@@ -50,7 +50,7 @@ export function ItineraryTimeline({
       title: "Inicio",
       description: startDescription ?? defaultStartDescription
     },
-    ...stops.map((stop, index) => ({
+    ...stops.map((stop, index): TimelineEntry => ({
       variant: "stop",
       badge: `${index + 1}`,
       title: stop.label,

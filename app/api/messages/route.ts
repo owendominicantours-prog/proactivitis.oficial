@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
     include: {
-      participants: true
+      ConversationParticipant: true
     }
   });
 
@@ -27,13 +28,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Conversación no encontrada" }, { status: 404 });
   }
 
-  const isParticipant = conversation.participants.some((item) => item.userId === session.user.id);
+  const isParticipant = conversation.ConversationParticipant.some((item) => item.userId === session.user.id);
   if (!isParticipant) {
     return NextResponse.json({ error: "No eres parte de esta conversación" }, { status: 403 });
   }
 
   const message = await prisma.message.create({
     data: {
+      id: randomUUID(),
       conversationId,
       senderId: session.user.id,
       senderRole: session.user.role ?? "CUSTOMER",

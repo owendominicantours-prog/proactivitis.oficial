@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { TourDetailShell } from "@/components/tours/TourDetailShell";
+import { TourDetailShell, type TourWithSupplier } from "@/components/tours/TourDetailShell";
 
 export const dynamic = "force-dynamic";
 
@@ -33,9 +33,9 @@ export default async function AdminTourPreviewPage({ params }: { params: { id?: 
   const tour = await prisma.tour.findUnique({
     where: { id: params.id },
     include: {
-      supplier: {
+      SupplierProfile: {
         include: {
-          user: true
+          User: true
         }
       }
     }
@@ -45,9 +45,22 @@ export default async function AdminTourPreviewPage({ params }: { params: { id?: 
     notFound();
   }
 
+  const tourWithSupplier: TourWithSupplier = {
+    ...tour,
+    supplier: {
+      id: tour.SupplierProfile?.id ?? "",
+      company: tour.SupplierProfile?.company ?? "",
+      user: {
+        id: tour.SupplierProfile?.User?.id ?? "",
+        name: tour.SupplierProfile?.User?.name ?? null,
+        email: tour.SupplierProfile?.User?.email ?? ""
+      }
+    }
+  };
+
   const isAdmin = session.user.role === "ADMIN";
   const isSupplierOwner =
-    session.user.role === "SUPPLIER" && session.user.id && tour.supplier.userId === session.user.id;
+    session.user.role === "SUPPLIER" && session.user.id && tour.SupplierProfile?.userId === session.user.id;
   if (!isAdmin && !isSupplierOwner) {
     notFound();
   }
@@ -59,7 +72,7 @@ export default async function AdminTourPreviewPage({ params }: { params: { id?: 
       <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-xs text-amber-800">
         Estás viendo una vista previa interna del tour tal como lo verá el cliente. Estado actual: {statusLabel}
       </div>
-      <TourDetailShell tour={tour} />
+      <TourDetailShell tour={tourWithSupplier} />
     </>
   );
 }

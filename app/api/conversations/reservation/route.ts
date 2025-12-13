@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto";
+import type { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -17,16 +19,16 @@ export async function POST(request: NextRequest) {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: {
-      tour: {
+      Tour: {
         include: {
-          supplier: {
+          SupplierProfile: {
             include: {
-              user: true
+              User: true
             }
           }
         }
       },
-      user: true
+      User: true
     }
   });
 
@@ -35,7 +37,7 @@ export async function POST(request: NextRequest) {
   }
 
   const customerId = booking.userId;
-  const supplierUserId = booking.tour?.supplier?.userId;
+  const supplierUserId = booking.Tour?.SupplierProfile?.userId;
   if (!supplierUserId) {
     return NextResponse.json({ error: "Proveedor sin cuenta" }, { status: 500 });
   }
@@ -53,20 +55,28 @@ export async function POST(request: NextRequest) {
 
   const participants = Array.from(new Set([customerId, supplierUserId]));
 
-  const conversation = await prisma.conversation.create({
+  const createdConversation = await prisma.conversation.create({
     data: {
+      id: randomUUID(),
       type: "RESERVATION",
       reservationId: booking.id,
       createdById: session.user.id,
-      participants: {
-        create: participants.map((userId) => ({
-          userId
-        }))
-      }
-    },
+      updatedAt: new Date()
+    }
+  });
+
+  await prisma.conversationParticipant.createMany({
+    data: participants.map((userId) => ({
+      conversationId: createdConversation.id,
+      userId
+    }))
+  });
+
+  const conversation = await prisma.conversation.findUnique({
+    where: { id: createdConversation.id },
     include: {
-      participants: {
-        include: { user: { select: { id: true, name: true, role: true } } }
+      ConversationParticipant: {
+        include: { User: { select: { id: true, name: true, role: true } } }
       }
     }
   });

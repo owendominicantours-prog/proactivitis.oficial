@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -45,12 +46,14 @@ export async function POST(request: NextRequest) {
     data: {
       tourId: body.tourId || "UNKNOWN",
       userId: body.userId || "anon",
-      date: new Date(body.date || Date.now()),
+      travelDate: new Date(body.date || Date.now()),
       passengers: Number(body.passengers) || 1,
       totalAmount: Number(body.totalAmount) || 0,
       supplierAmount: Number(body.supplierAmount) || 0,
-      platformFee: Number(body.platformFee) || 0
-    }
+      platformFee: Number(body.platformFee) || 0,
+      customerName: body.customerName || "Guest",
+      customerEmail: body.customerEmail || ""
+    } as Prisma.BookingUncheckedCreateInput
   });
   return NextResponse.json({ booking }, { status: 201 });
 }

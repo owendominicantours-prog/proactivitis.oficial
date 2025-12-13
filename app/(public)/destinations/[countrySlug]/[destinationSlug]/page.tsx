@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { TourFilters } from "@/components/public/TourFilters";
+import type { DurationOption } from "@/components/public/TourFilters";
 import { buildTourFilter, type TourSearchParams } from "@/lib/filterBuilder";
 import { getZoneInfo } from "@/lib/destinationInfo";
 
@@ -65,7 +66,12 @@ export default async function DestinationPage({
   });
 
   const languages = Array.from(new Set(tours.map((t) => t.language).filter(Boolean))) as string[];
-  const durations = Array.from(new Set(tours.map((t) => t.duration).filter(Boolean))) as string[];
+  const durations: DurationOption[] = Array.from(
+    new Set(tours.map((t) => t.duration).filter(Boolean))
+  ).map((duration) => ({
+    value: duration,
+    label: duration
+  }));
 
   const zoneInfo = getZoneInfo(resolvedParams.countrySlug, resolvedParams.destinationSlug);
 

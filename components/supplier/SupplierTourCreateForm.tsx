@@ -152,6 +152,8 @@ type TourState = {
 
   title: string;
 
+  category: string;
+
   shortDescription: string;
 
   description: string;
@@ -218,6 +220,8 @@ const INSTRUCTION_PRESETS = [
 const defaultState: TourState = {
 
   title: "",
+
+  category: "",
 
   shortDescription: "",
 

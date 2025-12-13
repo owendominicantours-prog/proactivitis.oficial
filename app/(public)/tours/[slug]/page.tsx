@@ -196,7 +196,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
           <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-slate-900">Gallery</h3>
             <div className="mt-4 grid gap-4 md:grid-cols-3">
-              {gallery.slice(0, 3).map((img, index) => (
+              {gallery.slice(0, 3).map((img: string, index: number) => (
                 <div key={index} className="h-32 w-full overflow-hidden rounded-2xl border border-slate-200">
                   <DynamicImage
                     src={img}

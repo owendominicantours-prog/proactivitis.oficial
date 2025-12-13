@@ -1,6 +1,8 @@
-import { toursCatalog } from "@/lib/destinations";
+import { getAllTours } from "@/lib/destinations";
 
-export default function SearchPage() {
+export default async function SearchPage() {
+  const tours = await getAllTours();
+
   return (
     <div className="space-y-10 bg-slate-50 pb-16 pt-8">
       <div className="mx-auto max-w-6xl px-6">
@@ -10,17 +12,26 @@ export default function SearchPage() {
         </p>
       </div>
       <div className="mx-auto max-w-6xl space-y-4 px-6">
-        {toursCatalog.map((tour) => (
+        {tours.map((tour) => (
           <div
             key={tour.id}
             className="rounded-[30px] bg-white p-6 shadow-card transition hover:border-slate-200 hover:bg-slate-50"
           >
-            <h2 className="text-2xl font-semibold text-slate-900">{tour.title}</h2>
-            <p className="text-sm text-slate-500">{tour.description}</p>
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold text-slate-900">{tour.title}</h2>
+              <span className="text-sm font-semibold text-brand">
+                ${tour.price.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+              </span>
+            </div>
             <div className="mt-3 flex flex-wrap gap-3 text-xs uppercase tracking-[0.3em] text-slate-500">
               <span>{tour.duration}</span>
-              <span>{tour.language}</span>
+              <span>{tour.location}</span>
             </div>
+            {tour.departureDestination?.name ? (
+              <p className="mt-3 text-sm font-semibold text-slate-900">
+                Sale desde {tour.departureDestination.name}
+              </p>
+            ) : null}
           </div>
         ))}
       </div>

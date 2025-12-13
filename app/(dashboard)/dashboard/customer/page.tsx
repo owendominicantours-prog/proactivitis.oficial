@@ -16,7 +16,7 @@ export default async function CustomerDashboardPage() {
     where: {
       OR: [{ customerEmail: session.user.email }, { userId: session.user.id ?? undefined }]
     },
-    include: { tour: true },
+    include: { Tour: true },
     orderBy: { travelDate: "asc" }
   });
 
@@ -24,12 +24,14 @@ export default async function CustomerDashboardPage() {
   const upcoming = bookings.filter((booking) => booking.travelDate >= today);
   const past = bookings.filter((booking) => booking.travelDate < today);
 
-  const statusMessages: Record<BookingStatus, string> = {
+  const statusMessages: Partial<Record<BookingStatus, string>> = {
     CONFIRMED: "Tu reserva está confirmada.",
     CANCELLATION_REQUESTED: "Se ha solicitado la cancelación de esta reserva. Nuestro equipo la revisa.",
     CANCELLED: "Esta reserva está cancelada.",
     COMPLETED: "Esta reserva fue completada."
   };
+
+  const getStatusMessage = (status: BookingStatus) => statusMessages[status] ?? "";
 
   const renderList = (items: typeof bookings) => (
     <div className="space-y-3">
@@ -37,7 +39,7 @@ export default async function CustomerDashboardPage() {
         <div key={booking.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-slate-900">{booking.tour.title}</p>
+              <p className="text-sm font-semibold text-slate-900">{booking.Tour?.title ?? "Tour"}</p>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
                 {booking.travelDate.toLocaleDateString("es-ES")} · {booking.travelDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
               </p>
@@ -46,7 +48,7 @@ export default async function CustomerDashboardPage() {
               {booking.status}
             </span>
           </div>
-          <p className="mt-2 text-xs text-slate-500">{statusMessages[booking.status] ?? ""}</p>
+              <p className="mt-2 text-xs text-slate-500">{getStatusMessage(booking.status as BookingStatus)}</p>
           <div className="mt-3 flex flex-wrap items-center justify-between text-sm text-slate-600">
             <p>Pax: {booking.paxAdults + booking.paxChildren}</p>
             <Link href={`/dashboard/customer/reservas/${booking.id}`} className="text-xs font-semibold text-sky-500 hover:underline">

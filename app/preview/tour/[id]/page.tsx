@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { TourDetailShell } from "@/components/tours/TourDetailShell";
+import { TourDetailShell, type TourWithSupplier } from "@/components/tours/TourDetailShell";
 
 export const dynamic = "force-dynamic";
 
@@ -19,9 +19,9 @@ export default async function PublicTourPreviewPage({ params }: { params: { id?:
   const tour = await prisma.tour.findUnique({
     where: { id: lookupId },
     include: {
-      supplier: {
+      SupplierProfile: {
         include: {
-          user: true
+          User: true
         }
       }
     }
@@ -31,5 +31,18 @@ export default async function PublicTourPreviewPage({ params }: { params: { id?:
     notFound();
   }
 
-  return <TourDetailShell tour={tour} />;
+  const tourWithSupplier: TourWithSupplier = {
+    ...tour,
+    supplier: {
+      id: tour.SupplierProfile?.id ?? "",
+      company: tour.SupplierProfile?.company ?? "",
+      user: {
+        id: tour.SupplierProfile?.User?.id ?? "",
+        name: tour.SupplierProfile?.User?.name ?? null,
+        email: tour.SupplierProfile?.User?.email ?? ""
+      }
+    }
+  };
+
+  return <TourDetailShell tour={tourWithSupplier} />;
 }

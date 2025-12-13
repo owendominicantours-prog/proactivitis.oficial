@@ -86,7 +86,7 @@ export function MediaUploader({
   useEffect(() => {
     const previews = galleryPreviews;
     return () => {
-      previews.forEach((url) => URL.revokeObjectURL(url));
+      previews.forEach((preview) => URL.revokeObjectURL(preview.url));
     };
   }, [galleryPreviews]);
 

@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
 import { notFound } from "next/navigation";
 import { DynamicImage } from "@/components/shared/DynamicImage";
+import type { BookingStatus } from "@/lib/types/booking";
 
 export default async function CustomerBookingDetailPage({ params }: { params: Promise<{ id?: string }> }) {
   const resolved = await params;
@@ -26,9 +27,9 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
   const booking = await prisma.booking.findUnique({
     where: { id: resolved.id },
     include: {
-      tour: {
+      Tour: {
         include: {
-          supplier: true
+          SupplierProfile: true
         }
       }
     }
@@ -72,21 +73,23 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
         <div className="flex flex-col gap-4 lg:flex-row">
           <div className="relative h-48 w-full overflow-hidden rounded-2xl bg-slate-100 lg:w-1/3">
             <DynamicImage
-              src={booking.tour.heroImage ?? "/fototours/fototour.jpeg"}
-              alt={booking.tour.title}
+              src={booking.Tour?.heroImage ?? "/fototours/fototour.jpeg"}
+              alt={booking.Tour?.title ?? "Tour"}
               className="absolute inset-0 h-full w-full object-cover"
             />
           </div>
           <div className="flex-1 space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-2xl font-semibold text-slate-900">{booking.tour.title}</h2>
-              <BookingStatusBadge status={booking.status} />
+              <h2 className="text-2xl font-semibold text-slate-900">{booking.Tour?.title ?? "Tour"}</h2>
+              <BookingStatusBadge status={booking.status as BookingStatus} />
             </div>
             <p className="text-xs text-slate-500">{statusMessages[booking.status] ?? ""}</p>
             <p className="text-sm text-slate-500">
-              {travelDate} · {travelTime} · {booking.tour.location}
+              {travelDate} · {travelTime} · {booking.Tour?.location}
             </p>
-            <p className="text-sm text-slate-500">Proveedor: {booking.tour.supplier.company}</p>
+            <p className="text-sm text-slate-500">
+              Proveedor: {booking.Tour?.SupplierProfile?.company ?? "No asignado"}
+            </p>
             <p className="text-sm text-slate-500">Pax: {booking.paxAdults + booking.paxChildren}</p>
             <div className="flex flex-wrap gap-3">
               <Link
@@ -118,9 +121,9 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
         </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Detalles del tour</p>
-          <p className="text-sm text-slate-700">{booking.tour.duration}</p>
-          <p className="text-sm text-slate-700">{booking.tour.language}</p>
-          <p className="text-sm text-slate-700">{booking.tour.includes}</p>
+          <p className="text-sm text-slate-700">{booking.Tour?.duration}</p>
+          <p className="text-sm text-slate-700">{booking.Tour?.language}</p>
+          <p className="text-sm text-slate-700">{booking.Tour?.includes}</p>
         </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Notas de recogida</p>

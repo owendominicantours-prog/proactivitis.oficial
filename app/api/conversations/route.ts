@@ -22,23 +22,11 @@ export async function GET(request: NextRequest) {
   const conversations = await prisma.conversation.findMany({
     where: filterClause,
     include: {
-      messages: {
+      Message: {
         orderBy: {
           createdAt: "desc"
         },
         take: 1,
-        include: {
-          sender: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              role: true
-            }
-          }
-        }
-      },
-      participants: {
         include: {
           User: {
             select: {
@@ -50,11 +38,23 @@ export async function GET(request: NextRequest) {
           }
         }
       },
-      booking: {
+      ConversationParticipant: {
+        include: {
+          User: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true
+            }
+          }
+        }
+      },
+      Booking: {
         select: {
-          bookingCode: true,
+          id: true,
           travelDate: true,
-          tour: {
+          Tour: {
             select: {
               id: true,
               title: true
@@ -71,21 +71,21 @@ export async function GET(request: NextRequest) {
   const payload = conversations.map((conv) => ({
     id: conv.id,
     type: conv.type,
-    tour: conv.booking?.tour
+    tour: conv.Booking?.Tour
       ? {
-          id: conv.booking.tour.id,
-          title: conv.booking.tour.title
+          id: conv.Booking.Tour.id,
+          title: conv.Booking.Tour.title
         }
       : null,
-    bookingCode: conv.booking?.bookingCode ?? null,
-    lastMessage: conv.messages[0]
+    bookingCode: conv.Booking?.id ?? null,
+    lastMessage: conv.Message[0]
       ? {
-          content: conv.messages[0].content,
-          createdAt: conv.messages[0].createdAt,
-          sender: conv.messages[0].sender
+          content: conv.Message[0].content,
+          createdAt: conv.Message[0].createdAt,
+          sender: conv.Message[0].User
         }
       : null,
-    participants: conv.participants.map((participant) => ({
+    participants: conv.ConversationParticipant.map((participant) => ({
       id: participant.User?.id ?? participant.userId,
       name: participant.User?.name ?? participant.userId,
       email: participant.User?.email ?? null,

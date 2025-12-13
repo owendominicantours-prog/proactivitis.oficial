@@ -54,7 +54,9 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async session({ session, token }) {
       if (!session?.user) return session;
-      session.user.id = token.sub;
+      if (token.sub) {
+        session.user.id = token.sub;
+      }
       session.user.role = token.role as string;
       session.user.supplierApproved = token.supplierApproved === "true";
       return session;
@@ -68,7 +70,9 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
-    async redirect({ url, baseUrl, token }) {
+    async redirect(params) {
+      const { url, baseUrl } = params;
+      const token = (params as { token?: { role?: string } }).token;
       if (!token?.role) return baseUrl;
       const mapped = roleRedirects[token.role as string];
       return mapped ?? url ?? baseUrl;

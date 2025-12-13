@@ -1,15 +1,17 @@
 export const dynamic = "force-dynamic"; // Agency bookings panel must display latest cancellations.
 
+import type { ReactNode } from "react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PanelShell } from "@/components/dashboard/PanelShell";
-import { BookingTable } from "@/components/bookings/BookingTable";
+import { BookingTable, type BookingRow } from "@/components/bookings/BookingTable";
 import {
   agencyCancelBooking,
   agencyRequestCancellation
 } from "@/lib/actions/bookingCancellation";
 import { requiresCancellationRequest } from "@/lib/bookings";
+import type { BookingStatus } from "@/lib/types/booking";
 
 export default async function AgencyBookingsPage() {
   const session = await getServerSession(authOptions);
@@ -19,7 +21,7 @@ export default async function AgencyBookingsPage() {
 
   const bookings = await prisma.booking.findMany({
     where: { source: "AGENCY" },
-    include: { tour: true },
+    include: { Tour: true },
     orderBy: { createdAt: "desc" }
   });
 
@@ -38,25 +40,26 @@ export default async function AgencyBookingsPage() {
     createdAt: booking.createdAt.toLocaleDateString("es-ES"),
     travelDateValue: booking.travelDate.toISOString(),
     createdAtValue: booking.createdAt.toISOString(),
-    tourTitle: booking.tour.title,
+    tourTitle: booking.Tour?.title ?? "Tour no disponible",
     customerName: booking.customerName,
     pax: booking.paxAdults + booking.paxChildren,
     totalAmount: booking.totalAmount,
-    status: booking.status,
-    source: booking.source,
+    status: booking.status as BookingStatus,
+    source: booking.source as BookingRow["source"],
     hotel: booking.hotel,
     cancellationReason: booking.cancellationReason,
     cancellationByRole: booking.cancellationByRole,
     cancellationAt: booking.cancellationAt?.toISOString() ?? null
   }));
 
-  const rowActions = bookings.map((booking) => {
-    const travelDate = new Date(booking.travelDateValue);
+  const rowActions: Record<string, ReactNode> = {};
+  bookings.forEach((booking) => {
+    const travelDate = booking.travelDate;
     const needsRequest = requiresCancellationRequest(travelDate);
-    return (
+    rowActions[booking.id] = (
       <details key={booking.id} className="space-y-2 text-xs text-slate-500">
         <summary className="cursor-pointer rounded-md border border-slate-200 px-3 py-1 text-center font-semibold text-slate-600">
-          {needsRequest ? "Solicitar cancelación" : "Cancelar reserva"}
+          {needsRequest ? "Solicitar cancelaci?n" : "Cancelar reserva"}
         </summary>
         <form
           action={needsRequest ? agencyRequestCancellation : agencyCancelBooking}
@@ -65,7 +68,7 @@ export default async function AgencyBookingsPage() {
         >
           <input type="hidden" name="bookingId" value={booking.id} />
           <label className="block text-[10px] uppercase tracking-[0.3em] text-slate-500">
-            Motivo de cancelación
+            Motivo de cancelaci?n
             <textarea
               name="reason"
               required

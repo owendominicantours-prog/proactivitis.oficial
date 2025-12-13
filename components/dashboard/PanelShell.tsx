@@ -5,6 +5,7 @@ import { ReactNode } from "react";
 import { parseNotificationMetadata } from "@/lib/notificationService";
 import { markNotificationReadAction } from "@/app/(dashboard)/notifications/actions";
 import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
+import type { NotificationType } from "@/lib/types/notificationTypes";
 import { DashboardUserMenu } from "@/components/dashboard/DashboardUserMenu";
 import { NavMenu } from "@/components/dashboard/NavMenu";
 
@@ -116,7 +117,8 @@ const buildBookingDetailRoute = (bookingId: string | undefined, metadataRole: st
                       notifications!.map((notification) => {
                         const metadata = parseNotificationMetadata(notification.metadata);
                         const redirectUrl = metadata.referenceUrl ?? fallbackLink;
-                        const display = getNotificationDisplayProps(notification.type ?? undefined);
+                        const notificationType = notification.type as NotificationType | undefined;
+                        const display = getNotificationDisplayProps(notificationType);
                         const message = notification.message ?? notification.body ?? "";
                         return (
                           <form

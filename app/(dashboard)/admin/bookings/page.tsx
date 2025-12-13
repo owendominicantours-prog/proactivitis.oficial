@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic"; // Needs fresh reservation & cancellation data in every render.
 
+import type { ReactNode } from "react";
 import { prisma } from "@/lib/prisma";
+import type { BookingStatus } from "@/lib/types/booking";
 import { BookingTable, BookingRow } from "@/components/bookings/BookingTable";
 import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
 import {
@@ -14,9 +16,6 @@ export default async function AdminBookingsPage() {
     include: { Tour: true },
     orderBy: { createdAt: "desc" }
   });
-  const cancellationRequests = bookings.filter(
-    (booking) => booking.status === "CANCELLATION_REQUESTED"
-  );
   const rows: BookingRow[] = bookings.map((booking) => ({
     id: booking.id,
     travelDate: booking.travelDate.toLocaleDateString("es-ES"),
@@ -27,35 +26,40 @@ export default async function AdminBookingsPage() {
     customerName: booking.customerName,
     pax: booking.paxAdults + booking.paxChildren,
     totalAmount: booking.totalAmount,
-    status: booking.status,
-    source: booking.source,
+    status: booking.status as BookingStatus,
+    source: booking.source as BookingRow["source"],
     hotel: booking.hotel,
     cancellationReason: booking.cancellationReason,
     cancellationByRole: booking.cancellationByRole,
     cancellationAt: booking.cancellationAt?.toISOString() ?? null
   }));
-  const rowActions = bookings.map((booking) => (
-    <details key={booking.id} className="space-y-2 text-xs text-slate-500">
-      <summary className="cursor-pointer rounded-md border border-slate-200 px-3 py-1 text-center font-semibold text-slate-600">
-        Cancelar
-      </summary>
-      <form action={adminCancelBooking} method="post" className="space-y-2">
-        <input type="hidden" name="bookingId" value={booking.id} />
-        <textarea
-          name="reason"
-          required
-          placeholder="Motivo de cancelación"
-          className="w-full rounded-md border border-slate-200 px-3 py-2 text-xs text-slate-700"
-        />
-        <button
-          type="submit"
-          className="w-full rounded-md bg-rose-600 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white"
-        >
-          Confirmar cancelación
-        </button>
-      </form>
-    </details>
-  ));
+  const cancellationRequests = rows.filter((booking) => booking.status === "CANCELLATION_REQUESTED");
+
+  const rowActions: Record<string, ReactNode> = {};
+  bookings.forEach((booking) => {
+    rowActions[booking.id] = (
+      <details key={booking.id} className="space-y-2 text-xs text-slate-500">
+        <summary className="cursor-pointer rounded-md border border-slate-200 px-3 py-1 text-center font-semibold text-slate-600">
+          Cancelar
+        </summary>
+        <form action={adminCancelBooking} method="post" className="space-y-2">
+          <input type="hidden" name="bookingId" value={booking.id} />
+          <textarea
+            name="reason"
+            required
+            placeholder="Motivo de cancelaci?n"
+            className="w-full rounded-md border border-slate-200 px-3 py-2 text-xs text-slate-700"
+          />
+          <button
+            type="submit"
+            className="w-full rounded-md bg-rose-600 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+          >
+            Confirmar cancelaci?n
+          </button>
+        </form>
+      </details>
+    );
+  });
 
   return (
     <div className="space-y-6">

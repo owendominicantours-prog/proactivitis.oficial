@@ -3,20 +3,24 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(request: NextRequest, { params }: { params: { conversationId: string } }) {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ conversationId: string }> }
+) {
+  const { conversationId } = await context.params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   const conversation = await prisma.conversation.findUnique({
-    where: { id: params.conversationId },
+    where: { id: conversationId },
     include: {
-      participants: true,
-      messages: {
+      ConversationParticipant: true,
+      Message: {
         orderBy: { createdAt: "asc" },
         include: {
-          sender: {
+          User: {
             select: {
               id: true,
               name: true,
@@ -32,10 +36,10 @@ export async function GET(request: NextRequest, { params }: { params: { conversa
     return NextResponse.json({ error: "Conversación no encontrada" }, { status: 404 });
   }
 
-  const isParticipant = conversation.participants.some((item) => item.userId === session.user.id);
+  const isParticipant = conversation.ConversationParticipant.some((item) => item.userId === session.user.id);
   if (!isParticipant) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  return NextResponse.json({ messages: conversation.messages });
+  return NextResponse.json({ messages: conversation.Message });
 }

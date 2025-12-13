@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
   const existing = await prisma.conversation.findFirst({
     where: {
       type: "SUPPORT",
-      participants: {
+      ConversationParticipant: {
         every: {
           userId: {
             in: participants
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       }
     },
     include: {
-      participants: {
+      ConversationParticipant: {
         include: { User: { select: { id: true, name: true, role: true } } }
       }
     }
@@ -72,22 +72,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ conversation: existing });
   }
 
-  const conversation = await prisma.conversation.create({
+  const createdConversation = await prisma.conversation.create({
     data: {
+      id: randomUUID(),
       type: "SUPPORT",
       createdById: requesterId,
       updatedAt: new Date(),
-      participants: {
-        create: participants.map((userId) => ({ userId }))
-      },
-      metadata: JSON.stringify({ requesterName, requesterEmail })
-    },
+    }
+  });
+
+  await prisma.conversationParticipant.createMany({
+    data: participants.map((userId) => ({
+      conversationId: createdConversation.id,
+      userId
+    }))
+  });
+
+  const conversation = await prisma.conversation.findUnique({
+    where: { id: createdConversation.id },
     include: {
-      participants: {
+      ConversationParticipant: {
         include: { User: { select: { id: true, name: true, role: true } } }
       }
     }
   });
+
+  if (!conversation) {
+    return NextResponse.json({ error: "No se pudo crear la conversación" }, { status: 500 });
+  }
 
   // Notificar al admin sobre el nuevo ticket
   await createNotification({

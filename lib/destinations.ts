@@ -183,6 +183,35 @@ export async function getDestinationBySlugs(countrySlug: string, destinationSlug
   });
 }
 
+export async function getDestinationBySlug(slug: string): Promise<DestinationWithCountry | null> {
+  return prisma.destination.findFirst({
+    where: { slug },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      shortDescription: true,
+      heroImage: true,
+      country: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          code: true
+        }
+      }
+    }
+  });
+}
+
+export async function getAllDestinationSlugs() {
+  return prisma.destination.findMany({
+    select: {
+      slug: true
+    }
+  });
+}
+
 const selectTourForCard = Prisma.validator<Prisma.TourSelect>()({
   id: true,
   slug: true,
@@ -249,6 +278,17 @@ export async function getToursByDestinationSlug(countrySlug: string, destination
         }
       }
     },
+    select: selectTourForCard,
+    orderBy: {
+      title: "asc"
+    }
+  });
+
+  return tours.map(mapToTourForCard);
+}
+
+export async function getAllTours(): Promise<TourForCard[]> {
+  const tours = await prisma.tour.findMany({
     select: selectTourForCard,
     orderBy: {
       title: "asc"

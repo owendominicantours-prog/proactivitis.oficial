@@ -29,6 +29,7 @@ model AgencyProfile {
   id          String @id
   userId      String @unique
   companyName String
+  approved    Boolean @default(false)
   User        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -91,11 +92,11 @@ model ConversationParticipant {
 }
 
 model LandingPage {
-  id        String   @id
+  id        String   @id @default(cuid())
   slug      String   @unique
   title     String
   body      String
-  updatedAt DateTime
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Message {
@@ -145,7 +146,7 @@ model PartnerApplication {
 }
 
 model Offer {
-  id          String   @id
+  id          String   @id @default(cuid())
   tourId      String
   title       String
   description String
@@ -239,7 +240,7 @@ model Tour {
 }
 
 model User {
-  id                      String                    @id
+  id                      String                    @id @default(cuid())
   name                    String?
   email                   String                    @unique
   password                String?

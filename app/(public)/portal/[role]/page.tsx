@@ -89,8 +89,8 @@ export default async function PortalRolePage({ params }: Props) {
             )}
           </>
         ) : (
-          <div className="rounded-[28px] border border-red-200 bg-red-50 p-6 text-sm text-red-600 shadow-sm">
-            <p>El portal solicitado ({params.role}) no existe. Usa uno de los roles válidos: admin, supplier, agency, customer.</p>
+            <div className="rounded-[28px] border border-red-200 bg-red-50 p-6 text-sm text-red-600 shadow-sm">
+              <p>El portal solicitado ({requestedRole}) no existe. Usa uno de los roles válidos: admin, supplier, agency, customer.</p>
             <Link href="/portal" className="mt-3 inline-flex text-sm font-semibold text-red-700 underline">
               Volver al listado de portales
             </Link>

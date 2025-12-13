@@ -1,7 +1,7 @@
 import type { Tour } from "@prisma/client";
 import { ReactNode } from "react";
 
-type TourWithSupplier = Tour & {
+export type TourWithSupplier = Tour & {
   heroImage?: string | null;
   gallery?: string | null;
   supplier: {

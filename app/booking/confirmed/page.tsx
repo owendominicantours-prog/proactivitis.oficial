@@ -191,7 +191,7 @@ export default async function BookingConfirmedPage({ searchParams }: Props) {
                   location={item.location}
                   price={item.price}
                   rating={4}
-                  image={item.heroImage}
+                  image={item.heroImage ?? "/fototours/fototour.jpeg"}
                 />
               ))}
             </div>

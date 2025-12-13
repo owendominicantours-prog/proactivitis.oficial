@@ -13,7 +13,7 @@ export function getStripe() {
   }
 
   const client = new Stripe(secret, {
-    apiVersion: "2023-08-16"
+    apiVersion: "2025-11-17.clover"
   });
 
   cached = { client };

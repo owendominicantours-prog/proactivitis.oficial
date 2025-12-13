@@ -1,6 +1,4 @@
-import { PrismaConfig } from "@prisma/client";
-
-const config: PrismaConfig = {
+const config = {
   datasources: {
     db: {
       url: "file:./dev.db"

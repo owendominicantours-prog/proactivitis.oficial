@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getNotificationsForRecipient, parseNotificationMetadata } from "@/lib/notificationService";
 import { markNotificationReadAction } from "@/app/(dashboard)/notifications/actions";
 import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
+import type { NotificationType } from "@/lib/types/notificationTypes";
 import { prisma } from "@/lib/prisma";
 import { buildBookingDetailRoute } from "@/lib/bookingRoutes";
 
@@ -65,7 +66,8 @@ export default async function SupplierNotificationsPage() {
         {enrichedNotifications.length ? (
           enrichedNotifications.map(({ notification, metadata, bookingId }) => {
             const redirectUrl = metadata.referenceUrl ?? "/supplier/bookings";
-            const display = getNotificationDisplayProps(notification.type ?? undefined);
+            const notificationType = notification.type as NotificationType | undefined;
+            const display = getNotificationDisplayProps(notificationType);
             const message = notification.message ?? notification.body ?? "";
             const booking = bookingId ? bookingMap.get(bookingId) : undefined;
             const bookingDetailRoute = buildBookingDetailRoute({

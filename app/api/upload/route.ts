@@ -58,8 +58,8 @@ export async function POST(request: NextRequest) {
     const filePath = path.join(uploadDir, safeName);
     const publicPath = path.join(publicDir, safeName);
 
-    await fs.writeFile(filePath, optimized);
-    await fs.writeFile(publicPath, optimized);
+    await fs.writeFile(filePath, optimized as unknown as Uint8Array);
+    await fs.writeFile(publicPath, optimized as unknown as Uint8Array);
 
     return NextResponse.json({
       ok: true,

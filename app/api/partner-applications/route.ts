@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
   const role = String(body.role).toUpperCase();
   const serviceTypes = Array.isArray(body.serviceTypes)
-    ? body.serviceTypes.filter((value) => Boolean(value))
+    ? body.serviceTypes.filter((value: unknown) => Boolean(value))
     : [];
   const normalizedEmail = String(body.email).toLowerCase().trim();
   const password = String(body.password ?? "").trim();
@@ -63,13 +63,13 @@ export async function POST(request: NextRequest) {
     try {
       const buffer = Buffer.from(body.documentData, "base64");
       mkdirSync(UPLOADS_DIRECTORY, { recursive: true });
-      const extension = path.extname(documentName);
+      const extension = path.extname(documentName ?? "");
       const safeName = `${randomUUID()}${extension || ""}`;
       const fullName = `${safeName}`;
       const destinationPath = path.join(UPLOADS_DIRECTORY, fullName);
-      writeFileSync(destinationPath, buffer);
+      writeFileSync(destinationPath, buffer as unknown as Uint8Array);
       documentUrl = `/uploads/partner-applications/${fullName}`;
-      documentName = sanitizeFileName(documentName);
+      documentName = sanitizeFileName(documentName ?? "");
     } catch (error) {
       console.error("No se pudo guardar el documento:", error);
     }

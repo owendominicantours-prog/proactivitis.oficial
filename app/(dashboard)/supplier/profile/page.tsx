@@ -49,7 +49,7 @@ export default async function SupplierProfilePage() {
           </div>
           <div className="text-xs text-slate-500">
             Creado el{" "}
-            {supplier.createdAt ? new Date(supplier.createdAt).toLocaleDateString("es-ES") : "desconocido"}
+            {supplier.User?.createdAt ? new Date(supplier.User.createdAt).toLocaleDateString("es-ES") : "desconocido"}
           </div>
         </div>
           <p className="mt-4 text-sm text-slate-500">

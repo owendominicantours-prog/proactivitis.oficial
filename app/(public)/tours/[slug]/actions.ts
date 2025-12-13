@@ -1,5 +1,6 @@
 "use server";
 
+import type Stripe from "stripe";
 import { BookingSourceEnum, BookingStatusEnum } from "@/lib/types/booking";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -208,10 +209,10 @@ export async function createBookingAction(formData: FormData) {
       {
         price_data: {
           currency,
-      product_data: {
-        name: tour.title?.trim() || "Tour reservation",
-        description: summary
-      },
+          product_data: {
+            name: tour.title?.trim() || "Tour reservation",
+            description: summary
+          },
           unit_amount: Math.round(totalAmount * 100)
         },
         quantity: 1
@@ -228,7 +229,7 @@ export async function createBookingAction(formData: FormData) {
     },
     success_url: buildSuccessUrl(successTarget),
     cancel_url: buildCancelUrl(cancelTarget)
-  });
+  } as Stripe.Checkout.SessionCreateParams);
 
   const paymentIntentId =
     typeof checkoutSession.payment_intent === "string"

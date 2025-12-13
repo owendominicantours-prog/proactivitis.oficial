@@ -1,3 +1,5 @@
+"use client";
+
 import { ChatBox } from "@/components/ChatBox";
 import { ConversationList } from "@/components/conversations/ConversationList";
 import { useState } from "react";

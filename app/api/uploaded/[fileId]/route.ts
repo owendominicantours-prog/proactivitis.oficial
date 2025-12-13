@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 
-export async function GET(_: Request, { params }: { params: { fileId: string } }) {
-  const { fileId } = params;
+export async function GET(_request: NextRequest, context: { params: Promise<{ fileId: string }> }) {
+  const { fileId } = await context.params;
   console.log("GET /api/uploaded -> fileId", fileId);
   if (!fileId) {
     return NextResponse.json({ error: "Archivo no especificado" }, { status: 400 });
@@ -20,7 +20,7 @@ export async function GET(_: Request, { params }: { params: { fileId: string } }
     } else if (ext === ".webp") {
       contentType = "image/webp";
     }
-    return new NextResponse(buffer, {
+    return new NextResponse(buffer as unknown as ArrayBuffer, {
       headers: {
         "Content-Type": contentType,
         "Content-Length": buffer.length.toString()

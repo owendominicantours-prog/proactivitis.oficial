@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { getServerSession } from "next-auth";
-import { PanelShell } from "@/components/dashboard/PanelShell";
+import { PanelShell, type NotificationMenuItem } from "@/components/dashboard/PanelShell";
 import { authOptions } from "@/lib/auth";
 import { getNotificationUnreadCount, getNotificationsForRecipient } from "@/lib/notificationService";
 import { SupportTicketButton } from "@/components/dashboard/SupportTicketButton";
@@ -26,7 +26,7 @@ export const metadata = {
 export default async function AgencyDashboardLayout({ children }: { children: ReactNode }) {
   const session = await getServerSession(authOptions);
   const isAgency = session?.user?.role === "AGENCY";
-  let notifications = [];
+  let notifications: NotificationMenuItem[] = [];
   let unreadCount = 0;
 
   if (isAgency) {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getNotificationsForRecipient, parseNotificationMetadata } from "@/lib/notificationService";
 import { markNotificationReadAction } from "@/app/(dashboard)/admin/notifications/actions";
 import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
+import type { NotificationType } from "@/lib/types/notificationTypes";
 
 const formatDate = (value: Date) =>
   new Intl.DateTimeFormat("es-ES", {
@@ -36,7 +37,8 @@ export default async function AdminNotificationsPage() {
           notifications.map((notification) => {
             const metadata = parseNotificationMetadata(notification.metadata);
             const redirectUrl = metadata.referenceUrl ?? "/admin/bookings";
-            const display = getNotificationDisplayProps(notification.type ?? undefined);
+            const notificationType = notification.type as NotificationType | undefined;
+            const display = getNotificationDisplayProps(notificationType);
             const message = notification.message ?? notification.body ?? "";
             return (
               <article key={notification.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">

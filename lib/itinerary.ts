@@ -5,40 +5,36 @@ export type ItineraryStop = {
 };
 
 const TIME_TITLE_RE = /^\s*([0-9]{1,2}:[0-9]{2})\s*-\s*([^:]+):?\s*(.*)$/;
-const ADMIN_LINE_RE = /^\s*\d+\.\s*([^·-]+?)\s*[·]\s*([^:-]+?)(?:\s*-\s*(.*))?$/;
+const ADMIN_LINE_RE = /^\s*\d+\.\s*([^Жњ-]+?)\s*[Жњ]\s*([^:-]+?)(?:\s*-\s*(.*))?$/;
 
 export function parseItinerary(text: string): ItineraryStop[] {
   if (!text) return [];
-  return text
-    .split(/\r?\n/)
-    .map((line) => {
-      const match = line.match(TIME_TITLE_RE);
-      if (!match) {
-        return null;
-      }
-      const [, time, title, description] = match;
-      return {
-        time: time.trim(),
-        title: title.trim(),
-        description: description?.trim() || undefined
-      };
-    })
-    .filter((stop): stop is ItineraryStop => Boolean(stop));
+  const stops: ItineraryStop[] = [];
+  text.split(/\r?\n/).forEach((line) => {
+    const match = line.match(TIME_TITLE_RE);
+    if (!match) return;
+    const [, time, title, description] = match;
+    stops.push({
+      time: time.trim(),
+      title: title.trim(),
+      description: description?.trim() || undefined
+    });
+  });
+  return stops;
 }
 
 export function parseAdminItinerary(text: string): ItineraryStop[] {
   if (!text) return [];
-  return text
-    .split(/\r?\n/)
-    .map((line) => {
-      const match = line.match(ADMIN_LINE_RE);
-      if (!match) return null;
-      const [, duration, place, note] = match;
-      return {
-        time: duration.trim(),
-        title: place.trim(),
-        description: note?.trim() || undefined
-      };
-    })
-    .filter((stop): stop is ItineraryStop => Boolean(stop));
+  const stops: ItineraryStop[] = [];
+  text.split(/\r?\n/).forEach((line) => {
+    const match = line.match(ADMIN_LINE_RE);
+    if (!match) return;
+    const [, duration, place, note] = match;
+    stops.push({
+      time: duration.trim(),
+      title: place.trim(),
+      description: note?.trim() || undefined
+    });
+  });
+  return stops;
 }
