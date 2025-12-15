@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NEXT_DISABLE_SOURCE_MAPS=1 next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "jest --runInBand",
     "test:e2e": "playwright test",
-    "prisma": "prisma"
+    "prisma": "prisma",
+    "postinstall": "prisma generate"
   },
   "prisma": {
     "seed": "node prisma\\seed.js"
