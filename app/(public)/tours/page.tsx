@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { logPrismaError, prisma } from "@/lib/prisma";
 import { buildTourFilter, TourSearchParams } from "@/lib/filterBuilder";
 import { TourFilters } from "@/components/public/TourFilters";
 import { DynamicImage } from "@/components/shared/DynamicImage";
@@ -86,12 +86,8 @@ export default async function ToursGridPage({
   const params = resolvedSearchParams ?? {};
 
   let countries: CountryOption[] = [];
-  try {
-    countries = await prisma.country.findMany({
-      select: { name: true, slug: true }
-    });
   } catch (error) {
-    console.error("Prisma error loading countries:", error);
+    logPrismaError("loading countries", error);
   }
 
   let destinations: DestinationOption[] = [];
@@ -104,7 +100,7 @@ export default async function ToursGridPage({
       }
     });
   } catch (error) {
-    console.error("Prisma error loading destinations:", error);
+    logPrismaError("loading destinations", error);
   }
 
   let languagesRaw: TourLanguageRow[] = [];
@@ -114,7 +110,7 @@ export default async function ToursGridPage({
       select: { language: true }
     });
   } catch (error) {
-    console.error("Prisma error loading languages:", error);
+    logPrismaError("loading languages", error);
   }
 
   let durationsRaw: TourDurationRow[] = [];
@@ -124,7 +120,7 @@ export default async function ToursGridPage({
       select: { duration: true }
     });
   } catch (error) {
-    console.error("Prisma error loading durations:", error);
+    logPrismaError("loading durations", error);
   }
 
   const uniqueLanguages = Array.from(new Set(languagesRaw.map((entry) => entry.language).filter(Boolean)));
@@ -146,7 +142,7 @@ export default async function ToursGridPage({
       take: 24
     });
   } catch (error) {
-    console.error("Prisma error loading tours:", error);
+    logPrismaError("loading tours", error);
   }
 
   const activeFilters = [

@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { prisma, logPrismaError } from "@/lib/prisma";
 
 export type PublicTourFilter = {
   countrySlug?: string;
@@ -151,7 +151,7 @@ export async function getPublishedTours(filter: PublicTourFilter = {}, limit = 2
       take: limit
     });
   } catch (error) {
-    console.error("Prisma error fetching published tours:", error);
+    logPrismaError("fetching published tours", error);
     return [];
   }
 

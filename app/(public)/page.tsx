@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { TourCard } from "@/components/public/TourCard";
 import { getFeaturedTour } from "@/lib/publicTours";
-import { prisma } from "@/lib/prisma";
+import { logPrismaError, prisma } from "@/lib/prisma";
 
 type ExtraTour = {
   slug: string;
@@ -33,7 +33,7 @@ export default async function PublicHomePage() {
   try {
     featuredTour = await getFeaturedTour();
   } catch (error) {
-    console.error("Prisma error loading featured tour:", error);
+    logPrismaError("loading featured tour", error);
   }
 
   let extraTours: ExtraTour[] = [];
@@ -45,7 +45,7 @@ export default async function PublicHomePage() {
       select: { slug: true, title: true, location: true, price: true, heroImage: true }
     });
   } catch (error) {
-    console.error("Prisma error loading extra tours:", error);
+    logPrismaError("loading extra tours", error);
   }
 
   return (
