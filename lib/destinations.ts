@@ -1,6 +1,24 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
+const safePrismaArray = async <T>(label: string, fn: () => Promise<T[]>): Promise<T[]> => {
+  try {
+    return await fn();
+  } catch (error) {
+    console.error(`Prisma error ${label}:`, error);
+    return [];
+  }
+};
+
+const safePrismaSingle = async <T>(label: string, fn: () => Promise<T | null>): Promise<T | null> => {
+  try {
+    return await fn();
+  } catch (error) {
+    console.error(`Prisma error ${label}:`, error);
+    return null;
+  }
+};
+
 export type CountryWithMeta = {
   id: string;
   name: string;
@@ -57,65 +75,72 @@ type TourWithDestination = {
 };
 
 const buildDestinationCountMaps = async () => {
-  const grouped = await prisma.tour.groupBy({
-    by: ["departureDestinationId"],
-    where: {
-      departureDestinationId: {
-        not: null
+  try {
+    const grouped = await prisma.tour.groupBy({
+      by: ["departureDestinationId"],
+      where: {
+        departureDestinationId: {
+          not: null
+        }
+      },
+      _count: {
+        id: true
       }
-    },
-    _count: {
-      id: true
-    }
-  });
+    });
 
-  const perDestination = new Map<string, number>();
-  grouped.forEach((entry) => {
-    if (!entry.departureDestinationId) return;
-    perDestination.set(entry.departureDestinationId, entry._count.id);
-  });
+    const perDestination = new Map<string, number>();
+    grouped.forEach((entry) => {
+      if (!entry.departureDestinationId) return;
+      perDestination.set(entry.departureDestinationId, entry._count.id);
+    });
 
-  const destinations = await prisma.destination.findMany({
-    select: {
-      id: true,
-      countryId: true
-    }
-  });
+    const destinations = await prisma.destination.findMany({
+      select: {
+        id: true,
+        countryId: true
+      }
+    });
 
-  const perCountry = new Map<string, number>();
-  destinations.forEach((destination) => {
-    const count = perDestination.get(destination.id) ?? 0;
-    perCountry.set(destination.countryId, (perCountry.get(destination.countryId) ?? 0) + count);
-  });
+    const perCountry = new Map<string, number>();
+    destinations.forEach((destination) => {
+      const count = perDestination.get(destination.id) ?? 0;
+      perCountry.set(destination.countryId, (perCountry.get(destination.countryId) ?? 0) + count);
+    });
 
-  return { perCountry };
+    return { perCountry };
+  } catch (error) {
+    console.error("Prisma error building destination counts:", error);
+    return { perCountry: new Map<string, number>() };
+  }
 };
 
 export async function getCountriesWithTours(): Promise<CountryWithMeta[]> {
   const { perCountry } = await buildDestinationCountMaps();
 
-  const countries = await prisma.country.findMany({
-    where: {
-      destinations: {
-        some: {
-          tours: {
-            some: {}
+  const countries = await safePrismaArray("fetching countries with tours", () =>
+    prisma.country.findMany({
+      where: {
+        destinations: {
+          some: {
+            tours: {
+              some: {}
+            }
           }
         }
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        code: true,
+        shortDescription: true,
+        heroImage: true
+      },
+      orderBy: {
+        name: "asc"
       }
-    },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      code: true,
-      shortDescription: true,
-      heroImage: true
-    },
-    orderBy: {
-      name: "asc"
-    }
-  });
+    })
+  );
 
   return countries.map((country) => ({
     ...country,
@@ -124,92 +149,102 @@ export async function getCountriesWithTours(): Promise<CountryWithMeta[]> {
 }
 
 export async function getCountryBySlug(slug: string) {
-  return prisma.country.findFirst({
-    where: { slug },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      code: true,
-      shortDescription: true,
-      heroImage: true
-    }
-  });
+  return safePrismaSingle("fetching country by slug", () =>
+    prisma.country.findFirst({
+      where: { slug },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        code: true,
+        shortDescription: true,
+        heroImage: true
+      }
+    })
+  );
 }
 
 export async function getDestinationsByCountrySlug(slug: string) {
-  return prisma.destination.findMany({
-    where: {
-      country: {
-        slug
+  return safePrismaArray("fetching destinations by country", () =>
+    prisma.destination.findMany({
+      where: {
+        country: {
+          slug
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        shortDescription: true,
+        heroImage: true
+      },
+      orderBy: {
+        name: "asc"
       }
-    },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      shortDescription: true,
-      heroImage: true
-    },
-    orderBy: {
-      name: "asc"
-    }
-  });
+    })
+  );
 }
 
 export async function getDestinationBySlugs(countrySlug: string, destinationSlug: string): Promise<DestinationWithCountry | null> {
-  return prisma.destination.findFirst({
-    where: {
-      slug: destinationSlug,
-      country: {
-        slug: countrySlug
-      }
-    },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      shortDescription: true,
-      heroImage: true,
-      country: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          code: true
+  return safePrismaSingle("fetching destination by slugs", () =>
+    prisma.destination.findFirst({
+      where: {
+        slug: destinationSlug,
+        country: {
+          slug: countrySlug
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        shortDescription: true,
+        heroImage: true,
+        country: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            code: true
+          }
         }
       }
-    }
-  });
+    })
+  );
 }
 
 export async function getDestinationBySlug(slug: string): Promise<DestinationWithCountry | null> {
-  return prisma.destination.findFirst({
-    where: { slug },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      shortDescription: true,
-      heroImage: true,
-      country: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          code: true
+  return safePrismaSingle("fetching destination by slug", () =>
+    prisma.destination.findFirst({
+      where: { slug },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        shortDescription: true,
+        heroImage: true,
+        country: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            code: true
+          }
         }
       }
-    }
-  });
+    })
+  );
 }
 
 export async function getAllDestinationSlugs() {
-  return prisma.destination.findMany({
-    select: {
-      slug: true
-    }
-  });
+  return safePrismaArray("fetching destination slugs", () =>
+    prisma.destination.findMany({
+      select: {
+        slug: true
+      }
+    })
+  );
 }
 
 const selectTourForCard = Prisma.validator<Prisma.TourSelect>()({
@@ -251,49 +286,55 @@ const mapToTourForCard = (tour: TourWithDestination): TourForCard => ({
 });
 
 export async function getToursByCountrySlug(countrySlug: string): Promise<TourForCard[]> {
-  const tours = await prisma.tour.findMany({
-    where: {
-      departureDestination: {
-        country: {
-          slug: countrySlug
+  const tours = await safePrismaArray("fetching tours by country", () =>
+    prisma.tour.findMany({
+      where: {
+        departureDestination: {
+          country: {
+            slug: countrySlug
+          }
         }
+      },
+      select: selectTourForCard,
+      orderBy: {
+        title: "asc"
       }
-    },
-    select: selectTourForCard,
-    orderBy: {
-      title: "asc"
-    }
-  });
+    })
+  );
 
   return tours.map(mapToTourForCard);
 }
 
 export async function getToursByDestinationSlug(countrySlug: string, destinationSlug: string): Promise<TourForCard[]> {
-  const tours = await prisma.tour.findMany({
-    where: {
-      departureDestination: {
-        slug: destinationSlug,
-        country: {
-          slug: countrySlug
+  const tours = await safePrismaArray("fetching tours by destination", () =>
+    prisma.tour.findMany({
+      where: {
+        departureDestination: {
+          slug: destinationSlug,
+          country: {
+            slug: countrySlug
+          }
         }
+      },
+      select: selectTourForCard,
+      orderBy: {
+        title: "asc"
       }
-    },
-    select: selectTourForCard,
-    orderBy: {
-      title: "asc"
-    }
-  });
+    })
+  );
 
   return tours.map(mapToTourForCard);
 }
 
 export async function getAllTours(): Promise<TourForCard[]> {
-  const tours = await prisma.tour.findMany({
-    select: selectTourForCard,
-    orderBy: {
-      title: "asc"
-    }
-  });
+  const tours = await safePrismaArray("fetching all tours", () =>
+    prisma.tour.findMany({
+      select: selectTourForCard,
+      orderBy: {
+        title: "asc"
+      }
+    })
+  );
 
   return tours.map(mapToTourForCard);
 }

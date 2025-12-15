@@ -142,12 +142,18 @@ export async function getPublishedTours(filter: PublicTourFilter = {}, limit = 2
     AND: filters
   };
 
-  const tours = await prisma.tour.findMany({
-    where,
-    select: selectTourFields,
-    orderBy: { createdAt: "desc" },
-    take: limit
-  });
+  let tours = [];
+  try {
+    tours = await prisma.tour.findMany({
+      where,
+      select: selectTourFields,
+      orderBy: { createdAt: "desc" },
+      take: limit
+    });
+  } catch (error) {
+    console.error("Prisma error fetching published tours:", error);
+    return [];
+  }
 
   return tours.map((tour) => ({
     id: tour.id,

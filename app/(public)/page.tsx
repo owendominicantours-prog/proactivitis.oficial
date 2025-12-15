@@ -3,6 +3,14 @@ import { TourCard } from "@/components/public/TourCard";
 import { getFeaturedTour } from "@/lib/publicTours";
 import { prisma } from "@/lib/prisma";
 
+type ExtraTour = {
+  slug: string;
+  title: string;
+  location: string;
+  price: number;
+  heroImage?: string | null;
+};
+
 const benefits = [
   {
     title: "Soporte local inmediato",
@@ -18,14 +26,27 @@ const benefits = [
   }
 ];
 
+export const runtime = "nodejs";
+
 export default async function PublicHomePage() {
-  const featuredTour = await getFeaturedTour();
-  const extraTours = await prisma.tour.findMany({
-    where: { status: "published" },
-    orderBy: { createdAt: "desc" },
-    take: 4,
-    select: { slug: true, title: true, location: true, price: true, heroImage: true }
-  });
+  let featuredTour = null;
+  try {
+    featuredTour = await getFeaturedTour();
+  } catch (error) {
+    console.error("Prisma error loading featured tour:", error);
+  }
+
+  let extraTours: ExtraTour[] = [];
+  try {
+    extraTours = await prisma.tour.findMany({
+      where: { status: "published" },
+      orderBy: { createdAt: "desc" },
+      take: 4,
+      select: { slug: true, title: true, location: true, price: true, heroImage: true }
+    });
+  } catch (error) {
+    console.error("Prisma error loading extra tours:", error);
+  }
 
   return (
     <div className="space-y-16 bg-slate-50 text-slate-900">

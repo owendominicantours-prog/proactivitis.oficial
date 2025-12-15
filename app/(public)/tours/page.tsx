@@ -4,6 +4,7 @@ import { buildTourFilter, TourSearchParams } from "@/lib/filterBuilder";
 import { TourFilters } from "@/components/public/TourFilters";
 import { DynamicImage } from "@/components/shared/DynamicImage";
 import type { DurationOption } from "@/components/public/TourFilters";
+import type { Prisma } from "@prisma/client";
 
 const parseDurationMeta = (value?: string | null) => {
   if (!value) return null;
@@ -39,12 +40,41 @@ const buildDurationOptions = (values: (string | null)[]): DurationOption[] => {
   return Array.from(map.entries()).map(([value, label]) => ({ value, label }));
 };
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 type Props = {
   searchParams?: TourSearchParams;
 };
+
+type CountryOption = Prisma.CountryGetPayload<{
+  select: { name: true; slug: true };
+}>;
+
+type DestinationOption = Prisma.DestinationGetPayload<{
+  select: {
+    name: true;
+    slug: true;
+    country: { select: { slug: true } };
+  };
+}>;
+
+type TourLanguageRow = Prisma.TourGetPayload<{
+  select: { language: true };
+}>;
+
+type TourDurationRow = Prisma.TourGetPayload<{
+  select: { duration: true };
+}>;
+
+type TourWithDeparture = Prisma.TourGetPayload<{
+  include: {
+    departureDestination: {
+      include: { country: true };
+    };
+  };
+}>;
 
 export default async function ToursGridPage({
   searchParams
@@ -55,26 +85,47 @@ export default async function ToursGridPage({
       : searchParams;
   const params = resolvedSearchParams ?? {};
 
-  const [countries, destinations, languagesRaw, durationsRaw] = await Promise.all([
-    prisma.country.findMany({
+  let countries: CountryOption[] = [];
+  try {
+    countries = await prisma.country.findMany({
       select: { name: true, slug: true }
-    }),
-    prisma.destination.findMany({
+    });
+  } catch (error) {
+    console.error("Prisma error loading countries:", error);
+  }
+
+  let destinations: DestinationOption[] = [];
+  try {
+    destinations = await prisma.destination.findMany({
       select: {
         name: true,
         slug: true,
         country: { select: { slug: true } }
       }
-    }),
-    prisma.tour.findMany({
+    });
+  } catch (error) {
+    console.error("Prisma error loading destinations:", error);
+  }
+
+  let languagesRaw: TourLanguageRow[] = [];
+  try {
+    languagesRaw = await prisma.tour.findMany({
       where: { status: "published" },
       select: { language: true }
-    }),
-    prisma.tour.findMany({
+    });
+  } catch (error) {
+    console.error("Prisma error loading languages:", error);
+  }
+
+  let durationsRaw: TourDurationRow[] = [];
+  try {
+    durationsRaw = await prisma.tour.findMany({
       where: { status: "published" },
       select: { duration: true }
-    })
-  ]);
+    });
+  } catch (error) {
+    console.error("Prisma error loading durations:", error);
+  }
 
   const uniqueLanguages = Array.from(new Set(languagesRaw.map((entry) => entry.language).filter(Boolean)));
   const durationOptions = buildDurationOptions(durationsRaw.map((entry) => entry.duration));
@@ -82,16 +133,21 @@ export default async function ToursGridPage({
 
   const where = buildTourFilter(params);
 
-  const tours = await prisma.tour.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    include: {
-      departureDestination: {
-        include: { country: true }
-      }
-    },
-    take: 24
-  });
+  let tours: TourWithDeparture[] = [];
+  try {
+    tours = await prisma.tour.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: {
+        departureDestination: {
+          include: { country: true }
+        }
+      },
+      take: 24
+    });
+  } catch (error) {
+    console.error("Prisma error loading tours:", error);
+  }
 
   const activeFilters = [
     params.country && `País: ${params.country}`,
