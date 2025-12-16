@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { ReactNode } from "react";
 import { Open_Sans } from "next/font/google";
 import { Providers } from "./providers";
+import { Analytics } from "@vercel/analytics/react";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="es" className={openSans.variable}>
       <body className="min-h-full bg-slate-50 text-slate-900 antialiased font-sans">
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );
