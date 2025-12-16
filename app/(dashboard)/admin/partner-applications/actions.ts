@@ -70,7 +70,7 @@ const welcomeTitles: Record<string, string> = {
   AGENCY: "Tu cuenta de agencia está activa"
 };
 
-async function sendPartnerWelcome(user: { id: string; email: string | null; name?: string }, role: string) {
+async function sendPartnerWelcome(user: { id: string; email: string | null; name?: string | null }, role: string) {
   if (!user.email) return;
   const subject = welcomeTitles[role] ?? "Tu cuenta en Proactivitis está activa";
   const html = `
