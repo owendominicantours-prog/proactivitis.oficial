@@ -46,7 +46,7 @@ export default function LoginPage() {
     router.push(redirectMap[role] || "/portal");
   };
 
-  const allowPublicLogin = process.env.NEXT_PUBLIC_ALLOW_PUBLIC_LOGIN === "true";
+  const allowPublicLogin = process.env.NEXT_PUBLIC_ALLOW_PUBLIC_LOGIN !== "false";
   if (!allowPublicLogin) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-4 py-10">
