@@ -103,7 +103,7 @@ export default async function PartnerApplicationsPage() {
                 )}
 
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <form action={approveApplication}>
+                  <form action={approveApplication} method="post">
                     <input type="hidden" name="applicationId" value={application.id} />
                     <button
                       type="submit"
@@ -112,7 +112,7 @@ export default async function PartnerApplicationsPage() {
                       Aprobar
                     </button>
                   </form>
-                  <form action={rejectApplication}>
+                  <form action={rejectApplication} method="post">
                     <input type="hidden" name="applicationId" value={application.id} />
                     <button
                       type="submit"
