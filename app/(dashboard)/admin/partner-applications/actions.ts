@@ -2,7 +2,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createAccountStatusNotification } from "@/lib/notificationService";
 import { NotificationRole, NotificationType } from "@/lib/types/notificationTypes";
-import { sendResendEmail } from "@/lib/resend";
+import { sendEmail } from "@/lib/email";
 
 const ensureStatusMessage = (status: "APPROVED" | "REJECTED") =>
   status === "APPROVED"
@@ -104,7 +104,7 @@ async function sendPartnerWelcome(user: { id: string; email: string | null; name
       </div>
     </div>
   `;
-  await sendResendEmail({
+  await sendEmail({
     to: user.email,
     subject,
     html

@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
-import { sendResendEmail } from "@/lib/resend";
+import { sendEmail } from "@/lib/email";
 
 const SALT_ROUNDS = 12;
 
@@ -212,7 +212,7 @@ export async function POST(request: Request) {
       </div>
     `;
 
-    await sendResendEmail({
+    await sendEmail({
       to: normalizedEmail,
       subject: "Tu cuenta en Proactivitis está lista",
       html: htmlBody
