@@ -86,6 +86,10 @@ export default async function ToursGridPage({
   const params = resolvedSearchParams ?? {};
 
   let countries: CountryOption[] = [];
+  try {
+    countries = await prisma.country.findMany({
+      select: { name: true, slug: true }
+    });
   } catch (error) {
     logPrismaError("loading countries", error);
   }

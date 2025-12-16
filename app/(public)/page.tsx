@@ -49,9 +49,9 @@ export default async function PublicHomePage() {
   }
 
   return (
-    <div className="space-y-16 bg-slate-50 text-slate-900">
+    <div className="space-y-12 bg-slate-50 text-slate-900">
       <section
-        className="relative py-24"
+        className="relative pt-16 pb-20 sm:pt-20 sm:pb-24"
         style={{
           backgroundImage: `linear-gradient(180deg,rgba(2,6,23,0.1),rgba(2,6,23,0.45)), url('${
             featuredTour?.heroImage ?? "/fototours/fotosimple.jpg"
@@ -61,29 +61,27 @@ export default async function PublicHomePage() {
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/20 via-slate-900/10 to-slate-900/60" />
-        <div className="relative mx-auto max-w-6xl px-6">
-          <div className="max-w-2xl space-y-5 text-white">
-            <p className="text-xs uppercase tracking-[0.5em] text-white/70">Proactivitis Global</p>
+        <div className="relative mx-auto flex max-w-6xl flex-col px-4 sm:px-6 lg:px-0">
+          <div className="space-y-5 text-white">
+            <p className="text-xs uppercase tracking-[0.5em] text-white/70">Proactivitis</p>
             <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
-              {featuredTour ? featuredTour.title : "Tu próxima aventura comienza aquí"}
+              Experiencias reales guiadas por locales que se preocupan.
             </h1>
             <p className="text-lg text-white/80">
-              {featuredTour
-                ? featuredTour.description
-                : "Descubre experiencias auténticas y confiables. Selecciona fechas, confirma y recibe tu voucher al instante."}
+              Recorridos confiables, gente real y momentos inolvidables listos para cualquier rincón del mundo.
             </p>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/tours"
-                className="inline-flex items-center rounded-full bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600"
+                className="w-full rounded-full bg-sky-500 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-sky-600 sm:w-auto"
               >
                 Ver tours destacados
               </Link>
-              <div className="flex-1 min-w-[220px] rounded-full border border-white/40 bg-white/20 px-5 py-2 text-sm font-semibold text-white backdrop-blur">
+              <div className="w-full sm:w-[260px]">
                 <input
                   type="text"
                   placeholder="Buscar por destino, tour o fecha"
-                  className="w-full bg-transparent text-sm text-white placeholder:text-white/70 focus:outline-none"
+                  className="w-full rounded-full border border-white/40 bg-white/20 px-5 py-2 text-sm font-semibold text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/60"
                 />
               </div>
             </div>
@@ -91,7 +89,18 @@ export default async function PublicHomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl space-y-8 px-6">
+      <section className="mx-auto max-w-6xl space-y-4 px-4 sm:px-6">
+        <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-lg">
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Qué hacemos</p>
+          <h2 className="text-2xl font-semibold text-slate-900">Hacemos que viajar sea fácil</h2>
+          <p className="text-sm text-slate-600">
+            Ayudamos a los viajeros a organizar y disfrutar experiencias auténticas sin complicaciones. Aquí encuentras
+            tours confiables y soporte humano que te acompaña antes, durante y después de cada viaje.
+          </p>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl space-y-6 px-4 sm:px-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Recomendado</p>
@@ -104,8 +113,11 @@ export default async function PublicHomePage() {
             Ver todo el catálogo
           </Link>
         </div>
+        <p className="text-sm text-slate-600">
+          No son solo tours. Son experiencias curadas por locales que saben lo que realmente funciona y cómo cuidar a los viajeros.
+        </p>
         {extraTours.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {extraTours.map((tour) => (
               <TourCard
                 key={tour.slug}
@@ -139,10 +151,11 @@ export default async function PublicHomePage() {
         <div className="mx-auto max-w-6xl space-y-6 px-6 py-20">
           <div className="space-y-4">
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500">¿Por qué Proactivitis?</p>
-            <h2 className="text-3xl font-semibold text-slate-900">Tu marketplace turístico moderno y confiable</h2>
+            <h2 className="text-3xl font-semibold text-slate-900">Turismo hecho por gente que conoce el país</h2>
             <p className="text-lg text-slate-600">
-              Combinamos marketplace, paneles y tecnología en una sola experiencia. Elige tu tour, nosotros validamos al
-              operador y sincronizamos pagos, comunicaciones y soporte.
+              Trabajamos todos los días con viajeros y proveedores en el terreno. Esta plataforma surgió de necesidades
+              reales, no de teorías, así que cada tour y cada soporte nace de personas que conocen lo que funciona de
+              verdad.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
