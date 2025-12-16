@@ -73,9 +73,14 @@ export const authOptions: NextAuthOptions = {
     async redirect(params) {
       const { url, baseUrl } = params;
       const token = (params as { token?: { role?: string } }).token;
-      if (!token?.role) return baseUrl;
+      const safeBase = baseUrl ?? "/";
+      const safeUrl = typeof url === "string" && url.startsWith(safeBase) ? url : safeBase;
+      if (!token?.role) return safeUrl;
       const mapped = roleRedirects[token.role as string];
-      return mapped ?? url ?? baseUrl;
+      if (mapped) {
+        return safeBase.endsWith("/") ? `${safeBase.slice(0, -1)}${mapped}` : `${safeBase}${mapped}`;
+      }
+      return safeUrl;
     }
   },
   pages: {

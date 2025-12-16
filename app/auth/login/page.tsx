@@ -46,6 +46,21 @@ export default function LoginPage() {
     router.push(redirectMap[role] || "/portal");
   };
 
+  const allowPublicLogin = process.env.NEXT_PUBLIC_ALLOW_PUBLIC_LOGIN === "true";
+  if (!allowPublicLogin) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-4 py-10">
+        <div className="w-full max-w-md rounded-[32px] bg-white p-8 text-center shadow-card">
+          <h1 className="text-2xl font-semibold text-slate-900">Acceso restringido</h1>
+          <p className="mt-4 text-sm text-slate-600">
+            El inicio de sesión está temporalmente cerrado al público por razones de seguridad. Si perteneces al
+            equipo o eres un cliente autorizado, contacta a <a className="text-brand underline" href="mailto:info@proactivitis.com">info@proactivitis.com</a>.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-4 py-10">
       <div className="w-full max-w-md rounded-[32px] bg-white p-8 shadow-card">
