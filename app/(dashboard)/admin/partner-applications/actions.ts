@@ -60,6 +60,8 @@ async function updateApplicationStatus(formData: FormData, status: "APPROVED" | 
 
   revalidatePath("/admin/partner-applications");
   revalidatePath("/admin/crm");
+  revalidatePath("/dashboard/supplier");
+  revalidatePath("/dashboard/agency");
 }
 
 const APP_BASE_URL =

@@ -24,6 +24,7 @@ const formatServiceTypes = (value: string | null) =>
 
 export default async function PartnerApplicationsPage() {
   const applications: PartnerApplication[] = await prisma.partnerApplication.findMany({
+    where: { status: "PENDING" },
     orderBy: { createdAt: "desc" }
   });
 
