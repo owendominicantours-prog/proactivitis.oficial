@@ -16,6 +16,7 @@ const formatDate = (value: Date) =>
 export default async function AdminCrmPage() {
   const requests = await getContactNotifications(50);
   const partnerApplications: PartnerApplication[] = await prisma.partnerApplication.findMany({
+    where: { status: "PENDING" },
     orderBy: { createdAt: "desc" },
     take: 5
   });
