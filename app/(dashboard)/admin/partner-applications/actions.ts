@@ -55,11 +55,19 @@ async function updateApplicationStatus(formData: FormData, status: "APPROVED" | 
     const notificationType: NotificationType =
       application.role === "SUPPLIER" ? "SUPPLIER_ACCOUNT_STATUS" : "AGENCY_ACCOUNT_STATUS";
 
+    const uniqueId = randomUUID();
+    const metadata = {
+      userId: application.userId,
+      applicationId: application.id,
+      notificationUniqueId: uniqueId
+    };
+
+    const messageKey = `${application.userId}-${notificationType}-${statusMessage}`;
     const alreadyNotified = await prisma.notification.findFirst({
       where: {
         type: notificationType,
         role: application.role as NotificationRole,
-        metadata: { contains: `"userId":"${application.userId}"` }
+        metadata: { contains: `"messageKey":"${messageKey}"` }
       }
     });
 
@@ -68,7 +76,8 @@ async function updateApplicationStatus(formData: FormData, status: "APPROVED" | 
         userId: application.userId,
         role: application.role as NotificationRole,
         message: statusMessage,
-        type: notificationType
+        type: notificationType,
+        metadata: { ...metadata, messageKey }
       });
     }
     if (status === "APPROVED" && application.role === "SUPPLIER") {
