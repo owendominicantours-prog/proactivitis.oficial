@@ -67,6 +67,9 @@ model Booking {
   User                User            @relation(fields: [userId], references: [id])
   Tour                Tour            @relation(fields: [tourId], references: [id])
   Conversation        Conversation?
+  paymentBrand        String?          @map("payment_brand")
+  paymentLast4        String?          @map("payment_last4")
+  paymentMethod       String?          @map("payment_method")
 }
 
 model Conversation {
@@ -261,4 +264,17 @@ model User {
   Session                 Session[]
   SupplierProfile         SupplierProfile?
   PartnerApplication      PartnerApplication[]
+  CustomerPayment         CustomerPayment?
+}
+
+model CustomerPayment {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  method    String?
+  brand     String?
+  last4     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
