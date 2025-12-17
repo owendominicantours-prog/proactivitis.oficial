@@ -229,9 +229,9 @@ model Tour {
   priceChild      Float?
   priceYouth      Float?
   duration        String
-  description     String
+  description     String           @db.Text
   subtitle        String?
-  shortDescription String?
+  shortDescription String?         @db.Text
   category        String?
   physicalLevel   String?
   minAge          Int?
