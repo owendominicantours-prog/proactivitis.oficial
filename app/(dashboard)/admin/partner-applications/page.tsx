@@ -122,11 +122,20 @@ export default async function PartnerApplicationsPage() {
                       Rechazar
                     </button>
                   </form>
+                  <form action={ensureSupplierProfileAction} method="post">
+                    <input type="hidden" name="applicationId" value={application.id} />
+                    <button
+                      type="submit"
+                      className="rounded-lg border border-sky-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-sky-600 transition hover:bg-sky-50"
+                    >
+                      Asignar perfil
+                    </button>
+                  </form>
                   <Link
                     href="/admin/partner-applications"
                     className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-600 hover:underline"
                   >
-                    Ver en registro completo
+                    Ver detalle
                   </Link>
                 </div>
               </div>

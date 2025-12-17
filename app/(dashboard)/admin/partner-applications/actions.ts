@@ -4,6 +4,7 @@ import { createAccountStatusNotification } from "@/lib/notificationService";
 import { NotificationRole, NotificationType } from "@/lib/types/notificationTypes";
 import { sendEmail } from "@/lib/email";
 import { randomUUID } from "crypto";
+import { randomUUID } from "crypto";
 
 const ensureStatusMessage = (status: "APPROVED" | "REJECTED") =>
   status === "APPROVED"
@@ -113,6 +114,44 @@ async function sendPartnerWelcome(user: { id: string; email: string | null; name
     subject,
     html
   });
+}
+
+async function ensureSupplierProfile(userId: string, company: string) {
+  const existing = await prisma.supplierProfile.findUnique({ where: { userId } });
+  if (existing) {
+    await prisma.supplierProfile.update({
+      where: { userId },
+      data: { company: company || existing.company, approved: true }
+    });
+    return;
+  }
+  await prisma.supplierProfile.create({
+    data: {
+      id: randomUUID(),
+      userId,
+      company: company || "Proveedor",
+      approved: true
+    }
+  });
+}
+
+export async function ensureSupplierProfileAction(formData: FormData) {
+  "use server";
+  const id = formData.get("applicationId");
+  if (!id || typeof id !== "string") {
+    throw new Error("Falta el identificador de la solicitud.");
+  }
+  const application = await prisma.partnerApplication.findUnique({
+    where: { id },
+    include: { User: true }
+  });
+  if (!application?.userId) {
+    throw new Error("Solicitud o usuario inválido.");
+  }
+  await ensureSupplierProfile(application.userId, application.companyName);
+  revalidatePath("/admin/partner-applications");
+  revalidatePath("/admin/crm");
+  revalidatePath("/dashboard/supplier");
 }
 
 async function ensureSupplierProfile(userId: string, company: string) {
