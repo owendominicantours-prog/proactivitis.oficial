@@ -26,6 +26,13 @@ async function updateApplicationStatus(formData: FormData, status: "APPROVED" | 
     throw new Error("Solicitud no encontrada.");
   }
 
+  if (application.status === status) {
+    revalidatePath("/admin/partner-applications");
+    revalidatePath("/admin/crm");
+    revalidatePath("/dashboard/supplier");
+    revalidatePath("/dashboard/agency");
+    return;
+  }
   await prisma.partnerApplication.update({
     where: { id },
     data: { status }
@@ -48,12 +55,22 @@ async function updateApplicationStatus(formData: FormData, status: "APPROVED" | 
     const notificationType: NotificationType =
       application.role === "SUPPLIER" ? "SUPPLIER_ACCOUNT_STATUS" : "AGENCY_ACCOUNT_STATUS";
 
-    await createAccountStatusNotification({
-      userId: application.userId,
-      role: application.role as NotificationRole,
-      message: statusMessage,
-      type: notificationType
+    const alreadyNotified = await prisma.notification.findFirst({
+      where: {
+        type: notificationType,
+        role: application.role as NotificationRole,
+        metadata: { contains: `"userId":"${application.userId}"` }
+      }
     });
+
+    if (!alreadyNotified) {
+      await createAccountStatusNotification({
+        userId: application.userId,
+        role: application.role as NotificationRole,
+        message: statusMessage,
+        type: notificationType
+      });
+    }
     if (status === "APPROVED" && application.role === "SUPPLIER") {
       await ensureSupplierProfile(application.userId, application.companyName ?? "Proveedor");
     }
