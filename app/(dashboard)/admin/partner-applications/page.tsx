@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PartnerApplication } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { approveApplication, rejectApplication } from "./actions";
+import { approveApplication, rejectApplication, ensureSupplierProfileAction } from "./actions";
 
 const statusBadgeColor = (status: string) => {
   switch (status) {
