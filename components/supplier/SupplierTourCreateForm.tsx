@@ -217,6 +217,27 @@ const INSTRUCTION_PRESETS = [
   "Llegar 1 hora antes"
 ];
 
+type FieldLimitKey = keyof TourState | "includes";
+
+const FIELD_LIMITS: Partial<Record<FieldLimitKey, number>> = {
+  title: 120,
+  shortDescription: 300,
+  description: 1200,
+  includes: 1000,
+  meetingPoint: 200,
+  meetingInstructions: 800,
+  requirements: 600,
+  terms: 600,
+  pickupNotes: 400
+};
+
+const limitValue = <K extends keyof TourState>(key: K, value: TourState[K]): TourState[K] => {
+  if (typeof value !== "string") return value;
+  const limit = FIELD_LIMITS[key];
+  if (!limit) return value;
+  return value.slice(0, limit) as TourState[K];
+};
+
 const defaultState: TourState = {
 
   title: "",
@@ -651,9 +672,11 @@ export function SupplierTourCreateForm({
 
   const updateField = <K extends keyof TourState>(key: K, value: TourState[K]) => {
 
+    const limitedValue = limitValue(key, value);
+
     setState((prev) => {
 
-      const nextState = { ...prev, [key]: value };
+      const nextState = { ...prev, [key]: limitedValue };
 
       if (key === "country") {
         const nextCountry = (value as string).trim();

@@ -7,6 +7,28 @@ import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+const FIELD_LIMITS: Partial<Record<"title" | "shortDescription" | "description" | "includes" | "meetingPoint" | "meetingInstructions" | "requirements" | "terms" | "pickupNotes", number>> = {
+  title: 120,
+  shortDescription: 300,
+  description: 1200,
+  includes: 1000,
+  meetingPoint: 200,
+  meetingInstructions: 800,
+  requirements: 600,
+  terms: 600,
+  pickupNotes: 400
+};
+
+const clampText = (value: string, limit?: number) => {
+  if (!limit) return value;
+  return value.length <= limit ? value : value.slice(0, limit);
+};
+
+const sanitized = (value: unknown, key?: keyof typeof FIELD_LIMITS) => {
+  if (typeof value !== "string") return "";
+  return clampText(value.trim(), key ? FIELD_LIMITS[key] : undefined);
+};
+
 function slugify(value: string) {
   return value
     .normalize("NFD")
@@ -85,7 +107,7 @@ export async function createTourAction(formData: FormData) {
   const supplierProfile = await prisma.supplierProfile.findUnique({ where: { userId } });
   if (!supplierProfile) throw new Error("No tienes un perfil de supplier activo.");
   const supplierId = supplierProfile.id;
-  const title = formData.get("title")?.toString() ?? "";
+  const title = sanitized(formData.get("title"), "title");
   const baseSlug = slugify(title);
   let slug = baseSlug || `tour-${Date.now()}`;
   const slugExists = await prisma.tour.findUnique({ where: { slug } });
@@ -94,16 +116,16 @@ export async function createTourAction(formData: FormData) {
   const languageValue = buildLanguagesString(formData);
   const categoryValue = buildCategoryString(formData);
   const itineraryValue = buildItineraryDescription(formData);
-  const description = formData.get("description")?.toString() ?? title;
-  const shortDescription = formData.get("shortDescription")?.toString() ?? "";
+  const description = sanitized(formData.get("description"), "description") || title;
+  const shortDescription = sanitized(formData.get("shortDescription"), "shortDescription");
   const cancellationPolicy = formData.get("cancellation")?.toString() ?? "flexible";
   const confirmationType = formData.get("confirmationType")?.toString() ?? "instant";
   const physicalLevel = formData.get("physicalLevel")?.toString() ?? "";
-  const meetingPoint = formData.get("meetingPoint")?.toString() ?? "";
-  const meetingInstructions = formData.get("meetingInstructions")?.toString() ?? "";
+  const meetingPoint = sanitized(formData.get("meetingPoint"), "meetingPoint");
+  const meetingInstructions = sanitized(formData.get("meetingInstructions"), "meetingInstructions");
   const pickup = formData.get("pickup")?.toString() ?? "";
-  const requirements = formData.get("requirements")?.toString() ?? "";
-  const terms = formData.get("terms")?.toString() ?? "";
+  const requirements = sanitized(formData.get("requirements"), "requirements");
+  const terms = sanitized(formData.get("terms"), "terms");
   const minAgeValue = toInteger(formData.get("minAge"));
   const capacityValue = toInteger(formData.get("capacity")) ?? 1;
   const priceValue = toFloat(formData.get("price")) ?? 0;
@@ -126,7 +148,7 @@ export async function createTourAction(formData: FormData) {
     );
 
   const heroImage = formData.get("heroImageUrl")?.toString() || "/fototours/fototour.jpeg";
-  const includes = formData.get("includes")?.toString() ?? "";
+  const includes = sanitized(formData.get("includes"), "includes");
 
   await prisma.tour.create({
     data: {
@@ -186,16 +208,18 @@ export async function updateTourAction(formData: FormData) {
   const languageValue = buildLanguagesString(formData);
   const categoryValue = buildCategoryString(formData);
   const itineraryValue = buildItineraryDescription(formData);
-  const description = formData.get("description")?.toString() ?? tour.title;
-  const shortDescription = formData.get("shortDescription")?.toString() ?? tour.shortDescription ?? "";
+  const description = sanitized(formData.get("description"), "description") || tour.title;
+  const shortDescription = sanitized(formData.get("shortDescription"), "shortDescription") || tour.shortDescription || "";
   const cancellationPolicy = formData.get("cancellation")?.toString() ?? tour.cancellationPolicy ?? "flexible";
   const confirmationType = formData.get("confirmationType")?.toString() ?? tour.confirmationType ?? "instant";
   const physicalLevel = formData.get("physicalLevel")?.toString() ?? tour.physicalLevel ?? "";
-  const meetingPoint = formData.get("meetingPoint")?.toString() ?? tour.meetingPoint ?? "";
-  const meetingInstructions = formData.get("meetingInstructions")?.toString() ?? tour.meetingInstructions ?? "";
+  const meetingPoint =
+    sanitized(formData.get("meetingPoint"), "meetingPoint") || tour.meetingPoint || "";
+  const meetingInstructions =
+    sanitized(formData.get("meetingInstructions"), "meetingInstructions") || tour.meetingInstructions || "";
   const pickup = formData.get("pickup")?.toString() ?? tour.pickup ?? "";
-  const requirements = formData.get("requirements")?.toString() ?? tour.requirements ?? "";
-  const terms = formData.get("terms")?.toString() ?? tour.terms ?? "";
+  const requirements = sanitized(formData.get("requirements"), "requirements") || tour.requirements || "";
+  const terms = sanitized(formData.get("terms"), "terms") || tour.terms || "";
   const minAgeValue = toInteger(formData.get("minAge")) ?? tour.minAge ?? undefined;
   const capacityValue = toInteger(formData.get("capacity")) ?? tour.capacity ?? 1;
   const priceValue = toFloat(formData.get("price")) ?? tour.price;
@@ -217,7 +241,7 @@ export async function updateTourAction(formData: FormData) {
       typeof val === "string" && val.trim().length > 0
     );
   const heroImage = formData.get("heroImageUrl")?.toString() || tour.heroImage;
-  const includes = formData.get("includes")?.toString() ?? tour.includes;
+  const includes = sanitized(formData.get("includes"), "includes") || tour.includes;
 
   await prisma.tour.update({
     where: { id: tourId },

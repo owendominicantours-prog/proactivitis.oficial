@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "fs";
 import path from "path";
+import { readUploadedFile } from "@/lib/storage";
 
 export async function GET(_request: NextRequest, context: { params: Promise<{ fileId: string }> }) {
   const { fileId } = await context.params;
-  console.log("GET /api/uploaded -> fileId", fileId);
   if (!fileId) {
     return NextResponse.json({ error: "Archivo no especificado" }, { status: 400 });
   }
-  const filePath = path.join(process.cwd(), "storage", "uploads", fileId);
   try {
-    const buffer = await fs.readFile(filePath);
+    const buffer = await readUploadedFile(fileId);
     const ext = path.extname(fileId).toLowerCase();
     let contentType = "application/octet-stream";
     if (ext === ".jpg" || ext === ".jpeg") {

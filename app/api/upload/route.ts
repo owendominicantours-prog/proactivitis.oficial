@@ -7,6 +7,7 @@ import { randomUUID } from "crypto";
 import sharp from "sharp";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { getUploadPaths } from "@/lib/storage";
 
 const MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/jpg"]);
@@ -50,22 +51,21 @@ export async function POST(request: NextRequest) {
       .webp({ quality: 85 })
       .toBuffer();
 
-    const uploadDir = path.join(process.cwd(), "storage", "uploads");
-    const publicDir = path.join(process.cwd(), "public", "uploads");
-    await fs.mkdir(uploadDir, { recursive: true });
-    await fs.mkdir(publicDir, { recursive: true });
+    const { uploadDir, publicDir, exposureUrl } = await getUploadPaths();
     const safeName = `${Date.now()}-${randomUUID()}.webp`;
     const filePath = path.join(uploadDir, safeName);
     const publicPath = path.join(publicDir, safeName);
 
     await fs.writeFile(filePath, optimized as unknown as Uint8Array);
-    await fs.writeFile(publicPath, optimized as unknown as Uint8Array);
+    if (!exposureUrl(safeName).startsWith("/api/uploaded/")) {
+      await fs.writeFile(publicPath, optimized as unknown as Uint8Array);
+    }
 
     return NextResponse.json({
       ok: true,
       fileId: safeName,
       path: path.join("storage", "uploads", safeName),
-      url: `/uploads/${encodeURIComponent(safeName)}`
+      url: exposureUrl(safeName)
     });
   } catch (error) {
     console.error("image upload failed", error);
