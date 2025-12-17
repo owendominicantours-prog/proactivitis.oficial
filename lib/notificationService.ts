@@ -97,12 +97,14 @@ export const createAccountStatusNotification = async ({
   userId,
   role,
   message,
-  type
+  type,
+  metadata
 }: {
   userId: string;
   role: NotificationRole;
   message: string;
   type: NotificationType;
+  metadata?: NotificationMetadata;
 }) => {
   await createNotification({
     type,
@@ -110,7 +112,8 @@ export const createAccountStatusNotification = async ({
     title: "Estado de cuenta",
     message,
     metadata: {
-      referenceUrl: `/portal/${role.toLowerCase()}`
+      referenceUrl: `/portal/${role.toLowerCase()}`,
+      ...(metadata ?? {})
     },
     recipientUserId: userId
   });
