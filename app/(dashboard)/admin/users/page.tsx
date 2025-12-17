@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { deleteUserAction } from "./actions";
 
 export default async function AdminUsersPage() {
   const users = await prisma.user.findMany({
@@ -27,6 +28,7 @@ export default async function AdminUsersPage() {
               <th className="px-3 py-2">Email</th>
               <th className="px-3 py-2">Rol</th>
               <th className="px-3 py-2">Registrado</th>
+              <th className="px-3 py-2">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -34,9 +36,20 @@ export default async function AdminUsersPage() {
               <tr key={user.id} className="border-t border-slate-100">
                 <td className="px-3 py-3">{user.name ?? "Sin nombre"}</td>
                 <td className="px-3 py-3">{user.email}</td>
-                <td className="px-3 py-3">{user.role}</td>
-                <td className="px-3 py-3">{user.createdAt.toLocaleDateString("es-DO")}</td>
-              </tr>
+              <td className="px-3 py-3">{user.role}</td>
+              <td className="px-3 py-3">{user.createdAt.toLocaleDateString("es-DO")}</td>
+              <td className="px-3 py-3">
+                <form action={deleteUserAction} method="post" className="inline">
+                  <input type="hidden" name="userId" value={user.id} />
+                  <button
+                    type="submit"
+                    className="rounded-lg border border-rose-500 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-rose-600 transition hover:bg-rose-50"
+                  >
+                    Eliminar
+                  </button>
+                </form>
+              </td>
+            </tr>
             ))}
             {!users.length && (
               <tr>
