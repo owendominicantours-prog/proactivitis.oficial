@@ -37,7 +37,11 @@ export default async function CustomerPublicReservationsPage() {
       OR: [{ customerEmail: session.user.email }, { userId: session.user.id ?? undefined }]
     },
     include: {
-      Tour: true
+      Tour: {
+        include: {
+          SupplierProfile: true
+        }
+      }
     },
     orderBy: { travelDate: "asc" }
   });
