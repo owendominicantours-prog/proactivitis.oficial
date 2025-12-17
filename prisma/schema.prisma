@@ -66,6 +66,10 @@ model Booking {
   updatedAt           DateTime?       @updatedAt
   User                User            @relation(fields: [userId], references: [id])
   Tour                Tour            @relation(fields: [tourId], references: [id])
+  AgencyProLink      AgencyProLink?   @relation("AgencyProBookings", fields: [agencyProLinkId], references: [id])
+  agencyProLinkId    String?
+  agencyMarkupAmount Float?
+  agencyPricingMode  Boolean          @default(false)
   Conversation        Conversation?
   paymentBrand        String?          @map("payment_brand")
   paymentLast4        String?          @map("payment_last4")
@@ -198,6 +202,24 @@ model SupplierProfile {
   Tour     Tour[]
 }
 
+model AgencyProLink {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  tourId       String
+  agencyUserId String
+  price        Float
+  basePrice    Float
+  markup       Float
+  note         String?
+  active       Boolean  @default(true)
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  Tour         Tour     @relation(fields: [tourId], references: [id])
+  AgencyUser   User     @relation(fields: [agencyUserId], references: [id])
+  Booking      Booking[] @relation("AgencyProBookings")
+}
+
 model Tour {
   id              String          @id
   title           String
@@ -241,6 +263,7 @@ model Tour {
   Offer           Offer[]
   platformSharePercent Int            @default(20)
   SupplierProfile SupplierProfile @relation(fields: [supplierId], references: [id])
+  AgencyProLinks AgencyProLink[]
 }
 
 model User {
@@ -265,6 +288,7 @@ model User {
   SupplierProfile         SupplierProfile?
   PartnerApplication      PartnerApplication[]
   CustomerPayment         CustomerPayment?
+  AgencyProLinks          AgencyProLink[]
 }
 
 model CustomerPayment {

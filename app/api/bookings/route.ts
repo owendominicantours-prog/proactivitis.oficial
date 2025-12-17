@@ -42,6 +42,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
+  const agencyProLinkId = typeof body.agencyProLinkId === "string" ? body.agencyProLinkId : null;
+  const agencyMarkupAmount =
+    typeof body.agencyMarkupAmount === "number"
+      ? body.agencyMarkupAmount
+      : agencyProLinkId
+      ? Number(body.markupAmount ?? 0)
+      : undefined;
+  const agencyPricingMode = Boolean(agencyProLinkId);
   const booking = await prisma.booking.create({
     data: {
       tourId: body.tourId || "UNKNOWN",
@@ -52,7 +60,10 @@ export async function POST(request: NextRequest) {
       supplierAmount: Number(body.supplierAmount) || 0,
       platformFee: Number(body.platformFee) || 0,
       customerName: body.customerName || "Guest",
-      customerEmail: body.customerEmail || ""
+      customerEmail: body.customerEmail || "",
+      agencyProLinkId,
+      agencyMarkupAmount,
+      agencyPricingMode
     } as Prisma.BookingUncheckedCreateInput
   });
   return NextResponse.json({ booking }, { status: 201 });

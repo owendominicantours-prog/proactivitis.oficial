@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { DynamicImage } from "@/components/shared/DynamicImage";
+import { AgencyProBuilder } from "@/components/agency/AgencyProBuilder";
 
 export type AgencyTourSummary = {
   id: string;
@@ -113,6 +114,7 @@ export const TourCatalog = ({ tours }: { tours: AgencyTourSummary[] }) => {
               <button className="rounded-md border border-slate-200 px-3 py-1 text-sky-500 hover:border-slate-300">
                 Vender / Crear reserva
               </button>
+              <AgencyProBuilder tourId={tour.id} tourTitle={tour.title} basePrice={tour.price} />
             </div>
           </div>
         ))}
