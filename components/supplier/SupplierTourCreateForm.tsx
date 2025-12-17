@@ -231,6 +231,9 @@ const FIELD_LIMITS: Partial<Record<FieldLimitKey, number>> = {
   pickupNotes: 400
 };
 
+const DESCRIPTION_LIMIT = FIELD_LIMITS.description ?? 1200;
+const SHORT_DESCRIPTION_LIMIT = FIELD_LIMITS.shortDescription ?? 300;
+
 const limitValue = <K extends keyof TourState>(key: K, value: TourState[K]): TourState[K] => {
   if (typeof value !== "string") return value;
   const limit = FIELD_LIMITS[key];
