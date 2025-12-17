@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { createAccountStatusNotification } from "@/lib/notificationService";
 import { NotificationRole, NotificationType } from "@/lib/types/notificationTypes";
 import { sendEmail } from "@/lib/email";
+import { randomUUID } from "crypto";
 
 const ensureStatusMessage = (status: "APPROVED" | "REJECTED") =>
   status === "APPROVED"
@@ -53,6 +54,9 @@ async function updateApplicationStatus(formData: FormData, status: "APPROVED" | 
       message: statusMessage,
       type: notificationType
     });
+    if (status === "APPROVED" && application.role === "SUPPLIER") {
+      await ensureSupplierProfile(application.userId, application.companyName);
+    }
     if (status === "APPROVED" && application.User?.email) {
       await sendPartnerWelcome(application.User, application.role);
     }
@@ -108,6 +112,25 @@ async function sendPartnerWelcome(user: { id: string; email: string | null; name
     to: user.email,
     subject,
     html
+  });
+}
+
+async function ensureSupplierProfile(userId: string, company: string) {
+  const existing = await prisma.supplierProfile.findUnique({ where: { userId } });
+  if (existing) {
+    await prisma.supplierProfile.update({
+      where: { userId },
+      data: { company: company || existing.company, approved: true }
+    });
+    return;
+  }
+  await prisma.supplierProfile.create({
+    data: {
+      id: randomUUID(),
+      userId,
+      company: company || "Proveedor",
+      approved: true
+    }
   });
 }
 
