@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { convert } from "html-to-text";
 
 const host = process.env.SMTP_HOST;
 const port = Number(process.env.SMTP_PORT ?? "587");
@@ -37,6 +38,14 @@ export async function sendEmail({
     from: from ?? `"Proactivitis" <${user}>`,
     to,
     subject,
-    html
+    html,
+    replyTo: from ?? user,
+    text: convert(html, {
+      wordwrap: 130
+    }),
+    headers: {
+      "X-Priority": "3",
+      "X-Mailer": "Proactivitis CRM"
+    }
   });
 }
