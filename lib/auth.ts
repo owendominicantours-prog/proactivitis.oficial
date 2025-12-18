@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt";
+import { randomUUID } from "crypto";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
+import Auth0Provider from "next-auth/providers/auth0";
 import { prisma } from "./prisma";
 import type { NextAuthOptions } from "next-auth";
 
@@ -23,6 +25,11 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt"
   },
   providers: [
+    Auth0Provider({
+      clientId: process.env.AUTH0_CLIENT_ID ?? "",
+      clientSecret: process.env.AUTH0_CLIENT_SECRET ?? "",
+      issuer: process.env.AUTH0_ISSUER ?? ""
+    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -67,8 +74,40 @@ export const authOptions: NextAuthOptions = {
         token.supplierApproved = (user as { supplierApproved?: boolean }).supplierApproved
           ? "true"
           : "false";
+        return token;
+      }
+      if (token.sub) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.sub }
+        });
+        if (dbUser) {
+          token.role = dbUser.role;
+          token.supplierApproved = dbUser.supplierApproved ? "true" : "false";
+        }
       }
       return token;
+    },
+    async signIn({ user, account }) {
+      if (account.provider === "auth0" && user?.email) {
+        await prisma.user.upsert({
+          where: { email: user.email },
+          update: {
+            name: user.name ?? undefined,
+            supplierApproved: true,
+            accountStatus: "APPROVED"
+          },
+          create: {
+            id: randomUUID(),
+            name: user.name ?? "Aliado",
+            email: user.email,
+            role: "CUSTOMER",
+            supplierApproved: true,
+            agencyApproved: false,
+            accountStatus: "APPROVED"
+          }
+        });
+      }
+      return true;
     },
     async redirect(params) {
       const { url, baseUrl } = params;
