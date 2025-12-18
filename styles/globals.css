@@ -33,3 +33,48 @@ a {
 .glass-card {
   @apply bg-white/80 backdrop-blur-lg shadow-glass border border-white/40 rounded-[28px];
 }
+
+.botones-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.boton-verde,
+.boton-naranja {
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 12px 24px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  min-width: 180px;
+}
+
+.boton-verde {
+  background-color: #3b6e53;
+  color: #ffffff;
+}
+
+.boton-verde:hover,
+.boton-verde:focus-visible {
+  background-color: #1c7f65;
+  transform: translateY(-2px);
+}
+
+.boton-naranja {
+  background-color: #f47b20;
+  color: #ffffff;
+}
+
+.boton-naranja:hover,
+.boton-naranja:focus-visible {
+  background-color: #d86a1a;
+  transform: translateY(-2px);
+}

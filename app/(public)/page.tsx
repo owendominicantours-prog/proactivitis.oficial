@@ -43,17 +43,11 @@ export default function PublicHomePage() {
             <p className="text-lg text-white/90">
               Recorridos confiables, gente real y momentos inolvidables listos para cualquier rincón del mundo.
             </p>
-            <div className="mx-auto flex max-w-[360px] flex-col gap-3 sm:flex-row sm:justify-center md:justify-start">
-              <Link
-                href="/tours"
-                className="flex-1 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 px-6 py-3 text-center text-sm font-semibold text-white shadow-lg transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-              >
+            <div className="botones-banner">
+              <Link href="/tours" className="boton-verde">
                 Ver tours destacados
               </Link>
-              <Link
-                href="/tours"
-                className="flex-1 rounded-full bg-gradient-to-r from-orange-500 to-orange-400 px-6 py-3 text-center text-sm font-semibold text-white shadow-lg transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-              >
+              <Link href="/tours" className="boton-naranja">
                 Buscar por destino
               </Link>
             </div>
