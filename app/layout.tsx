@@ -16,7 +16,12 @@ const openSans = Open_Sans({
 export const metadata: Metadata = {
   title: "Proactivitis Marketplace",
   description:
-    "Marketplace turístico integral de Owen Dominicanproactivitis - tours, proveedores, agencias y CRM en un solo lugar."
+    "Marketplace turístico integral de Owen Dominicanproactivitis. Tours, proveedores, agencias y CRM en un solo lugar.",
+  icons: [
+    { rel: "icon", url: "/ico.ico" },
+    { rel: "shortcut icon", url: "/ico.ico" },
+    { rel: "apple-touch-icon", url: "/ico.ico" }
+  ]
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
