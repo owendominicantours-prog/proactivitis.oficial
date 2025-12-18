@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       await fs.writeFile(publicPath, optimized as unknown as Uint8Array);
     }
 
-    const blobUrl = await uploadToBlob(safeName, optimized as unknown as Uint8Array, "image/webp");
+    const blobUrl = await uploadToBlob(safeName, Buffer.from(optimized), "image/webp");
 
     return NextResponse.json({
       ok: true,
