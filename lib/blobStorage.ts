@@ -1,7 +1,7 @@
 const projectId = process.env.BLOB_PROJECT_ID;
 const token = process.env.BLOB_READ_WRITE_TOKEN;
 
-export async function uploadToBlob(key: string, body: Buffer, contentType: string) {
+export async function uploadToBlob(key: string, body: BufferSource, contentType: string) {
   if (!projectId || !token) return null;
   const url = `https://blob.vercel-storage.com/${projectId}/${encodeURIComponent(key)}`;
   await fetch(url, {
