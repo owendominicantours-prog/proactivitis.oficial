@@ -1,22 +1,23 @@
 "use server";
 
+import { put } from "@vercel/blob";
 import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
-import { randomUUID } from "crypto";
 import sharp from "sharp";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getUploadPaths } from "@/lib/storage";
-import { uploadToBlob } from "@/lib/blobStorage";
 
-const MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB
+export const runtime = "nodejs";
+
 const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/jpg"]);
+const ALLOWED_ROLES = new Set(["ADMIN", "SUPPLIER"]);
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+  if (!session.user.role || !ALLOWED_ROLES.has(session.user.role)) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
   const formData = await request.formData().catch(() => null);
@@ -29,50 +30,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
-  const mime = file.type || "";
-  if (!ALLOWED_MIMES.has(mime)) {
-    return NextResponse.json({ error: "Tipo de archivo no permitido" }, { status: 415 });
+  if (!ALLOWED_MIMES.has(file.type)) {
+    return NextResponse.json({ error: "Only images allowed" }, { status: 415 });
   }
 
-  const size = typeof file.size === "number" ? file.size : 0;
-  if (size > MAX_UPLOAD_SIZE) {
-    return NextResponse.json({ error: "Archivo demasiado grande" }, { status: 413 });
-  }
-
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-  if (buffer.byteLength > MAX_UPLOAD_SIZE) {
-    return NextResponse.json({ error: "Archivo demasiado grande" }, { status: 413 });
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!token) {
+    return NextResponse.json({ error: "Blob storage not configured" }, { status: 500 });
   }
 
   try {
-    const optimized = await sharp(buffer)
+    const optimized = await sharp(await file.arrayBuffer())
       .rotate()
       .resize({ width: 2400, withoutEnlargement: true })
       .webp({ quality: 85 })
       .toBuffer();
 
-    const { uploadDir, publicDir, exposureUrl } = await getUploadPaths();
-    const safeName = `${Date.now()}-${randomUUID()}.webp`;
-    const filePath = path.join(uploadDir, safeName);
-    const publicPath = path.join(publicDir, safeName);
-
-    await fs.writeFile(filePath, optimized as unknown as Uint8Array);
-    if (!exposureUrl(safeName).startsWith("/api/uploaded/")) {
-      await fs.writeFile(publicPath, optimized as unknown as Uint8Array);
-    }
-
-    const blobUrl = await uploadToBlob(safeName, optimized, "image/webp");
-
-    return NextResponse.json({
-      ok: true,
-      fileId: safeName,
-      path: path.join("storage", "uploads", safeName),
-      url: blobUrl ?? exposureUrl(safeName),
-      blobUrl: blobUrl ?? null
+    const filename = `tours/${Date.now()}-${file.name.replace(/\s+/g, "-").toLowerCase().replace(/[^a-z0-9.-]/g, "")}.webp`;
+    const { url } = await put(filename, optimized, {
+      access: "public",
+      addRandomSuffix: true,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "image/webp"
+      }
     });
+
+    return NextResponse.json({ url });
   } catch (error) {
     console.error("image upload failed", error);
-    return NextResponse.json({ error: "No se pudo convertir la imagen" }, { status: 500 });
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }
