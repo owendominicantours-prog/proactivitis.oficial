@@ -88,7 +88,7 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async signIn({ user, account }) {
-      if (account.provider === "auth0" && user?.email) {
+      if (account?.provider === "auth0" && user?.email) {
         await prisma.user.upsert({
           where: { email: user.email },
           update: {
