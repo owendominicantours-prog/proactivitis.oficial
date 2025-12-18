@@ -102,7 +102,14 @@ export default function PublicHomePage() {
       <section className="bg-slate-50">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-2">
           <div className="overflow-hidden rounded-[32px] bg-slate-900">
-            <Image src="/delfin.png" alt="Guía con viajeros" width={900} height={600} className="object-cover" priority />
+            <Image
+              src="/mini-portada.png"
+              alt="Grupo de viajeros felices"
+              width={900}
+              height={600}
+              className="object-cover"
+              priority
+            />
           </div>
           <div className="space-y-4">
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Por qué Proactivitis</p>
