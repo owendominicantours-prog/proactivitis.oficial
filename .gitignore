@@ -11,7 +11,7 @@ standalone/
 # Env
 .env
 .env.*
-.env.local
+!.env.example
 
 # Uploads / runtime
 storage/uploads/
