@@ -8,6 +8,7 @@ import sharp from "sharp";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getUploadPaths } from "@/lib/storage";
+import { uploadToBlob } from "@/lib/blobStorage";
 
 const MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/jpg"]);
@@ -61,11 +62,14 @@ export async function POST(request: NextRequest) {
       await fs.writeFile(publicPath, optimized as unknown as Uint8Array);
     }
 
+    const blobUrl = await uploadToBlob(safeName, optimized as unknown as Uint8Array, "image/webp");
+
     return NextResponse.json({
       ok: true,
       fileId: safeName,
       path: path.join("storage", "uploads", safeName),
-      url: exposureUrl(safeName)
+      url: blobUrl ?? exposureUrl(safeName),
+      blobUrl: blobUrl ?? null
     });
   } catch (error) {
     console.error("image upload failed", error);
