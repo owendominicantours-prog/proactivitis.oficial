@@ -6,8 +6,6 @@ import sharp from "sharp";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export const runtime = "nodejs";
-
 const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/jpg"]);
 const ALLOWED_ROLES = new Set(["ADMIN", "SUPPLIER"]);
 
