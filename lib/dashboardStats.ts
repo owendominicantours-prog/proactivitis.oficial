@@ -1,5 +1,6 @@
 import { BookingStatus } from "@/lib/types/booking";
 import { prisma } from "@/lib/prisma";
+import { ensureSupplierProfile } from "@/lib/supplierProfiles";
 
 export function getCurrentMonthRange(date = new Date()) {
   const start = new Date(date.getFullYear(), date.getMonth(), 1);
@@ -50,10 +51,23 @@ export async function getAdminDashboardMetrics() {
 }
 
 export async function getSupplierDashboardMetrics(userId: string) {
-  const supplier = await prisma.supplierProfile.findUnique({
+  let supplier = await prisma.supplierProfile.findUnique({
     where: { userId },
     include: { Tour: { select: { id: true } } }
   });
+  if (!supplier) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { supplierApproved: true, name: true }
+    });
+    if (!user?.supplierApproved) return null;
+    await ensureSupplierProfile(userId, user.name ?? "Proveedor");
+    supplier = await prisma.supplierProfile.findUnique({
+      where: { userId },
+      include: { Tour: { select: { id: true } } }
+    });
+    if (!supplier) return null;
+  }
   if (!supplier) return null;
   const tourIds = (supplier.Tour ?? []).map((tour) => tour.id);
   const now = new Date();

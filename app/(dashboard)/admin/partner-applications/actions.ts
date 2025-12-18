@@ -4,6 +4,7 @@ import { createAccountStatusNotification } from "@/lib/notificationService";
 import { NotificationRole, NotificationType } from "@/lib/types/notificationTypes";
 import { sendEmail } from "@/lib/email";
 import { randomUUID } from "crypto";
+import { ensureSupplierProfile } from "@/lib/supplierProfiles";
 
 const ensureStatusMessage = (status: "APPROVED" | "REJECTED") =>
   status === "APPROVED"
@@ -158,25 +159,6 @@ export async function ensureSupplierProfileAction(formData: FormData) {
   revalidatePath("/admin/partner-applications");
   revalidatePath("/admin/crm");
   revalidatePath("/dashboard/supplier");
-}
-
-async function ensureSupplierProfile(userId: string, company: string) {
-  const existing = await prisma.supplierProfile.findUnique({ where: { userId } });
-  if (existing) {
-    await prisma.supplierProfile.update({
-      where: { userId },
-      data: { company: company || existing.company, approved: true }
-    });
-    return;
-  }
-  await prisma.supplierProfile.create({
-    data: {
-      id: randomUUID(),
-      userId,
-      company: company || "Proveedor",
-      approved: true
-    }
-  });
 }
 
 export async function approveApplication(formData: FormData) {
