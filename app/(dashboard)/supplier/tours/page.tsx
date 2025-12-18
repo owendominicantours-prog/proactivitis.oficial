@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -36,6 +37,13 @@ export default async function SupplierToursPage({ searchParams }: SupplierToursP
     );
   }
 
+  const drafts = await prisma.tourDraft.findMany({
+    where: { supplierId: supplier.id },
+    orderBy: { updatedAt: "desc" },
+    take: 3
+  });
+  const hasDrafts = drafts.length > 0;
+
   const simplified: SupplierTourSummary[] = (supplier.Tour ?? []).map((tour) => ({
     id: tour.id,
     title: tour.title,
@@ -56,6 +64,35 @@ export default async function SupplierToursPage({ searchParams }: SupplierToursP
 
   return (
     <section className="space-y-6 rounded-lg border border-slate-200 bg-slate-50 p-6 shadow-sm">
+      {hasDrafts && (
+        <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Borradores</p>
+              <h2 className="text-lg  font-semibold text-slate-900">Retomar tour guardado</h2>
+            </div>
+            <span className="text-xs uppercase tracking-[0.4em] text-slate-500">Autoguardado</span>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            {drafts.map((draft) => {
+              const draftMeta = draft.data as { state?: { title?: string } };
+              const title = draft.title ?? draftMeta?.state?.title ?? "Borrador sin título";
+              return (
+                <Link
+                  key={draft.id}
+                  href={`/supplier/tours/create?draftId=${draft.id}`}
+                  className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400"
+                >
+                  <p>{title}</p>
+                  <p className="text-xs font-normal text-slate-500">
+                    Guardado {new Date(draft.updatedAt).toLocaleString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
       {searchParams?.status === "sent" && (
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-900">
           Su tour ha sido enviado correctamente y está en revisión.

@@ -118,6 +118,8 @@ const DURATION_UNITS = ["minutos", "horas", "días"];
 const PHYSICAL_LEVEL_OPTIONS = ["Easy", "Moderate", "Hard"];
 
 const STORAGE_KEY = "supplier-tour-wizard-draft";
+const DRAFT_KEY = "supplier-autosave";
+const AUTOSAVE_DELAY = 1300;
 
 const normalizeSearchTerm = (value: string) =>
   value
@@ -332,29 +334,21 @@ const SectionCard = ({ title, description, children }: SectionCardProps) => (
 type SavedState = TourState & Partial<Record<"includes" | "excludes", string>>;
 
 export type SavedDraft = {
-
+  id?: string;
+  draftKey?: string;
+  step?: number;
+  lastSavedAt?: string;
   state?: SavedState;
-
   languages?: string[];
-
   categories?: string[];
-
   timeSlots?: TimeSlot[];
-
   daySelection?: string[];
-
   blackoutDates?: string[];
-
   itineraryStops?: ItineraryStop[];
-
   pickupOptions?: string[];
-
   duration?: { value: string; unit: string };
-
   heroImage?: UploadedImage | null;
-
   galleryImages?: UploadedImage[];
-
 };
 
 
@@ -375,7 +369,9 @@ export function SupplierTourCreateForm({
 
 }: SupplierTourCreateFormProps) {
 
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(initialDraft?.step ?? 0);
+  const [draftId, setDraftId] = useState(initialDraft?.id ?? null);
+  const [draftKey] = useState(initialDraft?.draftKey ?? DRAFT_KEY);
 
   const [state, setState] = useState<TourState>(() => {
 
@@ -479,6 +475,44 @@ export function SupplierTourCreateForm({
   const shouldLoadLocalDraft = shouldPersistDraft && !initialDraft;
 
   const [submitting, setSubmitting] = useState(false);
+
+  const buildDraftSnapshot = useMemo(
+    () => () =>
+      ({
+        id: draftId ?? undefined,
+        draftKey,
+        step,
+        lastSavedAt: new Date().toISOString(),
+        state,
+        languages,
+        categories,
+        timeSlots,
+        daySelection,
+        blackoutDates,
+        itineraryStops,
+        pickupOptions,
+        heroImage,
+        galleryImages,
+        duration: { value: durationValue, unit: durationUnit }
+      } as SavedDraft),
+    [
+      draftId,
+      draftKey,
+      step,
+      state,
+      languages,
+      categories,
+      timeSlots,
+      daySelection,
+      blackoutDates,
+      itineraryStops,
+      pickupOptions,
+      heroImage,
+      galleryImages,
+      durationValue,
+      durationUnit
+    ]
+  );
 
   const findCountryByInput = useCallback(
     (input: string) => {
@@ -606,72 +640,45 @@ export function SupplierTourCreateForm({
 
 
   useEffect(() => {
-
     if (!shouldPersistDraft) return;
-
     if (typeof window === "undefined") return;
+    const timer = window.setTimeout(() => {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(buildDraftSnapshot()));
+    }, 800);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [shouldPersistDraft, buildDraftSnapshot, state.title, draftId, draftKey]);
 
-    window.localStorage.setItem(
-
-      STORAGE_KEY,
-
-      JSON.stringify({
-
-        state,
-
-        languages,
-
-        categories,
-
-        timeSlots,
-
-        daySelection,
-
-        blackoutDates,
-
-        itineraryStops,
-
-        heroImage,
-
-        galleryImages,
-
-        pickupOptions,
-
-        duration: { value: durationValue, unit: durationUnit }
-
-      })
-
-    );
-
-  }, [
-
-    shouldPersistDraft,
-
-    state,
-
-    languages,
-
-    categories,
-
-    timeSlots,
-
-    daySelection,
-
-    blackoutDates,
-
-    itineraryStops,
-
-    durationValue,
-
-    durationUnit,
-
-    heroImage,
-
-    galleryImages,
-
-    pickupOptions
-
-  ]);
+  useEffect(() => {
+    if (!shouldPersistDraft) return;
+    if (typeof window === "undefined") return;
+    const timer = window.setTimeout(async () => {
+      const snapshot = buildDraftSnapshot();
+      try {
+        const response = await fetch("/api/supplier/drafts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            draftId,
+            draftKey,
+            title: state.title,
+            data: snapshot
+          })
+        });
+        if (!response.ok) return;
+        const result = await response.json();
+        if (result?.draftId) {
+          setDraftId(result.draftId);
+        }
+      } catch (error) {
+        console.error("draft save failed", error);
+      }
+    }, AUTOSAVE_DELAY);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [shouldPersistDraft, buildDraftSnapshot, state.title, draftId, draftKey]);
 
   const updateField = <K extends keyof TourState>(key: K, value: TourState[K]) => {
 
@@ -859,6 +866,10 @@ export function SupplierTourCreateForm({
     if (shouldPersistDraft && typeof window !== "undefined") {
 
       window.localStorage.removeItem(STORAGE_KEY);
+
+      if (draftId) {
+        void fetch(`/api/supplier/drafts?draftId=${draftId}`, { method: "DELETE" });
+      }
 
     }
 

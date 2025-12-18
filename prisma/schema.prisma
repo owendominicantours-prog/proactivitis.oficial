@@ -27,53 +27,53 @@ model Account {
 }
 
 model AgencyProfile {
-  id          String @id
-  userId      String @unique
+  id          String  @id
+  userId      String  @unique
   companyName String
   approved    Boolean @default(false)
-  User        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Booking {
-  id                  String           @id @default(cuid())
-  tourId              String
-  userId              String
-  status              String          @default("CONFIRMED")
-  source              String          @default("WEB")
-  customerName        String
-  customerEmail       String
-  customerPhone       String?
-  travelDate          DateTime        @map("date")
-  paxAdults           Int             @default(1)
-  paxChildren         Int             @default(0)
-  passengers          Int?
-  pickup              String?
-  hotel               String?
-  pickupNotes         String?
-  totalAmount         Float
-  stripeSessionId     String?          @map("stripe_session_id")
-  stripePaymentIntentId String?         @map("stripe_payment_intent_id")
-  stripeCheckoutUrl   String?          @map("stripe_checkout_url")
-  paymentStatus       String?          @map("payment_status")
-  supplierAmount      Float?
-  platformFee         Float?
-  agencyFee           Float?
-  startTime           String?
-  cancellationReason  String?
-  cancellationByRole  String?
-  cancellationAt      DateTime?
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime?       @updatedAt
-  User                User            @relation(fields: [userId], references: [id])
-  Tour                Tour            @relation(fields: [tourId], references: [id])
-  AgencyProLink      AgencyProLink?   @relation("AgencyProBookings", fields: [agencyProLinkId], references: [id])
-  agencyProLinkId    String?
-  agencyMarkupAmount Float?
-  agencyPricingMode  Boolean          @default(false)
-  Conversation        Conversation?
-  paymentBrand        String?          @map("payment_brand")
-  paymentLast4        String?          @map("payment_last4")
-  paymentMethod       String?          @map("payment_method")
+  id                    String         @id @default(cuid())
+  tourId                String
+  userId                String
+  status                String         @default("CONFIRMED")
+  source                String         @default("WEB")
+  customerName          String
+  customerEmail         String
+  customerPhone         String?
+  travelDate            DateTime       @map("date")
+  paxAdults             Int            @default(1)
+  paxChildren           Int            @default(0)
+  passengers            Int?
+  pickup                String?
+  hotel                 String?
+  pickupNotes           String?
+  totalAmount           Float
+  stripeSessionId       String?        @map("stripe_session_id")
+  stripePaymentIntentId String?        @map("stripe_payment_intent_id")
+  stripeCheckoutUrl     String?        @map("stripe_checkout_url")
+  paymentStatus         String?        @map("payment_status")
+  supplierAmount        Float?
+  platformFee           Float?
+  agencyFee             Float?
+  startTime             String?
+  cancellationReason    String?
+  cancellationByRole    String?
+  cancellationAt        DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime?      @updatedAt
+  User                  User           @relation(fields: [userId], references: [id])
+  Tour                  Tour           @relation(fields: [tourId], references: [id])
+  AgencyProLink         AgencyProLink? @relation("AgencyProBookings", fields: [agencyProLinkId], references: [id])
+  agencyProLinkId       String?
+  agencyMarkupAmount    Float?
+  agencyPricingMode     Boolean        @default(false)
+  Conversation          Conversation?
+  paymentBrand          String?        @map("payment_brand")
+  paymentLast4          String?        @map("payment_last4")
+  paymentMethod         String?        @map("payment_method")
 }
 
 model Conversation {
@@ -119,7 +119,7 @@ model Message {
 }
 
 model Notification {
-  id         String           @id
+  id         String   @id
   type       String?
   role       String?
   title      String
@@ -128,8 +128,8 @@ model Notification {
   bookingId  String?
   metadata   String?
   caseNumber String?
-  isRead     Boolean          @default(false) @map("read")
-  createdAt  DateTime         @default(now())
+  isRead     Boolean  @default(false) @map("read")
+  createdAt  DateTime @default(now())
 }
 
 model PartnerApplication {
@@ -175,12 +175,12 @@ model Country {
 }
 
 model Destination {
-  id               String        @id @default(cuid())
+  id               String  @id @default(cuid())
   name             String
-  slug             String        @unique
+  slug             String  @unique
   shortDescription String?
   heroImage        String?
-  country          Country       @relation(fields: [countryId], references: [id])
+  country          Country @relation(fields: [countryId], references: [id])
   countryId        String
   tours            Tour[]
 }
@@ -194,76 +194,90 @@ model Session {
 }
 
 model SupplierProfile {
-  id       String  @id
-  userId   String  @unique
+  id       String      @id
+  userId   String      @unique
   company  String
-  approved Boolean @default(false)
-  User     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approved Boolean     @default(false)
+  User     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   Tour     Tour[]
+  drafts   TourDraft[]
+}
+
+model TourDraft {
+  id         String          @id @default(cuid())
+  supplierId String
+  draftKey   String
+  title      String?
+  data       Json
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  Supplier   SupplierProfile @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@unique([supplierId, draftKey])
 }
 
 model AgencyProLink {
-  id           String   @id @default(cuid())
-  slug         String   @unique
+  id           String    @id @default(cuid())
+  slug         String    @unique
   tourId       String
   agencyUserId String
   price        Float
   basePrice    Float
   markup       Float
   note         String?
-  active       Boolean  @default(true)
+  active       Boolean   @default(true)
   expiresAt    DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  Tour         Tour     @relation(fields: [tourId], references: [id])
-  AgencyUser   User     @relation(fields: [agencyUserId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  Tour         Tour      @relation(fields: [tourId], references: [id])
+  AgencyUser   User      @relation(fields: [agencyUserId], references: [id])
   Booking      Booking[] @relation("AgencyProBookings")
 }
 
 model Tour {
-  id              String          @id
-  title           String
-  slug            String          @unique
-  productId       String          @unique @default(uuid())
-  price           Float
-  priceChild      Float?
-  priceYouth      Float?
-  duration        String
-  description     String           @db.Text
-  subtitle        String?
-  shortDescription String?         @db.Text
-  category        String?
-  physicalLevel   String?
-  minAge          Int?
-  accessibility   String?
-  confirmationType String?
-  timeOptions     String?
-  operatingDays   String?
-  blackoutDates   String?
-  capacity        Int?
-  meetingPoint    String?
-  meetingInstructions String?
-  pickup          String?
-  requirements    String?
-  cancellationPolicy String?
-  terms           String?
-  language        String
-  includes        String
-  location        String
-  supplierId      String
-  featured        Boolean         @default(false)
-  status          String          @default("draft")
-  adminNote       String?
-  createdAt       DateTime        @default(now())
-  gallery         String?
-  heroImage       String?
+  id                     String          @id
+  title                  String
+  slug                   String          @unique
+  productId              String          @unique @default(uuid())
+  price                  Float
+  priceChild             Float?
+  priceYouth             Float?
+  duration               String
+  description            String          @db.Text
+  subtitle               String?
+  shortDescription       String?         @db.Text
+  category               String?
+  physicalLevel          String?
+  minAge                 Int?
+  accessibility          String?
+  confirmationType       String?
+  timeOptions            String?
+  operatingDays          String?
+  blackoutDates          String?
+  capacity               Int?
+  meetingPoint           String?
+  meetingInstructions    String?
+  pickup                 String?
+  requirements           String?
+  cancellationPolicy     String?
+  terms                  String?
+  language               String
+  includes               String
+  location               String
+  supplierId             String
+  featured               Boolean         @default(false)
+  status                 String          @default("draft")
+  adminNote              String?
+  createdAt              DateTime        @default(now())
+  gallery                String?
+  heroImage              String?
   departureDestinationId String?
-  departureDestination   Destination?  @relation(fields: [departureDestinationId], references: [id])
-  Booking         Booking[]
-  Offer           Offer[]
-  platformSharePercent Int            @default(20)
-  SupplierProfile SupplierProfile @relation(fields: [supplierId], references: [id])
-  AgencyProLinks AgencyProLink[]
+  departureDestination   Destination?    @relation(fields: [departureDestinationId], references: [id])
+  Booking                Booking[]
+  Offer                  Offer[]
+  platformSharePercent   Int             @default(20)
+  SupplierProfile        SupplierProfile @relation(fields: [supplierId], references: [id])
+  AgencyProLinks         AgencyProLink[]
 }
 
 model User {
