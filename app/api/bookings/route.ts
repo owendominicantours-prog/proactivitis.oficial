@@ -1,16 +1,19 @@
-import type { Prisma } from "@prisma/client";
+import type { Prisma, QueryMode } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const query = url.searchParams.get("q")?.trim();
+  const containsFilter = query
+    ? { contains: query, mode: "insensitive" as QueryMode }
+    : undefined;
   const where = query
     ? {
         OR: [
-          { id: { contains: query, mode: "insensitive" } },
-          { customerName: { contains: query, mode: "insensitive" } },
-          { customerEmail: { contains: query, mode: "insensitive" } }
+          { id: containsFilter },
+          { customerName: containsFilter },
+          { customerEmail: containsFilter }
         ]
       }
     : undefined;
