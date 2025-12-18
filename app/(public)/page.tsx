@@ -112,16 +112,10 @@ export default function PublicHomePage() {
               Combinamos personas en el terreno, tecnología y procesos confiables para que cada viaje sea claro, humano y memorable.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link
-                href="/tours"
-                className="inline-flex items-center rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-              >
+              <Link href="/tours" className="boton-verde">
                 Explorar tours
               </Link>
-              <Link
-                href="/contact"
-                className="text-sm font-semibold text-slate-600 underline transition hover:text-slate-900"
-              >
+              <Link href="/contact" className="boton-naranja">
                 Contáctanos
               </Link>
             </div>
