@@ -48,10 +48,7 @@ export async function POST(request: NextRequest) {
     const { url } = await put(filename, optimized, {
       access: "public",
       addRandomSuffix: true,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "image/webp"
-      }
+      contentType: "image/webp"
     });
 
     return NextResponse.json({ url });
