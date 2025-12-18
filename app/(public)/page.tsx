@@ -25,7 +25,7 @@ export default function PublicHomePage() {
   return (
     <div className="space-y-16 bg-white text-slate-900">
       <section
-        className="relative overflow-hidden rounded-b-[40px]"
+        className="relative overflow-hidden"
         style={{
           backgroundImage:
             "linear-gradient(90deg, rgba(4, 21, 45, 0.85), rgba(4, 21, 45, 0.35)), url('/mejorbanner.png')",
