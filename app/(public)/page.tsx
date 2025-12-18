@@ -28,7 +28,7 @@ export default function PublicHomePage() {
         className="relative overflow-hidden rounded-b-[40px]"
         style={{
           backgroundImage:
-            "linear-gradient(90deg, rgba(4, 21, 45, 0.85), rgba(4, 21, 45, 0.35)), url('/banner.png')",
+            "linear-gradient(90deg, rgba(4, 21, 45, 0.85), rgba(4, 21, 45, 0.35)), url('/mejorbanner.png')",
           backgroundSize: "cover",
           backgroundPosition: "center"
         }}
@@ -46,13 +46,13 @@ export default function PublicHomePage() {
             <div className="mx-auto flex max-w-[360px] flex-col gap-3 sm:flex-row sm:justify-center md:justify-start">
               <Link
                 href="/tours"
-                className="flex-1 rounded-full bg-[#165F4D] px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#F47B20]"
+                className="flex-1 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 px-6 py-3 text-center text-sm font-semibold text-white shadow-lg transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
               >
                 Ver tours destacados
               </Link>
               <Link
                 href="/tours"
-                className="flex-1 rounded-full border border-white/70 px-6 py-3 text-center text-sm font-semibold text-white/90 transition hover:bg-white/20"
+                className="flex-1 rounded-full bg-gradient-to-r from-orange-500 to-orange-400 px-6 py-3 text-center text-sm font-semibold text-white shadow-lg transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
               >
                 Buscar por destino
               </Link>
