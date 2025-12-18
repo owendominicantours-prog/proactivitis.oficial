@@ -7,9 +7,6 @@ export async function uploadToBlob(key: string, body: BufferSource, contentType:
   const { url } = await put(key, body, {
     access: "public",
     addRandomSuffix: true,
-    headers: {
-      "Content-Type": contentType
-    }
   });
   return url;
 }
