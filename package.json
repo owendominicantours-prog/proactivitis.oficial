@@ -13,6 +13,7 @@
     "prisma": "prisma",
     "seed": "node prisma/seed.js",
     "seed:countries": "node scripts/seed-countries.ts",
+    "seed:destinations": "node scripts/seed-destinations.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {
