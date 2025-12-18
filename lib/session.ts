@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { NextResponse } from "next/server";
 
 export type Role = "ADMIN" | "SUPPLIER" | "AGENCY" | "CUSTOMER";
 
@@ -14,4 +15,12 @@ export function requireRole(user: { role: Role }, allowed: Role[]) {
   if (!allowed.includes(user.role)) {
     throw new Error("FORBIDDEN");
   }
+}
+
+export async function requireSession(): Promise<{ id: string; role: Role }> {
+  const user = await getSessionUser();
+  if (!user) {
+    throw NextResponse.redirect("/auth/login");
+  }
+  return user;
 }
