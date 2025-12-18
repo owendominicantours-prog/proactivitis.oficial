@@ -1,14 +1,17 @@
-import { authOptions } from "./auth";
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-export async function requireSession() {
+export type Role = "ADMIN" | "SUPPLIER" | "AGENCY" | "CUSTOMER";
+
+export async function getSessionUser(): Promise<{ id: string; role: Role } | null> {
   const session = await getServerSession(authOptions);
-  if (!session) {
-    throw new Error("Sesión requerida");
-  }
-  return session;
+  const role = session?.user?.role as Role | undefined;
+  if (!session?.user?.id || !role) return null;
+  return { id: session.user.id, role };
 }
 
-export async function getSessionUser() {
-  return (await getServerSession(authOptions))?.user;
+export function requireRole(user: { role: Role }, allowed: Role[]) {
+  if (!allowed.includes(user.role)) {
+    throw new Error("FORBIDDEN");
+  }
 }

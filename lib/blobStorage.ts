@@ -2,27 +2,19 @@ import { put } from "@vercel/blob";
 
 const token = process.env.BLOB_READ_WRITE_TOKEN;
 
-type BlobBody = File | Blob | Buffer | ArrayBuffer | ArrayBufferView;
+export type UploadResult = { url: string; pathname: string };
 
-function toBuffer(body: BlobBody) {
-  if (Buffer.isBuffer(body)) {
-    return body;
+export async function uploadToBlob(params: {
+  key: string;
+  body: File | Blob;
+}): Promise<UploadResult> {
+  if (!token) {
+    throw new Error("Blob storage token is not configured");
   }
-  if (body instanceof ArrayBuffer) {
-    return Buffer.from(body);
-  }
-  if (ArrayBuffer.isView(body)) {
-    return Buffer.from(body.buffer, body.byteOffset, body.byteLength);
-  }
-  return Buffer.from(body.arrayBuffer());
-}
-
-export async function uploadToBlob(key: string, body: BlobBody) {
-  if (!token) return null;
-  const buffer = await toBuffer(body);
-  const { url } = await put(key, buffer, {
+  const blob = await put(params.key, params.body, {
     access: "public",
-    addRandomSuffix: true,
+    addRandomSuffix: true
   });
-  return url;
+
+  return { url: blob.url, pathname: blob.pathname };
 }

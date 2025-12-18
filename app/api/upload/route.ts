@@ -1,59 +1,59 @@
-"use server";
-
-import { put } from "@vercel/blob";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import sharp from "sharp";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { uploadToBlob } from "@/lib/blobStorage";
+import { getSessionUser, requireRole, type Role } from "@/lib/session";
+
+export const runtime = "nodejs";
 
 const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/jpg"]);
-const ALLOWED_ROLES = new Set(["ADMIN", "SUPPLIER"]);
+const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
+const ALLOWED_ROLES: Role[] = ["ADMIN", "SUPPLIER"];
 
-export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
-  if (!session.user.role || !ALLOWED_ROLES.has(session.user.role)) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
-  }
-
-  const formData = await request.formData().catch(() => null);
-  if (!formData) {
-    return NextResponse.json({ error: "No form data" }, { status: 400 });
-  }
-
-  const file = formData.get("file");
-  if (!file || !(file instanceof File)) {
-    return NextResponse.json({ error: "No file provided" }, { status: 400 });
-  }
-
-  if (!ALLOWED_MIMES.has(file.type)) {
-    return NextResponse.json({ error: "Only images allowed" }, { status: 415 });
-  }
-
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) {
-    return NextResponse.json({ error: "Blob storage not configured" }, { status: 500 });
-  }
-
+export async function POST(request: Request) {
   try {
+    const user = await getSessionUser();
+    if (!user) {
+      return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+    }
+    requireRole(user, ALLOWED_ROLES);
+
+    const form = await request.formData();
+    const file = form.get("file");
+    const tourId = String(form.get("tourId") ?? "");
+    const supplierId = String(form.get("supplierId") ?? user.id);
+    const kind = String(form.get("kind") ?? "cover");
+
+    if (!file || !(file instanceof File)) {
+      return NextResponse.json({ error: "Missing file" }, { status: 400 });
+    }
+    if (!ALLOWED_MIMES.has(file.type)) {
+      return NextResponse.json({ error: "Only images allowed" }, { status: 415 });
+    }
+    if (file.size > MAX_BYTES) {
+      return NextResponse.json({ error: "File too large" }, { status: 413 });
+    }
+    if (!tourId) {
+      return NextResponse.json({ error: "Missing tourId" }, { status: 400 });
+    }
+
     const optimized = await sharp(await file.arrayBuffer())
       .rotate()
       .resize({ width: 2400, withoutEnlargement: true })
       .webp({ quality: 85 })
       .toBuffer();
 
-    const filename = `tours/${Date.now()}-${file.name.replace(/\s+/g, "-").toLowerCase().replace(/[^a-z0-9.-]/g, "")}.webp`;
-    const { url } = await put(filename, optimized, {
-      access: "public",
-      addRandomSuffix: true,
-      contentType: "image/webp"
-    });
+    const blob = new Blob([optimized], { type: "image/webp" });
+    const safeName = file.name.replace(/\s+/g, "-").toLowerCase().replace(/[^a-z0-9.-]/g, "");
+    const key = `tours/${supplierId}/${tourId}/${kind}-${Date.now()}-${safeName}`;
+
+    const { url } = await uploadToBlob({ key, body: blob });
 
     return NextResponse.json({ url });
-  } catch (error) {
-    console.error("image upload failed", error);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+  } catch (error: any) {
+    if (error?.message === "FORBIDDEN") {
+      return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+    }
+    console.error("upload failed", error);
+    return NextResponse.json({ error: "UPLOAD_FAILED" }, { status: 500 });
   }
 }
