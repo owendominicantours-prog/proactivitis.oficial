@@ -126,10 +126,7 @@ export function MediaUploader({
         return null;
       }
       const data = await res.json();
-      const returnedUrl =
-        (data.url as string | undefined) ??
-        (data.fileId ? `/api/uploaded/${encodeURIComponent(data.fileId)}` : undefined) ??
-        (data.path ? `/${data.path}` : undefined);
+      const returnedUrl = data.url as string | undefined;
       if (!returnedUrl) {
         setError("La API no devolvió la URL de la imagen.");
         return null;
