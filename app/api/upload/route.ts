@@ -42,7 +42,10 @@ export async function POST(request: Request) {
       .webp({ quality: 85 })
       .toBuffer();
 
-    const arrayBuffer = optimized.buffer.slice(optimized.byteOffset, optimized.byteOffset + optimized.byteLength);
+    const arrayBuffer = optimized.buffer.slice(
+      optimized.byteOffset,
+      optimized.byteOffset + optimized.byteLength
+    ) as ArrayBuffer;
     const blob = new Blob([arrayBuffer], { type: "image/webp" });
     const safeName = file.name.replace(/\s+/g, "-").toLowerCase().replace(/[^a-z0-9.-]/g, "");
     const key = `tours/${supplierId}/${tourId}/${kind}-${Date.now()}-${safeName}`;
