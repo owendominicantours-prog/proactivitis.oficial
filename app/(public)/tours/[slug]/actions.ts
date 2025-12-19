@@ -125,7 +125,11 @@ export async function createBookingAction(formData: FormData) {
       secret,
       { expiresIn: "7d" }
     );
-    await fetch("http://localhost:3000/api/session/create", {
+    const sessionBase =
+      process.env.NEXTAUTH_URL ??
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
+    await fetch(`${sessionBase}/api/session/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token })
