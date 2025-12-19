@@ -226,11 +226,11 @@ export const PanelShell = ({
                 Notificaciones
               </button>
             )}
-            <div className="flex flex-col items-end gap-1 text-right">
-              <div className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-slate-600">
+            <div className="flex items-center gap-3 text-slate-600">
+              <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em]">
                 {roleLabel}
-              </div>
-              {displayAccount && <div className="text-[0.65rem] text-slate-500">{displayAccount}</div>}
+              </span>
+              {displayAccount && <span className="text-xs text-slate-500">{displayAccount}</span>}
             </div>
             <DashboardUserMenu />
           </div>
