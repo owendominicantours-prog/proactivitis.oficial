@@ -34,9 +34,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
               </Link>
             ))}
           </nav>
-          <div className="flex-1">
-            <PublicHeaderSearch />
-          </div>
           <div className="flex items-center gap-3">
             <button
               type="button"
