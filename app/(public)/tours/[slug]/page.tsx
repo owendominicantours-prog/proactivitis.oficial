@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import { ItineraryTimeline, TimelineStop } from "@/components/itinerary/ItineraryTimeline";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
+import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 
 type TourDetailProps = {
   params: {
@@ -128,6 +129,8 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
     description: stop.description,
     duration: stop.time
   }));
+
+  const priceLabel = `Desde $${tour.price.toFixed(0)} USD`;
 
   return (
     <div className="bg-slate-50 text-slate-900">
@@ -342,7 +345,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
         </div>
 
         <aside className="space-y-6">
-        <div className="sticky top-24 space-y-5">
+        <div id="booking" className="sticky top-24 space-y-5">
           <TourBookingWidget tourId={tour.id} basePrice={tour.price} timeSlots={timeSlots} />
           <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Supplier</p>
@@ -352,6 +355,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
         </div>
         </aside>
       </main>
+      <ReserveFloatingButton targetId="booking" priceLabel={priceLabel} />
     </div>
   );
 }
