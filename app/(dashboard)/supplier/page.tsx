@@ -12,13 +12,14 @@ const kpiCards = [
   { label: "Solicitudes pendientes", key: "cancellationRequests", icon: "M6 12h4v3H6z" }
 ] as const;
 
-  const alerts = [
-    { title: "Tours sin fotos suficientes", detail: "Sube al menos 7 imágenes para cada experiencia." },
-    { title: "Reservas pendientes", detail: "Hay 3 solicitudes que esperan confirmación." },
-    { title: "Oferta destacada", detail: "Navidad expira en 2 días. Revisa los precios." }
-  ];
+const alerts = [
+  { title: "Tours sin fotos suficientes", detail: "Sube al menos 7 imágenes para cada experiencia." },
+  { title: "Reservas pendientes", detail: "Hay 3 solicitudes que esperan confirmación." },
+  { title: "Oferta destacada", detail: "Navidad expira en 2 días. Revisa los precios." }
+];
 
-const formatCurrency = (value: number) => `$${value.toLocaleString("en-US", { minimumFractionDigits: 0 })}`;
+const formatCurrency = (value: number) =>
+  `$${value.toLocaleString("en-US", { minimumFractionDigits: 0 })}`;
 
 export default async function SupplierPanel() {
   const session = await getServerSession(authOptions);

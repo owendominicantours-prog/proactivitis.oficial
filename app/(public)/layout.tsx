@@ -23,34 +23,27 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
           __html: `{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.proactivitis.com/#organization","name":"Proactivitis","url":"https://www.proactivitis.com/","description":"Creado por locales para viajeros globales. Proactivitis nació en el Caribe ayudando visitantes y creció hasta convertirse en una plataforma que conecta viajeros, proveedores y agencias con reservas, notificaciones, pagos y herramientas operativas.","foundingLocation":{"@type":"Place","name":"Caribbean"},"knowsAbout":["Experiencias locales","Tours y actividades","Plataformas de reservas","Tecnología de viajes","Pagos y reservaciones","Gestión de proveedores"],"contactPoint":{"@type":"ContactPoint","contactType":"Atención al Cliente","email":"info@proactivitis.com","availableLanguage":["es","en"]},"logo":{"@type":"ImageObject","url":"https://www.proactivitis.com/logo.png","width":512,"height":512}},{"@type":"WebSite","@id":"https://www.proactivitis.com/#website","url":"https://www.proactivitis.com/","name":"Proactivitis","publisher":{"@id":"https://www.proactivitis.com/#organization"},"inLanguage":["es"]},{"@type":"AboutPage","@id":"https://www.proactivitis.com/about#webpage","url":"https://www.proactivitis.com/about","name":"Acerca de Proactivitis","isPartOf":{"@id":"https://www.proactivitis.com/#website"},"about":{"@id":"https://www.proactivitis.com/#organization"},"inLanguage":["es"],"description":"Proactivitis nació en el Caribe para traer claridad, operaciones locales y pensamiento de producto moderno a experiencias de viaje globales."}]}`
         }}
       />
-      <header className="fixed top-0 z-50 w-full border-b border-slate-100 bg-white/90 shadow-sm backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6 lg:px-8">
-          <div className="flex shrink-0 items-center overflow-visible">
-            <Link href="/" className="flex items-center">
-              <Image
-                src="/logo.png"
-                alt="Proactivitis"
-                width={140}
-                height={32}
-                className="h-10 w-auto object-contain scale-[4] origin-left transition-transform duration-200 hover:scale-[4.3]"
-                style={{ transformOrigin: "left center" }}
-              />
+      <header className="fixed top-0 z-50 w-full border-b border-slate-100 bg-white/90 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex h-full items-center">
+              <Image src="/logo.png" alt="Proactivitis" width={120} height={32} className="h-8 w-auto object-contain" />
             </Link>
           </div>
-          <nav className="hidden items-center gap-8 text-[13px] font-semibold uppercase tracking-[0.3em] text-slate-600 md:flex md:ml-6">
+          <nav className="hidden items-center gap-6 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-600 md:flex md:ml-6">
             {publicNavLinks.map((item) => (
               <Link key={item.href} href={item.href} className="transition hover:text-slate-900">
                 {item.label}
               </Link>
             ))}
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <PublicHeaderSearch />
             <PublicCurrencyLanguage />
             <PublicWishlistButton />
             <Link
               href="/tours"
-              className="rounded-full border border-slate-200 bg-slate-900 px-4 py-1 text-[11px] font-black uppercase tracking-[0.35em] text-white transition hover:border-slate-800 hover:bg-slate-800"
+              className="rounded-full border border-slate-200 bg-slate-900 px-4 py-1 text-[11px] font-black uppercase tracking-[0.3em] text-white transition hover:border-slate-800 hover:bg-slate-800"
             >
               Explorar
             </Link>

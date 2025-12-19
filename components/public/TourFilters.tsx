@@ -64,9 +64,7 @@ export function TourFilters({ countries, destinations, languages, durations }: P
     router.push("/tours");
   };
 
-  const isDestinationDisabled = !country;
-
-  const filteredDestinations = destinations.filter((dest) => dest.countrySlug === country);
+  const filteredDestinations = country ? destinations.filter((dest) => dest.countrySlug === country) : destinations;
 
   return (
     <form className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-md">
@@ -97,10 +95,9 @@ export function TourFilters({ countries, destinations, languages, durations }: P
           value={destination}
           onChange={(event) => setDestination(event.target.value)}
           className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900"
-          disabled={isDestinationDisabled}
         >
-              <option value="">Todas las zonas</option>
-          {(isDestinationDisabled ? destinations : filteredDestinations).map((destinationOption) => (
+          <option value="">Todas las zonas</option>
+          {filteredDestinations.map((destinationOption) => (
             <option key={destinationOption.slug} value={destinationOption.slug}>
               {destinationOption.name}
             </option>
