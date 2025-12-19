@@ -1,5 +1,6 @@
 ﻿import Image from "next/image";
 import Link from "next/link";
+import FeaturedToursSection from "@/components/public/FeaturedToursSection";
 
 const benefits = [
   {
@@ -81,15 +82,14 @@ export default function PublicHomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-4xl space-y-4 px-4 sm:px-6">
+      <section className="mx-auto max-w-6xl space-y-4 px-4 sm:px-6">
         <div className="space-y-3 text-center">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Recomendado</p>
           <h2 className="text-3xl font-semibold text-slate-900">Tours más populares</h2>
           <p className="text-sm text-slate-500">Aún estamos subiendo experiencias reales. Mientras tanto, estamos listos para ayudarte a crear la tuya.</p>
         </div>
-        <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 text-center text-sm text-slate-500 shadow-sm">
-          <p className="text-lg font-semibold text-slate-900">Próximamente verás lo mejor del catálogo aquí.</p>
-          <p>Subiremos tours reales tan pronto como estén aprobados por el equipo.</p>
+        <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-sm">
+          <FeaturedToursSection />
         </div>
       </section>
 
