@@ -5,7 +5,6 @@ import { notFound, redirect } from "next/navigation";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import { ItineraryTimeline, TimelineStop } from "@/components/itinerary/ItineraryTimeline";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
-import TourGalleryViewer from "@/components/shared/TourGalleryViewer";
 
 type TourDetailProps = {
   params: {
