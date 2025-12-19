@@ -1,3 +1,14 @@
+import { ReactNode, createElement } from "react";
+import {
+  AlertTriangle,
+  CalendarCheck2,
+  CheckCircle2,
+  Trash2,
+  Wallet,
+  Ticket,
+  Bell
+} from "lucide-react";
+
 export type NotificationType =
   | "ADMIN_BOOKING_CREATED"
   | "ADMIN_BOOKING_CANCELLED"
@@ -22,94 +33,65 @@ export type NotificationType =
   | "AGENCY_PROMO_ALERT"
   | "AGENCY_ACCOUNT_STATUS";
 
-export type NotificationRole = "ADMIN" | "SUPPLIER" | "AGENCY" | "CUSTOMER";
-
 type NotificationDisplayTone = "primary" | "success" | "warning" | "danger" | "info";
 
 export type NotificationDisplayConfig = {
-  icon: string;
+  icon: ReactNode;
   label: string;
-  badgeClass: string;
   textClass: string;
 };
 
-const toneStyles: Record<NotificationDisplayTone, NotificationDisplayConfig> = {
-  primary: {
-    icon: "📅",
-    label: "Notificación",
-    badgeClass: "border-sky-200 bg-sky-50 text-sky-600",
-    textClass: "text-sky-600"
-  },
-  success: {
-    icon: "✅",
-    label: "Éxito",
-    badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
-    textClass: "text-emerald-600"
-  },
-  warning: {
-    icon: "⚠️",
-    label: "Alerta",
-    badgeClass: "border-amber-200 bg-amber-50 text-amber-700",
-    textClass: "text-amber-600"
-  },
-  danger: {
-    icon: "🗑️",
-    label: "Crítico",
-    badgeClass: "border-rose-200 bg-rose-50 text-rose-700",
-    textClass: "text-rose-600"
-  },
-  info: {
-    icon: "💼",
-    label: "Info",
-    badgeClass: "border-slate-200 bg-slate-50 text-slate-600",
-    textClass: "text-slate-600"
-  }
+const toneTextClass: Record<NotificationDisplayTone, string> = {
+  primary: "text-sky-600",
+  success: "text-emerald-600",
+  warning: "text-amber-600",
+  danger: "text-rose-600",
+  info: "text-slate-600"
 };
 
-type NotificationToneConfig = {
-  label: string;
-  icon: string;
-  badgeClass: string;
-  textClass: string;
+const toneIcon: Record<NotificationDisplayTone, ReactNode> = {
+  primary: createElement(CalendarCheck2, { className: "h-4 w-4 text-sky-500" }),
+  success: createElement(CheckCircle2, { className: "h-4 w-4 text-emerald-500" }),
+  warning: createElement(AlertTriangle, { className: "h-4 w-4 text-amber-500" }),
+  danger: createElement(Trash2, { className: "h-4 w-4 text-rose-500" }),
+  info: createElement(Wallet, { className: "h-4 w-4 text-slate-500" })
 };
 
-const createConfig = (label: string, icon: string, tone: NotificationDisplayTone): NotificationDisplayConfig => ({
-  icon,
+const createConfig = (label: string, tone: NotificationDisplayTone, icon?: ReactNode): NotificationDisplayConfig => ({
+  icon: icon ?? toneIcon[tone],
   label,
-  badgeClass: toneStyles[tone].badgeClass,
-  textClass: toneStyles[tone].textClass
+  textClass: toneTextClass[tone]
 });
 
 const defaultDisplay: NotificationDisplayConfig = {
-  icon: toneStyles.primary.icon,
-  label: toneStyles.primary.label,
-  badgeClass: toneStyles.primary.badgeClass,
-  textClass: toneStyles.primary.textClass
+  icon: createElement(Bell, { className: "h-4 w-4 text-slate-500" }),
+  label: "NotificaciÃ³n",
+  textClass: toneTextClass.primary
 };
 
 export const notificationTypeConfig: Record<NotificationType, NotificationDisplayConfig> = {
-  ADMIN_BOOKING_CREATED: createConfig("Reserva nueva", "?", "primary"),
-  ADMIN_BOOKING_CANCELLED: createConfig("Reserva cancelada", "?", "danger"),
-  ADMIN_BOOKING_MODIFIED: createConfig("Reserva modificada", "?", "info"),
-  ADMIN_SUPPLIER_PAYOUT_SENT: createConfig("Pago al proveedor", "??", "success"),
-  ADMIN_PAYMENT_FAILED: createConfig("Pago fallido", "?", "warning"),
-  ADMIN_SUPPLIER_LOW_AVAILABILITY: createConfig("Baja disponibilidad", "?", "warning"),
-  ADMIN_SYSTEM_ALERT: createConfig("Alerta del sistema", "?", "warning"),
-  ADMIN_CONTACT_REQUEST: createConfig("Solicitud de contacto", "?", "info"),
-  ADMIN_PARTNER_APPLICATION: createConfig("Nueva solicitud", "?", "primary"),
-  SUPPLIER_BOOKING_CREATED: createConfig("Nueva reserva", "?", "primary"),
-  SUPPLIER_BOOKING_CANCELLED: createConfig("Reserva cancelada", "?", "danger"),
-  SUPPLIER_BOOKING_MODIFIED: createConfig("Reserva actualizada", "?", "info"),
-  SUPPLIER_PAYOUT_CONFIRMED: createConfig("Payout confirmado", "??", "success"),
-  SUPPLIER_TOUR_REMINDER: createConfig("Recordatorio de tour", "??", "info"),
-  SUPPLIER_ACCOUNT_STATUS: createConfig("Estado de cuenta", "?", "info"),
-  SUPPLIER_TOUR_REMOVED: createConfig("Tour eliminado", "?", "danger"),
-  AGENCY_BOOKING_CREATED: createConfig("Reserva creada", "?", "primary"),
-  AGENCY_BOOKING_CANCELLED: createConfig("Reserva cancelada", "?", "danger"),
-  AGENCY_BOOKING_MODIFIED: createConfig("Reserva modificada", "?", "info"),
-  AGENCY_COMMISSION_PAID: createConfig("Comisi?n pagada", "??", "success"),
-  AGENCY_PROMO_ALERT: createConfig("Promo activa", "??", "info"),
-  AGENCY_ACCOUNT_STATUS: createConfig("Estado de cuenta", "?", "info")
+  ADMIN_BOOKING_CREATED: createConfig("Nueva reserva", "primary", createElement(Ticket, { className: "h-4 w-4 text-sky-500" })),
+  ADMIN_BOOKING_CANCELLED: createConfig("Reserva cancelada", "danger"),
+  ADMIN_BOOKING_MODIFIED: createConfig("Reserva modificada", "info"),
+  ADMIN_SUPPLIER_PAYOUT_SENT: createConfig("Pago al proveedor", "success", createElement(Wallet, { className: "h-4 w-4 text-emerald-500" })),
+  ADMIN_PAYMENT_FAILED: createConfig("Pago fallido", "warning"),
+  ADMIN_SUPPLIER_LOW_AVAILABILITY: createConfig("Baja disponibilidad", "warning"),
+  ADMIN_SYSTEM_ALERT: createConfig("Alerta del sistema", "warning"),
+  ADMIN_CONTACT_REQUEST: createConfig("Solicitud de contacto", "info"),
+  ADMIN_PARTNER_APPLICATION: createConfig("Nueva solicitud", "primary"),
+  SUPPLIER_BOOKING_CREATED: createConfig("Nueva reserva", "primary", createElement(Ticket, { className: "h-4 w-4 text-sky-500" })),
+  SUPPLIER_BOOKING_CANCELLED: createConfig("Reserva cancelada", "danger"),
+  SUPPLIER_BOOKING_MODIFIED: createConfig("Reserva actualizada", "info"),
+  SUPPLIER_PAYOUT_CONFIRMED: createConfig("Payout confirmado", "success"),
+  SUPPLIER_TOUR_REMINDER: createConfig("Recordatorio de tour", "info", createElement(CalendarCheck2, { className: "h-4 w-4 text-slate-500" })),
+  SUPPLIER_ACCOUNT_STATUS: createConfig("Estado de cuenta", "success", createElement(Wallet, { className: "h-4 w-4 text-slate-500" })),
+  SUPPLIER_TOUR_REMOVED: createConfig("Tour eliminado", "danger", createElement(Trash2, { className: "h-4 w-4 text-rose-500" })),
+  AGENCY_BOOKING_CREATED: createConfig("Reserva creada", "primary", createElement(Ticket, { className: "h-4 w-4 text-sky-500" })),
+  AGENCY_BOOKING_CANCELLED: createConfig("Reserva cancelada", "danger"),
+  AGENCY_BOOKING_MODIFIED: createConfig("Reserva modificada", "info"),
+  AGENCY_COMMISSION_PAID: createConfig("ComisiÃ³n pagada", "success"),
+  AGENCY_PROMO_ALERT: createConfig("PromociÃ³n activa", "info"),
+  AGENCY_ACCOUNT_STATUS: createConfig("Estado de cuenta", "info")
 };
 
 export function getNotificationDisplayProps(type?: NotificationType): NotificationDisplayConfig {

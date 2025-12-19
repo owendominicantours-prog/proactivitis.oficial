@@ -8,6 +8,7 @@ import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
 import type { NotificationType } from "@/lib/types/notificationTypes";
 import { DashboardUserMenu } from "@/components/dashboard/DashboardUserMenu";
 import { NavMenu } from "@/components/dashboard/NavMenu";
+import { ChevronRight } from "lucide-react";
 
 export type PanelNavItem = {
   label: string;
@@ -34,6 +35,20 @@ const notificationGroupLabel = (value: Date) => {
   if (diff < 2 * day) return "Ayer";
   if (diff < 7 * day) return "Esta semana";
   return "Anterior";
+};
+
+const sanitizeNotificationText = (value: string) =>
+  value
+    .replace(/\u0416\u042C/g, "\u00B7")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/[^\w0-9\u00B7.,:;!?()\s-]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const buildNotificationDetails = (notification: NotificationMenuItem, metadataLabel?: string) => {
+  const raw = notification.message ?? notification.body ?? metadataLabel ?? "";
+  const clean = sanitizeNotificationText(raw);
+  return clean.length > 0 ? clean : undefined;
 };
 
 type PanelShellProps = {
@@ -146,48 +161,44 @@ export const PanelShell = ({
                                 const redirectUrl = metadata.referenceUrl ?? fallbackLink;
                                 const notificationType = notification.type as NotificationType | undefined;
                                 const display = getNotificationDisplayProps(notificationType);
-                                const message = notification.message ?? notification.body ?? "";
+                                const details = buildNotificationDetails(notification, metadata?.tourName);
                                 return (
                                   <form
                                     key={notification.id}
                                     action={markNotificationReadAction}
-                                    className="rounded-2xl border border-slate-100 bg-slate-50 transition hover:border-slate-300"
+                                    className="rounded-2xl border border-slate-100 bg-slate-50 transition hover:border-slate-300 hover:bg-white"
                                   >
                                     <input type="hidden" name="notificationId" value={notification.id} />
                                     <input type="hidden" name="redirectTo" value={redirectUrl} />
-                                    <button type="submit" className="w-full text-left p-4">
-                                      <div className="flex items-start gap-3">
+                                    <button type="submit" className="w-full text-left p-3">
+                                      <div className="flex items-center gap-3">
                                         <div className="relative">
-                                          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-lg">
+                                          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white">
                                             {display.icon}
                                           </span>
                                           {!notification.isRead && (
                                             <span className="absolute right-0 top-0 h-2 w-2 rounded-full bg-sky-500" />
                                           )}
                                         </div>
-                                        <div className="flex-1 space-y-0.5">
-                                          <p className="text-sm font-semibold text-slate-900">
-                                            {notification.title ?? display.label}
-                                          </p>
-                                          <p className="text-xs text-slate-500">{message}</p>
-                                          <div className="flex items-center justify-between text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">
-                                            <span>{formatNotificationDate(notification.createdAt)}</span>
-                                            <span
-                                              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-semibold ${display.badgeClass}`}
-                                            >
-                                              {display.label}
-                                            </span>
+                                        <div className="flex-1">
+                                          <div className="flex items-center justify-between gap-3">
+                                            <p className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                                              {notification.title ?? display.label}
+                                              <span className={`text-[0.55rem] uppercase tracking-[0.35em] ${display.textClass} opacity-80`}>
+                                                {display.label}
+                                              </span>
+                                            </p>
+                                            <span className="text-[0.6rem] text-slate-400">{formatNotificationDate(notification.createdAt)}</span>
                                           </div>
+                                          {details && <p className="text-xs text-slate-500">{details}</p>}
                                         </div>
-                                      </div>
-                                      <div className="mt-3 flex items-center justify-between text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-slate-600">
-                                        <span>Ver detalles</span>
-                                        <span className="text-sky-600">Go →</span>
+                                        <ChevronRight className="h-4 w-4 text-slate-400" />
                                       </div>
                                     </button>
                                   </form>
                                 );
                               })}
+
                             </div>
                           </div>
                         );
@@ -195,7 +206,7 @@ export const PanelShell = ({
                     ) : (
                       <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
                         <div className="flex items-center gap-2">
-                          <span className="text-lg">ℹ️</span>
+                          <span className="text-lg text-slate-400">â€¢</span>
                           <p>No tienes notificaciones nuevas.</p>
                         </div>
                       </div>
