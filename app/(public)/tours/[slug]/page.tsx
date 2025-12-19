@@ -194,8 +194,8 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
         </div>
       </section>
 
-      <main className="relative mx-auto grid max-w-6xl gap-8 px-6 py-12 lg:max-w-7xl lg:grid-cols-[1fr,360px]">
-        <div className="space-y-10">
+      <main className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:max-w-7xl lg:flex-row lg:items-start">
+        <div className="space-y-8 lg:w-3/5">
           <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-slate-900">Gallery</h3>
             <div className="mt-4">
@@ -359,3 +359,4 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
     </div>
   );
 }
+
