@@ -49,14 +49,18 @@ export default async function FeaturedToursSection() {
   return (
     <div className="grid gap-6 md:grid-cols-3">
       {tours.map((tour) => (
-        <article key={tour.id} className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+        <Link
+          key={tour.id}
+          href={`/tours/${tour.slug}`}
+          className="group flex flex-col rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition hover:border-slate-300 hover:shadow-lg"
+        >
           {tour.heroImage ? (
             <div className="relative h-44 w-full overflow-hidden rounded-2xl">
               <Image
                 src={tour.heroImage}
                 alt={tour.title}
                 fill
-                className="object-cover"
+                className="object-cover transition duration-300 group-hover:scale-105"
                 sizes="(max-width: 768px) 100vw, 33vw"
               />
             </div>
@@ -68,14 +72,11 @@ export default async function FeaturedToursSection() {
             {tour.shortDescription && <p className="text-sm text-slate-500">{tour.shortDescription}</p>}
             <p className="text-sm font-semibold text-slate-800">${tour.price.toFixed(2)}</p>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{statusLabel(tour.status)}</p>
-            <Link
-              href={`/tours/${tour.slug}`}
-              className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-            >
+            <span className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition group-hover:bg-slate-50">
               Ver detalles
-            </Link>
+            </span>
           </div>
-        </article>
+        </Link>
       ))}
     </div>
   );
