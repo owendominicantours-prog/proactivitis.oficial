@@ -329,6 +329,12 @@ const SectionCard = ({ title, description, children }: SectionCardProps) => (
 
 );
 
+const CheckIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
+    <path d="M6 12l4 4 8-8" />
+  </svg>
+);
+
 
 
 type SavedState = TourState & Partial<Record<"includes" | "excludes", string>>;
@@ -2237,47 +2243,123 @@ export function SupplierTourCreateForm({
 
   return (
 
-    <div className="rounded-[32px] bg-gradient-to-br from-slate-950/90 via-slate-900 to-slate-950 p-[2px] shadow-[0_40px_120px_rgba(2,6,23,0.8)]">
+    <div className="min-h-screen bg-[#F8FAFC] py-10">
 
-      <form
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 lg:flex-row lg:items-start">
 
-        action={formAction}
+        <aside className="hidden w-72 flex-col gap-6 rounded-[28px] bg-slate-900/80 p-6 text-white shadow-[0_25px_80px_rgba(15,23,42,0.45)] backdrop-blur lg:flex">
 
-        onSubmit={handleFormSubmit}
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Command Center</p>
 
-        className="space-y-6 rounded-[30px] border border-slate-800 bg-slate-950/80 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] text-white"
+          <h3 className="text-2xl font-semibold text-white">Sube tu tour</h3>
 
-      >
+          <div className="space-y-4">
 
-      <div className="space-y-3">
+            {STEP_TITLES.map((title, index) => (
 
-        <div className="flex flex-wrap gap-2">
+              <div key={title} className="flex items-center gap-3">
 
-          {STEP_TITLES.map((title, index) => (
+                <span
 
-            <button
+                  className={`flex h-10 w-10 items-center justify-center rounded-2xl border-2 ${
 
-              type="button"
+                    index < step
+                      ? "border-emerald-400 bg-emerald-400 text-white"
+                      : index === step
+                        ? "border-blue-400 bg-blue-500 text-white"
+                        : "border-slate-700 text-slate-400"
 
-              key={title}
+                  }`}
 
-              onClick={() => setStep(index)}
+                >
 
-              className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] transition ${
+                  {index < step ? <CheckIcon /> : index + 1}
 
-                index === step
-                  ? "bg-indigo-600 text-white shadow-[0_10px_30px_rgba(79,70,229,0.4)]"
-                  : "border border-slate-700 bg-slate-900/40 text-slate-300 hover:border-slate-500"
+                </span>
 
-              }`}
+                <div>
+
+                  <p className="text-sm font-semibold text-white">{title}</p>
+
+                  <p className="text-[0.65rem] text-slate-400">Paso {index + 1}</p>
+
+                </div>
+
+              </div>
+
+            ))}
+
+          </div>
+
+        </aside>
+
+        <div className="flex-1 space-y-6">
+
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-[30px] bg-white/80 px-6 py-4 shadow-[0_30px_60px_rgba(15,23,42,0.15)] text-slate-700 backdrop-blur">
+
+            <div>
+
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Command Center</p>
+
+              <p className="text-xl font-semibold text-slate-900">Sube tu tour premium</p>
+
+            </div>
+
+            <div className="flex items-center gap-2 text-[0.65rem] uppercase tracking-[0.4em] text-slate-500">
+
+              <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
+
+              Cambios guardados
+
+            </div>
+
+          </div>
+
+          <div className="rounded-[32px] bg-gradient-to-br from-slate-950/90 via-slate-900 to-slate-950 p-[2px] shadow-[0_40px_120px_rgba(2,6,23,0.8)]">
+
+            <form
+
+              action={formAction}
+
+              onSubmit={handleFormSubmit}
+
+              className="space-y-6 rounded-[30px] border border-slate-800 bg-slate-950/80 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] text-white"
 
             >
 
-              {title}
+        <div className="space-y-3">
 
-            </button>
+        <div className="flex flex-wrap gap-3">
 
-          ))}
+          {STEP_TITLES.map((title, index) => {
+            const isActive = index === step;
+            const isCompleted = index < step;
+            return (
+              <button
+                type="button"
+                key={title}
+                onClick={() => setStep(index)}
+                className={`flex items-center gap-3 rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] transition ${
+                  isActive
+                    ? "bg-indigo-600 text-white shadow-[0_15px_40px_rgba(79,70,229,0.4)]"
+                    : "border border-slate-700 bg-slate-900/40 text-slate-300 hover:border-slate-500"
+                }`}
+              >
+                <span
+                  className={`flex h-7 w-7 items-center justify-center rounded-full border ${
+                    isCompleted
+                      ? "border-emerald-400 bg-emerald-400 text-white"
+                      : isActive
+                        ? "border-indigo-300 bg-indigo-500 text-white"
+                        : "border-slate-700 bg-slate-900/30 text-slate-400"
+                  }`}
+                >
+                  {isCompleted ? <CheckIcon /> : index + 1}
+                </span>
+                {title}
+              </button>
+            );
+          })}
 
         </div>
 
@@ -2449,11 +2531,17 @@ export function SupplierTourCreateForm({
 
         )}
 
-      </div>
+        </div>
 
       </form>
 
     </div>
+
+  </div>
+
+</div>
+
+</div>
 
   );
 
