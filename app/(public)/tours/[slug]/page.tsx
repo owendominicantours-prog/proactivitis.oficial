@@ -207,7 +207,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] text-slate-900 pb-24">
+    <div className="min-h-screen bg-[#FDFDFD] text-slate-900 pb-24 overflow-x-hidden">
       {/* Hero */}
       <section className="mx-auto max-w-[1240px] px-4 pt-10">
         <div className="grid gap-0 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_80px_rgba(0,0,0,0.05)] lg:grid-cols-2">
@@ -245,9 +245,12 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
               </Link>
             </div>
           </div>
-          <div className="relative h-[400px] lg:h-full">
-            <Image src={heroImage} alt={tour.title} fill className="object-cover" priority />
-          </div>
+          <div
+            className="h-[400px] lg:h-full bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${heroImage})`
+            }}
+          />
         </div>
       </section>
 
