@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
     const form = await request.formData();
     const file = form.get("file");
-    const tourId = String(form.get("tourId") ?? "");
+    const tourId = (form.get("tourId") as string | null)?.trim() ?? "";
     const supplierId = String(form.get("supplierId") ?? user.id);
     const kind = String(form.get("kind") ?? "cover");
 
@@ -32,9 +32,7 @@ export async function POST(request: Request) {
     if (file.size > MAX_BYTES) {
       return NextResponse.json({ error: "File too large" }, { status: 413 });
     }
-    if (!tourId) {
-      return NextResponse.json({ error: "Missing tourId" }, { status: 400 });
-    }
+    const ownerPrefix = tourId || `tour-${Date.now()}`;
 
     const optimized = await sharp(await file.arrayBuffer())
       .rotate()
@@ -48,7 +46,8 @@ export async function POST(request: Request) {
     ) as ArrayBuffer;
     const blob = new Blob([arrayBuffer], { type: "image/webp" });
     const safeName = file.name.replace(/\s+/g, "-").toLowerCase().replace(/[^a-z0-9.-]/g, "");
-    const key = `tours/${supplierId}/${tourId}/${kind}-${Date.now()}-${safeName}`;
+    const groupId = tourId || `temp-${Date.now()}`;
+    const key = `tours/${supplierId}/${groupId}/${kind}-${Date.now()}-${safeName}`;
 
     const { url } = await uploadToBlob({ key, body: blob });
 
