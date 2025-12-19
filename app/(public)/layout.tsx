@@ -4,8 +4,15 @@ import Link from "next/link";
 import { PublicAuthButtons } from "@/components/public/PublicAuthButtons";
 import { PublicCurrencyLanguage } from "@/components/public/PublicCurrencyLanguage";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import { PublicNavMenu } from "@/components/public/PublicNav";
+import { PublicHeaderSearch } from "@/components/public/PublicHeaderSearch";
 import { PublicWishlistButton } from "@/components/public/PublicWishlistButton";
+
+const publicNavLinks = [
+  { label: "Inicio", href: "/" },
+  { label: "Tours", href: "/tours" },
+  { label: "Destinos", href: "/destinations" },
+  { label: "Contacto", href: "/contact" }
+];
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -20,28 +27,18 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6 lg:px-8">
           <div className="flex shrink-0 items-center">
             <Link href="/" className="flex items-center">
-              <Image src="/logo.png" alt="Proactivitis" width={140} height={32} className="h-8 w-auto object-contain" />
+              <Image src="/logo.png" alt="Proactivitis" width={140} height={32} className="h-10 w-auto object-contain" />
             </Link>
           </div>
           <nav className="hidden items-center gap-6 text-[13px] font-semibold uppercase tracking-[0.3em] text-slate-600 md:flex">
-            {["Inicio", "Tours", "Destinos", "Contacto"].map((item) => (
-              <Link
-                key={item}
-                href={`/${item.toLowerCase()}`}
-                className="transition hover:text-slate-900"
-              >
-                {item}
+            {publicNavLinks.map((item) => (
+              <Link key={item.href} href={item.href} className="transition hover:text-slate-900">
+                {item.label}
               </Link>
             ))}
           </nav>
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-lg text-slate-600 transition hover:border-slate-300"
-              aria-label="Abrir búsqueda"
-            >
-              🔍
-            </button>
+            <PublicHeaderSearch />
             <PublicCurrencyLanguage />
             <PublicWishlistButton />
             <Link
