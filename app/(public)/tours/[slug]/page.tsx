@@ -197,18 +197,6 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
 
   const quickInfo = [
     {
-      label: "Precio desde",
-      value: priceLabel,
-      detail: "Mejor precio garantizado",
-      highlight: true,
-      icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
-          <path d="M12 5v14M6 9h12M6 15h12" />
-          <circle cx="12" cy="12" r="9" />
-        </svg>
-      )
-    },
-    {
       label: "Duración",
       value: durationLabel,
       detail: "Experiencia guiada",
@@ -292,14 +280,15 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             <h1 className="text-3xl font-semibold leading-tight text-white sm:text-4xl lg:text-5xl">
               {tour.title}
             </h1>
-            <p className="text-sm text-slate-200 sm:text-base lg:text-lg">
-              {shortDescription || "Experiencia guiada por proveedores locales certificados."}
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700">
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-3xl font-semibold text-white sm:text-4xl lg:text-5xl">{priceLabel}</p>
+              <span className="text-[0.6rem] font-semibold uppercase tracking-[0.35em] text-emerald-200">
                 Mejor precio garantizado
               </span>
             </div>
+            <p className="text-sm text-slate-200 sm:text-base lg:text-lg">
+              {shortDescription || "Experiencia guiada por proveedores locales certificados."}
+            </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
@@ -319,33 +308,19 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
       </section>
 
       <section className="mx-auto max-w-[1100px] px-4 py-6">
-        <div className="grid grid-cols-1 gap-2 rounded-full bg-white/80 px-4 py-3 text-sm text-slate-600 shadow-sm shadow-slate-200/40 sm:grid-cols-4">
-          {quickInfo.map((item, index) => (
-            <div
-              key={item.label}
-              className={`flex flex-col items-start justify-center gap-1 border-slate-200/60 px-3 py-2 sm:border-l sm:last:border-r-0 sm:first:border-l-0 ${
-                index > 0 ? "sm:border-l" : ""
-              }`}
-            >
-              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
-                {item.label}
-              </p>
-              <div className="flex items-center gap-2">
-                {item.icon && (
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-50 text-sky-600">
-                    {item.icon}
-                  </span>
-                )}
+        <div className="flex w-full divide-x divide-slate-200 border border-[#F1F5F9] px-1 text-sm" style={{ backgroundColor: "transparent" }}>
+          {quickInfo.map((item) => (
+            <div key={item.label} className="flex flex-1 items-center gap-3 px-3 py-3">
+              <span className="flex h-5 w-5 items-center justify-center text-slate-900">{item.icon}</span>
+              <div>
+                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
+                  {item.label}
+                </p>
                 <p className="text-base font-semibold text-slate-900">{item.value}</p>
-                {item.highlight && (
-                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.25em] text-emerald-700">
-                    Mejor precio
-                  </span>
-                )}
+                <p className="text-[0.55rem] font-semibold uppercase tracking-[0.3em] text-slate-400">
+                  {item.detail}
+                </p>
               </div>
-              <p className="text-[0.55rem] font-semibold uppercase tracking-[0.3em] text-slate-400">
-                {item.detail}
-              </p>
             </div>
           ))}
         </div>
