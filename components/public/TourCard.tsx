@@ -61,30 +61,33 @@ export function TourCard({
   return (
     <Link href={`/tours/${slug}`} className="group block">
     <article className="flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-card transition-transform duration-300 hover:-translate-y-2">
-      <div className="relative">
+        <div className="relative">
           <div
             className="aspect-[4/3] w-full bg-cover bg-center"
             style={{ backgroundImage: `url(${image})` }}
             role="img"
             aria-label={title}
           />
-          <div className="absolute right-4 top-4 rounded-xl bg-white/80 px-3 py-1 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur">
+          <div className="absolute right-4 top-4 rounded-xl bg-white/90 px-3 py-1 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur">
             {badgeText}
           </div>
+          <div className="absolute left-4 bottom-4 flex flex-wrap gap-2">
+            {tagList.map((tag) => (
+              <span
+                key={`badge-${tag}`}
+                className="rounded-full border border-white/80 bg-white/90 px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-500 shadow"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-1 flex-col gap-2 p-5">
+        <div className="flex flex-1 flex-col gap-2 p-4">
           <p className="text-brand font-medium text-[10px] tracking-[0.4em] uppercase">{`Desde ${locationText}`}</p>
           <h3 className="text-slate-900 text-2xl font-black leading-tight">{title}</h3>
           <p className="text-slate-500 text-sm leading-relaxed line-clamp-2">
             {description ?? `Experiencia exclusiva en ${locationText} con guía local certificado.`}
           </p>
-          <div className="flex flex-wrap items-center gap-2 pt-2 text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-slate-500">
-            {tagList.map((tag) => (
-              <span key={tag} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[9px]">
-                {tag}
-              </span>
-            ))}
-          </div>
           <div className="flex flex-wrap items-center gap-2 border-y border-slate-50 py-2 text-[11px] text-slate-500">
             <span className="flex items-center gap-1">
               <IconClock />
