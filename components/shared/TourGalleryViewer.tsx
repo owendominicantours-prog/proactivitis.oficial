@@ -72,11 +72,12 @@ export default function TourGalleryViewer({ images }: TourGalleryViewerProps) {
           >
             →
           </button>
-          <div className="relative mx-auto h-[65vh] max-w-5xl overflow-hidden rounded-3xl border border-white/30 bg-black/60">
+          <div className="relative mx-auto h-[65vh] w-full max-w-5xl overflow-hidden rounded-3xl border border-white/30 bg-black/60">
             <Image
               src={images[activeIndex].url}
               alt={images[activeIndex].label ?? `Gallery image ${activeIndex + 1}`}
               fill
+              priority
               className="object-contain"
               sizes="(max-width: 768px) 90vw, 70vw"
             />
