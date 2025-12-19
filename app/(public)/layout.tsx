@@ -7,10 +7,7 @@ import { PublicNavMenu } from "@/components/public/PublicNav";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
-    <div
-      className="flex min-h-screen flex-col bg-slate-50 text-slate-900"
-      style={{ fontFamily: "Inter, system-ui, sans-serif" }}
-    >
+    <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
