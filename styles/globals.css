@@ -84,3 +84,10 @@ a {
   background-color: #144365;
   transform: translateY(-2px);
 }
+
+.tracking-\[0\.2em\],
+.tracking-\[0\.3em\],
+.tracking-\[0\.4em\],
+.tracking-\[0\.5em\] {
+  letter-spacing: 0.08em !important;
+}
