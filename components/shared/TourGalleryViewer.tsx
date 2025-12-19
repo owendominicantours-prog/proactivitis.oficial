@@ -5,9 +5,10 @@ import { useState } from "react";
 
 type TourGalleryViewerProps = {
   images: { url: string; label?: string }[];
+  visibleCount?: number;
 };
 
-export default function TourGalleryViewer({ images }: TourGalleryViewerProps) {
+export default function TourGalleryViewer({ images, visibleCount = 3 }: TourGalleryViewerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -26,8 +27,8 @@ export default function TourGalleryViewer({ images }: TourGalleryViewerProps) {
 
   return (
     <>
-      <div className="flex w-full gap-3 overflow-x-auto pb-2">
-        {images.map((image, index) => (
+      <div className="flex w-full gap-3 overflow-hidden pb-2 lg:w-full">
+        {images.slice(0, visibleCount).map((image, index) => (
           <button
             key={`${image.url}-${index}`}
             type="button"
@@ -48,6 +49,15 @@ export default function TourGalleryViewer({ images }: TourGalleryViewerProps) {
             </span>
           </button>
         ))}
+        {images.length > visibleCount && (
+          <button
+            type="button"
+            onClick={() => openLightbox(visibleCount)}
+            className="relative flex min-w-[140px] items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/80 p-1 text-sm font-semibold uppercase tracking-[0.3em] text-slate-500"
+          >
+            +{images.length - visibleCount}
+          </button>
+        )}
       </div>
 
       {isOpen && (
