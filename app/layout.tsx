@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es" className={openSans.variable}>
-      <body className="min-h-full bg-slate-50 text-slate-900 antialiased font-sans">
+      <body className="min-h-full bg-[#F8FAFC] text-slate-900 antialiased font-slate">
         <Providers>{children}</Providers>
         <Analytics />
         <SpeedInsights />

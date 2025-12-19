@@ -21,6 +21,8 @@ const fetchFeaturedTours = async () =>
       shortDescription: true,
       heroImage: true,
       location: true,
+      duration: true,
+      capacity: true,
       status: true
     }
   });
@@ -48,17 +50,21 @@ export default async function FeaturedToursSection() {
   return (
     <div className="grid gap-6 md:grid-cols-3">
       {tours.map((tour) => (
-          <TourCard
-            key={tour.id}
-            slug={tour.slug}
-            title={tour.title}
-            location={tour.location ?? "Destino Premium"}
-            price={tour.price}
-            image={tour.heroImage ?? "/fototours/fototour.jpeg"}
-            description={tour.shortDescription ?? undefined}
-            tags={[statusHint(tour.status), "Experiencia Top"]}
-            rating={4.9}
-          />
+        <TourCard
+          key={tour.id}
+          slug={tour.slug}
+          title={tour.title}
+          location={tour.location ?? "Destino Premium"}
+          zone={tour.location ? tour.location.split(",")[0] : "Zona exclusiva"}
+          price={tour.price}
+          image={tour.heroImage ?? "/fototours/fototour.jpeg"}
+          description={tour.shortDescription ?? undefined}
+          tags={[statusHint(tour.status), "Experiencia Top"]}
+          rating={4.9}
+          maxPax={tour.capacity ?? 12}
+          duration={tour.duration ?? "4 horas"}
+          pickupIncluded={true}
+        />
       ))}
     </div>
   );

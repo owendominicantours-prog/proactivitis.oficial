@@ -256,50 +256,34 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
     );
   };
 
-  const sectionVariant = (index: number) =>
-    index % 2 === 0 ? "bg-white/90" : "bg-white/0";
-
-  const sectionClasses = (index: number) =>
-    `group relative rounded-[16px] border border-[#F1F5F9] ${sectionVariant(index)} px-4 py-4 transition hover:border-l-4 hover:border-sky-500 focus-within:border-l-4 focus-within:border-sky-500 backdrop-blur-sm`;
+  const sectionClasses = () =>
+    "group relative rounded-[16px] border border-[#E5E7EB] bg-white px-4 py-4 transition hover:border-l-4 hover:border-sky-500 focus-within:border-l-4 focus-within:border-sky-500";
 
   return (
-    <div className="bg-[#F1F5F9] text-slate-900">
-      <section
-        className="relative overflow-hidden bg-slate-900 text-white px-4"
-        style={{
-          backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)), url(${gallery[0]})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center"
-        }}
-      >
-        <div className="relative mx-auto flex max-w-[1100px] flex-col gap-4 py-12">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-200">
-            {tour.location}, Dominican Republic
-          </p>
-          <div className="space-y-4">
-            <h1 className="text-3xl font-semibold leading-tight text-white sm:text-4xl lg:text-5xl">
-              {tour.title}
-            </h1>
+    <div className="bg-[#F8FAFC] text-slate-900">
+      <section className="mx-auto max-w-[1180px] px-4 py-12">
+        <div className="rounded-[32px] border border-slate-200 bg-white px-8 py-10 shadow-[0_25px_60px_rgba(15,23,42,0.1)]">
+          <div className="space-y-3">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400">{tour.location}, Dominican Republic</p>
+            <h1 className="text-4xl font-black text-slate-900">{tour.title}</h1>
             <div className="flex flex-wrap items-center gap-3">
-              <p className="text-3xl font-semibold text-white sm:text-4xl lg:text-5xl">{priceLabel}</p>
-              <span className="text-[0.6rem] font-semibold uppercase tracking-[0.35em] text-emerald-200">
+              <p className="text-3xl font-black text-slate-900">{priceLabel}</p>
+              <span className="text-[0.6rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
                 Mejor precio garantizado
               </span>
             </div>
-            <p className="text-sm text-slate-200 sm:text-base lg:text-lg">
-              {shortDescription || "Experiencia guiada por proveedores locales certificados."}
-            </p>
+            <p className="text-base text-slate-600">{shortDescription || "Experiencia guiada por proveedores locales certificados."}</p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="#booking"
-              className="inline-flex items-center justify-center rounded-full bg-sky-500 px-7 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-white transition duration-200 transform hover:-translate-y-0.5 hover:shadow-md hover:bg-sky-600"
+              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 shadow-sm transition hover:border-slate-300"
             >
               Reserva ahora
             </Link>
             <Link
               href="#gallery"
-              className="inline-flex items-center justify-center rounded-full border border-white/60 px-7 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-white/90 transition duration-200 transform hover:-translate-y-0.5 hover:shadow-md hover:text-white"
+              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 shadow-sm transition hover:border-slate-300"
             >
               Ver fotos
             </Link>
@@ -308,27 +292,29 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
       </section>
 
       <section className="mx-auto max-w-[1100px] px-4 py-6">
-        <div className="flex w-full divide-x divide-slate-200 border border-[#F1F5F9] px-1 text-sm" style={{ backgroundColor: "transparent" }}>
-          {quickInfo.map((item) => (
-            <div key={item.label} className="flex flex-1 items-center gap-3 px-3 py-3">
-              <span className="flex h-5 w-5 items-center justify-center text-slate-900">{item.icon}</span>
-              <div>
-                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
-                  {item.label}
-                </p>
-                <p className="text-base font-semibold text-slate-900">{item.value}</p>
-                <p className="text-[0.55rem] font-semibold uppercase tracking-[0.3em] text-slate-400">
-                  {item.detail}
-                </p>
+        <div className="rounded-[24px] border border-[#E5E7EB] bg-white px-0 text-sm shadow-sm">
+          <div className="flex w-full divide-x divide-slate-200">
+            {quickInfo.map((item) => (
+              <div key={item.label} className="flex flex-1 items-center justify-between gap-3 px-3 py-3 text-sm">
+                <span className="flex h-5 w-5 items-center justify-center text-slate-900">{item.icon}</span>
+                <div>
+                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
+                    {item.label}
+                  </p>
+                  <p className="text-base font-semibold text-slate-900">{item.value}</p>
+                  <p className="text-[0.55rem] font-semibold uppercase tracking-[0.3em] text-slate-400">
+                    {item.detail}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
       <main className="mx-auto flex max-w-[1100px] flex-col gap-6 px-4 pb-16 lg:flex-row lg:items-start">
         <div className="space-y-6 lg:w-3/5">
-          <div className={sectionClasses(0)}>
+          <div className={sectionClasses()}>
             <TourGalleryViewer
               images={gallery.map((img: string, index: number) => ({
                 url: img,
@@ -337,7 +323,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             />
           </div>
 
-          <section className={`${sectionClasses(1)} space-y-4`}>
+          <section className={`${sectionClasses()} space-y-4`}>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resumen</p>
@@ -357,7 +343,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
 
           <section
             id="full-description"
-            className={`${sectionClasses(2)} space-y-4`}
+            className={`${sectionClasses()} space-y-4`}
           >
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Descripción</p>
@@ -369,7 +355,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
           </section>
 
           {detailRows.length > 0 && (
-            <section className={`${sectionClasses(3)} space-y-4`}>
+            <section className={`${sectionClasses()} space-y-4`}>
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">Detalles</p>
@@ -413,7 +399,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             </section>
           )}
 
-          <section className={`${sectionClasses(4)} space-y-4`}>
+          <section className={`${sectionClasses()} space-y-4`}>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Incluye</p>
@@ -446,7 +432,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             </div>
           </section>
 
-          <section className={`${sectionClasses(5)} space-y-4`}>
+          <section className={`${sectionClasses()} space-y-4`}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Itinerario</p>
@@ -480,7 +466,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             </div>
           </section>
 
-          <section className={`${sectionClasses(6)} space-y-4`}>
+          <section className={`${sectionClasses()} space-y-4`}>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Prueba social</p>
@@ -539,7 +525,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             </div>
           </section>
 
-          <section className={`${sectionClasses(7)} space-y-4`}>
+          <section className={`${sectionClasses()} space-y-4`}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Extra</p>
@@ -561,7 +547,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             </div>
           </section>
 
-          <section className={`${sectionClasses(8)} space-y-4`}>
+          <section className={`${sectionClasses()} space-y-4`}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Información adicional</p>
