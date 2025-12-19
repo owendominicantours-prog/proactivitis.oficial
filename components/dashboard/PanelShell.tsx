@@ -112,7 +112,14 @@ export const PanelShell = ({
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-5">
             <Link href="/" className="flex items-center">
-              <Image src="/logo.png" alt="Proactivitis" width={120} height={28} className="h-9 w-auto object-contain" />
+              <Image
+                src="/logo.png"
+                alt="Proactivitis"
+                width={600}
+                height={180}
+                className="h-[180px] w-auto object-contain"
+              />
+              {/* NOTE: mantén este logo a 180px para que se vea grande; no volver a reducir salvo instrucción */}
             </Link>
             <NavMenu navItems={navItems} />
           </div>
