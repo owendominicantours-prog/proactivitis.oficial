@@ -22,18 +22,21 @@ const fetchFeaturedTours = async () =>
       heroImage: true,
       location: true,
       duration: true,
-      capacity: true,
-      status: true
+      capacity: true
     }
   });
 
-const statusHint = (status: string) => {
-  const mapping: Record<string, string> = {
-    published: "Publicado",
-    pending: "En revisión",
-    rejected: "Rechazado"
-  };
-  return mapping[status] ?? status;
+const formatDurationValue = (value?: string | null) => {
+  if (!value) return "4 horas";
+  try {
+    const parsed = JSON.parse(value);
+    if (parsed?.value && parsed?.unit) {
+      return `${parsed.value} ${parsed.unit}`;
+    }
+  } catch {
+    // ignore
+  }
+  return value;
 };
 
 export default async function FeaturedToursSection() {
@@ -48,21 +51,21 @@ export default async function FeaturedToursSection() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-3">
+    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
       {tours.map((tour) => (
         <TourCard
           key={tour.id}
           slug={tour.slug}
           title={tour.title}
           location={tour.location ?? "Destino Premium"}
-          zone={tour.location ? tour.location.split(",")[0] : "Zona exclusiva"}
+          zone={tour.location ? tour.location.split(",")[0] : "Punta Cana"}
           price={tour.price}
           image={tour.heroImage ?? "/fototours/fototour.jpeg"}
           description={tour.shortDescription ?? undefined}
-          tags={[statusHint(tour.status), "Experiencia Top"]}
+          tags={["Experiencia Top"]}
           rating={4.9}
-          maxPax={tour.capacity ?? 12}
-          duration={tour.duration ?? "4 horas"}
+          maxPax={tour.capacity ?? 15}
+          duration={formatDurationValue(tour.duration)}
           pickupIncluded={true}
         />
       ))}

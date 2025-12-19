@@ -24,7 +24,7 @@ export const runtime = "nodejs";
 
 export default function PublicHomePage() {
   return (
-    <div className="space-y-16 bg-[#F8FAFC] text-slate-900">
+    <div className="space-y-16 bg-[#F8FAFC] text-slate-900 overflow-x-hidden">
       <section
         className="relative overflow-hidden"
         style={{

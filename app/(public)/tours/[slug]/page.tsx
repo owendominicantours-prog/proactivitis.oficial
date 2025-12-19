@@ -259,34 +259,57 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
   const sectionClasses = () =>
     "group relative rounded-[16px] border border-[#E5E7EB] bg-white px-4 py-4 transition hover:border-l-4 hover:border-sky-500 focus-within:border-l-4 focus-within:border-sky-500";
 
+  const heroImageUrl = tour.heroImage ?? gallery[0] ?? "/fototours/fotosimple.jpg";
+  const heroSubtitle = "Conduce un buggy, un ATV o un Buggy VIP por senderos de la selva dominicana.";
+
   return (
-    <div className="bg-[#F8FAFC] text-slate-900">
+    <div className="bg-[#F8FAFC] text-slate-900 overflow-x-hidden">
       <section className="mx-auto max-w-[1180px] px-4 py-12">
-        <div className="rounded-[32px] border border-slate-200 bg-white px-8 py-10 shadow-[0_25px_60px_rgba(15,23,42,0.1)]">
-          <div className="space-y-3">
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-400">{tour.location}, Dominican Republic</p>
-            <h1 className="text-4xl font-black text-slate-900">{tour.title}</h1>
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="text-3xl font-black text-slate-900">{priceLabel}</p>
-              <span className="text-[0.6rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
-                Mejor precio garantizado
-              </span>
+        <div className="grid gap-8 rounded-[32px] border border-slate-200 bg-white px-6 py-8 shadow-[0_25px_60px_rgba(15,23,42,0.1)] lg:grid-cols-[1.2fr_0.8fr] lg:px-10 lg:py-10">
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400">{tour.location}, Dominican Republic</p>
+              <h1 className="text-3xl font-black text-slate-900">{tour.title || "Excursión en Buggy y ATV en Punta Cana"}</h1>
+              <p className="text-sm text-slate-500">{heroSubtitle}</p>
             </div>
-            <p className="text-base text-slate-600">{shortDescription || "Experiencia guiada por proveedores locales certificados."}</p>
+            <div className="flex flex-wrap items-end gap-4">
+              <div className="rounded-[20px] border border-slate-100 bg-slate-50 px-6 py-5 text-slate-700 shadow-sm">
+                <p className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">Desde</p>
+                <p className="text-4xl font-black text-brand">{priceLabel}</p>
+                <p className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-400">Mejor precio garantizado</p>
+              </div>
+              <div className="text-sm text-slate-600">
+                <p className="font-semibold text-slate-900">{displayTime}</p>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Salida desde el lobby</p>
+                <p className="mt-2 text-xs text-slate-500">{languagesDisplay}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="#booking"
+                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 shadow-sm transition hover:border-slate-300"
+              >
+                Reserva ahora
+              </Link>
+              <Link
+                href="#gallery"
+                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 shadow-sm transition hover:border-slate-300"
+              >
+                Ver fotos
+              </Link>
+            </div>
           </div>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href="#booking"
-              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 shadow-sm transition hover:border-slate-300"
-            >
-              Reserva ahora
-            </Link>
-            <Link
-              href="#gallery"
-              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 shadow-sm transition hover:border-slate-300"
-            >
-              Ver fotos
-            </Link>
+          <div className="relative">
+            <div className="h-72 w-full overflow-hidden rounded-[24px] border border-slate-100 bg-slate-100 shadow-inner md:h-[360px] lg:h-[420px]">
+              <Image
+                src={heroImageUrl}
+                alt={tour.title ?? "Tour destacado"}
+                fill
+                priority
+                sizes="(max-width: 768px) 90vw, 500px"
+                className="object-cover transition duration-700 hover:scale-105"
+              />
+            </div>
           </div>
         </div>
       </section>

@@ -55,12 +55,12 @@ export function TourCard({
 }: TourCardProps) {
   const displayRating = typeof rating === "number" ? rating.toFixed(1) : "4.9";
   const badgeText = `⭐ ${displayRating} • 1.2K reseñas`;
-  const tagList = tags && tags.length ? tags : [zone ?? location ?? "Destino premium"];
-  const locationText = zone || location?.split(",")[0] || "Zona exclusiva";
+  const tagList = tags && tags.length ? tags : ["Experiencia Top"];
+  const locationText = zone || location?.split(",")[0] || "Punta Cana";
 
   return (
     <Link href={`/tours/${slug}`} className="group block">
-      <article className="flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-card transition-transform duration-300 hover:-translate-y-1">
+      <article className="flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-card transition-transform duration-300 hover:-translate-y-2">
         <div className="relative">
           <div
             className="aspect-[4/3] w-full bg-cover bg-center"
@@ -73,7 +73,7 @@ export function TourCard({
           </div>
         </div>
         <div className="flex flex-1 flex-col gap-3 p-6">
-          <p className="text-brand font-medium text-[10px] tracking-[0.4em] uppercase">{`Zona ${locationText}`}</p>
+          <p className="text-brand font-medium text-[10px] tracking-[0.4em] uppercase">{`Desde ${locationText}`}</p>
           <h3 className="text-slate-900 text-2xl font-black leading-tight">{title}</h3>
           <p className="text-slate-500 text-sm leading-relaxed line-clamp-2">
             {description ?? `Experiencia exclusiva en ${locationText} con guía local certificado.`}
@@ -88,18 +88,18 @@ export function TourCard({
               </span>
             ))}
           </div>
-          <div className="flex items-center gap-3 border-y border-slate-50 py-3 text-[11px] text-slate-500">
+          <div className="flex flex-wrap items-center gap-3 border-y border-slate-50 py-3 text-[11px] text-slate-500">
+            <span className="flex items-center gap-1">
+              <IconClock />
+              {duration ?? "4 horas"}
+            </span>
             <span className="flex items-center gap-1">
               <IconUsers />
-              {`Máx. ${maxPax ?? 12} pers.`}
+              {`Máx. ${maxPax ?? 15} pers.`}
             </span>
             <span className="flex items-center gap-1">
               <IconMap />
               {locationText}
-            </span>
-            <span className="flex items-center gap-1">
-              <IconClock />
-              {duration ?? "4 horas"}
             </span>
           </div>
           {pickupIncluded && (
