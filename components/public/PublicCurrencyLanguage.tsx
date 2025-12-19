@@ -4,33 +4,24 @@ import { useState } from "react";
 
 export function PublicCurrencyLanguage() {
   const [currency, setCurrency] = useState("USD");
-  const [language, setLanguage] = useState("Español");
+  const [language, setLanguage] = useState("ES");
 
   return (
-    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
-      <label className="flex items-center gap-1 rounded-full border border-slate-200 px-2 py-1">
-        <span>Moneda:</span>
-        <select
-          value={currency}
-          onChange={(event) => setCurrency(event.target.value)}
-          className="bg-transparent text-[0.7rem] font-semibold uppercase tracking-[0.4em] text-slate-700 outline-none"
-        >
-          <option value="USD">USD</option>
-          <option value="EUR">EUR</option>
-          <option value="DOP">DOP</option>
-        </select>
-      </label>
-      <label className="flex items-center gap-1 rounded-full border border-slate-200 px-2 py-1">
-        <span>Idioma:</span>
-        <select
-          value={language}
-          onChange={(event) => setLanguage(event.target.value)}
-          className="bg-transparent text-[0.7rem] font-semibold uppercase tracking-[0.4em] text-slate-700 outline-none"
-        >
-          <option value="Español">Español</option>
-          <option value="English">English</option>
-        </select>
-      </label>
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setCurrency(currency === "USD" ? "EUR" : currency === "EUR" ? "DOP" : "USD")}
+        className="flex h-10 items-center justify-center rounded-full border border-slate-200 px-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600"
+      >
+        {currency} ▾
+      </button>
+      <button
+        type="button"
+        onClick={() => setLanguage(language === "ES" ? "EN" : "ES")}
+        className="flex h-10 items-center justify-center rounded-full border border-slate-200 px-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600"
+      >
+        {language} ▾
+      </button>
     </div>
   );
 }

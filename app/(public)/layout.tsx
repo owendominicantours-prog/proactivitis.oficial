@@ -4,7 +4,6 @@ import Link from "next/link";
 import { PublicAuthButtons } from "@/components/public/PublicAuthButtons";
 import { PublicCurrencyLanguage } from "@/components/public/PublicCurrencyLanguage";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import { PublicHeaderSearch } from "@/components/public/PublicHeaderSearch";
 import { PublicNavMenu } from "@/components/public/PublicNav";
 import { PublicWishlistButton } from "@/components/public/PublicWishlistButton";
 
@@ -39,6 +38,13 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             <PublicHeaderSearch />
           </div>
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-lg text-slate-600 transition hover:border-slate-300"
+              aria-label="Abrir búsqueda"
+            >
+              🔍
+            </button>
             <PublicCurrencyLanguage />
             <PublicWishlistButton />
             <Link

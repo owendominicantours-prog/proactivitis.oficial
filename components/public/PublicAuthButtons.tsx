@@ -7,7 +7,6 @@ import { signIn, signOut, useSession } from "next-auth/react";
 export function PublicAuthButtons() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
-  const userName = session?.user?.name || session?.user?.email;
   const showPortalButton = session && (pathname === "/" || pathname === "/home");
 
   if (status === "loading") {
@@ -20,22 +19,18 @@ export function PublicAuthButtons() {
         {showPortalButton ? (
           <Link
             href="/portal"
-            className="rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+            className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
           >
-            Ir al portal
+            Portal
           </Link>
         ) : (
-          <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-slate-600">
-            Conectado
-          </div>
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-lg text-slate-700 transition hover:border-slate-400"
+          >
+            👤
+          </button>
         )}
-        {userName && <span className="text-sm font-semibold text-slate-800">{userName}</span>}
-        <button
-          onClick={() => signOut({ callbackUrl: "/" })}
-          className="rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
-        >
-          Cerrar sesión
-        </button>
       </div>
     );
   }
@@ -43,9 +38,9 @@ export function PublicAuthButtons() {
   return (
     <button
       onClick={() => signIn(undefined, { callbackUrl: "/" })}
-      className="rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 text-lg text-slate-700 transition hover:border-slate-400"
     >
-      Iniciar sesión
+      👤
     </button>
   );
 }
