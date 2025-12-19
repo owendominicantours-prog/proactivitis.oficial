@@ -333,7 +333,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
         </div>
 
         <aside className="space-y-6">
-        <div id="booking" className="sticky top-24 space-y-5">
+        <div id="booking" className="lg:sticky top-24 space-y-5">
           <TourBookingWidget tourId={tour.id} basePrice={tour.price} timeSlots={timeSlots} />
           <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Supplier</p>
