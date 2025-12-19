@@ -34,7 +34,7 @@ export default function TourGalleryViewer({ images, visibleCount = 3 }: TourGall
       key={`${image.url}-${index}`}
       type="button"
       onClick={() => openLightbox(index)}
-      className={`relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-sm transition hover:border-slate-400 hover:shadow-lg ${className}`}
+      className={`relative overflow-hidden rounded-[12px] border border-[#F1F5F9] bg-white/0 transition hover:border-slate-300 ${className}`}
       aria-label={`Abrir foto ${index + 1}`}
     >
       <div className="relative h-full w-full">
@@ -57,7 +57,7 @@ export default function TourGalleryViewer({ images, visibleCount = 3 }: TourGall
 
   return (
     <section id="gallery" className="space-y-4">
-      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="relative">
           {previewImages[0] && renderPreviewButton(previewImages[0], 0, "h-[420px] w-full")}
         </div>
@@ -70,7 +70,7 @@ export default function TourGalleryViewer({ images, visibleCount = 3 }: TourGall
           <button
             type="button"
             onClick={() => openLightbox(0)}
-            className="flex items-center justify-center rounded-3xl border border-slate-200 bg-white/90 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-white"
+            className="flex items-center justify-center rounded-[12px] border border-[#F1F5F9] bg-white/0 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-slate-600 transition hover:border-slate-300"
           >
             Ver todas las fotos{extraCount ? ` (+${extraCount})` : ""}
           </button>

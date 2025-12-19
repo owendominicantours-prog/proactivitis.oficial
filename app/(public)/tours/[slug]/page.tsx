@@ -201,7 +201,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
       value: priceLabel,
       detail: "Mejor precio garantizado",
       icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
           <path d="M12 5v14M6 9h12M6 15h12" />
           <circle cx="12" cy="12" r="9" />
         </svg>
@@ -212,7 +212,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
       value: durationLabel,
       detail: "Experiencia guiada",
       icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
           <circle cx="12" cy="12" r="9" />
           <path d="M12 7v5l3 2" />
         </svg>
@@ -223,7 +223,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
       value: languagesDisplay,
       detail: languages.length ? `${languages.length} idiomas disponibles` : "Por confirmar",
       icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
           <path d="M4 6h16M4 12h16M4 18h16" />
           <path d="M8 4c0 2.21-1.343 4-3 4M18 4c0 2.21 1.343 4 3 4" />
         </svg>
@@ -234,7 +234,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
       value: displayTime,
       detail: "Encuentro en el lobby",
       icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
           <path d="M12 4a8 8 0 100 16 8 8 0 000-16Zm0 9V7" />
           <path d="M12 12h4" />
         </svg>
@@ -270,14 +270,14 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
   return (
     <div className="bg-[#F9FAFB] text-slate-900">
       <section
-        className="relative overflow-hidden bg-slate-900 text-white"
+        className="relative overflow-hidden bg-slate-900 text-white px-4"
         style={{
           backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)), url(${gallery[0]})`,
           backgroundSize: "cover",
           backgroundPosition: "center"
         }}
       >
-        <div className="relative mx-auto flex max-w-[1200px] flex-col gap-6 px-6 py-16">
+        <div className="relative mx-auto flex max-w-[1100px] flex-col gap-4 py-12">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-200">
             {tour.location}, Dominican Republic
           </p>
@@ -311,35 +311,28 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1200px] px-4 py-12">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {quickInfo.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition hover:shadow-lg"
-            >
-              <div className="flex items-center gap-4">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-900">
-                  {item.icon}
-                </span>
-                <div>
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
-                    {item.label}
-                  </p>
-                  <p className="text-lg font-semibold text-slate-900">{item.value}</p>
-                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-                    {item.detail}
-                  </p>
-                </div>
+      <section className="mx-auto max-w-[1100px] px-4 py-6">
+        <div className="flex w-full divide-x divide-slate-200 border border-[#F1F5F9] px-1 text-sm" style={{ backgroundColor: "transparent" }}>
+          {quickInfo.map((item, index) => (
+            <div key={item.label} className={`flex flex-1 items-center gap-3 px-3 py-3 ${index === quickInfo.length - 1 ? "" : ""}`}>
+              <span className="flex h-5 w-5 items-center justify-center text-slate-900">{item.icon}</span>
+              <div>
+                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
+                  {item.label}
+                </p>
+                <p className="text-base font-semibold text-slate-900">{item.value}</p>
+                <p className="text-[0.55rem] font-semibold uppercase tracking-[0.3em] text-slate-400">
+                  {item.detail}
+                </p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      <main className="mx-auto flex max-w-[1200px] flex-col gap-10 px-4 pb-16 lg:flex-row lg:items-start">
-        <div className="space-y-8 lg:w-3/5">
-          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+      <main className="mx-auto flex max-w-[1100px] flex-col gap-6 px-4 pb-16 lg:flex-row lg:items-start">
+        <div className="space-y-6 lg:w-3/5">
+          <div className="rounded-[16px] border border-[#F1F5F9] bg-white/0 p-4">
             <TourGalleryViewer
               images={gallery.map((img: string, index: number) => ({
                 url: img,
@@ -348,11 +341,11 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             />
           </div>
 
-          <section className="space-y-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+          <section className="space-y-4 rounded-[16px] border border-[#F1F5F9] bg-white/0 p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resumen</p>
-                <h2 className="text-2xl font-semibold text-slate-900">Visión general</h2>
+                <h2 className="text-[20px] font-semibold text-slate-900">Visión general</h2>
               </div>
               {needsReadMore && (
                 <Link
@@ -368,11 +361,11 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
 
           <section
             id="full-description"
-            className="space-y-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm"
+            className="space-y-4 rounded-[16px] border border-[#F1F5F9] bg-white/0 p-4"
           >
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Descripción</p>
-              <h2 className="text-2xl font-semibold text-slate-900">Detalles completos</h2>
+              <h2 className="text-[20px] font-semibold text-slate-900">Detalles completos</h2>
             </div>
             <p className="text-sm leading-relaxed text-slate-600">
               {detailedDescription || "La descripción completa estará disponible pronto."}
@@ -380,25 +373,25 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
           </section>
 
           {detailRows.length > 0 && (
-            <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <section className="rounded-[16px] border border-[#F1F5F9] bg-white/0 p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Detalles</p>
-                  <h3 className="text-lg font-semibold text-slate-900">Detalles clave</h3>
+                  <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">Detalles</p>
+                  <h3 className="text-[16px] font-semibold text-slate-900">Detalles clave</h3>
                 </div>
-                <span className="text-xs uppercase tracking-[0.4em] text-slate-400">Información resumida</span>
+                <span className="text-[0.55rem] uppercase tracking-[0.4em] text-slate-400">Resumen</span>
               </div>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {detailRows.map((row) => (
                   <div
                     key={row.label}
-                    className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-4"
+                    className="space-y-3 rounded-[12px] border border-[#F1F5F9] bg-white/0 px-3 py-3"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-slate-900">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-[12px] bg-white text-slate-900">
                         {renderIcon(row.label)}
                       </span>
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
+                      <p className="text-[0.75rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
                         {row.label}
                       </p>
                     </div>
@@ -407,14 +400,16 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
                         {row.values.map((value) => (
                           <span
                             key={value}
-                            className="rounded-full border border-white/80 bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm"
+                            className="rounded-full border border-[#F1F5F9] bg-white px-2 py-1 text-[0.65rem] font-semibold text-slate-600"
                           >
                             {value}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      row.value && <p className="text-sm font-semibold text-slate-900">{row.value}</p>
+                      row.value && (
+                        <p className="text-sm font-semibold text-slate-900">{row.value}</p>
+                      )
                     )}
                   </div>
                 ))}
@@ -422,15 +417,15 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             </section>
           )}
 
-          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="grid gap-6 md:grid-cols-2">
+          <section className="rounded-[16px] border border-[#F1F5F9] bg-white/0 p-4">
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Incluye</p>
                 <div className="mt-3 space-y-2">
                   {includes.map((item) => (
                     <div
                       key={item}
-                      className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm font-semibold text-emerald-800"
+                      className="flex items-center gap-2 rounded-[12px] border border-emerald-100 bg-emerald-50/30 px-3 py-2 text-[0.75rem] font-semibold text-emerald-800"
                     >
                       <span aria-hidden>✓</span>
                       <span>{item}</span>
@@ -444,7 +439,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
                   {excludes.map((item) => (
                     <div
                       key={item}
-                      className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-rose-50/50 px-4 py-3 text-sm font-semibold text-rose-600"
+                      className="flex items-center gap-2 rounded-[12px] border border-rose-100 bg-rose-50/30 px-3 py-2 text-[0.75rem] font-semibold text-rose-600"
                     >
                       <span aria-hidden>✘</span>
                       <span>{item}</span>
@@ -455,33 +450,31 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+          <section className="rounded-[16px] border border-[#F1F5F9] bg-white/0 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Itinerario</p>
-                <h3 className="text-lg font-semibold text-slate-900">Línea de tiempo visual</h3>
+                <h3 className="text-[16px] font-semibold text-slate-900">Línea de tiempo visual</h3>
               </div>
               <span className="text-xs uppercase tracking-[0.4em] text-slate-400">Paso a paso</span>
             </div>
-            <div className="relative mt-6 pl-10">
-              <div className="pointer-events-none absolute left-5 top-2 bottom-2 w-px rounded-full bg-gradient-to-b from-slate-200 via-slate-300 to-slate-200" />
-              <div className="space-y-8">
+            <div className="relative mt-4 pl-10">
+              <div className="pointer-events-none absolute left-4 top-1 bottom-1 w-px bg-slate-200" />
+              <div className="space-y-4">
                 {visualTimeline.map((stop, index) => (
-                  <div key={`${stop.title}-${index}`} className="relative flex gap-4">
+                  <div key={`${stop.title}-${index}`} className="relative flex gap-3">
                     <div className="flex flex-col items-center">
-                      <span className="flex h-3 w-3 items-center justify-center rounded-full bg-sky-600 text-[0.6rem] font-semibold uppercase tracking-[0.5em] text-white">
-                        <span className="block h-full w-full rounded-full bg-sky-600" />
-                      </span>
+                      <span className="flex h-2 w-2 rounded-full bg-sky-600" />
                       {index !== visualTimeline.length - 1 && (
-                        <span className="mt-1 block h-full w-px bg-slate-200" />
+                        <span className="mt-1 block h-6 w-px bg-slate-200" />
                       )}
                     </div>
-                    <div className="flex-1 rounded-3xl border border-slate-100 bg-slate-50/80 p-4 shadow-sm">
-                      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
+                    <div className="flex-1 rounded-[12px] border border-[#F1F5F9] bg-white/0 px-3 py-3">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
                         {stop.time}
                       </p>
-                      <p className="mt-1 text-lg font-semibold text-slate-900">{stop.title}</p>
-                      <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                      <p className="mt-1 text-[16px] font-semibold text-slate-900">{stop.title}</p>
+                      <p className="mt-1 text-sm leading-relaxed text-slate-600">
                         {stop.description ?? "Detalles próximamente."}
                       </p>
                     </div>
@@ -491,15 +484,15 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+          <section className="rounded-[16px] border border-[#F1F5F9] bg-white/0 p-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Prueba social</p>
-                <h3 className="text-lg font-semibold text-slate-900">Opiniones destacadas</h3>
+                <h3 className="text-[16px] font-semibold text-slate-900">Opiniones destacadas</h3>
               </div>
               <div className="text-sm font-semibold text-slate-500">★ 4.9 · 1,230 reseñas</div>
             </div>
-            <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+            <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
               <div className="space-y-4">
                 <div className="flex items-end gap-3">
                   <p className="text-4xl font-semibold text-slate-900">4.9</p>
@@ -529,7 +522,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
               </div>
               <div className="space-y-4">
                 {reviewHighlights.map((review) => (
-                  <div key={review.name} className="rounded-3xl border border-slate-100 bg-slate-50 p-4 shadow-sm">
+                  <div key={review.name} className="rounded-[12px] border border-[#F1F5F9] bg-white/0 p-3">
                     <div className="flex items-center gap-3">
                       <Image
                         src={review.avatar}
@@ -543,28 +536,28 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
                         <p className="text-xs text-slate-500">{review.date}</p>
                       </div>
                     </div>
-                    <p className="mt-3 text-sm leading-relaxed text-slate-600">{review.quote}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{review.quote}</p>
                   </div>
                 ))}
               </div>
             </div>
           </section>
 
-          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+          <section className="rounded-[16px] border border-[#F1F5F9] bg-white/0 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Extra</p>
-                <h3 className="text-lg font-semibold text-slate-900">Qué llevar</h3>
+                <h3 className="text-[16px] font-semibold text-slate-900">Qué llevar</h3>
               </div>
               <span className="text-xs uppercase tracking-[0.4em] text-slate-400">Valor agregado</span>
             </div>
-            <div className="mt-6 flex gap-4 overflow-x-auto pb-2">
+            <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
               {packingList.map((item) => (
                 <div
                   key={item.label}
-                  className="flex min-w-[160px] flex-col items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-5 text-center shadow-sm"
+                  className="flex min-w-[140px] flex-col items-center gap-2 rounded-[12px] border border-[#F1F5F9] bg-white/0 px-3 py-4 text-center"
                 >
-                  <span className="text-3xl">{item.icon}</span>
+                  <span className="text-2xl">{item.icon}</span>
                   <p className="text-sm font-semibold text-slate-900">{item.label}</p>
                   <p className="text-xs text-slate-500">{item.detail}</p>
                 </div>
@@ -572,14 +565,14 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+          <section className="rounded-[16px] border border-[#F1F5F9] bg-white/0 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Información adicional</p>
-                <h3 className="text-lg font-semibold text-slate-900">Puntos clave</h3>
+                <h3 className="text-[16px] font-semibold text-slate-900">Puntos clave</h3>
               </div>
             </div>
-            <ul className="mt-4 space-y-3 text-sm text-slate-600">
+            <ul className="mt-3 space-y-2 text-sm text-slate-600">
               {additionalInfo.map((item) => (
                 <li key={item} className="flex items-start gap-3">
                   <span className="mt-1 h-2 w-2 rounded-full bg-slate-400" />
@@ -594,9 +587,9 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
           <div className="space-y-6">
             <div id="booking" className="lg:sticky top-24 space-y-5">
               <TourBookingWidget tourId={tour.id} basePrice={tour.price} timeSlots={timeSlots} />
-              <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+              <div className="rounded-[16px] border border-[#F1F5F9] bg-white/0 p-4">
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Proveedor</p>
-                <p className="mt-2 text-lg font-semibold text-slate-900">
+                <p className="mt-2 text-[16px] font-semibold text-slate-900">
                   {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Local partner"}
                 </p>
                 <p className="text-sm text-slate-600">Certified by Proactivitis.</p>
