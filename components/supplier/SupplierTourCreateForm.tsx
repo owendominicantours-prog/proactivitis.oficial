@@ -2245,7 +2245,7 @@ export function SupplierTourCreateForm({
     <div className="min-h-screen bg-gradient-to-br from-[#f4f6fb] to-[#edf3fb] py-10">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 sm:px-6 lg:flex-row lg:items-start">
 
-        <aside className="panel-card hidden w-72 flex-col gap-6 text-slate-900 lg:flex">
+        <aside className="panel-card hidden w-72 flex-col gap-6 text-slate-900">
 
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Command Center</p>
 
