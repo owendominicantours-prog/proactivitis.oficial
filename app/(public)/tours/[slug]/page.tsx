@@ -344,7 +344,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
           <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Proveedor</p>
             <p className="text-lg font-semibold text-slate-900">
-              {tour.SupplierProfile?.companyName ?? tour.SupplierProfile?.User?.name ?? "Local partner"}
+              {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Local partner"}
             </p>
             <p className="text-sm text-slate-600">Certified by Proactivitis.</p>
           </div>
