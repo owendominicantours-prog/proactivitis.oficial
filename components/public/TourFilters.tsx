@@ -82,7 +82,7 @@ export function TourFilters({ countries, destinations, languages, durations }: P
           }}
           className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900"
         >
-          <option value="">All countries</option>
+          <option value="">Todos los países</option>
           {countries.map((countryOption) => (
             <option key={countryOption.slug} value={countryOption.slug}>
               {countryOption.name}

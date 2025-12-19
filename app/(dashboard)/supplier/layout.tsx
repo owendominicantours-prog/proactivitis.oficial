@@ -6,15 +6,15 @@ import { getNotificationUnreadCount, getNotificationsForRecipient } from "@/lib/
 import { SupportTicketButton } from "@/components/dashboard/SupportTicketButton";
 
 const supplierNav = [
-  { label: "Dashboard", href: "/supplier" },
-  { label: "Mis Tours", href: "/supplier/tours" },
-  { label: "Crear Tour", href: "/supplier/tours/create" },
+  { label: "Panel principal", href: "/supplier" },
+  { label: "Mis tours", href: "/supplier/tours" },
+  { label: "Crear tour", href: "/supplier/tours/create" },
   { label: "Reservas", href: "/supplier/bookings" },
   { label: "Calendario", href: "/supplier/calendar" },
   { label: "Finanzas", href: "/supplier/finance" },
-  { label: "Payouts", href: "/supplier/payouts" },
+  { label: "Pagos", href: "/supplier/payouts" },
   { label: "Ofertas", href: "/supplier/offers" },
-  { label: "Mini-sitios", href: "/supplier/minisites" },
+  { label: "Mini sitios", href: "/supplier/minisites" },
   { label: "Notificaciones", href: "/supplier/notifications" },
   { label: "Perfil", href: "/supplier/profile" }
 ];
@@ -40,9 +40,9 @@ export default async function SupplierDashboardLayout({ children }: { children: 
 
   return (
     <>
-      <PanelShell
-        roleLabel="Proveedor"
-        title="Panel Proveedor"
+        <PanelShell
+          roleLabel="Proveedor"
+          title="Panel Proveedor"
         navItems={supplierNav}
         notifications={notifications}
         unreadCount={unreadCount}

@@ -2247,8 +2247,6 @@ export function SupplierTourCreateForm({
 
         <aside className="panel-card hidden w-72 flex-col gap-6 text-slate-900">
 
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Command Center</p>
-
           <h3 className="text-2xl font-semibold text-slate-900">Sube tu tour</h3>
 
           <div className="space-y-4">
@@ -2295,7 +2293,6 @@ export function SupplierTourCreateForm({
 
           <div className="panel-card rounded-[32px] px-6 py-5">
             <div className="flex flex-col gap-3">
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Command Center</p>
               <h2 className="text-2xl font-semibold text-slate-900">Sube tu tour premium</h2>
             </div>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
