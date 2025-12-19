@@ -313,17 +313,17 @@ type SectionCardProps = {
 
 const SectionCard = ({ title, description, children }: SectionCardProps) => (
 
-  <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+  <section className="space-y-4 rounded-[28px] border border-slate-800 bg-gradient-to-br from-slate-950/70 via-slate-900/70 to-slate-950/80 p-6 shadow-[0_25px_90px_rgba(2,6,23,0.75)] text-white">
 
-    <div>
+    <div className="space-y-1">
 
-      <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+      <h2 className="text-lg font-semibold text-white">{title}</h2>
 
-      {description && <p className="text-sm text-slate-500">{description}</p>}
+      {description && <p className="text-sm text-slate-300">{description}</p>}
 
     </div>
 
-    <div className="space-y-4">{children}</div>
+    <div className="space-y-4 text-slate-200">{children}</div>
 
   </section>
 
@@ -2237,17 +2237,19 @@ export function SupplierTourCreateForm({
 
   return (
 
-    <form
+    <div className="rounded-[32px] bg-gradient-to-br from-slate-950/90 via-slate-900 to-slate-950 p-[2px] shadow-[0_40px_120px_rgba(2,6,23,0.8)]">
 
-      action={formAction}
+      <form
 
-      onSubmit={handleFormSubmit}
+        action={formAction}
 
-      className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
+        onSubmit={handleFormSubmit}
 
-    >
+        className="space-y-6 rounded-[30px] border border-slate-800 bg-slate-950/80 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] text-white"
 
-      <div className="space-y-2">
+      >
+
+      <div className="space-y-3">
 
         <div className="flex flex-wrap gap-2">
 
@@ -2261,9 +2263,11 @@ export function SupplierTourCreateForm({
 
               onClick={() => setStep(index)}
 
-              className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+              className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] transition ${
 
-                index === step ? "bg-sky-600 text-white" : "border border-slate-200 text-slate-500 hover:border-slate-400"
+                index === step
+                  ? "bg-indigo-600 text-white shadow-[0_10px_30px_rgba(79,70,229,0.4)]"
+                  : "border border-slate-700 bg-slate-900/40 text-slate-300 hover:border-slate-500"
 
               }`}
 
@@ -2277,7 +2281,7 @@ export function SupplierTourCreateForm({
 
         </div>
 
-        <p className="text-sm text-slate-500">
+        <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
 
           Paso {step + 1} de {STEP_TITLES.length}
 
@@ -2447,7 +2451,9 @@ export function SupplierTourCreateForm({
 
       </div>
 
-    </form>
+      </form>
+
+    </div>
 
   );
 
