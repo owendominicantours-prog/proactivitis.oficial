@@ -1,6 +1,5 @@
-import Image from "next/image";
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { TourCard } from "@/components/public/TourCard";
 
 const fetchFeaturedTours = async () =>
   prisma.tour.findMany({
@@ -21,15 +20,15 @@ const fetchFeaturedTours = async () =>
       price: true,
       shortDescription: true,
       heroImage: true,
+      location: true,
       status: true
     }
   });
 
-const statusLabel = (status: string) => {
+const statusHint = (status: string) => {
   const mapping: Record<string, string> = {
     published: "Publicado",
     pending: "En revisión",
-    draft: "Borrador",
     rejected: "Rechazado"
   };
   return mapping[status] ?? status;
@@ -39,9 +38,9 @@ export default async function FeaturedToursSection() {
   const tours = await fetchFeaturedTours();
   if (!tours.length) {
     return (
-      <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 text-center text-sm text-slate-500 shadow-sm">
+      <div className="rounded-[28px] border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 shadow-[0_35px_80px_rgba(15,23,42,0.12)]">
         <p className="text-lg font-semibold text-slate-900">Próximamente verás lo mejor del catálogo aquí.</p>
-        <p>Subiremos tours reales tan pronto como estén aprobados por el equipo.</p>
+        <p>Subiremos tours reales tan pronto estén aprobados por el equipo.</p>
       </div>
     );
   }
@@ -49,34 +48,17 @@ export default async function FeaturedToursSection() {
   return (
     <div className="grid gap-6 md:grid-cols-3">
       {tours.map((tour) => (
-        <Link
-          key={tour.id}
-          href={`/tours/${tour.slug}`}
-          className="group flex flex-col rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition hover:border-slate-300 hover:shadow-lg"
-        >
-          {tour.heroImage ? (
-            <div className="relative h-44 w-full overflow-hidden rounded-2xl">
-              <Image
-                src={tour.heroImage}
-                alt={tour.title}
-                fill
-                className="object-cover transition duration-300 group-hover:scale-105"
-                sizes="(max-width: 768px) 100vw, 33vw"
-              />
-            </div>
-          ) : (
-            <div className="h-44 rounded-2xl bg-slate-100" />
-          )}
-          <div className="mt-4 space-y-1">
-            <h3 className="text-lg font-semibold text-slate-900">{tour.title}</h3>
-            {tour.shortDescription && <p className="text-sm text-slate-500">{tour.shortDescription}</p>}
-            <p className="text-sm font-semibold text-slate-800">${tour.price.toFixed(2)}</p>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{statusLabel(tour.status)}</p>
-            <span className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition group-hover:bg-slate-50">
-              Ver detalles
-            </span>
-          </div>
-        </Link>
+          <TourCard
+            key={tour.id}
+            slug={tour.slug}
+            title={tour.title}
+            location={tour.location ?? "Destino Premium"}
+            price={tour.price}
+            image={tour.heroImage ?? "/fototours/fototour.jpeg"}
+            description={tour.shortDescription ?? undefined}
+            tags={[statusHint(tour.status), "Experiencia Top"]}
+            rating={4.9}
+          />
       ))}
     </div>
   );
