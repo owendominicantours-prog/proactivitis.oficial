@@ -313,17 +313,17 @@ type SectionCardProps = {
 
 const SectionCard = ({ title, description, children }: SectionCardProps) => (
 
-  <section className="space-y-4 rounded-[28px] border border-slate-800 bg-gradient-to-br from-slate-950/70 via-slate-900/70 to-slate-950/80 p-6 shadow-[0_25px_90px_rgba(2,6,23,0.75)] text-white">
+  <section className="space-y-4 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm text-slate-900">
 
-    <div className="space-y-1">
+    <div>
 
-      <h2 className="text-lg font-semibold text-white">{title}</h2>
+      <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
 
-      {description && <p className="text-sm text-slate-300">{description}</p>}
+      {description && <p className="text-sm text-slate-500">{description}</p>}
 
     </div>
 
-    <div className="space-y-4 text-slate-200">{children}</div>
+    <div className="space-y-4">{children}</div>
 
   </section>
 
@@ -2247,11 +2247,11 @@ export function SupplierTourCreateForm({
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 lg:flex-row lg:items-start">
 
-        <aside className="hidden w-72 flex-col gap-6 rounded-[28px] bg-slate-900/80 p-6 text-white shadow-[0_25px_80px_rgba(15,23,42,0.45)] backdrop-blur lg:flex">
+        <aside className="hidden w-72 flex-col gap-6 rounded-[28px] border border-slate-200 bg-white p-6 text-slate-900 shadow-lg lg:flex">
 
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Command Center</p>
 
-          <h3 className="text-2xl font-semibold text-white">Sube tu tour</h3>
+          <h3 className="text-2xl font-semibold text-slate-900">Sube tu tour</h3>
 
           <div className="space-y-4">
 
@@ -2279,7 +2279,7 @@ export function SupplierTourCreateForm({
 
                 <div>
 
-                  <p className="text-sm font-semibold text-white">{title}</p>
+                  <p className="text-sm font-semibold text-slate-900">{title}</p>
 
                   <p className="text-[0.65rem] text-slate-400">Paso {index + 1}</p>
 
@@ -2315,7 +2315,7 @@ export function SupplierTourCreateForm({
 
           </div>
 
-          <div className="rounded-[32px] bg-gradient-to-br from-slate-950/90 via-slate-900 to-slate-950 p-[2px] shadow-[0_40px_120px_rgba(2,6,23,0.8)]">
+          <div className="rounded-[32px] border border-slate-200 bg-white shadow-xl">
 
             <form
 
@@ -2323,11 +2323,11 @@ export function SupplierTourCreateForm({
 
               onSubmit={handleFormSubmit}
 
-              className="space-y-6 rounded-[30px] border border-slate-800 bg-slate-950/80 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] text-white"
+              className="space-y-6 rounded-[30px] bg-white p-6 text-slate-900"
 
             >
 
-        <div className="space-y-3">
+          <div className="space-y-3">
 
         <div className="flex flex-wrap gap-3">
 
@@ -2339,10 +2339,10 @@ export function SupplierTourCreateForm({
                 type="button"
                 key={title}
                 onClick={() => setStep(index)}
-                className={`flex items-center gap-3 rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] transition ${
+                className={`flex items-center gap-3 rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] transition ${
                   isActive
-                    ? "bg-indigo-600 text-white shadow-[0_15px_40px_rgba(79,70,229,0.4)]"
-                    : "border border-slate-700 bg-slate-900/40 text-slate-300 hover:border-slate-500"
+                    ? "border-blue-400 bg-blue-50 text-blue-700 shadow-sm"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
                 }`}
               >
                 <span
@@ -2350,8 +2350,8 @@ export function SupplierTourCreateForm({
                     isCompleted
                       ? "border-emerald-400 bg-emerald-400 text-white"
                       : isActive
-                        ? "border-indigo-300 bg-indigo-500 text-white"
-                        : "border-slate-700 bg-slate-900/30 text-slate-400"
+                        ? "border-blue-300 bg-blue-200 text-blue-700"
+                        : "border-slate-200 bg-white text-slate-400"
                   }`}
                 >
                   {isCompleted ? <CheckIcon /> : index + 1}
@@ -2531,17 +2531,17 @@ export function SupplierTourCreateForm({
 
         )}
 
+      </div>
+
+            </form>
+
+          </div>
+
         </div>
 
-      </form>
+      </div>
 
     </div>
-
-  </div>
-
-</div>
-
-</div>
 
   );
 
