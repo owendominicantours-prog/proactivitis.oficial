@@ -109,19 +109,20 @@ export const PanelShell = ({
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <header className="border-b bg-white shadow-sm">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-          <div className="flex items-center gap-5">
-            <Link href="/" className="flex items-center">
-              <Image
-                src="/logo.png"
-                alt="Proactivitis"
-                width={200}
-                height={60}
-                className="h-12 w-auto object-contain"
-              />
-            </Link>
-            <NavMenu navItems={navItems} />
-          </div>
+          <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
+            <div className="flex items-center gap-8">
+              <Link href="/" className="flex items-center overflow-visible">
+                <Image
+                  src="/logo.png"
+                  alt="Proactivitis"
+                  width={200}
+                  height={60}
+                  className="h-12 w-auto object-contain origin-left"
+                  style={{ transform: "scale(5)" }}
+                />
+              </Link>
+              <NavMenu navItems={navItems} />
+            </div>
           <div className="flex items-center gap-3 text-sm text-slate-700">
             {notificationLink ? (
               <div className="relative group focus-within:outline-none" tabIndex={0}>
