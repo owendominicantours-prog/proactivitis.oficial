@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 type TourGalleryViewerProps = {
   images: { url: string; label?: string }[];
@@ -11,9 +11,12 @@ type TourGalleryViewerProps = {
 export default function TourGalleryViewer({ images, visibleCount = 3 }: TourGalleryViewerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const carouselRef = useRef<HTMLDivElement | null>(null);
 
   if (!images.length) return null;
+
+  const previewCount = Math.max(3, visibleCount);
+  const previewImages = images.slice(0, previewCount);
+  const extraCount = Math.max(images.length - 3, 0);
 
   const openLightbox = (index: number) => {
     setActiveIndex(index);
@@ -26,65 +29,52 @@ export default function TourGalleryViewer({ images, visibleCount = 3 }: TourGall
 
   const close = () => setIsOpen(false);
 
-  const scrollThumbnails = (delta: number) => {
-    if (!carouselRef.current) return;
-    const step = Math.max(carouselRef.current.clientWidth / visibleCount, 120);
-    carouselRef.current.scrollBy({ left: delta * step, behavior: "smooth" });
-  };
+  const renderPreviewButton = (image: { url: string; label?: string }, index: number, className: string) => (
+    <button
+      key={`${image.url}-${index}`}
+      type="button"
+      onClick={() => openLightbox(index)}
+      className={`relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-sm transition hover:border-slate-400 hover:shadow-lg ${className}`}
+      aria-label={`Abrir foto ${index + 1}`}
+    >
+      <div className="relative h-full w-full">
+        <Image
+          src={image.url}
+          alt={image.label ?? `Galería imagen ${index + 1}`}
+          fill
+          className="object-cover transition duration-500 hover:scale-105"
+          sizes="(min-width: 1024px) 60vw, (min-width: 768px) 40vw, 100vw"
+          priority={index === 0}
+        />
+      </div>
+      <span className="absolute left-4 top-4 rounded-full border border-white/60 bg-black/40 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-white backdrop-blur">
+        {index + 1}/{images.length}
+      </span>
+    </button>
+  );
+
+  const secondaryImages = previewImages.slice(1, 3);
 
   return (
-    <>
-      <div className="relative">
-        <div className="flex w-full gap-3 overflow-hidden pb-2 lg:w-full" ref={carouselRef}>
-          {images.slice(0, visibleCount).map((image, index) => (
-            <button
-              key={`${image.url}-${index}`}
-              type="button"
-              onClick={() => openLightbox(index)}
-              className="relative min-w-[140px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/80 p-1 transition hover:border-slate-400"
-            >
-              <div className="relative h-32 w-full overflow-hidden rounded-xl bg-slate-100">
-                <Image
-                  src={image.url}
-                  alt={image.label ?? `Gallery image ${index + 1}`}
-                  fill
-                  className="object-cover transition duration-300 hover:scale-105"
-                  sizes="140px"
-                />
-              </div>
-              <span className="mt-1 block text-center text-[0.7rem] uppercase tracking-[0.3em] text-slate-500">
-                {index + 1}/{images.length}
-              </span>
-            </button>
-          ))}
-          {images.length > visibleCount && (
-            <button
-              type="button"
-              onClick={() => openLightbox(visibleCount)}
-              className="relative flex min-w-[140px] items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/80 p-1 text-sm font-semibold uppercase tracking-[0.3em] text-slate-500"
-            >
-              +{images.length - visibleCount}
-            </button>
-          )}
+    <section id="gallery" className="space-y-4">
+      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="relative">
+          {previewImages[0] && renderPreviewButton(previewImages[0], 0, "h-[420px] w-full")}
         </div>
-        {images.length > visibleCount && (
-          <div className="mt-2 flex items-center justify-between space-x-2 text-xs text-slate-600 sm:hidden">
-            <button
-              onClick={() => scrollThumbnails(-1)}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm"
-              aria-label="Anterior miniatura"
-            >
-              ←
-            </button>
-            <button
-              onClick={() => scrollThumbnails(1)}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm"
-              aria-label="Siguiente miniatura"
-            >
-              →
-            </button>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-1 flex-col gap-4">
+            {secondaryImages.map((image, index) =>
+              renderPreviewButton(image, index + 1, "h-[192px] w-full")
+            )}
           </div>
-        )}
+          <button
+            type="button"
+            onClick={() => openLightbox(0)}
+            className="flex items-center justify-center rounded-3xl border border-slate-200 bg-white/90 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-white"
+          >
+            Ver todas las fotos{extraCount ? ` (+${extraCount})` : ""}
+          </button>
+        </div>
       </div>
 
       {isOpen && (
@@ -110,7 +100,7 @@ export default function TourGalleryViewer({ images, visibleCount = 3 }: TourGall
           <div className="relative mx-auto h-[65vh] w-full max-w-5xl overflow-hidden rounded-3xl border border-white/30 bg-black/60">
             <Image
               src={images[activeIndex].url}
-              alt={images[activeIndex].label ?? `Gallery image ${activeIndex + 1}`}
+              alt={images[activeIndex].label ?? `Galería imagen ${activeIndex + 1}`}
               fill
               priority
               className="object-contain"
@@ -119,6 +109,6 @@ export default function TourGalleryViewer({ images, visibleCount = 3 }: TourGall
           </div>
         </div>
       )}
-    </>
+    </section>
   );
 }

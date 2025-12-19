@@ -1,9 +1,9 @@
-import { prisma } from "@/lib/prisma";
+import Image from "next/image";
 import Link from "next/link";
 import TourGalleryViewer from "@/components/shared/TourGalleryViewer";
 import { notFound, redirect } from "next/navigation";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
-import { ItineraryTimeline, TimelineStop } from "@/components/itinerary/ItineraryTimeline";
+import { prisma } from "@/lib/prisma";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 
@@ -25,11 +25,11 @@ const parseJsonArray = <T,>(value?: string | null): T[] => {
 };
 
 const parseDuration = (value?: string | null) => {
-  if (!value) return { value: "8", unit: "horas" };
+  if (!value) return { value: "4", unit: "Horas" };
   try {
     return JSON.parse(value) as { value: string; unit: string };
   } catch {
-    return { value: value ?? "8", unit: "horas" };
+    return { value: value ?? "4", unit: "Horas" };
   }
 };
 
@@ -38,26 +38,79 @@ const formatTimeSlot = (slot: PersistedTimeSlot) => {
   return `${slot.hour.toString().padStart(2, "0")}:${minute} ${slot.period}`;
 };
 
-const breadcrumb = ["Home", "Tours", "Dominican Republic", "Safari Proactivitis"];
 const itineraryMock: ItineraryStop[] = [
-  { time: "08:00", title: "Hotel pickup", description: "We collect guests from Punta Cana hotels and drive toward the ranch." },
-  { time: "10:30", title: "Safari route", description: "Thunder through countryside tracks with stops for photos." },
-  { time: "12:30", title: "Village visit", description: "Meet locals, taste cocoa and enjoy folkloric presentation." },
-  { time: "14:00", title: "Lunch & river stop", description: "Buffet lunch and manageable swim in the river." }
+  {
+    time: "09:00",
+    title: "Pick-up",
+    description: "Recogida en el lobby de tu hotel para arrancar con energía."
+  },
+  {
+    time: "Ruta Safari",
+    title: "Ruta Safari",
+    description: "Manejo por senderos de selva y lodo con paradas para fotos imperdibles."
+  },
+  {
+    time: "Cultura local",
+    title: "Cultura Local",
+    description: "Degustación de café, cacao y tabaco en casa típica de la región."
+  },
+  {
+    time: "Cenote o playa",
+    title: "Cenote / Playa",
+    description: "Parada técnica para nadar y refrescarse en un entorno natural."
+  },
+  {
+    time: "Regreso",
+    title: "Regreso",
+    description: "Traslado de vuelta al punto de origen con recuerdos inolvidables."
+  }
 ];
+
 const additionalInfo = [
-  "Confirmamos los puntos exactos de encuentro con 24h de antelación",
-  "No apto para personas con movilidad reducida",
-  "No recomendado para embarazadas",
-  "Sillas infantiles disponibles bajo solicitud",
-  "Reserva confirmada desde 2 huéspedes"
+  "Confirmamos los puntos exactos de encuentro con 24 h de antelación.",
+  "No apto para personas con movilidad reducida.",
+  "No recomendado para embarazadas.",
+  "Sillas infantiles disponibles bajo solicitud.",
+  "Reserva confirmada desde 2 huéspedes."
 ];
+
 const packingList = [
-  { icon: "👟", label: "Calzado cerrado", detail: "Protección en terrenos irregulares" },
-  { icon: "🕶️", label: "Gafas de sol", detail: "Ideal para brisa marina y lodo reflejante" },
-  { icon: "🧴", label: "Protector solar", detail: "Elige fórmula biodegradable" },
-  { icon: "👕", label: "Ropa cómoda", detail: "Manga corta + ropa que se pueda ensuciar" }
+  { icon: "👟", label: "Calzado cerrado", detail: "Protección en terrenos irregulares." },
+  { icon: "🕶️", label: "Gafas de sol", detail: "Ideal para brillo y brisa marina." },
+  { icon: "🧴", label: "Protector solar", detail: "Elige una opción biodegradable." },
+  { icon: "👕", label: "Ropa que se pueda ensuciar", detail: "Capas ligeras y cómodas." }
 ];
+
+const reviewBreakdown = [
+  { label: "5 estrellas", percent: 90 },
+  { label: "4 estrellas", percent: 8 },
+  { label: "3 estrellas", percent: 1 },
+  { label: "2 estrellas", percent: 1 },
+  { label: "1 estrella", percent: 0 }
+];
+
+const reviewHighlights = [
+  {
+    name: "Gabriela R.",
+    date: "Mayo 2025 · Verified traveler",
+    quote: "Guía excepcional, recorridos emocionantes y transporte muy cómodo.",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
+  },
+  {
+    name: "James T.",
+    date: "Abril 2025 · Verified traveler",
+    quote: "Muy bien organizado, adrenalina sin perder la seguridad y tiempo para fotos.",
+    avatar: "https://images.unsplash.com/photo-1504593811423-6dd665756598"
+  },
+  {
+    name: "Anna L.",
+    date: "Marzo 2025 · Verified traveler",
+    quote: "El viaje al cenote fue mágico y el equipo muy puntual.",
+    avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39"
+  }
+];
+
+const reviewTags = ["Excelente guía", "Mucha adrenalina", "Puntualidad"];
 
 export default async function TourDetailPage({ params }: TourDetailProps) {
   const { slug } = await params;
@@ -130,113 +183,238 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
   const parsedAdminItinerary = parseAdminItinerary(tour.adminNote ?? "");
   const itinerarySource = parsedAdminItinerary.length ? parsedAdminItinerary : parseItinerary(tour.adminNote ?? "");
   const finalItinerary = itinerarySource.length ? itinerarySource : itineraryMock;
-  const timelineStops: TimelineStop[] = finalItinerary.map((stop) => ({
-    label: stop.title,
-    description: stop.description,
-    duration: stop.time
-  }));
+  const timelineSource = finalItinerary.length ? finalItinerary : itineraryMock;
+  const visualTimeline = timelineSource.slice(0, 5);
 
   const priceLabel = `Desde $${tour.price.toFixed(0)} USD`;
+  const displayTime = timeSlots.length ? formatTimeSlot(timeSlots[0]) : "09:00 AM";
+  const languagesDisplay = languages.length ? languages.join(", ") : "Por confirmar";
+  const shortTeaser =
+    shortDescription && shortDescription.length > 220
+      ? `${shortDescription.slice(0, 220).trim()}…`
+      : shortDescription || "Explora esta aventura guiada por expertos locales.";
+  const needsReadMore = Boolean(shortDescription && shortDescription.length > 220);
+
+  const quickInfo = [
+    {
+      label: "Precio desde",
+      value: priceLabel,
+      detail: "Mejor precio garantizado",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <path d="M12 5v14M6 9h12M6 15h12" />
+          <circle cx="12" cy="12" r="9" />
+        </svg>
+      )
+    },
+    {
+      label: "Duración",
+      value: durationLabel,
+      detail: "Experiencia guiada",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+      )
+    },
+    {
+      label: "Idiomas",
+      value: languagesDisplay,
+      detail: languages.length ? `${languages.length} idiomas disponibles` : "Por confirmar",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <path d="M4 6h16M4 12h16M4 18h16" />
+          <path d="M8 4c0 2.21-1.343 4-3 4M18 4c0 2.21 1.343 4 3 4" />
+        </svg>
+      )
+    },
+    {
+      label: "Hora de salida",
+      value: displayTime,
+      detail: "Encuentro en el lobby",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <path d="M12 4a8 8 0 100 16 8 8 0 000-16Zm0 9V7" />
+          <path d="M12 12h4" />
+        </svg>
+      )
+    }
+  ];
+
+  const renderIcon = (label: string) => {
+    if (label.toLowerCase().includes("categor")) {
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <rect x="4" y="4" width="16" height="16" rx="4" />
+          <path d="M4 10h16M10 4v16" />
+        </svg>
+      );
+    }
+    if (label.toLowerCase().includes("idiomas") || label.toLowerCase().includes("nivel")) {
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M4 12h16M12 4c0 3.314-1.343 6-3 6M20 12c0-3.314-1.343-6-3-6" />
+        </svg>
+      );
+    }
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </svg>
+    );
+  };
 
   return (
-    <div className="bg-slate-50 text-slate-900">
-      <section className="relative overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${gallery[0]})` }}>
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/90 via-slate-900/70 to-slate-900/70" />
-        <div className="relative mx-auto max-w-6xl px-6 py-12">
-          <div className="rounded-[28px] border border-white/10 bg-white/10 p-6 backdrop-blur-sm">
-            <div className="space-y-5 text-white">
-              <p className="text-xs uppercase tracking-[0.4em] text-white/70">{tour.location}, Dominican Republic</p>
-              <h1 className="text-3xl font-semibold leading-tight text-white sm:text-4xl">{tour.title}</h1>
-              <p className="text-sm text-white/80">{shortDescription || "Experiencia guiada por proveedores locales certificados."}</p>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="#booking"
-                  className="inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-sky-600"
-                >
-                  Reserva ahora
-                </Link>
-                <Link
-                  href="#gallery"
-                  className="inline-flex items-center justify-center rounded-full border border-white/60 px-6 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/90 transition hover:text-white"
-                >
-                  Ver fotos
-                </Link>
+    <div className="bg-[#F9FAFB] text-slate-900">
+      <section
+        className="relative overflow-hidden bg-slate-900 text-white"
+        style={{
+          backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)), url(${gallery[0]})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center"
+        }}
+      >
+        <div className="relative mx-auto flex max-w-[1200px] flex-col gap-6 px-6 py-16">
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-200">
+            {tour.location}, Dominican Republic
+          </p>
+          <div className="space-y-4">
+            <h1 className="text-3xl font-semibold leading-tight text-white sm:text-4xl lg:text-5xl">
+              {tour.title}
+            </h1>
+            <p className="text-sm text-slate-200 sm:text-base lg:text-lg">
+              {shortDescription || "Experiencia guiada por proveedores locales certificados."}
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700">
+                Mejor precio garantizado
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="#booking"
+              className="inline-flex items-center justify-center rounded-full bg-sky-500 px-7 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-sky-600"
+            >
+              Reserva ahora
+            </Link>
+            <Link
+              href="#gallery"
+              className="inline-flex items-center justify-center rounded-full border border-white/60 px-7 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-white/90 transition hover:text-white"
+            >
+              Ver fotos
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-[1200px] px-4 py-12">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {quickInfo.map((item) => (
+            <div
+              key={item.label}
+              className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition hover:shadow-lg"
+            >
+              <div className="flex items-center gap-4">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-900">
+                  {item.icon}
+                </span>
+                <div>
+                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
+                    {item.label}
+                  </p>
+                  <p className="text-lg font-semibold text-slate-900">{item.value}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                    {item.detail}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="grid gap-4 rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-1">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Precio base</p>
-            <p className="text-xl font-semibold text-slate-900">{priceLabel}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Duración</p>
-            <p className="text-xl font-semibold text-slate-900">{durationLabel}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Idiomas</p>
-            <p className="text-sm font-semibold text-slate-900">{languages.length ? languages.join(" · ") : "Por confirmar"}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Horarios</p>
-            <p className="text-sm font-semibold text-slate-900">{timeSlots.length ? timeSlots.map(formatTimeSlot).join(" · ") : "Por confirmar"}</p>
-          </div>
-        </div>
-      </section>
-
-      <main className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:max-w-7xl lg:flex-row lg:items-start">
+      <main className="mx-auto flex max-w-[1200px] flex-col gap-10 px-4 pb-16 lg:flex-row lg:items-start">
         <div className="space-y-8 lg:w-3/5">
-          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-slate-900">Gallery</h3>
-            <div className="mt-4">
-              <TourGalleryViewer
-                images={gallery.map((img: string, index: number) => ({
-                  url: img,
-                  label: `${tour.title} ${index + 1}`
-                }))}
-              />
+          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <TourGalleryViewer
+              images={gallery.map((img: string, index: number) => ({
+                url: img,
+                label: `${tour.title} ${index + 1}`
+              }))}
+            />
+          </div>
+
+          <section className="space-y-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resumen</p>
+                <h2 className="text-2xl font-semibold text-slate-900">Visión general</h2>
+              </div>
+              {needsReadMore && (
+                <Link
+                  href="#full-description"
+                  className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-600 hover:text-sky-700"
+                >
+                  Leer más
+                </Link>
+              )}
             </div>
+            <p className="text-sm leading-relaxed text-slate-600">{shortTeaser}</p>
           </section>
 
-          <section className="space-y-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-semibold text-slate-900">Overview</h2>
-            <p className="text-sm text-slate-600">{shortDescription || "Descripción breve no disponible."}</p>
-          </section>
-
-          <section className="space-y-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-semibold text-slate-900">Descripción completa</h2>
-            <p className="text-sm text-slate-600">{detailedDescription || "La descripción completa estará disponible pronto."}</p>
+          <section
+            id="full-description"
+            className="space-y-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm"
+          >
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Descripción</p>
+              <h2 className="text-2xl font-semibold text-slate-900">Detalles completos</h2>
+            </div>
+            <p className="text-sm leading-relaxed text-slate-600">
+              {detailedDescription || "La descripción completa estará disponible pronto."}
+            </p>
           </section>
 
           {detailRows.length > 0 && (
             <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <h3 className="text-lg font-semibold text-slate-900">Detalles clave</h3>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Detalles</p>
+                  <h3 className="text-lg font-semibold text-slate-900">Detalles clave</h3>
+                </div>
                 <span className="text-xs uppercase tracking-[0.4em] text-slate-400">Información resumida</span>
               </div>
-              <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {detailRows.map((row) => (
-                  <div key={row.label} className="space-y-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
-                      {row.label}
-                    </p>
+                  <div
+                    key={row.label}
+                    className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-slate-900">
+                        {renderIcon(row.label)}
+                      </span>
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
+                        {row.label}
+                      </p>
+                    </div>
                     {row.values ? (
                       <div className="flex flex-wrap gap-2">
                         {row.values.map((value) => (
                           <span
                             key={value}
-                            className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm"
+                            className="rounded-full border border-white/80 bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm"
                           >
                             {value}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm font-semibold text-slate-900">{row.value}</p>
+                      row.value && <p className="text-sm font-semibold text-slate-900">{row.value}</p>
                     )}
                   </div>
                 ))}
@@ -244,115 +422,191 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             </section>
           )}
 
-          <section className="grid gap-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm md:grid-cols-2">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900">What’s included</h3>
-              <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                {includes.map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <span className="text-sky-500">•</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900">What’s not included</h3>
-              <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                {excludes.map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <span className="text-rose-500">•</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-
-          <section className="space-y-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="flex items-baseline justify-between">
-              <h3 className="text-lg font-semibold text-slate-900">Meeting & pickup</h3>
-              <span className="text-xs text-slate-500">Start time: 08:00</span>
-            </div>
-            <p className="text-sm text-slate-600">
-              Pickup available at select Punta Cana resorts. Confirm exact location and time after booking.
-            </p>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-              Hotel pickup, meeting point details, and optional transfers included.
+          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Incluye</p>
+                <div className="mt-3 space-y-2">
+                  {includes.map((item) => (
+                    <div
+                      key={item}
+                      className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm font-semibold text-emerald-800"
+                    >
+                      <span aria-hidden>✓</span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">No incluye</p>
+                <div className="mt-3 space-y-2">
+                  {excludes.map((item) => (
+                    <div
+                      key={item}
+                      className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-rose-50/50 px-4 py-3 text-sm font-semibold text-rose-600"
+                    >
+                      <span aria-hidden>✘</span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
 
-          <ItineraryTimeline
-            stops={timelineStops}
-            startDescription={
-              tour.meetingPoint ? `Encuentro en ${tour.meetingPoint}.` : undefined
-            }
-            finishDescription={tour.meetingInstructions || undefined}
-          />
+          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Itinerario</p>
+                <h3 className="text-lg font-semibold text-slate-900">Línea de tiempo visual</h3>
+              </div>
+              <span className="text-xs uppercase tracking-[0.4em] text-slate-400">Paso a paso</span>
+            </div>
+            <div className="relative mt-6 pl-10">
+              <div className="pointer-events-none absolute left-5 top-2 bottom-2 w-px rounded-full bg-gradient-to-b from-slate-200 via-slate-300 to-slate-200" />
+              <div className="space-y-8">
+                {visualTimeline.map((stop, index) => (
+                  <div key={`${stop.title}-${index}`} className="relative flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <span className="flex h-3 w-3 items-center justify-center rounded-full bg-sky-600 text-[0.6rem] font-semibold uppercase tracking-[0.5em] text-white">
+                        <span className="block h-full w-full rounded-full bg-sky-600" />
+                      </span>
+                      {index !== visualTimeline.length - 1 && (
+                        <span className="mt-1 block h-full w-px bg-slate-200" />
+                      )}
+                    </div>
+                    <div className="flex-1 rounded-3xl border border-slate-100 bg-slate-50/80 p-4 shadow-sm">
+                      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
+                        {stop.time}
+                      </p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900">{stop.title}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                        {stop.description ?? "Detalles próximamente."}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
 
-          <section className="space-y-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-slate-900">Additional info</h3>
-            <ul className="space-y-2 text-sm text-slate-600">
+          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Prueba social</p>
+                <h3 className="text-lg font-semibold text-slate-900">Opiniones destacadas</h3>
+              </div>
+              <div className="text-sm font-semibold text-slate-500">★ 4.9 · 1,230 reseñas</div>
+            </div>
+            <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+              <div className="space-y-4">
+                <div className="flex items-end gap-3">
+                  <p className="text-4xl font-semibold text-slate-900">4.9</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">de 5</p>
+                </div>
+                <div className="space-y-3 text-sm text-slate-600">
+                  {reviewBreakdown.map((item) => (
+                    <div key={item.label} className="flex items-center gap-3">
+                      <span className="w-20 text-xs text-slate-500">{item.label}</span>
+                      <div className="relative flex-1 overflow-hidden rounded-full bg-slate-100">
+                        <span
+                          className="block h-2 rounded-full bg-emerald-500"
+                          style={{ width: `${item.percent}%` }}
+                        />
+                      </div>
+                      <span className="ml-2 text-xs font-semibold text-slate-500">{item.percent}%</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
+                  {reviewTags.map((tag) => (
+                    <span key={tag} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-4">
+                {reviewHighlights.map((review) => (
+                  <div key={review.name} className="rounded-3xl border border-slate-100 bg-slate-50 p-4 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <Image
+                        src={review.avatar}
+                        alt={review.name}
+                        width={48}
+                        height={48}
+                        className="h-12 w-12 rounded-full object-cover"
+                      />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{review.name}</p>
+                        <p className="text-xs text-slate-500">{review.date}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm leading-relaxed text-slate-600">{review.quote}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Extra</p>
+                <h3 className="text-lg font-semibold text-slate-900">Qué llevar</h3>
+              </div>
+              <span className="text-xs uppercase tracking-[0.4em] text-slate-400">Valor agregado</span>
+            </div>
+            <div className="mt-6 flex gap-4 overflow-x-auto pb-2">
+              {packingList.map((item) => (
+                <div
+                  key={item.label}
+                  className="flex min-w-[160px] flex-col items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-5 text-center shadow-sm"
+                >
+                  <span className="text-3xl">{item.icon}</span>
+                  <p className="text-sm font-semibold text-slate-900">{item.label}</p>
+                  <p className="text-xs text-slate-500">{item.detail}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Información adicional</p>
+                <h3 className="text-lg font-semibold text-slate-900">Puntos clave</h3>
+              </div>
+            </div>
+            <ul className="mt-4 space-y-3 text-sm text-slate-600">
               {additionalInfo.map((item) => (
-                <li key={item} className="flex items-start gap-2">
-                  <span className="text-slate-400">•</span>
-                  {item}
+                <li key={item} className="flex items-start gap-3">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-slate-400" />
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
           </section>
-
-          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-slate-900">Cancellation policy</h3>
-            <p className="text-sm text-slate-600">
-              You can cancel up to 24 hours in advance of the experience for a full refund.
-            </p>
-          </section>
-
-          <section className="space-y-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900">Reviews</h3>
-              <div className="text-sm text-slate-500">★ 4.9 · 1,230 reviews</div>
-            </div>
-            <div className="grid gap-4">
-              {["Rebecca", "James", "Anna"].map((name) => (
-                <div key={name} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                  <p className="font-semibold text-slate-900">{name}</p>
-                  <p className="text-xs text-slate-500">March 2025 · Verified traveller</p>
-                  <p>“Amazing safari experience, comfortable transport and knowledgeable guides.”</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-slate-900">Related experiences</h3>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              {["Safari + Catamaran", "Sunset Cruise"].map((item) => (
-                <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-                  <p className="font-semibold text-slate-900">{item}</p>
-                  <p>More adventures coming soon.</p>
-                </div>
-              ))}
-            </div>
-          </section>
         </div>
 
-        <aside className="space-y-6">
-          <div id="booking" className="lg:sticky top-24 space-y-5">
-          <TourBookingWidget tourId={tour.id} basePrice={tour.price} timeSlots={timeSlots} />
-          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Proveedor</p>
-            <p className="text-lg font-semibold text-slate-900">
-              {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Local partner"}
-            </p>
-            <p className="text-sm text-slate-600">Certified by Proactivitis.</p>
+        <aside className="lg:w-2/5">
+          <div className="space-y-6">
+            <div id="booking" className="lg:sticky top-24 space-y-5">
+              <TourBookingWidget tourId={tour.id} basePrice={tour.price} timeSlots={timeSlots} />
+              <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Proveedor</p>
+                <p className="mt-2 text-lg font-semibold text-slate-900">
+                  {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Local partner"}
+                </p>
+                <p className="text-sm text-slate-600">Certified by Proactivitis.</p>
+              </div>
+            </div>
           </div>
-        </div>
         </aside>
       </main>
+
       <ReserveFloatingButton targetId="booking" priceLabel={priceLabel} />
     </div>
   );
 }
-
