@@ -37,7 +37,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
               />
             </Link>
           </div>
-          <nav className="hidden items-center gap-8 text-[13px] font-semibold uppercase tracking-[0.3em] text-slate-600 md:flex">
+          <nav className="hidden items-center gap-8 text-[13px] font-semibold uppercase tracking-[0.3em] text-slate-600 md:flex md:ml-6">
             {publicNavLinks.map((item) => (
               <Link key={item.href} href={item.href} className="transition hover:text-slate-900">
                 {item.label}
