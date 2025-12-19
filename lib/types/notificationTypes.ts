@@ -30,6 +30,7 @@ export type NotificationDisplayConfig = {
   icon: ReactNode;
   label: string;
   textClass: string;
+  badgeClass: string;
 };
 
 const toneTextClass: Record<NotificationDisplayTone, string> = {
@@ -51,7 +52,8 @@ const toneIcon: Record<NotificationDisplayTone, ReactNode> = {
 const createConfig = (label: string, tone: NotificationDisplayTone, icon?: ReactNode): NotificationDisplayConfig => ({
   icon: icon ?? toneIcon[tone],
   label,
-  textClass: toneTextClass[tone]
+  textClass: toneTextClass[tone],
+  badgeClass: `border-slate-200 bg-slate-50 text-slate-600`
 });
 
 const defaultDisplay: NotificationDisplayConfig = {
