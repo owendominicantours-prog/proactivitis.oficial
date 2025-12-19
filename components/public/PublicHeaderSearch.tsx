@@ -10,7 +10,7 @@ export function PublicHeaderSearch() {
 
   return (
     <div className="relative flex-1">
-      <label className="flex h-12 w-full items-center gap-2 rounded-full border border-slate-200 bg-white px-4 shadow-sm transition hover:border-slate-300">
+      <label className="flex h-10 w-full items-center gap-2 rounded-full border border-slate-200 bg-white px-3 shadow-sm transition hover:border-slate-300">
         <span className="text-slate-400">
           🔍
         </span>
@@ -21,11 +21,11 @@ export function PublicHeaderSearch() {
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           placeholder="Buscar destino, tour o experiencia"
-          className="flex-1 border-none bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
+          className="flex-1 border-none bg-transparent text-sm font-semibold text-slate-800 outline-none placeholder:text-slate-400"
         />
         <button
           type="button"
-          className="rounded-full bg-slate-900 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
+          className="rounded-full bg-slate-900 px-3 py-0.5 text-[11px] font-semibold uppercase tracking-[0.35em] text-white transition hover:bg-slate-800"
         >
           Buscar
         </button>
