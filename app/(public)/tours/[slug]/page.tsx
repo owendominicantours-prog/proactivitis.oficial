@@ -135,33 +135,13 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
   return (
     <div className="bg-slate-50 text-slate-900">
       <section className="relative overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${gallery[0]})` }}>
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-900/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/90 via-slate-900/70 to-slate-900/70" />
         <div className="relative mx-auto max-w-6xl px-6 py-12">
-          <div className="rounded-[28px] border border-white/10 bg-white/10 p-6 backdrop-blur-sm md:flex md:items-stretch md:gap-8">
-            <div className="flex-1 space-y-6 text-white">
-              <div className="flex flex-wrap items-center gap-3 text-[0.65rem] uppercase tracking-[0.4em] text-white/70">
-                {breadcrumb.map((crumb, idx) => (
-                  <span key={crumb}>
-                    {crumb}
-                    {idx < breadcrumb.length - 1 && <span className="px-2">›</span>}
-                  </span>
-                ))}
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-white/70">{tour.location}, Dominican Republic</p>
-                <h1 className="mt-3 text-3xl font-semibold leading-tight text-white sm:text-4xl">{tour.title}</h1>
-                <p className="mt-2 max-w-2xl text-sm text-white/80">{shortDescription || "Experiencia guiada por proveedores locales certificados."}</p>
-              </div>
-              <div className="flex flex-wrap gap-3 text-[0.7rem] uppercase tracking-[0.3em] text-white/80">
-                <span className="rounded-full bg-white/10 px-3 py-1 text-white">Desde ${tour.price.toFixed(0)} USD</span>
-                <span className="rounded-full bg-white/10 px-3 py-1 text-white">{durationLabel}</span>
-                <span className="rounded-full bg-white/10 px-3 py-1 text-white">
-                  {timeSlots.length ? `${timeSlots.length} turno${timeSlots.length > 1 ? "s" : ""}` : "Horarios por confirmar"}
-                </span>
-              </div>
-              <p className="text-xs uppercase tracking-[0.35em] text-white/80">
-                {languages.length > 0 ? `Idiomas: ${languages.join(" · ")}` : "Idiomas por confirmar"}
-              </p>
+          <div className="rounded-[28px] border border-white/10 bg-white/10 p-6 backdrop-blur-sm">
+            <div className="space-y-5 text-white">
+              <p className="text-xs uppercase tracking-[0.4em] text-white/70">{tour.location}, Dominican Republic</p>
+              <h1 className="text-3xl font-semibold leading-tight text-white sm:text-4xl">{tour.title}</h1>
+              <p className="text-sm text-white/80">{shortDescription || "Experiencia guiada por proveedores locales certificados."}</p>
               <div className="flex flex-wrap gap-3">
                 <Link
                   href="#booking"
@@ -170,26 +150,34 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
                   Reserva ahora
                 </Link>
                 <Link
-                  href="#detalles"
-                  className="inline-flex items-center justify-center rounded-full border border-white/60 px-6 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 transition hover:text-white"
+                  href="#gallery"
+                  className="inline-flex items-center justify-center rounded-full border border-white/60 px-6 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/90 transition hover:text-white"
                 >
-                  Ver detalles
+                  Ver fotos
                 </Link>
               </div>
             </div>
-            <div className="hidden w-[260px] flex-col gap-4 rounded-2xl border border-white/20 bg-slate-900/60 p-5 text-white md:flex">
-              <p className="text-xs uppercase tracking-[0.4em] text-white/60">Código</p>
-              <p className="text-2xl font-semibold">{tour.slug}</p>
-              <p className="text-sm text-white/80">{timeSlots.length ? timeSlots.map(formatTimeSlot).join(" · ") : "Horarios por confirmar"}</p>
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.4em] text-white/60">Rating</p>
-                <p className="text-lg font-semibold">4.8 · +1.2k reviews</p>
-              </div>
-              <div className="space-y-1 rounded-2xl bg-white/5 p-3">
-                <p className="text-[0.65rem] uppercase tracking-[0.3em] text-white/70">Capacidad</p>
-                <p className="text-lg font-semibold">{tour.capacity ? `${tour.capacity} personas` : "Flexible"}</p>
-              </div>
-            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="grid gap-4 rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-1">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Precio base</p>
+            <p className="text-xl font-semibold text-slate-900">{priceLabel}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Duración</p>
+            <p className="text-xl font-semibold text-slate-900">{durationLabel}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Idiomas</p>
+            <p className="text-sm font-semibold text-slate-900">{languages.length ? languages.join(" · ") : "Por confirmar"}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Horarios</p>
+            <p className="text-sm font-semibold text-slate-900">{timeSlots.length ? timeSlots.map(formatTimeSlot).join(" · ") : "Por confirmar"}</p>
           </div>
         </div>
       </section>

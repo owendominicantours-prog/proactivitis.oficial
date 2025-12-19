@@ -9,20 +9,27 @@ type ReserveFloatingButtonProps = {
 
 export default function ReserveFloatingButton({ targetId, priceLabel }: ReserveFloatingButtonProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [hiddenAfterClick, setHiddenAfterClick] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsVisible(window.scrollY > 200);
+      const shouldShow = window.scrollY > 200;
+      if (window.scrollY < 200 && hiddenAfterClick) {
+        setHiddenAfterClick(false);
+      }
+      setIsVisible(shouldShow && !hiddenAfterClick);
     };
     handleScroll();
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [hiddenAfterClick]);
 
   if (!isVisible) return null;
 
   const scroll = () => {
     document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setHiddenAfterClick(true);
+    setIsVisible(false);
   };
 
   return (
