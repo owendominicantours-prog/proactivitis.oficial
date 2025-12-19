@@ -60,8 +60,8 @@ export function TourCard({
 
   return (
     <Link href={`/tours/${slug}`} className="group block">
-      <article className="flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-card transition-transform duration-300 hover:-translate-y-2">
-        <div className="relative">
+    <article className="flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-card transition-transform duration-300 hover:-translate-y-2">
+      <div className="relative">
           <div
             className="aspect-[4/3] w-full bg-cover bg-center"
             style={{ backgroundImage: `url(${image})` }}
@@ -72,23 +72,20 @@ export function TourCard({
             {badgeText}
           </div>
         </div>
-        <div className="flex flex-1 flex-col gap-3 p-6">
+        <div className="flex flex-1 flex-col gap-2 p-5">
           <p className="text-brand font-medium text-[10px] tracking-[0.4em] uppercase">{`Desde ${locationText}`}</p>
           <h3 className="text-slate-900 text-2xl font-black leading-tight">{title}</h3>
           <p className="text-slate-500 text-sm leading-relaxed line-clamp-2">
             {description ?? `Experiencia exclusiva en ${locationText} con guía local certificado.`}
           </p>
-          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+          <div className="flex flex-wrap items-center gap-2 pt-2 text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-slate-500">
             {tagList.map((tag) => (
-              <span
-                key={tag}
-                className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-500"
-              >
+              <span key={tag} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[9px]">
                 {tag}
               </span>
             ))}
           </div>
-          <div className="flex flex-wrap items-center gap-3 border-y border-slate-50 py-3 text-[11px] text-slate-500">
+          <div className="flex flex-wrap items-center gap-2 border-y border-slate-50 py-2 text-[11px] text-slate-500">
             <span className="flex items-center gap-1">
               <IconClock />
               {duration ?? "4 horas"}
@@ -107,7 +104,7 @@ export function TourCard({
               Recogida en hotel incluida
             </p>
           )}
-          <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-5">
+          <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
             <div>
               <p className="text-slate-400 text-[10px] uppercase tracking-[0.4em]">Desde</p>
               <div className="flex items-baseline gap-1">
