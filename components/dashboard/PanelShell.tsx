@@ -21,9 +21,20 @@ export type NotificationMenuItem = Pick<
 
 const formatNotificationDate = (value: Date) =>
   new Intl.DateTimeFormat("es-ES", {
-    dateStyle: "short",
-    timeStyle: "short"
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
   }).format(value);
+
+const notificationGroupLabel = (value: Date) => {
+  const diff = Date.now() - value.getTime();
+  const day = 1000 * 60 * 60 * 24;
+  if (diff < day) return "Hoy";
+  if (diff < 2 * day) return "Ayer";
+  if (diff < 7 * day) return "Esta semana";
+  return "Anterior";
+};
 
 type PanelShellProps = {
   title: string;
@@ -48,9 +59,16 @@ export const PanelShell = ({
 }: PanelShellProps) => {
   const hasNotifications = Boolean(notifications && notifications.length);
   const fallbackLink = notificationLink ?? "#";
+  const groupOrder = ["Hoy", "Ayer", "Esta semana", "Anterior"];
+  const groupedNotifications = (notifications ?? []).reduce<Record<string, NotificationMenuItem[]>>((acc, next) => {
+    const label = notificationGroupLabel(new Date(next.createdAt));
+    if (!acc[label]) acc[label] = [];
+    acc[label].push(next);
+    return acc;
+  }, {});
 
-const formatAccount = () => {
-  if (!accountId) return null;
+  const formatAccount = () => {
+    if (!accountId) return null;
     const clean = accountId.replace(/[^a-zA-Z0-9]/g, "");
     const short = clean.slice(0, 5) || clean;
     const label = roleLabel.toLowerCase();
@@ -59,20 +77,20 @@ const formatAccount = () => {
     else if (label.includes("agency") || label.includes("agencia")) prefix = "A-";
     else if (label.includes("customer") || label.includes("cliente")) prefix = "C-";
     else if (label.includes("afiliador") || label.includes("affiliate")) prefix = "AF-";
-  return `${prefix}${short}`;
-};
+    return `${prefix}${short}`;
+  };
 
-const displayAccount = formatAccount();
+  const displayAccount = formatAccount();
 
-const buildBookingDetailRoute = (bookingId: string | undefined, metadataRole: string | undefined, fallback: string) => {
-  if (!bookingId) return fallback;
-  const role = (metadataRole ?? "").toString().toUpperCase();
-  if (role.includes("ADMIN")) return `/admin/bookings?bookingId=${bookingId}`;
-  if (role.includes("SUPPLIER")) return `/supplier/bookings?bookingId=${bookingId}`;
-  if (role.includes("AGENCY")) return `/agency/bookings?bookingId=${bookingId}`;
-  if (role.includes("CUSTOMER")) return `/booking/confirmed?bookingId=${bookingId}`;
-  return `/booking/confirmed?bookingId=${bookingId}`;
-};
+  const buildBookingDetailRoute = (bookingId: string | undefined, metadataRole: string | undefined, fallback: string) => {
+    if (!bookingId) return fallback;
+    const role = (metadataRole ?? "").toString().toUpperCase();
+    if (role.includes("ADMIN")) return `/admin/bookings?bookingId=${bookingId}`;
+    if (role.includes("SUPPLIER")) return `/supplier/bookings?bookingId=${bookingId}`;
+    if (role.includes("AGENCY")) return `/agency/bookings?bookingId=${bookingId}`;
+    if (role.includes("CUSTOMER")) return `/booking/confirmed?bookingId=${bookingId}`;
+    return `/booking/confirmed?bookingId=${bookingId}`;
+  };
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
@@ -111,66 +129,83 @@ const buildBookingDetailRoute = (bookingId: string | undefined, metadataRole: st
                     </span>
                   ) : null}
                 </button>
-                <div className="pointer-events-auto invisible absolute right-0 z-50 mt-2 w-80 min-w-[20rem] rounded-lg border border-slate-200 bg-white opacity-0 shadow-lg transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-                  <div className="space-y-2 p-4">
+                <div className="pointer-events-auto invisible absolute right-0 z-50 mt-2 w-96 min-w-[20rem] rounded-lg border border-slate-200 bg-white opacity-0 shadow-lg transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                  <div className="space-y-4 p-4">
                     {hasNotifications ? (
-                      notifications!.map((notification) => {
-                        const metadata = parseNotificationMetadata(notification.metadata);
-                        const redirectUrl = metadata.referenceUrl ?? fallbackLink;
-                        const notificationType = notification.type as NotificationType | undefined;
-                        const display = getNotificationDisplayProps(notificationType);
-                        const message = notification.message ?? notification.body ?? "";
+                      groupOrder.map((groupLabel) => {
+                        const items = groupedNotifications[groupLabel];
+                        if (!items?.length) return null;
                         return (
-                          <form
-                            key={notification.id}
-                            action={markNotificationReadAction}
-                            className="rounded-lg border border-slate-100 bg-slate-50 transition hover:border-slate-300 hover:bg-white"
-                          >
-                            <input type="hidden" name="notificationId" value={notification.id} />
-                            <input type="hidden" name="redirectTo" value={redirectUrl} />
-                            <button type="submit" className="w-full text-left p-4 text-sm text-slate-700">
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-3">
-                                  <span className="text-2xl">{display.icon}</span>
-                                  <div>
-                                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                                      {display.label}
-                                    </p>
-                                    <p className="text-base font-semibold text-slate-900">{notification.title}</p>
-                                  </div>
-                                </div>
-                                <span className="text-xs text-slate-500">{formatNotificationDate(notification.createdAt)}</span>
-                              </div>
-                              <p className="mt-2 text-sm text-slate-700">{message}</p>
-                              <div className="mt-3 flex items-center justify-between text-xs">
-                                <span
-                                  className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-semibold uppercase tracking-[0.3em] ${display.badgeClass}`}
-                                >
-                                  {display.label}
-                                </span>
-                                {!notification.isRead ? (
-                                  <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
-                                    Nuevo
-                                  </span>
-                                ) : (
-                                  <span className="text-emerald-500">Leída</span>
-                                )}
-                              </div>
-                            </button>
-                          </form>
+                          <div key={groupLabel} className="space-y-2">
+                            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-400">
+                              {groupLabel}
+                            </p>
+                            <div className="space-y-2">
+                              {items.map((notification) => {
+                                const metadata = parseNotificationMetadata(notification.metadata);
+                                const redirectUrl = metadata.referenceUrl ?? fallbackLink;
+                                const notificationType = notification.type as NotificationType | undefined;
+                                const display = getNotificationDisplayProps(notificationType);
+                                const message = notification.message ?? notification.body ?? "";
+                                return (
+                                  <form
+                                    key={notification.id}
+                                    action={markNotificationReadAction}
+                                    className="rounded-2xl border border-slate-100 bg-slate-50 transition hover:border-slate-300"
+                                  >
+                                    <input type="hidden" name="notificationId" value={notification.id} />
+                                    <input type="hidden" name="redirectTo" value={redirectUrl} />
+                                    <button type="submit" className="w-full text-left p-4">
+                                      <div className="flex items-start gap-3">
+                                        <div className="relative">
+                                          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-lg">
+                                            {display.icon}
+                                          </span>
+                                          {!notification.isRead && (
+                                            <span className="absolute right-0 top-0 h-2 w-2 rounded-full bg-sky-500" />
+                                          )}
+                                        </div>
+                                        <div className="flex-1 space-y-0.5">
+                                          <p className="text-sm font-semibold text-slate-900">
+                                            {notification.title ?? display.label}
+                                          </p>
+                                          <p className="text-xs text-slate-500">{message}</p>
+                                          <div className="flex items-center justify-between text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">
+                                            <span>{formatNotificationDate(notification.createdAt)}</span>
+                                            <span
+                                              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-semibold ${display.badgeClass}`}
+                                            >
+                                              {display.label}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="mt-3 flex items-center justify-between text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-slate-600">
+                                        <span>Ver detalles</span>
+                                        <span className="text-sky-600">Go →</span>
+                                      </div>
+                                    </button>
+                                  </form>
+                                );
+                              })}
+                            </div>
+                          </div>
                         );
                       })
                     ) : (
                       <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
                         <div className="flex items-center gap-2">
-                          <span className="text-lg">ℹ</span>
+                          <span className="text-lg">ℹ️</span>
                           <p>No tienes notificaciones nuevas.</p>
                         </div>
                       </div>
                     )}
                   </div>
-                  <div className="border-t border-slate-100 px-4 py-3 text-right text-xs">
-                    <Link href={fallbackLink} className="font-semibold text-sky-600 hover:underline">
+                  <div className="border-t border-slate-100 px-4 py-4 text-right text-xs">
+                    <Link
+                      href={fallbackLink}
+                      className="rounded-full border border-slate-200 bg-slate-900 px-4 py-1 text-white transition hover:bg-slate-800"
+                    >
                       Ver todas
                     </Link>
                   </div>

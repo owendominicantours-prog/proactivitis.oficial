@@ -35,31 +35,31 @@ export type NotificationDisplayConfig = {
 
 const toneStyles: Record<NotificationDisplayTone, NotificationDisplayConfig> = {
   primary: {
-    icon: "?",
-    label: "Notificaci?n",
+    icon: "📅",
+    label: "Notificación",
     badgeClass: "border-sky-200 bg-sky-50 text-sky-600",
     textClass: "text-sky-600"
   },
   success: {
-    icon: "?",
-    label: "?xito",
+    icon: "✅",
+    label: "Éxito",
     badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
     textClass: "text-emerald-600"
   },
   warning: {
-    icon: "?",
+    icon: "⚠️",
     label: "Alerta",
     badgeClass: "border-amber-200 bg-amber-50 text-amber-700",
     textClass: "text-amber-600"
   },
   danger: {
-    icon: "?",
-    label: "Cr?tico",
+    icon: "🗑️",
+    label: "Crítico",
     badgeClass: "border-rose-200 bg-rose-50 text-rose-700",
     textClass: "text-rose-600"
   },
   info: {
-    icon: "?",
+    icon: "💼",
     label: "Info",
     badgeClass: "border-slate-200 bg-slate-50 text-slate-600",
     textClass: "text-slate-600"
