@@ -22,10 +22,13 @@ export function PublicHeaderSearch() {
       <button
         type="button"
         aria-label="Abrir búsqueda"
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-lg text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
         onClick={() => setOpen((prev) => !prev)}
       >
-        🔍
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <circle cx="11" cy="11" r="7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <line x1="16.5" y1="16.5" x2="21" y2="21" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </button>
       {open && (
         <div className="absolute right-0 top-full z-30 mt-2 w-80 rounded-2xl border border-slate-200 bg-white p-4 shadow-lg">
