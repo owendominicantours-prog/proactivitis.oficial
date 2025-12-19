@@ -76,11 +76,11 @@ const buildBookingDetailRoute = (bookingId: string | undefined, metadataRole: st
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-3 sm:gap-5">
-            <Link href="/" className="flex items-center gap-2">
-              <Image src="/logo.png" alt="Proactivitis" width={128} height={28} className="object-contain" />
+      <header className="border-b bg-white shadow-sm">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+          <div className="flex items-center gap-5">
+            <Link href="/" className="flex items-center">
+              <Image src="/logo.png" alt="Proactivitis" width={120} height={28} className="h-9 w-auto object-contain" />
             </Link>
             <NavMenu navItems={navItems} />
           </div>
