@@ -37,7 +37,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
               />
             </Link>
           </div>
-          <nav className="hidden items-center gap-6 text-[13px] font-semibold uppercase tracking-[0.3em] text-slate-600 md:flex">
+          <nav className="hidden items-center gap-8 text-[13px] font-semibold uppercase tracking-[0.3em] text-slate-600 md:flex">
             {publicNavLinks.map((item) => (
               <Link key={item.href} href={item.href} className="transition hover:text-slate-900">
                 {item.label}
@@ -52,7 +52,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
               href="/tours"
               className="rounded-full border border-slate-200 bg-slate-900 px-4 py-1 text-[11px] font-black uppercase tracking-[0.35em] text-white transition hover:border-slate-800 hover:bg-slate-800"
             >
-              Explorar ahora
+              Explorar
             </Link>
             <PublicAuthButtons />
           </div>
