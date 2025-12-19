@@ -85,6 +85,60 @@ a {
   transform: translateY(-2px);
 }
 
+.panel-card {
+  border-radius: 28px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 25px 45px rgba(15, 23, 42, 0.1);
+}
+
+.command-tile {
+  border-radius: 28px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #ffffff;
+  box-shadow: 0 18px 35px rgba(15, 23, 42, 0.08);
+  padding: 1.5rem;
+}
+
+.step-pill {
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(15, 23, 42, 0.03);
+}
+
+.step-pill.active {
+  background: #e0f2ff;
+  border-color: rgba(15, 23, 42, 0.2);
+  color: #0d3b6c;
+}
+
+.primary-btn {
+  background: #1d3b6c;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.85rem 2rem;
+  font-weight: 600;
+  box-shadow: 0 14px 30px rgba(29, 59, 108, 0.35);
+}
+
+.secondary-btn {
+  border-radius: 999px;
+  padding: 0.85rem 1.8rem;
+  border: 1px solid rgba(29, 59, 108, 0.2);
+  color: #102a43;
+  background: #fff;
+  font-weight: 600;
+  transition: border-color 0.25s ease;
+}
+
+.secondary-btn:hover {
+  border-color: #1d3b6c;
+}
+
 .tracking-\[0\.2em\],
 .tracking-\[0\.3em\],
 .tracking-\[0\.4em\],

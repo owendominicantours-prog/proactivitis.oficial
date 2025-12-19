@@ -2242,12 +2242,10 @@ export function SupplierTourCreateForm({
 
 
   return (
+    <div className="min-h-screen bg-gradient-to-br from-[#f4f6fb] to-[#edf3fb] py-10">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 sm:px-6 lg:flex-row lg:items-start">
 
-    <div className="min-h-screen bg-[#F8FAFC] py-10">
-
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 lg:flex-row lg:items-start">
-
-        <aside className="hidden w-72 flex-col gap-6 rounded-[28px] border border-slate-200 bg-white p-6 text-slate-900 shadow-lg lg:flex">
+        <aside className="panel-card hidden w-72 flex-col gap-6 text-slate-900 lg:flex">
 
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Command Center</p>
 
@@ -2295,41 +2293,42 @@ export function SupplierTourCreateForm({
 
         <div className="flex-1 space-y-6">
 
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-[30px] bg-white/80 px-6 py-4 shadow-[0_30px_60px_rgba(15,23,42,0.15)] text-slate-700 backdrop-blur">
-
-            <div>
-
+          <div className="panel-card rounded-[32px] px-6 py-5">
+            <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Command Center</p>
-
-              <p className="text-xl font-semibold text-slate-900">Sube tu tour premium</p>
-
+              <h2 className="text-2xl font-semibold text-slate-900">Sube tu tour premium</h2>
             </div>
-
-            <div className="flex items-center gap-2 text-[0.65rem] uppercase tracking-[0.4em] text-slate-500">
-
-              <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
-
-              Cambios guardados
-
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap gap-3">
+                {STEP_TITLES.map((title, index) => (
+                  <button
+                    key={title}
+                    type="button"
+                    onClick={() => setStep(index)}
+                    className={`step-pill ${index === step ? "active" : ""}`}
+                  >
+                    {index + 1}. {title}
+                  </button>
+                ))}
+              </div>
+              <span className="flex items-center gap-2 text-xs font-semibold text-emerald-500">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
+                Cambios guardados
+              </span>
             </div>
-
+            <p className="mt-3 text-xs uppercase tracking-[0.3em] text-slate-400">
+              Paso {step + 1} de {STEP_TITLES.length}
+            </p>
           </div>
 
-          <div className="rounded-[32px] border border-slate-200 bg-white shadow-xl">
+          <div className="panel-card rounded-[32px] p-6">
+            <form action={formAction} onSubmit={handleFormSubmit} className="space-y-6 text-slate-900">
 
-            <form
+          <div className="max-h-[70vh] min-h-[420px] space-y-3 overflow-y-auto pr-2 sm:pr-6">
 
-              action={formAction}
+        <div className="space-y-3 hidden">
 
-              onSubmit={handleFormSubmit}
-
-              className="space-y-6 rounded-[30px] bg-white p-6 text-slate-900"
-
-            >
-
-          <div className="space-y-3">
-
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 hidden">
 
           {STEP_TITLES.map((title, index) => {
             const isActive = index === step;
@@ -2363,7 +2362,7 @@ export function SupplierTourCreateForm({
 
         </div>
 
-        <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
+        <p className="text-xs uppercase tracking-[0.4em] text-slate-400 hidden">
 
           Paso {step + 1} de {STEP_TITLES.length}
 
@@ -2374,6 +2373,8 @@ export function SupplierTourCreateForm({
 
 
       {stepContent()}
+
+              </div>
 
 
 
@@ -2465,7 +2466,7 @@ export function SupplierTourCreateForm({
 
 
 
-      <div className="flex items-center justify-between pt-4">
+      <div className="flex items-center justify-between gap-4 pt-4">
 
         <button
 
@@ -2475,7 +2476,7 @@ export function SupplierTourCreateForm({
 
           disabled={step === 0}
 
-          className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 disabled:opacity-40"
+          className="secondary-btn text-xs disabled:opacity-40"
 
         >
 
@@ -2491,7 +2492,7 @@ export function SupplierTourCreateForm({
 
             onClick={handleNext}
 
-            className="rounded-full bg-sky-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
+            className="primary-btn text-sm"
 
           >
 
@@ -2510,16 +2511,9 @@ export function SupplierTourCreateForm({
             </div>
 
             <button
-
               type="submit"
-
               disabled={submitting}
-
-              className={`rounded-full px-5 py-2 text-sm font-semibold text-white shadow-sm ${
-
-                submitting ? "bg-emerald-500 opacity-70" : "bg-green-600 hover:bg-green-700"
-
-              }`}
+              className={`primary-btn ${submitting ? "opacity-70" : ""}`}
 
             >
 
