@@ -25,14 +25,15 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       />
       <header className="fixed top-0 z-50 w-full border-b border-slate-100 bg-white/90 shadow-sm backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6 lg:px-8">
-          <div className="flex shrink-0 items-center overflow-hidden">
+          <div className="flex shrink-0 items-center overflow-visible">
             <Link href="/" className="flex items-center">
               <Image
                 src="/logo.png"
                 alt="Proactivitis"
                 width={140}
                 height={32}
-                className="h-10 w-auto object-contain scale-[5] origin-left transition-transform duration-200 hover:scale-[5.2]"
+                className="h-10 w-auto object-contain scale-[4] origin-left transition-transform duration-200 hover:scale-[4.3]"
+                style={{ transformOrigin: "left center" }}
               />
             </Link>
           </div>
