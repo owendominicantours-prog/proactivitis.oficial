@@ -86,7 +86,6 @@ export default function PublicHomePage() {
         <div className="space-y-3 text-center">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Recomendado</p>
           <h2 className="text-3xl font-semibold text-slate-900">Tours más populares</h2>
-          <p className="text-sm text-slate-500">Aún estamos subiendo experiencias reales. Mientras tanto, estamos listos para ayudarte a crear la tuya.</p>
         </div>
         <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-sm">
           <FeaturedToursSection />

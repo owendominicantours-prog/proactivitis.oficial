@@ -5,7 +5,9 @@ import { prisma } from "@/lib/prisma";
 const fetchFeaturedTours = async () =>
   prisma.tour.findMany({
     where: {
-      status: "published"
+      status: {
+        not: "draft"
+      }
     },
     orderBy: [
       { featured: "desc" },
@@ -18,9 +20,20 @@ const fetchFeaturedTours = async () =>
       slug: true,
       price: true,
       shortDescription: true,
-      heroImage: true
+      heroImage: true,
+      status: true
     }
   });
+
+const statusLabel = (status: string) => {
+  const mapping: Record<string, string> = {
+    published: "Publicado",
+    pending: "En revisión",
+    draft: "Borrador",
+    rejected: "Rechazado"
+  };
+  return mapping[status] ?? status;
+};
 
 export default async function FeaturedToursSection() {
   const tours = await fetchFeaturedTours();
@@ -54,6 +67,7 @@ export default async function FeaturedToursSection() {
             <h3 className="text-lg font-semibold text-slate-900">{tour.title}</h3>
             {tour.shortDescription && <p className="text-sm text-slate-500">{tour.shortDescription}</p>}
             <p className="text-sm font-semibold text-slate-800">${tour.price.toFixed(2)}</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{statusLabel(tour.status)}</p>
             <Link
               href={`/tours/${tour.slug}`}
               className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
