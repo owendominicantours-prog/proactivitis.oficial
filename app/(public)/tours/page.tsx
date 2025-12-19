@@ -166,7 +166,7 @@ export default async function ToursGridPage({
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Proactivitis Experiences</p>
               <h1 className="mt-1 text-2xl font-semibold text-slate-900 md:text-3xl">Explora experiencias disponibles</h1>
-              <p className="mt-1 text-sm text-slate-600">Filtra por país, destino, duración, idioma o precio.</p>
+            <p className="mt-1 text-sm text-slate-600">Filtra por país, destino, duración, idioma o precio.</p>
             </div>
           </div>
       </section>
