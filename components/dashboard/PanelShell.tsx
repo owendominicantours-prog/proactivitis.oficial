@@ -115,11 +115,10 @@ export const PanelShell = ({
               <Image
                 src="/logo.png"
                 alt="Proactivitis"
-                width={600}
-                height={180}
-                className="h-[180px] w-auto object-contain"
+                width={200}
+                height={60}
+                className="h-12 w-auto object-contain"
               />
-              {/* NOTE: mantén este logo a 180px para que se vea grande; no volver a reducir salvo instrucción */}
             </Link>
             <NavMenu navItems={navItems} />
           </div>
