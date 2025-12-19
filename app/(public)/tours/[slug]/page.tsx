@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { DynamicImage } from "@/components/shared/DynamicImage";
 import Link from "next/link";
+import TourGalleryViewer from "@/components/shared/TourGalleryViewer";
 import { notFound, redirect } from "next/navigation";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import { ItineraryTimeline, TimelineStop } from "@/components/itinerary/ItineraryTimeline";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
+import TourGalleryViewer from "@/components/shared/TourGalleryViewer";
 
 type TourDetailProps = {
   params: {
@@ -81,7 +82,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
     notFound();
   }
 
-  const gallery = tour.gallery ? JSON.parse(tour.gallery as string) : [tour.heroImage ?? "/fototours/fotosimple.jpg"];
+  const gallery = (tour.gallery ? JSON.parse(tour.gallery as string) : [tour.heroImage ?? "/fototours/fotosimple.jpg"]) as string[];
   const includes = tour.includes
     ? tour.includes.split(";").map((item) => item.trim()).filter(Boolean)
     : ["Transport", "Guide", "Lunch"];
@@ -195,16 +196,13 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
         <div className="space-y-10">
           <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-slate-900">Gallery</h3>
-            <div className="mt-4 grid gap-4 md:grid-cols-3">
-              {gallery.slice(0, 3).map((img: string, index: number) => (
-                <div key={index} className="h-32 w-full overflow-hidden rounded-2xl border border-slate-200">
-                  <DynamicImage
-                    src={img}
-                    alt={`${tour.title} ${index + 1}`}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              ))}
+            <div className="mt-4">
+              <TourGalleryViewer
+                images={gallery.map((img: string, index: number) => ({
+                  url: img,
+                  label: `${tour.title} ${index + 1}`
+                }))}
+              />
             </div>
           </section>
 
