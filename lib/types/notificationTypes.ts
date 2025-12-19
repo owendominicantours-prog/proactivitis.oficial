@@ -24,6 +24,8 @@ export type NotificationType =
   | "AGENCY_PROMO_ALERT"
   | "AGENCY_ACCOUNT_STATUS";
 
+export type NotificationRole = "ADMIN" | "SUPPLIER" | "AGENCY" | "CUSTOMER";
+
 type NotificationDisplayTone = "primary" | "success" | "warning" | "danger" | "info";
 
 export type NotificationDisplayConfig = {
