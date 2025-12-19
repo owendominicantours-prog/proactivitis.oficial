@@ -8,7 +8,6 @@ import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
 import type { NotificationType } from "@/lib/types/notificationTypes";
 import { DashboardUserMenu } from "@/components/dashboard/DashboardUserMenu";
 import { NavMenu } from "@/components/dashboard/NavMenu";
-import { ChevronRight } from "lucide-react";
 
 export type PanelNavItem = {
   label: string;
@@ -192,7 +191,7 @@ export const PanelShell = ({
                                           </div>
                                           {details && <p className="text-xs text-slate-500">{details}</p>}
                                         </div>
-                                        <ChevronRight className="h-4 w-4 text-slate-400" />
+                                        <span className="text-slate-400">→</span>
                                       </div>
                                     </button>
                                   </form>
