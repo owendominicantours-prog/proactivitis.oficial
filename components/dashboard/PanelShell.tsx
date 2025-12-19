@@ -109,7 +109,7 @@ export const PanelShell = ({
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <header className="border-b bg-white shadow-sm">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-5">
             <Link href="/" className="flex items-center">
               <Image
@@ -117,7 +117,7 @@ export const PanelShell = ({
                 alt="Proactivitis"
                 width={200}
                 height={60}
-                className="h-12 w-auto object-contain"
+                className="h-16 w-auto object-contain"
               />
             </Link>
             <NavMenu navItems={navItems} />
