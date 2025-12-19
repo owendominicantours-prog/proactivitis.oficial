@@ -46,11 +46,17 @@ const itineraryMock: ItineraryStop[] = [
   { time: "14:00", title: "Lunch & river stop", description: "Buffet lunch and manageable swim in the river." }
 ];
 const additionalInfo = [
-  "Instant confirmation",
-  "Not wheelchair accessible",
-  "Not recommended for pregnant travelers",
-  "Child seats available upon request",
-  "Minimum 2 guests"
+  "Confirmamos los puntos exactos de encuentro con 24h de antelación",
+  "No apto para personas con movilidad reducida",
+  "No recomendado para embarazadas",
+  "Sillas infantiles disponibles bajo solicitud",
+  "Reserva confirmada desde 2 huéspedes"
+];
+const packingList = [
+  { icon: "👟", label: "Calzado cerrado", detail: "Protección en terrenos irregulares" },
+  { icon: "🕶️", label: "Gafas de sol", detail: "Ideal para brisa marina y lodo reflejante" },
+  { icon: "🧴", label: "Protector solar", detail: "Elige fórmula biodegradable" },
+  { icon: "👕", label: "Ropa cómoda", detail: "Manga corta + ropa que se pueda ensuciar" }
 ];
 
 export default async function TourDetailPage({ params }: TourDetailProps) {
