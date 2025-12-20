@@ -161,7 +161,7 @@ export default async function BookingConfirmedPage({ params, searchParams }: Pro
               Enviamos una copia del voucher a <span className="font-semibold">{booking.customerEmail}</span>.
             </p>
           </div>
-          <AutoLoginBanner bookingId={booking.id} sessionId={searchParams.session_id} />
+          <AutoLoginBanner bookingId={booking.id} />
         </div>
       </section>
 
