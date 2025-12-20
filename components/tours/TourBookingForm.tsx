@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createBookingAction } from "@/app/(public)/tours/[slug]/actions";
 
 type Props = {
@@ -11,6 +10,7 @@ type Props = {
   initialChildren?: number;
   hideDateAndPax?: boolean;
   selectedTime?: string;
+  onSuccess?: (data: { bookingId: string; clientSecret: string | null; amount: number }) => void;
 };
 
 export const TourBookingForm = ({
@@ -18,22 +18,25 @@ export const TourBookingForm = ({
   initialDate,
   initialAdults = 1,
   initialChildren = 0,
-  hideDateAndPax = false
-  ,
-  selectedTime
+  hideDateAndPax = false,
+  selectedTime,
+  onSuccess
 }: Props) => {
   const [feedback, setFeedback] = useState<string | null>(null);
-  const router = useRouter();
 
   const handleSubmit = async (formData: FormData) => {
     try {
       const result = await createBookingAction(formData);
-      if (result?.stripeSessionUrl) {
-        window.location.assign(result.stripeSessionUrl);
-        return;
-      }
       if (result?.bookingId) {
-        router.push(`/booking/confirmed?bookingId=${result.bookingId}`);
+        if (result.clientSecret) {
+          onSuccess?.({
+            bookingId: result.bookingId,
+            clientSecret: result.clientSecret,
+            amount: result.amount ?? 0
+          });
+          return;
+        }
+        setFeedback("Reserva creada, pero no pudimos iniciar el pago. Te contactamos pronto.");
         return;
       }
       setFeedback("Reserva creada. Te contactamos pronto.");

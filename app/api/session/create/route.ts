@@ -9,6 +9,7 @@ import { buildCustomerEticketEmail, buildSupplierBookingEmail } from "@/lib/emai
 type Body = {
   bookingId?: string;
   sessionId?: string;
+  paymentIntentId?: string;
 };
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
@@ -65,22 +66,36 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "ConfiguraciÃ³n faltante" }, { status: 500 });
   }
 
+  const stripe = getStripe();
+
+  const paymentIntentId = body.paymentIntentId ?? booking.stripePaymentIntentId;
   const stripeSessionId = body.sessionId ?? booking.stripeSessionId;
-  if (!stripeSessionId) {
-    return NextResponse.json({ ok: false, error: "Falta la sesiÃ³n de pago" }, { status: 400 });
+  let paymentStatus = booking.paymentStatus;
+
+  if (!paymentIntentId && !stripeSessionId) {
+    return NextResponse.json({ ok: false, error: "Falta la sesión de pago" }, { status: 400 });
   }
 
-  const stripe = getStripe();
-  const stripeSession = await stripe.checkout.sessions.retrieve(stripeSessionId);
-  if (stripeSession.payment_status !== "paid") {
-    return NextResponse.json({ ok: false, error: "El pago aÃºn no estÃ¡ confirmado" }, { status: 402 });
+  if (paymentIntentId) {
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const intentPaid = ["succeeded", "requires_capture"].includes(paymentIntent.status);
+    if (!intentPaid) {
+      return NextResponse.json({ ok: false, error: "El pago aún no está confirmado" }, { status: 402 });
+    }
+    paymentStatus = paymentIntent.status ?? paymentStatus;
+  } else if (stripeSessionId) {
+    const stripeSession = await stripe.checkout.sessions.retrieve(stripeSessionId);
+    if (stripeSession.payment_status !== "paid") {
+      return NextResponse.json({ ok: false, error: "El pago aún no está confirmado" }, { status: 402 });
+    }
+    paymentStatus = stripeSession.payment_status ?? paymentStatus;
   }
 
   await prisma.booking.update({
     where: { id: bookingId },
     data: {
       status: BookingStatusEnum.CONFIRMED,
-      paymentStatus: stripeSession.payment_status ?? booking.paymentStatus
+      paymentStatus
     }
   });
 

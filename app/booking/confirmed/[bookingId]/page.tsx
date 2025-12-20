@@ -7,7 +7,6 @@ import ContactoProveedor from "@/components/booking/ContactoProveedor";
 import Eticket from "@/components/booking/Eticket";
 import { ItineraryTimeline, TimelineStop } from "@/components/itinerary/ItineraryTimeline";
 import { parseAdminItinerary } from "@/lib/itinerary";
-import AutoLoginBanner from "@/components/booking/AutoLoginBanner";
 
 type Props = {
   params: {
@@ -161,7 +160,6 @@ export default async function BookingConfirmedPage({ params, searchParams }: Pro
               Enviamos una copia del voucher a <span className="font-semibold">{booking.customerEmail}</span>.
             </p>
           </div>
-          <AutoLoginBanner bookingId={booking.id} />
         </div>
       </section>
 
