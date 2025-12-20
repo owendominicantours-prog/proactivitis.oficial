@@ -7,9 +7,10 @@ import Link from "next/link";
 type HeaderProps = {
   navItems: { label: string; href: string }[];
   rightSlot?: ReactNode;
+  navDisplay?: "inline" | "dropdown";
 };
 
-export const Header = ({ navItems, rightSlot }: HeaderProps) => {
+export const Header = ({ navItems, rightSlot, navDisplay = "inline" }: HeaderProps) => {
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const currencyOptions = ["USD", "EUR"];
@@ -25,15 +26,35 @@ export const Header = ({ navItems, rightSlot }: HeaderProps) => {
             <Image src="/logo.png" alt="Proactivitis" width={200} height={60} className="h-16 w-auto" />
           </Link>
           <nav className="hidden items-center gap-6 text-sm text-slate-700 md:flex">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="font-semibold uppercase tracking-[0.2em] text-slate-500 transition hover:text-slate-900"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navDisplay === "inline" ? (
+              navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="font-semibold uppercase tracking-[0.2em] text-slate-500 transition hover:text-slate-900"
+                >
+                  {item.label}
+                </Link>
+              ))
+            ) : (
+              <div className="relative">
+                <button className="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700 transition hover:bg-slate-50">
+                  Menú
+                  <span>▾</span>
+                </button>
+                <div className="pointer-events-auto absolute left-0 mt-2 w-40 rounded-xl border border-slate-200 bg-white shadow-lg">
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className="block px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </nav>
         </div>
 
