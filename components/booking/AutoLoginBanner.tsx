@@ -9,7 +9,7 @@ type AutoLoginBannerProps = {
 
 type Status = "idle" | "loading" | "success" | "error";
 
-export default function AutoLoginBanner({ bookingId, sessionId }: AutoLoginBannerProps) {
+export default function AutoLoginBanner({ bookingId }: AutoLoginBannerProps) {
   const [status, setStatus] = useState<Status>("idle");
 
   useEffect(() => {
