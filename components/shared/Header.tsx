@@ -69,7 +69,7 @@ export const Header = ({ navItems, rightSlot, navDisplay = "inline" }: HeaderPro
               <span>▾</span>
             </button>
             {currencyOpen && (
-              <div className="absolute right-0 mt-2 w-28 rounded-xl border border-slate-200 bg-white shadow-lg z-50">
+              <div className="absolute right-0 top-full mt-2 w-28 rounded-xl border border-slate-200 bg-white shadow-lg z-50">
                 {currencyOptions.map((option) => (
                   <button
                     key={option}
@@ -97,7 +97,7 @@ export const Header = ({ navItems, rightSlot, navDisplay = "inline" }: HeaderPro
               <span>▾</span>
             </button>
             {languageOpen && (
-              <div className="absolute right-0 mt-2 w-28 rounded-xl border border-slate-200 bg-white shadow-lg z-50">
+              <div className="absolute right-0 top-full mt-2 w-28 rounded-xl border border-slate-200 bg-white shadow-lg z-50">
                 {languageOptions.map((option) => (
                   <button
                     key={option}
