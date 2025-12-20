@@ -22,6 +22,7 @@ type PanelShellProps = {
   title: string;
   roleLabel: string;
   navItems: PanelNavItem[];
+  navDisplay?: "inline" | "dropdown";
   children: ReactNode;
   notifications?: NotificationMenuItem[];
   unreadCount?: number;
@@ -176,6 +177,7 @@ export const PanelShell = ({
   title,
   roleLabel,
   navItems,
+  navDisplay,
   children,
   notifications,
   unreadCount = 0,
@@ -212,7 +214,7 @@ export const PanelShell = ({
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <Header navItems={navItems} rightSlot={rightSlot} />
+      <Header navItems={navItems} rightSlot={rightSlot} navDisplay={navDisplay} />
       <main className="mx-auto max-w-6xl px-6 py-10">{children}</main>
     </div>
   );

@@ -40,10 +40,11 @@ export default async function SupplierDashboardLayout({ children }: { children: 
 
   return (
     <>
-        <PanelShell
-          roleLabel="Proveedor"
-          title="Panel Proveedor"
+      <PanelShell
+        roleLabel="Proveedor"
+        title="Panel Proveedor"
         navItems={supplierNav}
+        navDisplay="dropdown"
         notifications={notifications}
         unreadCount={unreadCount}
         notificationLink="/supplier/notifications"
