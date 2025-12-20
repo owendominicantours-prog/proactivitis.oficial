@@ -16,6 +16,7 @@ type Props = {
   searchParams: {
     session_id?: string;
     bookingId?: string;
+    nxtPbookingId?: string;
   };
 };
 
