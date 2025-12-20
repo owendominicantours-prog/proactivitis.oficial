@@ -209,13 +209,13 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
   return (
     <div className="min-h-screen bg-[#FDFDFD] text-slate-900 pb-24 overflow-x-hidden">
       {/* Hero */}
-      <section className="mx-auto max-w-[1240px] px-4 pt-10">
-        <div className="grid gap-0 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_80px_rgba(0,0,0,0.05)] lg:grid-cols-2">
-          <div className="flex flex-col justify-center p-8 lg:p-16">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-indigo-600">
+      <section className="mx-auto max-w-[1240px] px-4 pt-8 sm:pt-10">
+        <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">
+          <div className="flex flex-col justify-center gap-6 p-6 sm:p-8 lg:p-16">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
               📍 {tour.location}
             </div>
-            <h1 className="mb-6 text-4xl font-black leading-tight text-slate-900 lg:text-5xl">
+            <h1 className="mb-6 text-3xl font-black leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
               {tour.title}
             </h1>
             <p className="mb-10 text-lg text-slate-500 leading-relaxed">{shortTeaser}</p>
@@ -256,7 +256,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
 
       {/* Quick Info */}
       <section className="mx-auto mt-10 max-w-[1240px] px-4">
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {quickInfo.map((item) => (
             <div
               key={item.label}
@@ -372,7 +372,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
               </div>
               <span className="text-[0.65rem] uppercase tracking-[0.4em] text-slate-400">Paso a paso</span>
             </div>
-            <div className="relative mt-4 pl-10">
+            <div className="relative mt-4 pl-0 lg:pl-10">
               <div className="absolute left-4 top-0 bottom-0 w-px border-l-2 border-dashed border-slate-200" />
               <div className="space-y-5">
                 {visualTimeline.map((stop, index) => (
@@ -489,7 +489,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
           </section>
         </div>
 
-        <aside className="space-y-6 lg:w-[400px]">
+        <aside className="space-y-6 lg:w-[400px] w-full">
           <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva</p>
             <h3 className="mt-2 text-2xl font-bold text-slate-900">Confirma tu cupo</h3>

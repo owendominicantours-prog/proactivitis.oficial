@@ -30,6 +30,7 @@
 body {
   @apply bg-slate-50 text-slate-900;
   font-family: var(--font-open-sans), "Slate", "Inter", sans-serif;
+  overflow-x: hidden;
 }
 
 a {
