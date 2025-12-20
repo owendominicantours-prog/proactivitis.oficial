@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { BookingStatus } from "@/lib/types/booking";
+import Eticket from "@/components/booking/Eticket";
 
 const statusMessages: Partial<Record<BookingStatus, string>> = {
   CONFIRMED: "Tu reserva está confirmada.",
@@ -85,6 +86,33 @@ export default async function CustomerPublicReservationsPage() {
                 >
                   Ver detalle
                 </Link>
+              </div>
+              <div className="mt-6">
+                <Eticket
+                  variant="compact"
+                  booking={{
+                    id: booking.id,
+                    travelDate: booking.travelDate,
+                    startTime: booking.startTime,
+                    totalAmount: booking.totalAmount,
+                    paxAdults: booking.paxAdults,
+                    paxChildren: booking.paxChildren,
+                    customerName: booking.customerName,
+                    customerEmail: booking.customerEmail,
+                    pickupNotes: booking.pickupNotes,
+                    hotel: booking.hotel
+                  }}
+                  tour={{
+                    id: booking.Tour?.id ?? "",
+                    slug: booking.Tour?.slug ?? "",
+                    title: booking.Tour?.title ?? "Tour",
+                    heroImage: booking.Tour?.heroImage,
+                    meetingPoint: booking.Tour?.meetingPoint,
+                    meetingInstructions: booking.Tour?.meetingInstructions,
+                    duration: booking.Tour?.duration
+                  }}
+                  supplierName={booking.Tour?.SupplierProfile?.company ?? booking.Tour?.SupplierProfile?.userId ?? undefined}
+                />
               </div>
             </article>
           ))}

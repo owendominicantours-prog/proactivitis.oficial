@@ -1,26 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import { encode } from "next-auth/jwt";
+import { BookingStatusEnum } from "@/lib/types/booking";
+import { prisma } from "@/lib/prisma";
+import { getStripe } from "@/lib/stripe";
+import { sendEmail } from "@/lib/email";
+import { buildCustomerEticketEmail, buildSupplierBookingEmail } from "@/lib/emailTemplates";
 
-function isSameOrigin(request: NextRequest) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== request.nextUrl.origin) return false;
+type Body = {
+  bookingId?: string;
+  sessionId?: string;
+};
 
-  const referer = request.headers.get("referer");
-  if (referer) {
-    try {
-      const refererOrigin = new URL(referer).origin;
-      if (refererOrigin !== request.nextUrl.origin) return false;
-    } catch {
-      return false;
-    }
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
+
+const buildCookie = (name: string, value: string) => {
+  const secure = process.env.NODE_ENV === "production";
+  const segments = [
+    `${name}=${value}`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    `Max-Age=${COOKIE_MAX_AGE}`
+  ];
+  if (secure) {
+    segments.push("Secure");
   }
-
-  return !!origin || !!referer;
-}
+  return segments.join("; ");
+};
 
 export async function POST(request: NextRequest) {
-  if (!isSameOrigin(request)) {
-    return NextResponse.json({ ok: false, error: "CSRF detectado" }, { status: 403 });
+  const body = (await request.json().catch(() => ({}))) as Body;
+  const bookingId = body.bookingId;
+  if (!bookingId) {
+    return NextResponse.json({ ok: false, error: "Reserva inválida" }, { status: 400 });
+  }
+
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: {
+      User: true,
+      Tour: {
+        include: {
+          SupplierProfile: {
+            include: {
+              User: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+  if (!booking || !booking.User || !booking.Tour) {
+    return NextResponse.json({ ok: false, error: "Reserva no encontrada" }, { status: 404 });
   }
 
   const secret = process.env.NEXTAUTH_SECRET;
@@ -28,34 +65,124 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "Configuración faltante" }, { status: 500 });
   }
 
-  const payload = await request.json().catch(() => null);
-  const token = payload?.token;
-
-  if (!token) {
-    return NextResponse.json({ ok: false, error: "Token ausente" }, { status: 400 });
+  const stripeSessionId = body.sessionId ?? booking.stripeSessionId;
+  if (!stripeSessionId) {
+    return NextResponse.json({ ok: false, error: "Falta la sesión de pago" }, { status: 400 });
   }
 
-  let decoded: JwtPayload | string;
-  try {
-    decoded = jwt.verify(token, secret);
-  } catch {
-    return NextResponse.json({ ok: false, error: "Token inválido" }, { status: 401 });
+  const stripe = getStripe();
+  const stripeSession = await stripe.checkout.sessions.retrieve(stripeSessionId);
+  if (stripeSession.payment_status !== "paid") {
+    return NextResponse.json({ ok: false, error: "El pago aún no está confirmado" }, { status: 402 });
   }
 
-  const maxAge = 60 * 60 * 24 * 7;
-  const secureFlag = process.env.NODE_ENV === "production" ? "Secure" : "";
-  const cookieValue = [
-    `auth_token=${token}`,
-    "Path=/",
-    "HttpOnly",
-    "SameSite=Lax",
-    `Max-Age=${maxAge}`,
-    secureFlag
-  ]
-    .filter(Boolean)
-    .join("; ");
+  await prisma.booking.update({
+    where: { id: bookingId },
+    data: {
+      status: BookingStatusEnum.CONFIRMED,
+      paymentStatus: stripeSession.payment_status ?? booking.paymentStatus
+    }
+  });
 
-  const response = NextResponse.json({ ok: true, sub: (decoded as JwtPayload)?.sub ?? null });
-  response.headers.set("Set-Cookie", cookieValue);
+  const tour = booking.Tour;
+  const supplierProfile = tour.SupplierProfile;
+  const supplierUser = supplierProfile?.User;
+  const supplierEmail = supplierUser?.email;
+  const supplierName = supplierUser?.name ?? supplierProfile?.company ?? "Proactivitis";
+  const baseUrl =
+    process.env.NEXTAUTH_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  const ticketUrl = `${baseUrl}/booking/confirmed/${bookingId}`;
+  const orderCode = `#PR-${bookingId.slice(-4).toUpperCase()}`;
+  const whatsappLink = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/?text=Hola%20Proactivitis";
+  const tourData = {
+    title: tour.title,
+    slug: tour.slug,
+    heroImage: tour.heroImage,
+    meetingPoint: tour.meetingPoint
+  };
+  const bookingDetails = {
+    id: booking.id,
+    travelDate: booking.travelDate,
+    startTime: booking.startTime,
+    totalAmount: booking.totalAmount,
+    paxAdults: booking.paxAdults,
+    paxChildren: booking.paxChildren,
+    customerName: booking.customerName,
+    customerEmail: booking.customerEmail,
+    customerPhone: booking.customerPhone,
+    pickupNotes: booking.pickupNotes,
+    hotel: booking.hotel
+  };
+  const customerHtml = buildCustomerEticketEmail({
+    booking: bookingDetails,
+    tour: tourData,
+    supplierName,
+    orderCode,
+    ticketUrl,
+    baseUrl,
+    whatsappLink
+  });
+  const supplierHtml = supplierEmail
+    ? buildSupplierBookingEmail({
+        booking: bookingDetails,
+        tour: tourData,
+        customerName: booking.customerName,
+        orderCode,
+        baseUrl
+      })
+    : null;
+  const emailTasks = [
+    sendEmail({
+      to: booking.customerEmail,
+      subject: `Tu reserva ${orderCode} está confirmada`,
+      html: customerHtml
+    }).catch((error) => {
+      console.warn("No se pudo enviar el correo de confirmación al cliente", error);
+    })
+  ];
+  if (supplierEmail) {
+    emailTasks.push(
+      sendEmail({
+        to: supplierEmail,
+        subject: `Nueva reserva ${orderCode} para ${tour.title}`,
+        html: supplierHtml ?? ""
+      }).catch((error) => {
+        console.warn("No se pudo enviar el correo al proveedor", error);
+      })
+    );
+  }
+  await Promise.all(emailTasks);
+
+  const tokenPayload = {
+    sub: booking.User.id,
+    email: booking.User.email,
+    name: booking.User.name ?? "Viajero",
+    role: booking.User.role ?? "CUSTOMER",
+    supplierApproved: booking.User.supplierApproved ? "true" : "false"
+  };
+
+  const jwtToken = await encode({
+    token: tokenPayload,
+    secret,
+    maxAge: COOKIE_MAX_AGE
+  });
+
+  if (!jwtToken) {
+    return NextResponse.json({ ok: false, error: "No se pudo iniciar sesión" }, { status: 500 });
+  }
+
+  const response = NextResponse.json({
+    ok: true,
+    bookingId,
+    user: {
+      id: booking.User.id,
+      email: booking.User.email,
+      name: booking.User.name
+    }
+  });
+
+  response.headers.append("Set-Cookie", buildCookie("__Secure-next-auth.session-token", jwtToken));
+  response.headers.append("Set-Cookie", buildCookie("next-auth.session-token", jwtToken));
   return response;
 }

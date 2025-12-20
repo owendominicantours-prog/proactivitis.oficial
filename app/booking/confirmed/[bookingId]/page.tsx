@@ -4,12 +4,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TourCard } from "@/components/public/TourCard";
 import ContactoProveedor from "@/components/booking/ContactoProveedor";
+import Eticket from "@/components/booking/Eticket";
 import { ItineraryTimeline, TimelineStop } from "@/components/itinerary/ItineraryTimeline";
 import { parseAdminItinerary } from "@/lib/itinerary";
+import AutoLoginBanner from "@/components/booking/AutoLoginBanner";
 
 type Props = {
   params: {
     bookingId: string;
+  };
+  searchParams: {
+    session_id?: string;
   };
 };
 
@@ -22,7 +27,7 @@ const InfoRow = ({ label, value }: { label: string; value: string }) => (
   </div>
 );
 
-export default async function BookingConfirmedPage({ params }: Props) {
+export default async function BookingConfirmedPage({ params, searchParams }: Props) {
   const { bookingId } = params;
 
   const booking = await prisma.booking.findUnique({
@@ -94,15 +99,64 @@ export default async function BookingConfirmedPage({ params }: Props) {
     duration: stop.time
   }));
 
+  const whatsappLink =
+    process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/?text=Hola%20Proactivitis";
+  const orderCode = `#PR-${booking.id.slice(-4).toUpperCase()}`;
+  const travelDateLabel = new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(booking.travelDate);
+  const passengerLabel = `${booking.paxAdults + booking.paxChildren} pax`;
+  const startTimeLabel = booking.startTime ?? "Hora por confirmar";
+
   return (
     <div className="bg-slate-50 min-h-screen">
       <section className="bg-white border-b border-slate-200">
-        <div className="mx-auto max-w-6xl px-6 py-8 space-y-4">
-          <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Reserva confirmada</p>
-          <h1 className="text-4xl font-semibold text-slate-900">Prepárate para tu experiencia</h1>
-          <p className="max-w-2xl text-slate-500">
-            Todo está listo. Revisa los detalles, descarga tu e-ticket y contacta al proveedor si necesitas ayuda.
-          </p>
+        <div className="mx-auto max-w-6xl px-6 py-8 space-y-6">
+          <div className="rounded-3xl border border-emerald-100 bg-emerald-50/80 p-6 shadow-sm">
+            <div className="flex items-center gap-4 text-emerald-600">
+              <span className="flex h-12 w-12 items-center justify-center rounded-[18px] border border-emerald-200 bg-emerald-50 text-3xl font-black">
+                ✓
+              </span>
+              <div>
+                <p className="text-xs uppercase tracking-[0.6em] text-emerald-700">Reserva confirmada</p>
+                <h1 className="text-3xl font-black text-slate-900 md:text-4xl">¡Tu aventura comienza pronto!</h1>
+              </div>
+            </div>
+            <div className="mt-6 grid gap-6 md:grid-cols-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.6em] text-slate-500">Número de pedido</p>
+                <p className="text-3xl font-black text-slate-900">{orderCode}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Tour reservado</p>
+                <p className="text-base font-semibold text-slate-700">{tour.title}</p>
+                <p className="text-sm text-slate-500">{travelDateLabel}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Pasajeros</p>
+                <p className="text-lg font-semibold text-slate-700">{passengerLabel}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{startTimeLabel}</p>
+              </div>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-4">
+              <a
+                href="#eticket"
+                className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
+              >
+                Descargar mi E-Ticket
+              </a>
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center rounded-full border border-slate-900 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-slate-900 hover:text-white"
+              >
+                ¿Dudas sobre el encuentro? Chatea por WhatsApp
+              </a>
+            </div>
+            <p className="mt-4 text-sm text-slate-600">
+              Enviamos una copia del voucher a <span className="font-semibold">{booking.customerEmail}</span>.
+            </p>
+          </div>
+          <AutoLoginBanner bookingId={booking.id} sessionId={searchParams.session_id} />
         </div>
       </section>
 
@@ -182,6 +236,37 @@ export default async function BookingConfirmedPage({ params }: Props) {
             </div>
           </section>
         )}
+
+        <section className="space-y-6 border-t border-slate-200 pt-8">
+          <h2 className="text-2xl font-semibold text-slate-900">Tu e-ticket digital</h2>
+          <p className="text-sm text-slate-500">
+            Guarda este voucher en tu celular o descárgalo para mostrarlo cuando te reciban en el tour.
+          </p>
+          <Eticket
+            booking={{
+              id: booking.id,
+              travelDate: booking.travelDate,
+              startTime: booking.startTime,
+              totalAmount: booking.totalAmount,
+              paxAdults: booking.paxAdults,
+              paxChildren: booking.paxChildren,
+              customerName: booking.customerName,
+              customerEmail: booking.customerEmail,
+              pickupNotes: booking.pickupNotes,
+              hotel: booking.hotel
+            }}
+            tour={{
+              id: tour.id,
+              slug: tour.slug,
+              title: tour.title,
+              heroImage: tour.heroImage,
+              meetingPoint: tour.meetingPoint,
+              meetingInstructions: tour.meetingInstructions,
+              duration: tour.duration
+            }}
+            supplierName={supplier?.name}
+          />
+        </section>
       </main>
     </div>
   );
