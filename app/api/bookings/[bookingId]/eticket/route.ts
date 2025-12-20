@@ -8,8 +8,14 @@ const buildBuffer = (doc: PDFKit.PDFDocument) =>
     const chunks: Uint8Array[] = [];
     doc.on("data", (chunk: Uint8Array) => chunks.push(chunk));
     doc.on("end", () => {
-      const buffers = chunks.map((chunk) => Buffer.from(chunk));
-      resolve(Buffer.concat(buffers));
+      const totalLength = chunks.reduce((total, chunk) => total + chunk.length, 0);
+      const merged = new Uint8Array(totalLength);
+      let offset = 0;
+      for (const chunk of chunks) {
+        merged.set(chunk, offset);
+        offset += chunk.length;
+      }
+      resolve(Buffer.from(merged));
     });
   });
 
