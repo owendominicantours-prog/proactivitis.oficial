@@ -120,8 +120,7 @@ export async function GET(
 
   doc.end();
   const buffer = await buildBuffer(doc);
-  const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
-  const response = new NextResponse(arrayBuffer);
+  const response = new NextResponse(new Uint8Array(buffer));
   response.headers.set("Content-Type", "application/pdf");
   response.headers.set("Content-Disposition", `inline; filename="proactivitis-eticket-${booking.id}.pdf"`);
   return response;
