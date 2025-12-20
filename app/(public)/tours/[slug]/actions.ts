@@ -193,7 +193,8 @@ export async function createBookingAction(formData: FormData) {
 
   const buildSuccessUrl = (target: string) => {
     const url = new URL(target, baseUrl);
-    url.searchParams.set("bookingId", booking.id);
+    const normalizedPath = url.pathname.replace(/\/+$/, "");
+    url.pathname = `${normalizedPath}/${booking.id}`;
     url.searchParams.set("session_id", "{CHECKOUT_SESSION_ID}");
     return url.toString().replace(/%7B/g, "{").replace(/%7D/g, "}");
   };
