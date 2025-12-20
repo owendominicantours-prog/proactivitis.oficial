@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 
 type AutoLoginBannerProps = {
   bookingId: string;
-  sessionId?: string;
 };
 
 type Status = "idle" | "loading" | "success" | "error";
@@ -15,7 +14,7 @@ export default function AutoLoginBanner({ bookingId, sessionId }: AutoLoginBanne
 
   useEffect(() => {
     let active = true;
-    const payload = { bookingId, sessionId };
+    const payload = { bookingId };
 
     const login = async () => {
       setStatus("loading");
@@ -41,7 +40,7 @@ export default function AutoLoginBanner({ bookingId, sessionId }: AutoLoginBanne
     return () => {
       active = false;
     };
-  }, [bookingId, sessionId]);
+  }, [bookingId]);
 
   if (status === "idle") {
     return null;
