@@ -13,6 +13,11 @@ export type PanelNavItem = {
   href: string;
 };
 
+export type NotificationMenuItem = Pick<
+  Notification,
+  "id" | "title" | "message" | "body" | "metadata" | "createdAt" | "isRead" | "type"
+>;
+
 type NotificationMenuItem = Pick<
   Notification,
   "id" | "title" | "message" | "body" | "metadata" | "createdAt" | "isRead" | "type"
