@@ -59,7 +59,7 @@ export async function GET(
   doc
     .fontSize(10)
     .fillColor("#64748b")
-    .text("Voucher digital", { align: "left", letterSpacing: 1.5 });
+    .text("Voucher digital", { align: "left" });
   doc.moveDown(0.5);
 
   doc
