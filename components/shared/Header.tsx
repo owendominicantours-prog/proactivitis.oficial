@@ -1,121 +1,110 @@
-﻿"use client";
-
-import { ReactNode, useState } from "react";
+﻿import Link from "next/link";
 import Image from "next/image";
-import Link from "next/link";
+import { Notification } from "@prisma/client";
+import { ReactNode } from "react";
+import { parseNotificationMetadata } from "@/lib/notificationService";
+import { markNotificationReadAction } from "@/app/(dashboard)/notifications/actions";
+import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
+import type { NotificationType } from "@/lib/types/notificationTypes";
+import { DashboardUserMenu } from "@/components/dashboard/DashboardUserMenu";
+
+export type HeaderNotification = Pick<
+  Notification,
+  "id" | "title" | "message" | "body" | "metadata" | "createdAt" | "isRead" | "type"
+>;
 
 type HeaderProps = {
   navItems: { label: string; href: string }[];
-  rightSlot?: ReactNode;
-  navDisplay?: "inline" | "dropdown";
+  notifications?: HeaderNotification[];
+  unreadCount?: number;
+  notificationLink?: string;
+  roleLabel: string;
+  displayAccount?: string | null;
 };
 
-export const Header = ({ navItems, rightSlot, navDisplay = "inline" }: HeaderProps) => {
-  const [currencyOpen, setCurrencyOpen] = useState(false);
-  const [languageOpen, setLanguageOpen] = useState(false);
-  const currencyOptions = ["USD", "EUR"];
-  const languageOptions = ["ES", "EN"];
-  const [selectedCurrency, setSelectedCurrency] = useState(currencyOptions[0]);
-  const [selectedLanguage, setSelectedLanguage] = useState(languageOptions[0]);
+const formatNotificationDate = (value: Date) =>
+  new Intl.DateTimeFormat("es-ES", {
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(value);
+
+const notificationGroupLabel = (value: Date) => {
+  const diff = Date.now() - value.getTime();
+  const day = 1000 * 60 * 60 * 24;
+  if (diff < day) return "Hoy";
+  if (diff < 2 * day) return "Ayer";
+  if (diff < 7 * day) return "Esta semana";
+  return "Anterior";
+};
+
+export const Header = ({
+  navItems,
+  notifications,
+  unreadCount = 0,
+  notificationLink,
+  roleLabel,
+  displayAccount
+}: HeaderProps) => {
+  const groupOrder = ["Hoy", "Ayer", "Esta semana", "Anterior"];
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 border-b border-slate-100 bg-white/90 shadow-sm backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex h-16 items-center">
-            <Image src="/logo.png" alt="Proactivitis" width={200} height={60} className="h-16 w-auto" />
-          </Link>
-          <nav className="hidden items-center gap-6 text-sm text-slate-700 md:flex">
-            {navDisplay === "inline" ? (
-              navItems.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="font-semibold uppercase tracking-[0.2em] text-slate-500 transition hover:text-slate-900"
-                >
-                  {item.label}
-                </Link>
-              ))
-            ) : (
-              <div className="relative">
-                <button className="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700 transition hover:bg-slate-50">
-                  Menú
-                  <span>▾</span>
-                </button>
-                <div className="pointer-events-auto absolute left-0 mt-2 w-40 rounded-xl border border-slate-200 bg-white shadow-lg">
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className="block px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </nav>
-        </div>
+    <header className="border-b bg-white shadow-sm">
+      <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-6">
+        
+        {/* LOGO FIXED */}
+        <Link href="/" className="flex items-center">
+          <div className="relative h-16 w-[220px]">
+            <Image
+              src="/logo.png"
+              alt="Proactivitis"
+              fill
+              priority
+              sizes="220px"
+              className="object-contain object-left"
+            />
+          </div>
+        </Link>
 
-        <div className="flex items-center gap-4 text-sm text-slate-700">
-          <div className="relative">
-            <button
-              type="button"
-              className="flex items-center gap-1 rounded-full border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300"
-              onClick={() => setCurrencyOpen((prev) => !prev)}
-            >
-              {selectedCurrency}
-              <span>▾</span>
-            </button>
-            {currencyOpen && (
-              <div className="absolute right-0 top-full mt-2 w-28 rounded-xl border border-slate-200 bg-white shadow-lg z-50">
-                {currencyOptions.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    className="w-full px-3 py-2 text-left text-xs font-medium text-slate-600 hover:bg-slate-50"
-                    onClick={() => {
-                      setSelectedCurrency(option);
-                      setCurrencyOpen(false);
-                    }}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            )}
+        {/* NAV */}
+        <div className="flex items-center gap-8 text-sm text-slate-700">
+          <div className="flex items-center gap-6">
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 transition hover:text-slate-900"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
 
-          <div className="relative">
-            <button
-              type="button"
-              className="flex items-center gap-1 rounded-full border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300"
-              onClick={() => setLanguageOpen((prev) => !prev)}
-            >
-              {selectedLanguage}
-              <span>▾</span>
-            </button>
-            {languageOpen && (
-              <div className="absolute right-0 top-full mt-2 w-28 rounded-xl border border-slate-200 bg-white shadow-lg z-50">
-                {languageOptions.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    className="w-full px-3 py-2 text-left text-xs font-medium text-slate-600 hover:bg-slate-50"
-                    onClick={() => {
-                      setSelectedLanguage(option);
-                      setLanguageOpen(false);
-                    }}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            )}
+          <div className="flex items-center gap-3">
+            {notificationLink ? (
+              <Link
+                href={notificationLink}
+                className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-700 transition hover:bg-slate-50"
+              >
+                Notificaciones
+                {unreadCount ? (
+                  <span className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">
+                    {unreadCount}
+                  </span>
+                ) : null}
+              </Link>
+            ) : null}
           </div>
 
-          {rightSlot}
+          <div className="flex items-center gap-3 text-slate-600">
+            <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em]">
+              {roleLabel}
+            </span>
+            {displayAccount && <span className="text-xs text-slate-500">{displayAccount}</span>}
+          </div>
+
+          <DashboardUserMenu />
         </div>
       </div>
     </header>
