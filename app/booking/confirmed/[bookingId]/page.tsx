@@ -29,7 +29,7 @@ const InfoRow = ({ label, value }: { label: string; value: string }) => (
 );
 
 export default async function BookingConfirmedPage({ params, searchParams }: Props) {
-  const bookingId = params.bookingId ?? searchParams.bookingId;
+  const bookingId = params.bookingId ?? searchParams.bookingId ?? searchParams.nxtPbookingId;
   if (!bookingId) {
     notFound();
   }
