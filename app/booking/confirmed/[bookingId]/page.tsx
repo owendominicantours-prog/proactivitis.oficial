@@ -11,10 +11,11 @@ import AutoLoginBanner from "@/components/booking/AutoLoginBanner";
 
 type Props = {
   params: {
-    bookingId: string;
+    bookingId?: string;
   };
   searchParams: {
     session_id?: string;
+    bookingId?: string;
   };
 };
 
@@ -28,7 +29,10 @@ const InfoRow = ({ label, value }: { label: string; value: string }) => (
 );
 
 export default async function BookingConfirmedPage({ params, searchParams }: Props) {
-  const { bookingId } = params;
+  const bookingId = params.bookingId ?? searchParams.bookingId;
+  if (!bookingId) {
+    notFound();
+  }
 
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
