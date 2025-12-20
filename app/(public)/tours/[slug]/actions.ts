@@ -193,10 +193,9 @@ export async function createBookingAction(formData: FormData) {
 
   const buildSuccessUrl = (target: string) => {
     const url = new URL(target, baseUrl);
-    const hasSearch = Boolean(url.search);
     url.searchParams.set("bookingId", booking.id);
-    const prefix = `${url.toString()}${hasSearch ? "&" : "?"}`;
-    return `${prefix}session_id={CHECKOUT_SESSION_ID}`.replace(/%7B/g, "{").replace(/%7D/g, "}");
+    url.searchParams.set("session_id", "{CHECKOUT_SESSION_ID}");
+    return url.toString().replace(/%7B/g, "{").replace(/%7D/g, "}");
   };
 
   const buildCancelUrl = (target: string) => {
