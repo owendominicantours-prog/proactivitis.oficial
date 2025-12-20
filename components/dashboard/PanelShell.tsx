@@ -18,11 +18,6 @@ export type NotificationMenuItem = Pick<
   "id" | "title" | "message" | "body" | "metadata" | "createdAt" | "isRead" | "type"
 >;
 
-type NotificationMenuItem = Pick<
-  Notification,
-  "id" | "title" | "message" | "body" | "metadata" | "createdAt" | "isRead" | "type"
->;
-
 type PanelShellProps = {
   title: string;
   roleLabel: string;
