@@ -5,9 +5,12 @@ import { toDataURL } from "qrcode";
 
 const buildBuffer = (doc: PDFKit.PDFDocument) =>
   new Promise<Buffer>((resolve) => {
-    const chunks: Buffer[] = [];
-    doc.on("data", (chunk) => chunks.push(chunk));
-    doc.on("end", () => resolve(Buffer.concat(chunks)));
+    const chunks: Uint8Array[] = [];
+    doc.on("data", (chunk: Uint8Array) => chunks.push(chunk));
+    doc.on("end", () => {
+      const buffers = chunks.map((chunk) => Buffer.from(chunk));
+      resolve(Buffer.concat(buffers));
+    });
   });
 
 export async function GET(
