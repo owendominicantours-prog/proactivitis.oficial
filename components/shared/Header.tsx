@@ -11,7 +11,7 @@ type HeaderProps = {
 
 export const Header = ({ navItems, navDisplay = "inline", rightSlot, logoScale = 3 }: HeaderProps) => (
   <header className="border-b bg-white shadow-sm">
-    <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
+    <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-6">
         <div className="flex items-center overflow-visible">
           <Link href="/" className="flex items-center">
             <Image
