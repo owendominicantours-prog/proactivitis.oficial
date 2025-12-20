@@ -12,9 +12,9 @@ const buildBuffer = (doc: PDFKit.PDFDocument) =>
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { bookingId: string } }
+  context: { params: Promise<{ bookingId: string }> }
 ) {
-  const { bookingId } = params;
+  const { bookingId } = await context.params;
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: {
