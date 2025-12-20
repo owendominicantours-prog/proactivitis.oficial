@@ -3,8 +3,11 @@
 @tailwind utilities;
 
 :root {
-  font-family: var(--font-open-sans), "Slate", "Inter", sans-serif;
+  font-family: var(--font-inter, "Inter", system-ui, -apple-system, sans-serif);
+  font-optical-sizing: auto;
   background-color: #f5f7fb;
+  --font-heading: var(--font-geist, "Geist", "Inter", system-ui, sans-serif);
+  --font-mono: var(--font-geist-mono, "Geist Mono", ui-monospace, "SFMono-Regular", monospace);
   --color-primary: #102a43;
   --color-secondary: #1d3b6c;
   --color-accent: #1f74c0;
@@ -29,8 +32,26 @@
 
 body {
   @apply bg-slate-50 text-slate-900;
-  font-family: var(--font-open-sans), "Slate", "Inter", sans-serif;
+  font-family: var(--font-inter, "Inter", system-ui, -apple-system, sans-serif);
   overflow-x: hidden;
+}
+
+h1,
+h2 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.geist-heading {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.geist-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 a {

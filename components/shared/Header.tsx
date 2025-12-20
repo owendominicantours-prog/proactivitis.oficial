@@ -1,110 +1,98 @@
-﻿import Link from "next/link";
-import Image from "next/image";
-import { Notification } from "@prisma/client";
-import { ReactNode } from "react";
-import { parseNotificationMetadata } from "@/lib/notificationService";
-import { markNotificationReadAction } from "@/app/(dashboard)/notifications/actions";
-import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
-import type { NotificationType } from "@/lib/types/notificationTypes";
-import { DashboardUserMenu } from "@/components/dashboard/DashboardUserMenu";
+ "use client";
 
-export type HeaderNotification = Pick<
-  Notification,
-  "id" | "title" | "message" | "body" | "metadata" | "createdAt" | "isRead" | "type"
->;
+import Link from "next/link";
+import Image from "next/image";
+import { ReactNode, useState } from "react";
 
 type HeaderProps = {
   navItems: { label: string; href: string }[];
-  notifications?: HeaderNotification[];
-  unreadCount?: number;
-  notificationLink?: string;
-  roleLabel: string;
-  displayAccount?: string | null;
+  navDisplay?: "inline" | "dropdown";
+  rightSlot?: ReactNode;
+  logoScale?: number;
 };
 
-const formatNotificationDate = (value: Date) =>
-  new Intl.DateTimeFormat("es-ES", {
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  }).format(value);
-
-const notificationGroupLabel = (value: Date) => {
-  const diff = Date.now() - value.getTime();
-  const day = 1000 * 60 * 60 * 24;
-  if (diff < day) return "Hoy";
-  if (diff < 2 * day) return "Ayer";
-  if (diff < 7 * day) return "Esta semana";
-  return "Anterior";
-};
-
-export const Header = ({
-  navItems,
-  notifications,
-  unreadCount = 0,
-  notificationLink,
-  roleLabel,
-  displayAccount
-}: HeaderProps) => {
-  const groupOrder = ["Hoy", "Ayer", "Esta semana", "Anterior"];
+export const Header = ({ navItems, navDisplay = "inline", rightSlot, logoScale = 3 }: HeaderProps) => {
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <header className="border-b bg-white shadow-sm">
-      <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-6">
-        
-        {/* LOGO FIXED */}
-        <Link href="/" className="flex items-center">
-          <div className="relative h-16 w-[220px]">
+      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-6">
+        <div className="flex items-center overflow-visible">
+          <Link href="/" className="flex items-center">
             <Image
               src="/logo.png"
               alt="Proactivitis"
-              fill
-              priority
-              sizes="220px"
-              className="object-contain object-left"
+              width={200}
+              height={60}
+              className="h-12 w-auto object-contain origin-left"
+              style={{ transform: `scale(${logoScale})`, transformOrigin: "left" }}
             />
-          </div>
-        </Link>
+          </Link>
+        </div>
 
-        {/* NAV */}
-        <div className="flex items-center gap-8 text-sm text-slate-700">
-          <div className="flex items-center gap-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 transition hover:text-slate-900"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
+        <nav className="hidden items-center gap-8 text-sm text-slate-700 md:flex">
+          {navDisplay === "inline" ? (
+            <div className="flex items-center gap-6">
+              {navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 transition hover:text-slate-900"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="relative group">
+              <button className="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-700 transition hover:bg-slate-50">
+                Menú
+                <span className="text-base leading-4">▾</span>
+              </button>
+              <div className="pointer-events-auto invisible absolute left-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white opacity-0 shadow-lg transition duration-150 group-hover:visible group-hover:opacity-100">
+                <div className="flex flex-col">
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          {rightSlot}
+        </nav>
 
-          <div className="flex items-center gap-3">
-            {notificationLink ? (
-              <Link
-                href={notificationLink}
-                className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-700 transition hover:bg-slate-50"
-              >
-                Notificaciones
-                {unreadCount ? (
-                  <span className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">
-                    {unreadCount}
-                  </span>
-                ) : null}
-              </Link>
-            ) : null}
-          </div>
+        <div className="flex items-center gap-4 md:hidden">
+          <button
+            type="button"
+            className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-700"
+            onClick={() => setMobileOpen((prev) => !prev)}
+          >
+            Menú
+          </button>
+          {rightSlot}
+        </div>
+      </div>
 
-          <div className="flex items-center gap-3 text-slate-600">
-            <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em]">
-              {roleLabel}
-            </span>
-            {displayAccount && <span className="text-xs text-slate-500">{displayAccount}</span>}
-          </div>
-
-          <DashboardUserMenu />
+      <div
+        className={`md:hidden ${mobileOpen ? "block" : "hidden"} bg-white border-t border-slate-100`}
+        aria-expanded={mobileOpen}
+      >
+        <div className="flex flex-col px-6 py-4 gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="rounded-md px-3 py-2 transition hover:bg-slate-50 hover:text-slate-900"
+            >
+              {item.label}
+            </Link>
+          ))}
         </div>
       </div>
     </header>
