@@ -124,6 +124,13 @@ export default function SupplierFinanceScreen({ supplierName, initialAccountId }
         <div className="rounded-3xl border border-rose-200 bg-rose-50 px-6 py-5 text-sm text-rose-700 shadow-sm">
           <p className="font-semibold">No pudimos cargar Stripe.</p>
           <p>{error}</p>
+          <button
+            disabled={isCreatingAccount}
+            onClick={handleCreateAccount}
+            className="mt-4 inline-flex items-center justify-center rounded-2xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {isCreatingAccount ? "Cargando..." : "Configurar mi cuenta de Stripe ahora"}
+          </button>
         </div>
       )}
 
