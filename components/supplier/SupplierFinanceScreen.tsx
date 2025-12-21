@@ -69,6 +69,7 @@ export default function SupplierFinanceScreen({ supplierName }: SupplierFinanceS
   }, [setAccountId]);
 
   const themeAttr = useMemo(() => JSON.stringify(theme), []);
+  const returnUrl = typeof window !== "undefined" ? `${window.location.origin}/supplier/finance` : undefined;
 
   return (
     <div className="space-y-6">
@@ -101,6 +102,7 @@ export default function SupplierFinanceScreen({ supplierName }: SupplierFinanceS
               style={{ width: "100%", minHeight: "100%" }}
               account-session={accountSession.accountSessionSecret}
               theme={themeAttr}
+              return-url={returnUrl}
             />
           </div>
         </div>

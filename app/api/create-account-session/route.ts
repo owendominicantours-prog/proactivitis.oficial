@@ -44,13 +44,13 @@ export async function POST() {
     });
   }
 
-  const baseUrl =
-    process.env.NEXTAUTH_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
   const accountSession = await stripe.accountSessions.create({
     account: accountId,
-    type: "payouts",
-    return_url: `${baseUrl}/supplier/finance`
+    components: {
+      payouts: {
+        enabled: true
+      }
+    }
   });
 
   return NextResponse.json({
