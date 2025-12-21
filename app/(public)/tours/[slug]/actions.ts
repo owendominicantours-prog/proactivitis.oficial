@@ -196,7 +196,7 @@ export async function createBookingAction(formData: FormData) {
       bookingId: booking.id,
       tourId: tour.id,
       pax: passengerCount.toString(),
-      startTime: selectedStartTime ?? undefined
+      startTime: selectedStartTime ?? null
     },
     automatic_payment_methods: {
       enabled: true
