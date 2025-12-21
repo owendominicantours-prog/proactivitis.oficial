@@ -23,6 +23,7 @@ export default function SupplierFinanceScreen({ supplierName, initialAccountId }
   const [accountSession, setAccountSession] = useState<AccountSessionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -41,6 +42,12 @@ export default function SupplierFinanceScreen({ supplierName, initialAccountId }
   }, [initialAccountId, accountId, setAccountId]);
 
   useEffect(() => {
+    if (!accountId) {
+      setAccountSession(null);
+      setLoading(false);
+      return;
+    }
+
     let active = true;
 
     const fetchSession = async () => {
@@ -72,7 +79,27 @@ export default function SupplierFinanceScreen({ supplierName, initialAccountId }
     return () => {
       active = false;
     };
-  }, [setAccountId]);
+  }, [accountId, setAccountId]);
+
+  const handleCreateAccount = async () => {
+    setIsCreatingAccount(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/create-supplier-account", {
+        method: "POST"
+      });
+      const payload = (await response.json()) as { url?: string; error?: string };
+      if (!response.ok || !payload.url) {
+        throw new Error(payload.error ?? "No pudimos iniciar el onboarding de Stripe");
+      }
+      window.location.assign(payload.url);
+    } catch (cause) {
+      setError((cause as Error).message || "No pudimos iniciar Stripe");
+    } finally {
+      setIsCreatingAccount(false);
+    }
+  };
 
   const themeAttr = useMemo(() => JSON.stringify(theme), []);
   const returnUrl = typeof window !== "undefined" ? `${window.location.origin}/supplier/finance` : undefined;
@@ -97,6 +124,23 @@ export default function SupplierFinanceScreen({ supplierName, initialAccountId }
         <div className="rounded-3xl border border-rose-200 bg-rose-50 px-6 py-5 text-sm text-rose-700 shadow-sm">
           <p className="font-semibold">No pudimos cargar Stripe.</p>
           <p>{error}</p>
+        </div>
+      )}
+
+      {!accountId && (
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold text-slate-500">Stripe Connect</p>
+          <p className="mt-2 text-sm text-slate-600">
+            Parece que aún no tienes una cuenta conectada. Para recibir pagos en Proactivitis primero debes configurar tu cuenta
+            de Stripe.
+          </p>
+          <button
+            disabled={isCreatingAccount}
+            onClick={handleCreateAccount}
+            className="mt-6 inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isCreatingAccount ? "Abriendo Stripe..." : "Configurar cuenta de Stripe"}
+          </button>
         </div>
       )}
 
