@@ -40,6 +40,12 @@ const buildDurationOptions = (values: (string | null)[]): DurationOption[] => {
   return Array.from(map.entries()).map(([value, label]) => ({ value, label }));
 };
 
+export const metadata = {
+  title: "Tours y Experiencias Exclusivas | Reserve con Confianza en Proactivitis",
+  description:
+    "Explore nuestra colección de tours y actividades premium. Confirmación inmediata, pagos seguros y soporte global 24/7 para sus vacaciones perfectas."
+};
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -161,31 +167,111 @@ export default async function ToursGridPage({
 
   return (
     <div className="bg-slate-50 pb-16">
-      <section className="border-b border-slate-200 bg-white">
-          <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Proactivitis Experiences</p>
-              <h1 className="mt-1 text-2xl font-semibold text-slate-900 md:text-3xl">Explora experiencias disponibles</h1>
-            <p className="mt-1 text-sm text-slate-600">Filtra por país, destino, duración, idioma o precio.</p>
-            </div>
+      <section className="border-b border-slate-200 bg-gradient-to-br from-white via-slate-50 to-white">
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">Tours & Experiences</p>
+            <h1 className="text-3xl font-semibold text-slate-900 md:text-4xl">
+              Experiencias Curadas: Descubra el Mundo con Otros Ojos
+            </h1>
+            <p className="text-base text-slate-600">
+              Tours auténticos, guías verificados y momentos inolvidables. Sin procesos automáticos, solo calidad
+              garantizada.
+            </p>
           </div>
+        </div>
       </section>
 
       <main className="mx-auto max-w-6xl px-4 py-6">
-        <div className="grid gap-6 lg:grid-cols-[280px,1fr]">
+        <div className="grid gap-6 lg:grid-cols-[300px,1fr]">
           <aside className="space-y-6">
             <TourFilters
               countries={countries}
-            destinations={destinations.map((dest) => ({
-              name: dest.name,
-              slug: dest.slug,
-              countrySlug: dest.country.slug
-            }))}
+              destinations={destinations.map((dest) => ({
+                name: dest.name,
+                slug: dest.slug,
+                countrySlug: dest.country.slug
+              }))}
               languages={uniqueLanguages}
               durations={durationOptions}
+              mobileFriendly
+              categories={["Aventura", "Cultura", "Gastronomía", "Privados", "Acuáticos"]}
             />
+            <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">Filtro inteligente (móvil friendly)</p>
+              <ul className="space-y-1">
+                <li>Categoría: selección rápida con iconos minimalistas.</li>
+                <li>Destino: desplazamientos fluidos sin mencionar países.</li>
+                <li>Duración: medio día / día completo / multidía.</li>
+                <li>Tipo de grupo: privado o compartido.</li>
+              </ul>
+            </div>
           </aside>
           <section className="space-y-4">
+            <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 text-sm font-medium text-slate-700 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-slate-600">
+                <span className="flex items-center gap-2">
+                  <span className="text-emerald-500">✅</span> Confirmación Inmediata: Reciba su voucher al instante.
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="text-emerald-500">✅</span> Cancelación Flexible: Reembolsos claros.
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="text-emerald-500">✅</span> Soporte 24/7: Asistencia humana real en su actividad.
+                </span>
+              </div>
+            </div>
+
+            {activeFilters.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {activeFilters.map((label) => (
+                  <span key={label} className="rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold text-slate-600">
+                    {label}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <p className="text-xs text-slate-500">
+              Mostrando {tours.length} experiencia{tours.length === 1 ? "" : "s"} seg{`ún`} los filtros.
+            </p>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {tours.map((tour) => (
+                <Link
+                  key={tour.slug}
+                  href={`/tours/${tour.slug}`}
+                  className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="relative h-44 w-full overflow-hidden rounded-t-2xl bg-slate-200">
+                    <DynamicImage
+                      src={tour.heroImage ?? "/fototours/fototour.jpeg"}
+                      alt={tour.title}
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="space-y-2 px-4 py-4">
+                    <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                      <span>{tour.departureDestination?.name ?? tour.location}</span>
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-emerald-600">Verificado</span>
+                    </div>
+                    <p className="text-sm font-semibold text-slate-900 line-clamp-2">{tour.title}</p>
+                    <div className="flex flex-wrap items-center justify-between text-xs text-slate-500">
+                      <span>Desde ${tour.price.toFixed(0)}</span>
+                      <span>{formatDurationLabel(tour.duration)}</span>
+                    </div>
+                    <p className="text-xs text-slate-500">Idioma: {tour.language ?? "Español / Inglés"}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            {tours.length === 0 && (
+                <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
+                  No hay tours con esos filtros. Cambia los parámetros y vuelve a intentar.
+                </div>
+            )}
+          </section>
+        </div>
+      </main>
             {activeFilters.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {activeFilters.map((label) => (
@@ -262,6 +348,10 @@ export default async function ToursGridPage({
                 </span>
               </Link>
             ))}
+            <p className="mt-6 text-sm text-slate-500">
+              Proactivitis selecciona rigurosamente a cada operador turístico para asegurar que su experiencia cumpla con estándares internacionales
+              de seguridad y servicio. Desde traslados privados hasta excursiones exclusivas, nuestra plataforma es su garantía de un viaje sin contratiempos.
+            </p>
           </div>
         </div>
       </section>

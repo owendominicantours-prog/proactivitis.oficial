@@ -5,14 +5,23 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 export type DurationOption = { value: string; label: string };
 
-type Props = {
+interface Props {
   countries: { name: string; slug: string }[];
   destinations: { name: string; slug: string; countrySlug: string }[];
   languages: string[];
   durations: DurationOption[];
-};
+  categories?: string[];
+  mobileFriendly?: boolean;
+}
 
-export function TourFilters({ countries, destinations, languages, durations }: Props) {
+export function TourFilters({
+  countries,
+  destinations,
+  languages,
+  durations,
+  categories,
+  mobileFriendly
+}: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -23,7 +32,6 @@ export function TourFilters({ countries, destinations, languages, durations }: P
   const [language, setLanguage] = useState("");
   const [duration, setDuration] = useState("");
 
-  // Inicializa estados desde la URL al montar/actualizar searchParams (sin efectos en cascada).
   const searchCountry = searchParams.get("country") ?? "";
   const searchDestination = searchParams.get("destination") ?? "";
   const searchMinPrice = searchParams.get("minPrice") ?? "";
@@ -69,14 +77,33 @@ export function TourFilters({ countries, destinations, languages, durations }: P
   return (
     <form className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-md">
       <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Filtros</p>
-
-        <label className="text-[0.7rem] font-semibold text-slate-600">
-          País
-          <select
-            value={country}
-            onChange={(event) => {
-              setCountry(event.target.value);
-              setDestination("");
+      {mobileFriendly ? (
+        <p className="text-[0.65rem] text-slate-500">
+          Filtros optimizados para móvil, listos para tocar y ajustar rápidamente.
+        </p>
+      ) : null}
+      {categories && categories.length > 0 ? (
+        <div className="space-y-2">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-slate-500">Categoría</p>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((category) => (
+              <span
+                key={category}
+                className="rounded-full border border-slate-200 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.3em] text-slate-600"
+              >
+                {category}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      <label className="text-[0.7rem] font-semibold text-slate-600">
+        País
+        <select
+          value={country}
+          onChange={(event) => {
+            setCountry(event.target.value);
+            setDestination("");
           }}
           className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900"
         >
@@ -88,7 +115,6 @@ export function TourFilters({ countries, destinations, languages, durations }: P
           ))}
         </select>
       </label>
-
       <label className="text-[0.7rem] font-semibold text-slate-600">
         Zona o destino
         <select
@@ -104,10 +130,9 @@ export function TourFilters({ countries, destinations, languages, durations }: P
           ))}
         </select>
       </label>
-
       <div className="grid gap-3 md:grid-cols-2">
-      <label className="text-[0.7rem] font-semibold text-slate-600">
-        Precio mínimo
+        <label className="text-[0.7rem] font-semibold text-slate-600">
+          Precio mínimo
           <input
             type="number"
             min="0"
@@ -117,8 +142,8 @@ export function TourFilters({ countries, destinations, languages, durations }: P
             placeholder="0"
           />
         </label>
-      <label className="text-[0.7rem] font-semibold text-slate-600">
-        Precio máximo
+        <label className="text-[0.7rem] font-semibold text-slate-600">
+          Precio máximo
           <input
             type="number"
             min="0"
@@ -129,7 +154,6 @@ export function TourFilters({ countries, destinations, languages, durations }: P
           />
         </label>
       </div>
-
       <div className="grid gap-3 md:grid-cols-2">
         <label className="text-[0.7rem] font-semibold text-slate-600">
           Idioma
@@ -138,7 +162,7 @@ export function TourFilters({ countries, destinations, languages, durations }: P
             onChange={(event) => setLanguage(event.target.value)}
             className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900"
           >
-          <option value="">Cualquier idioma</option>
+            <option value="">Cualquier idioma</option>
             {languages.map((lang) => (
               <option key={lang} value={lang}>
                 {lang}
@@ -146,7 +170,6 @@ export function TourFilters({ countries, destinations, languages, durations }: P
             ))}
           </select>
         </label>
-
         <label className="text-[0.7rem] font-semibold text-slate-600">
           Duración
           <select
@@ -163,7 +186,6 @@ export function TourFilters({ countries, destinations, languages, durations }: P
           </select>
         </label>
       </div>
-
       <div className="flex items-center justify-between gap-2">
         <button
           type="button"
