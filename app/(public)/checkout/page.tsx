@@ -36,12 +36,6 @@ const paymentMethods = [
 const countries = ['Estados Unidos', 'España', 'México', 'Reino Unido', 'Colombia', 'Chile', 'Perú', 'Canadá', 'Brasil'];
 const stepTitles = ['Datos de contacto', 'Detalles de la actividad', 'Información de pago'];
 
-export const metadata = {
-  title: 'Checkout · Proactivitis',
-  description:
-    'Finaliza tu reserva con el checkout premium de Proactivitis: pagos seguros, resumen fijo y asistencia 24/7 para tus experiencias premium.'
-};
-
 export default function CheckoutPage() {
   const [activeStep, setActiveStep] = useState(0);
   const [contactData, setContactData] = useState({ firstName: '', lastName: '', email: '', confirmEmail: '', phone: '' });
