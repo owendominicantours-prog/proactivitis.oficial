@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 
-const currencyOptions = ["USD", "EUR", "DOP"];
+const currencyOptions = ["USD", "EUR"];
 const languageOptions = [
-  { label: "Español", value: "ES" },
-  { label: "English", value: "EN" }
+  { label: "ES", value: "ES" },
+  { label: "EN", value: "EN" }
 ];
 
 export function PublicCurrencyLanguage() {
@@ -25,13 +25,14 @@ export function PublicCurrencyLanguage() {
           }}
           className="flex h-10 items-center justify-center gap-1 rounded-full border border-slate-200 px-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-600"
         >
+          <span aria-hidden="true">💲</span>
           {currency}
           <svg className="h-3 w-3" viewBox="0 0 8 6" fill="none" stroke="currentColor" strokeWidth="1.2">
             <path d="M1 1l3 3 3-3" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
         {currencyOpen && (
-          <div className="absolute left-0 mt-1 w-24 rounded-2xl border border-slate-200 bg-white shadow-lg">
+          <div className="absolute left-0 mt-1 w-24 rounded-2xl border border-slate-200 bg-white shadow-lg z-50">
             {currencyOptions.map((option) => (
               <button
                 type="button"
@@ -57,13 +58,14 @@ export function PublicCurrencyLanguage() {
           }}
           className="flex h-10 items-center justify-center gap-1 rounded-full border border-slate-200 px-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-600"
         >
+          <span aria-hidden="true">🌐</span>
           {language}
           <svg className="h-3 w-3" viewBox="0 0 8 6" fill="none" stroke="currentColor" strokeWidth="1.2">
             <path d="M1 1l3 3 3-3" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
         {languageOpen && (
-          <div className="absolute left-0 mt-1 w-28 rounded-2xl border border-slate-200 bg-white shadow-lg">
+          <div className="absolute left-0 mt-1 w-28 rounded-2xl border border-slate-200 bg-white shadow-lg z-50">
             {languageOptions.map((option) => (
               <button
                 type="button"
