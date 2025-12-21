@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
-import PaymentElementStep from "@/components/booking/PaymentElementStep";
-import { TourBookingForm } from "@/components/tours/TourBookingForm";
+import { useRouter } from "next/navigation";
 
 type TimeSlotOption = {
   hour: number;
@@ -25,24 +24,18 @@ type TourBookingWidgetProps = {
   platformSharePercent: number;
 };
 
-type PaymentSession = {
-  bookingId: string;
-  clientSecret: string;
-  amount: number;
-};
-
 export function TourBookingWidget({
   tourId,
   basePrice,
   timeSlots,
-  supplierHasStripeAccount,
-  platformSharePercent
+  supplierHasStripeAccount: _supplierHasStripeAccount,
+  platformSharePercent: _platformSharePercent
 }: TourBookingWidgetProps) {
+  const router = useRouter();
   const [date, setDate] = useState("");
   const [adults, setAdults] = useState(1);
   const [youth, setYouth] = useState(0);
   const [child, setChild] = useState(0);
-  const [showDetails, setShowDetails] = useState(false);
   const [showTravelersPopover, setShowTravelersPopover] = useState(false);
   const [selectedTime, setSelectedTime] = useState(() =>
     timeSlots.length ? formatTimeOption(timeSlots[0]) : ""
@@ -52,23 +45,18 @@ export function TourBookingWidget({
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const totalTravelers = Math.max(1, adults + youth + child);
   const estimatedTotal = basePrice * totalTravelers;
-  const [paymentSession, setPaymentSession] = useState<PaymentSession | null>(null);
 
   const handleCheckAvailability = () => {
     if (!date) return;
-    setShowDetails(true);
-  };
-
-  const handleBookingSuccess = (session: { bookingId: string; clientSecret: string | null; amount: number }) => {
-    if (!session.clientSecret) {
-      setPaymentSession(null);
-      return;
-    }
-    setPaymentSession({
-      bookingId: session.bookingId,
-      clientSecret: session.clientSecret,
-      amount: session.amount
+    const params = new URLSearchParams({
+      tourId,
+      date,
+      time: selectedTime,
+      adults: adults.toString(),
+      youth: youth.toString(),
+      child: child.toString()
     });
+    router.push(`/checkout?${params.toString()}`);
   };
 
   const travelersSummary = () => {
@@ -280,55 +268,6 @@ export function TourBookingWidget({
         </div>
       </div>
 
-      {/* STEP 2: TRAVELER DETAILS */}
-      {showDetails && (
-        <div className="mt-5 border-t border-slate-200 pt-4">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Step 2 · Traveler details
-          </p>
-          <TourBookingForm
-            tourId={tourId}
-            initialDate={date}
-            initialAdults={adults}
-            initialChildren={youth + child}
-            hideDateAndPax
-            selectedTime={selectedTime}
-            onSuccess={handleBookingSuccess}
-          />
-
-          {paymentSession && (
-            <div className="mt-6 space-y-4">
-              {!supplierHasStripeAccount && (
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
-                  <p className="font-semibold text-amber-800">Reserva garantizada por Proactivitis</p>
-                  <p className="mt-1 text-[0.65rem] leading-tight">
-                    Pagamos tu reserva mientras ayudamos al proveedor a terminar su configuración de Stripe.
-                  </p>
-                </div>
-              )}
-
-              {platformSharePercent > 20 && (
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
-                  <p className="font-semibold">Impulsa activo: {platformSharePercent}% para Proactivitis</p>
-                  <p className="mt-1 text-[0.65rem] text-amber-700">
-                    El tour aporta más marketing. El proveedor recibe {100 - platformSharePercent}% mientras tu reserva está protegida.
-                  </p>
-                </div>
-              )}
-
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                <p className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">Step 3 · Pago seguro</p>
-                <p className="mt-1 text-xs">Confirma el pago y te llevamos directo a la página de confirmación.</p>
-              </div>
-              <PaymentElementStep
-                bookingId={paymentSession.bookingId}
-                clientSecret={paymentSession.clientSecret}
-                amount={paymentSession.amount}
-              />
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
