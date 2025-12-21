@@ -74,12 +74,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             <PublicHeaderSearch />
             <PublicCurrencyLanguage />
             <PublicWishlistButton />
-            <Link
-              href="/become-a-supplier"
-              className="rounded-full border border-slate-200 bg-slate-900 px-4 py-1 text-[11px] font-black uppercase tracking-[0.3em] text-white transition hover:border-slate-800 hover:bg-slate-800"
-            >
-              CONVIÉRTETE EN PROVEEDOR
-            </Link>
             <PublicAuthButtons />
           </div>
         }
