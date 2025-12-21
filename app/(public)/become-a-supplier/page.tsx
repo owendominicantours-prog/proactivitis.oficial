@@ -1,4 +1,4 @@
-import { Globe, ShieldCheck, Sparkles } from "lucide-react";
+import { CreditCard, Globe, ShieldCheck, Sparkles } from "lucide-react";
 import PartnerRequestForm from "@/components/public/PartnerRequestForm";
 
 export const metadata = {
@@ -98,6 +98,23 @@ export default function BecomeSupplierPage() {
       </section>
 
       <PartnerRequestForm id="partner-form" role="SUPPLIER" subtitle="Cuéntanos sobre tu operación y tus servicios" />
+
+      <section className="space-y-4 rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-xl">
+        <div className="flex flex-wrap items-center gap-4">
+          <CreditCard className="h-5 w-5 text-slate-900" />
+          <p className="text-base font-semibold text-slate-900">Sistema de pago y cobro garantizado por Stripe Connect Express</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+          {["Visa", "Mastercard", "American Express", "Discover"].map((brand) => (
+            <span
+              key={brand}
+              className="rounded-full border border-slate-200 px-4 py-2 font-semibold shadow-sm"
+            >
+              {brand}
+            </span>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

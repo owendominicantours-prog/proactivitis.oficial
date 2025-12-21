@@ -194,40 +194,40 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          {[
-            { label: "Nombre de la empresa", value: companyName, setter: setCompanyName },
-            { label: "Nombre del contacto", value: contactName, setter: setContactName },
-            { label: "Cargo del contacto", value: contactRole, setter: setContactRole },
-            { label: "Correo electrónico", value: email, setter: setEmail, type: "email" },
-            { label: "Teléfono", value: phone, setter: setPhone },
-            { label: "País de operación", value: country, setter: (val: string) => setCountry(val), isSelect: true }
-          ].map((field) => (
-            <label key={field.label} className="block">
-              <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{field.label}</span>
-              {field.isSelect ? (
-                <select
-                  value={country}
-                  onChange={(event) => field.setter(event.target.value)}
-                  required
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
-                >
-                  {countryOptions.map((option) => (
-                    <option value={option} key={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  type={field.type ?? "text"}
-                  value={field.value}
-                  onChange={(event) => field.setter(event.target.value)}
-                  required
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
-                />
-              )}
-            </label>
-          ))}
+        {[
+          { label: "Nombre de la empresa", value: companyName, setter: setCompanyName },
+          { label: "Nombre del contacto", value: contactName, setter: setContactName },
+          { label: "Cargo del contacto", value: contactRole, setter: setContactRole },
+          { label: "Correo electrónico", value: email, setter: setEmail, type: "email" },
+          { label: "Teléfono", value: phone, setter: setPhone },
+          { label: "País de operación", value: country, setter: (val: string) => setCountry(val), isSelect: true }
+        ].map((field) => (
+          <label key={field.label} className="block">
+            <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{field.label}</span>
+            {field.isSelect ? (
+              <select
+                value={country}
+                onChange={(event) => field.setter(event.target.value)}
+                required
+                className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+              >
+                {countryOptions.map((option) => (
+                  <option value={option} key={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type={field.type ?? "text"}
+                value={field.value}
+                onChange={(event) => field.setter(event.target.value)}
+                required
+                className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+              />
+            )}
+          </label>
+        ))}
           <label className="block">
             <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Sitio web</span>
             <input
@@ -237,26 +237,40 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
               placeholder="https://"
             />
           </label>
-          <label className="block">
-            <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Contraseña</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-              className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
-            />
-          </label>
-          <label className="block">
-            <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Repite la contraseña</span>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              required
-              className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
-            />
-          </label>
+        <label className="block relative">
+          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Contraseña</span>
+          <input
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3 top-8 text-[0.65rem] uppercase tracking-[0.3em] text-slate-500"
+          >
+            {showPassword ? "Ocultar" : "Ver"}
+          </button>
+        </label>
+        <label className="block relative">
+          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Repite la contraseña</span>
+          <input
+            type={showConfirmPassword ? "text" : "password"}
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            required
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword((prev) => !prev)}
+            className="absolute right-3 top-8 text-[0.65rem] uppercase tracking-[0.3em] text-slate-500"
+          >
+            {showConfirmPassword ? "Ocultar" : "Ver"}
+          </button>
+        </label>
         </div>
 
         <div className="space-y-3">
@@ -299,6 +313,7 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
             accept=".pdf,.doc,.docx,.zip,.png,.jpg,.jpeg"
             onChange={handleFileChange}
           />
+          <p className="mt-1 text-xs text-slate-500">Aceptamos PDF, JPG, PNG y ZIP para respaldar tu operación.</p>
           {file && <p className="mt-1 text-xs text-slate-500">Archivo listo: {file.name}</p>}
         </label>
 
