@@ -186,71 +186,28 @@ export async function createBookingAction(formData: FormData) {
   }
 
   const stripeClient = getStripe();
-  const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
-  const successTarget = process.env.NEXT_PUBLIC_STRIPE_SUCCESS_URL ?? `${baseUrl}/booking/confirmed`;
-  const cancelTarget = process.env.NEXT_PUBLIC_STRIPE_CANCEL_URL ?? baseUrl;
   const currency = (process.env.STRIPE_CURRENCY ?? "usd").toLowerCase();
 
-  const buildSuccessUrl = (target: string) => {
-    const url = new URL(target, baseUrl);
-    const normalizedPath = url.pathname.replace(/\/+$/, "");
-    url.pathname = `${normalizedPath}/${booking.id}`;
-    url.searchParams.set("session_id", "{CHECKOUT_SESSION_ID}");
-    return url.toString().replace(/%7B/g, "{").replace(/%7D/g, "}");
-  };
-
-  const buildCancelUrl = (target: string) => {
-    const url = new URL(target, baseUrl);
-    url.searchParams.set("bookingId", booking.id);
-    return url.toString();
-  };
-
-  const checkoutSession = await stripeClient.checkout.sessions.create({
-    payment_method_types: ["card"],
-    mode: "payment",
-    customer_email: customerEmail.trim().toLowerCase(),
-    line_items: [
-      {
-        price_data: {
-          currency,
-          product_data: {
-            name: tour.title?.trim() || "Tour reservation",
-            description: summary
-          },
-          unit_amount: Math.round(totalAmount * 100)
-        },
-        quantity: 1
-      }
-    ],
+  const paymentIntent = await stripeClient.paymentIntents.create({
+    amount: Math.round(totalAmount * 100),
+    currency,
+    description: summary,
     metadata: {
       bookingId: booking.id,
       tourId: tour.id,
       pax: passengerCount.toString(),
       startTime: selectedStartTime ?? undefined
     },
-    payment_intent_data: {
-      description: summary
-    },
-    success_url: buildSuccessUrl(successTarget),
-    cancel_url: buildCancelUrl(cancelTarget)
-  } as Stripe.Checkout.SessionCreateParams);
-
-  const paymentIntentId =
-    typeof checkoutSession.payment_intent === "string"
-      ? checkoutSession.payment_intent
-      : checkoutSession.payment_intent?.id;
-
-  if (!checkoutSession.url) {
-    throw new Error("No se pudo iniciar el pago con Stripe. Intenta nuevamente.");
-  }
+    automatic_payment_methods: {
+      enabled: true
+    }
+  });
 
   await prisma.booking.update({
     where: { id: booking.id },
     data: {
-      stripeSessionId: checkoutSession.id,
-      stripePaymentIntentId: paymentIntentId ?? null,
-      paymentStatus: checkoutSession.payment_status ?? null,
-      stripeCheckoutUrl: checkoutSession.url ?? null
+      stripePaymentIntentId: paymentIntent.id,
+      paymentStatus: paymentIntent.status ?? booking.paymentStatus
     }
   });
 
@@ -258,5 +215,10 @@ export async function createBookingAction(formData: FormData) {
   revalidatePath("/supplier/bookings");
   revalidatePath("/agency/bookings");
   revalidatePath("/dashboard/customer");
-  return { bookingId: booking.id, tourSlug: tour.slug, stripeSessionUrl: checkoutSession.url ?? null };
+  return {
+    bookingId: booking.id,
+    tourSlug: tour.slug,
+    clientSecret: paymentIntent.client_secret ?? null,
+    amount: totalAmount
+  };
 }
