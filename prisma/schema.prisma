@@ -198,6 +198,7 @@ model SupplierProfile {
   userId   String      @unique
   company  String
   approved Boolean     @default(false)
+  stripeAccountId String? @map("stripe_account_id")
   User     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   Tour     Tour[]
   drafts   TourDraft[]
