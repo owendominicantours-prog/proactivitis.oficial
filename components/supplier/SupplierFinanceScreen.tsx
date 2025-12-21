@@ -104,6 +104,7 @@ export default function SupplierFinanceScreen({ supplierName, initialAccountId }
   const themeAttr = useMemo(() => JSON.stringify(theme), []);
   const returnUrl = typeof window !== "undefined" ? `${window.location.origin}/supplier/finance` : undefined;
   const needsOnboardingPrompt = Boolean(accountId && !accountSession && !loading && !error);
+  const needsSetupButton = Boolean(!accountId && !loading && !error);
 
   return (
     <div className="space-y-6">
@@ -131,6 +132,22 @@ export default function SupplierFinanceScreen({ supplierName, initialAccountId }
             className="mt-4 inline-flex items-center justify-center rounded-2xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isCreatingAccount ? "Cargando..." : "Configurar mi cuenta de Stripe ahora"}
+          </button>
+        </div>
+      )}
+
+      {needsSetupButton && (
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold text-slate-500">Stripe Connect</p>
+          <p className="mt-2 text-sm text-slate-600">
+            Para empezar a recibir pagos necesitas conectar tu cuenta de Stripe. Pulsa el botón para iniciar el proceso.
+          </p>
+          <button
+            disabled={isCreatingAccount}
+            onClick={handleCreateAccount}
+            className="mt-6 inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isCreatingAccount ? "Cargando..." : "Configurar cuenta de Stripe"}
           </button>
         </div>
       )}
