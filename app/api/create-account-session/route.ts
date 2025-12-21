@@ -25,11 +25,13 @@ export async function POST() {
   const defaultCountry = process.env.STRIPE_ACCOUNT_DEFAULT_COUNTRY ?? "US";
   let accountId = supplier.stripeAccountId;
 
+  const userEmail = session?.user?.email ?? undefined;
+
   if (!accountId) {
     const account = await stripe.accounts.create({
       type: "express",
       country: defaultCountry,
-      email: session.user?.email ?? undefined,
+      email: userEmail,
       business_type: "company",
       company: {
         name: supplier.company
