@@ -8,9 +8,9 @@ const footerGroups = [
     title: "Soporte",
     links: [
       { title: "Centro de ayuda", href: "/help-center" },
-      { title: "Contáctanos", href: "/contact" },
+      { title: "Contacto", href: "/contact" },
       { title: "Cómo funciona", href: "/how-it-works" },
-      { title: "Preguntas frecuentes", href: "/faqs" }
+      { title: "FAQs", href: "/faqs" }
     ]
   },
   {
@@ -18,26 +18,26 @@ const footerGroups = [
     links: [
       { title: "Sobre Proactivitis", href: "/about" },
       { title: "Nuestra misión", href: "/our-mission" },
-      { title: "Prensa y medios", href: "/press" },
+      { title: "Prensa", href: "/press" },
       { title: "Aliados", href: "/partners" }
     ]
   },
   {
     title: "Colabora",
     links: [
-      { title: "Conviértete en supplier", href: "/become-a-supplier" },
-      { title: "Alianzas con agencias", href: "/agency-partners" },
+      { title: "Conviértete en Partner", href: "/become-a-supplier" },
+      { title: "Alianzas con Agencias", href: "/agency-partners" },
       { title: "Afiliados", href: "/affiliates" },
-      { title: "Carreras (próximamente)", href: "/careers" }
+      { title: "Carreras", href: "/careers" }
     ]
   },
   {
     title: "Legal",
     links: [
-      { title: "Términos y condiciones", href: "/legal/terms" },
-      { title: "Política de privacidad", href: "/legal/privacy" },
+      { title: "Términos y Condiciones", href: "/legal/terms" },
+      { title: "Privacidad", href: "/legal/privacy" },
       { title: "Cookies", href: "/legal/cookies" },
-      { title: "Información legal", href: "/legal/information" }
+      { title: "Información Legal", href: "/legal/information" }
     ]
   }
 ];
@@ -71,7 +71,7 @@ export function PublicFooter() {
           </div>
         ))}
         <div className="space-y-2 border-t border-white/10 pt-4 text-[0.65rem] uppercase tracking-[0.3em] text-gray-500">
-          <p className="text-center font-semibold text-slate-100">Proactivitis — Turismo hecho por personas</p>
+          <p className="text-center font-semibold text-slate-100">Proactivitis — Tourism powered by people, not bots. Global Headquarters.</p>
           <p className="text-center">&copy; {new Date().getFullYear()} Proactivitis</p>
         </div>
       </div>
@@ -102,10 +102,10 @@ export function PublicFooter() {
           </div>
           <div className="space-y-1 md:space-y-0">
             <p className="text-center text-[0.65rem] uppercase tracking-[0.3em] text-gray-500 md:text-left">
-             &copy; {new Date().getFullYear()} Proactivitis
+              &copy; {new Date().getFullYear()} Proactivitis
             </p>
             <p className="text-center text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-slate-200 md:text-left">
-              Tourism powered by people, not bots.
+              Proactivitis — Tourism powered by people, not bots. Global Headquarters.
             </p>
           </div>
         </div>
