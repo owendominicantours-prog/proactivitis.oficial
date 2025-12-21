@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 
 type AccountSessionResponse = {
   accountId: string;
-  accountSessionId: string;
   accountSessionSecret: string;
 };
 

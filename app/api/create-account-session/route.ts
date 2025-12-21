@@ -55,7 +55,6 @@ export async function POST() {
 
   return NextResponse.json({
     accountId,
-    accountSessionId: accountSession.id,
     accountSessionSecret: accountSession.client_secret
   });
 }
