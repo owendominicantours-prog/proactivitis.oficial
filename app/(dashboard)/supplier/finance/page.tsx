@@ -29,7 +29,7 @@ export default async function SupplierFinancePage() {
 
   return (
     <AccountProvider initialAccountId={supplier.stripeAccountId}>
-      <SupplierFinanceScreen supplierName={supplier.company} />
+      <SupplierFinanceScreen supplierName={supplier.company} initialAccountId={supplier.stripeAccountId} />
     </AccountProvider>
   );
 }

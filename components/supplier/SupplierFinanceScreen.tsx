@@ -15,10 +15,11 @@ const theme = {
 
 type SupplierFinanceScreenProps = {
   supplierName: string;
+  initialAccountId?: string | null;
 };
 
-export default function SupplierFinanceScreen({ supplierName }: SupplierFinanceScreenProps) {
-  const { setAccountId } = useAccount();
+export default function SupplierFinanceScreen({ supplierName, initialAccountId }: SupplierFinanceScreenProps) {
+  const { accountId, setAccountId } = useAccount();
   const [accountSession, setAccountSession] = useState<AccountSessionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +33,12 @@ export default function SupplierFinanceScreen({ supplierName }: SupplierFinanceS
       document.head.removeChild(script);
     };
   }, []);
+
+  useEffect(() => {
+    if (initialAccountId && !accountId) {
+      setAccountId(initialAccountId);
+    }
+  }, [initialAccountId, accountId, setAccountId]);
 
   useEffect(() => {
     let active = true;
