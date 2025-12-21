@@ -272,54 +272,6 @@ export default async function ToursGridPage({
           </section>
         </div>
       </main>
-            {activeFilters.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {activeFilters.map((label) => (
-                  <span key={label} className="rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold text-slate-600">
-                    {label}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            <p className="text-xs text-slate-500">
-              Mostrando {tours.length} experiencia{tours.length === 1 ? "" : "s"} según los filtros.
-            </p>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {tours.map((tour) => (
-                <Link
-                  key={tour.slug}
-                  href={`/tours/${tour.slug}`}
-                  className="rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <div className="relative h-40 w-full overflow-hidden rounded-t-2xl bg-slate-200">
-                    <DynamicImage
-                      src={tour.heroImage ?? "/fototours/fototour.jpeg"}
-                      alt={tour.title}
-                      className="absolute inset-0 h-full w-full object-cover"
-                    />
-                  </div>
-            <div className="space-y-1 px-4 py-3">
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
-                      {tour.departureDestination?.country?.name ?? "Global"} ·{" "}
-                      {tour.departureDestination?.name ?? tour.location}
-                    </p>
-                    <p className="text-sm font-semibold text-slate-900 line-clamp-2">{tour.title}</p>
-                    <p className="text-xs text-slate-500">
-                      Desde ${tour.price.toFixed(0)} · {formatDurationLabel(tour.duration)}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-            {tours.length === 0 && (
-                <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
-                  No hay tours con esos filtros. Cambia los parámetros y vuelve a intentar.
-                </div>
-            )}
-          </section>
-        </div>
-      </main>
 
       <section className="bg-white">
         <div className="mx-auto max-w-6xl px-4 py-14">
