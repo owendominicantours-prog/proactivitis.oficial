@@ -188,20 +188,43 @@ export async function createBookingAction(formData: FormData) {
   const stripeClient = getStripe();
   const currency = (process.env.STRIPE_CURRENCY ?? "usd").toLowerCase();
 
-  const paymentIntent = await stripeClient.paymentIntents.create({
-    amount: Math.round(totalAmount * 100),
+  const centsAmount = Math.round(totalAmount * 100);
+  const supplierAccountId = tour.SupplierProfile?.stripeAccountId;
+  const basePaymentParams: Stripe.PaymentIntentCreateParams = {
+    amount: centsAmount,
     currency,
     description: summary,
     metadata: {
       bookingId: booking.id,
       tourId: tour.id,
       pax: passengerCount.toString(),
-      startTime: selectedStartTime ?? null
+      startTime: selectedStartTime ?? null,
+      supplierAccountId: supplierAccountId ?? "not-configured"
     },
     automatic_payment_methods: {
       enabled: true
     }
-  });
+  };
+
+  let paymentIntent: Stripe.PaymentIntent;
+  const applicationFeeAmount = Math.round((centsAmount * 20) / 100);
+
+  if (supplierAccountId) {
+    try {
+      paymentIntent = await stripeClient.paymentIntents.create({
+        ...basePaymentParams,
+        transfer_data: {
+          destination: supplierAccountId
+        },
+        application_fee_amount: applicationFeeAmount
+      });
+    } catch (intentError) {
+      console.error("Stripe transfer_data failed, falling back to platform payment", intentError);
+      paymentIntent = await stripeClient.paymentIntents.create(basePaymentParams);
+    }
+  } else {
+    paymentIntent = await stripeClient.paymentIntents.create(basePaymentParams);
+  }
 
   await prisma.booking.update({
     where: { id: booking.id },

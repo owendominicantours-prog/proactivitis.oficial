@@ -493,7 +493,12 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
           <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva</p>
             <h3 className="mt-2 text-2xl font-bold text-slate-900">Confirma tu cupo</h3>
-            <TourBookingWidget tourId={tour.id} basePrice={tour.price} timeSlots={timeSlots} />
+            <TourBookingWidget
+              tourId={tour.id}
+              basePrice={tour.price}
+              timeSlots={timeSlots}
+              supplierHasStripeAccount={Boolean(tour.SupplierProfile?.stripeAccountId)}
+            />
             <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-600">
               <p className="font-semibold text-slate-900">
                 {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Proveedor local"}

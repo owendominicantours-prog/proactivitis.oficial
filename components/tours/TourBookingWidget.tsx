@@ -21,6 +21,7 @@ type TourBookingWidgetProps = {
   tourId: string;
   basePrice: number;
   timeSlots: TimeSlotOption[];
+  supplierHasStripeAccount: boolean;
 };
 
 type PaymentSession = {
@@ -29,7 +30,12 @@ type PaymentSession = {
   amount: number;
 };
 
-export function TourBookingWidget({ tourId, basePrice, timeSlots }: TourBookingWidgetProps) {
+export function TourBookingWidget({
+  tourId,
+  basePrice,
+  timeSlots,
+  supplierHasStripeAccount
+}: TourBookingWidgetProps) {
   const [date, setDate] = useState("");
   const [adults, setAdults] = useState(1);
   const [youth, setYouth] = useState(0);
@@ -287,12 +293,20 @@ export function TourBookingWidget({ tourId, basePrice, timeSlots }: TourBookingW
             selectedTime={selectedTime}
             onSuccess={handleBookingSuccess}
           />
-          {paymentSession && (
-            <div className="mt-6 space-y-4">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                <p className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">Step 3 · Pago seguro</p>
-                <p className="mt-1 text-xs">Confirma el pago y te llevamos directo a la página de confirmación.</p>
-              </div>
+      {paymentSession && (
+        <div className="mt-6 space-y-4">
+          {!supplierHasStripeAccount && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
+              <p className="font-semibold text-amber-800">Reserva garantizada por Proactivitis</p>
+              <p className="mt-1 text-[0.65rem] leading-tight">
+                Pagamos tu reserva mientras ayudamos al proveedor a terminar su configuración de Stripe.
+              </p>
+            </div>
+          )}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            <p className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">Step 3 · Pago seguro</p>
+            <p className="mt-1 text-xs">Confirma el pago y te llevamos directo a la página de confirmación.</p>
+          </div>
               <PaymentElementStep
                 bookingId={paymentSession.bookingId}
                 clientSecret={paymentSession.clientSecret}
