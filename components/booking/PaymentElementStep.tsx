@@ -21,9 +21,7 @@ export default function PaymentElementStep({ bookingId, clientSecret, amount }: 
       variables: {
         colorPrimary: "#047857",
         colorBackground: "#f8fafc",
-        borderRadius: "16px",
-        paddingBlock: "8px",
-        spacingGridRow: "12px"
+        borderRadius: "16px"
       }
     };
     return {
