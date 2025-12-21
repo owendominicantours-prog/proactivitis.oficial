@@ -160,7 +160,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
       ? `${tour.shortDescription.slice(0, 220).trim()}…`
       : tour.shortDescription || "Explora esta aventura guiada por expertos locales.";
 
-  const ratingValue = 4.9;
+  const ratingValue = tour.rating ?? 4.9;
   const languagesLabel = languages.length ? languages.join(" / ") : "Español / Inglés";
   const isBestseller = tour.featured;
   const supplierName = tour.SupplierProfile?.company ?? "Owen Dominican Tours";
