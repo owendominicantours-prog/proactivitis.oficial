@@ -13,10 +13,11 @@ type Body = {
 export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as Body;
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id ?? null;
-  if (!userId) {
+  const user = session?.user;
+  if (!user?.id) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
+  const userId = user.id;
 
   const supplier = await prisma.supplierProfile.findUnique({
     where: { userId }
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
     const account = await stripe.accounts.create({
       type: "express",
       country: defaultCountry,
-      email: session.user?.email ?? undefined,
+      email: user.email ?? undefined,
       business_type: "company",
       company: {
         name: supplier.company
