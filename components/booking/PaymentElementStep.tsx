@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import type { StripeElementsOptionsClientSecret } from "@stripe/stripe-js";
 
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
@@ -14,22 +15,22 @@ type PaymentElementStepProps = {
 };
 
 export default function PaymentElementStep({ bookingId, clientSecret, amount }: PaymentElementStepProps) {
-  const appearanceOptions = useMemo(
-    () => ({
-      clientSecret,
-      appearance: {
-        theme: "flat",
-        variables: {
-          colorPrimary: "#047857",
-          colorBackground: "#f8fafc",
-          borderRadius: "16px",
-          paddingBlock: "8px",
-          spacingGridRow: "12px"
-        }
+  const appearanceOptions = useMemo<StripeElementsOptionsClientSecret>(() => {
+    const appearance: StripeElementsOptionsClientSecret["appearance"] = {
+      theme: "flat",
+      variables: {
+        colorPrimary: "#047857",
+        colorBackground: "#f8fafc",
+        borderRadius: "16px",
+        paddingBlock: "8px",
+        spacingGridRow: "12px"
       }
-    }),
-    [clientSecret]
-  );
+    };
+    return {
+      clientSecret,
+      appearance
+    };
+  }, [clientSecret]);
 
   if (!stripePromise) {
     return (
