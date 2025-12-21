@@ -22,6 +22,7 @@ type TourBookingWidgetProps = {
   basePrice: number;
   timeSlots: TimeSlotOption[];
   supplierHasStripeAccount: boolean;
+  platformSharePercent: number;
 };
 
 type PaymentSession = {
@@ -34,7 +35,8 @@ export function TourBookingWidget({
   tourId,
   basePrice,
   timeSlots,
-  supplierHasStripeAccount
+  supplierHasStripeAccount,
+  platformSharePercent
 }: TourBookingWidgetProps) {
   const [date, setDate] = useState("");
   const [adults, setAdults] = useState(1);
@@ -293,20 +295,31 @@ export function TourBookingWidget({
             selectedTime={selectedTime}
             onSuccess={handleBookingSuccess}
           />
-      {paymentSession && (
-        <div className="mt-6 space-y-4">
-          {!supplierHasStripeAccount && (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
-              <p className="font-semibold text-amber-800">Reserva garantizada por Proactivitis</p>
-              <p className="mt-1 text-[0.65rem] leading-tight">
-                Pagamos tu reserva mientras ayudamos al proveedor a terminar su configuración de Stripe.
-              </p>
-            </div>
-          )}
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-            <p className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">Step 3 · Pago seguro</p>
-            <p className="mt-1 text-xs">Confirma el pago y te llevamos directo a la página de confirmación.</p>
-          </div>
+
+          {paymentSession && (
+            <div className="mt-6 space-y-4">
+              {!supplierHasStripeAccount && (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
+                  <p className="font-semibold text-amber-800">Reserva garantizada por Proactivitis</p>
+                  <p className="mt-1 text-[0.65rem] leading-tight">
+                    Pagamos tu reserva mientras ayudamos al proveedor a terminar su configuración de Stripe.
+                  </p>
+                </div>
+              )}
+
+              {platformSharePercent > 20 && (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+                  <p className="font-semibold">Impulsa activo: {platformSharePercent}% para Proactivitis</p>
+                  <p className="mt-1 text-[0.65rem] text-amber-700">
+                    El tour aporta más marketing. El proveedor recibe {100 - platformSharePercent}% mientras tu reserva está protegida.
+                  </p>
+                </div>
+              )}
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                <p className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">Step 3 · Pago seguro</p>
+                <p className="mt-1 text-xs">Confirma el pago y te llevamos directo a la página de confirmación.</p>
+              </div>
               <PaymentElementStep
                 bookingId={paymentSession.bookingId}
                 clientSecret={paymentSession.clientSecret}

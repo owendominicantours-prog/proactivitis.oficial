@@ -187,9 +187,12 @@ export async function createBookingAction(formData: FormData) {
 
   const stripeClient = getStripe();
   const currency = (process.env.STRIPE_CURRENCY ?? "usd").toLowerCase();
-
+  const platformSharePercent = Math.min(Math.max(tour.platformSharePercent ?? 20, 20), 50);
   const centsAmount = Math.round(totalAmount * 100);
+  const platformFeeAmount = Math.round((centsAmount * platformSharePercent) / 100);
+  const supplierAmount = centsAmount - platformFeeAmount;
   const supplierAccountId = tour.SupplierProfile?.stripeAccountId;
+
   const basePaymentParams: Stripe.PaymentIntentCreateParams = {
     amount: centsAmount,
     currency,
@@ -199,6 +202,7 @@ export async function createBookingAction(formData: FormData) {
       tourId: tour.id,
       pax: passengerCount.toString(),
       startTime: selectedStartTime ?? null,
+      platformSharePercent: platformSharePercent.toString(),
       supplierAccountId: supplierAccountId ?? "not-configured"
     },
     automatic_payment_methods: {
@@ -207,7 +211,6 @@ export async function createBookingAction(formData: FormData) {
   };
 
   let paymentIntent: Stripe.PaymentIntent;
-  const applicationFeeAmount = Math.round((centsAmount * 20) / 100);
 
   if (supplierAccountId) {
     try {
@@ -216,21 +219,26 @@ export async function createBookingAction(formData: FormData) {
         transfer_data: {
           destination: supplierAccountId
         },
-        application_fee_amount: applicationFeeAmount
+        application_fee_amount: platformFeeAmount
       });
     } catch (intentError) {
-      console.error("Stripe transfer_data failed, falling back to platform payment", intentError);
+      console.error("Stripe transfer_data failed, falling back to platform account", intentError);
       paymentIntent = await stripeClient.paymentIntents.create(basePaymentParams);
     }
   } else {
-    paymentIntent = await stripeClient.paymentIntents.create(basePaymentParams);
+    paymentIntent = await stripeClient.paymentIntents.create({
+      ...basePaymentParams,
+      application_fee_amount: platformFeeAmount
+    });
   }
 
   await prisma.booking.update({
     where: { id: booking.id },
     data: {
       stripePaymentIntentId: paymentIntent.id,
-      paymentStatus: paymentIntent.status ?? booking.paymentStatus
+      paymentStatus: paymentIntent.status ?? booking.paymentStatus,
+      platformFee: platformFeeAmount / 100,
+      supplierAmount: supplierAmount / 100
     }
   });
 

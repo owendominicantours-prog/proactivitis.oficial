@@ -17,11 +17,20 @@ export async function POST(
     return NextResponse.json({ error: "Tour inválido" }, { status: 400 });
   }
 
-  const tour = await prisma.tour.findUnique({ where: { id: tourId } });
+  const tour = await prisma.tour.findUnique({
+    where: { id: tourId },
+    include: {
+      SupplierProfile: {
+        select: {
+          userId: true
+        }
+      }
+    }
+  });
   if (!tour) {
     return NextResponse.json({ error: "Tour no encontrado" }, { status: 404 });
   }
-  if (tour.supplierId !== session.user.id) {
+  if (tour.SupplierProfile?.userId !== session.user.id) {
     return NextResponse.json({ error: "No tienes permiso para modificar este tour" }, { status: 403 });
   }
 

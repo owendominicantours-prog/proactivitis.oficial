@@ -498,6 +498,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
               basePrice={tour.price}
               timeSlots={timeSlots}
               supplierHasStripeAccount={Boolean(tour.SupplierProfile?.stripeAccountId)}
+              platformSharePercent={tour.platformSharePercent ?? 20}
             />
             <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-600">
               <p className="font-semibold text-slate-900">
