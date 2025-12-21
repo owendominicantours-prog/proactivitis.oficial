@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   }
 
   const stripe = getStripe();
-  const feePercent = Number(process.env.STRIPE_PLATFORM_FEE_PERCENT ?? 15);
+  const feePercent = 20;
   const applicationFeeAmount = Math.max(0, Math.round((amount * feePercent) / 100));
 
   const session = await stripe.checkout.sessions.create({

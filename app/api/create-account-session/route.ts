@@ -40,14 +40,26 @@ export async function POST(request: NextRequest) {
       business_type: "company",
       company: {
         name: supplier.company
-      }
-    });
+    }
+  });
     accountId = account.id;
     await prisma.supplierProfile.update({
       where: { id: supplier.id },
       data: { stripeAccountId: accountId }
     });
   }
+
+  await stripe.accounts.update(accountId, {
+    settings: {
+      payouts: {
+        schedule: {
+          interval: "weekly",
+          weekly_anchor: "saturday"
+        },
+        delay_days: 7
+      }
+    }
+  });
 
   const accountSession = await stripe.accountSessions.create({
     account: accountId,
