@@ -55,9 +55,9 @@ export async function POST(request: NextRequest) {
       payouts: {
         schedule: {
           interval: "weekly",
-          weekly_anchor: "saturday"
-        },
-        delay_days: 7
+          weekly_anchor: "saturday",
+          delay_days: 7
+        }
       }
     }
   });
