@@ -6,6 +6,8 @@ import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import { prisma } from "@/lib/prisma";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
+import { DynamicImage } from "@/components/shared/DynamicImage";
+import { Bus, Clock4, Globe, Star } from "lucide-react";
 
 type TourDetailProps = {
   params: {
@@ -158,50 +160,37 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
       ? `${tour.shortDescription.slice(0, 220).trim()}…`
       : tour.shortDescription || "Explora esta aventura guiada por expertos locales.";
 
+  const ratingValue = tour.rating ?? 4.9;
+  const languagesLabel = languages.length ? languages.join(" / ") : "Español / Inglés";
+  const isBestseller = tour.featured;
+  const supplierName = tour.SupplierProfile?.company ?? "Owen Dominican Tours";
+
   const quickInfo = [
     {
       label: "Duración",
       value: durationLabel,
-      detail: "Experiencia guiada",
       icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 7v5l3 2" />
-        </svg>
+        <div className="rounded-full bg-emerald-50 p-1">
+          <Clock4 className="h-4 w-4 text-emerald-500" />
+        </div>
       )
     },
     {
-      label: "Salida",
+      label: "Recogida",
       value: displayTime,
-      detail: "Encuentro en el lobby",
       icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
-          <path d="M12 4a8 8 0 100 16 8 8 0 000-16Zm0 9V7" />
-          <path d="M12 12h4" />
-        </svg>
+        <div className="rounded-full bg-sky-50 p-1">
+          <Bus className="h-4 w-4 text-sky-500" />
+        </div>
       )
     },
     {
       label: "Idiomas",
-      value: languages.length ? languages.join(", ") : "Por confirmar",
-      detail: languages.length ? `${languages.length} idiomas disponibles` : "Por confirmar",
+      value: languagesLabel,
       icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
-          <path d="M4 6h16M4 12h16M4 18h16" />
-          <path d="M8 4c0 2.21-1.343 4-3 4M18 4c0 2.21 1.343 4 3 4" />
-        </svg>
-      )
-    },
-    {
-      label: "Capacidad",
-      value: `${tour.capacity ?? "15"} pers.`,
-      detail: "Grupos reducidos",
-      icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
-          <circle cx="8" cy="8" r="3" />
-          <circle cx="16" cy="8" r="3" />
-          <path d="M2 21c0-3.314 2.686-6 6-6h8c3.314 0 6 2.686 6 6" />
-        </svg>
+        <div className="rounded-full bg-amber-50 p-1">
+          <Globe className="h-4 w-4 text-amber-500" />
+        </div>
       )
     }
   ];
@@ -218,17 +207,16 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             <h1 className="mb-6 text-3xl font-black leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
               {tour.title}
             </h1>
-            <p className="mb-10 text-lg text-slate-500 leading-relaxed">{shortTeaser}</p>
-            <div className="flex items-center gap-8 border-t border-slate-100 pt-8">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Desde</p>
-                <p className="text-4xl font-black text-indigo-600">{priceLabel}</p>
+            <p className="mb-6 text-lg text-slate-500 leading-relaxed">{shortTeaser}</p>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+              <div className="flex items-center gap-1">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <Star key={index} className="h-4 w-4 text-amber-400" />
+                ))}
               </div>
-              <div className="h-10 w-px bg-slate-200" />
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Rating</p>
-                <p className="text-xl font-black">⭐ 4.9</p>
-              </div>
+              <span className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                {ratingValue.toFixed(1)} · 128 reseñas
+              </span>
             </div>
             <div className="mt-10 flex flex-wrap gap-4">
               <Link
@@ -245,27 +233,33 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
               </Link>
             </div>
           </div>
-          <div
-            className="h-[400px] lg:h-full bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${heroImage})`
-            }}
-          />
+          <div className="relative h-[400px] lg:h-full">
+            {isBestseller && (
+              <span className="absolute right-4 top-4 rounded-full bg-amber-500 px-4 py-1 text-xs font-bold uppercase tracking-[0.3em] text-white shadow-lg">
+                Top Experience
+              </span>
+            )}
+            <div
+              className="h-full w-full bg-cover bg-center"
+              style={{
+                backgroundImage: `url(${heroImage})`
+              }}
+            />
+          </div>
         </div>
       </section>
 
       {/* Quick Info */}
       <section className="mx-auto mt-10 max-w-[1240px] px-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {quickInfo.map((item) => (
             <div
               key={item.label}
               className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
             >
-              <span className="mb-3 block text-2xl">{item.icon}</span>
+              <div className="mb-3">{item.icon}</div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{item.label}</p>
               <p className="text-sm font-black text-slate-900">{item.value}</p>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400 mt-2">{item.detail}</p>
             </div>
           ))}
         </div>
@@ -489,8 +483,9 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
           </section>
         </div>
 
-        <aside className="space-y-6 lg:w-[400px] w-full">
-          <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl">
+        <aside className="space-y-6 w-full lg:w-[400px]">
+          <div className="lg:sticky lg:top-6 space-y-6">
+            <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva</p>
             <h3 className="mt-2 text-2xl font-bold text-slate-900">Confirma tu cupo</h3>
             <TourBookingWidget
@@ -499,6 +494,9 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
               timeSlots={timeSlots}
               supplierHasStripeAccount={Boolean(tour.SupplierProfile?.stripeAccountId)}
               platformSharePercent={tour.platformSharePercent ?? 20}
+              durationLabel={durationLabel}
+              startTimeLabel={displayTime}
+              languageInfo={languagesLabel}
             />
             <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-600">
               <p className="font-semibold text-slate-900">
@@ -506,9 +504,29 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
               </p>
               <p>Operado por expertos en la región.</p>
             </div>
+            </div>
           </div>
         </aside>
       </main>
+
+      <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+          <div className="h-24 w-24 overflow-hidden rounded-3xl bg-slate-100">
+            <DynamicImage
+              src={tour.heroImage ?? "/fototours/fototour.jpeg"}
+              alt={`${supplierName} · anfitrión Proactivitis`}
+              className="h-full w-full object-cover"
+            />
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Conoce a tu anfitrión</p>
+            <p className="text-xl font-semibold text-slate-900">{supplierName}</p>
+            <p className="text-sm text-slate-600">
+              Guías certificados, atención personalizada y respaldo de Proactivitis para cada grupo.
+            </p>
+          </div>
+        </div>
+      </section>
 
       <ReserveFloatingButton targetId="booking" priceLabel={priceLabel} />
     </div>
