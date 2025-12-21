@@ -28,9 +28,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Proactivitis Marketplace",
+  title: "Proactivitis | Global Travel Experience Platform: Tours & Transfers",
   description:
-    "Marketplace turístico integral de Owen Dominicanproactivitis. Tours, proveedores, agencias y CRM en un solo lugar.",
+    "Reserve tours auténticos, traslados privados premium y experiencias exclusivas con confirmación inmediata. Seguridad de pago global y soporte 24/7 en los mejores destinos del mundo.",
   icons: [
     { rel: "icon", url: "/ico.ico" },
     { rel: "shortcut icon", url: "/ico.ico" },

@@ -7,12 +7,12 @@ export type InfoSection =
   | {
       type: "faq";
       title: string;
-      items: { question: string; answer: string }[];
+      items: { question: string; answer: string; ctaLabel?: string; ctaHref?: string }[];
     }
   | {
       type: "faq-group";
       title: string;
-      items: { question: string; answer: string }[];
+      items: { question: string; answer: string; ctaLabel?: string; ctaHref?: string }[];
     }
   | {
       type: "cta";
@@ -233,87 +233,73 @@ export const infoPages: InfoPage[] = [
     category: "support",
     path: "/how-it-works",
     title: "Cómo funciona",
-    seoTitle: "Cómo funciona Proactivitis",
-    seoDescription: "Descubre cómo conectamos viajeros, proveedores y agencias a través de una sola plataforma.",
+    seoTitle: "Cómo funciona Proactivitis | How Proactivitis works",
+    seoDescription: "Procesos simples, pagos blindados y ejecución premium para cada viajero. | Simple processes, secure payments, and premium execution for every traveler.",
     hero: {
-      eyebrow: "Producto",
-      title: "Así funciona Proactivitis",
-      subtitle: "Una plataforma que une viajeros, proveedores locales y agencias con pasos claros desde buscar hasta cobrar.",
+      eyebrow: "Proceso",
+      title: "Cómo funciona Proactivitis: Su viaje perfecto, simplificado.",
+      subtitle: "Desde la selección hasta la ejecución, garantizamos un estándar de seguridad y claridad en cada paso.",
       layout: "standard"
     },
     sections: [
       {
         type: "steps",
-        title: "Para viajeros",
-        steps: [
-          { label: "Descubre", description: "Busca por destino, fecha o tipo de experiencia y compara tours verificados en una sola vista." },
-          { label: "Reserva", description: "Elige fecha, tamaño del grupo e idioma. Completa el pago y recibe confirmación al instante cuando el tour lo permita." },
-          { label: "Disfruta", description: "Encuentra al proveedor en el punto de encuentro o en el pickup del hotel, muestra tu voucher y vive la experiencia." }
-        ]
-      },
-      {
-        type: "steps",
-        title: "Para proveedores y agencias",
+        title: "Simplificamos todo en tres pasos",
         steps: [
           {
-            label: "Publica experiencias",
-            description: "Crea páginas detalladas con fotos, itinerarios, disponibilidades y precios."
+            label: "Paso 1: Selección Inteligente",
+            description: "Explore nuestra red global de servicios. Filtre por destino, tipo de vehículo o categoría de experiencia. Todos nuestros precios son finales, sin cargos ocultos."
           },
           {
-            label: "Gestiona reservas",
-            description: "Usa el panel de proveedor para confirmar, chatear con viajeros, administrar cupos y medir rendimiento."
+            label: "Paso 2: Reserva Blindada",
+            description: "Confirme su reserva mediante nuestra pasarela de pago con encriptación de grado bancario. Recibirá un voucher electrónico con todos los detalles técnicos y puntos de encuentro de inmediato."
           },
           {
-            label: "Cobros",
-            description: "Proactivitis procesa pagos online y libera fondos según experiencias completadas y acuerdos pactados."
+            label: "Paso 3: Ejecución Premium",
+            description: "El día de su servicio, un profesional verificado le asistirá. Monitoreamos cada traslado y tour mediante GPS y comunicación directa para asegurar su tranquilidad."
           }
         ]
       }
     ]
   },
+
   {
     key: "faqs",
     category: "support",
     path: "/faqs",
     title: "Preguntas frecuentes",
-    seoTitle: "Preguntas frecuentes | Proactivitis",
-    seoDescription: "Respuestas claras sobre Proactivitis, reservas, pagos y proveedores.",
+    seoTitle: "Preguntas frecuentes | FAQs | Proactivitis",
+    seoDescription: "Resuelve dudas globales sobre cobertura, seguridad y partners. | Resolve global doubts about coverage, security, and partners.",
     hero: {
       eyebrow: "Soporte",
       title: "Preguntas frecuentes",
-      subtitle: "Respuestas breves y útiles a lo que más preguntan nuestros usuarios.",
-      layout: "narrow"
+      subtitle: "Resolución clara de inquietudes sin mencionar ubicación física, con datos de confianza y soporte internacional.",
+      layout: "standard"
     },
     sections: [
       {
         type: "faq-group",
-        title: "Reservas",
+        title: "Resolvemos tus dudas",
         items: [
           {
-            question: "¿Necesito imprimir mi voucher?",
-            answer:
-              "En la mayoría de los casos aceptamos vouchers móviles. Si un tour exige impresos, lo verás claro en la página del tour y en tu correo de confirmación."
+            question: "¿En qué países opera Proactivitis?",
+            answer: "Somos una plataforma global en constante expansión. Actualmente cubrimos los principales hubs turísticos y aeropuertos internacionales, conectando viajeros con proveedores locales de élite en múltiples continentes.",
+            ctaLabel: "Ver destinos",
+            ctaHref: "/destinations"
           },
           {
-            question: "¿Puedo reservar para otra persona?",
-            answer:
-              "Sí. Solo ingresa el nombre y los datos de contacto del viajero durante el checkout para que el proveedor pueda comunicarse con la persona correcta."
-          }
-        ]
-      },
-      {
-        type: "faq-group",
-        title: "Pagos",
-        items: [
-          {
-            question: "¿Qué monedas aceptan?",
-            answer:
-              "Cobramoss principalmente en monedas globales (USD, EUR y otras según tu ubicación). La moneda final siempre la ves antes de confirmar."
+            question: "¿Cómo garantizan mi seguridad?",
+            answer: "Todos los proveedores deben cumplir con licencias comerciales vigentes y seguros de responsabilidad civil internacional. Además, nuestro equipo de soporte supervisa la operativa 24/7 y responde al +1 (809) 394-9877."
           },
           {
-            question: "¿Hay cargos adicionales?",
-            answer:
-              "Todos los cargos obligatorios se muestran antes de pagar. Extras opcionales (fotos, bebidas premium, etc.) aparecen como no incluidos."
+            question: "¿Qué métodos de pago aceptan?",
+            answer: "Aceptamos todas las tarjetas de crédito internacionales (Visa, Mastercard, Amex) y procesamos los pagos a través de sistemas seguros globales para su total protección."
+          },
+          {
+            question: "¿Cómo puedo ser proveedor?",
+            answer: "Si usted es un operador con flota propia o servicios turísticos de alta gama, puede iniciar su proceso de auditoría en nuestra sección de Partners.",
+            ctaLabel: "Partners",
+            ctaHref: "/become-a-supplier"
           }
         ]
       }
@@ -324,129 +310,166 @@ export const infoPages: InfoPage[] = [
     category: "company",
     path: "/about",
     title: "Sobre Proactivitis",
-    seoTitle: "Sobre Proactivitis | Experiencias locales globales",
-    seoDescription: "La historia de Proactivitis, plataforma local que conecta viajeros con operadores confiables.",
+    seoTitle: "Proactivitis: Excelencia en Movilidad y Experiencias Globales | Proactivitis: Excellence in Mobility and Global Experiences",
+    seoDescription: "Proactivitis es una plataforma tecnológica líder para traslados premium y experiencias curadas, conectando proveedores locales con viajeros globales. | Proactivitis is a leading technology platform for premium transfers and curated experiences, connecting local partners with global travelers.",
     hero: {
       eyebrow: "Empresa",
-      title: "Creado por locales para viajeros globales",
-      subtitle:
-        "Proactivitis nació en el Caribe ayudando a visitantes y creció hasta ser una plataforma para proveedores globales.",
+      title: "Proactivitis: Excelencia en Movilidad y Experiencias Globales",
+      subtitle: "Autoridad tecnológica, confianza internacional y operaciones diseñadas para el viajero global.",
       layout: "standard"
     },
     sections: [
       {
         type: "text",
-        title: "Nuestra historia",
+        title: "Nuestra propuesta",
         body: [
-          "Proactivitis nació en el Caribe, donde viajeros preguntaban una y otra vez: “¿En quién confío para vivir una experiencia real y segura?” Como operadores locales, conocíamos ambos lados: invitados que buscaban claridad y proveedores ahogados entre correos, hojas de Excel y múltiples marketplaces.",
-          "Decidimos construir algo distinto: una plataforma tan cercana como tu contacto local en WhatsApp, pero tan robusta como los grandes players globales. Hoy Proactivitis conecta viajeros, proveedores y agencias en un solo lugar con herramientas de reservas, notificaciones, pagos y rendimiento."
+          "Proactivitis es una plataforma tecnológica líder, dedicada a la gestión de traslados privados premium y experiencias de viaje curadas en los destinos más exclusivos del mundo.",
+          "Nuestra misión es cerrar la brecha entre los proveedores locales de alta calidad y el viajero global, garantizando estándares de seguridad, puntualidad y soporte que las agencias tradicionales no pueden ofrecer.",
+          "Operamos bajo una estructura diseñada para la eficiencia internacional, permitiendo que cada reserva sea procesada con la máxima transparencia y seguridad financiera."
         ]
       },
       {
-        type: "text",
-        title: "Qué nos hace distintos",
-        body: [
-          "Local-first: partimos desde el terreno trabajando con operadores locales.",
-          "Transparencia: precios claros, comunicación abierta y expectativas definidas para cada experiencia.",
-          "Mentalidad de producto: unimos experiencia en ruta con software moderno para mantener todo simple y confiable."
+        type: "bullets",
+        title: "Nuestros valores",
+        items: [
+          "Verificación rigurosa: auditamos a cada socio comercial para asegurar vehículos modernos y guías certificados.",
+          "Soporte multi-destino: asistencia coordinada globalmente para resolver cualquier imprevisto en tiempo real.",
+          "Innovación en pagos: procesamiento seguro en múltiples divisas para una experiencia sin fronteras."
         ]
       }
     ]
-  },
-  {
+  },  {
     key: "mission",
     category: "company",
     path: "/our-mission",
     title: "Nuestra misión",
-    seoTitle: "Nuestra misión | Proactivitis",
-    seoDescription: "Hacemos que las experiencias locales sean fáciles de reservar, operar y más justas.",
+    seoTitle: "Nuestra Misión y Visión | El Compromiso de Proactivitis",
+    seoDescription: "Descubra los valores que impulsan a Proactivitis: excelencia en traslados privados, tours curados y una infraestructura tecnológica global para el turismo moderno.",
     hero: {
       eyebrow: "Empresa",
-      title: "Nuestra misión",
-      subtitle: "Facilitar experiencias locales para viajeros, proveedores y agencias.",
+      title: "Elevando los estándares del viaje global",
+      subtitle: "Transformamos la logística de viajes en una experiencia de lujo, seguridad y simplicidad absoluta.",
       layout: "standard"
     },
     sections: [
       {
-        type: "bullets",
-        title: "Tres promesas simples",
-        items: [
-          "Para viajeros: información clara, pago seguro y soporte confiable.",
-          "Para proveedores: herramientas modernas sin perder la relación humana con invitados.",
-          "Para agencias: inventario, comisiones y comunicación claros."
+        type: "text",
+        title: "Nuestra Visión",
+        body: [
+          "Convertirnos en la infraestructura tecnológica preferida para la movilidad premium y las experiencias turísticas a nivel mundial.",
+          "Conectamos de manera inteligente a los mejores proveedores con los clientes más exigentes."
+        ]
+      },
+      {
+        type: "columns",
+        title: "Nuestros Valores Fundamentales",
+        columns: [
+          { title: "Calidad sobre Cantidad", items: ["Selección manual de partners; la tecnología humaniza el servicio."] },
+          { title: "Seguridad y Transparencia Global", items: ["Infraestructura de pagos y datos alineada con estándares internacionales."] },
+          { title: "Empoderamiento del Socio Local", items: ["Damos herramientas tecnológicas para mantener la autenticidad en cada destino."] },
+          { title: "Excelencia Operativa", items: ["Puntualidad, respuesta inmediata y resolución proactiva de imprevistos."] }
         ]
       },
       {
         type: "text",
-        title: "Cómo medimos el éxito",
+        title: "Hacia dónde vamos",
         body: [
-          "Nos enfocamos en experiencias completadas, satisfacción del viajero y relaciones duraderas con proveedores, no solo en clics o impresiones.",
-          "Cada nueva funcionalidad que lanzamos debe responder: ¿hace la vida más fácil a viajeros, proveedores o agencias?"
+          "Construimos el ecosistema de viajes más confiable del planeta.",
+          "La tecnología y la hospitalidad se encuentran para que el viajero se sienta en casa y el proveedor tenga el control."
         ]
       }
     ]
-  },
-  {
+  },  {
     key: "press",
     category: "company",
     path: "/press",
     title: "Press & media",
-    seoTitle: "Press & media | Proactivitis",
-    seoDescription: "Press resources, brand story and media contact information for Proactivitis.",
+    seoTitle: "Sala de Prensa y Media Kit | Proactivitis Global",
+    seoDescription: "Acceda a los recursos oficiales de prensa, logotipos y noticias de Proactivitis, la plataforma líder en tecnología para viajes y movilidad.",
     hero: {
-      eyebrow: "Medios",
-      title: "Prensa y medios",
-      subtitle: "¿Cubres a Proactivitis o el sector de tours y actividades? Aquí tienes un punto de partida.",
-      layout: "narrow"
-    },
-    sections: [
-      {
-        type: "text",
-        title: "Resumen de marca",
-        body: [
-          "Proactivitis es un marketplace global y plataforma SaaS para tours y actividades, creado por operadores que conocen lo que ocurre en el terreno.",
-          "Ayudamos a proveedores a digitalizar su inventario y alcanzar viajeros globales manteniendo un trato local y humano."
-        ]
-      },
-      {
-        type: "list",
-        title: "Recursos para prensa",
-        items: [
-          "Guías de marca (logo, colores, tipografía)",
-          "Logos en versiones claras y oscuras",
-          "Capturas del producto (marketplace y paneles)",
-          "Biografías de fundadores y líderes"
-        ]
-      },
-      {
-        type: "contact-info",
-        title: "Contacto para medios",
-        items: [{ label: "Consultas de prensa", value: "press@proactivitis.com" }]
-      }
-    ]
-  },
-  {
-    key: "partners",
-    category: "company",
-    path: "/partners",
-    title: "Aliados",
-    seoTitle: "Aliados | Proactivitis",
-    seoDescription: "Descubre cómo trabajamos con operadores locales, agencias y socios tecnológicos.",
-    hero: {
-      eyebrow: "Empresa",
-      title: "Aliados",
-      subtitle: "Colaboramos con operadores locales, agencias y partners tecnológicos que priorizan la calidad y la transparencia.",
+      eyebrow: "Prensa",
+      title: "Centro de Prensa y Media Kit",
+      subtitle: "Llevando la tecnología turística al siguiente nivel con actualizaciones globales y recursos oficiales.",
       layout: "standard"
     },
     sections: [
       {
+        type: "text",
+        title: "Sobre Proactivitis",
+        body: [
+          "Proactivitis es una plataforma tecnológica global que conecta viajeros internacionales con traslados premium y tours curados.",
+          "Bajo el lema 'Tourism powered by people, not bots', devolvemos la calidad y el servicio humano al centro de la industria turística."        ]
+      },
+      {
         type: "columns",
-        title: "Tipos de aliados",
+        title: "Recursos de Marca",
         columns: [
-          { title: "Operadores locales", items: ["Proveedores de experiencias individuales", "Operadores multi-destino", "Diseñadores de experiencias y DMCs"] },
-          { title: "Agencias", items: ["Agencias de viaje online", "Conserjerías y desks de hoteles", "Agencias especializadas"] },
-          { title: "Tecnología", items: ["Procesadores de pago", "Gestores de conectividad y canales", "Ecosistemas travel-tech"] }
+          { title: "Logotipos oficiales", items: ["Descargue versiones en alta resolución para fondos claros y oscuros."] },
+          { title: "Guía de estilo", items: ["Nuestra paleta de colores y tipografías corporativas."] },
+          { title: "Banco de imágenes", items: ["Fotografías curadas con placeholder para el media kit (.ZIP)."] }
         ]
+      },
+      {
+        type: "columns",
+        title: "Notas de prensa recientes",
+        columns: [
+          { title: "Enero 2025", items: ["Proactivitis anuncia nuevos estándares de seguridad en su red global de traslados privados."] },
+          { title: "Diciembre 2024", items: ["Expansión del programa 'Agency Partners' para agencias minoristas."] },
+          { title: "Noviembre 2024", items: ["Lanzamiento de la nueva interfaz de reserva con confirmación instantánea para mercados internacionales."] }
+        ]
+      },
+      {
+        type: "cta",
+        title: "Contacto para medios",
+        body: "Para periodistas o creadores que necesitan información adicional, entrevistas o materiales, nuestro equipo de comunicación global está disponible.",
+        primaryLabel: "Descargar Media Kit (.ZIP)",
+        primaryHref: "/press/media-kit.zip",
+        secondaryLabel: "Escribir a press@proactivitis.com",
+        secondaryHref: "mailto:press@proactivitis.com"
+      }
+    ]
+  },  {
+    key: "partners",
+    category: "company",
+    path: "/partners",
+    title: "Aliados",
+    seoTitle: "Alianzas Corporativas y Estratégicas | Proactivitis Global Partners",
+    seoDescription: "Explore oportunidades de colaboración con Proactivitis. Ofrecemos soluciones de movilidad y tours para hoteles, aerolíneas y empresas del sector lujo.",
+    hero: {
+      eyebrow: "Empresa",
+      title: "Alianzas Estratégicas: Expandiendo los límites del Turismo Global",
+      subtitle: "Colaboramos con socios que buscan excelencia, seguridad y servicio humano para sus clientes corporativos.",
+      layout: "standard"
+    },
+    sections: [
+      {
+        type: "text",
+        title: "¿A quién buscamos como partner?",
+        body: [
+          "Cadenas hoteleras y resorts integran nuestra flota premium para ofrecer lujo desde el aeropuerto hasta el check-in.",
+          "Aerolíneas y OTAs complementan su oferta con servicios de tierra de alta confianza y confirmación inmediata mediante nuestra API.",
+          "Servicios financieros y concierge obtienen beneficios exclusivos para titulares de tarjetas premium.",
+          "Plataformas tecnológicas colaboran con integraciones que optimizan logística y distribución global."
+        ]
+      },
+      {
+        type: "columns",
+        title: "El diferencial Proactivitis para socios",
+        columns: [
+          { title: "Infraestructura global", items: ["Acceso a una red curada en destinos estratégicos."] },
+          { title: "Integración flexible", items: ["Desde widgets hasta integraciones via API adaptadas a su stack." ] },
+          { title: "Seguridad financiera", items: ["Procesamiento robusto y liquidaciones transparentes."] },
+          { title: "Brand protection", items: ["Su marca se asocia con un estándar auditado y soporte 24/7."] }
+        ]
+      },
+      {
+        type: "cta",
+        title: "Inicie una conversación estratégica",
+        body: "Nuestro equipo de Desarrollo de Negocio Global está listo para discutir cómo potenciar su oferta.",
+        primaryLabel: "Contactar a partners@proactivitis.com",
+        primaryHref: "mailto:partners@proactivitis.com",
+        secondaryLabel: "Descubra integraciones enterprise",
+        secondaryHref: "/partners"
       }
     ]
   },
@@ -488,68 +511,187 @@ export const infoPages: InfoPage[] = [
     key: "agency-partners",
     category: "work-with-us",
     path: "/agency-partners",
-    title: "Alianzas con agencias",
-    seoTitle: "Alianzas con agencias | Proactivitis",
-    seoDescription: "Descubre cómo las agencias acceden a inventario curado y comisiones claras.",
+    title: "Agency Partners",
+    seoTitle: "Programa para Agencias de Viajes | Agency Partners Proactivitis",
+    seoDescription:
+      "Únase al programa de partners de Proactivitis. Ofrecemos traslados y tours exclusivos con las mejores comisiones para agencias de viajes globales.",
     hero: {
-      eyebrow: "Colabora",
-      title: "Alianzas con agencias",
-      subtitle: "Conecta a tus clientes con tours locales curados manteniendo control sobre márgenes y servicio.",
+      eyebrow: "B2B",
+      title: "Potencie su Agencia con la Tecnología de Proactivitis",
+      subtitle:
+        "Únase a nuestra red global de agencias aliadas y acceda a un inventario exclusivo de traslados VIP y experiencias curadas.",
       layout: "standard"
     },
     sections: [
       {
         type: "text",
-        title: "Diseñado para agencias",
+        title: "Potencie su agencia con infraestructura global",
         body: [
-          "Las agencias necesitan más que un enlace genérico. Proactivitis ofrece productos curados, comisiones transparentes y herramientas para mantener el control.",
-          "Usa nuestro inventario o integra tus propios proveedores dentro de la plataforma con tu marca."
+          "Diseñamos soluciones que permiten a agencias tradicionales y digitales competir hoy con eficiencia y mejores márgenes.",
+          "El diseño visual refleja autoridad: iconografía de gráficos, alianzas y edificios corporativos respaldan la narrativa de confianza global."
         ]
+      },
+      {
+        type: "columns",
+        title: "Por qué elegir Proactivitis como su partner global",
+        columns: [
+          {
+            title: "Comisiones competitivas",
+            items: ["Esquemas de rentabilidad superiores para crecer junto al programa."]
+          },
+          {
+            title: "Gestión white-label",
+            items: ["Ofrecemos traslados con marca blanca para personalizar la experiencia bajo su identidad."]
+          },
+          {
+            title: "Soporte 24/7",
+            items: ["Línea prioritaria +1 (809) 394-9877 para resolver imprevistos operativos en tiempo real."]
+          },
+          {
+            title: "Inventario verificado",
+            items: ["Auditoría global de proveedores garantizando satisfacción del cliente final."]
+          }
+        ]
+      },
+      {
+        type: "columns",
+        title: "Nuestras herramientas para agencias",
+        columns: [
+          {
+            title: "Portal de reservas B2B",
+            items: ["Interfaz rápida e intuitiva para reservar traslados y tours en segundos."]
+          },
+          {
+            title: "Confirmación inmediata",
+            items: ["El sistema responde en tiempo real para que no pierda ventas esperando cotizaciones manuales."]
+          },
+          {
+            title: "Facturación centralizada",
+            items: ["Reportes detallados y administración simplificada de reservas mensuales."]
+          }
+        ]
+      },
+      {
+        type: "cta",
+        title: "Conviértase en agency partner hoy mismo",
+        body:
+          "Complete nuestro formulario de solicitud B2B o escríbanos directamente a agencies@proactivitis.com y acelere su oferta.",
+        primaryLabel: "Solicitar Registro de Agencia",
+        primaryHref: "/agency-partners",
+        secondaryLabel: "Escribir a agencies@proactivitis.com",
+        secondaryHref: "mailto:agencies@proactivitis.com"
       }
     ]
-  },
-  {
+  },  {
     key: "affiliates",
     category: "work-with-us",
     path: "/affiliates",
     title: "Afiliados",
-    seoTitle: "Afiliados | Proactivitis",
-    seoDescription: "Monetiza tu comunidad recomendando experiencias seleccionadas.",
+    seoTitle: "Programa de Afiliados de Viajes | Gane Comisiones con Proactivitis",
+    seoDescription: "Únase al programa de afiliados de Proactivitis. Gane dinero recomendando los mejores tours y traslados privados a nivel global.",
     hero: {
-      eyebrow: "Colabora",
-      title: "Afiliados",
-      subtitle: "¿Tu audiencia ama viajar? Asóciate con Proactivitis y gana comisiones por reservas confirmadas.",
-      layout: "narrow"
-    },
-    sections: [
-      {
-        type: "bullets",
-        title: "Para quién es",
-        items: ["Creadores de contenido y bloggers de viajes", "Comunidades y clubs privados", "Plataformas de nicho y newsletters"]
-      }
-    ]
-  },
-  {
-    key: "careers",
-    category: "work-with-us",
-    path: "/careers",
-    title: "Carreras (próximamente)",
-    seoTitle: "Carreras | Proactivitis",
-    seoDescription: "Próximas oportunidades laborales con el equipo de Proactivitis.",
-    hero: {
-      eyebrow: "Colabora",
-      title: "Carreras en Proactivitis",
-      subtitle: "Construimos una compañía guiada por producto con raíces en el viaje local. Los roles aparecerán aquí mientras crecemos.",
-      layout: "narrow"
+      eyebrow: "Afiliados",
+      title: "Monetice su tráfico con el Líder Global en Experiencias y Traslados",
+      subtitle: "Únase al programa de afiliados de Proactivitis y empiece a ganar comisiones por cada reserva realizada a través de sus canales.",
+      layout: "standard"
     },
     sections: [
       {
         type: "text",
-        title: "Mantente al tanto",
+        title: "Una propuesta de negocio atractiva",
         body: [
-          "Todavía no estamos contratando roles full-time, pero colaboramos con diseñadores, ingenieros y expertos locales.",
-          "Si quieres trabajar con nosotros en el futuro, comparte tu perfil y te tendremos en cuenta para próximos proyectos."
+          "Ofrecemos una plataforma tecnológica robusta que convierte su audiencia en ingresos constantes.",
+          "La experiencia combina iconografía de crecimiento, dinero/comisión y conectividad global para atraer a audiencias jóvenes."
         ]
+      },
+      {
+        type: "columns",
+        title: "Ventajas de ser Afiliado de Proactivitis",
+        columns: [
+          { title: "Comisiones Elevadas", items: ["Tasas de comisión superiores por cada reserva completada."] },
+          { title: "Tecnología de Rastreo", items: ["Cookies de larga duración para asegurar que usted reciba la comisión aún si el cliente reserva después."] },
+          { title: "Inventario Global", items: ["Proveedores auditados, siempre listos para satisfacer al viajero exigente."] },
+          { title: "Panel en Tiempo Real", items: ["Monitoree clics, conversiones y pagos acumulados con total transparencia."] }
+        ]
+      },
+      {
+        type: "columns",
+        title: "Cómo funciona nuestro programa",
+        columns: [
+          { title: "Regístrese Gratuitamente", items: ["Complete la solicitud en menos de 5 minutos."] },
+          { title: "Promocione su enlace", items: ["Utilice nuestros banners, widgets o enlaces personalizados en web, redes o newsletters."] },
+          { title: "Gane dinero", items: ["Reciba pagos mensuales internacionales. Sin límites de ganancias."] }
+        ]
+      },
+      {
+        type: "columns",
+        title: "¿Quiénes pueden unirse?",
+        columns: [
+          { title: "Blogueros y creadores", items: ["Especializados en viajes, lifestyle y experiencias exclusivas."] },
+          { title: "Agencias de marketing", items: ["Sitios de reseñas y plataformas enfocadas en turismo internacional."] },
+          { title: "Influencers", items: ["Audiencias interesadas en experiencias VIP y movilidad premium."] },
+          { title: "Cualquier plataforma digital", items: ["Con foco turístico que busque monetizar tráfico global."] }
+        ]
+      },
+      {
+        type: "cta",
+        title: "Empiece a ganar hoy mismo",
+        body: "Transforme su pasión por los viajes en ingresos profesionales con nuestra infraestructura global. Proactivitis paga con métodos internacionales como PayPal o transferencia.",
+        primaryLabel: "Aplicar ahora",
+        primaryHref: "/affiliates",
+        secondaryLabel: "Consultas por email",
+        secondaryHref: "mailto:affiliates@proactivitis.com"
+      }
+    ]
+  },  {
+    key: "careers",
+    category: "work-with-us",
+    path: "/careers",
+    title: "Carreras",
+    seoTitle: "Carreras y Empleo | Únete al Equipo Global de Proactivitis",
+    seoDescription: "Descubra oportunidades profesionales en Proactivitis. Buscamos talento global para revolucionar la industria de los tours y traslados privados.",
+    hero: {
+      eyebrow: "Carreras",
+      title: "Construya el Futuro del Turismo Global con Nosotros",
+      subtitle: "Para talento que valora libertad de movimiento y tecnología en una empresa Remote-First.",
+      layout: "standard"
+    },
+    sections: [
+      {
+        type: "text",
+        title: "Nuestra Cultura: 'People, not Bots'",
+        body: [
+          "Aunque somos tecnología, nuestro motor es el factor humano: proactividad, transparencia y resolución en un entorno global."
+        ]
+      },
+      {
+        type: "columns",
+        title: "¿Por qué trabajar en Proactivitis?",
+        columns: [
+          { title: "Libertad Geográfica", items: ["Trabaje desde cualquier lugar del mundo mientras cumple sus objetivos."] },
+          { title: "Impacto Real", items: ["Cada línea de código o alianza impacta la experiencia de miles de viajeros."] },
+          { title: "Crecimiento Exponencial", items: ["Crecemos globalmente y su carrera crece con la empresa."] },
+          { title: "Entorno Multicultural", items: ["Colabore diariamente con profesionales y partners de diversas culturas."] }
+        ]
+      },
+      {
+        type: "columns",
+        title: "Áreas de Oportunidad",
+        columns: [
+          { title: "Tecnología y Desarrollo", items: ["Next.js, bases de datos escalables, seguridad en la nube."] },
+          { title: "Operaciones y Calidad", items: ["Auditoría de proveedores y optimización de servicios de transporte."] },
+          { title: "Growth & Marketing", items: ["SEO internacional, marketing de afiliados y alianzas estratégicas."] },
+          { title: "Soporte Global", items: ["Agentes multilingües enfocados en servicio VIP."] }
+        ]
+      },
+      {
+        type: "cta",
+        title: "¿Listo para el siguiente paso?",
+        body: "Si crees que tu perfil encaja con nuestra visión global, queremos conocerte. Envía tu CV y portafolio a careers@proactivitis.com.",
+        primaryLabel: "Ver posiciones abiertas",
+        primaryHref: "/careers",
+        secondaryLabel: "Enviar candidatura espontánea",
+        secondaryHref: "mailto:careers@proactivitis.com"
       }
     ]
   },
@@ -557,101 +699,141 @@ export const infoPages: InfoPage[] = [
     key: "terms",
     category: "legal",
     path: "/legal/terms",
-    title: "Términos y condiciones",
-    seoTitle: "Términos y condiciones | Proactivitis",
-    seoDescription: "Consulta los términos que aplican cuando usas Proactivitis como viajero, proveedor o agencia.",
+    title: "Términos y Condiciones de Uso",
+    seoTitle: "Términos y Condiciones Globales | Proactivitis",
+    seoDescription: "Marco legal y condiciones de uso para la plataforma global de experiencias y traslados Proactivitis.",
     hero: {
       eyebrow: "Legal",
-      title: "Términos y condiciones",
-      subtitle: "Explican cómo funciona Proactivitis y las responsabilidades de viajeros, proveedores y agencias.",
-      layout: "narrow"
+      title: "Términos y Condiciones de Uso - Proactivitis",
+      subtitle: "Normas de uso para nuestra plataforma tecnológica de experiencias y traslados globales.",
+      layout: "standard"
     },
     sections: [
       {
         type: "legal-section",
-        title: "1. Alcance del servicio",
+        title: "1. Relación Contractual",
         body: [
-          "Proactivitis opera una plataforma online que conecta viajeros con proveedores independientes y agencias.",
-          "No operamos las experiencias directamente, salvo cuando se indica en la página del producto."
+          "Proactivitis actúa exclusivamente como una plataforma tecnológica de intermediación entre usuarios finales y proveedores de servicios.",
+          "Al utilizar este sitio, usted reconoce que Proactivitis no es un operador de transporte ni una agencia física, sino un facilitador tecnológico global."
         ]
       },
       {
         type: "legal-section",
-        title: "2. Tu cuenta",
-        body: ["Eres responsable de mantener tus credenciales confidenciales.", "Aceptas que la información que entregas es precisa y está actualizada."]
-      },
-      {
-        type: "legal-section",
-        title: "3. Reservas y pagos",
+        title: "2. Uso de la Plataforma",
         body: [
-          "Al reservar una experiencia, estableces una relación contractual directa con el proveedor que la opera.",
-          "Proactivitis procesa pagos en nombre del proveedor y puede actuar como comerciante registrado según país y método de pago."
+          "Capacidad Legal: El usuario declara ser mayor de edad y tener capacidad legal para contratar servicios internacionales.",
+          "Exactitud de Información: Usted es responsable de la veracidad de los datos de reserva, incluidos horarios de vuelo y contactos."
         ]
       },
       {
         type: "legal-section",
-        title: "4. Cancelaciones y reembolsos",
+        title: "3. Reservas, Pagos y Fiscalidad Global",
         body: [
-          "Cada producto tiene su propia política de cancelación visible en el checkout y en el correo de confirmación.",
-          "Si corresponde reembolso, se procesará por el método de pago original."
+          "Procesamiento de Pagos: Proactivitis utiliza pasarelas de pago internacionales seguras. El cargo aparecerá bajo el nombre de la plataforma o su procesador global.",
+          "Precios y Divisas: Todos los precios se muestran de forma neta. El usuario es responsable de cualquier tasa o comisión de su entidad bancaria internacional."
         ]
       },
       {
         type: "legal-section",
-        title: "5. Responsabilidad",
+        title: "4. Políticas de Cancelación y Modificaciones",
         body: [
-          "Los proveedores son responsables de operar sus experiencias de forma segura y de cumplir las leyes locales.",
-          "Dentro de lo permitido por la ley, Proactivitis no es responsable por daños indirectos, incidentales o consecuentes derivados del uso de la plataforma o de las experiencias."
+          "Cada servicio está sujeto a las políticas específicas del proveedor, aceptadas por el usuario al momento de la compra.",
+          "Las solicitudes de reembolso se procesan según la política seleccionada y se acreditan al método de pago original."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "5. Limitación de Responsabilidad Internacional",
+        body: [
+          "Servicios de Terceros: Proactivitis no se responsabiliza por lesiones, pérdidas, daños o retrasos de proveedores independientes.",
+          "Fuerza Mayor: La plataforma no será responsable por incumplimientos derivados de desastres naturales, conflictos civiles o restricciones gubernamentales globales."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "6. Propiedad Intelectual",
+        body: [
+          "Todo el contenido, marcas y tecnología de Proactivitis son propiedad de la entidad matriz global y están protegidos por leyes internacionales."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "7. Resolución de Conflictos",
+        body: [
+          "Cualquier discrepancia se buscará resolver mediante mediación directa con nuestro equipo de Soporte Global antes de recurrir a instancias legales internacionales."
         ]
       }
     ]
-  },
-  {
+  },  {
     key: "privacy",
     category: "legal",
     path: "/legal/privacy",
     title: "Política de privacidad",
-    seoTitle: "Política de privacidad | Proactivitis",
-    seoDescription: "Conoce cómo recolectamos, usamos y protegemos tus datos personales.",
+    seoTitle: "Política de Privacidad Global | Proactivitis",
+    seoDescription:
+      "Conozca cómo Proactivitis protege sus datos a nivel internacional bajo los más altos estándares de seguridad y transparencia.",
     hero: {
       eyebrow: "Legal",
-      title: "Política de privacidad",
-      subtitle: "Respetamos tu privacidad y explicamos claramente cómo tratamos tus datos.",
-      layout: "narrow"
+      title: "Política de Privacidad - Proactivitis",
+      subtitle: "Compromiso global con la transparencia y protección de sus datos personales.",
+      layout: "standard"
     },
     sections: [
       {
         type: "legal-section",
-        title: "1. Datos que recopilamos",
+        title: "1. Compromiso de Privacidad Global",
         body: [
-          "Información de contacto como nombre, correo y teléfono.",
-          "Detalles de reserva como fechas, viajeros, productos seleccionados y estado de pago.",
-          "Datos de uso como páginas visitadas, dispositivo e ubicación aproximada."
+          "En Proactivitis, la protección de sus datos personales es una prioridad absoluta.",
+          "Esta política describe cómo recopilamos, utilizamos y protegemos su información a través de nuestra plataforma global."
         ]
       },
       {
         type: "legal-section",
-        title: "2. Cómo usamos tus datos",
+        title: "2. Información que Recopilamos",
         body: [
-          "Para procesar reservas y pagos.",
-          "Para comunicarnos sobre tus viajes, solicitudes de soporte y novedades relevantes.",
-          "Para mejorar la plataforma y prevenir fraudes o mal uso."
+          "Datos de Identificación: nombre, correo electrónico y número de teléfono de contacto internacional.",
+          "Datos de Reserva: detalles del vuelo, destino y preferencias de servicio.",
+          "Datos de Pago: no almacenamos los datos de su tarjeta; son procesados por proveedores certificados (PCI-DSS)."
         ]
       },
       {
         type: "legal-section",
-        title: "3. Compartir tus datos",
+        title: "3. Uso de la Información",
         body: [
-          "Compartimos la información mínima necesaria con proveedores y socios para que entreguen tu experiencia.",
-          "Podemos usar proveedores terceros para pagos, analítica y envíos de correo, sujetos a acuerdos de protección de datos."
+          "Gestionamos y confirmamos sus reservas con los proveedores seleccionados.",
+          "Brindamos soporte técnico y asistencia en tiempo real a través de nuestros canales.",
+          "Mejoramos la seguridad de la plataforma y prevenimos actividades fraudulentas."
         ]
       },
       {
         type: "legal-section",
-        title: "4. Tus derechos",
+        title: "4. Transferencia Internacional de Datos",
         body: [
-          "Según tu ubicación, puedes tener derechos a acceder, corregir o eliminar tus datos personales.",
-          "Para ejercerlos contáctanos en privacy@proactivitis.com."
+          "Su información puede ser procesada en servidores ubicados fuera de su país de residencia.",
+          "Proactivitis garantiza que todas las transferencias se realizan bajo protocolos de seguridad estrictos."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "5. Derechos del Usuario",
+        body: [
+          "Usted puede acceder, rectificar o eliminar sus datos personales.",
+          "Puede retirar su consentimiento para marketing y solicitar una copia de la información que mantenemos."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "6. Seguridad de la Información",
+        body: [
+          "Implementamos medidas técnicas y organizativas avanzadas, incluyendo encriptación SSL y firewalls modernos.",
+          "Estas protecciones previenen accesos no autorizados o pérdidas accidentales."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "7. Contacto de Privacidad",
+        body: [
+          "Para consultas relacionadas con sus datos personales, escríbanos a privacy@proactivitis.com."
         ]
       }
     ]
@@ -661,40 +843,311 @@ export const infoPages: InfoPage[] = [
     category: "legal",
     path: "/legal/cookies",
     title: "Cookies",
-    seoTitle: "Política de cookies | Proactivitis",
-    seoDescription: "Entiende cómo usamos cookies y tecnologías similares en Proactivitis.",
+    seoTitle: "Política de Cookies Global | Proactivitis",
+    seoDescription: "Información transparente sobre el uso de cookies en la plataforma internacional Proactivitis para mejorar su experiencia de viaje.",
     hero: {
       eyebrow: "Legal",
-      title: "Política de cookies",
-      subtitle: "Usamos cookies para hacer que Proactivitis funcione, mejorar el rendimiento y mostrar contenido relevante.",
-      layout: "narrow"
+      title: "Política de Cookies - Proactivitis",
+      subtitle: "Uso internacional de cookies, centrado en el funcionamiento técnico, rendimiento y preferencias sin atarnos a leyes locales.",
+      layout: "standard"
     },
     sections: [
       {
         type: "legal-section",
-        title: "1. ¿Qué son las cookies?",
-        body: ["Las cookies son pequeños archivos de texto que se guardan en tu dispositivo al visitar un sitio. Ayudan a recordar tus preferencias y actividad."]
-      },
-      {
-        type: "legal-section",
-        title: "2. Tipos de cookies que usamos",
+        title: "1. ¿Qué son las Cookies?",
         body: [
-          "Cookies esenciales para mantener el sitio funcionando y seguro.",
-          "Cookies de análisis para entender cómo los usuarios usan Proactivitis.",
-          "Cookies de preferencia para recordar tu idioma o moneda."
+          "Las cookies son pequeños archivos de texto que se almacenan en su dispositivo al visitar nuestra plataforma global.",
+          "Nos permiten reconocer su navegador, mantener su sesión activa y mejorar su experiencia sin identificarlo personalmente."
         ]
       },
       {
         type: "legal-section",
-        title: "3. Gestionar cookies",
+        title: "2. Tipos de Cookies que utilizamos",
         body: [
-          "Puedes controlar las cookies desde la configuración del navegador y las herramientas de consentimiento que ofrecemos.",
-          "Si desactivas ciertas cookies, tu experiencia o algunas funciones podrían verse afectadas."
+          "Cookies Técnicas (Esenciales): indispensables para la navegación, el uso del carrito de reservas y el acceso seguro a su cuenta.",
+          "Cookies de Rendimiento y Analítica: nos ayudan a comprender cómo usuarios globales interactúan con la plataforma mediante datos agregados.",
+          "Cookies de Preferencias: permiten recordar elecciones como idioma o divisa para futuras visitas."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "3. Control de Cookies",
+        body: [
+          "Usted puede configurar su navegador para bloquear o eliminar las cookies en cualquier momento.",
+          "Tenga en cuenta que desactivar las cookies técnicas podría afectar la funcionalidad de ciertos procesos de reserva."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "4. Servicios de Terceros",
+        body: [
+          "Podemos utilizar herramientas de análisis global y procesadores de pago que también dependen de cookies para seguridad y prevención de fraudes.",
+          "Estos terceros operan bajo sus propias políticas de privacidad internacionales."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "5. Actualizaciones de esta Política",
+        body: [
+          "Esta política puede actualizarse para reflejar cambios en nuestras herramientas digitales.",
+          "Cualquier modificación importante se publicará en esta página."
+        ]
+      }
+    ]
+  },  {
+    key: "legal-info",
+    category: "legal",
+    path: "/legal/information",
+    title: "Información legal",
+    seoTitle: "Información Legal Corporativa | Proactivitis",
+    seoDescription: "Detalles legales y términos de identidad de la plataforma global Proactivitis.",
+    hero: {
+      eyebrow: "Legal",
+      title: "Información Legal - Proactivitis",
+      subtitle: "Transparencia corporativa sin comprometer la estrategia global.",
+      layout: "standard"
+    },
+    sections: [
+      {
+        type: "legal-section",
+        title: "1. Identidad de la Plataforma",
+        body: [
+          "Proactivitis es una plataforma tecnológica de servicios turísticos y movilidad global.",
+          "Operamos como una entidad digital dedicada a la intermediación técnica entre proveedores locales y viajeros internacionales."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "2. Propiedad Intelectual y Marcas",
+        body: [
+          "Todo el contenido disponible en proactivitis.com es propiedad exclusiva de la entidad matriz global de Proactivitis.",
+          "Queda prohibida cualquier reproducción o distribución sin autorización expresa por escrito."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "3. Naturaleza del Servicio",
+        body: [
+          "Intermediación: Proactivitis actúa como un marketplace digital que facilita la contratación de servicios de terceros.",
+          "Responsabilidad Operativa: La ejecución de tours, traslados y experiencias corresponde a los proveedores locales independientes, con sus respectivas licencias y seguros internacionales."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "4. Cumplimiento Normativo Global",
+        body: [
+          "Nuestra estructura cumple con los estándares de comercio electrónico internacional, garantizando la seguridad en el procesamiento de datos.",
+          "Transparencia total en las transacciones financieras globales."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "5. Contacto Corporativo",
+        body: [
+          "Para notificaciones legales, requerimientos de información o asuntos de propiedad intelectual, escriba a legal@proactivitis.com."
+        ]
+      }
+    ]
+  },  {
+    key: "terms",
+    category: "legal",
+    path: "/legal/terms",
+    title: "Términos y Condiciones de Uso",
+    seoTitle: "Términos y Condiciones Globales | Proactivitis",
+    seoDescription: "Marco legal y condiciones de uso para la plataforma global de experiencias y traslados Proactivitis.",
+    hero: {
+      eyebrow: "Legal",
+      title: "Términos y Condiciones de Uso - Proactivitis",
+      subtitle: "Normas de uso para nuestra plataforma tecnológica de experiencias y traslados globales.",
+      layout: "standard"
+    },
+    sections: [
+      {
+        type: "legal-section",
+        title: "1. Relación Contractual",
+        body: [
+          "Proactivitis actúa exclusivamente como una plataforma tecnológica de intermediación entre usuarios finales y proveedores de servicios.",
+          "Al utilizar este sitio, usted reconoce que Proactivitis no es un operador de transporte ni una agencia física, sino un facilitador tecnológico global."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "2. Uso de la Plataforma",
+        body: [
+          "Capacidad Legal: El usuario declara ser mayor de edad y tener capacidad legal para contratar servicios internacionales.",
+          "Exactitud de Información: Usted es responsable de la veracidad de los datos de reserva, incluidos horarios de vuelo y contactos."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "3. Reservas, Pagos y Fiscalidad Global",
+        body: [
+          "Procesamiento de Pagos: Proactivitis utiliza pasarelas de pago internacionales seguras. El cargo aparecerá bajo el nombre de la plataforma o su procesador global.",
+          "Precios y Divisas: Todos los precios se muestran de forma neta. El usuario es responsable de cualquier tasa o comisión de su entidad bancaria internacional."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "4. Políticas de Cancelación y Modificaciones",
+        body: [
+          "Cada servicio está sujeto a las políticas específicas del proveedor, aceptadas por el usuario al momento de la compra.",
+          "Las solicitudes de reembolso se procesan según la política seleccionada y se acreditan al método de pago original."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "5. Limitación de Responsabilidad Internacional",
+        body: [
+          "Servicios de Terceros: Proactivitis no se responsabiliza por lesiones, pérdidas, daños o retrasos de proveedores independientes.",
+          "Fuerza Mayor: La plataforma no será responsable por incumplimientos derivados de desastres naturales, conflictos civiles o restricciones gubernamentales globales."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "6. Propiedad Intelectual",
+        body: [
+          "Todo el contenido, marcas y tecnología de Proactivitis son propiedad de la entidad matriz global y están protegidos por leyes internacionales."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "7. Resolución de Conflictos",
+        body: [
+          "Cualquier discrepancia se buscará resolver mediante mediación directa con nuestro equipo de Soporte Global antes de recurrir a instancias legales internacionales."
+        ]
+      }
+    ]
+  },  {
+    key: "privacy",
+    category: "legal",
+    path: "/legal/privacy",
+    title: "Política de privacidad",
+    seoTitle: "Política de Privacidad Global | Proactivitis",
+    seoDescription:
+      "Conozca cómo Proactivitis protege sus datos a nivel internacional bajo los más altos estándares de seguridad y transparencia.",
+    hero: {
+      eyebrow: "Legal",
+      title: "Política de Privacidad - Proactivitis",
+      subtitle: "Compromiso global con la transparencia y protección de sus datos personales.",
+      layout: "standard"
+    },
+    sections: [
+      {
+        type: "legal-section",
+        title: "1. Compromiso de Privacidad Global",
+        body: [
+          "En Proactivitis, la protección de sus datos personales es una prioridad absoluta.",
+          "Esta política describe cómo recopilamos, utilizamos y protegemos su información a través de nuestra plataforma global."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "2. Información que Recopilamos",
+        body: [
+          "Datos de Identificación: nombre, correo electrónico y número de teléfono de contacto internacional.",
+          "Datos de Reserva: detalles del vuelo, destino y preferencias de servicio.",
+          "Datos de Pago: no almacenamos los datos de su tarjeta; son procesados por proveedores certificados (PCI-DSS)."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "3. Uso de la Información",
+        body: [
+          "Gestionamos y confirmamos sus reservas con los proveedores seleccionados.",
+          "Brindamos soporte técnico y asistencia en tiempo real a través de nuestros canales.",
+          "Mejoramos la seguridad de la plataforma y prevenimos actividades fraudulentas."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "4. Transferencia Internacional de Datos",
+        body: [
+          "Su información puede ser procesada en servidores ubicados fuera de su país de residencia.",
+          "Proactivitis garantiza que todas las transferencias se realizan bajo protocolos de seguridad estrictos."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "5. Derechos del Usuario",
+        body: [
+          "Usted puede acceder, rectificar o eliminar sus datos personales.",
+          "Puede retirar su consentimiento para marketing y solicitar una copia de la información que mantenemos."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "6. Seguridad de la Información",
+        body: [
+          "Implementamos medidas técnicas y organizativas avanzadas, incluyendo encriptación SSL y firewalls modernos.",
+          "Estas protecciones previenen accesos no autorizados o pérdidas accidentales."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "7. Contacto de Privacidad",
+        body: [
+          "Para consultas relacionadas con sus datos personales, escríbanos a privacy@proactivitis.com."
         ]
       }
     ]
   },
   {
+    key: "cookies",
+    category: "legal",
+    path: "/legal/cookies",
+    title: "Cookies",
+    seoTitle: "Política de Cookies Global | Proactivitis",
+    seoDescription: "Información transparente sobre el uso de cookies en la plataforma internacional Proactivitis para mejorar su experiencia de viaje.",
+    hero: {
+      eyebrow: "Legal",
+      title: "Política de Cookies - Proactivitis",
+      subtitle: "Uso internacional de cookies, centrado en el funcionamiento técnico, rendimiento y preferencias sin atarnos a leyes locales.",
+      layout: "standard"
+    },
+    sections: [
+      {
+        type: "legal-section",
+        title: "1. ¿Qué son las Cookies?",
+        body: [
+          "Las cookies son pequeños archivos de texto que se almacenan en su dispositivo al visitar nuestra plataforma global.",
+          "Nos permiten reconocer su navegador, mantener su sesión activa y mejorar su experiencia sin identificarlo personalmente."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "2. Tipos de Cookies que utilizamos",
+        body: [
+          "Cookies Técnicas (Esenciales): indispensables para la navegación, el uso del carrito de reservas y el acceso seguro a su cuenta.",
+          "Cookies de Rendimiento y Analítica: nos ayudan a comprender cómo usuarios globales interactúan con la plataforma mediante datos agregados.",
+          "Cookies de Preferencias: permiten recordar elecciones como idioma o divisa para futuras visitas."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "3. Control de Cookies",
+        body: [
+          "Usted puede configurar su navegador para bloquear o eliminar las cookies en cualquier momento.",
+          "Tenga en cuenta que desactivar las cookies técnicas podría afectar la funcionalidad de ciertos procesos de reserva."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "4. Servicios de Terceros",
+        body: [
+          "Podemos utilizar herramientas de análisis global y procesadores de pago que también dependen de cookies para seguridad y prevención de fraudes.",
+          "Estos terceros operan bajo sus propias políticas de privacidad internacionales."
+        ]
+      },
+      {
+        type: "legal-section",
+        title: "5. Actualizaciones de esta Política",
+        body: [
+          "Esta política puede actualizarse para reflejar cambios en nuestras herramientas digitales.",
+          "Cualquier modificación importante se publicará en esta página."
+        ]
+      }
+    ]
+  },  {
     key: "legal-info",
     category: "legal",
     path: "/legal/information",

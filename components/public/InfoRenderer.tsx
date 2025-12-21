@@ -11,6 +11,21 @@ type Props = {
 export function InfoRenderer({ page }: Props) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const faqSchemaEntities =
+    page.key === "faqs"
+      ? page.sections
+          .flatMap((section) =>
+            section.type === "faq" || section.type === "faq-group" ? section.items : []
+          )
+          .map((item) => ({
+            "@type": "Question",
+            name: item.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: item.answer
+            }
+          }))
+      : [];
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -78,6 +93,14 @@ export function InfoRenderer({ page }: Props) {
                       <div key={item.question} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                         <p className="font-semibold text-slate-900">{item.question}</p>
                         <p className="mt-1 text-sm text-slate-600">{item.answer}</p>
+                        {item.ctaLabel && item.ctaHref ? (
+                          <Link
+                            href={item.ctaHref}
+                            className="mt-2 inline-flex items-center text-sm font-semibold text-emerald-600"
+                          >
+                            {item.ctaLabel}
+                          </Link>
+                        ) : null}
                       </div>
                     ))}
                   </div>
@@ -92,6 +115,14 @@ export function InfoRenderer({ page }: Props) {
                       <div key={item.question} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                         <p className="font-semibold text-slate-900">{item.question}</p>
                         <p className="mt-1 text-sm text-slate-600">{item.answer}</p>
+                        {item.ctaLabel && item.ctaHref ? (
+                          <Link
+                            href={item.ctaHref}
+                            className="mt-2 inline-flex items-center text-sm font-semibold text-emerald-600"
+                          >
+                            {item.ctaLabel}
+                          </Link>
+                        ) : null}
                       </div>
                     ))}
                   </div>
@@ -256,6 +287,18 @@ export function InfoRenderer({ page }: Props) {
               return null;
           }
         })}
+        {faqSchemaEntities.length > 0 ? (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                mainEntity: faqSchemaEntities
+              })
+            }}
+          />
+        ) : null}
       </main>
     </div>
   );
