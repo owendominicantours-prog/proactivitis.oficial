@@ -51,7 +51,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 type Props = {
-  searchParams?: TourSearchParams;
+  searchParams?: Promise<TourSearchParams>;
 };
 
 type CountryOption = Prisma.CountryGetPayload<{
@@ -82,13 +82,8 @@ type TourWithDeparture = Prisma.TourGetPayload<{
   };
 }>;
 
-export default async function ToursGridPage({
-  searchParams
-}: Props & { searchParams?: TourSearchParams | Promise<TourSearchParams> }) {
-  const resolvedSearchParams =
-    searchParams && typeof (searchParams as Promise<TourSearchParams>).then === "function"
-      ? await searchParams
-      : searchParams;
+export default async function ToursGridPage({ searchParams }: Props) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const params = resolvedSearchParams ?? {};
 
   let countries: CountryOption[] = [];

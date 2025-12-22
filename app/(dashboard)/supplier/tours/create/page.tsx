@@ -8,12 +8,14 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 type SupplierTourCreatePageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     draftId?: string;
-  };
+  }>;
 };
 
 export default async function SupplierTourCreatePage({ searchParams }: SupplierTourCreatePageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const draftId = resolvedSearchParams?.draftId;
   const countries = await prisma.country.findMany({
     select: { id: true, name: true, slug: true }
   });
@@ -44,8 +46,8 @@ export default async function SupplierTourCreatePage({ searchParams }: SupplierT
   };
 
   let initialDraft: SavedDraft | undefined;
-  if (searchParams?.draftId) {
-    const draftRecord = await prisma.tourDraft.findUnique({ where: { id: searchParams.draftId } });
+  if (draftId) {
+    const draftRecord = await prisma.tourDraft.findUnique({ where: { id: draftId } });
     if (draftRecord && draftRecord.supplierId === supplier.id) {
       initialDraft = readDraft(draftRecord);
     }

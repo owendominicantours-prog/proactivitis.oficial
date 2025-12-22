@@ -5,12 +5,14 @@ import { prisma } from "@/lib/prisma";
 import { ToursList, SupplierTourSummary } from "@/components/supplier/ToursList";
 
 type SupplierToursPageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     status?: string;
-  };
+  }>;
 };
 
 export default async function SupplierToursPage({ searchParams }: SupplierToursPageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const status = resolvedSearchParams?.status;
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) {
@@ -93,7 +95,7 @@ export default async function SupplierToursPage({ searchParams }: SupplierToursP
           </div>
         </div>
       )}
-      {searchParams?.status === "sent" && (
+      {status === "sent" && (
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-900">
           Su tour ha sido enviado correctamente y está en revisión.
         </div>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getDestinationBySlug, getAllDestinationSlugs, getToursByDestinationSlug } from "@/lib/destinations";
 
 type Params = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 export async function generateStaticParams() {
@@ -12,7 +12,8 @@ export async function generateStaticParams() {
 }
 
 export default async function DestinationPage({ params }: Params) {
-  const destination = await getDestinationBySlug(params.slug);
+  const resolvedParams = await params;
+  const destination = await getDestinationBySlug(resolvedParams.slug);
   if (!destination) {
     return (
       <div className="mx-auto max-w-4xl py-20 px-6 text-center">

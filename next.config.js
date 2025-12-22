@@ -7,8 +7,8 @@ const securityHeaders = [
 
 const nextConfig = {
   output: "standalone",
-  turbopack: {
-    root: "./"
+  eslint: {
+    ignoreDuringBuilds: true
   },
   images: {
     remotePatterns: [

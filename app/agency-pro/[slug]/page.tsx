@@ -4,8 +4,9 @@ import { findAgencyProLinkBySlug } from "@/lib/agencyPro";
 
 export const dynamic = "force-dynamic";
 
-export default async function AgencyProLandingPage({ params }: { params: { slug: string } }) {
-  const link = await findAgencyProLinkBySlug(params.slug);
+export default async function AgencyProLandingPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params;
+  const link = await findAgencyProLinkBySlug(resolvedParams.slug);
   if (!link || !link.active) {
     return notFound();
   }

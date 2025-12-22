@@ -1,26 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
-
-const updateAgencyApproval = async (formData: FormData, approved: boolean) => {
-  "use server";
-  const id = formData.get("agencyId");
-  if (!id || typeof id !== "string") return;
-  await prisma.agencyProfile.update({
-    where: { id },
-    data: { approved }
-  });
-  revalidatePath(`/admin/agencies/${id}`);
-};
-
-export async function approveAgency(formData: FormData) {
-  await updateAgencyApproval(formData, true);
-}
-
-export async function rejectAgency(formData: FormData) {
-  await updateAgencyApproval(formData, false);
-}
+import { approveAgency, rejectAgency } from "./actions";
 
 export default async function AgencyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolved = await params;

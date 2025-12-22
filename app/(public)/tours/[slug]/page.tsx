@@ -8,9 +8,9 @@ import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itiner
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 
 type TourDetailProps = {
-  params: {
+  params: Promise<{
     slug?: string;
-  };
+  }>;
 };
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };

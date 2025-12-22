@@ -15,13 +15,10 @@ export default async function DestinationPage({
   searchParams
 }: {
   params: Promise<{ countrySlug: string; destinationSlug: string }>;
-  searchParams?: TourSearchParams | Promise<TourSearchParams>;
+  searchParams?: Promise<TourSearchParams>;
 }) {
   const resolvedParams = await params;
-  const resolvedSearchParams =
-    searchParams && typeof (searchParams as Promise<TourSearchParams>).then === "function"
-      ? await searchParams
-      : searchParams;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
 
   const destination = await prisma.destination.findFirst({
     where: {

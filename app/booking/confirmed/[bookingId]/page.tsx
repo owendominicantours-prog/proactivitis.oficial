@@ -5,18 +5,20 @@ import { getBookingConfirmationData } from "../helpers";
 export const dynamic = "force-dynamic";
 
 type Props = {
-  params: {
+  params: Promise<{
     bookingId?: string;
-  };
-  searchParams: {
+  }>;
+  searchParams?: Promise<{
     session_id?: string;
     bookingId?: string;
     nxtPbookingId?: string;
-  };
+  }>;
 };
 
 export default async function BookingConfirmedPage({ params, searchParams }: Props) {
-  const bookingId = params.bookingId ?? searchParams.bookingId ?? searchParams.nxtPbookingId;
+  const resolvedParams = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const bookingId = resolvedParams.bookingId ?? resolvedSearchParams.bookingId ?? resolvedSearchParams.nxtPbookingId;
   if (!bookingId) {
     notFound();
   }

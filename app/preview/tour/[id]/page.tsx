@@ -9,8 +9,8 @@ export const metadata = {
   robots: { index: false, follow: false }
 };
 
-export default async function PublicTourPreviewPage({ params }: { params: { id?: string; slug?: string } }) {
-  const { id, slug } = params ?? {};
+export default async function PublicTourPreviewPage({ params }: { params: Promise<{ id?: string; slug?: string }> }) {
+  const { id, slug } = await params;
   const lookupId = id ?? slug;
   if (!lookupId) {
     notFound();

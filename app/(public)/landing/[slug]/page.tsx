@@ -1,15 +1,16 @@
 import { landingPages } from "@/lib/landing";
 
 type Params = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 export async function generateStaticParams() {
   return landingPages.map((landing) => ({ slug: landing.slug }));
 }
 
-export default function LandingPage({ params }: Params) {
-  const landing = landingPages.find((item) => item.slug === params.slug);
+export default async function LandingPage({ params }: Params) {
+  const resolvedParams = await params;
+  const landing = landingPages.find((item) => item.slug === resolvedParams.slug);
 
   if (!landing) {
     return (

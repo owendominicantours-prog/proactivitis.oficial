@@ -20,8 +20,9 @@ const statusLabels: Record<string, string> = {
   paused: "Pausado"
 };
 
-export default async function AdminTourPreviewPage({ params }: { params: { id?: string } }) {
-  if (!params?.id) {
+export default async function AdminTourPreviewPage({ params }: { params: Promise<{ id?: string }> }) {
+  const resolvedParams = await params;
+  if (!resolvedParams?.id) {
     notFound();
   }
 
@@ -31,7 +32,7 @@ export default async function AdminTourPreviewPage({ params }: { params: { id?: 
   }
 
   const tour = await prisma.tour.findUnique({
-    where: { id: params.id },
+    where: { id: resolvedParams.id },
     include: {
       SupplierProfile: {
         include: {
