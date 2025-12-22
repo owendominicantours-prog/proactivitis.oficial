@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import CheckoutForm from './CheckoutForm';
@@ -24,6 +25,7 @@ type CheckoutWithStripeProps = {
 export default function CheckoutWithStripe({ searchParams }: CheckoutWithStripeProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const payload = useMemo(() => {
     return {
@@ -39,6 +41,12 @@ export default function CheckoutWithStripe({ searchParams }: CheckoutWithStripeP
   const missingTourError = useMemo(() => {
     return payload.tourId ? null : "Falta identificar el tour seleccionado.";
   }, [payload.tourId]);
+
+  useEffect(() => {
+    if (missingTourError) {
+      router.replace('/tours');
+    }
+  }, [missingTourError, router]);
 
   useEffect(() => {
     if (missingTourError) {
