@@ -249,6 +249,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
   const [currentSession, setCurrentSession] = useState<CheckoutSessionInfo | null>(null);
   const router = useRouter();
+  const handlePaymentSuccess = useCallback(() => {
+    const redirect = process.env.NEXT_PUBLIC_STRIPE_SUCCESS_URL ?? "/booking/confirmed";
+    const target = bookingId ? `${redirect}?bookingId=${bookingId}` : redirect;
+    router.push(target);
+  }, [bookingId, router]);
   const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sessionExpiredRef = useRef(false);
   const handleSessionExpire = useCallback(
@@ -736,30 +741,31 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                     <p className="text-slate-400">Reserva provisional · ID: {bookingId ?? "pendiente"}</p>
                   </div>
                   <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    {!stripePromise && <p className="text-sm text-rose-500">Stripe no está configurado.</p>}
-                    {intentLoading && <p className="text-sm text-slate-600">Preparando el pago seguro…</p>}
-                  {clientSecret && stripePromise ? (
-                    <Elements stripe={stripePromise} options={{ clientSecret }}>
-                      <PaymentForm
-                        paymentEmailField={paymentEmailField}
-                        setPaymentEmailField={setPaymentEmailField}
-                        paymentFeedback={paymentFeedback}
-                        setPaymentFeedback={setPaymentFeedback}
-                        paymentLoading={paymentLoading}
-                        setPaymentLoading={setPaymentLoading}
-                        activePaymentMethod={activePaymentMethod}
-                        setActivePaymentMethod={setActivePaymentMethod}
-                        paymentCountry={paymentCountry}
-                        setPaymentCountry={setPaymentCountry}
-                        onBack={() => setActiveStep(1)}
-                      />
-                    </Elements>
-                  ) : (
-                    !intentLoading && (
-                      <p className="text-sm text-slate-500">Confirma los pasos anteriores para habilitar el pago.</p>
-                    )
-                  )}
-                </div>
+                    {!stripePromise && <p className="text-sm text-rose-500">Stripe no est� configurado.</p>}
+                    {intentLoading && <p className="text-sm text-slate-600">Preparando el pago seguro.</p>}
+                    {clientSecret && stripePromise ? (
+                      <Elements stripe={stripePromise} options={{ clientSecret }}>
+                        <PaymentForm
+                          paymentEmailField={paymentEmailField}
+                          setPaymentEmailField={setPaymentEmailField}
+                          paymentFeedback={paymentFeedback}
+                          setPaymentFeedback={setPaymentFeedback}
+                          paymentLoading={paymentLoading}
+                          setPaymentLoading={setPaymentLoading}
+                          activePaymentMethod={activePaymentMethod}
+                          setActivePaymentMethod={setActivePaymentMethod}
+                          paymentCountry={paymentCountry}
+                          setPaymentCountry={setPaymentCountry}
+                          onBack={() => setActiveStep(1)}
+                          onSuccess={handlePaymentSuccess}
+                        />
+                      </Elements>
+                    ) : (
+                      !intentLoading && (
+                        <p className="text-sm text-slate-500">Confirma los pasos anteriores para habilitar el pago.</p>
+                      )
+                    )}
+                  </div>
                 </div>
               )}
             </article>
@@ -768,10 +774,10 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
         <aside className="space-y-4">
           <div className="sticky top-8 space-y-6">
             <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-lg">
-            <div className="flex items-center gap-3 rounded-2xl bg-pink-50 px-3 py-2 text-sm font-semibold text-rose-600">
-              <Clock3 className="h-4 w-4" /> Te guardamos la plaza durante{" "}
-              <CountdownTimer expires={countdownExpires} onExpire={countdownOnExpire} />
-            </div>
+              <div className="flex items-center gap-3 rounded-2xl bg-pink-50 px-3 py-2 text-sm font-semibold text-rose-600">
+                <Clock3 className="h-4 w-4" /> Te guardamos la plaza durante{" "}
+                <CountdownTimer expires={countdownExpires} onExpire={countdownOnExpire} />
+              </div>
               <div className="mt-4 flex items-center gap-3 border-b border-slate-100 pb-4">
                 <Image
                   src={summary.tourImage}
@@ -849,6 +855,7 @@ type PaymentFormProps = {
   paymentCountry: string;
   setPaymentCountry: Dispatch<SetStateAction<string>>;
   onBack: () => void;
+  onSuccess: () => void;
 };
 
 const PaymentForm = memo(function PaymentForm({
@@ -893,11 +900,11 @@ const PaymentForm = memo(function PaymentForm({
     }
 
     if (result.paymentIntent?.status === "succeeded") {
-      setPaymentFeedback("Tu pago fue confirmado y cada voucher llegará al correo que ingresaste.");
-    } else {
-      setPaymentFeedback("Pago iniciado. Te redirigimos en breve para cerrar la reserva.");
+      onSuccess();
+      return;
     }
 
+    setPaymentFeedback("Pago iniciado. Te redirigimos en breve para cerrar la reserva.");
     setPaymentLoading(false);
   };
 
