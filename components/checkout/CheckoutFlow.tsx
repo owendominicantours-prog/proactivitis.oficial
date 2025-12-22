@@ -1,21 +1,40 @@
-"use client";
+﻿"use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import type { LucideIcon } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  BadgeCheck,
+  CalendarCheck,
+  CheckCircle2,
+  Clock3,
+  CreditCard,
+  Globe,
+  MapPin,
+  ShieldCheck,
+  Star,
+  Users
+} from "lucide-react";
 import { recommendedReservation } from "@/lib/checkout";
 
-const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-  : null;
-
-type Props = {
-  params: { [key: string]: string | string[] | undefined };
+export type CheckoutPageParams = {
+  tourId?: string;
+  tourTitle?: string;
+  tourImage?: string;
+  tourPrice?: string;
+  date?: string;
+  time?: string;
+  adults?: string;
+  youth?: string;
+  child?: string;
 };
 
-type Step = 0 | 1 | 2;
-
-type ContactForm = {
+type ContactState = {
   firstName: string;
   lastName: string;
   email: string;
@@ -23,260 +42,795 @@ type ContactForm = {
   phone: string;
 };
 
-const defaultForm: ContactForm = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  confirmEmail: "",
-  phone: ""
-};
+type PaymentMethodId = "card" | "paypal" | "google_pay" | "klarna";
 
-const normalize = (value: string | string[] | undefined) => {
-  if (Array.isArray(value)) return value[0];
-  return value ?? "";
-};
+const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  : null;
 
-const parseIntSafe = (value: string | string[] | undefined, fallback = 0) => {
-  const raw = normalize(value);
-  const parsed = Number.parseInt(raw, 10);
+const guardTime = "28:56";
+
+const phoneCountries = [
+  { code: "DO", label: "República Dominicana", dial: "+1", flag: "????" },
+  { code: "US", label: "Estados Unidos", dial: "+1", flag: "????" },
+  { code: "MX", label: "México", dial: "+52", flag: "????" },
+  { code: "CO", label: "Colombia", dial: "+57", flag: "????" },
+  { code: "ES", label: "España", dial: "+34", flag: "????" },
+  { code: "AR", label: "Argentina", dial: "+54", flag: "????" }
+];
+
+const languageOptions = [
+  "Español / Inglés",
+  "Español / Francés",
+  "Inglés / Portugués",
+  "Español / Alemán"
+];
+
+const paymentCountryOptions = [
+  "Estados Unidos",
+  "México",
+  "España",
+  "Colombia",
+  "Reino Unido",
+  "Chile",
+  "Argentina",
+  "Canadá",
+  "Brasil"
+];
+
+const paymentMethods: { id: PaymentMethodId; label: string; description: string; icon: LucideIcon }[] = [
+  {
+    id: "card",
+    label: "Tarjeta de crédito",
+    description: "Visa, Mastercard y American Express",
+    icon: CreditCard
+  },
+  {
+    id: "paypal",
+    label: "PayPal",
+    description: "Te redirigimos a tu cuenta PayPal",
+    icon: Globe
+  },
+  {
+    id: "google_pay",
+    label: "Google Pay",
+    description: "Paga con tu cuenta Google en segundos",
+    icon: ShieldCheck
+  },
+  {
+    id: "klarna",
+    label: "Klarna",
+    description: "Paga después con Klarna",
+    icon: Star
+  }
+];
+
+const cardLogos = [
+  { id: "visa", label: "Visa" },
+  { id: "mastercard", label: "Mastercard" },
+  { id: "amex", label: "American Express" }
+];
+
+const parsePositiveInt = (value?: string, fallback = 0) => {
+  if (!value) return fallback;
+  const parsed = Number.parseInt(value, 10);
   return Number.isNaN(parsed) ? fallback : Math.max(fallback, parsed);
 };
 
-const buildSummary = (params: Props["params"]) => {
-  const tourId = normalize(params.tourId);
-  const tourTitle = normalize(params.tourTitle) || recommendedReservation.tourName;
-  const tourImage = normalize(params.tourImage) || recommendedReservation.imageUrl;
-  const tourPrice = Number.parseFloat(normalize(params.tourPrice)) || recommendedReservation.price;
-  const date = normalize(params.date) || recommendedReservation.date;
-  const time = normalize(params.time) || recommendedReservation.time;
-  const adults = parseIntSafe(params.adults, 1);
-  const youth = parseIntSafe(params.youth, 0);
-  const children = parseIntSafe(params.child, 0);
+const parsePriceValue = (value?: string, fallback = 0) => {
+  if (!value) return fallback;
+  const parsed = Number.parseFloat(value.replace(",", "."));
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
+const buildSummary = (params: CheckoutPageParams) => {
+  const adults = parsePositiveInt(params.adults, 1);
+  const youth = parsePositiveInt(params.youth, 0);
+  const children = parsePositiveInt(params.child, 0);
+  const pricePerPerson = parsePriceValue(params.tourPrice, recommendedReservation.price);
   const totalTravelers = Math.max(1, adults + youth + children);
-  const totalPrice = totalTravelers * tourPrice;
-  return { tourId, tourTitle, tourImage, tourPrice, date, time, totalTravelers, totalPrice, adults, youth, children };
+  const totalPrice = totalTravelers * pricePerPerson;
+
+  return {
+    tourId: params.tourId,
+    tourTitle: params.tourTitle || recommendedReservation.tourName,
+    tourImage: params.tourImage || recommendedReservation.imageUrl,
+    tourPrice: pricePerPerson,
+    date: params.date || recommendedReservation.date,
+    time: params.time || recommendedReservation.time,
+    adults,
+    youth,
+    children,
+    totalTravelers,
+    totalPrice
+  };
 };
 
-const ContactStep = ({ onNext }: { onNext: () => void }) => {
-  const [form, setForm] = useState<ContactForm>(defaultForm);
-  const [errors, setErrors] = useState<Partial<ContactForm>>({});
-
-  const handleChange = (field: keyof ContactForm) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({ ...prev, [field]: event.target.value }));
-    setErrors((prev) => ({ ...prev, [field]: undefined }));
-  };
-
-  const submit = () => {
-    const nextErrors: Partial<ContactForm> = {};
-    if (!form.firstName) nextErrors.firstName = "Ingresa tu nombre";
-    if (!form.lastName) nextErrors.lastName = "Ingresa tu apellido";
-    if (!form.email) nextErrors.email = "Ingresa tu correo";
-    if (form.email !== form.confirmEmail) nextErrors.confirmEmail = "Los correos deben coincidir";
-    if (!form.phone) nextErrors.phone = "Agrega tu teléfono";
-    if (Object.keys(nextErrors).length) {
-      setErrors(nextErrors);
-      return;
-    }
-    onNext();
-  };
-
-  return (
-    <div className="space-y-4">
-      {(
-        [
-          { label: "Nombre", key: "firstName" },
-          { label: "Apellido", key: "lastName" },
-          { label: "Correo", key: "email" },
-          { label: "Confirmar correo", key: "confirmEmail" },
-          { label: "Teléfono", key: "phone" }
-        ] as const
-      ).map((field) => (
-        <label key={field.key} className="block text-xs uppercase tracking-[0.3em] text-slate-500">
-          {field.label}
-          <input
-            type={field.key.includes("email") ? "email" : "text"}
-            value={form[field.key]}
-            onChange={handleChange(field.key)}
-            className={`mt-1 w-full rounded-2xl border px-3 py-2 text-sm ${
-              errors[field.key] ? "border-rose-500" : "border-slate-200"
-            }`}
-          />
-          {errors[field.key] && <p className="text-rose-500 text-[11px]">{errors[field.key]}</p>}
-        </label>
-      ))}
-      <button
-        type="button"
-        onClick={submit}
-        className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white"
-      >
-        Continuar
-      </button>
-    </div>
-  );
-};
-
-const TravelStep = ({
-  summary,
-  onNext
-}: {
-  summary: ReturnType<typeof buildSummary>;
-  onNext: () => void;
-}) => (
-  <div className="space-y-4">
-    <p className="text-sm text-slate-600">
-      {summary.totalTravelers} viajeros · {summary.date} · {summary.time}
-    </p>
-    <button
-      type="button"
-      onClick={onNext}
-      className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white"
-    >
-      Continuar al pago
-    </button>
-  </div>
-);
-
-const PaymentStep = ({
-  clientSecret,
-  onBack,
-  onError
-}: {
-  clientSecret: string;
-  onBack: () => void;
-  onError: (message: string) => void;
-}) => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
-
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    if (!stripe || !elements) {
-      onError("Stripe no está listo");
-      return;
-    }
-    if (!email.includes("@")) {
-      onError("Ingresa un correo válido");
-      return;
-    }
-    setLoading(true);
-    const result = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: process.env.NEXT_PUBLIC_STRIPE_SUCCESS_URL ?? "https://proactivitis.com/booking/confirmed"
-      },
-      redirect: "if_required"
-    });
-    if (result.error) {
-      onError(result.error.message ?? "Error procesando el pago");
-    }
-    setLoading(false);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <input
-        type="email"
-        value={email}
-        onChange={(event) => setEmail(event.target.value)}
-        className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm"
-        placeholder="tucorreo@proactivitis.com"
-      />
-      <PaymentElement />
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={onBack}
-          className="text-sm font-semibold text-slate-600 hover:text-slate-900"
-        >
-          <span className="inline-block">Regresar</span>
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white"
-        >
-          {loading ? "Procesando…" : "Pagar ahora"}
-        </button>
-      </div>
-    </form>
-  );
-};
-
-export default function CheckoutFlow({ params }: Props) {
-  const summary = buildSummary(params);
-  const [step, setStep] = useState<Step>(0);
+const contactFields: { label: string; key: keyof ContactState; type: string; placeholder: string }[] = [
+  { label: "Nombre", key: "firstName", type: "text", placeholder: "Idelkis" },
+  { label: "Apellido", key: "lastName", type: "text", placeholder: "Marín" },
+  { label: "Correo electrónico", key: "email", type: "email", placeholder: "tucorreo@proactivitis.com" },
+  { label: "Confirmar correo", key: "confirmEmail", type: "email", placeholder: "Confirma tu correo" }
+];
+export default function CheckoutFlow({ initialParams }: { initialParams: CheckoutPageParams }) {
+  const router = useRouter();
+  const summary = useMemo(() => buildSummary(initialParams), [initialParams]);
+  const [activeStep, setActiveStep] = useState(0);
+  const [contact, setContact] = useState<ContactState>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    confirmEmail: "",
+    phone: ""
+  });
+  const [paymentEmailField, setPaymentEmailField] = useState("");
+  const [travelerName, setTravelerName] = useState("");
+  const [pickupPreference, setPickupPreference] = useState<"pickup" | "later">("pickup");
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [language, setLanguage] = useState(languageOptions[0]);
+  const [specialRequirements, setSpecialRequirements] = useState("");
+  const [phoneCountry, setPhoneCountry] = useState(phoneCountries[0]);
+  const [paymentCountry, setPaymentCountry] = useState(paymentCountryOptions[0]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [intentLoading, setIntentLoading] = useState(false);
+  const [intentReady, setIntentReady] = useState(false);
+  const [intentError, setIntentError] = useState<string | null>(null);
+  const [bookingId, setBookingId] = useState<string | null>(null);
+  const [paymentFeedback, setPaymentFeedback] = useState<string | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentOption, setPaymentOption] = useState<"now" | "later">("now");
+  const [activePaymentMethod, setActivePaymentMethod] = useState<PaymentMethodId>("card");
+  const [cardBrand, setCardBrand] = useState<string | null>(null);
 
   useEffect(() => {
     if (!summary.tourId) {
-      setError("Falta el tour seleccionado");
+      router.replace("/tours");
+    }
+  }, [router, summary.tourId]);
+
+  const displayAmount = Number.isFinite(summary.totalPrice)
+    ? `$${summary.totalPrice.toFixed(2)} USD`
+    : "Precio bajo consulta";
+  const perPersonLabel = Number.isFinite(summary.tourPrice)
+    ? `${summary.tourPrice.toFixed(2)} USD por viajero`
+    : "Precio por viajero";
+
+  const contactSummary = useMemo(() => {
+    if (!contact.firstName && !contact.email) return "";
+    const traveler = `${contact.firstName} ${contact.lastName}`.trim() || "Viajero principal";
+    const emailLabel = contact.email || "sin correo";
+    const phoneLabel = contact.phone ? `${phoneCountry.dial} ${contact.phone}` : "sin teléfono";
+    return `${traveler} · ${emailLabel} · ${phoneLabel}`;
+  }, [contact, phoneCountry]);
+
+  const travelerSummary = useMemo(() => {
+    if (!travelerName) return "Completa los datos del viajero principal.";
+    const pickupLabel =
+      pickupPreference === "pickup" ? pickupLocation || "Elige un punto de encuentro" : "Punto por definir";
+    return `${travelerName} · ${pickupLabel}`;
+  }, [travelerName, pickupLocation, pickupPreference]);
+
+  const handleContactChange = (field: keyof ContactState) => (event: ChangeEvent<HTMLInputElement>) => {
+    const nextValue = event.target.value;
+    setContact((prev) => {
+      const next = { ...prev, [field]: nextValue };
+      if (field === "email" && paymentEmailField === prev.email) {
+        setPaymentEmailField(nextValue);
+      }
+      return next;
+    });
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const handleTravelerChange = (value: string) => {
+    setTravelerName(value);
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.travelerName;
+      return next;
+    });
+  };
+
+  const handlePickupLocationChange = (value: string) => {
+    setPickupLocation(value);
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.pickupLocation;
+      return next;
+    });
+  };
+
+  const triggerPaymentIntent = async () => {
+    if (intentReady || intentLoading || !summary.tourId) return;
+    setIntentLoading(true);
+    setIntentError(null);
+    setPaymentFeedback(null);
+
+    try {
+      const payload = {
+        tourId: summary.tourId,
+        tourTitle: summary.tourTitle,
+        tourImage: summary.tourImage,
+        tourPrice: summary.tourPrice,
+        date: summary.date,
+        time: summary.time,
+        adults: summary.adults,
+        youth: summary.youth,
+        child: summary.children,
+        firstName: contact.firstName.trim(),
+        lastName: contact.lastName.trim(),
+        email: contact.email.trim(),
+        phone: contact.phone.trim(),
+        phoneCountry: phoneCountry.code,
+        pickupPreference,
+        pickupLocation:
+          pickupPreference === "pickup" ? pickupLocation.trim() : "Decidiré el punto más tarde",
+        language,
+        specialRequirements: specialRequirements.trim(),
+        paymentOption: "now"
+      };
+
+      const response = await fetch("/api/checkout/payment-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.clientSecret) {
+        throw new Error(data.error ?? "No se pudo preparar el pago");
+      }
+
+      setClientSecret(data.clientSecret);
+      setBookingId(data.bookingId ?? null);
+      setIntentReady(true);
+    } catch (error) {
+      setIntentError(error instanceof Error ? error.message : "Error preparando el pago");
+      setIntentReady(false);
+    } finally {
+      setIntentLoading(false);
+    }
+  };
+
+  const handleNext = (currentIndex: number) => {
+    const nextErrors: Record<string, string> = {};
+
+    if (currentIndex === 0) {
+      if (!contact.firstName.trim()) nextErrors.firstName = "Ingresa tu nombre";
+      if (!contact.lastName.trim()) nextErrors.lastName = "Ingresa tu apellido";
+      if (!contact.email.trim()) nextErrors.email = "Ingresa un correo";
+      if (!contact.confirmEmail.trim()) nextErrors.confirmEmail = "Confirma tu correo";
+      if (contact.email && contact.confirmEmail && contact.email !== contact.confirmEmail) {
+        nextErrors.confirmEmail = "Los correos deben coincidir";
+      }
+      if (!contact.phone.trim()) nextErrors.phone = "Ingresa un teléfono";
+    }
+
+    if (currentIndex === 1) {
+      if (!travelerName.trim()) nextErrors.travelerName = "Indica el nombre del viajero principal";
+      if (pickupPreference === "pickup" && !pickupLocation.trim()) {
+        nextErrors.pickupLocation = "Agrega un punto de recogida";
+      }
+    }
+
+    if (Object.keys(nextErrors).length) {
+      setErrors(nextErrors);
+      const field = Object.keys(nextErrors)[0];
+      const target = document.getElementById(field);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
       return;
     }
-    const controller = new AbortController();
-    (async () => {
-      try {
-        const response = await fetch("/api/checkout/payment-intent", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(summary),
-          signal: controller.signal
-        });
-        const data = await response.json();
-        if (!response.ok || !data.clientSecret) {
-          throw new Error(data.error ?? "No se pudo preparar el pago");
-        }
-        setClientSecret(data.clientSecret);
-      } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-        setError(err instanceof Error ? err.message : "Error interno");
+
+    if (currentIndex === 0) {
+      void triggerPaymentIntent();
+    }
+
+    setActiveStep((prev) => Math.min(2, prev + 1));
+  };
+  const PaymentForm = () => {
+    const stripe = useStripe();
+    const elements = useElements();
+
+    const handleSubmit = async (event: FormEvent) => {
+      event.preventDefault();
+      if (!stripe || !elements) {
+        setPaymentFeedback("Stripe aún no está listo");
+        return;
       }
-    })();
-    return () => controller.abort();
-  }, [summary]);
 
-  const next = () =>
-    setStep((prev) => {
-      if (prev === 0) return 1;
-      if (prev === 1 || prev === 2) return 2;
-      return prev;
-    });
+      if (!paymentEmailField.includes("@")) {
+        setPaymentFeedback("Ingresa un correo válido");
+        return;
+      }
 
-  if (!stripePromise) {
-    return <p>Stripe no configurado</p>;
-  }
+      if (paymentOption === "later") {
+        setPaymentFeedback("Te contactaremos para completar el pago más adelante.");
+        return;
+      }
 
-  return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4">
-      <div className="mx-auto max-w-4xl space-y-6 rounded-3xl border border-slate-100 bg-white p-6">
-        <h1 className="text-2xl font-semibold">Checkout</h1>
-        <p className="text-sm text-slate-600">
-          {summary.tourTitle} · {summary.date} · {summary.totalTravelers} viajeros
-        </p>
-        {error && <p className="text-sm text-rose-600">{error}</p>}
-        <div className="space-y-4">
-          {step === 0 && <ContactStep onNext={next} />}
-          {step === 1 && (
-            <div>
-              <p className="text-sm text-slate-600">Confirma los detalles antes de avanzar.</p>
-              <button
-                className="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white"
-                onClick={next}
-                type="button"
-              >
-                Continuar al pago
-              </button>
-            </div>
-          )}
-          {step === 2 && clientSecret && (
-            <Elements stripe={stripePromise} options={{ clientSecret }}>
-              <PaymentStep clientSecret={clientSecret} onBack={() => setStep(1)} onError={setError} />
-            </Elements>
+      setPaymentLoading(true);
+      setPaymentFeedback(null);
+
+      const result = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url:
+            process.env.NEXT_PUBLIC_STRIPE_SUCCESS_URL ?? "https://proactivitis.com/booking/confirmed"
+        },
+        redirect: "if_required"
+      });
+
+      if (result.error) {
+        setPaymentFeedback(result.error.message ?? "Error procesando el pago");
+      }
+
+      setPaymentLoading(false);
+    };
+
+    return (
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-2">
+          <label className="text-xs uppercase tracking-[0.3em] text-slate-500" htmlFor="paymentEmail">
+            Email para recibo
+          </label>
+          <input
+            id="paymentEmail"
+            type="email"
+            value={paymentEmailField}
+            onChange={(event) => setPaymentEmailField(event.target.value)}
+            className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+            placeholder="tucorreo@proactivitis.com"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Opciones de pago</p>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => setPaymentOption("now")}
+              className={`rounded-2xl px-4 py-3 text-sm font-semibold text-white transition ${
+                paymentOption === "now" ? "bg-[#008768]" : "bg-slate-200 text-slate-600"
+              }`}
+            >
+              Pagar ahora
+            </button>
+            <button
+              type="button"
+              onClick={() => setPaymentOption("later")}
+              className={`rounded-2xl px-4 py-3 text-sm font-semibold text-white transition ${
+                paymentOption === "later" ? "bg-[#008768]" : "bg-slate-200 text-slate-600"
+              }`}
+            >
+              Reservar ahora y pagar después
+            </button>
+          </div>
+          {paymentOption === "later" && (
+            <p className="text-sm text-slate-500">
+              Nuestro equipo confirmará la disponibilidad y te enviará la información para pagar más tarde.
+            </p>
           )}
         </div>
+
+        <div className="space-y-4">
+          {paymentMethods.map((method) => {
+            const isActive = activePaymentMethod === method.id;
+            return (
+              <div
+                key={method.id}
+                className={`overflow-hidden rounded-2xl border transition ${isActive ? "border-[#008768]" : "border-slate-200"}`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setActivePaymentMethod(method.id)}
+                  className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left text-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <method.icon className="h-5 w-5 text-slate-600" />
+                    <div>
+                      <p className="font-semibold text-slate-900">{method.label}</p>
+                      <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{method.description}</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-semibold text-slate-500">{isActive ? "Activo" : "Seleccionar"}</span>
+                </button>
+                {isActive && (
+                  <div className="bg-slate-50 px-5 pb-5 pt-0">
+                    {method.id === "card" ? (
+                      <>
+                        <div className="flex flex-wrap gap-2 pb-3 text-[11px] uppercase tracking-[0.3em] text-slate-500">
+                          {cardLogos.map((logo) => {
+                            const highlighted = cardBrand === logo.id;
+                            return (
+                              <span
+                                key={logo.id}
+                                className={`rounded-full border px-3 py-1 text-xs font-semibold ${
+                                  highlighted ? "border-[#008768] text-[#008768]" : "border-slate-200 text-slate-500"
+                                }`}
+                              >
+                                {logo.label}
+                              </span>
+                            );
+                          })}
+                        </div>
+                        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                          {clientSecret ? (
+                            <PaymentElement
+                              id="payment-element"
+                              onChange={(event) => setCardBrand(event.value?.card?.brand ?? null)}
+                            />
+                          ) : (
+                            <p className="text-sm text-slate-500">Estamos preparando el formulario seguro de pago.</p>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-sm text-slate-600">
+                        {method.description}. Esta opción se maneja a través de Stripe a medida que avanzas.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="paymentCountry" className="text-xs uppercase tracking-[0.3em] text-slate-500">
+            País
+          </label>
+          <input
+            id="paymentCountry"
+            list="country-list"
+            value={paymentCountry}
+            onChange={(event) => setPaymentCountry(event.target.value)}
+            className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+            placeholder="Busca tu país"
+          />
+          <datalist id="country-list">
+            {paymentCountryOptions.map((country) => (
+              <option key={country} value={country} />
+            ))}
+          </datalist>
+        </div>
+
+        {paymentFeedback && <p className="text-sm text-rose-500">{paymentFeedback}</p>}
+
+        <div className="flex items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={() => setActiveStep(1)}
+            className="flex items-center gap-2 text-sm font-semibold text-slate-600"
+          >
+            <ArrowLeft className="h-4 w-4" /> Regresar
+          </button>
+          <button
+            type="submit"
+            disabled={paymentLoading || !clientSecret || paymentOption === "later"}
+            className="w-[65%] rounded-2xl bg-[#008768] px-5 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
+          >
+            {paymentLoading ? "Procesando…" : `Pagar ${displayAmount}`}
+          </button>
+        </div>
+      </form>
+    );
+  };
+  return (
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-10">
+      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[2.2fr_1fr]">
+        <section className="space-y-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-xl">
+          <header className="space-y-2">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Pasarela profesional</p>
+            <h1 className="text-3xl font-semibold text-slate-900">Verifica disponibilidad y asegura tu plaza</h1>
+            <p className="text-sm text-slate-600">Completa cada paso para preparar la experiencia antes de pagar.</p>
+          </header>
+
+          {intentError && (
+            <div className="flex items-start gap-2 rounded-2xl bg-rose-50 p-4 text-sm text-rose-600">
+              <AlertTriangle className="h-4 w-4" /> {intentError}
+            </div>
+          )}
+
+          <div className="space-y-6">
+            <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+              <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Paso 1 · Datos de contacto</p>
+                  <p className="text-lg font-semibold text-slate-900">Completa tus datos</p>
+                  {contactSummary && <p className="text-sm text-slate-500">{contactSummary}</p>}
+                </div>
+                <span className="text-sm font-semibold text-[#008768]">{activeStep === 0 ? "Activo" : "Pendiente"}</span>
+              </div>
+              <div className="space-y-4 px-5 pb-6 pt-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  {contactFields.map((field) => (
+                    <label key={field.key} className="space-y-1 text-xs uppercase tracking-[0.3em] text-slate-500">
+                      <span>{field.label}</span>
+                      <input
+                        id={field.key}
+                        type={field.type}
+                        value={contact[field.key]}
+                        placeholder={field.placeholder}
+                        onChange={handleContactChange(field.key)}
+                        className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
+                          errors[field.key] ? "border-rose-500 ring-2 ring-rose-100" : "border-slate-200"
+                        }`}
+                      />
+                      {errors[field.key] && <p className="text-xs text-rose-500">{errors[field.key]}</p>}
+                    </label>
+                  ))}
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs uppercase tracking-[0.3em] text-slate-500" htmlFor="phone">
+                    Teléfono
+                  </label>
+                  <div className="flex gap-3">
+                    <select
+                      value={phoneCountry.code}
+                      onChange={(event) => {
+                        const next = phoneCountries.find((country) => country.code === event.target.value);
+                        if (next) setPhoneCountry(next);
+                      }}
+                      className="w-36 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm"
+                    >
+                      {phoneCountries.map((country) => (
+                        <option key={country.code} value={country.code}>
+                          {country.flag} {country.code} {country.dial}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      id="phone"
+                      type="tel"
+                      value={contact.phone}
+                      onChange={handleContactChange("phone")}
+                      placeholder="809 000 0000"
+                      className={`flex-1 rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
+                        errors.phone ? "border-rose-500 ring-2 ring-rose-100" : "border-slate-200"
+                      }`}
+                    />
+                  </div>
+                  {errors.phone && <p className="text-xs text-rose-500">{errors.phone}</p>}
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => handleNext(0)}
+                    className="rounded-2xl bg-[#008768] px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+              <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Paso 2 · Detalles</p>
+                  <p className="text-lg font-semibold text-slate-900">Detalles de la actividad</p>
+                  {travelerSummary && <p className="text-sm text-slate-500">{travelerSummary}</p>}
+                </div>
+                <span className="text-sm font-semibold text-[#008768]">{activeStep === 1 ? "Activo" : "Pendiente"}</span>
+              </div>
+              <div className="space-y-5 px-5 pb-6 pt-6">
+                <div className="space-y-2">
+                  <label htmlFor="travelerName" className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                    Viajero principal
+                  </label>
+                  <input
+                    id="travelerName"
+                    value={travelerName}
+                    onChange={(event) => handleTravelerChange(event.target.value)}
+                    placeholder="Nombre completo"
+                    className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
+                      errors.travelerName ? "border-rose-500" : "border-slate-200"
+                    }`}
+                  />
+                  {errors.travelerName && <p className="text-xs text-rose-500">{errors.travelerName}</p>}
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Punto de recogida</p>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <label
+                      className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
+                        pickupPreference === "pickup" ? "border-[#008768] bg-emerald-50" : "border-slate-200"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="pickup"
+                        checked={pickupPreference === "pickup"}
+                        onChange={() => setPickupPreference("pickup")}
+                      />
+                      Prefiero que me recojan
+                    </label>
+                    <label
+                      className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
+                        pickupPreference === "later" ? "border-[#008768] bg-emerald-50" : "border-slate-200"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="pickup"
+                        checked={pickupPreference === "later"}
+                        onChange={() => setPickupPreference("later")}
+                      />
+                      Lo decidiré más tarde
+                    </label>
+                  </div>
+                  {pickupPreference === "pickup" && (
+                    <div className="space-y-2">
+                      <label htmlFor="pickupLocation" className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                        Localización preferida
+                      </label>
+                      <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm">
+                        <MapPin className="h-5 w-5 text-emerald-500" />
+                        <input
+                          id="pickupLocation"
+                          value={pickupLocation}
+                          onChange={(event) => handlePickupLocationChange(event.target.value)}
+                          placeholder="Hotel o punto de encuentro"
+                          className="w-full bg-transparent text-sm outline-none"
+                        />
+                      </div>
+                      {errors.pickupLocation && <p className="text-xs text-rose-500">{errors.pickupLocation}</p>}
+                    </div>
+                  )}
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Idioma del tour</label>
+                  <select
+                    value={language}
+                    onChange={(event) => setLanguage(event.target.value)}
+                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                  >
+                    {languageOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Requisitos especiales</label>
+                  <textarea
+                    value={specialRequirements}
+                    onChange={(event) => setSpecialRequirements(event.target.value)}
+                    rows={3}
+                    placeholder="Indica necesidades especiales"
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setActiveStep(0)}
+                    className="flex items-center gap-2 text-sm font-semibold text-slate-600"
+                  >
+                    <ArrowLeft className="h-4 w-4" /> Regresar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleNext(1)}
+                    className="rounded-2xl bg-[#008768] px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+              <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Paso 3 · Pago</p>
+                  <p className="text-lg font-semibold text-slate-900">Información de pago</p>
+                  <p className="text-sm text-slate-500">{summary.totalTravelers} viajeros · {summary.date} · {summary.time}</p>
+                </div>
+                <span className="text-sm font-semibold text-[#008768]">{activeStep === 2 ? "Activo" : "Pendiente"}</span>
+              </div>
+              <div className="space-y-4 px-5 pb-6 pt-6">
+                <div className="rounded-2xl border border-slate-200 bg-[#F8FAFC] p-4 text-sm text-slate-600">
+                  <p className="text-sm font-semibold text-slate-900">Resumen antes del pago</p>
+                  <p>
+                    {summary.totalTravelers} viajeros · {summary.date} · {summary.time}
+                  </p>
+                  <p className="text-slate-400">Reserva provisional · ID: {bookingId ?? "pendiente"}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                  {!stripePromise && <p className="text-sm text-rose-500">Stripe no está configurado.</p>}
+                  {intentLoading && <p className="text-sm text-slate-600">Preparando el pago seguro…</p>}
+                  {clientSecret && stripePromise ? (
+                    <Elements stripe={stripePromise} options={{ clientSecret }}>
+                      <PaymentForm />
+                    </Elements>
+                  ) : (
+                    !intentLoading && (
+                      <p className="text-sm text-slate-500">Confirma los pasos anteriores para habilitar el pago.</p>
+                    )
+                  )}
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+        <aside className="space-y-4">
+          <div className="sticky top-8 space-y-6">
+            <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-lg">
+              <div className="flex items-center gap-3 rounded-2xl bg-pink-50 px-3 py-2 text-sm font-semibold text-rose-600">
+                <Clock3 className="h-4 w-4" /> Te guardamos la plaza durante {guardTime}
+              </div>
+              <div className="mt-4 flex items-center gap-3 border-b border-slate-100 pb-4">
+                <Image
+                  src={summary.tourImage}
+                  alt={summary.tourTitle}
+                  width={84}
+                  height={84}
+                  className="h-[84px] w-[84px] rounded-2xl object-cover"
+                />
+                <div>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Tour</p>
+                  <p className="text-lg font-semibold text-slate-900">{summary.tourTitle}</p>
+                </div>
+              </div>
+              <div className="space-y-3 text-sm text-slate-600">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-slate-400" /> Personas
+                  </span>
+                  <strong>
+                    {summary.adults} adultos y {summary.children} niños
+                  </strong>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <CalendarCheck className="h-5 w-5 text-slate-400" /> Fecha
+                  </span>
+                  <strong>{summary.date}</strong>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Clock3 className="h-5 w-5 text-slate-400" /> Hora
+                  </span>
+                  <strong>{summary.time}</strong>
+                </div>
+              </div>
+              <div className="mt-4 rounded-2xl border border-emerald-500/20 bg-emerald-50 p-3 text-[13px] text-emerald-700">
+                <div className="flex items-center gap-2 text-[13px] font-semibold">
+                  <BadgeCheck className="h-4 w-4" /> Reserva con confianza · Trustpilot 5 estrellas
+                </div>
+                <p>Flexibilidad excepcional · Cancelación gratuita hasta 24 h antes</p>
+              </div>
+              <div className="mt-4 rounded-3xl border border-slate-100 bg-slate-950 p-5 text-white">
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Precio total</p>
+                <p className="text-3xl font-semibold">{displayAmount}</p>
+                <p className="mt-1 text-[13px] text-slate-300">{perPersonLabel}</p>
+              </div>
+              <div className="mt-4 space-y-3 rounded-2xl border border-dashed border-slate-200 p-4 text-xs text-slate-500">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-emerald-500" /> Pagos verificados y protegidos
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Soporte 24/7 en tu destino
+                </div>
+                <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.4em] text-slate-400">
+                  <Globe className="h-4 w-4 text-slate-400" /> Infraestructura global de cobros
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   );
 }
+
