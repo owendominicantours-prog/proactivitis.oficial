@@ -30,26 +30,7 @@ export default function CheckoutSummary({ params }: Props) {
   const child = parseNumber(params.child, 0);
   const totalTravelers = Math.max(1, adults + youth + child);
   const totalPrice = totalTravelers * pricePerPerson;
-
-  if (!tourId) {
-    return (
-      <div className='min-h-screen flex items-center justify-center bg-slate-50 px-4 py-10'>
-        <div className='max-w-xl space-y-4 rounded-3xl border border-slate-200 bg-white/90 p-6 text-center shadow-xl'>
-          <h1 className='text-2xl font-semibold text-slate-900'>Falta identificar el tour</h1>
-          <p className='text-sm text-slate-600'>
-            Por favor regresa a la página del tour y selecciona tus fechas y viajeros antes de continuar con
-            el pago.
-          </p>
-          <a
-            href='/tours'
-            className='inline-flex items-center justify-center rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700'
-          >
-            Volver a Tours
-          </a>
-        </div>
-      </div>
-    );
-  }
+  const missingTourId = !tourId;
 
   return (
     <div className='min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8'>
@@ -62,6 +43,12 @@ export default function CheckoutSummary({ params }: Props) {
               Estamos preparando tu reserva para <strong>{tourName}</strong>. Verifica fecha, viajeros y precio antes
               de continuar.
             </p>
+            {missingTourId && (
+              <p className='rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700'>
+                No se identificó el código del tour; los datos funcionan con lo que seleccionaste, pero el
+                identificador llegará cuando completes la reserva.
+              </p>
+            )}
           </header>
           <div className='space-y-5 rounded-2xl border border-slate-200 bg-slate-50 p-5'>
             <div className='flex gap-4'>
