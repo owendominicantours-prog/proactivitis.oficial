@@ -1,0 +1,5 @@
+<svg width="64" height="24" viewBox="0 0 64 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="24" rx="4" fill="#fff" stroke="#dcdcdd"/>
+  <text x="8" y="16" fill="#202124" font-family="Product Sans, Arial, sans-serif" font-size="10" font-weight="600">Google Pay</text>
+  <path d="M50 8h6v8h-6z" fill="#4285f4"/>
+</svg>
