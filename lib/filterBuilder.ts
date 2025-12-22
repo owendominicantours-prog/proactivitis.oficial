@@ -42,6 +42,7 @@ export function buildTourFilter(params: TourSearchParams = {}) {
     const orConditions: any[] = [];
 
     if (normalizedSlug) {
+      destinationIs.slug = normalizedSlug;
       orConditions.push({ slug: normalizedSlug });
     }
     if (searchValue) {
