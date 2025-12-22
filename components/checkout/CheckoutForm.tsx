@@ -1020,7 +1020,6 @@ export default function CheckoutForm() {
 
       </div>
 
-      </div>
     </div>
   );
 }
