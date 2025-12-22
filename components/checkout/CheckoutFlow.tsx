@@ -181,7 +181,6 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentOption, setPaymentOption] = useState<"now" | "later">("now");
   const [activePaymentMethod, setActivePaymentMethod] = useState<PaymentMethodId>("card");
-  const [cardBrand, setCardBrand] = useState<string | null>(null);
 
   useEffect(() => {
     if (!summary.tourId) {
@@ -447,7 +446,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                       <>
                         <div className="flex flex-wrap gap-2 pb-3 text-[11px] uppercase tracking-[0.3em] text-slate-500">
                           {cardLogos.map((logo) => {
-                            const highlighted = cardBrand === logo.id;
+                            const highlighted = isActive;
                             return (
                               <span
                                 key={logo.id}
@@ -462,10 +461,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                         </div>
                         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                           {clientSecret ? (
-                            <PaymentElement
-                              id="payment-element"
-                              onChange={(event) => setCardBrand(event.value?.card?.brand ?? null)}
-                            />
+                            <PaymentElement id="payment-element" />
                           ) : (
                             <p className="text-sm text-slate-500">Estamos preparando el formulario seguro de pago.</p>
                           )}
