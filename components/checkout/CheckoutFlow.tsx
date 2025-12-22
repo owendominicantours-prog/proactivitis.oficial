@@ -275,9 +275,20 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
         body: JSON.stringify(payload)
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      let data: any = {};
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch (err) {
+          data = { error: text };
+        }
+      }
       if (!response.ok || !data.clientSecret) {
-        throw new Error(data.error ?? "No se pudo preparar el pago");
+        throw new Error(
+          data?.error ??
+            `No se pudo preparar el pago${text ? `: ${text}` : ""}`
+        );
       }
 
       setClientSecret(data.clientSecret);
