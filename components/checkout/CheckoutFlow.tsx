@@ -180,6 +180,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentOption, setPaymentOption] = useState<"now" | "later">("now");
   const [activePaymentMethod, setActivePaymentMethod] = useState<PaymentMethodId>("card");
+  const [completedSteps, setCompletedSteps] = useState([false, false, false]);
 
   const displayAmount = Number.isFinite(summary.totalPrice)
     ? `$${summary.totalPrice.toFixed(2)} USD`
@@ -337,7 +338,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
       void triggerPaymentIntent();
     }
 
-    setActiveStep((prev) => Math.min(2, prev + 1));
+    setCompletedSteps((prev) => {
+      const next = [...prev];
+      next[currentIndex] = true;
+      return next;
+    });
+
+    setActiveStep(Math.min(2, currentIndex + 1));
   };
   const PaymentForm = () => {
     const stripe = useStripe();
