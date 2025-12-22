@@ -435,7 +435,9 @@ export default function CheckoutForm() {
 
     if (!paymentType) newErrors.paymentType = 'Selecciona un mtodo';
 
-    if (paymentType === 'card' && cardNumber.replace(/\s+/g, '').length < 16)
+    const normalizedCardNumber = cardNumber.split(' ').join('');
+
+    if (paymentType === 'card' && normalizedCardNumber.length < 16)
 
       newErrors.cardNumber = 'Ingresa un nmero vlido';
 
