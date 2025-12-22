@@ -15,6 +15,7 @@ import {
   Star,
   Users
 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 const recommendedReservation = {
   tourName: 'Tour guiado de lujo en Punta Cana',
@@ -49,6 +50,7 @@ export default function CheckoutPage() {
   const [cardNumber, setCardNumber] = useState('');
   const [errors, setErrors] = useState({} as Record<string, string>);
   const containerRefs = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)];
+  const searchParams = useSearchParams();
 
   const summaryLabel = useMemo(() => {
     if (!contactData.firstName && !contactData.email) return '';
@@ -57,6 +59,28 @@ export default function CheckoutPage() {
   }, [contactData]);
 
   const guardTime = '28:56';
+
+  const summaryState = useMemo(() => {
+    const parsePositive = (raw, fallback) => {
+      const value = parseInt(raw ?? '', 10);
+      if (Number.isNaN(value)) return fallback;
+      return Math.max(fallback, value);
+    };
+
+    const adultsCount = parsePositive(searchParams.get('adults'), 1);
+    const youthCount = parsePositive(searchParams.get('youth'), 0);
+    const childCount = parsePositive(searchParams.get('child'), 0);
+    const dateValue = searchParams.get('date') || recommendedReservation.date;
+    const timeValue = searchParams.get('time') || recommendedReservation.time;
+
+    return {
+      tourName: recommendedReservation.tourName,
+      date: dateValue,
+      time: timeValue,
+      adults: adultsCount,
+      children: youthCount + childCount
+    };
+  }, [searchParams]);
 
   const reservationSummary = useMemo(
     () => (
@@ -76,7 +100,7 @@ export default function CheckoutPage() {
           />
           <div>
             <p className='text-sm uppercase tracking-[0.4em] text-slate-400'>Tour</p>
-            <p className='font-semibold text-slate-900'>{recommendedReservation.tourName}</p>
+            <p className='font-semibold text-slate-900'>{summaryState.tourName}</p>
           </div>
         </div>
         <div className='space-y-3 text-sm text-slate-600'>
@@ -85,22 +109,23 @@ export default function CheckoutPage() {
               <Users className='h-5 w-5 text-slate-400' /> Personas
             </span>
             <strong>
-              {recommendedReservation.adults} adults Â· {recommendedReservation.children} niÃ±os
+              {summaryState.adults} adult{summaryState.adults > 1 ? 's' : ''} · {summaryState.children} niño{summaryState.children === 1 ? '' : 's'}
             </strong>
           </div>
           <div className='flex items-center justify-between'>
             <span className='flex items-center gap-2'>
               <CalendarCheck className='h-5 w-5 text-slate-400' /> Fecha
             </span>
-            <strong>{recommendedReservation.date}</strong>
+            <strong>{summaryState.date}</strong>
           </div>
           <div className='flex items-center justify-between'>
             <span className='flex items-center gap-2'>
               <Clock3 className='h-5 w-5 text-slate-400' /> Hora
             </span>
-            <strong>{recommendedReservation.time}</strong>
+            <strong>{summaryState.time}</strong>
           </div>
         </div>
+
         <div className='rounded-xl border border-emerald-500/20 bg-emerald-50 p-3 text-xs text-emerald-700'>
           <div className='flex items-center gap-2 text-[13px] font-semibold'>
             <BadgeCheck className='h-4 w-4' />
@@ -130,7 +155,7 @@ export default function CheckoutPage() {
         </div>
       </div>
     ),
-    []
+    [summaryState, guardTime]
   );
 
   const handleScrollToStep = (index: number) => {
