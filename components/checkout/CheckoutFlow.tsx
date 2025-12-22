@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, Dispatch, FormEvent, SetStateAction, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
@@ -466,153 +466,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
     setActiveStep(Math.min(2, currentIndex + 1));
   };
-  const PaymentForm = () => {
-    const stripe = useStripe();
-    const elements = useElements();
-
-    const handleSubmit = async (event: FormEvent) => {
-      event.preventDefault();
-      if (!stripe || !elements) {
-        setPaymentFeedback("Stripe aún no está listo");
-        return;
-      }
-
-      setPaymentLoading(true);
-      setPaymentFeedback(null);
-
-      const result = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url:
-            process.env.NEXT_PUBLIC_STRIPE_SUCCESS_URL ?? "https://proactivitis.com/booking/confirmed"
-        },
-        redirect: "if_required"
-      });
-
-      if (result.error) {
-        setPaymentFeedback(result.error.message ?? "Error procesando el pago");
-      }
-
-      setPaymentLoading(false);
-    };
-
-    return (
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <label className="text-xs uppercase tracking-[0.3em] text-slate-500" htmlFor="paymentEmail">
-            Email para recibo
-          </label>
-          <input
-            id="paymentEmail"
-            type="email"
-            value={paymentEmailField}
-            onChange={(event) => setPaymentEmailField(event.target.value)}
-            className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-            placeholder="tucorreo@proactivitis.com"
-          />
-        </div>
-
-        <div className="space-y-4">
-          {paymentMethods.map((method) => {
-            const isActive = activePaymentMethod === method.id;
-            return (
-              <div
-                key={method.id}
-                className={`overflow-hidden rounded-2xl border transition ${isActive ? "border-[#008768]" : "border-slate-200"}`}
-              >
-                <button
-                  type="button"
-                  onClick={() => setActivePaymentMethod(method.id)}
-                  className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left text-sm"
-                >
-                  <div className="flex items-center gap-3">
-                    <method.icon className="h-5 w-5 text-slate-600" />
-                    <div>
-                      <p className="font-semibold text-slate-900">{method.label}</p>
-                      <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{method.description}</p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-semibold text-slate-500">{isActive ? "Activo" : "Seleccionar"}</span>
-                </button>
-                {isActive && (
-                  <div className="bg-slate-50 px-5 pb-5 pt-0">
-                    {method.id === "card" ? (
-                      <>
-                        <div className="flex flex-wrap gap-2 pb-3 text-[11px] uppercase tracking-[0.3em] text-slate-500">
-                          {cardLogos.map((logo) => {
-                            const highlighted = isActive;
-                            return (
-                              <span
-                                key={logo.id}
-                                className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                                  highlighted ? "border-[#008768] text-[#008768]" : "border-slate-200 text-slate-500"
-                                }`}
-                              >
-                                {logo.label}
-                              </span>
-                            );
-                          })}
-                        </div>
-                        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                          {clientSecret ? (
-                            <PaymentElement id="payment-element" />
-                          ) : (
-                            <p className="text-sm text-slate-500">Estamos preparando el formulario seguro de pago.</p>
-                          )}
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-sm text-slate-600">
-                        {method.description}. Esta opción se maneja a través de Stripe a medida que avanzas.
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="paymentCountry" className="text-xs uppercase tracking-[0.3em] text-slate-500">
-            País
-          </label>
-          <input
-            id="paymentCountry"
-            list="country-list"
-            value={paymentCountry}
-            onChange={(event) => setPaymentCountry(event.target.value)}
-            className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-            placeholder="Busca tu país"
-          />
-          <datalist id="country-list">
-            {paymentCountryOptions.map((country) => (
-              <option key={country} value={country} />
-            ))}
-          </datalist>
-        </div>
-
-        {paymentFeedback && <p className="text-sm text-rose-500">{paymentFeedback}</p>}
-
-        <div className="flex items-center justify-between gap-4">
-          <button
-            type="button"
-            onClick={() => setActiveStep(1)}
-            className="flex items-center gap-2 text-sm font-semibold text-slate-600"
-          >
-            <ArrowLeft className="h-4 w-4" /> Regresar
-          </button>
-          <button
-            type="submit"
-            disabled={paymentLoading || !clientSecret}
-            className="w-[65%] rounded-2xl bg-[#008768] px-5 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
-          >
-            {paymentLoading ? "Procesando…" : "Confirmar y pagar"}
-          </button>
-        </div>
-      </form>
-    );
-  };
+;
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-10">
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[2.2fr_1fr]">
@@ -884,16 +738,28 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                   <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                     {!stripePromise && <p className="text-sm text-rose-500">Stripe no está configurado.</p>}
                     {intentLoading && <p className="text-sm text-slate-600">Preparando el pago seguro…</p>}
-                    {clientSecret && stripePromise ? (
-                      <Elements stripe={stripePromise} options={{ clientSecret }}>
-                        <PaymentForm />
-                      </Elements>
-                    ) : (
-                      !intentLoading && (
-                        <p className="text-sm text-slate-500">Confirma los pasos anteriores para habilitar el pago.</p>
-                      )
-                    )}
-                  </div>
+                  {clientSecret && stripePromise ? (
+                    <Elements stripe={stripePromise} options={{ clientSecret }}>
+                      <PaymentForm
+                        paymentEmailField={paymentEmailField}
+                        setPaymentEmailField={setPaymentEmailField}
+                        paymentFeedback={paymentFeedback}
+                        setPaymentFeedback={setPaymentFeedback}
+                        paymentLoading={paymentLoading}
+                        setPaymentLoading={setPaymentLoading}
+                        activePaymentMethod={activePaymentMethod}
+                        setActivePaymentMethod={setActivePaymentMethod}
+                        paymentCountry={paymentCountry}
+                        setPaymentCountry={setPaymentCountry}
+                        onBack={() => setActiveStep(1)}
+                      />
+                    </Elements>
+                  ) : (
+                    !intentLoading && (
+                      <p className="text-sm text-slate-500">Confirma los pasos anteriores para habilitar el pago.</p>
+                    )
+                  )}
+                </div>
                 </div>
               )}
             </article>
@@ -970,4 +836,157 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
     </div>
   );
 }
+
+type PaymentFormProps = {
+  paymentEmailField: string;
+  setPaymentEmailField: Dispatch<SetStateAction<string>>;
+  paymentFeedback: string | null;
+  setPaymentFeedback: Dispatch<SetStateAction<string | null>>;
+  paymentLoading: boolean;
+  setPaymentLoading: Dispatch<SetStateAction<boolean>>;
+  activePaymentMethod: PaymentMethodId;
+  setActivePaymentMethod: Dispatch<SetStateAction<PaymentMethodId>>;
+  paymentCountry: string;
+  setPaymentCountry: Dispatch<SetStateAction<string>>;
+  onBack: () => void;
+};
+
+const PaymentForm = memo(function PaymentForm({
+  paymentEmailField,
+  setPaymentEmailField,
+  paymentFeedback,
+  setPaymentFeedback,
+  paymentLoading,
+  setPaymentLoading,
+  activePaymentMethod,
+  setActivePaymentMethod,
+  paymentCountry,
+  setPaymentCountry,
+  onBack
+}: PaymentFormProps) {
+  const stripe = useStripe();
+  const elements = useElements();
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!stripe || !elements) {
+      setPaymentFeedback("Stripe aún no está listo");
+      return;
+    }
+
+    setPaymentLoading(true);
+    setPaymentFeedback(null);
+
+    const result = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url:
+          process.env.NEXT_PUBLIC_STRIPE_SUCCESS_URL ?? "https://proactivitis.com/booking/confirmed"
+      },
+      redirect: "if_required"
+    });
+
+    if (result.error) {
+      setPaymentFeedback(result.error.message ?? "Error procesando el pago");
+    }
+
+    setPaymentLoading(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <label className="text-xs uppercase tracking-[0.3em] text-slate-500" htmlFor="paymentEmail">
+          Email para recibo
+        </label>
+        <input
+          id="paymentEmail"
+          type="email"
+          value={paymentEmailField}
+          onChange={(event) => setPaymentEmailField(event.target.value)}
+          className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+          placeholder="tucorreo@proactivitis.com"
+        />
+      </div>
+
+      <div className="space-y-4">
+        {paymentMethods.map((method) => {
+          const isActive = activePaymentMethod === method.id;
+          return (
+            <div
+              key={method.id}
+              className={`overflow-hidden rounded-2xl border transition ${isActive ? "border-[#008768]" : "border-slate-200"}`}
+            >
+              <button
+                type="button"
+                onClick={() => setActivePaymentMethod(method.id)}
+                className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left text-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <method.icon className="h-5 w-5 text-slate-600" />
+                  <div>
+                    <p className="font-semibold text-slate-900">{method.label}</p>
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{method.description}</p>
+                  </div>
+                </div>
+                <span className="text-xs font-semibold text-slate-500">{isActive ? "Activo" : "Seleccionar"}</span>
+              </button>
+              {isActive && (
+                <div className="bg-slate-50 px-5 pb-5 pt-0">
+                  {method.id === "card" ? (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                      <PaymentElement id="payment-element" />
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-600">
+                      {method.description}. Esta opción se maneja a través de Stripe a medida que avanzas.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="paymentCountry" className="text-xs uppercase tracking-[0.3em] text-slate-500">
+          País
+        </label>
+        <input
+          id="paymentCountry"
+          list="country-list"
+          value={paymentCountry}
+          onChange={(event) => setPaymentCountry(event.target.value)}
+          className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+          placeholder="Busca tu país"
+        />
+        <datalist id="country-list">
+          {paymentCountryOptions.map((country) => (
+            <option key={country} value={country} />
+          ))}
+        </datalist>
+      </div>
+
+      {paymentFeedback && <p className="text-sm text-rose-500">{paymentFeedback}</p>}
+
+      <div className="flex items-center justify-between gap-4">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex items-center gap-2 text-sm font-semibold text-slate-600"
+        >
+          <ArrowLeft className="h-4 w-4" /> Regresar
+        </button>
+        <button
+          type="submit"
+          disabled={paymentLoading}
+          className="w-[65%] rounded-2xl bg-[#008768] px-5 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
+        >
+          {paymentLoading ? "Procesando." : "Confirmar y pagar"}
+        </button>
+      </div>
+    </form>
+  );
+});
 
