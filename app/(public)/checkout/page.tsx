@@ -1,9 +1,9 @@
-import CheckoutWithStripe from '@/components/checkout/CheckoutWithStripe';
+import CheckoutSummary from '@/components/checkout/CheckoutSummary';
 
 export default function CheckoutPage({
   searchParams
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  return <CheckoutWithStripe searchParams={searchParams} />;
+  return <CheckoutSummary params={searchParams} />;
 }
