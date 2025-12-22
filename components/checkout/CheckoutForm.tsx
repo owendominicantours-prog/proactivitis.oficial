@@ -167,8 +167,9 @@ const StripePaymentStep = ({ onBack }: StripePaymentStepProps) => {
   }
 
   const { checkout } = checkoutState;
-  const amount = checkout?.total?.total?.amount;
-  const currency = checkout?.total?.total?.currency?.toUpperCase() || 'USD';
+  const totalInfo = checkout?.total?.total;
+  const amount = totalInfo?.amount;
+  const currency = (totalInfo as { currency?: string } | undefined)?.currency?.toUpperCase() ?? 'USD';
   const displayAmount = amount ? `${(amount / 100).toFixed(2)} ${currency}` : '0.00 USD';
 
   const handleSubmit = async (event: FormEvent) => {
