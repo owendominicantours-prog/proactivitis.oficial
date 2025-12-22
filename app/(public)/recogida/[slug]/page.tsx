@@ -57,11 +57,17 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
     notFound();
   }
 
+  const bookingLabel = `Reservar Buggy con recogida en ${location.name}`;
+
   const tours = await prisma.tour.findMany({
     where: {
       status: "published",
       location: {
         contains: location.name,
+        mode: "insensitive"
+      },
+      category: {
+        contains: "Punta Cana",
         mode: "insensitive"
       }
     },
@@ -73,7 +79,13 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
   });
 
   const displayTours = tours.length ? tours : await prisma.tour.findMany({
-    where: { status: "published" },
+    where: {
+      status: "published",
+      category: {
+        contains: "Punta Cana",
+        mode: "insensitive"
+      }
+    },
     orderBy: { createdAt: "desc" },
     take: RECENT_TOURS_LIMIT,
     include: {
@@ -146,7 +158,7 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
                     href={buildCheckoutUrl(tour, location.slug, bookingCode)}
                     className="rounded-2xl bg-orange-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-lg transition hover:bg-orange-600"
                   >
-                    Reservar Ahora
+                    {bookingLabel}
                   </Link>
                 </div>
               </div>
