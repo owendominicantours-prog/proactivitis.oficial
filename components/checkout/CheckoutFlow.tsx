@@ -280,7 +280,6 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
     return () => clearInterval(interval);
   }, [handleSessionExpire, sessionExpired, summary.tourId]);
-  const [completedSteps, setCompletedSteps] = useState([false, false, false]);
 
   const displayAmount = Number.isFinite(summary.totalPrice)
     ? `$${summary.totalPrice.toFixed(2)} USD`
