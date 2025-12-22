@@ -1,14 +1,31 @@
 import { MetadataRoute } from "next";
+import { prisma } from "@/lib/prisma";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://proactivitis.com";
+const baseUrl = "https://proactivitis.com";
 
-  const routes = ["", "/about", "/contact", "/tours"].map((route) => ({
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const staticRoutes = ["", "/about", "/contact", "/tours"].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: "daily" as const,
     priority: route === "" ? 1 : 0.8
   }));
 
-  return routes;
+  let tourRoutes: MetadataRoute.SitemapItem[] = [];
+  try {
+    const tours = await prisma.tour.findMany({
+      where: { status: "active" },
+      select: { slug: true, updatedAt: true }
+    });
+    tourRoutes = tours.map((tour) => ({
+      url: `${baseUrl}/tours/${tour.slug}`,
+      lastModified: tour.updatedAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.7
+    }));
+  } catch (error) {
+    console.error("Sitemap: no se pudieron cargar tours", error);
+  }
+
+  return [...staticRoutes, ...tourRoutes];
 }
