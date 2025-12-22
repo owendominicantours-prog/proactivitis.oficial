@@ -153,7 +153,6 @@ const contactFields: { label: string; key: keyof ContactState; type: string; pla
   { label: "Confirmar correo", key: "confirmEmail", type: "email", placeholder: "Confirma tu correo" }
 ];
 export default function CheckoutFlow({ initialParams }: { initialParams: CheckoutPageParams }) {
-  const router = useRouter();
   const summary = useMemo(() => buildSummary(initialParams), [initialParams]);
   const [activeStep, setActiveStep] = useState(0);
   const [contact, setContact] = useState<ContactState>({
