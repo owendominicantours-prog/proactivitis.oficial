@@ -31,7 +31,9 @@ export function TourBookingWidget({
   basePrice,
   timeSlots,
   supplierHasStripeAccount: _supplierHasStripeAccount,
-  platformSharePercent: _platformSharePercent
+  platformSharePercent: _platformSharePercent,
+  tourTitle,
+  tourImage
 }: TourBookingWidgetProps) {
   const router = useRouter();
   const [date, setDate] = useState("");
