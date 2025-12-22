@@ -237,7 +237,12 @@ export default function CheckoutFlow({ params }: Props) {
     return () => controller.abort();
   }, [summary]);
 
-  const next = () => setStep((prev) => Math.min(2, (prev + 1) as Step));
+  const next = () =>
+    setStep((prev) => {
+      if (prev === 0) return 1;
+      if (prev === 1 || prev === 2) return 2;
+      return prev;
+    });
 
   if (!stripePromise) {
     return <p>Stripe no configurado</p>;
