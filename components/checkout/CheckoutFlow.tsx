@@ -888,6 +888,14 @@ const PaymentForm = memo(function PaymentForm({
 
     if (result.error) {
       setPaymentFeedback(result.error.message ?? "Error procesando el pago");
+      setPaymentLoading(false);
+      return;
+    }
+
+    if (result.paymentIntent?.status === "succeeded") {
+      setPaymentFeedback("Tu pago fue confirmado y cada voucher llegará al correo que ingresaste.");
+    } else {
+      setPaymentFeedback("Pago iniciado. Te redirigimos en breve para cerrar la reserva.");
     }
 
     setPaymentLoading(false);
