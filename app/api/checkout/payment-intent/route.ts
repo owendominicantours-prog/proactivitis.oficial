@@ -32,6 +32,9 @@ type PaymentIntentPayload = {
   language?: string;
   specialRequirements?: string;
   paymentOption?: "now" | "later";
+  hotelSlug?: string;
+  bookingCode?: string;
+  originHotelName?: string;
 };
 
 const parsePositive = (value: number | string | undefined, fallback: number) => {
@@ -204,6 +207,21 @@ export async function POST(request: NextRequest) {
     startTime
   );
 
+  const requestedBookingCode = payload.bookingCode?.trim();
+  let bookingCode: string;
+  if (requestedBookingCode) {
+    const existingBooking = await prisma.booking.findUnique({ where: { bookingCode: requestedBookingCode } });
+    if (existingBooking) {
+      return NextResponse.json(
+        { error: "El código de reserva ya está en uso. Intenta nuevamente o cambia el punto de partida." },
+        { status: 409 }
+      );
+    }
+    bookingCode = requestedBookingCode;
+  } else {
+    bookingCode = await generateBookingCode();
+  }
+
   let userId: string;
   try {
     userId = await ensureCustomerSession(customerName, customerEmail);
@@ -211,8 +229,6 @@ export async function POST(request: NextRequest) {
     console.error("Error creando sesión temporal", error);
     return NextResponse.json({ error: "No pudimos iniciar tu sesión. Intenta nuevamente." }, { status: 500 });
   }
-
-  const bookingCode = await generateBookingCode();
 
   const booking = await prisma.booking.create({
     data: {
@@ -225,6 +241,7 @@ export async function POST(request: NextRequest) {
       paxChildren: youth + child,
       passengers: passengerCount,
       pickup: pickupLocation,
+      hotel: payload.originHotelName ?? payload.hotelSlug ?? undefined,
       pickupNotes: pickupNotes || undefined,
       startTime,
       totalAmount,
@@ -284,6 +301,9 @@ export async function POST(request: NextRequest) {
       pickupPreference,
       supplierAccountId: supplierAccountId ?? "not-configured",
       platformSharePercent: platformSharePercent.toString(),
+      hotelSlug: payload.hotelSlug ?? "unknown",
+      bookingCode,
+      originHotelName: payload.originHotelName ?? "",
       holdForProvider: "true"
     },
     automatic_payment_methods: {

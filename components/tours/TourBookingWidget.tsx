@@ -24,6 +24,9 @@ type TourBookingWidgetProps = {
   platformSharePercent: number;
   tourTitle: string;
   tourImage?: string;
+  hotelSlug?: string;
+  bookingCode?: string;
+  originHotelName?: string;
 };
 
 export function TourBookingWidget({
@@ -33,7 +36,10 @@ export function TourBookingWidget({
   supplierHasStripeAccount: _supplierHasStripeAccount,
   platformSharePercent: _platformSharePercent,
   tourTitle,
-  tourImage
+  tourImage,
+  hotelSlug,
+  bookingCode,
+  originHotelName
 }: TourBookingWidgetProps) {
   const router = useRouter();
   const [date, setDate] = useState("");
@@ -49,6 +55,9 @@ export function TourBookingWidget({
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const totalTravelers = Math.max(1, adults + youth + child);
   const estimatedTotal = basePrice * totalTravelers;
+  const bookingLabel = originHotelName
+    ? `Reservar Buggy con recogida en ${originHotelName}`
+    : "Reservar Ahora";
 
   const handleCheckAvailability = () => {
     if (!date) return;
@@ -65,6 +74,9 @@ export function TourBookingWidget({
       params.set("tourImage", tourImage);
     }
     params.set("tourPrice", basePrice.toString());
+    if (hotelSlug) params.set("hotelSlug", hotelSlug);
+    if (bookingCode) params.set("bookingCode", bookingCode);
+    if (originHotelName) params.set("originHotelName", originHotelName);
     router.push(`/checkout?${params.toString()}`);
   };
 

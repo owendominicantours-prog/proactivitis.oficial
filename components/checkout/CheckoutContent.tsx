@@ -25,7 +25,10 @@ export default function CheckoutContent() {
       time: get("time"),
       adults: get("adults"),
       youth: get("youth"),
-      child: get("child")
+      child: get("child"),
+      hotelSlug: get("hotelSlug"),
+      bookingCode: get("bookingCode"),
+      originHotelName: get("originHotelName")
     };
   }, [searchParams]);
 
