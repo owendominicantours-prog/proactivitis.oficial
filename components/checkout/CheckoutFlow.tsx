@@ -1,9 +1,10 @@
 ﻿"use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
@@ -48,7 +49,49 @@ const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
   : null;
 
-const guardTime = "28:56";
+const SESSION_TTL_MS = 30 * 60 * 1000;
+const SESSION_TTL_SECONDS = SESSION_TTL_MS / 1000;
+const CHECKOUT_SESSION_COOKIE = "proactivitis_checkout_session";
+
+type CheckoutSessionInfo = {
+  expires: number;
+  tourId?: string;
+};
+
+const readCheckoutSession = (): CheckoutSessionInfo | null => {
+  if (typeof document === "undefined") return null;
+  const cookie = document.cookie
+    .split("; ")
+    .find((entry) => entry.startsWith(`${CHECKOUT_SESSION_COOKIE}=`));
+  if (!cookie) return null;
+  const value = cookie.substring(cookie.indexOf("=") + 1);
+  try {
+    return JSON.parse(decodeURIComponent(value)) as CheckoutSessionInfo;
+  } catch {
+    return null;
+  }
+};
+
+const saveCheckoutSession = (session: CheckoutSessionInfo) => {
+  if (typeof document === "undefined") return;
+  document.cookie = `${CHECKOUT_SESSION_COOKIE}=${encodeURIComponent(
+    JSON.stringify(session)
+  )}; path=/; max-age=${SESSION_TTL_SECONDS}`;
+};
+
+const clearCheckoutSession = () => {
+  if (typeof document === "undefined") return;
+  document.cookie = `${CHECKOUT_SESSION_COOKIE}=; path=/; max-age=0`;
+};
+
+const padTime = (value: number) => value.toString().padStart(2, "0");
+
+const formatCountdown = (ms: number) => {
+  const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${padTime(minutes)}:${padTime(seconds)}`;
+};
 
 const phoneCountries = [
   { code: "DO", label: "República Dominicana", dial: "+1", flag: "????" },
@@ -181,6 +224,63 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   const [paymentOption, setPaymentOption] = useState<"now" | "later">("now");
   const [activePaymentMethod, setActivePaymentMethod] = useState<PaymentMethodId>("card");
   const [completedSteps, setCompletedSteps] = useState([false, false, false]);
+  const [timeLeftMs, setTimeLeftMs] = useState<number | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const [sessionRedirectTarget, setSessionRedirectTarget] = useState<string | null>(null);
+  const router = useRouter();
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleSessionExpire = useCallback(
+    (session?: CheckoutSessionInfo) => {
+      clearCheckoutSession();
+      setSessionExpired(true);
+      const target = session?.tourId ? `/tours?tourId=${session.tourId}` : "/tours";
+      setSessionRedirectTarget(target);
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+      redirectTimeoutRef.current = setTimeout(() => {
+        router.push(target);
+      }, 2000);
+    },
+    [router]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || sessionExpired || !summary.tourId) return;
+    let session = readCheckoutSession();
+    const now = Date.now();
+    if (session && session.expires <= now) {
+      handleSessionExpire(session);
+      return;
+    }
+    if (!session || session.tourId !== summary.tourId) {
+      session = { expires: now + SESSION_TTL_MS, tourId: summary.tourId };
+      saveCheckoutSession(session);
+    }
+    setTimeLeftMs(session.expires - now);
+
+    const interval = setInterval(() => {
+      const remaining = session!.expires - Date.now();
+      if (remaining <= 0) {
+        clearInterval(interval);
+        setTimeLeftMs(0);
+        handleSessionExpire(session);
+        return;
+      }
+      setTimeLeftMs(remaining);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [handleSessionExpire, sessionExpired, summary.tourId]);
+  const [completedSteps, setCompletedSteps] = useState([false, false, false]);
 
   const displayAmount = Number.isFinite(summary.totalPrice)
     ? `$${summary.totalPrice.toFixed(2)} USD`
@@ -205,6 +305,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   }, [travelerName, pickupLocation, pickupPreference]);
 
   const missingTourId = !summary.tourId;
+  const countdownLabel = sessionExpired
+    ? "00:00"
+    : timeLeftMs !== null
+    ? formatCountdown(timeLeftMs)
+    : formatCountdown(SESSION_TTL_MS);
 
   const handleContactChange = (field: keyof ContactState) => (event: ChangeEvent<HTMLInputElement>) => {
     const nextValue = event.target.value;
@@ -542,6 +647,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
             <p className="text-sm text-slate-600">Completa cada paso para preparar la experiencia antes de pagar.</p>
           </header>
 
+          {sessionExpired && (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+              Tu sesión para <strong>{summary.tourTitle}</strong> expiró y el tiempo seguro venció. Te reenviaremos a{" "}
+              <strong>{sessionRedirectTarget ?? "/tours"}</strong> para volver a reservar.
+            </div>
+          )}
+
           {missingTourId && (
             <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
               <p>Para continuar debes llegar desde la ficha del tour. Verifica la disponibilidad y regresa.</p>
@@ -815,7 +927,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
           <div className="sticky top-8 space-y-6">
             <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-lg">
               <div className="flex items-center gap-3 rounded-2xl bg-pink-50 px-3 py-2 text-sm font-semibold text-rose-600">
-                <Clock3 className="h-4 w-4" /> Te guardamos la plaza durante {guardTime}
+                <Clock3 className="h-4 w-4" /> Te guardamos la plaza durante {countdownLabel}
               </div>
               <div className="mt-4 flex items-center gap-3 border-b border-slate-100 pb-4">
                 <Image
