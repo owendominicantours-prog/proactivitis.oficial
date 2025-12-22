@@ -1,11 +1,8 @@
 'use client';
 
-'use client';
-
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { useSearchParams } from 'next/navigation';
 import CheckoutForm from './CheckoutForm';
 
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
@@ -20,19 +17,22 @@ type PaymentIntentRequest = {
   child?: string | null;
 };
 
-export default function CheckoutWithStripe() {
-  const searchParams = useSearchParams();
+type CheckoutWithStripeProps = {
+  searchParams: PaymentIntentRequest;
+};
+
+export default function CheckoutWithStripe({ searchParams }: CheckoutWithStripeProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const payload = useMemo<PaymentIntentRequest>(() => {
+  const payload = useMemo(() => {
     return {
-      tourId: searchParams.get('tourId') ?? '',
-      date: searchParams.get('date'),
-      time: searchParams.get('time'),
-      adults: searchParams.get('adults'),
-      youth: searchParams.get('youth'),
-      child: searchParams.get('child')
+      tourId: searchParams.tourId ?? '',
+      date: searchParams.date,
+      time: searchParams.time,
+      adults: searchParams.adults,
+      youth: searchParams.youth,
+      child: searchParams.child
     };
   }, [searchParams]);
 
@@ -111,7 +111,7 @@ export default function CheckoutWithStripe() {
   }
 
   return (
-    <Elements stripe={stripePromise} options={{ clientSecret: clientSecret ?? undefined }}>
+    <Elements stripe={stripePromise} options={{ clientSecret: effectiveClientSecret ?? undefined }}>
       {content}
     </Elements>
   );
