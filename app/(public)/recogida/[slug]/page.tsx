@@ -88,6 +88,10 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Recogidas VIP</p>
             <h1 className="text-4xl font-bold text-slate-900">Tours y traslados desde {location.name}</h1>
+            <p className="flex items-center gap-2 text-sm text-slate-500">
+              <span className="text-lg text-green-500">✅</span>
+              Recogida confirmada en el lobby principal de {location.name}
+            </p>
             <p className="max-w-3xl text-sm text-slate-600">
               Te mostramos las experiencias mejor valoradas y traslados confiables que parten desde este hotel. Reservamos tu cupo con prioridad y mantenemos la plaza segura mientras preparas los detalles.
             </p>
@@ -140,7 +144,7 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
                   <span className="text-slate-900 font-semibold">${tour.price.toFixed(0)} USD</span>
                   <Link
                     href={buildCheckoutUrl(tour, location.slug, bookingCode)}
-                    className="rounded-2xl bg-emerald-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500"
+                    className="rounded-2xl bg-orange-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-lg transition hover:bg-orange-600"
                   >
                     Reservar Ahora
                   </Link>
