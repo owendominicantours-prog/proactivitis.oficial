@@ -33,27 +33,8 @@ import {
 } from 'lucide-react';
 
 import { useSearchParams } from 'next/navigation';
-import { PaymentElement, useCheckout } from '@stripe/react-stripe-js/checkout';
-
-
-
-const recommendedReservation = {
-
-  tourName: 'Tour guiado de lujo en Punta Cana',
-
-  date: '12 de enero, 2026',
-
-  time: '09:00 AM',
-
-  adults: 2,
-
-  children: 1,
-
-  price: 598,
-
-  imageUrl: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c3?auto=format&fit=crop&w=600&q=80'
-
-};
+import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import { recommendedReservation } from '@/lib/checkout';
 
 
 
@@ -99,95 +80,46 @@ export default function CheckoutForm() {
 
   const guardTime = '28:56';
 
-const validateEmail = async (email: string, checkout: any) => {
-  const updateResult = await checkout.updateEmail(email);
-  const isValid = updateResult.type !== 'error';
-  return { isValid, message: isValid ? null : updateResult.error?.message ?? 'Correo inválido' };
-};
-
-type EmailInputProps = {
-  email: string;
-  setEmail: Dispatch<SetStateAction<string>>;
-  error: string | null;
-  setError: Dispatch<SetStateAction<string | null>>;
-  checkout: any;
-};
-
-const EmailInput = ({ email, setEmail, error, setError, checkout }: EmailInputProps) => {
-  const handleBlur = async () => {
-    if (!email) return;
-    const { isValid, message } = await validateEmail(email, checkout);
-    if (!isValid) {
-      setError(message);
-    }
-  };
-
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setError(null);
-    setEmail(event.target.value);
-  };
-
-  return (
-    <label className='space-y-1 block text-sm'>
-      <span className='text-xs uppercase tracking-[0.3em] text-slate-500'>Email</span>
-      <input
-        id='email'
-        type='email'
-        value={email}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${error ? 'border-rose-500' : 'border-slate-200'}`}
-      />
-      {error && <p className='text-xs text-rose-500'>{error}</p>}
-    </label>
-  );
-};
-
 type StripePaymentStepProps = {
   onBack: () => void;
+  displayAmount: string;
 };
 
-const StripePaymentStep = ({ onBack }: StripePaymentStepProps) => {
+const StripePaymentStep = ({ onBack, displayAmount }: StripePaymentStepProps) => {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const checkoutState = useCheckout();
-  if (checkoutState.type === 'loading') {
-    return <p className='py-6 text-sm text-slate-500'>Cargando métodos de pago…</p>;
-  }
-
-  if (checkoutState.type === 'error') {
-    return (
-      <div className='rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600'>
-        Error: {checkoutState.error.message}
-      </div>
-    );
-  }
-
-  const { checkout } = checkoutState;
-  const totalInfo = checkout?.total?.total;
-  const amount = Number(totalInfo?.amount);
-  const currency = (totalInfo as { currency?: string } | undefined)?.currency?.toUpperCase() ?? 'USD';
-  const displayAmount = amount ? `${(amount / 100).toFixed(2)} ${currency}` : '0.00 USD';
+  const stripe = useStripe();
+  const elements = useElements();
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    setMessage(null);
+    if (!stripe || !elements) {
+      setMessage('Stripe aún está cargando...');
+      return;
+    }
 
-    const { isValid, message: validationMessage } = await validateEmail(email, checkout);
-    if (!isValid) {
-      setEmailError(validationMessage);
-      setMessage(validationMessage);
+    if (!email || !email.includes('@')) {
+      setEmailError('Ingresa un correo válido');
       return;
     }
 
     setIsLoading(true);
-    const confirmResult = await checkout.confirm();
+    setMessage(null);
+    setEmailError(null);
 
-    if (confirmResult.type === 'error') {
-      setMessage(confirmResult.error.message);
+    const result = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: process.env.NEXT_PUBLIC_STRIPE_SUCCESS_URL ?? 'https://proactivitis.com/booking/confirmed'
+      },
+      redirect: 'if_required'
+    });
+
+    if (result.error) {
+      setMessage(result.error.message ?? 'Error al procesar el pago');
     }
 
     setIsLoading(false);
@@ -195,7 +127,20 @@ const StripePaymentStep = ({ onBack }: StripePaymentStepProps) => {
 
   return (
     <form onSubmit={handleSubmit} className='space-y-4'>
-      <EmailInput email={email} setEmail={setEmail} error={emailError} setError={setEmailError} checkout={checkout} />
+      <label className='space-y-1 block text-sm'>
+        <span className='text-xs uppercase tracking-[0.3em] text-slate-500'>Email</span>
+        <input
+          id='email'
+          type='email'
+          value={email}
+          onChange={(event) => {
+            setEmailError(null);
+            setEmail(event.target.value);
+          }}
+          className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${emailError ? 'border-rose-500' : 'border-slate-200'}`}
+        />
+        {emailError && <p className='text-xs text-rose-500'>{emailError}</p>}
+      </label>
       <h4 className='text-xs uppercase tracking-[0.3em] text-slate-500'>Pago seguro</h4>
       <PaymentElement id='payment-element' />
       <div className='flex justify-between items-center'>
@@ -209,11 +154,11 @@ const StripePaymentStep = ({ onBack }: StripePaymentStepProps) => {
         <button
           type='submit'
           id='submit'
-          disabled={isLoading}
+          disabled={isLoading || !stripe || !elements}
           className='w-[60%] rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400'
         >
           {isLoading ? (
-            <span>Procesando…</span>
+            <span>Procesandoâ¦</span>
           ) : (
             `Pagar ${displayAmount} ahora`
           )}
@@ -284,168 +229,87 @@ const StripePaymentStep = ({ onBack }: StripePaymentStepProps) => {
 
   }, [searchParams]);
 
+  const totalTravelers = Math.max(1, summaryState.adults + summaryState.children);
+  const totalPrice = totalTravelers * summaryState.pricePerPerson;
+  const displayAmount = `${totalPrice.toFixed(2)} USD`;
+
 
 
   const reservationSummary = useMemo(
-
-    () => {
-
-      const totalTravelers = Math.max(1, summaryState.adults + summaryState.children);
-
-      const totalPrice = totalTravelers * summaryState.pricePerPerson;
-
-
-
-      return (
-
-        <div className='space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl'>
-
+    () => (
+      <div className='space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl'>
         <div className='flex items-center gap-3 rounded-xl bg-pink-100 px-3 py-2 text-sm font-semibold text-rose-700'>
-
           <Clock3 className='h-4 w-4' />
-
           Te guardamos la plaza durante <span className='font-black'>{guardTime}</span> minutos
-
         </div>
-
         <div className='flex items-center gap-3 border-b border-slate-100 pb-4'>
-
           <Image
-
             src={summaryState.imageUrl}
-
             alt={summaryState.tourName}
-
             width={76}
-
             height={76}
-
             className='h-[76px] w-[76px] rounded-xl object-cover shadow'
-
             priority
-
           />
-
           <div>
-
             <p className='text-sm uppercase tracking-[0.4em] text-slate-400'>Tour</p>
-
             <p className='font-semibold text-slate-900'>{summaryState.tourName}</p>
-
           </div>
-
         </div>
-
         <div className='space-y-3 text-sm text-slate-600'>
-
           <div className='flex items-center justify-between'>
-
             <span className='flex items-center gap-2'>
-
               <Users className='h-5 w-5 text-slate-400' /> Personas
-
             </span>
-
             <strong>
-
-              {summaryState.adults} adult{summaryState.adults > 1 ? 's' : ''} · {summaryState.children} niño{summaryState.children === 1 ? '' : 's'}
-
+              {summaryState.adults} adult{summaryState.adults > 1 ? 's' : ''} y {summaryState.children} niño{summaryState.children == 1 ? '' : 's'}
             </strong>
-
           </div>
-
           <div className='flex items-center justify-between'>
-
             <span className='flex items-center gap-2'>
-
               <CalendarCheck className='h-5 w-5 text-slate-400' /> Fecha
-
             </span>
-
             <strong>{summaryState.date}</strong>
-
           </div>
-
           <div className='flex items-center justify-between'>
-
             <span className='flex items-center gap-2'>
-
               <Clock3 className='h-5 w-5 text-slate-400' /> Hora
-
             </span>
-
             <strong>{summaryState.time}</strong>
-
           </div>
-
         </div>
-
-
-
         <div className='rounded-xl border border-emerald-500/20 bg-emerald-50 p-3 text-xs text-emerald-700'>
-
           <div className='flex items-center gap-2 text-[13px] font-semibold'>
-
             <BadgeCheck className='h-4 w-4' />
-
             <span className='flex items-center gap-1'>
-
               <Star className='h-4 w-4 text-amber-400' /> Trustpilot 5 estrellas
-
             </span>
-
           </div>
-
           <p className='text-[13px] text-emerald-700/80'>
-
-            Flexibilidad excepcional  cancelacin gratuita hasta 24 h antes
-
+            Flexibilidad excepcional  cancelación gratuita hasta 24 h antes
           </p>
-
         </div>
-
         <div className='rounded-2xl border border-slate-100 bg-slate-950 p-4 text-white'>
-
           <p className='text-xs uppercase tracking-[0.4em] text-slate-400'>Precio total</p>
-
           <p className='text-3xl font-semibold'>${totalPrice.toFixed(2)}</p>
-
           <p className='mt-2 text-[13px] text-slate-300'>
             {summaryState.pricePerPerson.toFixed(2)} USD por persona
           </p>
-
         </div>
-
         <div className='space-y-1 rounded-2xl border border-dashed border-slate-200 p-3 text-xs text-slate-500'>
-
           <div className='flex items-center gap-2'>
-
             <ShieldCheck className='h-4 w-4 text-emerald-500' /> Pagos verificados y protegidos
-
           </div>
-
           <div className='flex items-center gap-2'>
-
             <CheckCircle2 className='h-4 w-4 text-emerald-500' /> Soporte 24/7 en tu destino
-
           </div>
-
           <div className='flex items-center gap-2 text-[11px] uppercase tracking-[0.4em] text-slate-400'>
-
             <Globe className='h-4 w-4 text-slate-400' /> Infraestructura global de cobros
-
           </div>
-
         </div>
-
       </div>
-
-      );
-
-    },
-
-    [summaryState, guardTime]
-
+    ),
+    [summaryState, guardTime, totalPrice]
   );
 
 
@@ -847,7 +711,13 @@ const StripePaymentStep = ({ onBack }: StripePaymentStepProps) => {
 
                         {stepIdx === 2 && (
 
-                          <StripePaymentStep onBack={() => { setActiveStep(1); handleScrollToStep(1); }} />
+                          <StripePaymentStep
+                            onBack={() => {
+                              setActiveStep(1);
+                              handleScrollToStep(1);
+                            }}
+                            displayAmount={displayAmount}
+                          />
 
                         )}
 
