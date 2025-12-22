@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -741,7 +741,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                     <p className="text-slate-400">Reserva provisional · ID: {bookingId ?? "pendiente"}</p>
                   </div>
                   <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    {!stripePromise && <p className="text-sm text-rose-500">Stripe no est� configurado.</p>}
+                    {!stripePromise && <p className="text-sm text-rose-500">Stripe no está configurado.</p>}
                     {intentLoading && <p className="text-sm text-slate-600">Preparando el pago seguro.</p>}
                     {clientSecret && stripePromise ? (
                       <Elements stripe={stripePromise} options={{ clientSecret }}>
