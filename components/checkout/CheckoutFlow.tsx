@@ -558,69 +558,79 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                   <p className="text-lg font-semibold text-slate-900">Completa tus datos</p>
                   {contactSummary && <p className="text-sm text-slate-500">{contactSummary}</p>}
                 </div>
-                <span className="text-sm font-semibold text-[#008768]">{activeStep === 0 ? "Activo" : "Pendiente"}</span>
+                <span className="flex items-center gap-2 text-sm font-semibold text-[#008768]">
+                  {completedSteps[0] ? (
+                    <>
+                      <BadgeCheck className="h-4 w-4 text-emerald-500" /> <span className="text-emerald-700">Completado</span>
+                    </>
+                  ) : (
+                    <span>{activeStep === 0 ? "Activo" : "Pendiente"}</span>
+                  )}
+                </span>
               </div>
-              <div className="space-y-4 px-5 pb-6 pt-6">
-                <div className="grid gap-4 md:grid-cols-2">
-                  {contactFields.map((field) => (
-                    <label key={field.key} className="space-y-1 text-xs uppercase tracking-[0.3em] text-slate-500">
-                      <span>{field.label}</span>
+              {activeStep === 0 && (
+                <div className="space-y-4 px-5 pb-6 pt-6">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {contactFields.map((field) => (
+                      <label key={field.key} className="space-y-1 text-xs uppercase tracking-[0.3em] text-slate-500">
+                        <span>{field.label}</span>
+                        <input
+                          id={field.key}
+                          type={field.type}
+                          value={contact[field.key]}
+                          placeholder={field.placeholder}
+                          onChange={handleContactChange(field.key)}
+                          className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
+                            errors[field.key] ? "border-rose-500 ring-2 ring-rose-100" : "border-slate-200"
+                          }`}
+                        />
+                        {errors[field.key] && <p className="text-xs text-rose-500">{errors[field.key]}</p>}
+                      </label>
+                    ))}
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500" htmlFor="phone">
+                      Teléfono
+                    </label>
+                    <div className="flex gap-3">
+                      <select
+                        value={phoneCountry.code}
+                        onChange={(event) => {
+                          const next = phoneCountries.find((country) => country.code === event.target.value);
+                          if (next) setPhoneCountry(next);
+                        }}
+                        className="w-36 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm"
+                      >
+                        {phoneCountries.map((country) => (
+                          <option key={country.code} value={country.code}>
+                            {country.flag} {country.code} {country.dial}
+                          </option>
+                        ))}
+                      </select>
                       <input
-                        id={field.key}
-                        type={field.type}
-                        value={contact[field.key]}
-                        placeholder={field.placeholder}
-                        onChange={handleContactChange(field.key)}
-                        className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
-                          errors[field.key] ? "border-rose-500 ring-2 ring-rose-100" : "border-slate-200"
+                        id="phone"
+                        type="tel"
+                        value={contact.phone}
+                        onChange={handleContactChange("phone")}
+                        placeholder="809 000 0000"
+                        className={`flex-1 rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
+                          errors.phone ? "border-rose-500 ring-2 ring-rose-100" : "border-slate-200"
                         }`}
                       />
-                      {errors[field.key] && <p className="text-xs text-rose-500">{errors[field.key]}</p>}
-                    </label>
-                  ))}
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs uppercase tracking-[0.3em] text-slate-500" htmlFor="phone">
-                    Teléfono
-                  </label>
-                  <div className="flex gap-3">
-                    <select
-                      value={phoneCountry.code}
-                      onChange={(event) => {
-                        const next = phoneCountries.find((country) => country.code === event.target.value);
-                        if (next) setPhoneCountry(next);
-                      }}
-                      className="w-36 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm"
-                    >
-                      {phoneCountries.map((country) => (
-                        <option key={country.code} value={country.code}>
-                          {country.flag} {country.code} {country.dial}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      id="phone"
-                      type="tel"
-                      value={contact.phone}
-                      onChange={handleContactChange("phone")}
-                      placeholder="809 000 0000"
-                      className={`flex-1 rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
-                        errors.phone ? "border-rose-500 ring-2 ring-rose-100" : "border-slate-200"
-                      }`}
-                    />
+                    </div>
+                    {errors.phone && <p className="text-xs text-rose-500">{errors.phone}</p>}
                   </div>
-                  {errors.phone && <p className="text-xs text-rose-500">{errors.phone}</p>}
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => handleNext(0)}
+                      className="rounded-2xl bg-[#008768] px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
                 </div>
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => handleNext(0)}
-                    className="rounded-2xl bg-[#008768] px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700"
-                  >
-                    Siguiente
-                  </button>
-                </div>
-              </div>
+              )}
             </article>
 
             <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
@@ -630,114 +640,124 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                   <p className="text-lg font-semibold text-slate-900">Detalles de la actividad</p>
                   {travelerSummary && <p className="text-sm text-slate-500">{travelerSummary}</p>}
                 </div>
-                <span className="text-sm font-semibold text-[#008768]">{activeStep === 1 ? "Activo" : "Pendiente"}</span>
-              </div>
-              <div className="space-y-5 px-5 pb-6 pt-6">
-                <div className="space-y-2">
-                  <label htmlFor="travelerName" className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                    Viajero principal
-                  </label>
-                  <input
-                    id="travelerName"
-                    value={travelerName}
-                    onChange={(event) => handleTravelerChange(event.target.value)}
-                    placeholder="Nombre completo"
-                    className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
-                      errors.travelerName ? "border-rose-500" : "border-slate-200"
-                    }`}
-                  />
-                  {errors.travelerName && <p className="text-xs text-rose-500">{errors.travelerName}</p>}
-                </div>
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Punto de recogida</p>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <label
-                      className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
-                        pickupPreference === "pickup" ? "border-[#008768] bg-emerald-50" : "border-slate-200"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="pickup"
-                        checked={pickupPreference === "pickup"}
-                        onChange={() => setPickupPreference("pickup")}
-                      />
-                      Prefiero que me recojan
-                    </label>
-                    <label
-                      className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
-                        pickupPreference === "later" ? "border-[#008768] bg-emerald-50" : "border-slate-200"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="pickup"
-                        checked={pickupPreference === "later"}
-                        onChange={() => setPickupPreference("later")}
-                      />
-                      Lo decidiré más tarde
-                    </label>
-                  </div>
-                  {pickupPreference === "pickup" && (
-                    <div className="space-y-2">
-                      <label htmlFor="pickupLocation" className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                        Localización preferida
-                      </label>
-                      <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm">
-                        <MapPin className="h-5 w-5 text-emerald-500" />
-                        <input
-                          id="pickupLocation"
-                          value={pickupLocation}
-                          onChange={(event) => handlePickupLocationChange(event.target.value)}
-                          placeholder="Hotel o punto de encuentro"
-                          className="w-full bg-transparent text-sm outline-none"
-                        />
-                      </div>
-                      {errors.pickupLocation && <p className="text-xs text-rose-500">{errors.pickupLocation}</p>}
-                    </div>
+                <span className="flex items-center gap-2 text-sm font-semibold text-[#008768]">
+                  {completedSteps[1] ? (
+                    <>
+                      <BadgeCheck className="h-4 w-4 text-emerald-500" /> <span className="text-emerald-700">Completado</span>
+                    </>
+                  ) : (
+                    <span>{activeStep === 1 ? "Activo" : "Pendiente"}</span>
                   )}
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Idioma del tour</label>
-                  <select
-                    value={language}
-                    onChange={(event) => setLanguage(event.target.value)}
-                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                  >
-                    {languageOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Requisitos especiales</label>
-                  <textarea
-                    value={specialRequirements}
-                    onChange={(event) => setSpecialRequirements(event.target.value)}
-                    rows={3}
-                    placeholder="Indica necesidades especiales"
-                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => setActiveStep(0)}
-                    className="flex items-center gap-2 text-sm font-semibold text-slate-600"
-                  >
-                    <ArrowLeft className="h-4 w-4" /> Regresar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleNext(1)}
-                    className="rounded-2xl bg-[#008768] px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700"
-                  >
-                    Siguiente
-                  </button>
-                </div>
+                </span>
               </div>
+              {activeStep === 1 && (
+                <div className="space-y-5 px-5 pb-6 pt-6">
+                  <div className="space-y-2">
+                    <label htmlFor="travelerName" className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                      Viajero principal
+                    </label>
+                    <input
+                      id="travelerName"
+                      value={travelerName}
+                      onChange={(event) => handleTravelerChange(event.target.value)}
+                      placeholder="Nombre completo"
+                      className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
+                        errors.travelerName ? "border-rose-500" : "border-slate-200"
+                      }`}
+                    />
+                    {errors.travelerName && <p className="text-xs text-rose-500">{errors.travelerName}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Punto de recogida</p>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <label
+                        className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
+                          pickupPreference === "pickup" ? "border-[#008768] bg-emerald-50" : "border-slate-200"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="pickup"
+                          checked={pickupPreference === "pickup"}
+                          onChange={() => setPickupPreference("pickup")}
+                        />
+                        Prefiero que me recojan
+                      </label>
+                      <label
+                        className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
+                          pickupPreference === "later" ? "border-[#008768] bg-emerald-50" : "border-slate-200"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="pickup"
+                          checked={pickupPreference === "later"}
+                          onChange={() => setPickupPreference("later")}
+                        />
+                        Lo decidiré más tarde
+                      </label>
+                    </div>
+                    {pickupPreference === "pickup" && (
+                      <div className="space-y-2">
+                        <label htmlFor="pickupLocation" className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                          Localización preferida
+                        </label>
+                        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm">
+                          <MapPin className="h-5 w-5 text-emerald-500" />
+                          <input
+                            id="pickupLocation"
+                            value={pickupLocation}
+                            onChange={(event) => handlePickupLocationChange(event.target.value)}
+                            placeholder="Hotel o punto de encuentro"
+                            className="w-full bg-transparent text-sm outline-none"
+                          />
+                        </div>
+                        {errors.pickupLocation && <p className="text-xs text-rose-500">{errors.pickupLocation}</p>}
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Idioma del tour</label>
+                    <select
+                      value={language}
+                      onChange={(event) => setLanguage(event.target.value)}
+                      className="rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                    >
+                      {languageOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Requisitos especiales</label>
+                    <textarea
+                      value={specialRequirements}
+                      onChange={(event) => setSpecialRequirements(event.target.value)}
+                      rows={3}
+                      placeholder="Indica necesidades especiales"
+                      className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setActiveStep(0)}
+                      className="flex items-center gap-2 text-sm font-semibold text-slate-600"
+                    >
+                      <ArrowLeft className="h-4 w-4" /> Regresar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleNext(1)}
+                      className="rounded-2xl bg-[#008768] px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                </div>
+              )}
             </article>
 
             <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
@@ -747,30 +767,40 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                   <p className="text-lg font-semibold text-slate-900">Información de pago</p>
                   <p className="text-sm text-slate-500">{summary.totalTravelers} viajeros · {summary.date} · {summary.time}</p>
                 </div>
-                <span className="text-sm font-semibold text-[#008768]">{activeStep === 2 ? "Activo" : "Pendiente"}</span>
-              </div>
-              <div className="space-y-4 px-5 pb-6 pt-6">
-                <div className="rounded-2xl border border-slate-200 bg-[#F8FAFC] p-4 text-sm text-slate-600">
-                  <p className="text-sm font-semibold text-slate-900">Resumen antes del pago</p>
-                  <p>
-                    {summary.totalTravelers} viajeros · {summary.date} · {summary.time}
-                  </p>
-                  <p className="text-slate-400">Reserva provisional · ID: {bookingId ?? "pendiente"}</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                  {!stripePromise && <p className="text-sm text-rose-500">Stripe no está configurado.</p>}
-                  {intentLoading && <p className="text-sm text-slate-600">Preparando el pago seguro…</p>}
-                  {clientSecret && stripePromise ? (
-                    <Elements stripe={stripePromise} options={{ clientSecret }}>
-                      <PaymentForm />
-                    </Elements>
+                <span className="flex items-center gap-2 text-sm font-semibold text-[#008768]">
+                  {completedSteps[2] ? (
+                    <>
+                      <BadgeCheck className="h-4 w-4 text-emerald-500" /> <span className="text-emerald-700">Completado</span>
+                    </>
                   ) : (
-                    !intentLoading && (
-                      <p className="text-sm text-slate-500">Confirma los pasos anteriores para habilitar el pago.</p>
-                    )
+                    <span>{activeStep === 2 ? "Activo" : "Pendiente"}</span>
                   )}
-                </div>
+                </span>
               </div>
+              {activeStep === 2 && (
+                <div className="space-y-4 px-5 pb-6 pt-6">
+                  <div className="rounded-2xl border border-slate-200 bg-[#F8FAFC] p-4 text-sm text-slate-600">
+                    <p className="text-sm font-semibold text-slate-900">Resumen antes del pago</p>
+                    <p>
+                      {summary.totalTravelers} viajeros · {summary.date} · {summary.time}
+                    </p>
+                    <p className="text-slate-400">Reserva provisional · ID: {bookingId ?? "pendiente"}</p>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                    {!stripePromise && <p className="text-sm text-rose-500">Stripe no está configurado.</p>}
+                    {intentLoading && <p className="text-sm text-slate-600">Preparando el pago seguro…</p>}
+                    {clientSecret && stripePromise ? (
+                      <Elements stripe={stripePromise} options={{ clientSecret }}>
+                        <PaymentForm />
+                      </Elements>
+                    ) : (
+                      !intentLoading && (
+                        <p className="text-sm text-slate-500">Confirma los pasos anteriores para habilitar el pago.</p>
+                      )
+                    )}
+                  </div>
+                </div>
+              )}
             </article>
           </div>
         </section>
