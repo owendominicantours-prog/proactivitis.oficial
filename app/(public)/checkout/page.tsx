@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
-import { ChangeEvent, FormEvent, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
+import { ChangeEvent, FormEvent, Suspense, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   BadgeCheck,
@@ -218,8 +218,9 @@ export default function CheckoutPage() {
     }
   };
 
-  return (
-    <div className='min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8'>
+  return (
+    <Suspense fallback={<div />}>
+      <div className='min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8'>
       <div className='mx-auto grid max-w-6xl gap-8 lg:grid-cols-[2.2fr_1fr]'>
         <section className='space-y-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-xl'>
           <header className='space-y-2'>
@@ -493,8 +494,9 @@ export default function CheckoutPage() {
           </div>
         </aside>
       </div>
-    </div>
-  );
+      </div>
+    </Suspense>
+  );
 }
 
 
