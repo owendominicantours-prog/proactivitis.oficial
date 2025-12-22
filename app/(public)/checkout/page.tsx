@@ -792,8 +792,9 @@ export default function CheckoutPage() {
 
                                     </span>
 
-                                    {method.icons && <span className='text-xs font-normal text-slate-400'>{method.icons.join('  ')}</span>}
-
+                                    {method.label === 'Tarjeta de crédito' && (
+                                      <span className='text-xs font-normal text-slate-400'>Visa · Mastercard</span>
+                                    )}
                                   </button>
 
                                 ))}
