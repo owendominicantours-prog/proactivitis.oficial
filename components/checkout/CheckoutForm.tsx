@@ -816,7 +816,17 @@ export default function CheckoutForm() {
 
                                   value={cardNumber}
 
-                                  onChange={(event) => setCardNumber(event.target.value.replace(/\D/g, ''))}
+                                  onChange={(event) => {
+
+                                    const digitsOnly = Array.from(event.target.value)
+
+                                      .filter((ch) => ch >= '0' && ch <= '9')
+
+                                      .join('');
+
+                                    setCardNumber(digitsOnly);
+
+                                  }}
 
                                   placeholder='4111 1111 1111 1111'
 
