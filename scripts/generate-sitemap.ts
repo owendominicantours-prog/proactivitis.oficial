@@ -1,4 +1,4 @@
-import { buildSitemapEntries } from "@/lib/sitemap-generator";
+import { buildSitemapEntries } from "../lib/sitemap-generator";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 
