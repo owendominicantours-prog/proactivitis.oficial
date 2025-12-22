@@ -148,6 +148,45 @@ const parsePriceValue = (value?: string, fallback = 0) => {
   return Number.isNaN(parsed) ? fallback : parsed;
 };
 
+const CountdownTimer = ({ expires, onExpire }: { expires: number; onExpire: () => void }) => {
+  const [remaining, setRemaining] = useState(() => Math.max(0, expires - Date.now()));
+  const onExpireRef = useRef(onExpire);
+  const expiredRef = useRef(false);
+
+  useEffect(() => {
+    onExpireRef.current = onExpire;
+  }, [onExpire]);
+
+  useEffect(() => {
+    expiredRef.current = false;
+    const updateRemaining = () => {
+      const next = Math.max(0, expires - Date.now());
+      setRemaining(next);
+      return next;
+    };
+
+    const current = updateRemaining();
+    if (current <= 0) {
+      expiredRef.current = true;
+      onExpireRef.current();
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const next = updateRemaining();
+      if (next <= 0 && !expiredRef.current) {
+        expiredRef.current = true;
+        clearInterval(interval);
+        onExpireRef.current();
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [expires]);
+
+  return <span className="font-semibold">{formatCountdown(remaining)}</span>;
+};
+
 const buildSummary = (params: CheckoutPageParams) => {
   const adults = parsePositiveInt(params.adults, 1);
   const youth = parsePositiveInt(params.youth, 0);
@@ -205,15 +244,21 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [activePaymentMethod, setActivePaymentMethod] = useState<PaymentMethodId>("card");
   const [completedSteps, setCompletedSteps] = useState([false, false, false]);
-  const [timeLeftMs, setTimeLeftMs] = useState<number | null>(null);
   const [sessionExpired, setSessionExpired] = useState(false);
   const [sessionRedirectTarget, setSessionRedirectTarget] = useState<string | null>(null);
+  const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
+  const [currentSession, setCurrentSession] = useState<CheckoutSessionInfo | null>(null);
   const router = useRouter();
   const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sessionExpiredRef = useRef(false);
   const handleSessionExpire = useCallback(
     (session?: CheckoutSessionInfo) => {
+      if (sessionExpiredRef.current) return;
+      sessionExpiredRef.current = true;
       clearCheckoutSession();
       setSessionExpired(true);
+      setSessionExpiresAt(null);
+      setCurrentSession(null);
       const target = session?.tourId ? `/tours?tourId=${session.tourId}` : "/tours";
       setSessionRedirectTarget(target);
       if (redirectTimeoutRef.current) {
@@ -246,20 +291,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
       session = { expires: now + SESSION_TTL_MS, tourId: summary.tourId };
       saveCheckoutSession(session);
     }
-    setTimeLeftMs(session.expires - now);
-
-    const interval = setInterval(() => {
-      const remaining = session!.expires - Date.now();
-      if (remaining <= 0) {
-        clearInterval(interval);
-        setTimeLeftMs(0);
-        handleSessionExpire(session);
-        return;
-      }
-      setTimeLeftMs(remaining);
-    }, 1000);
-
-    return () => clearInterval(interval);
+    setCurrentSession(session);
+    setSessionExpiresAt(session.expires);
+    setSessionExpired(false);
+    sessionExpiredRef.current = false;
+    setSessionRedirectTarget(null);
   }, [handleSessionExpire, sessionExpired, summary.tourId]);
 
   const displayAmount = Number.isFinite(summary.totalPrice)
@@ -285,11 +321,10 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   }, [travelerName, pickupLocation, pickupPreference]);
 
   const missingTourId = !summary.tourId;
-  const countdownLabel = sessionExpired
-    ? "00:00"
-    : timeLeftMs !== null
-    ? formatCountdown(timeLeftMs)
-    : formatCountdown(SESSION_TTL_MS);
+  const countdownExpires = sessionExpired ? Date.now() : sessionExpiresAt ?? Date.now() + SESSION_TTL_MS;
+  const countdownOnExpire = useCallback(() => {
+    handleSessionExpire(currentSession ?? undefined);
+  }, [handleSessionExpire, currentSession]);
 
   const handleContactChange = (field: keyof ContactState) => (event: ChangeEvent<HTMLInputElement>) => {
     const nextValue = event.target.value;
@@ -867,9 +902,10 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
         <aside className="space-y-4">
           <div className="sticky top-8 space-y-6">
             <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-lg">
-              <div className="flex items-center gap-3 rounded-2xl bg-pink-50 px-3 py-2 text-sm font-semibold text-rose-600">
-                <Clock3 className="h-4 w-4" /> Te guardamos la plaza durante {countdownLabel}
-              </div>
+            <div className="flex items-center gap-3 rounded-2xl bg-pink-50 px-3 py-2 text-sm font-semibold text-rose-600">
+              <Clock3 className="h-4 w-4" /> Te guardamos la plaza durante{" "}
+              <CountdownTimer expires={countdownExpires} onExpire={countdownOnExpire} />
+            </div>
               <div className="mt-4 flex items-center gap-3 border-b border-slate-100 pb-4">
                 <Image
                   src={summary.tourImage}
