@@ -127,24 +127,6 @@ const paymentMethods: { id: PaymentMethodId; label: string; description: string;
     label: "Tarjeta de crédito",
     description: "Visa, Mastercard y American Express",
     icon: CreditCard
-  },
-  {
-    id: "paypal",
-    label: "PayPal",
-    description: "Te redirigimos a tu cuenta PayPal",
-    icon: Globe
-  },
-  {
-    id: "google_pay",
-    label: "Google Pay",
-    description: "Paga con tu cuenta Google en segundos",
-    icon: ShieldCheck
-  },
-  {
-    id: "klarna",
-    label: "Klarna",
-    description: "Paga después con Klarna",
-    icon: Star
   }
 ];
 
@@ -221,7 +203,6 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [paymentFeedback, setPaymentFeedback] = useState<string | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const [paymentOption, setPaymentOption] = useState<"now" | "later">("now");
   const [activePaymentMethod, setActivePaymentMethod] = useState<PaymentMethodId>("card");
   const [completedSteps, setCompletedSteps] = useState([false, false, false]);
   const [timeLeftMs, setTimeLeftMs] = useState<number | null>(null);
@@ -461,16 +442,6 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
         return;
       }
 
-      if (!paymentEmailField.includes("@")) {
-        setPaymentFeedback("Ingresa un correo válido");
-        return;
-      }
-
-      if (paymentOption === "later") {
-        setPaymentFeedback("Te contactaremos para completar el pago más adelante.");
-        return;
-      }
-
       setPaymentLoading(true);
       setPaymentFeedback(null);
 
@@ -504,35 +475,6 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
             className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             placeholder="tucorreo@proactivitis.com"
           />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Opciones de pago</p>
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => setPaymentOption("now")}
-              className={`rounded-2xl px-4 py-3 text-sm font-semibold text-white transition ${
-                paymentOption === "now" ? "bg-[#008768]" : "bg-slate-200 text-slate-600"
-              }`}
-            >
-              Pagar ahora
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaymentOption("later")}
-              className={`rounded-2xl px-4 py-3 text-sm font-semibold text-white transition ${
-                paymentOption === "later" ? "bg-[#008768]" : "bg-slate-200 text-slate-600"
-              }`}
-            >
-              Reservar ahora y pagar después
-            </button>
-          </div>
-          {paymentOption === "later" && (
-            <p className="text-sm text-slate-500">
-              Nuestro equipo confirmará la disponibilidad y te enviará la información para pagar más tarde.
-            </p>
-          )}
         </div>
 
         <div className="space-y-4">
@@ -627,7 +569,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
           </button>
           <button
             type="submit"
-            disabled={paymentLoading || !clientSecret || paymentOption === "later"}
+            disabled={paymentLoading || !clientSecret}
             className="w-[65%] rounded-2xl bg-[#008768] px-5 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
           >
             {paymentLoading ? "Procesando…" : "Confirmar y pagar"}
