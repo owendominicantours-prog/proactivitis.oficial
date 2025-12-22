@@ -107,7 +107,7 @@ export async function getBookingConfirmationData(
   }));
 
   const whatsappLink = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/?text=Hola%20Proactivitis";
-  const orderCode = `#PR-${booking.id.slice(-4).toUpperCase()}`;
+  const orderCode = booking.bookingCode ?? `#PR-${booking.id.slice(-4).toUpperCase()}`;
   const travelDateLabel = new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(booking.travelDate);
   const passengerLabel = `${booking.paxAdults + booking.paxChildren} pax`;
   const startTimeLabel = booking.startTime ?? "Hora por confirmar";

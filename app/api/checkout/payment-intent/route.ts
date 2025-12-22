@@ -74,6 +74,28 @@ const buildBookingSummary = (title: string, travelDate: Date, pax: number, start
   return startTime ? `${base} — ${startTime}` : base;
 };
 
+const formatBookingCode = (suffix: string) => `PRO-${suffix}`;
+
+const CODE_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const CODE_LENGTH = 6;
+const CODE_RETRY_LIMIT = 8;
+
+const generateRandomSuffix = () =>
+  Array.from({ length: CODE_LENGTH })
+    .map(() => CODE_CHARSET[Math.floor(Math.random() * CODE_CHARSET.length)])
+    .join("");
+
+const generateBookingCode = async () => {
+  for (let attempt = 0; attempt < CODE_RETRY_LIMIT; attempt++) {
+    const candidate = formatBookingCode(generateRandomSuffix());
+    const existing = await prisma.booking.findUnique({ where: { bookingCode: candidate } });
+    if (!existing) {
+      return candidate;
+    }
+  }
+  throw new Error("No se pudo generar un código de reserva único. Intenta nuevamente.");
+};
+
 const ensureCustomerSession = async (name: string, email: string) => {
   const session = await getServerSession(authOptions);
   const sessionUser = (session?.user as { id?: string } | null) ?? null;
@@ -190,6 +212,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No pudimos iniciar tu sesión. Intenta nuevamente." }, { status: 500 });
   }
 
+  const bookingCode = await generateBookingCode();
+
   const booking = await prisma.booking.create({
     data: {
       tourId,
@@ -204,6 +228,7 @@ export async function POST(request: NextRequest) {
       pickupNotes: pickupNotes || undefined,
       startTime,
       totalAmount,
+      bookingCode,
       userId,
       status: BookingStatusEnum.PAYMENT_PENDING,
       source: BookingSourceEnum.WEB,

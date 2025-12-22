@@ -43,6 +43,7 @@ model Booking {
   customerName          String
   customerEmail         String
   customerPhone         String?
+  bookingCode           String?        @unique
   travelDate            DateTime       @map("date")
   paxAdults             Int            @default(1)
   paxChildren           Int            @default(0)
