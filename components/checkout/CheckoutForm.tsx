@@ -233,7 +233,7 @@ export default function CheckoutForm() {
 
             <strong>
 
-              {summaryState.adults} adult{summaryState.adults > 1 ? 's' : ''} ? {summaryState.children} ni?o{summaryState.children === 1 ? '' : 's'}
+              {summaryState.adults} adult{summaryState.adults > 1 ? 's' : ''} · {summaryState.children} niño{summaryState.children === 1 ? '' : 's'}
 
             </strong>
 
