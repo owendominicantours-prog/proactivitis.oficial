@@ -16,12 +16,10 @@ const buildUrlEntry = (path: string, changefreq: string, priority: number) => `
     <priority>${priority}</priority>
   </url>`;
 
-export async function GET(request: NextRequest) {
+export function GET(request: NextRequest) {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${routes
-  .map((route) => buildUrlEntry(route.path, route.changefreq, route.priority))
-  .join("")}
+${routes.map((route) => buildUrlEntry(route.path, route.changefreq, route.priority)).join("")}
 </urlset>`;
 
   return new Response(xml, {
