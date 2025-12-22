@@ -10,6 +10,7 @@ type SitemapEntry = {
   priority: number;
 };
 
+// Nuevo despliegue forzado: actualiza el sitemap con tours activos.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: SitemapEntry[] = ["", "/about", "/contact", "/tours"].map((route) => ({
     url: `${baseUrl}${route}`,
