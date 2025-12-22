@@ -22,6 +22,8 @@ type TourBookingWidgetProps = {
   timeSlots: TimeSlotOption[];
   supplierHasStripeAccount: boolean;
   platformSharePercent: number;
+  tourTitle: string;
+  tourImage?: string;
 };
 
 export function TourBookingWidget({
@@ -56,6 +58,11 @@ export function TourBookingWidget({
       youth: youth.toString(),
       child: child.toString()
     });
+    params.set("tourTitle", tourTitle);
+    if (tourImage) {
+      params.set("tourImage", tourImage);
+    }
+    params.set("tourPrice", basePrice.toString());
     router.push(`/checkout?${params.toString()}`);
   };
 

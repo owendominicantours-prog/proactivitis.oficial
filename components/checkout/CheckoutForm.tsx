@@ -149,6 +149,13 @@ export default function CheckoutForm() {
 
 
 
+    const parsePricePerPerson = (raw: string | null) => {
+      const value = Number.parseFloat(raw ?? '');
+      return Number.isFinite(value) ? value : recommendedReservation.price;
+    };
+
+
+
     const adultsCount = parsePositive(searchParams.get('adults'), 1);
 
     const youthCount = parsePositive(searchParams.get('youth'), 0);
@@ -159,11 +166,17 @@ export default function CheckoutForm() {
 
     const timeValue = searchParams.get('time') || recommendedReservation.time;
 
+    const tourName = searchParams.get('tourTitle') || recommendedReservation.tourName;
+
+    const imageUrl = searchParams.get('tourImage') || recommendedReservation.imageUrl;
+
+    const pricePerPerson = parsePricePerPerson(searchParams.get('tourPrice'));
+
 
 
     return {
 
-      tourName: recommendedReservation.tourName,
+      tourName,
 
       date: dateValue,
 
@@ -171,7 +184,11 @@ export default function CheckoutForm() {
 
       adults: adultsCount,
 
-      children: youthCount + childCount
+      children: youthCount + childCount,
+
+      pricePerPerson,
+
+      imageUrl
 
     };
 
@@ -181,9 +198,17 @@ export default function CheckoutForm() {
 
   const reservationSummary = useMemo(
 
-    () => (
+    () => {
 
-      <div className='space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl'>
+      const totalTravelers = Math.max(1, summaryState.adults + summaryState.children);
+
+      const totalPrice = totalTravelers * summaryState.pricePerPerson;
+
+
+
+      return (
+
+        <div className='space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl'>
 
         <div className='flex items-center gap-3 rounded-xl bg-pink-100 px-3 py-2 text-sm font-semibold text-rose-700'>
 
@@ -197,9 +222,9 @@ export default function CheckoutForm() {
 
           <Image
 
-            src={recommendedReservation.imageUrl}
+            src={summaryState.imageUrl}
 
-            alt={recommendedReservation.tourName}
+            alt={summaryState.tourName}
 
             width={76}
 
@@ -293,9 +318,11 @@ export default function CheckoutForm() {
 
           <p className='text-xs uppercase tracking-[0.4em] text-slate-400'>Precio total</p>
 
-          <p className='text-3xl font-semibold'>${recommendedReservation.price.toFixed(2)}</p>
+          <p className='text-3xl font-semibold'>${totalPrice.toFixed(2)}</p>
 
-          <p className='mt-2 text-[13px] text-slate-300'>Incluye impuestos y tasas</p>
+          <p className='mt-2 text-[13px] text-slate-300'>
+            {summaryState.pricePerPerson.toFixed(2)} USD por persona
+          </p>
 
         </div>
 
@@ -323,7 +350,9 @@ export default function CheckoutForm() {
 
       </div>
 
-    ),
+      );
+
+    },
 
     [summaryState, guardTime]
 
