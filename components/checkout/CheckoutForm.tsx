@@ -3,7 +3,7 @@
 
 
 import Image from 'next/image';
-import { ChangeEvent, FormEvent, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, Dispatch, FormEvent, SetStateAction, useMemo, useRef, useState } from 'react';
 import {
 
   AlertTriangle,
@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 
 import { useSearchParams } from 'next/navigation';
+import { PaymentElement, useCheckout } from '@stripe/react-stripe-js/checkout';
 
 
 
@@ -56,34 +57,6 @@ const recommendedReservation = {
 
 
 
-const paymentMethods = [
-
-  { id: 'card', label: 'Tarjeta de crédito' },
-
-  { id: 'paypal', label: 'PayPal' },
-
-  { id: 'google', label: 'Google Pay' },
-
-  { id: 'klarna', label: 'Klarna' }
-
-];
-
-const paymentLogos = [
-
-  { alt: 'Visa', src: '/logos/visa.svg' },
-
-  { alt: 'Mastercard', src: '/logos/mastercard.svg' },
-
-  { alt: 'PayPal', src: '/logos/paypal.svg' },
-
-  { alt: 'Google Pay', src: '/logos/google-pay.svg' },
-
-  { alt: 'Klarna', src: '/logos/klarna.svg' }
-
-];
-
-
-
 const countries = ['Estados Unidos', 'Espaa', 'Mxico', 'Reino Unido', 'Colombia', 'Chile', 'Per', 'Canad', 'Brasil'];
 
 const stepTitles = ['Datos de contacto', 'Detalles de la actividad', 'Informacin de pago'];
@@ -103,14 +76,6 @@ export default function CheckoutForm() {
   const [language, setLanguage] = useState('Espaol / Ingls');
 
   const [specialRequirements, setSpecialRequirements] = useState('');
-
-  const [paymentType, setPaymentType] = useState('card');
-
-  const [paymentTiming, setPaymentTiming] = useState('pay-now');
-
-  const [billingCountry, setBillingCountry] = useState(countries[0]);
-
-  const [cardNumber, setCardNumber] = useState('');
 
   const [errors, setErrors] = useState({} as Record<string, string>);
 
@@ -133,6 +98,130 @@ export default function CheckoutForm() {
 
 
   const guardTime = '28:56';
+
+const validateEmail = async (email: string, checkout: any) => {
+  const updateResult = await checkout.updateEmail(email);
+  const isValid = updateResult.type !== 'error';
+  return { isValid, message: isValid ? null : updateResult.error?.message ?? 'Correo inválido' };
+};
+
+type EmailInputProps = {
+  email: string;
+  setEmail: Dispatch<SetStateAction<string>>;
+  error: string | null;
+  setError: Dispatch<SetStateAction<string | null>>;
+  checkout: any;
+};
+
+const EmailInput = ({ email, setEmail, error, setError, checkout }: EmailInputProps) => {
+  const handleBlur = async () => {
+    if (!email) return;
+    const { isValid, message } = await validateEmail(email, checkout);
+    if (!isValid) {
+      setError(message);
+    }
+  };
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setError(null);
+    setEmail(event.target.value);
+  };
+
+  return (
+    <label className='space-y-1 block text-sm'>
+      <span className='text-xs uppercase tracking-[0.3em] text-slate-500'>Email</span>
+      <input
+        id='email'
+        type='email'
+        value={email}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${error ? 'border-rose-500' : 'border-slate-200'}`}
+      />
+      {error && <p className='text-xs text-rose-500'>{error}</p>}
+    </label>
+  );
+};
+
+type StripePaymentStepProps = {
+  onBack: () => void;
+};
+
+const StripePaymentStep = ({ onBack }: StripePaymentStepProps) => {
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const checkoutState = useCheckout();
+  if (checkoutState.type === 'loading') {
+    return <p className='py-6 text-sm text-slate-500'>Cargando métodos de pago…</p>;
+  }
+
+  if (checkoutState.type === 'error') {
+    return (
+      <div className='rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600'>
+        Error: {checkoutState.error.message}
+      </div>
+    );
+  }
+
+  const { checkout } = checkoutState;
+  const amount = checkout?.total?.total?.amount;
+  const currency = checkout?.total?.total?.currency?.toUpperCase() || 'USD';
+  const displayAmount = amount ? `${(amount / 100).toFixed(2)} ${currency}` : '0.00 USD';
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    setMessage(null);
+
+    const { isValid, message: validationMessage } = await validateEmail(email, checkout);
+    if (!isValid) {
+      setEmailError(validationMessage);
+      setMessage(validationMessage);
+      return;
+    }
+
+    setIsLoading(true);
+    const confirmResult = await checkout.confirm();
+
+    if (confirmResult.type === 'error') {
+      setMessage(confirmResult.error.message);
+    }
+
+    setIsLoading(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className='space-y-4'>
+      <EmailInput email={email} setEmail={setEmail} error={emailError} setError={setEmailError} checkout={checkout} />
+      <h4 className='text-xs uppercase tracking-[0.3em] text-slate-500'>Pago seguro</h4>
+      <PaymentElement id='payment-element' />
+      <div className='flex justify-between items-center'>
+        <button
+          type='button'
+          onClick={onBack}
+          className='flex items-center gap-2 text-sm font-semibold text-slate-600'
+        >
+          <ArrowLeft className='h-4 w-4' /> Regresar
+        </button>
+        <button
+          type='submit'
+          id='submit'
+          disabled={isLoading || checkoutState.type === 'loading'}
+          className='w-[60%] rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400'
+        >
+          {isLoading || checkoutState.type === 'loading' ? (
+            <span>Procesando…</span>
+          ) : (
+            `Pagar ${displayAmount} ahora`
+          )}
+        </button>
+      </div>
+      {message && <p className='text-center text-sm text-rose-500'>{message}</p>}
+    </form>
+  );
+};
 
 
 
@@ -420,13 +509,6 @@ export default function CheckoutForm() {
 
     }
 
-    if (index === 2 && !paymentType) {
-
-      newErrors.paymentType = 'Elige un mtodo';
-
-    }
-
-
 
     setErrors(newErrors);
 
@@ -449,32 +531,6 @@ export default function CheckoutForm() {
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
       }
-
-    }
-
-  };
-
-
-
-  const handlePaymentSubmit = (event: FormEvent) => {
-
-    event.preventDefault();
-
-    const newErrors: Record<string, string> = {};
-
-    if (!paymentType) newErrors.paymentType = 'Selecciona un mtodo';
-
-    const normalizedCardNumber = cardNumber.split(' ').join('');
-
-    if (paymentType === 'card' && normalizedCardNumber.length < 16)
-
-      newErrors.cardNumber = 'Ingresa un nmero vlido';
-
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length === 0) {
-
-      alert('Tu reserva ha sido procesada con xito.');
 
     }
 
@@ -790,234 +846,7 @@ export default function CheckoutForm() {
 
                         {stepIdx === 2 && (
 
-                          <form onSubmit={handlePaymentSubmit} className='space-y-4'>
-
-                            <div className='space-y-2'>
-
-                              <p className='text-[11px] uppercase tracking-[0.4em] text-slate-400'>Pago</p>
-
-                              <div className='flex items-center gap-3'>
-
-                                {paymentMethods.map((method) => (
-
-                                  <button
-
-                                    key={method.id}
-
-                                    type='button'
-
-                                    className={`flex flex-1 items-center justify-between rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-
-                                      paymentType === method.id ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-600'
-
-                                    }`}
-
-                                    onClick={() => setPaymentType(method.id)}
-
-                                  >
-
-                                    <span className='flex items-center gap-2'>
-
-                                      {method.label}
-
-                                    </span>
-
-                                    {method.label === 'Tarjeta de crédito' && (
-                                      <span className='text-xs font-normal text-slate-400'>Visa · Mastercard</span>
-                                    )}
-                                  </button>
-
-                                ))}
-
-                              </div>
-
-                              {errors.paymentType && <p className='text-xs text-rose-500'>{errors.paymentType}</p>}
-
-                            </div>
-
-                            {paymentType === 'card' && (
-
-                              <div className='space-y-2'>
-
-                                <label className='text-xs uppercase tracking-[0.3em] text-slate-500'>Nmero de tarjeta</label>
-
-                                <input
-
-                                  id='cardNumber'
-
-                                  value={cardNumber}
-
-                                  onChange={(event) => {
-
-                                    const digitsOnly = Array.from(event.target.value)
-
-                                      .filter((ch) => ch >= '0' && ch <= '9')
-
-                                      .join('');
-
-                                    setCardNumber(digitsOnly);
-
-                                  }}
-
-                                  placeholder='4111 1111 1111 1111'
-
-                                  className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
-
-                                    errors.cardNumber ? 'border-rose-500' : 'border-slate-200'
-
-                                  }`}
-
-                                />
-
-                                {errors.cardNumber && <p className='text-xs text-rose-500'>{errors.cardNumber}</p>}
-
-                                <div className='flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500'>
-
-                                  <CreditCard className='h-4 w-4 text-slate-400' />
-
-                                  {paymentLogos.map((logo) => (
-
-                                    <div key={logo.alt} className='h-8 w-16'>
-
-                                      <Image src={logo.src} alt={logo.alt} width={64} height={24} className='h-full w-full object-contain' />
-
-                                    </div>
-
-                                  ))}
-
-                                </div>
-
-                              </div>
-
-                            )}
-
-                            <div className='space-y-2'>
-
-                              <label className='text-xs uppercase tracking-[0.3em] text-slate-500'>Pas de facturacin</label>
-
-                              <div className='relative'>
-
-                                <input
-
-                                  value={billingCountry}
-
-                                  onChange={(event) => setBillingCountry(event.target.value)}
-
-                                  list='country-options'
-
-                                  className='w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100'
-
-                                />
-
-                                <datalist id='country-options'>
-
-                                  {countries.map((country) => (
-
-                                    <option key={country} value={country} />
-
-                                  ))}
-
-                                </datalist>
-
-                              </div>
-
-                            </div>
-
-                            <div className='space-y-2'>
-
-                              <p className='text-[11px] uppercase tracking-[0.4em] text-slate-400'>Cundo deseas pagar?</p>
-
-                              <div className='flex items-center gap-4'>
-
-                                <label className='flex items-center gap-2 text-sm'>
-
-                                  <input
-
-                                    type='radio'
-
-                                    name='paymentTiming'
-
-                                    value='pay-now'
-
-                                    checked={paymentTiming === 'pay-now'}
-
-                                    onChange={() => setPaymentTiming('pay-now')}
-
-                                  />
-
-                                  Pagar ahora
-
-                                </label>
-
-                                <label className='flex items-center gap-2 text-sm'>
-
-                                  <input
-
-                                    type='radio'
-
-                                    name='paymentTiming'
-
-                                    value='pay-later'
-
-                                    checked={paymentTiming === 'pay-later'}
-
-                                    onChange={() => setPaymentTiming('pay-later')}
-
-                                  />
-
-                                  Reservar ahora y pagar despus
-
-                                </label>
-
-                                <span className='flex items-center gap-2 text-xs text-amber-600'>
-
-                                  <AlertTriangle className='h-4 w-4' />
-
-                                  Disponible durante el periodo de proteccin de 24 h
-
-                                </span>
-
-                              </div>
-
-                            </div>
-
-                            <div className='flex justify-between'>
-
-                              <button
-
-                                type='button'
-
-                                onClick={() => {
-
-                                  setActiveStep(1);
-
-                                  handleScrollToStep(1);
-
-                                }}
-
-                                className='flex items-center gap-2 text-sm font-semibold text-slate-600'
-
-                              >
-
-                                <ArrowLeft className='h-4 w-4' /> Regresar
-
-                              </button>
-
-                              <button
-
-                                type='submit'
-
-                                className='rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700'
-
-                              >
-
-                                Reservar ahora
-
-                              </button>
-
-                            </div>
-
-                          </form>
+                          <StripePaymentStep onBack={() => { setActiveStep(1); handleScrollToStep(1); }} />
 
                         )}
 
