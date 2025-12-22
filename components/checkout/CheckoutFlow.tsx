@@ -1,10 +1,9 @@
 ﻿"use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
@@ -21,6 +20,7 @@ import {
   Users
 } from "lucide-react";
 import { recommendedReservation } from "@/lib/checkout";
+import Link from "next/link";
 
 export type CheckoutPageParams = {
   tourId?: string;
@@ -182,12 +182,6 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   const [paymentOption, setPaymentOption] = useState<"now" | "later">("now");
   const [activePaymentMethod, setActivePaymentMethod] = useState<PaymentMethodId>("card");
 
-  useEffect(() => {
-    if (!summary.tourId) {
-      router.replace("/tours");
-    }
-  }, [router, summary.tourId]);
-
   const displayAmount = Number.isFinite(summary.totalPrice)
     ? `$${summary.totalPrice.toFixed(2)} USD`
     : "Precio bajo consulta";
@@ -209,6 +203,8 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
       pickupPreference === "pickup" ? pickupLocation || "Elige un punto de encuentro" : "Punto por definir";
     return `${travelerName} · ${pickupLabel}`;
   }, [travelerName, pickupLocation, pickupPreference]);
+
+  const missingTourId = !summary.tourId;
 
   const handleContactChange = (field: keyof ContactState) => (event: ChangeEvent<HTMLInputElement>) => {
     const nextValue = event.target.value;
@@ -528,6 +524,15 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
             <h1 className="text-3xl font-semibold text-slate-900">Verifica disponibilidad y asegura tu plaza</h1>
             <p className="text-sm text-slate-600">Completa cada paso para preparar la experiencia antes de pagar.</p>
           </header>
+
+          {missingTourId && (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+              <p>Para continuar debes llegar desde la ficha del tour. Verifica la disponibilidad y regresa.</p>
+              <Link href="/tours" className="font-semibold text-rose-600 underline">
+                Ver tours
+              </Link>
+            </div>
+          )}
 
           {intentError && (
             <div className="flex items-start gap-2 rounded-2xl bg-rose-50 p-4 text-sm text-rose-600">
