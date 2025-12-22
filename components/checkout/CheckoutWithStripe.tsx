@@ -45,31 +45,32 @@ export default function CheckoutWithStripe() {
       return;
     }
 
-    fetch('/api/checkout/payment-intent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(async (response) => {
+    const controller = new AbortController();
+    const fetchSecret = async () => {
+      try {
+        const response = await fetch('/api/checkout/payment-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
         const data = await response.json();
         if (!response.ok || !data.clientSecret) {
           throw new Error(data.error ?? 'No se pudo generar el pago.');
         }
         setError(null);
         setClientSecret(data.clientSecret);
-    })
-      .then(async (response) => {
-        const data = await response.json();
-        if (!response.ok || !data.clientSecret) {
-          throw new Error(data.error ?? 'No se pudo generar el pago.');
+      } catch (fetchError) {
+        if (fetchError instanceof DOMException && fetchError.name === 'AbortError') {
+          return;
         }
-        setError(null);
-        setClientSecret(data.clientSecret);
-      })
-      .catch((fetchError) => {
         console.error('Could not fetch client secret', fetchError);
         setError(fetchError instanceof Error ? fetchError.message : 'Error al generar el pago.');
-      });
+      }
+    };
+
+    fetchSecret();
+    return () => controller.abort();
   }, [payload, missingTourError]);
 
   const content = (
