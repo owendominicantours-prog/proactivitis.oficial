@@ -3,15 +3,22 @@ import { prisma } from "@/lib/prisma";
 
 const baseUrl = "https://proactivitis.com";
 
+type SitemapEntry = {
+  url: string;
+  lastModified: Date;
+  changeFrequency: MetadataRoute.ChangeFrequency;
+  priority: number;
+};
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticRoutes = ["", "/about", "/contact", "/tours"].map((route) => ({
+  const staticRoutes: SitemapEntry[] = ["", "/about", "/contact", "/tours"].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
-    changeFrequency: "daily" as const,
+    changeFrequency: "daily",
     priority: route === "" ? 1 : 0.8
   }));
 
-  let tourRoutes: MetadataRoute.SitemapItem[] = [];
+  let tourRoutes: SitemapEntry[] = [];
   try {
     const tours = await prisma.tour.findMany({
       where: { status: "active" },
