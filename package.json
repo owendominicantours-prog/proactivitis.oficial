@@ -12,7 +12,7 @@
     "test:e2e": "playwright test",
     "prisma": "prisma",
     "seed": "ts-node --project tsconfig.seed.json prisma/seed.ts",
-    "seed:countries": "node scripts/seed-countries.ts",
+    "seed:countries": "node scripts/seed-countries.cjs",
     "seed:destinations": "node scripts/seed-destinations.ts",
     "postinstall": "prisma generate"
   },

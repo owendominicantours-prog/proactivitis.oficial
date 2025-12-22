@@ -30,18 +30,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-const buildCheckoutUrl = (tour: { id: string; title: string; price: number }, locationSlug: string, bookingCode?: string) => {
+const buildTourUrl = (tour: { slug: string }, locationSlug: string, bookingCode?: string) => {
   const params = new URLSearchParams({
-    tourId: tour.id,
-    tourTitle: tour.title,
-    tourPrice: tour.price.toString(),
-    source: "recogida",
-    locationSlug
+    hotelSlug: locationSlug
   });
   if (bookingCode) {
     params.set("bookingCode", bookingCode);
   }
-  return `/checkout?${params.toString()}`;
+  return `/tours/${tour.slug}/recogida/${locationSlug}?${params.toString()}`;
 };
 
 export default async function RecogidaPage({ params, searchParams }: RecogidaPageProps) {
@@ -50,7 +46,12 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
   const bookingCode = resolvedSearchParams?.bookingCode;
 
   const location = await prisma.location.findUnique({
-    where: { slug: resolvedParams.slug }
+    where: { slug: resolvedParams.slug },
+    include: {
+      microZone: true,
+      destination: true,
+      country: true
+    }
   });
 
   if (!location) {
@@ -58,18 +59,30 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
   }
 
   const bookingLabel = `Reservar Buggy con recogida en ${location.name}`;
+  const baseCountryCondition = { countryId: location.countryId };
+  const orFilters = [];
+  if (location.microZoneId) {
+    orFilters.push({ ...baseCountryCondition, microZoneId: location.microZoneId });
+  }
+  if (location.destinationId) {
+    orFilters.push({ ...baseCountryCondition, destinationId: location.destinationId });
+  }
+  orFilters.push(baseCountryCondition);
+  orFilters.push({
+    ...baseCountryCondition,
+    category: { contains: "Nacional", mode: "insensitive" }
+  });
+  if (location.destination?.name?.toLowerCase().includes("punta cana")) {
+    orFilters.push({
+      ...baseCountryCondition,
+      category: { contains: "Punta Cana", mode: "insensitive" }
+    });
+  }
 
   const tours = await prisma.tour.findMany({
     where: {
       status: "published",
-      location: {
-        contains: location.name,
-        mode: "insensitive"
-      },
-      category: {
-        contains: "Punta Cana",
-        mode: "insensitive"
-      }
+      OR: orFilters
     },
     orderBy: { featured: "desc" },
     take: RECENT_TOURS_LIMIT,
@@ -81,10 +94,7 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
   const displayTours = tours.length ? tours : await prisma.tour.findMany({
     where: {
       status: "published",
-      category: {
-        contains: "Punta Cana",
-        mode: "insensitive"
-      }
+      countryId: location.countryId
     },
     orderBy: { createdAt: "desc" },
     take: RECENT_TOURS_LIMIT,
@@ -154,12 +164,12 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
                 <p className="text-sm text-slate-600 line-clamp-3">{tour.shortDescription ?? "Experiencia inmersiva, guías expertos y atención 24/7."}</p>
                 <div className="mt-auto flex items-center justify-between text-sm text-slate-700">
                   <span className="text-slate-900 font-semibold">${tour.price.toFixed(0)} USD</span>
-                  <Link
-                    href={buildCheckoutUrl(tour, location.slug, bookingCode)}
-                    className="rounded-2xl bg-orange-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-lg transition hover:bg-orange-600"
-                  >
-                    {bookingLabel}
-                  </Link>
+                <Link
+                  href={buildTourUrl(tour, location.slug, bookingCode)}
+                  className="rounded-2xl bg-orange-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-lg transition hover:bg-orange-600"
+                >
+                  {bookingLabel}
+                </Link>
                 </div>
               </div>
             </article>

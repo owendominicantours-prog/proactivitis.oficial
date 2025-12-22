@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 type CountryForm = {
   name: string;
   slug: string;
+  code: string;
   shortDescription?: string;
 };
 
@@ -23,20 +24,27 @@ export async function addCountryAction(formData: FormData) {
   if (!name || typeof name !== "string" || !name.trim()) {
     throw new Error("Ingresa el nombre del país.");
   }
+  const code = formData.get("code");
+
   if (!slug || typeof slug !== "string" || !slug.trim()) {
     throw new Error("Ingresa un slug para el país.");
+  }
+  if (!code || typeof code !== "string" || !code.trim()) {
+    throw new Error("Ingresa el código ISO del país.");
   }
 
   await prisma.country.upsert({
     where: { slug: slug.trim() },
     update: {
       name: name.trim(),
-      shortDescription: typeof shortDescription === "string" ? shortDescription.trim() : undefined
+      shortDescription: typeof shortDescription === "string" ? shortDescription.trim() : undefined,
+      code: code.trim().toUpperCase()
     },
     create: {
       name: name.trim(),
       shortDescription: typeof shortDescription === "string" ? shortDescription.trim() : undefined,
-      slug: slug.trim()
+      slug: slug.trim(),
+      code: code.trim().toUpperCase()
     }
   });
 

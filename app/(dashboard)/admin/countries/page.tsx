@@ -36,6 +36,16 @@ export default async function AdminCountriesPage() {
               <input name="slug" type="text" required className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
             </label>
             <label className="block text-sm font-semibold text-slate-700">
+              Código (ISO 2 caracteres)
+              <input
+                name="code"
+                type="text"
+                required
+                maxLength={2}
+                className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm uppercase tracking-[0.3em]"
+              />
+            </label>
+            <label className="block text-sm font-semibold text-slate-700">
               Descripción corta
               <textarea name="shortDescription" className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" rows={2}></textarea>
             </label>

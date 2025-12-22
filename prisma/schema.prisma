@@ -169,29 +169,55 @@ model Country {
   id               String        @id @default(cuid())
   name             String
   slug             String        @unique
-  code             String?
+  code             String        @unique
   shortDescription String?
   heroImage        String?
   destinations     Destination[]
+  locations        Location[]    @relation("CountryLocations")
+  tours            Tour[]        @relation("CountryTours")
+  microZones       MicroZone[]   @relation("CountryMicroZones")
 }
 
 model Destination {
-  id               String  @id @default(cuid())
+  id               String      @id @default(cuid())
   name             String
-  slug             String  @unique
+  slug             String      @unique
   shortDescription String?
   heroImage        String?
-  country          Country @relation(fields: [countryId], references: [id])
+  country          Country     @relation(fields: [countryId], references: [id])
   countryId        String
-  tours            Tour[]
+  tours            Tour[]      @relation("TourDestination")
+  departureTours   Tour[]      @relation("TourDepartureDestination")
+  microZones       MicroZone[] @relation("DestinationMicroZones")
+  locations        Location[]  @relation("LocationDestination")
+}
+
+model MicroZone {
+  id            String      @id @default(cuid())
+  name          String
+  slug          String      @unique
+  destination   Destination @relation("DestinationMicroZones", fields: [destinationId], references: [id])
+  destinationId String
+  country       Country     @relation("CountryMicroZones", fields: [countryCode], references: [code])
+  countryCode   String
+  locations     Location[]  @relation("MicroZoneLocations")
+  tours         Tour[]      @relation("TourMicroZone")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 
 model Location {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String       @id @default(cuid())
+  name          String
+  slug          String       @unique
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  country       Country      @relation("CountryLocations", fields: [countryId], references: [code])
+  countryId     String       @default("RD")
+  destination   Destination? @relation("LocationDestination", fields: [destinationId], references: [id])
+  destinationId String?
+  microZone     MicroZone?   @relation("MicroZoneLocations", fields: [microZoneId], references: [id])
+  microZoneId   String?
 }
 
 model Session {
@@ -203,14 +229,14 @@ model Session {
 }
 
 model SupplierProfile {
-  id       String      @id
-  userId   String      @unique
-  company  String
-  approved Boolean     @default(false)
-  stripeAccountId String? @map("stripe_account_id")
-  User     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Tour     Tour[]
-  drafts   TourDraft[]
+  id              String      @id
+  userId          String      @unique
+  company         String
+  approved        Boolean     @default(false)
+  stripeAccountId String?     @map("stripe_account_id")
+  User            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Tour            Tour[]
+  drafts          TourDraft[]
 }
 
 model TourDraft {
@@ -282,12 +308,18 @@ model Tour {
   gallery                String?
   heroImage              String?
   departureDestinationId String?
-  departureDestination   Destination?    @relation(fields: [departureDestinationId], references: [id])
+  departureDestination   Destination?    @relation("TourDepartureDestination", fields: [departureDestinationId], references: [id])
   Booking                Booking[]
   Offer                  Offer[]
   platformSharePercent   Int             @default(20)
   SupplierProfile        SupplierProfile @relation(fields: [supplierId], references: [id])
   AgencyProLinks         AgencyProLink[]
+  country                Country         @relation("CountryTours", fields: [countryId], references: [code])
+  countryId              String          @default("RD")
+  destination            Destination?    @relation("TourDestination", fields: [destinationId], references: [id])
+  destinationId          String?
+  microZone              MicroZone?      @relation("TourMicroZone", fields: [microZoneId], references: [id])
+  microZoneId            String?
 }
 
 model User {

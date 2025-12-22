@@ -7,10 +7,16 @@ import { prisma } from "@/lib/prisma";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 
+type TourDetailSearchParams = {
+  hotelSlug?: string;
+  bookingCode?: string;
+};
+
 type TourDetailProps = {
   params: Promise<{
     slug?: string;
   }>;
+  searchParams?: Promise<TourDetailSearchParams>;
 };
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
@@ -112,8 +118,17 @@ const reviewHighlights = [
 
 const reviewTags = ["Excelente guía", "Mucha adrenalina", "Puntualidad"];
 
-export default async function TourDetailPage({ params }: TourDetailProps) {
+export default async function TourDetailPage({ params, searchParams }: TourDetailProps) {
   const { slug } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const hotelSlugFromQuery = resolvedSearchParams?.hotelSlug;
+  const bookingCodeFromQuery = resolvedSearchParams?.bookingCode;
+  const originHotel =
+    hotelSlugFromQuery !== undefined
+      ? await prisma.location.findUnique({
+          where: { slug: hotelSlugFromQuery }
+        })
+      : null;
   if (!slug) notFound();
 
   const tour = await prisma.tour.findFirst({
@@ -493,15 +508,18 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
           <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva</p>
             <h3 className="mt-2 text-2xl font-bold text-slate-900">Confirma tu cupo</h3>
-            <TourBookingWidget
-              tourId={tour.id}
-              basePrice={tour.price}
-              timeSlots={timeSlots}
-              supplierHasStripeAccount={Boolean(tour.SupplierProfile?.stripeAccountId)}
-              platformSharePercent={tour.platformSharePercent ?? 20}
-              tourTitle={tour.title}
-              tourImage={heroImage}
-            />
+          <TourBookingWidget
+            tourId={tour.id}
+            basePrice={tour.price}
+            timeSlots={timeSlots}
+            supplierHasStripeAccount={Boolean(tour.SupplierProfile?.stripeAccountId)}
+            platformSharePercent={tour.platformSharePercent ?? 20}
+            tourTitle={tour.title}
+            tourImage={heroImage}
+            hotelSlug={hotelSlugFromQuery ?? undefined}
+            bookingCode={bookingCodeFromQuery ?? undefined}
+            originHotelName={originHotel?.name ?? undefined}
+          />
             <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-600">
               <p className="font-semibold text-slate-900">
                 {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Proveedor local"}

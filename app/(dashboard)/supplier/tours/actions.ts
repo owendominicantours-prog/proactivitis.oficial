@@ -50,13 +50,15 @@ async function resolveDestination(countryInput?: string | null, destinationInput
 
   let countryId: string | undefined;
   if (countrySlug) {
+    const code = countrySlug.toUpperCase();
     const country = await prisma.country.upsert({
       where: { slug: countrySlug },
-      update: { name: countryName ?? countrySlug },
+      update: { name: countryName ?? countrySlug, code },
       create: {
         id: randomUUID(),
         name: countryName ?? countrySlug,
-        slug: countrySlug
+        slug: countrySlug,
+        code
       }
     });
     countryId = country.id;
@@ -73,14 +75,14 @@ async function resolveDestination(countryInput?: string | null, destinationInput
       name: destName,
       slug: destSlug,
       countryId:
-        countryId ??
-        (
-          await prisma.country.upsert({
-            where: { slug: "global" },
-            update: {},
-            create: { id: randomUUID(), name: "Global", slug: "global" }
-          })
-        ).id
+      countryId ??
+      (
+        await prisma.country.upsert({
+          where: { slug: "global" },
+          update: {},
+          create: { id: randomUUID(), name: "Global", slug: "global", code: "GL" }
+        })
+      ).id
     }
   });
 
