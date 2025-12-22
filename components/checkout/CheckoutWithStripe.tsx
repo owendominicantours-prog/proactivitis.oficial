@@ -9,7 +9,7 @@ const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
 type PaymentIntentRequest = {
-  tourId: string;
+  tourId?: string;
   date?: string | null;
   time?: string | null;
   adults?: string | null;
