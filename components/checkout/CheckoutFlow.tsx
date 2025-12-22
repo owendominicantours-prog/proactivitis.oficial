@@ -109,8 +109,8 @@ const languageOptions = [
   "Español / Alemán"
 ];
 
-const paymentCountryOptions = [
-  "Estados Unidos",
+const paymentCountryOptions = [
+  "Estados Unidos",
   "México",
   "España",
   "Colombia",
@@ -130,12 +130,15 @@ const paymentMethods: { id: PaymentMethodId; label: string; description: string;
   }
 ];
 
-const cardLogos = [
-  { id: "visa", label: "Visa" },
+const cardLogos = [
+  { id: "visa", label: "Visa" },
   { id: "mastercard", label: "Mastercard" },
   { id: "amex", label: "American Express" }
-];
-
+];
+
+const BOOKING_ID_COOKIE_NAME = "bookingId";
+const BOOKING_ID_COOKIE_MAX_AGE = 30 * 60;
+
 const parsePositiveInt = (value?: string, fallback = 0) => {
   if (!value) return fallback;
   const parsed = Number.parseInt(value, 10);
@@ -418,7 +421,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
       }
 
       setClientSecret(data.clientSecret);
-      setBookingId(data.bookingId ?? null);
+      setBookingId(data.bookingId ?? null);
+
+      if (data.bookingId) {
+        const isSecure = window.location.protocol === "https:";
+        const secureFlag = isSecure ? "; secure" : "";
+        document.cookie = `${BOOKING_ID_COOKIE_NAME}=${data.bookingId}; path=/; max-age=${BOOKING_ID_COOKIE_MAX_AGE}; samesite=lax${secureFlag}`;
+      }
       setIntentReady(true);
     } catch (error) {
       setIntentError(error instanceof Error ? error.message : "Error preparando el pago");
@@ -428,7 +437,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
     }
   };
 
-  const handleNext = (currentIndex: number) => {
+  const handleNext = (currentIndex: number) => {
     const nextErrors: Record<string, string> = {};
 
     if (currentIndex === 0) {

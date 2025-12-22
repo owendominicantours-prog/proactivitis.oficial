@@ -1,15 +1,20 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { BookingConfirmedContent } from "./BookingConfirmedContent";
 import { getBookingConfirmationData } from "./helpers";
 
-export const dynamic = "force-dynamic";
-
 type Props = {
-  searchParams?: {
-    bookingId?: string;
-    bookingCode?: string;
-  };
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+const normalizeSearchParam = (value: string | string[] | undefined) => {
+  if (Array.isArray(value)) {
+    return value[0] ?? null;
+  }
+  return value ?? null;
+};
+
+export const dynamic = "force-dynamic";
 
 const BookingMissingMessage = ({ bookingId }: { bookingId?: string }) => (
   <div className="min-h-screen bg-slate-50">
@@ -40,10 +45,11 @@ const BookingMissingMessage = ({ bookingId }: { bookingId?: string }) => (
 );
 
 export default async function BookingConfirmedRedirectPage({ searchParams }: Props) {
-  const bookingId =
-    (typeof searchParams?.bookingId === "string" && searchParams.bookingId) ||
-    (typeof searchParams?.bookingCode === "string" && searchParams.bookingCode) ||
-    null;
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const queryBookingId = normalizeSearchParam(resolvedSearchParams.bookingId);
+  const queryBookingCode = normalizeSearchParam(resolvedSearchParams.bookingCode);
+  const cookieBookingId = (await cookies()).get("bookingId")?.value ?? null;
+  const bookingId = queryBookingId ?? queryBookingCode ?? cookieBookingId ?? null;
 
   if (!bookingId) {
     return <BookingMissingMessage />;
