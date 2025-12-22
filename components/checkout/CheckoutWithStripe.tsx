@@ -57,12 +57,19 @@ export default function CheckoutWithStripe() {
         }
         setError(null);
         setClientSecret(data.clientSecret);
+    })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || !data.clientSecret) {
+          throw new Error(data.error ?? 'No se pudo generar el pago.');
+        }
+        setError(null);
+        setClientSecret(data.clientSecret);
       })
       .catch((fetchError) => {
         console.error('Could not fetch client secret', fetchError);
         setError(fetchError instanceof Error ? fetchError.message : 'Error al generar el pago.');
-      })
-      .finally(() => setLoading(false));
+      });
   }, [payload, missingTourError]);
 
   const content = (
