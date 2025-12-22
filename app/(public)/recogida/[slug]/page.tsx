@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 const RECENT_TOURS_LIMIT = 6;
 
@@ -13,6 +14,12 @@ type RecogidaPageProps = {
   params: Promise<{ slug: string }>;
   searchParams?: Promise<SearchParams>;
 };
+
+type TourWithDeparture = Prisma.TourGetPayload<{
+  include: {
+    departureDestination: { select: { name: true; slug: true; country: { select: { slug: true } } } };
+  };
+}>;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -45,16 +52,23 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const bookingCode = resolvedSearchParams?.bookingCode;
 
-  const location = await prisma.location.findUnique({
-    where: { slug: resolvedParams.slug },
-    include: {
-      microZone: true,
-      destination: true,
-      country: true
-    }
-  });
+  let location = null;
+  try {
+    location = await prisma.location.findUnique({
+      where: { slug: resolvedParams.slug },
+      include: {
+        microZone: true,
+        destination: true,
+        country: true
+      }
+    });
+  } catch (error) {
+    console.error("Error cargando location para slug", { slug: resolvedParams.slug, error });
+    throw error;
+  }
 
   if (!location) {
+    console.error("Location no encontrada", { slug: resolvedParams.slug });
     notFound();
   }
 
@@ -79,29 +93,49 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
     });
   }
 
-  const tours = await prisma.tour.findMany({
-    where: {
-      status: "published",
-      OR: orFilters
-    },
-    orderBy: { featured: "desc" },
-    take: RECENT_TOURS_LIMIT,
-    include: {
-      departureDestination: { select: { name: true, slug: true, country: { select: { slug: true } } } }
-    }
-  });
+  let tours: TourWithDeparture[] = [];
+  try {
+    tours = await prisma.tour.findMany({
+      where: {
+        status: "published",
+        OR: orFilters
+      },
+      orderBy: { featured: "desc" },
+      take: RECENT_TOURS_LIMIT,
+      include: {
+        departureDestination: { select: { name: true, slug: true, country: { select: { slug: true } } } }
+      }
+    });
+  } catch (error) {
+    console.error("Error cargando tours para location", {
+      slug: resolvedParams.slug,
+      orFilters,
+      error
+    });
+  }
 
-  const displayTours = tours.length ? tours : await prisma.tour.findMany({
-    where: {
-      status: "published",
-      countryId: location.countryId
-    },
-    orderBy: { createdAt: "desc" },
-    take: RECENT_TOURS_LIMIT,
-    include: {
-      departureDestination: { select: { name: true, slug: true, country: { select: { slug: true } } } }
+  let displayTours = tours;
+  if (!displayTours.length) {
+    try {
+      displayTours = await prisma.tour.findMany({
+        where: {
+          status: "published",
+          countryId: location.countryId
+        },
+        orderBy: { createdAt: "desc" },
+        take: RECENT_TOURS_LIMIT,
+        include: {
+          departureDestination: { select: { name: true, slug: true, country: { select: { slug: true } } } }
+        }
+      });
+    } catch (error) {
+      console.error("Fallback tour query failed for location fallback", {
+        slug: resolvedParams.slug,
+        countryId: location.countryId,
+        error
+      });
     }
-  });
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">

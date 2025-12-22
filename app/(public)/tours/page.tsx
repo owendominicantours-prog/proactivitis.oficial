@@ -79,6 +79,9 @@ type TourWithDeparture = Prisma.TourGetPayload<{
     departureDestination: {
       include: { country: true };
     };
+    country: true;
+    destination: true;
+    microZone: true;
   };
 }>;
 
@@ -142,12 +145,16 @@ export default async function ToursGridPage({ searchParams }: Props) {
       include: {
         departureDestination: {
           include: { country: true }
-        }
+        },
+        country: true,
+        destination: true,
+        microZone: true
       },
       take: 24
     });
   } catch (error) {
     logPrismaError("loading tours", error);
+    console.error("Tour query failed", { where, error });
   }
 
   const activeFilters = [

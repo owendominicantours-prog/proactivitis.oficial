@@ -51,22 +51,42 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
   const { tourSlug, locationSlug } = await params;
   const resolvedSearch = searchParams ? await searchParams : {};
 
-  const [tour, location] = await Promise.all([
-    prisma.tour.findUnique({
-      where: { slug: tourSlug },
-      include: {
-        SupplierProfile: {
-          include: { User: { select: { name: true } } }
+  let tour = null;
+  let location = null;
+  try {
+    [tour, location] = await Promise.all([
+      prisma.tour.findUnique({
+        where: { slug: tourSlug },
+        include: {
+          SupplierProfile: {
+            include: { User: { select: { name: true } } }
+          },
+          country: true,
+          destination: true,
+          microZone: true
         }
-      }
-    }),
-    prisma.location.findUnique({
-      where: { slug: locationSlug },
-      include: { microZone: true, destination: true }
-    })
-  ]);
+      }),
+      prisma.location.findUnique({
+        where: { slug: locationSlug },
+        include: { microZone: true, destination: true, country: true }
+      })
+    ]);
+  } catch (error) {
+    console.error("Error loading tour or location for landing page", {
+      tourSlug,
+      locationSlug,
+      error
+    });
+    throw error;
+  }
 
-  if (!tour || !location) {
+  if (!tour) {
+    console.error("Tour no encontrado para el slug", { tourSlug, locationSlug });
+    notFound();
+  }
+
+  if (!location) {
+    console.error("Location no encontrada para el slug", { locationSlug, tourSlug });
     notFound();
   }
 
