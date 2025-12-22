@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
   const supplierAmount = centsAmount - platformFeeAmount;
   const supplierAccountId = tour.SupplierProfile?.stripeAccountId;
 
-  const paymentParams: Stripe.PaymentIntentCreateParams = {
+  const paymentIntent = await stripeClient.paymentIntents.create({
     amount: centsAmount,
     currency,
     description: summary,
@@ -258,56 +258,21 @@ export async function POST(request: NextRequest) {
       paymentOption: payload.paymentOption ?? "now",
       pickupPreference,
       supplierAccountId: supplierAccountId ?? "not-configured",
-      platformSharePercent: platformSharePercent.toString()
+      platformSharePercent: platformSharePercent.toString(),
+      holdForProvider: "true"
     },
     automatic_payment_methods: {
       enabled: true
     }
-  };
+  });
 
-  const createPlatformIntent = async (useApplicationFee: boolean) => {
-    const params: Stripe.PaymentIntentCreateParams = { ...paymentParams };
-    if (!useApplicationFee) {
-      delete params.application_fee_amount;
-    }
-    return stripeClient.paymentIntents.create(params);
-  };
-
-  let paymentIntent: Stripe.PaymentIntent;
-  let usedApplicationFee = Boolean(supplierAccountId);
-  if (supplierAccountId) {
-    const paramsWithTransfer: Stripe.PaymentIntentCreateParams = {
-      ...paymentParams,
-      transfer_data: {
-        destination: supplierAccountId
-      },
-      application_fee_amount: platformFeeAmount
-    };
-
-    try {
-      paymentIntent = await stripeClient.paymentIntents.create(paramsWithTransfer);
-    } catch (intentError) {
-      const isInsufficientCapabilities =
-        (intentError as Stripe.StripeError)?.code === "insufficient_capabilities_for_transfer";
-      console.error("Falló transfer_data, procesando en cuenta principal", intentError);
-      if (isInsufficientCapabilities) {
-        usedApplicationFee = false;
-      }
-      paymentIntent = await createPlatformIntent(!isInsufficientCapabilities);
-    }
-  } else {
-    paymentIntent = await createPlatformIntent(true);
-  }
-
-  const effectivePlatformFee = usedApplicationFee ? platformFeeAmount : 0;
-  const effectiveSupplierAmount = centsAmount - effectivePlatformFee;
   await prisma.booking.update({
     where: { id: booking.id },
     data: {
       stripePaymentIntentId: paymentIntent.id,
       paymentStatus: paymentIntent.status ?? booking.paymentStatus,
-      platformFee: effectivePlatformFee / 100,
-      supplierAmount: effectiveSupplierAmount / 100
+      platformFee: totalAmount,
+      supplierAmount: 0
     }
   });
 
