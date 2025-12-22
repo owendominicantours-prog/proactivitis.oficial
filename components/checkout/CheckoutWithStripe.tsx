@@ -111,7 +111,7 @@ export default function CheckoutWithStripe() {
   }
 
   return (
-    <Elements stripe={stripePromise} options={{ clientSecret }}>
+    <Elements stripe={stripePromise} options={{ clientSecret: clientSecret ?? undefined }}>
       {content}
     </Elements>
   );
