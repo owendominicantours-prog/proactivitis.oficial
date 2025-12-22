@@ -61,7 +61,7 @@ export default function CheckoutPage() {
   const guardTime = '28:56';
 
   const summaryState = useMemo(() => {
-    const parsePositive = (raw, fallback) => {
+    const parsePositive = (raw: string | null, fallback: number) => {
       const value = parseInt(raw ?? '', 10);
       if (Number.isNaN(value)) return fallback;
       return Math.max(fallback, value);
