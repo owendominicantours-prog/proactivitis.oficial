@@ -115,14 +115,20 @@ const ContactStep = ({ onNext }: { onNext: () => void }) => {
   );
 };
 
-const TravelStep = ({ summary }: { summary: ReturnType<typeof buildSummary>; onNext: () => void }) => (
+const TravelStep = ({
+  summary,
+  onNext
+}: {
+  summary: ReturnType<typeof buildSummary>;
+  onNext: () => void;
+}) => (
   <div className="space-y-4">
     <p className="text-sm text-slate-600">
       {summary.totalTravelers} viajeros · {summary.date} · {summary.time}
     </p>
     <button
       type="button"
-      onClick={summary.onNext}
+      onClick={onNext}
       className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white"
     >
       Continuar al pago
