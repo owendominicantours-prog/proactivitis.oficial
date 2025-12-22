@@ -6,7 +6,7 @@ const baseUrl = "https://proactivitis.com";
 type SitemapEntry = {
   url: string;
   lastModified: Date;
-  changeFrequency: MetadataRoute.ChangeFrequency;
+  changeFrequency: "daily" | "weekly" | "monthly";
   priority: number;
 };
 
