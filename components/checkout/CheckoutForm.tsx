@@ -209,10 +209,10 @@ const StripePaymentStep = ({ onBack }: StripePaymentStepProps) => {
         <button
           type='submit'
           id='submit'
-          disabled={isLoading || checkoutState.type === 'loading'}
+          disabled={isLoading}
           className='w-[60%] rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400'
         >
-          {isLoading || checkoutState.type === 'loading' ? (
+          {isLoading ? (
             <span>Procesando…</span>
           ) : (
             `Pagar ${displayAmount} ahora`
