@@ -112,12 +112,13 @@ const ensureCustomerSession = async (name: string, email: string) => {
 };
 
 export async function POST(request: NextRequest) {
-  const payload = (await request.json().catch(() => ({}))) as PaymentIntentPayload;
-  const tourId = payload.tourId;
+  try {
+    const payload = (await request.json().catch(() => ({}))) as PaymentIntentPayload;
+    const tourId = payload.tourId;
 
-  if (!tourId) {
-    return NextResponse.json({ error: "Necesitamos saber qué tour estás reservando." }, { status: 400 });
-  }
+    if (!tourId) {
+      return NextResponse.json({ error: "Necesitamos saber qué tour estás reservando." }, { status: 400 });
+    }
 
   if (!payload.firstName || !payload.lastName) {
     return NextResponse.json({ error: "Ingresa nombre y apellido completos." }, { status: 400 });
@@ -309,4 +310,12 @@ export async function POST(request: NextRequest) {
     amount: totalAmount,
     clientSecret: paymentIntent.client_secret ?? null
   });
+  } catch (error) {
+    console.error("Checkout payment-intent failed", error);
+    const message =
+      error instanceof Error
+        ? error.message
+        : "No se pudo preparar el pago por un error inesperado.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
