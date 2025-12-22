@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { recommendedReservation } from "@/lib/checkout";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 export type CheckoutPageParams = {
   tourId?: string;
@@ -153,6 +155,7 @@ const contactFields: { label: string; key: keyof ContactState; type: string; pla
   { label: "Confirmar correo", key: "confirmEmail", type: "email", placeholder: "Confirma tu correo" }
 ];
 export default function CheckoutFlow({ initialParams }: { initialParams: CheckoutPageParams }) {
+  const searchParams = useSearchParams();
   const summary = useMemo(() => buildSummary(initialParams), [initialParams]);
   const [activeStep, setActiveStep] = useState(0);
   const [contact, setContact] = useState<ContactState>({
@@ -203,7 +206,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
     return `${travelerName} · ${pickupLabel}`;
   }, [travelerName, pickupLocation, pickupPreference]);
 
-  const missingTourId = !summary.tourId;
+  const missingTourId = !summary.tourId && !searchParams.get("tourId");
 
   const handleContactChange = (field: keyof ContactState) => (event: ChangeEvent<HTMLInputElement>) => {
     const nextValue = event.target.value;
