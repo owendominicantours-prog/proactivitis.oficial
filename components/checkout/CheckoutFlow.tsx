@@ -508,7 +508,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
             disabled={paymentLoading || !clientSecret || paymentOption === "later"}
             className="w-[65%] rounded-2xl bg-[#008768] px-5 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
           >
-            {paymentLoading ? "Procesando…" : `Pagar ${displayAmount}`}
+            {paymentLoading ? "Procesando…" : "Confirmar y pagar"}
           </button>
         </div>
       </form>
@@ -773,9 +773,9 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                 <Image
                   src={summary.tourImage}
                   alt={summary.tourTitle}
-                  width={84}
-                  height={84}
-                  className="h-[84px] w-[84px] rounded-2xl object-cover"
+                  width={80}
+                  height={80}
+                  className="h-[80px] w-[80px] rounded-2xl object-cover"
                 />
                 <div>
                   <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Tour</p>
@@ -810,10 +810,10 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                 </div>
                 <p>Flexibilidad excepcional · Cancelación gratuita hasta 24 h antes</p>
               </div>
-              <div className="mt-4 rounded-3xl border border-slate-100 bg-slate-950 p-5 text-white">
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Precio total</p>
-                <p className="text-3xl font-semibold">{displayAmount}</p>
-                <p className="mt-1 text-[13px] text-slate-300">{perPersonLabel}</p>
+              <div className="mt-4 rounded-3xl border border-slate-200 bg-gray-50 p-5 text-slate-900 shadow-sm">
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Precio total</p>
+                <p className="text-3xl font-semibold text-slate-900">{displayAmount}</p>
+                <p className="mt-1 text-[13px] text-slate-500">{perPersonLabel}</p>
               </div>
               <div className="mt-4 space-y-3 rounded-2xl border border-dashed border-slate-200 p-4 text-xs text-slate-500">
                 <div className="flex items-center gap-2">
