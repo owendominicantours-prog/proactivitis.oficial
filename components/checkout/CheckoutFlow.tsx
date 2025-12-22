@@ -22,7 +22,6 @@ import {
 import { recommendedReservation } from "@/lib/checkout";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 
 export type CheckoutPageParams = {
   tourId?: string;
