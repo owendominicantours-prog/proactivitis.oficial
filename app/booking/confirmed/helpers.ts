@@ -1,0 +1,128 @@
+import { prisma } from "@/lib/prisma";
+import { parseAdminItinerary } from "@/lib/itinerary";
+import { TimelineStop } from "@/components/itinerary/ItineraryTimeline";
+
+const shuffleArray = <T,>(items: T[]) => items.slice().sort(() => Math.random() - 0.5);
+
+type RecommendedTour = {
+  id: string;
+  slug: string;
+  title: string;
+  price: number;
+  heroImage: string | null;
+  duration: string | null;
+  location: string | null;
+};
+
+export type BookingConfirmationData = {
+  booking: any;
+  tour: any;
+  supplier: { id: string; name: string } | null;
+  recommendedTours: RecommendedTour[];
+  timelineStops: TimelineStop[];
+  whatsappLink: string;
+  summary: string;
+  orderCode: string;
+  travelDateLabel: string;
+  passengerLabel: string;
+  startTimeLabel: string;
+};
+
+export async function getBookingConfirmationData(
+  bookingId: string
+): Promise<BookingConfirmationData | null> {
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: {
+      Tour: {
+        include: {
+          departureDestination: {
+            include: { country: true }
+          },
+          SupplierProfile: {
+            include: {
+              User: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  if (!booking || !booking.Tour) {
+    return null;
+  }
+
+  const tour = booking.Tour;
+  const supplier = tour.SupplierProfile?.User
+    ? {
+        id: tour.SupplierProfile.User.id,
+        name: tour.SupplierProfile.User.name ?? "Proactivitis"
+      }
+    : null;
+
+  const summary = `${tour.title} · ${booking.paxAdults + booking.paxChildren} pax · ${new Date(
+    booking.travelDate
+  ).toLocaleDateString("es-ES", { dateStyle: "long" })}`;
+
+  const recommendedTours = shuffleArray(
+    await prisma.tour.findMany({
+      where: { status: "published", id: { not: tour.id } },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        price: true,
+        heroImage: true,
+        duration: true,
+        location: true
+      }
+    })
+  ).slice(0, 3);
+
+  const adminItinerary = parseAdminItinerary(tour.adminNote ?? "");
+  const fallbackItinerary =
+    (tour.description ?? "")
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line, index) => {
+        const [timePart, ...descParts] = line.split(" - ");
+        return {
+          time: timePart ?? `Parada ${index + 1}`,
+          title: descParts[0] ?? line,
+          description: descParts.slice(1).join(" - ") || undefined
+        };
+      }) ?? [];
+  const finalItinerary = adminItinerary.length ? adminItinerary : fallbackItinerary;
+  const timelineStops: TimelineStop[] = finalItinerary.map((stop) => ({
+    label: stop.title,
+    description: stop.description,
+    duration: stop.time
+  }));
+
+  const whatsappLink = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/?text=Hola%20Proactivitis";
+  const orderCode = `#PR-${booking.id.slice(-4).toUpperCase()}`;
+  const travelDateLabel = new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(booking.travelDate);
+  const passengerLabel = `${booking.paxAdults + booking.paxChildren} pax`;
+  const startTimeLabel = booking.startTime ?? "Hora por confirmar";
+
+  return {
+    booking,
+    tour,
+    supplier,
+    recommendedTours,
+    timelineStops,
+    whatsappLink,
+    summary,
+    travelDateLabel,
+    passengerLabel,
+    startTimeLabel,
+    orderCode
+  };
+}
