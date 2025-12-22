@@ -22,11 +22,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const tours = await prisma.tour.findMany({
       where: { status: "active" },
-      select: { slug: true, updatedAt: true }
+      select: { slug: true, createdAt: true }
     });
     tourRoutes = tours.map((tour) => ({
       url: `${baseUrl}/tours/${tour.slug}`,
-      lastModified: tour.updatedAt,
+      lastModified: tour.createdAt,
       changeFrequency: "weekly" as const,
       priority: 0.7
     }));
