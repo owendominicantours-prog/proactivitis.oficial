@@ -184,6 +184,7 @@ export function BookingConfirmedContent({
               duration: tour.duration
             }}
             supplierName={supplier?.name}
+            orderCode={orderCode}
           />
         </section>
       </main>

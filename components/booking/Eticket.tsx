@@ -30,11 +30,12 @@ type EticketProps = {
   tour: TourSummary;
   supplierName?: string | null;
   variant?: "full" | "compact";
+  orderCode?: string;
 };
 
 const bringItems = ["Protector solar", "Calzado cómodo", "Documentación", "Ropa ligera"];
 
-export default async function Eticket({ booking, tour, supplierName, variant = "full" }: EticketProps) {
+export default async function Eticket({ booking, tour, supplierName, variant = "full", orderCode }: EticketProps) {
   const qrPayload = `${booking.id}|${tour.slug}|${booking.travelDate.toISOString()}`;
   const qrSize = variant === "full" ? 220 : 160;
   const qrDataUrl = await toDataURL(qrPayload, { width: qrSize, margin: 2 });
@@ -48,8 +49,9 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
     variant === "full"
       ? "rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm"
       : "rounded-2xl border border-slate-200 bg-white p-4 shadow-sm text-sm";
+  const displayOrderCode = orderCode ?? `#PR-${booking.id.slice(-4).toUpperCase()}`;
   const actions = variant === "full" ? (
-    <EticketActions bookingId={booking.id} tourTitle={tour.title} orderCode={`#PR-${booking.id.slice(-4).toUpperCase()}`} />
+    <EticketActions bookingId={booking.id} tourTitle={tour.title} orderCode={displayOrderCode} />
   ) : null;
 
   return (
@@ -72,7 +74,7 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
       <div className="mt-4 grid gap-6 md:grid-cols-[1fr,1fr,1fr]">
         <div>
           <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Codigo</p>
-          <p className="text-2xl font-black text-slate-900">{`#PR-${booking.id.slice(-4).toUpperCase()}`}</p>
+          <p className="text-2xl font-black text-slate-900">{displayOrderCode}</p>
         </div>
         <div>
           <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Tour</p>
