@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { BookingConfirmedContent } from "../BookingConfirmedContent";
 import { getBookingConfirmationData } from "../helpers";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: {
     bookingId?: string;

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { BookingConfirmedContent } from "./BookingConfirmedContent";
 import { getBookingConfirmationData } from "./helpers";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   searchParams?: {
     bookingId?: string;
