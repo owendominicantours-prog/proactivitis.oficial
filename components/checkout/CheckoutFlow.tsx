@@ -285,10 +285,21 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
         clearTimeout(redirectTimeoutRef.current);
       }
     };
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || sessionExpired || !summary.tourId) return;
+  }, []);
+
+  useEffect(() => {
+    if (!summary.tourId) {
+      const redirectTimer = setTimeout(() => {
+        router.replace("/tours");
+      }, 1400);
+
+      return () => clearTimeout(redirectTimer);
+    }
+    return undefined;
+  }, [router, summary.tourId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || sessionExpired || !summary.tourId) return;
     let session = readCheckoutSession();
     const now = Date.now();
     if (session && session.expires <= now) {
