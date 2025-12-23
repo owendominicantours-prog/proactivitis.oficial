@@ -12,31 +12,37 @@ export type LocationOption = {
 
 const vehicleCatalog = [
   {
-    id: "sedan",
-    title: "Economy · Sedán",
-    description: "Ideal para parejas o familias pequeñas. Máximo 3 maletas.",
+    id: "sedan-standard",
+    title: "Sedán Privado",
+    type: "Economy",
+    description: "Perfecto para parejas o viajes de negocios rápidos.",
     pax: 3,
-    luggage: 3,
-    basePrice: 75,
-    image: "/cars/sedan.png"
+    luggage: 2,
+    basePrice: 35,
+    image: "/assets/transporte/sedan-render.png",
+    features: ["Aire acondicionado potente", "Espacio para 2 maletas grandes", "Seguimiento de vuelo incluido"]
   },
   {
-    id: "van",
-    title: "Van Estándar",
-    description: "Perfecto para grupos. Hasta 8 pasajeros cómodamente.",
+    id: "van-private",
+    title: "Van Privada",
+    type: "Family",
+    description: "La opción preferida para familias y grupos de amigos.",
     pax: 8,
-    luggage: 6,
-    basePrice: 120,
-    image: "/cars/van.png"
+    luggage: 8,
+    basePrice: 55,
+    image: "/assets/transporte/van-render.png",
+    features: ["Ideal para hasta 8 personas", "Maletero de gran capacidad", "Silla de bebé (bajo petición)"]
   },
   {
-    id: "suv",
+    id: "suv-vip",
     title: "SUV Premium",
-    description: "Viaja con estilo. Chevrolet Suburban o similar.",
-    pax: 6,
+    type: "Luxury",
+    description: "Viaja con el máximo confort y total discreción.",
+    pax: 5,
     luggage: 5,
-    basePrice: 160,
-    image: "/cars/suv.png"
+    basePrice: 95,
+    image: "/assets/transporte/suv-render.png",
+    features: ["Vehículo de lujo (Suburban o similar)", "Bebidas frías incluidas", "Chofer bilingüe profesional"]
   }
 ];
 
@@ -53,11 +59,10 @@ const buildPrice = (base: number, zone?: string | null) => {
   return Math.round(base * multiplier);
 };
 
-const featureHighlights = [
-  "✅ Meet & Greet incluido con tu nombre",
-  "✅ 60 min de espera gratuita",
-  "✅ Cancelación sin costo hasta 24h antes",
-  "✅ Precio final sin peajes ocultos"
+const bookingSteps = [
+  { step: 1, name: "Selección de vehículo" },
+  { step: 2, name: "Detalles del vuelo" },
+  { step: 3, name: "Confirmación inmediata" }
 ];
 
 type Props = {
@@ -100,9 +105,9 @@ export default function TransportSearch({ hotels }: Props) {
     <div className="space-y-10">
       <div className="rounded-[32px] border border-slate-200 bg-white/80 p-6 shadow-lg">
         <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Transporte privado</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">Reserva desde Aeropuerto hasta tu hotel</h1>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">Traslados Privados Aeropuerto</h1>
         <p className="text-sm text-slate-500">
-          Llena los datos y elige tu vehículo en tres clics. Nos encargamos de coordinar la recogida en el lobby.
+          Selecciona el vehículo ideal para tu llegada a Punta Cana.
         </p>
         <form className="mt-6 flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end" onSubmit={handleSearch}>
           <label className="flex-1 min-w-[180px] text-sm text-slate-500">
@@ -202,6 +207,14 @@ export default function TransportSearch({ hotels }: Props) {
           </div>
         ))}
       </section>
+      <section className="grid gap-3 rounded-[28px] border border-slate-100 bg-white/90 p-6 shadow-sm md:grid-cols-3">
+        {bookingSteps.map((step) => (
+          <div key={step.step} className="text-center text-sm text-slate-600">
+            <span className="text-lg font-bold text-slate-900">Paso {step.step}</span>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{step.name}</p>
+          </div>
+        ))}
+      </section>
       {showResults && (
         <section className="space-y-6">
           <div className="flex flex-col gap-2">
@@ -226,7 +239,7 @@ export default function TransportSearch({ hotels }: Props) {
                   <p className="text-3xl font-black text-indigo-600">${vehicle.price}</p>
                 </div>
                 <ul className="mt-4 space-y-1 text-xs text-slate-500">
-                  {featureHighlights.map((feature) => (
+                  {vehicle.features.map((feature) => (
                     <li key={`${vehicle.id}-${feature}`}>{feature}</li>
                   ))}
                 </ul>

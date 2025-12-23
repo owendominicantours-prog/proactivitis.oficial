@@ -38,12 +38,8 @@ export default async function TransportePage() {
           <div className="mt-6 space-y-4">
             {[
               {
-                q: "¿Dónde me espera el chofer?",
-                a: "Estará en la salida de pasajeros con un cartel de Proactivitis y tu nombre."
-              },
-              {
-                q: "¿Qué pasa si mi vuelo se retrasa?",
-                a: "Monitoreamos tu número de vuelo en tiempo real. No tienes de qué preocuparte."
+                q: "¿Cómo encuentro a mi chofer?",
+                a: "Tu chofer te esperará en la salida de llegadas del aeropuerto con un cartel con el logo de Proactivitis y tu nombre escrito."
               }
             ].map((item) => (
               <div key={item.q} className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4 text-sm text-slate-600">
