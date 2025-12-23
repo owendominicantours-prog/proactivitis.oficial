@@ -571,7 +571,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   }, []);
 
   useEffect(() => {
-    if (!summary.tourId) {
+    if (!summary.tourId && !isTransferFlow) {
       const redirectTimer = setTimeout(() => {
         router.replace("/tours");
       }, 1400);
@@ -663,7 +663,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
 
 
-  const missingTourId = !summary.tourId;
+  const missingTourId = !summary.tourId && !isTransferFlow;
 
   const countdownExpires = sessionExpired ? Date.now() : sessionExpiresAt ?? Date.now() + SESSION_TTL_MS;
 
