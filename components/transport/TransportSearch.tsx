@@ -109,11 +109,12 @@ const vehicleMultiplierMap: Record<string, number> = {
 const resolveZoneKey = (hotel?: LocationOption): ZoneKey => {
   if (!hotel) return "PUJ_BAVARO";
   const name = hotel.name.toLowerCase();
+  const destinationName = hotel.destinationName?.toLowerCase();
   for (const [zoneKey, zone] of Object.entries(pricingEngine.zoneMatrix)) {
     if (zone.names.some((zoneName) => zoneName.toLowerCase() === name)) {
       return zoneKey as ZoneKey;
     }
-    if (hotel.destinationName && zone.names.some((zoneName) => zoneName.toLowerCase() === hotel.destinationName.toLowerCase())) {
+    if (destinationName && zone.names.some((zoneName) => zoneName.toLowerCase() === destinationName)) {
       return zoneKey as ZoneKey;
     }
   }
@@ -401,3 +402,4 @@ export default function TransportSearch({ hotels }: Props) {
       )}
     </div>
   );
+}
