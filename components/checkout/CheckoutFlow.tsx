@@ -1215,11 +1215,10 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
               )}
 
               </article>
-            )}
 
 
             {!isTransferFlow && (
-            <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+              <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
 
               <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
 
@@ -1469,7 +1468,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
               )}
 
-            </article>
+              </article>
             )}
             <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
 
