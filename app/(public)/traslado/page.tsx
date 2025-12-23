@@ -1,11 +1,11 @@
 import Link from "next/link";
-import TransportSearch, { LocationOption } from "@/components/transport/TransportSearch";
+import TrasladoSearch, { LocationOption } from "@/components/traslado/TrasladoSearch";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
   title: "Traslados Privados Aeropuerto Punta Cana | Proactivitis",
   description:
-    "Reserva tu transporte privado con chofer bilingüe, precios cerrados y flexibilidad total. Proactivitis conecta vuelos, hoteles y proveedores en tiempo real."
+    "Reserva tu traslado privado con chofer bilingüe, precios cerrados y flexibilidad total. Proactivitis conecta vuelos, hoteles y proveedores en tiempo real."
 };
 
 const faqItems = [
@@ -29,7 +29,7 @@ const heroStats = [
   { label: "Soporte 24/7", value: "en español e inglés" }
 ];
 
-export default async function TransportePage() {
+export default async function TrasladoPage() {
   const hotels = await prisma.location.findMany({
     where: { countryId: "RD" },
     orderBy: { name: "asc" },
@@ -52,7 +52,7 @@ export default async function TransportePage() {
     <div className="bg-gradient-to-b from-[#E2FFF8] via-white to-[#F8FAFC]">
       <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-10 px-4 py-10">
         <section className="space-y-6 rounded-[36px] border border-white/60 bg-white/80 p-8 shadow-xl backdrop-blur">
-          <p className="text-xs uppercase tracking-[0.5em] text-emerald-600">Proactivitis Transport</p>
+          <p className="text-xs uppercase tracking-[0.5em] text-emerald-600">Proactivitis Traslado</p>
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="space-y-2">
               <h1 className="text-4xl font-black leading-tight text-slate-900 md:text-5xl">
@@ -82,7 +82,7 @@ export default async function TransportePage() {
         </section>
 
         <section className="rounded-[36px] border border-slate-100 bg-white/90 p-6 shadow-2xl">
-          <TransportSearch hotels={options} />
+          <TrasladoSearch hotels={options} />
         </section>
 
         <section className="space-y-6 rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">

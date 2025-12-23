@@ -10,7 +10,7 @@ import { Header } from "@/components/shared/Header";
 const publicNavLinks = [
   { label: "Inicio", href: "/" },
   { label: "Tours", href: "/tours" },
-  { label: "Transfer", href: "/transporte" },
+  { label: "Traslado", href: "/traslado" },
   { label: "Contacto", href: "/contact" }
 ];
 

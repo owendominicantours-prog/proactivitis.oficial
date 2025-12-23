@@ -139,7 +139,7 @@ type Props = {
   hotels: LocationOption[];
 };
 
-export default function TransportSearch({ hotels }: Props) {
+export default function TrasladoSearch({ hotels }: Props) {
   const defaultHotel = hotels[0];
   const defaultAirport = airportOptions[0];
   const [destinationSlug, setDestinationSlug] = useState(defaultHotel?.slug ?? "hard-rock-punta-cana");
@@ -427,7 +427,7 @@ export default function TransportSearch({ hotels }: Props) {
               </div>
             </div>
             <p className="mt-4 text-xs text-slate-500">
-              Conectarás al checkout con la nota «Reserva de transporte» y nuestra tarifa cifrada.
+              Conectarás al checkout con la nota «Reserva de traslado» y nuestra tarifa cifrada.
             </p>
           </section>
           <section className="rounded-[28px] border border-slate-200 bg-white/80 p-6 shadow-sm">
