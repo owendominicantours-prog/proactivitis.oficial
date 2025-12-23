@@ -37,7 +37,7 @@ const matchesInheritance = (
 };
 
 export async function buildSitemapEntries() {
-  const [tours, locations, bookings] = await Promise.all([
+  const [tours, locations, bookings, countries, destinations, microZones] = await Promise.all([
     prisma.tour.findMany({
       select: {
         id: true,
@@ -58,6 +58,26 @@ export async function buildSitemapEntries() {
     prisma.booking.groupBy({
       by: ["hotel"],
       _count: { id: true }
+    }),
+    prisma.country.findMany({
+      select: { slug: true }
+    }),
+    prisma.destination.findMany({
+      select: {
+        slug: true,
+        country: { select: { slug: true } }
+      }
+    }),
+    prisma.microZone.findMany({
+      select: {
+        slug: true,
+        destination: {
+          select: {
+            slug: true,
+            country: { select: { slug: true } }
+          }
+        }
+      }
     })
   ]);
 
@@ -106,6 +126,7 @@ export async function buildSitemapEntries() {
   const routeEntries: { url: string; priority: number }[] = [
     { url: `${BASE_URL}/`, priority: 1.0 },
     { url: `${BASE_URL}/tours`, priority: 0.9 },
+    { url: `${BASE_URL}/traslado`, priority: 0.9 },
     ...tours.map((tour) => ({
       url: `${BASE_URL}/tours/${tour.slug}`,
       priority: 0.8
@@ -113,6 +134,18 @@ export async function buildSitemapEntries() {
     ...locations.map((location) => ({
       url: `${BASE_URL}/recogida/${location.slug}`,
       priority: 0.7
+    })),
+    ...countries.map((country) => ({
+      url: `${BASE_URL}/traslado/${country.slug}`,
+      priority: 0.7
+    })),
+    ...destinations.map((destination) => ({
+      url: `${BASE_URL}/traslado/${destination.country.slug}/${destination.slug}`,
+      priority: 0.65
+    })),
+    ...microZones.map((microZone) => ({
+      url: `${BASE_URL}/traslado/${microZone.destination.country.slug}/${microZone.destination.slug}/${microZone.slug}`,
+      priority: 0.6
     })),
     ...combos
   ];
