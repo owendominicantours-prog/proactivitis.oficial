@@ -645,10 +645,12 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
     const phoneLabel = contact.phone ? `${phoneCountry.dial} ${contact.phone}` : "sin teléfono";
 
     const flightLabel = flightNumber.trim() ? `Vuelo ${flightNumber.trim()}` : "Vuelo pendiente";
-
-    return `${traveler} · ${emailLabel} · ${phoneLabel} · ${flightLabel}`;
-
-  }, [contact, phoneCountry, flightNumber]);
+    const sections = [`${traveler} · ${emailLabel} · ${phoneLabel}`];
+    if (isTransferFlow) {
+      sections.push(flightLabel);
+    }
+    return sections.join(" · ");
+  }, [contact, phoneCountry, flightNumber, isTransferFlow]);
 
 
 
@@ -1182,19 +1184,21 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   </div>
 
-                  <div className="space-y-2">
-                    <label htmlFor="flightNumber" className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                      Numero de vuelo (opcional)
-                    </label>
-                    <input
-                      id="flightNumber"
-                      value={flightNumber}
-                      onChange={(event) => setFlightNumber(event.target.value)}
-                      placeholder="PUJ 123"
-                      className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                    />
-                    <p className="text-xs text-slate-500">Puedes indicar tu vuelo ahora o actualizarlo despues.</p>
-                  </div>
+                  {isTransferFlow && (
+                    <div className="space-y-2">
+                      <label htmlFor="flightNumber" className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                        Numero de vuelo (opcional)
+                      </label>
+                      <input
+                        id="flightNumber"
+                        value={flightNumber}
+                        onChange={(event) => setFlightNumber(event.target.value)}
+                        placeholder="PUJ 123"
+                        className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      />
+                      <p className="text-xs text-slate-500">Puedes indicar tu vuelo ahora o actualizarlo despues.</p>
+                    </div>
+                  )}
                   <div className="flex justify-end">
 
                     <button
