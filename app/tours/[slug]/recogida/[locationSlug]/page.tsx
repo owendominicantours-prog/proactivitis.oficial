@@ -258,7 +258,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
     <div className="min-h-screen bg-[#FDFDFD] text-slate-900 pb-24 overflow-x-hidden">
       <section className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-4 pt-8 sm:pt-10">
         <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">
-          <div className="flex flex-col justify-center gap-6 p-6 sm:p-8 lg:p-16">
+          <div className="flex flex-col justify-center gap-6 p-6 sm:p-8 lg:p-16 text-center lg:text-left">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
               Recogida garantizada en {location.name}
             </div>
@@ -536,7 +536,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
               bookingCode={bookingCode ?? undefined}
               originHotelName={location.name}
             />
-            <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-600">
+            <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-600 text-center">
               <p className="font-semibold text-slate-900">
                 {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Proveedor local"}
               </p>
