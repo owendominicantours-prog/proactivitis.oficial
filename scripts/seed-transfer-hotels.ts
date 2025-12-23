@@ -111,6 +111,96 @@ const directory = {
   ]
 };
 
+const extraDirectory = {
+  ZONA_PC_BAVARO_EXTRA: [
+    "Serenade All Caribbean",
+    "Grand El Cortecito",
+    "Vista Sol Punta Cana Beach",
+    "Carabela Beach Resort",
+    "Ifa Villas Bavaro",
+    "Garden Suites by Melia",
+    "The Reserve at Paradisus",
+    "Luxury Bahia Principe Esmeralda",
+    "Punta Cana Seven Beaches",
+    "Art Villa Dominicana",
+    "Hotel Cortecito Inn",
+    "Loto del Este",
+    "Las Terrazas Condos",
+    "Stanza Mare",
+    "Bavaro Green",
+    "Playa Turquesa Ocean Club",
+    "Sol Caribe",
+    "Flor del Mar",
+    "Costa Love Aparta Hotel",
+    "Aventura Village",
+    "Vilas de Bavaro",
+    "GARDEN CITY",
+    "Coral Village",
+    "Capistrano",
+    "Residencial Nautilus"
+  ],
+  ZONA_ROMANA_BAYAHIBE_EXTRA: [
+    "Catalonia Royal La Romana",
+    "Catalonia Gran Dominicus",
+    "Hotel Bayahibe",
+    "Villa Igneri",
+    "Apartahotel Villa Baya",
+    "Bayahibe Village",
+    "Alba Chiara",
+    "Hotel El Eden",
+    "Los Flamencos Apart Hotel",
+    "Cadaques Caribe",
+    "Residencial Saona",
+    "Hotel Vecchia Caserma",
+    "Rivera del Rio"
+  ],
+  ZONA_SANTO_DOMINGO_EXTRA: [
+    "Real InterContinental Santo Domingo",
+    "Winston Churchill Tower",
+    "Silver Sun Gallery",
+    "Radisson Santo Domingo",
+    "Boutique Hotel Palacio",
+    "Antiguo Hotel Europa",
+    "Casas del XVI",
+    "Hostal Nicolas de Ovando",
+    "Napolitano Hotel",
+    "W&P Santo Domingo",
+    "Holiday Inn Santo Domingo",
+    "Courtyard by Marriott SD"
+  ],
+  ZONA_SAMANA_EXTRA: [
+    "Grand Bahia Principe El Portillo",
+    "Bahia Principe Grand Cayacoa",
+    "Bahia Principe Grand Samana",
+    "The Bannister Hotel & Yacht Club",
+    "Xeliter Vista Mare",
+    "Colibri Boutique Hotel",
+    "Hotel Casa Coson",
+    "Hotel La Tortuga",
+    "Mahona Boutique Hotel",
+    "Takuma Boutik Hotel"
+  ],
+  ZONA_NORTE_EXTRA: [
+    "BlueBay Villas Doradas",
+    "Lifestyle Tropical Island",
+    "The Reef Marina",
+    "Velero Beach Resort",
+    "Kite Beach Inn",
+    "Natura Cabana",
+    "Millennium Resort",
+    "Ultravioleta Boutique",
+    "Agualina Kite Resort",
+    "Villa Taina"
+  ],
+  ZONA_MICHES_SABANA_EXTRA: [
+    "Sunrise Miches Beach Resort",
+    "Temptation Grand Miches",
+    "Club Med Michès",
+    "Hotel Sabana de la Mar",
+    "Paraíso Caño Hondo"
+  ]
+};
+
 const slugify = (value: string) =>
   value
     .toLowerCase()
@@ -121,7 +211,7 @@ const slugify = (value: string) =>
 
 async function main() {
   let created = 0;
-  for (const hotelNames of Object.values(directory)) {
+  for (const hotelNames of Object.values({ ...directory, ...extraDirectory })) {
     for (const name of hotelNames) {
       const slug = slugify(name);
       await prisma.location.upsert({

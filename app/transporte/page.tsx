@@ -7,6 +7,21 @@ export const metadata = {
     "Reserva tu transporte privado desde el aeropuerto hasta tu hotel en 3 clics. Precios cerrados, sin esperas."
 };
 
+const faqItems = [
+  {
+    q: "¿Dónde me espera el chofer?",
+    a: "En el aeropuerto, tras pasar aduanas, busca nuestro cartel de Proactivitis. En hoteles, te recibimos en el lobby principal."
+  },
+  {
+    q: "¿Qué pasa si mi vuelo se retrasa?",
+    a: "Monitoreamos tu vuelo en tiempo real. No cobramos nada extra por los retrasos."
+  },
+  {
+    q: "¿Puedo cancelar?",
+    a: "Cancelación gratuita hasta 24 horas antes del servicio."
+  }
+];
+
 export default async function TransportePage() {
   const hotels = await prisma.location.findMany({
     where: { countryId: "RD" },
@@ -36,12 +51,7 @@ export default async function TransportePage() {
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Preguntas frecuentes</p>
           <h2 className="mt-3 text-2xl font-bold text-slate-900">Todo lo que debes saber antes de viajar</h2>
           <div className="mt-6 space-y-4">
-            {[
-              {
-                q: "¿Cómo encuentro a mi chofer?",
-                a: "Tu chofer te esperará en la salida de llegadas del aeropuerto con un cartel con el logo de Proactivitis y tu nombre escrito."
-              }
-            ].map((item) => (
+            {faqItems.map((item) => (
               <div key={item.q} className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4 text-sm text-slate-600">
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{item.q}</p>
                 <p className="mt-2 text-base font-semibold text-slate-900">{item.a}</p>

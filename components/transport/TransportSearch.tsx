@@ -65,11 +65,6 @@ const pricingEngine = {
   }
 };
 
-const buildPrice = (base: number, zone?: string | null) => {
-  const multiplier = zone ? zoneModifiers[zone] ?? 1.0 : 1.0;
-  return Math.round(base * multiplier);
-};
-
 const bookingSteps = [
   { step: 1, name: "Selección de vehículo" },
   { step: 2, name: "Detalles del vuelo" },
@@ -104,15 +99,17 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
-const resolveZoneKey = (hotel?: LocationOption) => {
+type ZoneKey = keyof typeof pricingEngine.zoneMatrix;
+
+const resolveZoneKey = (hotel?: LocationOption): ZoneKey => {
   if (!hotel) return "PUJ_BAVARO";
   const name = hotel.name;
   for (const [zoneKey, zone] of Object.entries(pricingEngine.zoneMatrix)) {
     if (zone.names.some((zoneName) => zoneName.toLowerCase() === name.toLowerCase())) {
-      return zoneKey;
+      return zoneKey as ZoneKey;
     }
     if (hotel.destinationName && zone.names.some((zoneName) => zoneName.toLowerCase() === hotel.destinationName?.toLowerCase())) {
-      return zoneKey;
+      return zoneKey as ZoneKey;
     }
   }
   return "PUJ_BAVARO";
@@ -124,7 +121,7 @@ const vehicleMultiplierMap: Record<string, number> = {
   suv_vip: pricingEngine.vehicleMultipliers.suv_premium
 };
 
-const computePrice = (vehicleId: string, zoneKey: string) => {
+const computePrice = (vehicleId: string, zoneKey: ZoneKey) => {
   const base = pricingEngine.globalBase;
   const vehicleMult = vehicleMultiplierMap[vehicleId] ?? 1.0;
   const zone = pricingEngine.zoneMatrix[zoneKey];
