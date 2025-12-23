@@ -52,6 +52,11 @@ const vehicleCatalog = [
     features: ["Asientos de cuero", "Bebidas frías incluidas", "Chofer bilingüe profesional"]
   }
 ];
+type VehicleOption = (typeof vehicleCatalog)[number] & { price: number };
+
+const transferTourId = process.env.NEXT_PUBLIC_TRANSFER_TOUR_ID;
+const transferTourTitle = process.env.NEXT_PUBLIC_TRANSFER_TITLE ?? "Transfer privado Proactivitis";
+const transferTourImage = process.env.NEXT_PUBLIC_TRANSFER_IMAGE ?? "/transfer/sedan.png";
 
 const pricingEngine = {
   globalBase: 32 / 0.9,
@@ -156,7 +161,7 @@ export default function TransportSearch({ hotels }: Props) {
 
   const zoneKey = resolveZoneKey(selectedHotel);
   const zoneLabel = pricingEngine.zoneMatrix[zoneKey]?.names[0] ?? "Punta Cana";
-  const vehicles = useMemo(
+  const vehicles = useMemo<VehicleOption[]>(
     () =>
       vehicleCatalog.map((vehicle) => ({
         ...vehicle,
@@ -164,6 +169,45 @@ export default function TransportSearch({ hotels }: Props) {
       })),
     [zoneKey]
   );
+
+  const dateValue = dateTime ? dateTime.split("T")[0] : "";
+  const timeValue = dateTime ? dateTime.split("T")[1] : "";
+  const baseTransferParams = useMemo(() => {
+    if (!dateValue || !timeValue || !selectedHotel) return null;
+    const payload: Record<string, string> = {
+      type: "transfer",
+      date: dateValue,
+      time: timeValue,
+      adults: String(passengers),
+      youth: "0",
+      child: "0",
+      hotelSlug: selectedHotel.slug,
+      originHotelName: selectedHotel.name,
+      origin: originCode
+    };
+    if (transferTourId) {
+      payload.tourId = transferTourId;
+    }
+    if (transferTourImage) {
+      payload.tourImage = transferTourImage;
+    }
+    return payload;
+  }, [dateValue, timeValue, passengers, selectedHotel, originCode]);
+
+  const buildCheckoutHref = (vehicle: VehicleOption) => {
+    if (!baseTransferParams) return "/checkout?type=transfer";
+    const params = new URLSearchParams(baseTransferParams);
+    const vehicleTitle = `${transferTourTitle} · ${vehicle.title}`;
+    params.set("tourTitle", vehicleTitle);
+    params.set("tourImage", vehicle.image);
+    params.set("tourPrice", vehicle.price.toFixed(2));
+    params.set("vehicleId", vehicle.id);
+    params.set("passengers", String(passengers));
+    if (!transferTourId) {
+      params.delete("tourId");
+    }
+    return `/checkout?${params.toString()}`;
+  };
 
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
@@ -189,7 +233,6 @@ export default function TransportSearch({ hotels }: Props) {
       minute: "2-digit"
     });
 
-  const checkoutBase = `/checkout?type=transfer&hotelId=${selectedHotel?.slug ?? destinationSlug}&origin=${originCode}`;
   const paymentMethods = ["Stripe", "PayPal", "Credit Card"];
 
   const resetSearchForm = () => {
@@ -361,7 +404,7 @@ export default function TransportSearch({ hotels }: Props) {
                   ))}
                 </ul>
                 <Link
-                  href={`${checkoutBase}&passengers=${passengers}&vehicle=${vehicle.id}`}
+                  href={buildCheckoutHref(vehicle)}
                   className="mt-6 inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-indigo-500"
                 >
                   SELECCIONAR Y PAGAR

@@ -61,6 +61,8 @@ export type CheckoutPageParams = {
   hotelSlug?: string;
   bookingCode?: string;
   originHotelName?: string;
+  flowType?: "tour" | "transfer";
+  flightNumber?: string;
 };
 
 
@@ -454,7 +456,8 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   const [travelerName, setTravelerName] = useState("");
 
   const [pickupPreference, setPickupPreference] = useState<"pickup" | "later">("pickup");
-
+  const [flightNumber, setFlightNumber] = useState(initialParams.flightNumber ?? "");
+  const isTransferFlow = initialParams.flowType === "transfer";
   const [pickupLocation, setPickupLocation] = useState("");
 
   const [language, setLanguage] = useState(languageOptions[0]);
@@ -494,17 +497,21 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   const [currentSession, setCurrentSession] = useState<CheckoutSessionInfo | null>(null);
 
   const router = useRouter();
-
+  const successRedirectBase = useMemo(() => {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_STRIPE_SUCCESS_URL ?? "https://proactivitis.com/booking/confirmed";
+    if (!isTransferFlow) return baseUrl;
+    return `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}type=transfer`;
+  }, [isTransferFlow]);
   const handlePaymentSuccess = useCallback(() => {
-
-    const redirect = process.env.NEXT_PUBLIC_STRIPE_SUCCESS_URL ?? "/booking/confirmed";
-
-    const target = bookingId ? `${redirect}?bookingId=${bookingId}` : redirect;
-
+    const target = bookingId
+      ? `${successRedirectBase}${successRedirectBase.includes("?") ? "&" : "?"}bookingId=${bookingId}`
+      : successRedirectBase;
     router.push(target);
-
-  }, [bookingId, router]);
-
+  }, [bookingId, router, successRedirectBase]);
+  const goBackFromPayment = useCallback(() => {
+    setActiveStep(isTransferFlow ? 0 : 1);
+  }, [isTransferFlow]);
   const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sessionExpiredRef = useRef(false);
@@ -634,9 +641,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
     const phoneLabel = contact.phone ? `${phoneCountry.dial} ${contact.phone}` : "sin teléfono";
 
-    return `${traveler} · ${emailLabel} · ${phoneLabel}`;
+    const flightLabel = flightNumber.trim() ? `Vuelo ${flightNumber.trim()}` : "Vuelo pendiente";
 
-  }, [contact, phoneCountry]);
+    return `${traveler} · ${emailLabel} · ${phoneLabel} · ${flightLabel}`;
+
+  }, [contact, phoneCountry, flightNumber]);
 
 
 
@@ -794,6 +803,10 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
         specialRequirements: specialRequirements.trim(),
 
+        flowType: isTransferFlow ? "transfer" : "tour",
+
+        flightNumber: flightNumber.trim() || undefined,
+
         paymentOption: "now"
 
       };
@@ -945,6 +958,9 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
       const next = [...prev];
 
       next[currentIndex] = true;
+      if (isTransferFlow && currentIndex === 0) {
+        next[1] = true;
+      }
 
       return next;
 
@@ -952,7 +968,8 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
 
 
-    setActiveStep(Math.min(2, currentIndex + 1));
+    const nextStep = isTransferFlow && currentIndex === 0 ? 2 : Math.min(2, currentIndex + 1);
+    setActiveStep(nextStep);
 
   };
 
@@ -1162,6 +1179,19 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   </div>
 
+                  <div className="space-y-2">
+                    <label htmlFor="flightNumber" className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                      Numero de vuelo (opcional)
+                    </label>
+                    <input
+                      id="flightNumber"
+                      value={flightNumber}
+                      onChange={(event) => setFlightNumber(event.target.value)}
+                      placeholder="PUJ 123"
+                      className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                    />
+                    <p className="text-xs text-slate-500">Puedes indicar tu vuelo ahora o actualizarlo despues.</p>
+                  </div>
                   <div className="flex justify-end">
 
                     <button
@@ -1184,10 +1214,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
               )}
 
-            </article>
+              </article>
+            )}
 
 
-
+            {!isTransferFlow && (
             <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
 
               <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
@@ -1439,9 +1470,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
               )}
 
             </article>
-
-
-
+            )}
             <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
 
               <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
@@ -1524,8 +1553,9 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                           paymentCountry={paymentCountry}
 
                           setPaymentCountry={setPaymentCountry}
+                          returnUrl={successRedirectBase}
 
-                          onBack={() => setActiveStep(1)}
+                          onBack={goBackFromPayment}
 
                           onSuccess={handlePaymentSuccess}
 
@@ -1721,6 +1751,8 @@ type PaymentFormProps = {
 
   setPaymentCountry: Dispatch<SetStateAction<string>>;
 
+  returnUrl: string;
+
   onBack: () => void;
 
   onSuccess: () => void;
@@ -1740,6 +1772,7 @@ const PaymentForm = memo(function PaymentForm({
   setActivePaymentMethod,
   paymentCountry,
   setPaymentCountry,
+  returnUrl,
   onBack,
   onSuccess
 }: PaymentFormProps) {
@@ -1775,9 +1808,7 @@ const PaymentForm = memo(function PaymentForm({
 
       confirmParams: {
 
-        return_url:
-
-          process.env.NEXT_PUBLIC_STRIPE_SUCCESS_URL ?? "https://proactivitis.com/booking/confirmed"
+        return_url: returnUrl
 
       },
 
