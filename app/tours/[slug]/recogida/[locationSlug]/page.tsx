@@ -256,7 +256,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] text-slate-900 pb-24 overflow-x-hidden">
-      <section className="mx-auto max-w-[1240px] px-4 pt-8 sm:pt-10">
+      <section className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-4 pt-8 sm:pt-10">
         <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">
           <div className="flex flex-col justify-center gap-6 p-6 sm:p-8 lg:p-16">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
@@ -293,7 +293,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
             </div>
           </div>
           <div
-            className="h-[400px] lg:h-full bg-cover bg-center"
+            className="h-[320px] sm:h-[350px] lg:h-full bg-cover bg-center"
             style={{
               backgroundImage: `url(${heroImage})`
             }}
@@ -301,7 +301,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1240px] px-4 py-10">
+      <section className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-4 py-10">
         <div className="grid gap-4 rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm md:grid-cols-2 lg:grid-cols-4">
           {quickInfo.map((item) => (
             <div key={item.label} className="space-y-2 rounded-[18px] border border-slate-100 bg-slate-50/60 p-4 text-sm">
@@ -314,7 +314,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1240px] px-4 py-8">
+      <section className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-4 py-8">
         <div className="rounded-[28px] border border-slate-100 bg-white/90 p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-2 text-slate-600">
             <span className="flex items-center gap-2">
@@ -330,7 +330,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
         </div>
       </section>
 
-      <main className="mx-auto mt-12 grid max-w-[1240px] gap-10 px-4 lg:grid-cols-[1fr,400px]">
+      <main className="mx-auto mt-12 grid max-w-[1240px] gap-10 px-4 sm:px-6 lg:px-4 lg:grid-cols-[1fr,400px]">
         <div className="space-y-10">
           <section id="gallery" className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <TourGalleryViewer
@@ -517,7 +517,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
           </section>
         </div>
 
-        <aside className="space-y-6 lg:w-[400px] w-full">
+        <aside className="space-y-6 lg:w-[400px] w-full lg:sticky lg:top-16">
           <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl" id="booking">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva</p>
             <h3 className="mt-2 text-2xl font-bold text-slate-900">Confirma tu cupo</h3>
