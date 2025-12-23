@@ -67,10 +67,11 @@ type Props = {
 export default function TransportSearch({ hotels }: Props) {
   const defaultHotel = hotels[0];
   const [destinationSlug, setDestinationSlug] = useState(defaultHotel?.slug ?? "hard-rock-punta-cana");
-  const [destinationLabel, setDestinationLabel] = useState(defaultHotel?.name ?? "Hard Rock Hotel & Casino Punta Cana");
+  const [destinationLabel, setDestinationLabel] = useState(
+    defaultHotel?.name ?? "Hard Rock Hotel & Casino Punta Cana"
+  );
   const [passengers, setPassengers] = useState(2);
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("12:00");
+  const [dateTime, setDateTime] = useState("");
   const [showResults, setShowResults] = useState(false);
 
   const selectedHotel = useMemo(
@@ -91,6 +92,9 @@ export default function TransportSearch({ hotels }: Props) {
     event.preventDefault();
     setShowResults(true);
   };
+
+  const paymentMethods = ["Stripe", "PayPal", "Credit Card"];
+  const checkoutBase = `/checkout?type=transfer&hotelId=${selectedHotel?.slug ?? destinationSlug}`;
 
   return (
     <div className="space-y-10">
@@ -135,21 +139,13 @@ export default function TransportSearch({ hotels }: Props) {
               ))}
             </datalist>
           </label>
-          <label className="flex-1 min-w-[140px] text-sm text-slate-500">
-            Fecha
+          <label className="flex-1 min-w-[180px] text-sm text-slate-500">
+            Fecha y Hora de Llegada
             <input
-              type="date"
-              value={date}
-              onChange={(event) => setDate(event.target.value)}
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-indigo-500 focus:outline-none"
-            />
-          </label>
-          <label className="flex-1 min-w-[140px] text-sm text-slate-500">
-            Hora
-            <input
-              type="time"
-              value={time}
-              onChange={(event) => setTime(event.target.value)}
+              type="datetime-local"
+              value={dateTime}
+              required
+              onChange={(event) => setDateTime(event.target.value)}
               className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-indigo-500 focus:outline-none"
             />
           </label>
@@ -177,10 +173,35 @@ export default function TransportSearch({ hotels }: Props) {
             type="submit"
             className="md:ml-auto rounded-2xl bg-slate-900 px-8 py-3 text-sm font-bold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
           >
-            Ver precios
+            VER PRECIOS
           </button>
         </form>
       </div>
+      <section className="grid gap-4 rounded-[28px] border border-slate-100 bg-white/90 p-6 shadow-sm md:grid-cols-3">
+        {[
+          {
+            icon: "Clock",
+            title: "Espera incluida",
+            desc: "60 min de espera gratis tras el aterrizaje."
+          },
+          {
+            icon: "Shield",
+            title: "Precio final",
+            desc: "Sin peajes ni cargos ocultos al llegar."
+          },
+          {
+            icon: "CheckCircle",
+            title: "Cancelación",
+            desc: "Gratis hasta 24 horas antes del servicio."
+          }
+        ].map((item) => (
+          <div key={item.title} className="space-y-1 border-b border-slate-200 pb-3 text-center text-sm text-slate-600 last:border-none last:pb-0 md:border-none md:text-left">
+            <p className="text-indigo-600">{item.icon}</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{item.title}</p>
+            <p className="font-semibold text-slate-900">{item.desc}</p>
+          </div>
+        ))}
+      </section>
       {showResults && (
         <section className="space-y-6">
           <div className="flex flex-col gap-2">
@@ -210,14 +231,32 @@ export default function TransportSearch({ hotels }: Props) {
                   ))}
                 </ul>
                 <Link
-                  href={`/checkout?transport=true&destination=${destinationSlug}&passengers=${passengers}&vehicle=${vehicle.id}`}
+                  href={`${checkoutBase}&passengers=${passengers}&vehicle=${vehicle.id}`}
                   className="mt-6 inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-indigo-500"
                 >
-                  Seleccionar
+                  SELECCIONAR Y PAGAR
                 </Link>
               </article>
             ))}
           </div>
+          <section className="rounded-[28px] border border-slate-200 bg-white/80 p-6 shadow-sm">
+            <div className="flex flex-col gap-3 text-sm text-slate-600 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pago seguro</p>
+                <p className="text-lg font-semibold text-slate-900">Elige tu método favorito</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {paymentMethods.map((method) => (
+                  <span key={method} className="rounded-full border border-slate-200 px-4 py-1 text-xs uppercase tracking-[0.3em] text-slate-500">
+                    {method}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <p className="mt-4 text-xs text-slate-500">
+              Conectarás al checkout con la nota “Reserva de transporte” y nuestra tarifa cifrada. Confirmamos tu traslado en segundos.
+            </p>
+          </section>
         </section>
       )}
     </div>
