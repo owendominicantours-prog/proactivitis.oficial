@@ -15,18 +15,18 @@ const parseJsonArray = <T,>(value?: string | null): T[] => {
 };
 
 type TourHotelLandingParams = {
-  params: Promise<{ tourSlug: string; locationSlug: string }>;
+  params: Promise<{ slug: string; locationSlug: string }>;
   searchParams?: Promise<{ bookingCode?: string }>;
 };
 
 export async function generateMetadata({
   params
 }: {
-  params: Promise<{ tourSlug: string; locationSlug: string }>;
+  params: Promise<{ slug: string; locationSlug: string }>;
 }) {
-  const { tourSlug, locationSlug } = await params;
+  const { slug, locationSlug } = await params;
   const tour = await prisma.tour.findUnique({
-    where: { slug: tourSlug },
+    where: { slug },
     select: { title: true, shortDescription: true }
   });
   const location = await prisma.location.findUnique({
@@ -48,7 +48,7 @@ export async function generateMetadata({
 }
 
 export default async function TourHotelLanding({ params, searchParams }: TourHotelLandingParams) {
-  const { tourSlug, locationSlug } = await params;
+  const { slug, locationSlug } = await params;
   const resolvedSearch = searchParams ? await searchParams : {};
 
   let tour = null;
@@ -56,7 +56,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
   try {
     [tour, location] = await Promise.all([
       prisma.tour.findUnique({
-        where: { slug: tourSlug },
+        where: { slug },
         include: {
           SupplierProfile: {
             include: { User: { select: { name: true } } }
@@ -72,21 +72,21 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
       })
     ]);
   } catch (error) {
-    console.error("Error loading tour or location for landing page", {
-      tourSlug,
-      locationSlug,
-      error
-    });
+        console.error("Error loading tour or location for landing page", {
+          slug,
+          locationSlug,
+          error
+        });
     throw error;
   }
 
   if (!tour) {
-    console.error("Tour no encontrado para el slug", { tourSlug, locationSlug });
+    console.error("Tour no encontrado para el slug", { slug, locationSlug });
     notFound();
   }
 
   if (!location) {
-    console.error("Location no encontrada para el slug", { locationSlug, tourSlug });
+    console.error("Location no encontrada para el slug", { locationSlug, slug });
     notFound();
   }
 
