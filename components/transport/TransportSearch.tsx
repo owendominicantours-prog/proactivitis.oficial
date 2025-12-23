@@ -19,7 +19,7 @@ const vehicleCatalog = [
     pax: 3,
     luggage: 2,
     basePrice: 35,
-    image: "/assets/transporte/sedan-render.png",
+    image: "/transfer/sedan.png",
     features: ["Aire acondicionado potente", "Espacio para 2 maletas grandes", "Seguimiento de vuelo incluido"]
   },
   {
@@ -30,7 +30,7 @@ const vehicleCatalog = [
     pax: 8,
     luggage: 8,
     basePrice: 55,
-    image: "/assets/transporte/van-render.png",
+    image: "/transfer/mini van.png",
     features: ["Ideal para hasta 8 personas", "Maletero de gran capacidad", "Silla de bebé (bajo petición)"]
   },
   {
@@ -41,7 +41,7 @@ const vehicleCatalog = [
     pax: 5,
     luggage: 5,
     basePrice: 95,
-    image: "/assets/transporte/suv-render.png",
+    image: "/transfer/suv.png",
     features: ["Vehículo de lujo (Suburban o similar)", "Bebidas frías incluidas", "Chofer bilingüe profesional"]
   }
 ];
