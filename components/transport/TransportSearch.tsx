@@ -10,44 +10,51 @@ export type LocationOption = {
   microZoneName?: string | null;
 };
 
+const airportOptions = [
+  { code: "PUJ", label: "Aeropuerto de Punta Cana (PUJ)" },
+  { code: "SDQ", label: "Aeropuerto Internacional Las Américas (SDQ)" },
+  { code: "POP", label: "Aeropuerto Internacional Gregorio Luperón (POP)" },
+  { code: "LRM", label: "Aeropuerto Internacional La Romana (LRM)" }
+];
+
 const vehicleCatalog = [
   {
     id: "sedan-standard",
     title: "Sedán Privado",
     type: "Economy",
-    description: "Perfecto para parejas o viajes de negocios rápidos.",
+    description: "Perfecto para parejas o viajes de negocios ligeros.",
     pax: 3,
     luggage: 2,
     basePrice: 35,
     image: "/transfer/sedan.png",
-    features: ["Aire acondicionado potente", "Espacio para 2 maletas grandes", "Seguimiento de vuelo incluido"]
+    features: ["Aire acondicionado potente", "Espacio para 2 maletas grandes", "Seguimiento del vuelo incluido"]
   },
   {
     id: "van-private",
     title: "Van Privada",
     type: "Family",
-    description: "La opción preferida para familias y grupos de amigos.",
+    description: "Ideal para familias o grupos de amigos con equipaje.",
     pax: 8,
     luggage: 8,
     basePrice: 55,
     image: "/transfer/mini van.png",
-    features: ["Ideal para hasta 8 personas", "Maletero de gran capacidad", "Silla de bebé (bajo petición)"]
+    features: ["Maletero amplio", "Puerta corredera", "Silla de bebé bajo petición"]
   },
   {
     id: "suv-vip",
     title: "SUV Premium",
     type: "Luxury",
-    description: "Viaja con el máximo confort y total discreción.",
+    description: "Viaja con estilo y discreción con chofer bilingüe.",
     pax: 5,
     luggage: 5,
     basePrice: 95,
     image: "/transfer/suv.png",
-    features: ["Vehículo de lujo (Suburban o similar)", "Bebidas frías incluidas", "Chofer bilingüe profesional"]
+    features: ["Asientos de cuero", "Bebidas frías incluidas", "Chofer bilingüe profesional"]
   }
 ];
 
 const pricingEngine = {
-  globalBase: 32 / 0.9, // calibrado para que el sedán final muestre $32
+  globalBase: 32 / 0.9,
   roundTripFactor: 0.9,
   vehicleMultipliers: {
     sedan_economy: 1.0,
@@ -72,53 +79,45 @@ const bookingSteps = [
 ];
 
 const trustLabels = [
-  "Precio Final Sin Sorpresas",
-  "Conductores Profesionales",
-  "Seguro de Viaje Incluido",
-  "Cancelación Gratis (24h)"
+  "Precio final sin sorpresas",
+  "Conductores profesionales",
+  "Seguro de viaje incluido",
+  "Cancelación gratis (24h)"
 ];
 
 const pickupRules = [
   {
-    title: "Datos de Vuelo",
-    description: "Aerolínea · Número de Vuelo · Hora de Aterrizaje",
-    note: "60 min de espera gratuita"
+    title: "Datos de vuelo",
+    description: "Aerolínea · Número de vuelo · Hora estimada de aterrizaje",
+    note: "60 min de espera gratuita en el aeropuerto"
   },
   {
-    title: "Recogida en Hotel",
-    description: "Hotel / Dirección · Hora de Recogida preferida",
-    note: "15 min de espera en lobby · Sugerimos 4h antes del vuelo"
+    title: "Recogida en hotel",
+    description: "Hotel/dirección · Hora preferida de recogida",
+    note: "15 min de espera en lobby · Recomendamos 4h antes de la salida"
   }
 ];
 
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-
 type ZoneKey = keyof typeof pricingEngine.zoneMatrix;
-
-const resolveZoneKey = (hotel?: LocationOption): ZoneKey => {
-  if (!hotel) return "PUJ_BAVARO";
-  const name = hotel.name;
-  for (const [zoneKey, zone] of Object.entries(pricingEngine.zoneMatrix)) {
-    if (zone.names.some((zoneName) => zoneName.toLowerCase() === name.toLowerCase())) {
-      return zoneKey as ZoneKey;
-    }
-    if (hotel.destinationName && zone.names.some((zoneName) => zoneName.toLowerCase() === hotel.destinationName?.toLowerCase())) {
-      return zoneKey as ZoneKey;
-    }
-  }
-  return "PUJ_BAVARO";
-};
 
 const vehicleMultiplierMap: Record<string, number> = {
   sedan_standard: pricingEngine.vehicleMultipliers.sedan_economy,
   van_private: pricingEngine.vehicleMultipliers.van_private,
   suv_vip: pricingEngine.vehicleMultipliers.suv_premium
+};
+
+const resolveZoneKey = (hotel?: LocationOption): ZoneKey => {
+  if (!hotel) return "PUJ_BAVARO";
+  const name = hotel.name.toLowerCase();
+  for (const [zoneKey, zone] of Object.entries(pricingEngine.zoneMatrix)) {
+    if (zone.names.some((zoneName) => zoneName.toLowerCase() === name)) {
+      return zoneKey as ZoneKey;
+    }
+    if (hotel.destinationName && zone.names.some((zoneName) => zoneName.toLowerCase() === hotel.destinationName.toLowerCase())) {
+      return zoneKey as ZoneKey;
+    }
+  }
+  return "PUJ_BAVARO";
 };
 
 const computePrice = (vehicleId: string, zoneKey: ZoneKey) => {
@@ -136,119 +135,186 @@ type Props = {
 
 export default function TransportSearch({ hotels }: Props) {
   const defaultHotel = hotels[0];
+  const defaultAirport = airportOptions[0];
   const [destinationSlug, setDestinationSlug] = useState(defaultHotel?.slug ?? "hard-rock-punta-cana");
   const [destinationLabel, setDestinationLabel] = useState(
     defaultHotel?.name ?? "Hard Rock Hotel & Casino Punta Cana"
   );
+  const [originLabel, setOriginLabel] = useState(defaultAirport.label);
+  const [originCode, setOriginCode] = useState(defaultAirport.code);
   const [passengers, setPassengers] = useState(2);
   const [dateTime, setDateTime] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [formCollapsed, setFormCollapsed] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const selectedHotel = useMemo(
     () => hotels.find((hotel) => hotel.slug === destinationSlug),
     [destinationSlug, hotels]
   );
 
-  const zoneName = selectedHotel?.destinationName ?? selectedHotel?.microZoneName ?? "Punta Cana";
-
   const zoneKey = resolveZoneKey(selectedHotel);
   const zoneLabel = pricingEngine.zoneMatrix[zoneKey]?.names[0] ?? "Punta Cana";
-  const vehicles = useMemo(() => {
-    return vehicleCatalog.map((vehicle) => ({
-      ...vehicle,
-      price: computePrice(vehicle.id, zoneKey)
-    }));
-  }, [zoneKey]);
+  const vehicles = useMemo(
+    () =>
+      vehicleCatalog.map((vehicle) => ({
+        ...vehicle,
+        price: computePrice(vehicle.id, zoneKey)
+      })),
+    [zoneKey]
+  );
 
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
+    if (!selectedHotel) {
+      setErrorMessage("Selecciona un hotel válido");
+      return;
+    }
+    if (!dateTime) {
+      setErrorMessage("Indica la fecha y hora de llegada");
+      return;
+    }
+    setErrorMessage(null);
     setShowResults(true);
+    setFormCollapsed(true);
   };
 
+  const summaryDate =
+    dateTime &&
+    new Date(dateTime).toLocaleString("es-ES", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+  const checkoutBase = `/checkout?type=transfer&hotelId=${selectedHotel?.slug ?? destinationSlug}&origin=${originCode}`;
   const paymentMethods = ["Stripe", "PayPal", "Credit Card"];
-  const checkoutBase = `/checkout?type=transfer&hotelId=${selectedHotel?.slug ?? destinationSlug}`;
+
+  const resetSearchForm = () => {
+    setFormCollapsed(false);
+  };
 
   return (
-    <div className="space-y-10">
-      <div className="rounded-[32px] border border-slate-200 bg-white/80 p-6 shadow-lg">
-        <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Transporte privado</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">Traslados Privados Aeropuerto</h1>
-        <p className="text-sm text-slate-500">
-          Selecciona el vehículo ideal para tu llegada a Punta Cana.
-        </p>
-        <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Zona estimada: {zoneLabel}</p>
-        <form className="mt-6 flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end" onSubmit={handleSearch}>
-          <label className="flex-1 min-w-[180px] text-sm text-slate-500">
-            Origen
-            <input
-              readOnly
-              value="Aeropuerto de Punta Cana (PUJ)"
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 focus:border-indigo-500 focus:outline-none"
-            />
-          </label>
-          <label className="flex-1 min-w-[180px] text-sm text-slate-500">
-            Destino
-            <input
-              list="hotels"
-              value={destinationLabel}
-              onChange={(event) => {
-                const value = event.target.value;
-                setDestinationLabel(value);
-                const matched = hotels.find(
-                  (hotel) => hotel.name.toLowerCase() === value.toLowerCase()
-                );
-                if (matched) {
-                  setDestinationSlug(matched.slug);
-                }
-              }}
-              placeholder="Escribe tu hotel"
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-indigo-500 focus:outline-none"
-            />
-            <datalist id="hotels">
-              {hotels.map((hotel) => (
-                <option key={hotel.slug} value={hotel.name}>
-                  {hotel.name}
-                </option>
-              ))}
-            </datalist>
-          </label>
-          <label className="flex-1 min-w-[180px] text-sm text-slate-500">
-            Fecha y Hora de Llegada
-            <input
-              type="datetime-local"
-              value={dateTime}
-              required
-              onChange={(event) => setDateTime(event.target.value)}
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-indigo-500 focus:outline-none"
-            />
-          </label>
-          <div className="flex flex-1 min-w-[140px] items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base">
-            <span className="text-sm text-slate-600">Pasajeros</span>
-            <div className="flex items-center gap-2 text-slate-900">
-              <button
-                type="button"
-                className="rounded-full border border-slate-200 px-3 py-1 text-lg font-semibold"
-                onClick={() => setPassengers((value) => Math.max(1, value - 1))}
-              >
-                -
-              </button>
-              <span>{passengers}</span>
-              <button
-                type="button"
-                className="rounded-full border border-slate-200 px-3 py-1 text-lg font-semibold"
-                onClick={() => setPassengers((value) => Math.min(12, value + 1))}
-              >
-                +
-              </button>
+    <div className="space-y-8">
+      {formCollapsed && showResults && (
+        <div className="rounded-[28px] border border-emerald-200 bg-emerald-50/80 p-6 text-slate-900 shadow">
+          <div className="flex flex-col gap-3 text-sm md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Reserva lista</p>
+              <p className="text-lg font-semibold">
+                {originLabel} → {selectedHotel?.name ?? "tu hotel"}
+              </p>
+              <p className="text-sm text-slate-600">
+                {summaryDate ?? "Fecha pendiente"} · {passengers} pasajero{passengers > 1 ? "s" : ""}
+              </p>
             </div>
+            <button
+              type="button"
+              onClick={resetSearchForm}
+              className="rounded-full border border-emerald-300 bg-white px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700 shadow-sm transition hover:bg-emerald-50"
+            >
+              Modificar
+            </button>
           </div>
-          <button
-            type="submit"
-            className="md:ml-auto rounded-2xl bg-slate-900 px-8 py-3 text-sm font-bold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
-          >
-            VER PRECIOS
-          </button>
-        </form>
+        </div>
+      )}
+      <div className={`rounded-[32px] border ${formCollapsed ? "border-transparent" : "border-slate-200"} bg-white/90 p-6 shadow-xl`}>
+        <p className="text-xs uppercase tracking-[0.4em] text-emerald-500">Transporte privado</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+          Traslados privados desde el aeropuerto
+        </h1>
+        <p className="text-sm text-slate-500">Confirma tu traslado premium con chofer bilingüe y cancelación flexible.</p>
+        <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Zona estimada: {zoneLabel}</p>
+        {!formCollapsed && (
+          <form className="mt-6 flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end" onSubmit={handleSearch}>
+            <label className="flex-1 min-w-[180px] text-sm text-slate-500">
+              Origen
+              <input
+                list="airports"
+                value={originLabel}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setOriginLabel(value);
+                  const match = airportOptions.find((option) => option.label.toLowerCase() === value.toLowerCase());
+                  if (match) {
+                    setOriginCode(match.code);
+                  }
+                }}
+                placeholder="Selecciona el aeropuerto"
+                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
+              />
+              <datalist id="airports">
+                {airportOptions.map((airport) => (
+                  <option key={airport.code} value={airport.label} />
+                ))}
+              </datalist>
+            </label>
+            <label className="flex-1 min-w-[180px] text-sm text-slate-500">
+              Destino
+              <input
+                list="hotels"
+                value={destinationLabel}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setDestinationLabel(value);
+                  const matched = hotels.find((hotel) => hotel.name.toLowerCase() === value.toLowerCase());
+                  if (matched) {
+                    setDestinationSlug(matched.slug);
+                  }
+                }}
+                placeholder="Escribe tu hotel"
+                className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
+              />
+              <datalist id="hotels">
+                {hotels.map((hotel) => (
+                  <option key={hotel.slug} value={hotel.name}>
+                    {hotel.name}
+                  </option>
+                ))}
+              </datalist>
+            </label>
+            <label className="flex-1 min-w-[180px] text-sm text-slate-500">
+              Fecha y hora de llegada
+              <input
+                type="datetime-local"
+                value={dateTime}
+                required
+                onChange={(event) => setDateTime(event.target.value)}
+                className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
+              />
+            </label>
+            <div className="flex flex-1 min-w-[140px] items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base">
+              <span className="text-sm text-slate-600">Pasajeros</span>
+              <div className="flex items-center gap-2 text-slate-900">
+                <button
+                  type="button"
+                  className="rounded-full border border-slate-200 px-3 py-1 text-lg font-semibold"
+                  onClick={() => setPassengers((value) => Math.max(1, value - 1))}
+                >
+                  -
+                </button>
+                <span>{passengers}</span>
+                <button
+                  type="button"
+                  className="rounded-full border border-slate-200 px-3 py-1 text-lg font-semibold"
+                  onClick={() => setPassengers((value) => Math.min(12, value + 1))}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <button
+              type="submit"
+              className="md:ml-auto rounded-2xl bg-emerald-600 px-8 py-3 text-sm font-bold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500"
+            >
+              VER PRECIOS
+            </button>
+          </form>
+        )}
+        {errorMessage && !formCollapsed && (
+          <p className="mt-4 text-sm font-semibold text-rose-600">{errorMessage}</p>
+        )}
       </div>
       <section className="grid gap-4 rounded-[28px] border border-slate-100 bg-white/90 p-6 shadow-sm md:grid-cols-4">
         {trustLabels.map((label) => (
@@ -286,9 +352,7 @@ export default function TransportSearch({ hotels }: Props) {
                   <p className="text-sm font-semibold text-slate-900">
                     {vehicle.pax} pax · {vehicle.luggage} maletas
                   </p>
-                  <p className="text-3xl font-black text-indigo-600">
-                    ${vehicle.price.toFixed(2)}
-                  </p>
+                  <p className="text-3xl font-black text-indigo-600">${vehicle.price.toFixed(2)}</p>
                 </div>
                 <ul className="mt-4 space-y-1 text-xs text-slate-500">
                   {vehicle.features.map((feature) => (
@@ -319,7 +383,7 @@ export default function TransportSearch({ hotels }: Props) {
               </div>
             </div>
             <p className="mt-4 text-xs text-slate-500">
-              Conectarás al checkout con la nota “Reserva de transporte” y nuestra tarifa cifrada. Confirmamos tu traslado en segundos.
+              Conectarás al checkout con la nota «Reserva de transporte» y nuestra tarifa cifrada.
             </p>
           </section>
           <section className="rounded-[28px] border border-slate-200 bg-white/80 p-6 shadow-sm">
@@ -337,4 +401,3 @@ export default function TransportSearch({ hotels }: Props) {
       )}
     </div>
   );
-}
