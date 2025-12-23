@@ -61,6 +61,7 @@ export type CheckoutPageParams = {
   hotelSlug?: string;
   bookingCode?: string;
   originHotelName?: string;
+  origin?: string;
   flowType?: "tour" | "transfer";
   flightNumber?: string;
 };
@@ -411,7 +412,9 @@ const buildSummary = (params: CheckoutPageParams) => {
 
     bookingCode: params.bookingCode,
 
-    originHotelName: params.originHotelName
+    originHotelName: params.originHotelName,
+
+    origin: params.origin
 
   };
 
@@ -1616,9 +1619,23 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                 <div>
 
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Tour</p>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
+
+                    {isTransferFlow ? "Transfer" : "Tour"}
+
+                  </p>
 
                   <p className="text-lg font-semibold text-slate-900">{summary.tourTitle}</p>
+
+                  {isTransferFlow && (
+
+                    <p className="text-[11px] uppercase tracking-[0.4em] text-slate-500">
+
+                      {summary.originHotelName ?? "Tu hotel"}
+
+                    </p>
+
+                  )}
 
                 </div>
 
@@ -1665,6 +1682,22 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                   <strong>{summary.time}</strong>
 
                 </div>
+                {isTransferFlow && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-2">
+                        <MapPin className="h-5 w-5 text-slate-400" /> Origen
+                      </span>
+                      <strong>{summary.origin ?? "Aeropuerto de Punta Cana (PUJ)"}</strong>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-2">
+                        <MapPin className="h-5 w-5 text-slate-400" /> Destino
+                      </span>
+                      <strong>{summary.originHotelName ?? "Tu hotel"}</strong>
+                    </div>
+                  </>
+                )}
 
               </div>
 
