@@ -46,12 +46,23 @@ const vehicleCatalog = [
   }
 ];
 
-const zoneModifiers: Record<string, number> = {
-  "Cap Cana": 1.3,
-  "Bávaro": 1.1,
-  "Punta Cana": 1.0,
-  "Punta Cana Resort": 1.05,
-  "Uvero Alto": 1.25
+const pricingEngine = {
+  globalBase: 35.0,
+  roundTripFactor: 0.9,
+  vehicleMultipliers: {
+    sedan_economy: 1.0,
+    van_private: 1.65,
+    suv_premium: 2.85
+  },
+  zoneMatrix: {
+    PUJ_BAVARO: { m: 1.0, names: ["Punta Cana", "Bávaro", "Cap Cana", "Pueblo Bávaro"] },
+    UVERO_MICHES: { m: 1.7, names: ["Uvero Alto", "Miches", "Sabana de la Mar", "Macao"] },
+    ROMANA_BAYAHIBE: { m: 2.6, names: ["La Romana", "Bayahibe", "Dominicus", "LRM Airport"] },
+    SANTO_DOMINGO: { m: 4.5, names: ["Distrito Nacional", "SDQ Airport", "Boca Chica", "Juan Dolio"] },
+    SAMANA: { m: 8.5, names: ["Las Terrenas", "Samaná Port", "Las Galeras", "El Limón"] },
+    NORTE_CIBAO: { m: 9.5, names: ["Santiago", "STI Airport", "Puerto Plata", "Cabarete", "Sosúa"] },
+    SUR_PROFUNDO: { m: 12.0, names: ["Barahona", "Pedernales", "Bahía de las Águilas", "Baní"] }
+  }
 };
 
 const buildPrice = (base: number, zone?: string | null) => {
@@ -64,6 +75,62 @@ const bookingSteps = [
   { step: 2, name: "Detalles del vuelo" },
   { step: 3, name: "Confirmación inmediata" }
 ];
+
+const trustLabels = [
+  "Precio Final Sin Sorpresas",
+  "Conductores Profesionales",
+  "Seguro de Viaje Incluido",
+  "Cancelación Gratis (24h)"
+];
+
+const pickupRules = [
+  {
+    title: "Datos de Vuelo",
+    description: "Aerolínea · Número de Vuelo · Hora de Aterrizaje",
+    note: "60 min de espera gratuita"
+  },
+  {
+    title: "Recogida en Hotel",
+    description: "Hotel / Dirección · Hora de Recogida preferida",
+    note: "15 min de espera en lobby · Sugerimos 4h antes del vuelo"
+  }
+];
+
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+const resolveZoneKey = (hotel?: LocationOption) => {
+  if (!hotel) return "PUJ_BAVARO";
+  const name = hotel.name;
+  for (const [zoneKey, zone] of Object.entries(pricingEngine.zoneMatrix)) {
+    if (zone.names.some((zoneName) => zoneName.toLowerCase() === name.toLowerCase())) {
+      return zoneKey;
+    }
+    if (hotel.destinationName && zone.names.some((zoneName) => zoneName.toLowerCase() === hotel.destinationName?.toLowerCase())) {
+      return zoneKey;
+    }
+  }
+  return "PUJ_BAVARO";
+};
+
+const vehicleMultiplierMap: Record<string, number> = {
+  sedan_standard: pricingEngine.vehicleMultipliers.sedan_economy,
+  van_private: pricingEngine.vehicleMultipliers.van_private,
+  suv_vip: pricingEngine.vehicleMultipliers.suv_premium
+};
+
+const computePrice = (vehicleId: string, zoneKey: string) => {
+  const base = pricingEngine.globalBase;
+  const vehicleMult = vehicleMultiplierMap[vehicleId] ?? 1.0;
+  const zone = pricingEngine.zoneMatrix[zoneKey];
+  const zoneMult = zone?.m ?? 1.0;
+  return Math.round(base * vehicleMult * zoneMult * pricingEngine.roundTripFactor);
+};
 
 type Props = {
   hotels: LocationOption[];
@@ -86,12 +153,14 @@ export default function TransportSearch({ hotels }: Props) {
 
   const zoneName = selectedHotel?.destinationName ?? selectedHotel?.microZoneName ?? "Punta Cana";
 
+  const zoneKey = resolveZoneKey(selectedHotel);
+  const zoneLabel = pricingEngine.zoneMatrix[zoneKey]?.names[0] ?? "Punta Cana";
   const vehicles = useMemo(() => {
     return vehicleCatalog.map((vehicle) => ({
       ...vehicle,
-      price: buildPrice(vehicle.basePrice, zoneName)
+      price: computePrice(vehicle.id, zoneKey)
     }));
-  }, [zoneName]);
+  }, [zoneKey]);
 
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
@@ -109,6 +178,7 @@ export default function TransportSearch({ hotels }: Props) {
         <p className="text-sm text-slate-500">
           Selecciona el vehículo ideal para tu llegada a Punta Cana.
         </p>
+        <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Zona estimada: {zoneLabel}</p>
         <form className="mt-6 flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end" onSubmit={handleSearch}>
           <label className="flex-1 min-w-[180px] text-sm text-slate-500">
             Origen
@@ -182,28 +252,10 @@ export default function TransportSearch({ hotels }: Props) {
           </button>
         </form>
       </div>
-      <section className="grid gap-4 rounded-[28px] border border-slate-100 bg-white/90 p-6 shadow-sm md:grid-cols-3">
-        {[
-          {
-            icon: "Clock",
-            title: "Espera incluida",
-            desc: "60 min de espera gratis tras el aterrizaje."
-          },
-          {
-            icon: "Shield",
-            title: "Precio final",
-            desc: "Sin peajes ni cargos ocultos al llegar."
-          },
-          {
-            icon: "CheckCircle",
-            title: "Cancelación",
-            desc: "Gratis hasta 24 horas antes del servicio."
-          }
-        ].map((item) => (
-          <div key={item.title} className="space-y-1 border-b border-slate-200 pb-3 text-center text-sm text-slate-600 last:border-none last:pb-0 md:border-none md:text-left">
-            <p className="text-indigo-600">{item.icon}</p>
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{item.title}</p>
-            <p className="font-semibold text-slate-900">{item.desc}</p>
+      <section className="grid gap-4 rounded-[28px] border border-slate-100 bg-white/90 p-6 shadow-sm md:grid-cols-4">
+        {trustLabels.map((label) => (
+          <div key={label} className="text-center text-sm text-slate-600">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{label}</p>
           </div>
         ))}
       </section>
@@ -269,6 +321,17 @@ export default function TransportSearch({ hotels }: Props) {
             <p className="mt-4 text-xs text-slate-500">
               Conectarás al checkout con la nota “Reserva de transporte” y nuestra tarifa cifrada. Confirmamos tu traslado en segundos.
             </p>
+          </section>
+          <section className="rounded-[28px] border border-slate-200 bg-white/80 p-6 shadow-sm">
+            <div className="grid gap-4 md:grid-cols-2">
+              {pickupRules.map((rule) => (
+                <div key={rule.title} className="space-y-1 text-sm text-slate-600">
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{rule.title}</p>
+                  <p className="font-semibold text-slate-900">{rule.description}</p>
+                  <p className="text-xs text-slate-500">{rule.note}</p>
+                </div>
+              ))}
+            </div>
           </section>
         </section>
       )}
