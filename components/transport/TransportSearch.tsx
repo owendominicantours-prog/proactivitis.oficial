@@ -47,7 +47,7 @@ const vehicleCatalog = [
 ];
 
 const pricingEngine = {
-  globalBase: 35.0,
+  globalBase: 32 / 0.9, // calibrado para que el sedán final muestre $32
   roundTripFactor: 0.9,
   vehicleMultipliers: {
     sedan_economy: 1.0,
@@ -126,7 +126,8 @@ const computePrice = (vehicleId: string, zoneKey: ZoneKey) => {
   const vehicleMult = vehicleMultiplierMap[vehicleId] ?? 1.0;
   const zone = pricingEngine.zoneMatrix[zoneKey];
   const zoneMult = zone?.m ?? 1.0;
-  return Math.round(base * vehicleMult * zoneMult * pricingEngine.roundTripFactor);
+  const calculated = base * vehicleMult * zoneMult * pricingEngine.roundTripFactor;
+  return Number(calculated.toFixed(2));
 };
 
 type Props = {
@@ -285,7 +286,9 @@ export default function TransportSearch({ hotels }: Props) {
                   <p className="text-sm font-semibold text-slate-900">
                     {vehicle.pax} pax · {vehicle.luggage} maletas
                   </p>
-                  <p className="text-3xl font-black text-indigo-600">${vehicle.price}</p>
+                  <p className="text-3xl font-black text-indigo-600">
+                    ${vehicle.price.toFixed(2)}
+                  </p>
                 </div>
                 <ul className="mt-4 space-y-1 text-xs text-slate-500">
                   {vehicle.features.map((feature) => (

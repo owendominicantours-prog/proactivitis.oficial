@@ -140,8 +140,6 @@ const extraDirectory = {
     "Residencial Nautilus"
   ],
   ZONA_ROMANA_BAYAHIBE_EXTRA: [
-    "Catalonia Royal La Romana",
-    "Catalonia Gran Dominicus",
     "Hotel Bayahibe",
     "Villa Igneri",
     "Apartahotel Villa Baya",
@@ -181,7 +179,6 @@ const extraDirectory = {
     "Takuma Boutik Hotel"
   ],
   ZONA_NORTE_EXTRA: [
-    "BlueBay Villas Doradas",
     "Lifestyle Tropical Island",
     "The Reef Marina",
     "Velero Beach Resort",
