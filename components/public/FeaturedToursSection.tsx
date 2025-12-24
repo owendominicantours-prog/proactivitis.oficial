@@ -39,8 +39,20 @@ const formatDurationValue = (value?: string | null) => {
   return value;
 };
 
+const selectRotatingTours = (tours: Awaited<ReturnType<typeof fetchFeaturedTours>>) => {
+  if (!tours.length) return [];
+  const copy = [...tours];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, Math.min(3, copy.length));
+};
+
 export default async function FeaturedToursSection() {
   const tours = await fetchFeaturedTours();
+  const displayedTours = selectRotatingTours(tours);
+
   if (!tours.length) {
     return (
       <div className="rounded-[28px] border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 shadow-[0_35px_80px_rgba(15,23,42,0.12)]">
@@ -52,7 +64,7 @@ export default async function FeaturedToursSection() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-      {tours.map((tour) => (
+      {displayedTours.map((tour) => (
         <TourCard
           key={tour.id}
           slug={tour.slug}
