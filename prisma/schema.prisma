@@ -50,6 +50,7 @@ model Booking {
   passengers            Int?
   pickup                String?
   hotel                 String?
+  originAirport         String?
   pickupNotes           String?
   totalAmount           Float
   stripeSessionId       String?        @map("stripe_session_id")
@@ -60,6 +61,8 @@ model Booking {
   platformFee           Float?
   agencyFee             Float?
   startTime             String?
+  flightNumber          String?
+  flowType              String?        @default("tour")
   cancellationReason    String?
   cancellationByRole    String?
   cancellationAt        DateTime?

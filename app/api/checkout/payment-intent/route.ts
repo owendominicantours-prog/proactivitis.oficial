@@ -31,10 +31,13 @@ type PaymentIntentPayload = {
   pickupLocation?: string;
   language?: string;
   specialRequirements?: string;
+  flowType?: "tour" | "transfer";
+  flightNumber?: string;
   paymentOption?: "now" | "later";
   hotelSlug?: string;
   bookingCode?: string;
   originHotelName?: string;
+  origin?: string;
 };
 
 const parsePositive = (value: number | string | undefined, fallback: number) => {
@@ -242,11 +245,14 @@ export async function POST(request: NextRequest) {
       passengers: passengerCount,
       pickup: pickupLocation,
       hotel: payload.originHotelName ?? payload.hotelSlug ?? undefined,
+      originAirport: payload.origin ?? payload.originHotelName ?? undefined,
       pickupNotes: pickupNotes || undefined,
       startTime,
       totalAmount,
       bookingCode,
       userId,
+      flightNumber: normalizeString(payload.flightNumber),
+      flowType: payload.flowType ?? "tour",
       status: BookingStatusEnum.PAYMENT_PENDING,
       source: BookingSourceEnum.WEB,
       paymentMethod: payload.paymentOption === "later" ? "PAY_LATER" : "CARD"

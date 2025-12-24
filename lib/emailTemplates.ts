@@ -10,6 +10,9 @@ type BookingData = {
   customerPhone?: string | null;
   pickupNotes?: string | null;
   hotel?: string | null;
+  originAirport?: string | null;
+  flightNumber?: string | null;
+  flowType?: string | null;
 };
 
 type TourData = {
@@ -54,6 +57,9 @@ export const buildCustomerEticketEmail = ({
 }) => {
   const meetingPoint = tour.meetingPoint ?? "Punto aún por coordinar";
   const travelDate = formatDate(booking.travelDate);
+  const isTransfer = booking.flowType === "transfer";
+  const flightInfo = booking.flightNumber ? `Vuelo ${booking.flightNumber}` : "Vuelo pendiente";
+  const airportLabel = booking.originAirport ? booking.originAirport : "Aeropuerto por confirmar";
   return `
     <div style="font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#ecf2ff;padding:32px;">
       <div style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:30px;overflow:hidden;box-shadow:0 30px 90px rgba(2,6,23,0.15);">
@@ -88,10 +94,26 @@ export const buildCustomerEticketEmail = ({
               <p style="margin:0;font-size:14px;color:#475569;">${booking.startTime ?? "Horario por confirmar"}</p>
             </div>
             <div>
-              <p style="margin:0;font-size:10px;text-transform:uppercase;letter-spacing:0.4em;color:#94a3b8;">Punto de encuentro</p>
-              <p style="margin:4px 0;font-size:14px;font-weight:600;color:#0f172a;">${meetingPoint}</p>
+              <p style="margin:0;font-size:10px;text-transform:uppercase;letter-spacing:0.4em;color:#94a3b8;">${isTransfer ? "Traslado" : "Punto de encuentro"}</p>
+              <p style="margin:4px 0;font-size:14px;font-weight:600;color:#0f172a;">${isTransfer ? booking.hotel ?? "Hotel por confirmar" : meetingPoint}</p>
             </div>
           </div>
+          ${
+            isTransfer
+              ? `
+          <div style="margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
+            <div>
+              <p style="margin:0;font-size:10px;text-transform:uppercase;letter-spacing:0.3em;color:#94a3b8;">Origen</p>
+              <p style="margin:4px 0;font-size:14px;font-weight:600;color:#0f172a;">${airportLabel}</p>
+            </div>
+            <div>
+              <p style="margin:0;font-size:10px;text-transform:uppercase;letter-spacing:0.3em;color:#94a3b8;">${flightInfo}</p>
+              <p style="margin:4px 0;font-size:14px;font-weight:600;color:#0f172a;">Traslado confirmado</p>
+            </div>
+          </div>
+          `
+              : ""
+          }
           <div style="margin-top:32px;">
             <h2 style="margin:0 0 8px;font-size:16px;font-weight:600;color:#0f172a;">Qué llevar</h2>
             <ul style="margin:0;padding-left:20px;color:#475569;font-size:14px;">${buildBringList()}</ul>
@@ -102,9 +124,9 @@ export const buildCustomerEticketEmail = ({
               Ver mi e-ticket
             </a>
           </div>
-          <p style="margin-top:24px;font-size:14px;color:#475569;">
-            Mensaje enviado a ${booking.customerEmail}. Si tenés dudas sobre el punto de encuentro podés <a href="${whatsappLink}" style="color:#0ea5e9;font-weight:600;">chatear por WhatsApp</a>.
-          </p>
+    <p style="margin-top:24px;font-size:14px;color:#475569;">
+      Mensaje enviado a ${booking.customerEmail}. Si tenés dudas sobre el punto de encuentro podés <a href="${whatsappLink}" style="color:#0ea5e9;font-weight:600;">chatear por WhatsApp</a>.
+    </p>
         </div>
         <div style="padding:24px;background:#f8fafc;text-align:center;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#94a3b8;">
           ID de reserva: ${booking.id} · Proactivitis LLC
@@ -158,6 +180,7 @@ export const buildSupplierBookingEmail = ({
           <p style="margin:24px 0 8px;font-size:12px;letter-spacing:0.4em;text-transform:uppercase;color:#94a3b8;">Pickup</p>
           <p style="margin:0;font-size:14px;color:#0f172a;">${tour.meetingPoint ?? "Punto aún por coordinar"}</p>
           <p style="margin:4px 0;font-size:14px;color:#64748b;">${booking.pickupNotes ?? "Sin notas adicionales"}</p>
+          ${booking.flightNumber ? `<p style="margin:12px 0 0;font-size:12px;color:#475569;">Vuelo: ${booking.flightNumber}</p>` : ""}
           <div style="margin-top:28px;padding:18px;border-radius:16px;border:1px dashed rgba(15,23,42,0.2);background:#f8fafc;">
             <p style="margin:0;font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#0f172a;">Panel para revisar</p>
             <a
