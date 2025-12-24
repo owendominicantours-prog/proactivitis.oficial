@@ -25,21 +25,22 @@ export async function generateStaticParams() {
 }
 
 type TourDetailVariantProps = {
-  params: {
+  params: Promise<{
     slug?: string;
     variant?: TourDetailVariant;
-  };
-  searchParams?: TourDetailSearchParams;
+  }>;
+  searchParams?: Promise<TourDetailSearchParams>;
 };
 
 export default async function TourDetailVariantPage({
   params,
   searchParams
 }: TourDetailVariantProps) {
-  const { slug, variant } = params;
+  const { slug, variant } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
   return renderTourDetailContent({
     slug: slug ?? "",
     variant,
-    searchParams
+    searchParams: resolvedSearchParams
   });
 }
