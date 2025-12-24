@@ -152,6 +152,18 @@ export default function TrasladoSearch({
     }
   }, [autoShowResults, initialHotel, initialDateTime]);
 
+  const normalizeValue = (value?: string | null) =>
+    value?.trim().toLowerCase().replace(/\s+/g, " ") ?? "";
+
+  const matchHotel = (value?: string | null) => {
+    const normalized = normalizeValue(value);
+    if (!normalized) return null;
+    return (
+      hotels.find((hotel) => normalizeValue(hotel.name) === normalized) ??
+      hotels.find((hotel) => normalizeValue(hotel.slug).includes(normalized) || normalized.includes(normalizeValue(hotel.slug)))
+    );
+  };
+
   const selectedHotel = useMemo(
     () => hotels.find((hotel) => hotel.slug === destinationSlug),
     [destinationSlug, hotels]
@@ -252,8 +264,13 @@ export default function TrasladoSearch({
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
     if (!selectedHotel) {
-      setErrorMessage("Selecciona un hotel válido");
-      return;
+      const matched = matchHotel(destinationLabel);
+      if (matched) {
+        setDestinationSlug(matched.slug);
+      } else {
+        setErrorMessage("Selecciona un hotel válido");
+        return;
+      }
     }
     if (!dateTime) {
       setErrorMessage("Indica la fecha y hora de llegada");
@@ -348,11 +365,7 @@ export default function TrasladoSearch({
               onChange={(event) => {
                 const value = event.target.value;
                 setDestinationLabel(value);
-                const normalized = value.trim().toLowerCase();
-                let matched = hotels.find((hotel) => hotel.name.toLowerCase() === normalized);
-                if (!matched) {
-                  matched = hotels.find((hotel) => normalized.includes(hotel.slug) || hotel.slug.includes(normalized));
-                }
+                const matched = matchHotel(value);
                 if (matched) {
                   setDestinationSlug(matched.slug);
                 }
