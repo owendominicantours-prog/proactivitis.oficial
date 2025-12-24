@@ -9,8 +9,7 @@ const BASE_ORIGIN_LABEL = "Aeropuerto de Punta Cana (PUJ)";
 
 const HOTEL_INCLUDE = {
   destination: { select: { name: true } },
-  microZone: { select: { name: true, slug: true } },
-  assignedZoneId: true
+  microZone: { select: { name: true, slug: true } }
 };
 
 const buildTrasladoSeoText = (hotelName: string) => {
@@ -118,7 +117,6 @@ export default async function HotelTrasladoPage({ params }: TrasladoPageProps) {
       slug: true,
       destination: { select: { name: true } },
       microZone: { select: { name: true, slug: true } },
-      assignedZoneId: true
     }
   });
 
@@ -127,8 +125,7 @@ export default async function HotelTrasladoPage({ params }: TrasladoPageProps) {
     slug: item.slug,
     destinationName: item.destination?.name ?? null,
     microZoneName: item.microZone?.name ?? null,
-    microZoneSlug: item.microZone?.slug ?? null,
-    assignedZoneId: item.assignedZoneId ?? null
+      microZoneSlug: item.microZone?.slug ?? null
   }));
 
   const seoCopy = buildTrasladoSeoText(hotel.name);

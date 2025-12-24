@@ -37,8 +37,7 @@ export default async function TrasladoPage() {
       name: true,
       slug: true,
       destination: { select: { name: true } },
-      microZone: { select: { name: true, slug: true } },
-      assignedZoneId: true
+      microZone: { select: { name: true, slug: true } }
     }
   });
 
@@ -48,8 +47,6 @@ export default async function TrasladoPage() {
     destinationName: hotel.destination?.name ?? null,
     microZoneName: hotel.microZone?.name ?? null,
     microZoneSlug: hotel.microZone?.slug ?? null
-    ,
-    assignedZoneId: hotel.assignedZoneId ?? null
   }));
 
   return (
