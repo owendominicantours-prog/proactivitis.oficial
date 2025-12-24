@@ -3,9 +3,9 @@ import TrasladoSearch, { LocationOption } from "@/components/traslado/TrasladoSe
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
-  title: "Traslados Privados Aeropuerto Punta Cana | Proactivitis",
+  title: "Traslados Privados Proactivitis",
   description:
-    "Reserva tu traslado privado con chofer bilingüe, precios cerrados y flexibilidad total. Proactivitis conecta vuelos, hoteles y proveedores en tiempo real."
+    "Reserva tu traslado privado con chofer bilingüe, precios cerrados y flexibilidad total. Proactivitis conecta vuelos, hoteles y proveedores en toda la región."
 };
 
 const faqItems = [
@@ -57,7 +57,7 @@ export default async function TrasladoPage() {
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="space-y-2">
               <h1 className="text-4xl font-black leading-tight text-slate-900 md:text-5xl">
-                Traslados privados desde el aeropuerto hasta tu hotel
+                Traslados privados para cualquier destino
               </h1>
               <p className="text-base text-slate-600">
                 Todo incluido, chofer bilingüe y confirmación inmediata. Desde el aterrizaje hasta el lobby del hotel, tu viaje comienza con confianza.
@@ -104,3 +104,6 @@ export default async function TrasladoPage() {
     </div>
   );
 }
+
+
+
