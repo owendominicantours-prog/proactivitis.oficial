@@ -5,7 +5,7 @@ import { MouseEvent, useEffect, useMemo, useState } from "react";
 import Papa from "papaparse";
 
 import { DynamicImage } from "@/components/shared/DynamicImage";
-import { deleteSupplierTourAction } from "@/app/(dashboard)/supplier/tours/actions";
+import { deleteSupplierTourAction, duplicateTourAction } from "@/app/(dashboard)/supplier/tours/actions";
 import { sendToReview, togglePauseTour } from "@/lib/actions/tourModeration";
 
 export type SupplierTourSummary = {
@@ -228,6 +228,7 @@ export const ToursList = ({ tours }: { tours: SupplierTourSummary[] }) => {
   const [shareValues, setShareValues] = useState<Record<string, number>>(initialShares);
   const [shareStatus, setShareStatus] = useState<Record<string, "idle" | "saving" | "error">>({});
   const [shareFeedback, setShareFeedback] = useState<Record<string, string>>({});
+  const [duplicateOpen, setDuplicateOpen] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setShareValues(initialShares);
@@ -438,12 +439,6 @@ const getProactiveMessage = (value: number) => {
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
-              <Link
-                href={`/supplier/tours/${tour.id}/edit`}
-                className="rounded-md border border-slate-200 px-3 py-1 text-slate-600 transition hover:border-slate-300"
-              >
-                Editar
-              </Link>
               <form action={togglePauseTour} className="inline-flex">
                 <input type="hidden" name="tourId" value={tour.id} />
                 <input type="hidden" name="currentStatus" value={tour.status} />
@@ -460,6 +455,15 @@ const getProactiveMessage = (value: number) => {
               >
                 Editar
               </Link>
+              <button
+                type="button"
+                onClick={() =>
+                  setDuplicateOpen((prev) => ({ ...prev, [tour.id]: !prev[tour.id] }))
+                }
+                className="rounded-md border border-slate-200 px-3 py-1 text-slate-600 transition hover:border-slate-300"
+              >
+                Duplicar
+              </button>
               <Link
                 href={`/tours/${tour.slug}`}
                 className="rounded-md border border-slate-200 px-3 py-1 text-slate-600 transition hover:border-slate-300"
@@ -473,6 +477,26 @@ const getProactiveMessage = (value: number) => {
               >
                 Vista previa
               </Link>
+              {duplicateOpen[tour.id] && (
+                <form
+                  action={duplicateTourAction}
+                  className="flex flex-wrap gap-2 rounded-md border border-slate-200 bg-slate-50 p-3 text-sm"
+                >
+                  <input type="hidden" name="tourId" value={tour.id} />
+                  <input
+                    name="duplicateSlug"
+                    placeholder="slug limpio"
+                    className="min-w-[180px] flex-1 rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-sky-500 focus:outline-none"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="rounded-md bg-slate-900 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
+                  >
+                    Crear copia
+                  </button>
+                </form>
+              )}
               {["draft", "needs_changes"].includes(tour.status) && (
                 <form action={sendToReview} className="inline-flex">
                   <input type="hidden" name="tourId" value={tour.id} />

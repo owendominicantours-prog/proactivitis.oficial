@@ -115,6 +115,71 @@ export async function createTourAction(formData: FormData) {
   redirect("/supplier/tours?status=sent");
 }
 
+export async function duplicateTourAction(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  const sessionUser = session?.user as { id?: string } | undefined;
+  const userId = sessionUser?.id;
+  if (!userId) throw new Error("Debes iniciar sesión primero.");
+  const supplierProfile = await prisma.supplierProfile.findUnique({ where: { userId } });
+  if (!supplierProfile) throw new Error("No tienes un perfil de supplier activo.");
+
+  const tourId = formData.get("tourId")?.toString();
+  if (!tourId) throw new Error("Tour no encontrado");
+  const tour = await prisma.tour.findUnique({ where: { id: tourId } });
+  if (!tour) throw new Error("Tour no existe");
+  if (tour.supplierId !== supplierProfile.id) throw new Error("No autorizado");
+
+  const requestedSlug = formData.get("duplicateSlug")?.toString().trim() ?? "";
+  const candidateSlugBase = slugify(requestedSlug || tour.title);
+  const fallbackSlugBase = `${tour.slug}-${Date.now()}`;
+  let newSlug = candidateSlugBase || fallbackSlugBase;
+  while (await prisma.tour.findUnique({ where: { slug: newSlug } })) {
+    newSlug = `${candidateSlugBase || fallbackSlugBase}-${Math.floor(Math.random() * 9999)}`;
+  }
+
+  const newTour = await prisma.tour.create({
+    data: {
+      id: randomUUID(),
+      title: tour.title,
+      slug: newSlug,
+      description: tour.description,
+      shortDescription: tour.shortDescription,
+      includes: tour.includes,
+      duration: tour.duration,
+      location: tour.location,
+      language: tour.language,
+      category: tour.category,
+      price: tour.price,
+      priceChild: tour.priceChild,
+      priceYouth: tour.priceYouth,
+      capacity: tour.capacity ?? 1,
+      confirmationType: tour.confirmationType ?? "instant",
+      physicalLevel: tour.physicalLevel,
+      minAge: tour.minAge,
+      meetingPoint: tour.meetingPoint,
+      meetingInstructions: tour.meetingInstructions,
+      pickup: tour.pickup,
+      requirements: tour.requirements,
+      cancellationPolicy: tour.cancellationPolicy,
+      terms: tour.terms,
+      timeOptions: tour.timeOptions,
+      operatingDays: tour.operatingDays,
+      blackoutDates: tour.blackoutDates,
+      adminNote: tour.adminNote,
+      heroImage: tour.heroImage,
+      gallery: tour.gallery,
+      status: "draft",
+      supplierId: supplierProfile.id,
+      departureDestinationId: tour.departureDestinationId,
+      countryId: tour.countryId,
+      platformSharePercent: tour.platformSharePercent ?? 20,
+      productId: randomUUID()
+    }
+  });
+
+  redirect(`/supplier/tours/${newTour.id}/edit`);
+}
+
 export async function updateTourAction(formData: FormData) {
   const session = await getServerSession(authOptions);
   const sessionUser = session?.user as { id?: string } | undefined;
