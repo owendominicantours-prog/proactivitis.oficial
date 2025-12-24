@@ -95,7 +95,7 @@ type FAQItem = {
 };
 
 type TourVariantConfig = {
-  heroImage?: string;
+  galleryIndex?: number;
   heroBlurb?: string;
   heroBadge?: string;
   reviewHighlights?: ReviewHighlight[];
@@ -149,7 +149,7 @@ const defaultFaqs: FAQItem[] = [
 
 const tourVariantConfigs: Record<string, TourVariantConfig> = {
   "sunset-catamaran-cruise-passengers": {
-    heroImage: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80",
+    galleryIndex: 0,
     heroBlurb:
       "Ajustamos el horario a la llegada de tu crucero. Recogida en Puerto Taino Bay/Amber Cove a la hora exacta de atraque.",
     heroBadge: "Pick-up sincronizado con tu barco",
@@ -168,7 +168,7 @@ const tourVariantConfigs: Record<string, TourVariantConfig> = {
     }
   },
   "sunset-catamaran-bachelor-party": {
-    heroImage: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1400&q=80",
+    galleryIndex: 1,
     heroBlurb: "Bar abierto premium y DJ privado. El mejor plan para grupos de amigos antes de la boda.",
     heroBadge: "Fiesta privada con barra premium",
     reviewHighlights: [
@@ -186,7 +186,7 @@ const tourVariantConfigs: Record<string, TourVariantConfig> = {
     }
   },
   "sunset-catamaran-couples-anniversary": {
-    heroImage: "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1400&q=80",
+    galleryIndex: 2,
     heroBlurb: "Cena ligera a bordo y fotos profesionales del atardecer para parejas. Privacidad garantizada.",
     heroBadge: "Experiencia romántica íntima",
     reviewHighlights: [
@@ -204,7 +204,7 @@ const tourVariantConfigs: Record<string, TourVariantConfig> = {
     }
   },
   "sunset-catamaran-family-friendly": {
-    heroImage: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80",
+    galleryIndex: 3,
     heroBlurb:
       "Chalecos salvavidas para niños y equipo de snorkel infantil. Ambiente seguro y divertido para toda la familia.",
     heroBadge: "Kit familiar con snorkel infantil",
@@ -224,7 +224,7 @@ const tourVariantConfigs: Record<string, TourVariantConfig> = {
     }
   },
   "sunset-catamaran-usa-travelers": {
-    heroImage: "https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?auto=format&fit=crop&w=1400&q=80",
+    galleryIndex: 4,
     heroBlurb: "Precios en USD, guías nativos en inglés y estándares de seguridad americanos.",
     heroBadge: "Estándares americanos y guía nativo",
     reviewHighlights: [
@@ -339,7 +339,13 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
   const visualTimeline = itinerarySource.length ? itinerarySource : itineraryMock;
   const heroImageFallback = tour.heroImage ?? gallery[0];
   const variantConfig = tourVariantConfigs[slug];
-  const heroImage = variantConfig?.heroImage ?? heroImageFallback;
+  const variantGalleryImage =
+    typeof variantConfig?.galleryIndex === "number" &&
+    variantConfig.galleryIndex >= 0 &&
+    variantConfig.galleryIndex < gallery.length
+      ? gallery[variantConfig.galleryIndex]
+      : undefined;
+  const heroImage = variantGalleryImage ?? heroImageFallback;
   const baseShortTeaser =
     tour.shortDescription && tour.shortDescription.length > 220
       ? `${tour.shortDescription.slice(0, 220).trim()}…`

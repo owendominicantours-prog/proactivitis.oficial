@@ -124,7 +124,7 @@ type FAQItem = {
 };
 
 type TourVariantConfig = {
-  heroImage?: string;
+  galleryIndex?: number;
   heroBlurb?: string;
   heroBadge?: string;
   faqOverride?: FAQItem;
@@ -156,7 +156,7 @@ const defaultFaqs: FAQItem[] = [
 
 const tourVariantConfigs: Record<TourDetailVariant, TourVariantConfig> = {
   party: {
-    heroImage: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1400&q=80",
+    galleryIndex: 1,
     heroBlurb: "Bar abierto premium y DJ privado. El mejor plan para grupos de amigos antes de la boda.",
     heroBadge: "Fiesta privada con barra premium",
     faqOverride: {
@@ -166,7 +166,7 @@ const tourVariantConfigs: Record<TourDetailVariant, TourVariantConfig> = {
     }
   },
   family: {
-    heroImage: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80",
+    galleryIndex: 2,
     heroBlurb: "Chalecos salvavidas para niños, equipo de snorkel infantil y guías enfocados en familias.",
     heroBadge: "Kit familiar con snorkel infantil",
     faqOverride: {
@@ -176,7 +176,7 @@ const tourVariantConfigs: Record<TourDetailVariant, TourVariantConfig> = {
     }
   },
   cruise: {
-    heroImage: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80",
+    galleryIndex: 0,
     heroBlurb: "Ajustamos el horario a la llegada de tu crucero y recogemos desde los muelles oficiales.",
     heroBadge: "Pick-up sincronizado con tu barco",
     faqOverride: {
@@ -250,7 +250,13 @@ export async function renderTourDetailContent({
       ? `${tour.shortDescription.slice(0, 220).trim()}…`
       : tour.shortDescription || "Explora esta aventura guiada por expertos locales.";
   const variantConfig = variant ? tourVariantConfigs[variant] : undefined;
-  const heroImage = variantConfig?.heroImage ?? heroImageFallback;
+  const variantGalleryImage =
+    typeof variantConfig?.galleryIndex === "number" &&
+    variantConfig.galleryIndex >= 0 &&
+    variantConfig.galleryIndex < gallery.length
+      ? gallery[variantConfig.galleryIndex]
+      : undefined;
+  const heroImage = variantGalleryImage ?? heroImageFallback;
   const heroCopy = variantConfig?.heroBlurb ?? baseShortTeaser;
   const heroBadge = variantConfig?.heroBadge;
   const summaryDescription = tour.description ?? heroCopy;
