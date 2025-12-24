@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { MouseEvent, useEffect, useMemo, useState } from "react";
+import Papa from "papaparse";
 
 import { DynamicImage } from "@/components/shared/DynamicImage";
 import { deleteSupplierTourAction } from "@/app/(dashboard)/supplier/tours/actions";
@@ -39,6 +40,11 @@ export const ToursList = ({ tours }: { tours: SupplierTourSummary[] }) => {
   const [destinationFilter, setDestinationFilter] = useState("");
   const [infoOpen, setInfoOpen] = useState<Record<string, boolean>>({});
   const [impulzaVisible, setImpulzaVisible] = useState<Record<string, boolean>>({});
+  const [importPanel, setImportPanel] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
 
   const destinations = useMemo(() => Array.from(new Set(tours.map((tour) => tour.destination ?? tour.location))), [tours]);
 
@@ -52,6 +58,116 @@ export const ToursList = ({ tours }: { tours: SupplierTourSummary[] }) => {
     });
   }, [tours, statusFilter, destinationFilter]);
 
+  const normalizeKey = (value: string | undefined) =>
+    value
+      ?.normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/gi, "")
+      .trim()
+      .toLowerCase() ?? "";
+
+  const headerLookup = (record: Record<string, unknown>) =>
+    Object.fromEntries(
+      Object.entries(record).map(([key, value]) => [normalizeKey(key), value?.toString().trim() ?? ""])
+    );
+
+  const getMappedRecord = (row: Record<string, unknown>) => {
+    const lookup = headerLookup(row);
+    const mapValue = (keys: string[]) => {
+      for (const key of keys) {
+        const normalized = normalizeKey(key);
+        if (lookup[normalized]) {
+          return lookup[normalized];
+        }
+      }
+      return "";
+    };
+    return {
+      title: mapValue(["title", "nombre", "tour name", "tour"]),
+      shortDescription: mapValue(["short description", "summary", "resumen"]),
+      description: mapValue(["description", "detalle"]),
+      price: mapValue(["price", "precio", "adult price"]),
+      priceChild: mapValue(["child price", "precio niño", "precio nino"]),
+      priceYouth: mapValue(["youth price", "precio joven"]),
+      location: mapValue(["location", "hotel", "recogida", "pickup location"]),
+      destination: mapValue(["destination", "zona", "destino"]),
+      country: mapValue(["country", "país", "pais"]),
+      capacity: mapValue(["capacity", "capacidad"]),
+      includes: mapValue(["includes", "incluye"]),
+      meetingPoint: mapValue(["meeting point", "puntorecogida", "meeting"]),
+      pickup: mapValue(["pickup", "recogida"]),
+      pickupNotes: mapValue(["pickup notes", "notas pickup"]),
+      requirements: mapValue(["requirements", "requisitos"]),
+      terms: mapValue(["terms", "condiciones"]),
+      confirmationType: mapValue(["confirmation type", "confirmacion"]),
+      category: mapValue(["category", "categoria"]),
+      language: mapValue(["language", "idioma"]),
+      heroImageUrl: mapValue(["hero image", "heroimage", "imagen"]),
+      galleryUrls: mapValue(["gallery", "galeria"]),
+      itinerary: mapValue(["itinerary", "itinerario"]),
+      minAge: mapValue(["min age", "edad minima"]),
+      duration: mapValue(["duration", "duración"])
+    };
+  };
+
+  const rowsToImport = async (file: File) => {
+    const text = await file.text();
+    const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+    if (extension === "json") {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        throw new Error("JSON inválido");
+      }
+      const rawRecords = Array.isArray(parsed) ? parsed : typeof parsed === "object" ? [parsed] : [];
+      return rawRecords.map((row) => getMappedRecord(row));
+    }
+    const parsed = Papa.parse<Record<string, unknown>>(text, {
+      header: true,
+      skipEmptyLines: true
+    });
+    if (parsed.errors.length) {
+      throw new Error("El CSV contiene errores, verifica las comillas y los saltos de línea.");
+    }
+    return parsed.data.map((row) => getMappedRecord(row));
+  };
+
+  const handleImportFile = async () => {
+    if (!importFile) {
+      setImportError("Selecciona un archivo primero.");
+      return;
+    }
+    setImporting(true);
+    setImportError(null);
+    setImportMessage(null);
+    try {
+      const normalized = await rowsToImport(importFile);
+      const filteredRecords = normalized.filter((record) => record.title);
+      if (!filteredRecords.length) {
+        throw new Error("No se detectaron registros válidos.");
+      }
+      const response = await fetch("/api/supplier/tours/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ records: filteredRecords })
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error((body as { error?: string }).error ?? "No se pudo importar.");
+      }
+      setImportMessage(body.message ?? "Tours importados correctamente.");
+      window.location.href = body.redirectUrl ?? "/supplier/tours?status=draft";
+    } catch (error) {
+      setImportError(
+        error instanceof Error
+          ? error.message
+          : "Ocurrió un error al subir el archivo, inténtalo de nuevo."
+      );
+    } finally {
+      setImporting(false);
+    }
+  };
   const initialShares = useMemo(
     () =>
       tours.reduce<Record<string, number>>((acc, tour) => {
@@ -147,7 +263,51 @@ const getProactiveMessage = (value: number) => {
             </option>
           ))}
         </select>
+        <button
+          type="button"
+          className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300"
+          onClick={() => {
+            setImportPanel((prev) => !prev);
+            setImportError(null);
+            setImportMessage(null);
+          }}
+        >
+          Importar Tours (CSV/Excel/JSON)
+        </button>
       </div>
+
+      {importPanel && (
+        <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <h3 className="mb-2 text-sm font-semibold text-slate-800">Carga masiva automatizada</h3>
+          <p className="mb-3 text-xs text-slate-500">
+            Usa un CSV o JSON con columnas como nombre, precio, hotel y destino. Excel puede exportarse como CSV. Nosotros detectamos los nombres automáticamente.
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              type="file"
+              accept=".csv,.json"
+              onChange={(event) => {
+                setImportFile(event.target.files?.[0] ?? null);
+                setImportError(null);
+              }}
+              className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 file:cursor-pointer file:border-0 file:bg-slate-100 file:px-3 file:py-1 file:text-xs file:font-semibold"
+            />
+            <button
+              type="button"
+              onClick={handleImportFile}
+              disabled={importing || !importFile}
+              className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {importing ? "Importando..." : "Subir archivo"}
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-slate-500">
+            Al completar, irás a la vista de pendientes para solo asignar precios y fotos.
+          </p>
+          {importMessage && <p className="mt-2 text-sm text-emerald-600">{importMessage}</p>}
+          {importError && <p className="mt-2 text-sm text-rose-600">{importError}</p>}
+        </section>
+      )}
 
       <div className="space-y-3">
         {filtered.map((tour) => {
