@@ -27,13 +27,19 @@ type ImportRecord = Record<string, unknown>;
 
 const findRecords = (value: unknown): ImportRecord[] => {
   if (Array.isArray(value)) {
-    return value.map((entry) => (typeof entry === "object" && entry !== null ? entry : {}));
+    return value
+      .filter((entry): entry is ImportRecord => typeof entry === "object" && entry !== null)
+      .map((entry) => entry);
   }
   if (typeof value === "object" && value !== null) {
-    const candidates: unknown[] = [];
+    const candidates: ImportRecord[] = [];
     const pushArray = (input: unknown) => {
       if (Array.isArray(input)) {
-        candidates.push(...input.filter((entry): entry is ImportRecord => typeof entry === "object" && entry !== null));
+        input.forEach((entry) => {
+          if (typeof entry === "object" && entry !== null) {
+            candidates.push(entry as ImportRecord);
+          }
+        });
       }
     };
     if ("records" in value) {
@@ -49,7 +55,7 @@ const findRecords = (value: unknown): ImportRecord[] => {
       candidates.push((value as { tour?: unknown }).tour as ImportRecord);
     }
     if (candidates.length) {
-      return candidates.filter((entry): entry is ImportRecord => typeof entry === "object" && entry !== null);
+      return candidates;
     }
     return [value as ImportRecord];
   }
