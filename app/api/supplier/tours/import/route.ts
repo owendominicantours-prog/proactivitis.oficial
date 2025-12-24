@@ -81,9 +81,9 @@ export async function POST(request: NextRequest) {
         ? row.galleryUrls
             .split(/[,;|]/)
             .map((item) => item.trim())
-            .filter(Boolean)
+            .filter((item): item is string => item.length > 0)
         : Array.isArray(row.galleryUrls)
-        ? row.galleryUrls.filter((item): item is string => typeof item === "string" && item.trim())
+        ? row.galleryUrls.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
         : [];
 
     await prisma.tour.create({
