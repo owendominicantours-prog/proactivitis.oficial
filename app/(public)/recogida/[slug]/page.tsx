@@ -72,7 +72,6 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
     notFound();
   }
 
-  const bookingLabel = `Reservar Buggy con recogida en ${location.name}`;
   const baseCountryCondition = { countryId: location.countryId };
   const orFilters = [];
   if (location.microZoneId) {
@@ -202,7 +201,7 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
                   href={buildTourUrl(tour, location.slug, bookingCode)}
                   className="rounded-2xl bg-orange-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-lg transition hover:bg-orange-600"
                 >
-                  {bookingLabel}
+                  {`Reservar ${tour.title} desde ${location.name}`}
                 </Link>
                 </div>
               </div>
