@@ -25,8 +25,6 @@ const integerValue = (value: unknown) => {
 
 type ImportRecord = Record<string, unknown>;
 
-export const dynamic = "force-dynamic";
-
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   const userId = (session?.user as { id?: string } | undefined)?.id;
