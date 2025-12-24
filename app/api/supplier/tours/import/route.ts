@@ -30,12 +30,17 @@ const findRecords = (value: unknown): ImportRecord[] => {
     return value.map((entry) => (typeof entry === "object" && entry !== null ? entry : {}));
   }
   if (typeof value === "object" && value !== null) {
-    const candidates: (ImportRecord | undefined)[] = [];
-    if ("records" in value && Array.isArray((value as { records?: unknown }).records)) {
-      candidates.push((value as { records?: unknown }).records as ImportRecord[]);
+    const candidates: unknown[] = [];
+    const pushArray = (input: unknown) => {
+      if (Array.isArray(input)) {
+        candidates.push(...input.filter((entry): entry is ImportRecord => typeof entry === "object" && entry !== null));
+      }
+    };
+    if ("records" in value) {
+      pushArray((value as { records?: unknown }).records);
     }
-    if ("data" in value && Array.isArray((value as { data?: unknown }).data)) {
-      candidates.push((value as { data?: unknown }).data as ImportRecord[]);
+    if ("data" in value) {
+      pushArray((value as { data?: unknown }).data);
     }
     if ("tour_data" in value && typeof (value as { tour_data?: unknown }).tour_data === "object") {
       candidates.push((value as { tour_data?: unknown }).tour_data as ImportRecord);
@@ -44,8 +49,7 @@ const findRecords = (value: unknown): ImportRecord[] => {
       candidates.push((value as { tour?: unknown }).tour as ImportRecord);
     }
     if (candidates.length) {
-      const flattened = candidates.flat().filter((entry): entry is ImportRecord => Boolean(entry));
-      return flattened;
+      return candidates.filter((entry): entry is ImportRecord => typeof entry === "object" && entry !== null);
     }
     return [value as ImportRecord];
   }
