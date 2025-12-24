@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import TrasladoSearch, { LocationOption } from "@/components/traslado/TrasladoSearch";
 import { prisma } from "@/lib/prisma";
 
@@ -83,7 +84,9 @@ export default async function TrasladoPage() {
         </section>
 
         <section className="rounded-[36px] border border-slate-100 bg-white/90 p-6 shadow-2xl">
-          <TrasladoSearch hotels={options} />
+          <Suspense fallback={<div />}>
+            <TrasladoSearch hotels={options} />
+          </Suspense>
         </section>
 
         <section className="space-y-6 rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
