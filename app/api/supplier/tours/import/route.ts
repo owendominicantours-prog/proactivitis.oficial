@@ -25,6 +25,33 @@ const integerValue = (value: unknown) => {
 
 type ImportRecord = Record<string, unknown>;
 
+const findRecords = (value: unknown): ImportRecord[] => {
+  if (Array.isArray(value)) {
+    return value.map((entry) => (typeof entry === "object" && entry !== null ? entry : {}));
+  }
+  if (typeof value === "object" && value !== null) {
+    const candidates: (ImportRecord | undefined)[] = [];
+    if ("records" in value && Array.isArray((value as { records?: unknown }).records)) {
+      candidates.push((value as { records?: unknown }).records as ImportRecord[]);
+    }
+    if ("data" in value && Array.isArray((value as { data?: unknown }).data)) {
+      candidates.push((value as { data?: unknown }).data as ImportRecord[]);
+    }
+    if ("tour_data" in value && typeof (value as { tour_data?: unknown }).tour_data === "object") {
+      candidates.push((value as { tour_data?: unknown }).tour_data as ImportRecord);
+    }
+    if ("tour" in value && typeof (value as { tour?: unknown }).tour === "object") {
+      candidates.push((value as { tour?: unknown }).tour as ImportRecord);
+    }
+    if (candidates.length) {
+      const flattened = candidates.flat().filter((entry): entry is ImportRecord => Boolean(entry));
+      return flattened;
+    }
+    return [value as ImportRecord];
+  }
+  return [];
+};
+
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   const userId = (session?.user as { id?: string } | undefined)?.id;
@@ -36,14 +63,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No tienes un perfil de proveedor activo." }, { status: 403 });
   }
 
-  let body: { records?: ImportRecord[] };
+  let body: unknown;
   try {
     body = await request.json();
   } catch (error) {
     return NextResponse.json({ error: "El archivo no se pudo leer." }, { status: 400 });
   }
 
-  const records = Array.isArray(body?.records) ? body.records : [];
+  const records = findRecords(body);
   if (!records.length) {
     return NextResponse.json({ error: "No se encontraron filas para importar." }, { status: 400 });
   }
