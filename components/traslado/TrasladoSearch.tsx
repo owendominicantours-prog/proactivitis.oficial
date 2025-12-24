@@ -501,7 +501,7 @@ export default function TrasladoSearch({
       return filtered.slice(0, limit);
     };
 
-    const hotelSelections = hotels.map((hotel) => hotel);
+    const hotelSelections = hotels.map((hotel) => ({ ...hotel, label: hotel.name, slug: hotel.slug }));
     const airportSelections = airportDestinationOptions;
 
     const matchedAirports = filterOptions(airportSelections, 3);
@@ -536,7 +536,9 @@ export default function TrasladoSearch({
     }, 150);
   };
 
-  type DestinationSuggestion = LocationOption | { label: string; slug: string; type: "airport" };
+  type DestinationSuggestion =
+    | (LocationOption & { label: string; slug: string })
+    | { label: string; slug: string; type: "airport" };
 
   const airportDestinationOptions = airportOptions.map((airport) => ({
     label: airport.label,
