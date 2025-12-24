@@ -1,5 +1,3 @@
-"use server";
-
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 
