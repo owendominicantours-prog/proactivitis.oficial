@@ -351,7 +351,7 @@ export default function TrasladoSearch({
             <label className="flex-1 min-w-[180px] text-sm text-slate-500">
               Origen
               <input
-                list="airports"
+                list="origin-suggestions"
                 value={originLabel}
                 onChange={(event) => {
                   const value = event.target.value;
@@ -361,12 +361,15 @@ export default function TrasladoSearch({
                     setOriginCode(match.code);
                   }
                 }}
-                placeholder="Selecciona el aeropuerto"
+                placeholder="Selecciona origen (aeropuerto u hotel)"
                 className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
               />
-              <datalist id="airports">
+              <datalist id="origin-suggestions">
                 {airportOptions.map((airport) => (
-                  <option key={airport.code} value={airport.label} />
+                  <option key={`airport-${airport.code}`} value={airport.label} />
+                ))}
+                {hotels.map((hotel) => (
+                  <option key={`hotel-${hotel.slug}`} value={hotel.name} />
                 ))}
               </datalist>
             </label>
