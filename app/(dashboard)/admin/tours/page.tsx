@@ -3,6 +3,11 @@ import { TourModerationConsole, SimpleTourRecord } from "@/components/admin/tour
 
 export default async function AdminToursPage() {
   const tours = await prisma.tour.findMany({
+    where: {
+      status: {
+        not: "draft"
+      }
+    },
     include: {
       SupplierProfile: {
         select: {
