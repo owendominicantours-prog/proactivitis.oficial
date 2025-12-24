@@ -14,6 +14,7 @@
     "seed": "ts-node --project tsconfig.seed.json prisma/seed.ts",
     "seed:countries": "node scripts/seed-countries.cjs",
     "generate:sitemap": "ts-node --project tsconfig.seed.json scripts/generate-sitemap.ts",
+    "generate:transport-sitemap": "ts-node --project tsconfig.seed.json scripts/generate-transport-sitemap.ts",
     "seed:destinations": "node scripts/seed-destinations.ts",
     "postinstall": "prisma generate"
   },

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   DEFAULT_ZONE_ID,
@@ -104,23 +104,47 @@ const vehicleCategoryMap: Record<string, VehicleCategory> = {
 
 type Props = {
   hotels: LocationOption[];
+  initialHotelSlug?: string;
+  initialOriginCode?: string;
+  initialOriginLabel?: string;
+  initialDateTime?: string;
+  autoShowResults?: boolean;
 };
 
-export default function TrasladoSearch({ hotels }: Props) {
+export default function TrasladoSearch({
+  hotels,
+  initialHotelSlug,
+  initialOriginCode,
+  initialOriginLabel,
+  initialDateTime,
+  autoShowResults = false
+}: Props) {
   const defaultHotel = hotels[0];
+  const initialHotel =
+    hotels.find((hotel) => hotel.slug === initialHotelSlug) ?? defaultHotel ?? hotels[0];
   const defaultAirport = airportOptions[0];
-  const [destinationSlug, setDestinationSlug] = useState(defaultHotel?.slug ?? "hard-rock-punta-cana");
+  const initialAirport =
+    airportOptions.find((airport) => airport.code === initialOriginCode) ?? defaultAirport;
+  const [destinationSlug, setDestinationSlug] = useState(initialHotel?.slug ?? "hard-rock-punta-cana");
   const [destinationLabel, setDestinationLabel] = useState(
-    defaultHotel?.name ?? "Hard Rock Hotel & Casino Punta Cana"
+    initialHotel?.name ?? "Hard Rock Hotel & Casino Punta Cana"
   );
-  const [originLabel, setOriginLabel] = useState(defaultAirport.label);
-  const [originCode, setOriginCode] = useState(defaultAirport.code);
+  const [originLabel, setOriginLabel] = useState(initialOriginLabel ?? initialAirport.label);
+  const [originCode, setOriginCode] = useState(initialAirport.code);
   const [passengers, setPassengers] = useState(2);
-  const [dateTime, setDateTime] = useState("");
-  const [showResults, setShowResults] = useState(false);
-  const [formCollapsed, setFormCollapsed] = useState(false);
+  const [dateTime, setDateTime] = useState(initialDateTime ?? "");
+  const initialResultsVisible = Boolean(autoShowResults && initialHotel && initialDateTime);
+  const [showResults, setShowResults] = useState(initialResultsVisible);
+  const [formCollapsed, setFormCollapsed] = useState(initialResultsVisible);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [flightNumber, setFlightNumber] = useState("");
+
+  useEffect(() => {
+    if (autoShowResults && initialHotel && initialDateTime) {
+      setShowResults(true);
+      setFormCollapsed(true);
+    }
+  }, [autoShowResults, initialHotel, initialDateTime]);
 
   const selectedHotel = useMemo(
     () => hotels.find((hotel) => hotel.slug === destinationSlug),
