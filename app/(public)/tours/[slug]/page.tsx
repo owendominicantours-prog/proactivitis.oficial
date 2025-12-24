@@ -204,6 +204,13 @@ const variantReviewHighlights: Record<TourDetailVariant, ReviewHighlight[]> = {
 
 const reviewTags = ["Excelente guía", "Mucha adrenalina", "Puntualidad"];
 
+type TourVariantConfig = {
+  galleryIndex?: number;
+  heroBlurb?: string;
+  heroBadge?: string;
+  faqOverride?: FAQItem;
+};
+
 const tourVariantConfigs: Record<TourDetailVariant, TourVariantConfig> = {
   party: {
     galleryIndex: 1,
