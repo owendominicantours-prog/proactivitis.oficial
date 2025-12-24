@@ -120,6 +120,7 @@ export default function TrasladoSearch({ hotels }: Props) {
   const [showResults, setShowResults] = useState(false);
   const [formCollapsed, setFormCollapsed] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [flightNumber, setFlightNumber] = useState("");
 
   const selectedHotel = useMemo(
     () => hotels.find((hotel) => hotel.slug === destinationSlug),
@@ -155,6 +156,9 @@ export default function TrasladoSearch({ hotels }: Props) {
       originHotelName: selectedHotel.name,
       origin: originCode
     };
+    if (flightNumber.trim()) {
+      payload.flightNumber = flightNumber.trim();
+    }
     if (transferTourId) {
       payload.tourId = transferTourId;
     }
@@ -222,6 +226,11 @@ export default function TrasladoSearch({ hotels }: Props) {
               <p className="text-sm text-slate-600">
                 {summaryDate ?? "Fecha pendiente"} · {passengers} pasajero{passengers > 1 ? "s" : ""}
               </p>
+              {flightNumber.trim() && (
+                <p className="text-sm text-slate-600">
+                  Vuelo: <span className="font-semibold text-slate-900">{flightNumber.trim()}</span>
+                </p>
+              )}
             </div>
             <button
               type="button"
@@ -295,6 +304,16 @@ export default function TrasladoSearch({ hotels }: Props) {
                 value={dateTime}
                 required
                 onChange={(event) => setDateTime(event.target.value)}
+                className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
+              />
+            </label>
+            <label className="flex-1 min-w-[180px] text-sm text-slate-500">
+              Número de vuelo
+              <input
+                type="text"
+                value={flightNumber}
+                onChange={(event) => setFlightNumber(event.target.value.toUpperCase())}
+                placeholder="PU123"
                 className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
               />
             </label>
