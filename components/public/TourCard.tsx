@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { formatReviewCountShort, getTourReviewCount } from "@/lib/reviewCounts";
 
 type TourCardProps = {
   slug: string;
@@ -54,7 +55,9 @@ export function TourCard({
   pickupIncluded
 }: TourCardProps) {
   const displayRating = typeof rating === "number" ? rating.toFixed(1) : "4.9";
-  const badgeText = `⭐ ${displayRating} • 1.2K reseñas`;
+  const reviewCount = getTourReviewCount(slug, "card");
+  const reviewLabel = formatReviewCountShort(reviewCount);
+  const badgeText = `⭐ ${displayRating} • ${reviewLabel} reseñas`;
   const tagList = tags && tags.length ? tags : ["Experiencia Top"];
   const locationText = zone || location?.split(",")[0] || "Punta Cana";
 

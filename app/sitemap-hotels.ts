@@ -1,6 +1,6 @@
 import { buildSitemapEntries } from "@/lib/sitemap-generator";
 
 export default async function sitemap() {
-  const { tourEntries } = await buildSitemapEntries();
-  return tourEntries;
+  const { hotelEntries } = await buildSitemapEntries();
+  return hotelEntries;
 }

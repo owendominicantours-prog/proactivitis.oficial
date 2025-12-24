@@ -4,6 +4,7 @@ import TourGalleryViewer from "@/components/shared/TourGalleryViewer";
 import { notFound, redirect } from "next/navigation";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import { prisma } from "@/lib/prisma";
+import { formatReviewCountValue, getTourReviewCount } from "@/lib/reviewCounts";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 
@@ -172,6 +173,9 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
     tour.shortDescription && tour.shortDescription.length > 220
       ? `${tour.shortDescription.slice(0, 220).trim()}…`
       : tour.shortDescription || "Explora esta aventura guiada por expertos locales.";
+
+  const detailReviewCount = getTourReviewCount(tour.slug, "detail");
+  const detailReviewLabel = formatReviewCountValue(detailReviewCount);
 
   const quickInfo = [
     {
@@ -413,7 +417,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Prueba social</p>
                 <h3 className="text-[16px] font-semibold text-slate-900">Opiniones</h3>
               </div>
-              <div className="text-xs uppercase tracking-[0.3em] text-slate-400">⭐ 4.9 · 1,230 reseñas</div>
+              <div className="text-xs uppercase tracking-[0.3em] text-slate-400">⭐ 4.9 · {detailReviewLabel} reseñas</div>
             </div>
             <div className="mt-4 grid gap-6 lg:grid-cols-[1.2fr,1fr]">
               <div className="space-y-4">

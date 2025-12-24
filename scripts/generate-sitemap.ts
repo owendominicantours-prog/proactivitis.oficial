@@ -17,11 +17,18 @@ async function buildXml(entries: { url: string; priority: number }[]) {
 }
 
 async function main() {
-  const entries = await buildSitemapEntries();
-  const xml = await buildXml(entries);
-  const target = path.join(process.cwd(), "public", "sitemap.xml");
-  await writeFile(target, xml, "utf8");
-  console.log(`Updated sitemap with ${entries.length} entries`);
+  const { tourEntries, hotelEntries } = await buildSitemapEntries();
+  const tourXml = await buildXml(tourEntries);
+  const hotelXml = await buildXml(hotelEntries);
+  const tourTarget = path.join(process.cwd(), "public", "sitemap.xml");
+  const hotelTarget = path.join(process.cwd(), "public", "sitemap-hotels.xml");
+  await Promise.all([
+    writeFile(tourTarget, tourXml, "utf8"),
+    writeFile(hotelTarget, hotelXml, "utf8")
+  ]);
+  console.log(
+    `Updated sitemap with ${tourEntries.length} tour entries and ${hotelEntries.length} hotel entries`
+  );
 }
 
 main()

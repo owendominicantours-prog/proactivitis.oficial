@@ -21,6 +21,20 @@ const MAX_TOP_HOTELS = 80;
 const MAX_TOURS_PER_HOTEL = 35;
 const MAX_TOTAL_COMBOS = 4000;
 
+export type RouteEntry = { url: string; priority: number };
+
+export interface TourHotelHybridLink {
+  tourSlug: string;
+  hotelSlug: string;
+  url: string;
+}
+
+export interface SitemapEntries {
+  tourEntries: RouteEntry[];
+  hotelEntries: RouteEntry[];
+  hybridLinks: TourHotelHybridLink[];
+}
+
 const matchesInheritance = (
   tour: { countryId: string; destinationId?: string | null; microZoneId?: string | null; category?: string | null },
   location: { countryId: string; destinationId?: string | null; microZoneId?: string | null }
@@ -36,7 +50,16 @@ const matchesInheritance = (
   return false;
 };
 
-export async function buildSitemapEntries() {
+const uniqueByUrl = (entries: RouteEntry[]) => {
+  const seen = new Set<string>();
+  return entries.filter((entry) => {
+    if (seen.has(entry.url)) return false;
+    seen.add(entry.url);
+    return true;
+  });
+};
+
+export async function buildSitemapEntries(): Promise<SitemapEntries> {
   const [tours, locations, bookings, countries, destinations, microZones] = await Promise.all([
     prisma.tour.findMany({
       select: {
@@ -96,7 +119,7 @@ export async function buildSitemapEntries() {
     .sort((a, b) => b.traffic - a.traffic)
     .slice(0, MAX_TOP_HOTELS);
 
-  const combos: { url: string; priority: number }[] = [];
+  const combos: (RouteEntry & { tourSlug: string; locationSlug: string })[] = [];
   let totalCombos = 0;
 
   for (const { location } of locationRank) {
@@ -117,30 +140,28 @@ export async function buildSitemapEntries() {
       if (totalCombos >= MAX_TOTAL_COMBOS) break;
       combos.push({
         url: `${BASE_URL}/tours/${tour.slug}/recogida/${location.slug}`,
-        priority: 0.6
+        priority: 0.6,
+        tourSlug: tour.slug,
+        locationSlug: location.slug
       });
       totalCombos += 1;
     }
   }
 
-  const trasladoHotelEntries = locations
+  const trasladoHotelEntries: RouteEntry[] = locations
     .filter((location) => location.destination?.slug === "punta-cana")
     .map((location) => ({
       url: `${BASE_URL}/traslado/punta-cana/to-${location.slug}`,
       priority: 0.65
     }));
 
-  const routeEntries: { url: string; priority: number }[] = [
+  const tourEntries: RouteEntry[] = uniqueByUrl([
     { url: `${BASE_URL}/`, priority: 1.0 },
     { url: `${BASE_URL}/tours`, priority: 0.9 },
     { url: `${BASE_URL}/traslado`, priority: 0.9 },
     ...tours.map((tour) => ({
       url: `${BASE_URL}/tours/${tour.slug}`,
       priority: 0.8
-    })),
-    ...locations.map((location) => ({
-      url: `${BASE_URL}/recogida/${location.slug}`,
-      priority: 0.7
     })),
     ...countries.map((country) => ({
       url: `${BASE_URL}/traslado/${country.slug}`,
@@ -155,8 +176,24 @@ export async function buildSitemapEntries() {
       priority: 0.6
     })),
     ...trasladoHotelEntries,
-    ...combos
-  ];
+    ...combos.map(({ url, priority }) => ({ url, priority }))
+  ]);
 
-  return routeEntries;
+  const hotelEntries: RouteEntry[] = uniqueByUrl([
+    ...locations.map((location) => ({
+      url: `${BASE_URL}/recogida/${location.slug}`,
+      priority: 0.7
+    })),
+    ...trasladoHotelEntries
+  ]);
+
+  return {
+    tourEntries,
+    hotelEntries,
+    hybridLinks: combos.map(({ tourSlug, locationSlug, url }) => ({
+      tourSlug,
+      hotelSlug: locationSlug,
+      url
+    }))
+  };
 }
