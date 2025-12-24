@@ -243,7 +243,7 @@ export default function TrasladoSearch({
         setOriginLabel(matchAirport.label);
       }
     }
-    if (hotelParam && dateParam) {
+    if (hotelParam) {
       setShowResults(true);
       setFormCollapsed(true);
     }
