@@ -460,33 +460,58 @@ export default function TrasladoSearch({
   };
 
   const originSuggestionPool = useMemo(() => {
-    const baseOptions: OriginSelection[] = [
-      ...airportOptions.map((option) => createAirportSelection(option)),
-      ...hotels.map((hotel) => createHotelSelection(hotel))
-    ];
     const normalizedQuery = normalizeValue(originLabel);
-    if (!normalizedQuery) {
-      return baseOptions.slice(0, 8);
+    const matches = (options: OriginSelection[], limit: number) => {
+      const filtered = options.filter((option) => {
+        const normalizedLabel = normalizeValue(option.label);
+        return (
+          normalizedLabel.includes(normalizedQuery) || normalizedQuery.includes(normalizedLabel)
+        );
+      });
+      return normalizedQuery ? filtered.slice(0, limit) : options.slice(0, limit);
+    };
+
+    const airportSelections = airportOptions.map((option) => createAirportSelection(option));
+    const hotelSelections = hotels.map((hotel) => createHotelSelection(hotel));
+
+    const airportMatches = matches(airportSelections, 4);
+    const hotelMatches = matches(hotelSelections, 6);
+
+    if (!normalizedQuery && originSelection.type === "hotel") {
+      return [...airportSelections.slice(0, 3), ...hotelSelections.slice(0, 5)];
     }
-    const matches = baseOptions.filter((option) => {
-      const normalizedLabel = normalizeValue(option.label);
-      return (
-        normalizedLabel.includes(normalizedQuery) || normalizedQuery.includes(normalizedLabel)
-      );
-    });
-    return matches.length ? matches.slice(0, 8) : baseOptions.slice(0, 6);
-  }, [originLabel, hotels]);
 
-  const destinationSuggestions = useMemo(() => {
+    const combined = [...airportMatches, ...hotelMatches];
+    if (combined.length) {
+      return combined;
+    }
+    return [...airportSelections.slice(0, 3), ...hotelSelections.slice(0, 5)];
+  }, [originLabel, hotels, originSelection.type]);
+
+  const destinationSuggestionPool = useMemo(() => {
     const normalizedQuery = normalizeValue(destinationLabel);
-    if (!normalizedQuery) return hotels.slice(0, 6);
-    const matches = hotels.filter((hotel) => {
-      const normalizedName = normalizeValue(hotel.name);
-      return normalizedName.includes(normalizedQuery) || normalizedQuery.includes(normalizedName);
-    });
-    return matches.length ? matches.slice(0, 6) : hotels.slice(0, 6);
-  }, [destinationLabel, hotels]);
+    const filterOptions = <T extends { label: string }>(options: T[], limit: number) => {
+      if (!normalizedQuery) {
+        return options.slice(0, limit);
+      }
+      const filtered = options.filter((option) => {
+        const normalized = normalizeValue(option.label);
+        return normalized.includes(normalizedQuery) || normalizedQuery.includes(normalized);
+      });
+      return filtered.slice(0, limit);
+    };
 
+    const hotelSelections = hotels.map((hotel) => hotel);
+    const airportSelections = airportDestinationOptions;
+
+    const matchedAirports = filterOptions(airportSelections, 3);
+    const matchedHotels = filterOptions(hotelSelections, 6);
+
+    if (matchedAirports.length || matchedHotels.length) {
+      return [...matchedAirports, ...matchedHotels];
+    }
+    return [...airportSelections.slice(0, 3), ...hotelSelections.slice(0, 6)];
+  }, [destinationLabel, hotels]);
   const handleSelectOrigin = (selection: OriginSelection) => {
     if (originBlurTimeout.current) {
       clearTimeout(originBlurTimeout.current);
@@ -511,13 +536,28 @@ export default function TrasladoSearch({
     }, 150);
   };
 
-  const handleSelectDestination = (hotel: LocationOption) => {
+  type DestinationSuggestion = LocationOption | { label: string; slug: string; type: "airport" };
+
+  const airportDestinationOptions = airportOptions.map((airport) => ({
+    label: airport.label,
+    slug: `airport-${airport.code}`,
+    type: "airport" as const
+  }));
+
+  const isAirportSuggestion = (option: DestinationSuggestion): option is { label: string; slug: string; type: "airport" } =>
+    "type" in option && option.type === "airport";
+
+  const handleSelectDestination = (option: DestinationSuggestion) => {
     if (destinationBlurTimeout.current) {
       clearTimeout(destinationBlurTimeout.current);
       destinationBlurTimeout.current = null;
     }
-    setDestinationLabel(hotel.name);
-    setDestinationSlug(hotel.slug);
+    setDestinationLabel(option.label);
+    if ("type" in option && option.type === "airport") {
+      setDestinationSlug(option.slug);
+    } else {
+      setDestinationSlug(option.slug);
+    }
     setShowDestinationSuggestions(false);
   };
 
@@ -670,19 +710,19 @@ export default function TrasladoSearch({
                   placeholder="Escribe tu hotel"
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
                 />
-                {showDestinationSuggestions && destinationSuggestions.length > 0 && (
+                {showDestinationSuggestions && destinationSuggestionPool.length > 0 && (
                   <ul className="absolute left-0 right-0 z-30 mt-1 max-h-60 overflow-auto rounded-2xl border border-slate-200 bg-white shadow-lg">
-                    {destinationSuggestions.map((hotel) => (
-                      <li key={`destination-option-${hotel.slug}`} className="border-b border-slate-100 last:border-0">
+                    {destinationSuggestionPool.map((option) => (
+                      <li key={`destination-option-${option.slug}`} className="border-b border-slate-100 last:border-0">
                         <button
                           type="button"
                           onMouseDown={(event) => event.preventDefault()}
-                          onClick={() => handleSelectDestination(hotel)}
+                          onClick={() => handleSelectDestination(option)}
                           className="flex w-full flex-col px-4 py-3 text-left text-sm text-slate-800 transition hover:bg-slate-50"
                         >
-                          <span className="font-semibold">{hotel.name}</span>
+                          <span className="font-semibold">{option.label}</span>
                           <span className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
-                            {hotel.destinationName ?? "Hotel"}
+                            {isAirportSuggestion(option) ? "Aeropuerto" : option.destinationName ?? "Hotel"}
                           </span>
                         </button>
                       </li>
