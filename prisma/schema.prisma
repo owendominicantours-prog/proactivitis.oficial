@@ -210,19 +210,18 @@ model MicroZone {
 }
 
 model Location {
-    id            String       @id @default(cuid())
-    name          String
-    slug          String       @unique
-    createdAt     DateTime     @default(now())
-    updatedAt     DateTime     @updatedAt
-    country       Country      @relation("CountryLocations", fields: [countryId], references: [code])
-    countryId     String       @default("RD")
-    destination   Destination? @relation("LocationDestination", fields: [destinationId], references: [id])
-    destinationId String?
-    microZone     MicroZone?   @relation("MicroZoneLocations", fields: [microZoneId], references: [id])
-    microZoneId   String?
-    assignedZoneId String?
-  }
+  id            String       @id @default(cuid())
+  name          String
+  slug          String       @unique
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  country       Country      @relation("CountryLocations", fields: [countryId], references: [code])
+  countryId     String       @default("RD")
+  destination   Destination? @relation("LocationDestination", fields: [destinationId], references: [id])
+  destinationId String?
+  microZone     MicroZone?   @relation("MicroZoneLocations", fields: [microZoneId], references: [id])
+  microZoneId   String?
+}
 
 model Session {
   id           String   @id
@@ -324,17 +323,6 @@ model Tour {
   destinationId          String?
   microZone              MicroZone?      @relation("TourMicroZone", fields: [microZoneId], references: [id])
   microZoneId            String?
-  TourVariant            TourVariant[]
-}
-
-model TourVariant {
-  id        String   @id @default(cuid())
-  tourId    String
-  variant   String
-  createdAt DateTime @default(now()) @map("created_at")
-  Tour      Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
-
-  @@unique([tourId, variant])
 }
 
 model User {

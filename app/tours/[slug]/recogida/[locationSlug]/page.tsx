@@ -82,27 +82,7 @@ const reviewBreakdown = [
   { label: "1 estrella", percent: 0 }
 ];
 
-type ReviewHighlight = {
-  name: string;
-  date: string;
-  quote: string;
-  avatar: string;
-};
-
-type FAQItem = {
-  question: string;
-  answer: string;
-};
-
-type TourVariantConfig = {
-  galleryIndex?: number;
-  heroBlurb?: string;
-  heroBadge?: string;
-  reviewHighlights?: ReviewHighlight[];
-  faqOverride?: FAQItem;
-};
-
-const defaultReviewHighlights = [
+const reviewHighlights = [
   {
     name: "Gabriela R.",
     date: "Mayo 2025 · Verified traveler",
@@ -124,125 +104,6 @@ const defaultReviewHighlights = [
 ];
 
 const reviewTags = ["Excelente guía", "Mucha adrenalina", "Puntualidad"];
-
-const defaultFaqs: FAQItem[] = [
-  {
-    question: "¿Qué incluye la experiencia?",
-    answer:
-      "Traslado desde tu hotel, guía certificado, snorkel, bebidas selectas y una cena ligera frente al atardecer."
-  },
-  {
-    question: "¿Puedo modificar la fecha?",
-    answer: "Solo requerimos 24h de antelación para reprogramar, sujeto a disponibilidad del tour y del hotel."
-  },
-  {
-    question: "¿Qué pasa si llueve?",
-    answer:
-      "La experiencia se ajusta a condiciones moderadas; en caso de lluvia fuerte, se ofrece cambio de fecha o reembolso."
-  },
-  {
-    question: "¿Hay extras para grupos grandes?",
-    answer:
-      "Coordinamos DJ, barra o equipos especiales según el plan; comparte tu idea y te enviamos la propuesta."
-  }
-];
-
-const tourVariantConfigs: Record<string, TourVariantConfig> = {
-  "sunset-catamaran-cruise-passengers": {
-    galleryIndex: 0,
-    heroBlurb:
-      "Ajustamos el horario a la llegada de tu crucero. Recogida en Puerto Taino Bay/Amber Cove a la hora exacta de atraque.",
-    heroBadge: "Pick-up sincronizado con tu barco",
-    reviewHighlights: [
-      {
-        name: "Lucía & Grupo Crucero",
-        date: "Julio 2025 ¶ú Verified traveler",
-        quote: "Llegamos directo desde el barco y ya teníamos la lancha esperándonos. Todo cronometrado.",
-        avatar: "https://images.unsplash.com/photo-1504593811423-6dd665756598"
-      }
-    ],
-    faqOverride: {
-      question: "¿Qué pasa si mi barco se retrasa?",
-      answer:
-        "Monitorizamos el estado del crucero en tiempo real y reagendamos la recogida sin costo adicional para que no pierdas el atardecer."
-    }
-  },
-  "sunset-catamaran-bachelor-party": {
-    galleryIndex: 1,
-    heroBlurb: "Bar abierto premium y DJ privado. El mejor plan para grupos de amigos antes de la boda.",
-    heroBadge: "Fiesta privada con barra premium",
-    reviewHighlights: [
-      {
-        name: "Marcos & Amigos",
-        date: "Junio 2025 ¶ú Bachelor crew",
-        quote: "DJ a bordo y tragos ilimitados hicieron que la despedida fuera inolvidable. ¡Seguiremos regresando!",
-        avatar: "https://images.unsplash.com/photo-1469474968028-56623f02e42e"
-      }
-    ],
-    faqOverride: {
-      question: "¿Puedo llevar música y barra privada?",
-      answer:
-        "Sí, activamos el DJ y barra personalizada con mixólogos; solo confírmanos cuántas personas y preferencias."
-    }
-  },
-  "sunset-catamaran-couples-anniversary": {
-    galleryIndex: 2,
-    heroBlurb: "Cena ligera a bordo y fotos profesionales del atardecer para parejas. Privacidad garantizada.",
-    heroBadge: "Experiencia romántica íntima",
-    reviewHighlights: [
-      {
-        name: "Camila & Mateo",
-        date: "Abril 2025 ¶ú Couples retreat",
-        quote: "La cena a bordo y el fotógrafo privado hicieron que nuestro aniversario fuera mágico y relajado.",
-        avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39"
-      }
-    ],
-    faqOverride: {
-      question: "¿El tour es privado para parejas?",
-      answer:
-        "Personalizamos la cubierta para tu pareja, incluyendo cena ligera, fotos al atardecer y privacidad total en la zona VIP."
-    }
-  },
-  "sunset-catamaran-family-friendly": {
-    galleryIndex: 3,
-    heroBlurb:
-      "Chalecos salvavidas para niños y equipo de snorkel infantil. Ambiente seguro y divertido para toda la familia.",
-    heroBadge: "Kit familiar con snorkel infantil",
-    reviewHighlights: [
-      {
-        name: "Familia Castillo",
-        date: "Mayo 2025 ¶ú Verified parents",
-        quote:
-          "Los chalecos infantiles y la atención del equipo nos hicieron sentir tranquilos mientras los niños nadaban y jugaban.",
-        avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1"
-      }
-    ],
-    faqOverride: {
-      question: "¿Hay chalecos y snorkel para niños?",
-      answer:
-        "Contamos con kits de seguridad para niños y equipo adaptado; además, los guías acompañan cada tramo para que las familias estén seguras."
-    }
-  },
-  "sunset-catamaran-usa-travelers": {
-    galleryIndex: 4,
-    heroBlurb: "Precios en USD, guías nativos en inglés y estándares de seguridad americanos.",
-    heroBadge: "Estándares americanos y guía nativo",
-    reviewHighlights: [
-      {
-        name: "Travelers USA",
-        date: "Agosto 2025 ¶ú Verified travelers",
-        quote:
-          "Todo en dólares, el guía hablaba inglés perfecto y el protocolo de seguridad fue de primer nivel, tal como lo esperábamos.",
-        avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39"
-      }
-    ],
-    faqOverride: {
-      question: "¿Ofrecen guías nativos en inglés y estándares de seguridad americanos?",
-      answer:
-        "Sí, todos los guías tienen entrenamiento bilingüe y trabajamos con protocolos americanos de seguridad, incluidos controles de flotabilidad."
-    }
-  }
-};
 
 type TourHotelLandingParams = {
   params: Promise<{ slug: string; locationSlug: string }>;
@@ -337,33 +198,11 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
   const parsedAdminItinerary = parseAdminItinerary(tour.adminNote ?? "");
   const itinerarySource = parsedAdminItinerary.length ? parsedAdminItinerary : parseItinerary(tour.adminNote ?? "");
   const visualTimeline = itinerarySource.length ? itinerarySource : itineraryMock;
-  const heroImageFallback = tour.heroImage ?? gallery[0];
-  const variantConfig = tourVariantConfigs[slug];
-  const variantGalleryImage =
-    typeof variantConfig?.galleryIndex === "number" &&
-    variantConfig.galleryIndex >= 0 &&
-    variantConfig.galleryIndex < gallery.length
-      ? gallery[variantConfig.galleryIndex]
-      : undefined;
-  const heroImage = variantGalleryImage ?? heroImageFallback;
-  const baseShortTeaser =
+  const heroImage = tour.heroImage ?? gallery[0];
+  const shortTeaser =
     tour.shortDescription && tour.shortDescription.length > 220
       ? `${tour.shortDescription.slice(0, 220).trim()}…`
       : tour.shortDescription || "Explora esta aventura guiada por expertos locales.";
-  const heroCopy = variantConfig?.heroBlurb ?? baseShortTeaser;
-  const heroBadge = variantConfig?.heroBadge;
-  const summaryDescription = tour.description ?? heroCopy;
-  const variantFaq = variantConfig?.faqOverride;
-  const faqList = variantFaq
-    ? [variantFaq, ...defaultFaqs.filter((faq) => faq.question !== variantFaq.question)]
-    : defaultFaqs;
-  const variantReviewHighlights = variantConfig?.reviewHighlights ?? [];
-  const combinedReviewHighlights = [
-    ...variantReviewHighlights,
-    ...defaultReviewHighlights.filter(
-      (review) => !variantReviewHighlights.some((variantReview) => variantReview.name === review.name)
-    )
-  ];
 
   const quickInfo = [
     {
@@ -426,10 +265,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
             <h1 className="mb-6 text-3xl font-black leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
               {tour.title}
             </h1>
-            {heroBadge && (
-              <p className="text-xs uppercase tracking-[0.4em] text-indigo-500">{heroBadge}</p>
-            )}
-            <p className="text-lg text-slate-500 leading-relaxed">{heroCopy}</p>
+            <p className="text-lg text-slate-500 leading-relaxed">{shortTeaser}</p>
             <div className="flex items-center gap-8 border-t border-slate-100 pt-8">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Desde</p>
@@ -479,20 +315,6 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
       </section>
 
       <section className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-4 py-8">
-        <div className="rounded-[28px] border border-emerald-100 bg-gradient-to-r from-emerald-50/60 via-white to-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Traslado desde tu hotel incluido</p>
-          <h3 className="mt-2 text-2xl font-semibold text-slate-900">Coordinamos la conexión con tu hotel</h3>
-          <p className="mt-4 text-sm text-slate-600">
-            Ofrecemos recogida en {location.name} a las 2:15 PM para que llegues a tiempo al Sunset Catamaran sin
-            preocuparte por el traslado.
-          </p>
-          <p className="mt-2 text-xs uppercase tracking-[0.35em] text-emerald-700">
-            Este bloque enlaza tus 50,000 landings de hoteles con las experiencias de Proactivitis.
-          </p>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-4 py-8">
         <div className="rounded-[28px] border border-slate-100 bg-white/90 p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-2 text-slate-600">
             <span className="flex items-center gap-2">
@@ -522,34 +344,12 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">FAQs</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">Preguntas frecuentes</h3>
-              </div>
-            </div>
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
-              {faqList.map((faq) => (
-                <article
-                  key={faq.question}
-                  className="rounded-[16px] border border-[#F1F5F9] bg-white/90 p-4 shadow-sm"
-                >
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
-                    {faq.question}
-                  </p>
-                  <p className="mt-2 text-sm text-slate-600">{faq.answer}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resumen general</p>
                 <h2 className="text-[20px] font-semibold text-slate-900">Visión amplificada</h2>
               </div>
               <span className="text-xs uppercase tracking-[0.3em] text-slate-400">Recogida en {location.name}</span>
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">{summaryDescription}</p>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">{tour.description ?? shortTeaser}</p>
           </section>
 
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
@@ -672,7 +472,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
                 </div>
               </div>
               <div className="space-y-4">
-                {combinedReviewHighlights.map((review) => (
+                {reviewHighlights.map((review) => (
                   <div key={review.name} className="rounded-[16px] border border-[#F1F5F9] bg-white p-4 shadow-sm">
                     <div className="flex items-center gap-3">
                       <Image

@@ -6,23 +6,17 @@ import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import { prisma } from "@/lib/prisma";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
-import { TourDetailVariant } from "@/lib/tourVariants";
 
-export type TourDetailSearchParams = {
-  hotelSlug?: string | string[];
-  bookingCode?: string | string[];
+type TourDetailSearchParams = {
+  hotelSlug?: string;
+  bookingCode?: string;
 };
 
 type TourDetailProps = {
-  params: {
+  params: Promise<{
     slug?: string;
-  };
-  searchParams?: TourDetailSearchParams;
-};
-
-const resolveSearchParam = (value?: string | string[]) => {
-  if (Array.isArray(value)) return value[0];
-  return value;
+  }>;
+  searchParams?: Promise<TourDetailSearchParams>;
 };
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
@@ -101,14 +95,7 @@ const reviewBreakdown = [
   { label: "1 estrella", percent: 0 }
 ];
 
-type ReviewHighlight = {
-  name: string;
-  date: string;
-  quote: string;
-  avatar: string;
-};
-
-const baseReviewHighlights: ReviewHighlight[] = [
+const reviewHighlights = [
   {
     name: "Gabriela R.",
     date: "Mayo 2025 · Verified traveler",
@@ -129,153 +116,13 @@ const baseReviewHighlights: ReviewHighlight[] = [
   }
 ];
 
-const variantReviewHighlights: Record<TourDetailVariant, ReviewHighlight[]> = {
-  party: [
-    {
-      name: "Los Hernández",
-      date: "Junio 2025 · Despedida premium",
-      quote: "DJ a bordo, barra premium y un sunset privado. El mejor cierre antes de la boda.",
-      avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1"
-    },
-    {
-      name: "Amigos del Caribe",
-      date: "Abril 2025 · Grupo privado",
-      quote: "Música a medida, barra infinita y cero preocupaciones. Recomendado 100%.",
-      avatar: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab"
-    }
-  ],
-  family: [
-    {
-      name: "Familia Rivera",
-      date: "Julio 2025 · Viaje en familia",
-      quote: "Los niños amaron el snorkel y las guías infantiles los mantuvieron seguros en todo momento.",
-      avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1"
-    },
-    {
-      name: "Padres López",
-      date: "Mayo 2025 · Familias",
-      quote: "Chalecos y espacio para niños, el sunset perfecto para los papás también.",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e"
-    }
-  ],
-  cruise: [
-    {
-      name: "María P.",
-      date: "Enero 2025 · Cruceristas",
-      quote: "Recogida sincronizada con el crucero, todo puntual y sin estrés para el atardecer.",
-      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2"
-    },
-    {
-      name: "Daniel R.",
-      date: "Febrero 2025 · Crucero",
-      quote: "El equipo monitoreó el barco en tiempo real y nos llevaron directo al catamarán.",
-      avatar: "https://images.unsplash.com/photo-1502685104226-ee32379fefbe"
-    }
-  ],
-  couples: [
-    {
-      name: "Alex & Sofía",
-      date: "Junio 2025 · Parejas",
-      quote: "Cena ligera, fotos profesionales y privacidad. El sunset perfecto para celebrar.",
-      avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1"
-    },
-    {
-      name: "Max & Andrea",
-      date: "Abril 2025 · Aniversario",
-      quote: "El equipo mantuvo la privacidad y el atardecer fue mágico. Repetiremos.",
-      avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39"
-    }
-  ],
-  usa: [
-    {
-      name: "The Johnsons",
-      date: "Abril 2025 · USA Travelers",
-      quote: "Todo en USD, guías bilingües y estándares americanos. Muy recomendable.",
-      avatar: "https://images.unsplash.com/photo-1545996124-5f5b0379d29a"
-    },
-    {
-      name: "Sarah & Tom",
-      date: "Marzo 2025 · USA",
-      quote: "Seguro, puntual y sin sorpresas. El mejor plan para viajeros desde EEUU.",
-      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2"
-    }
-  ]
-};
-
 const reviewTags = ["Excelente guía", "Mucha adrenalina", "Puntualidad"];
 
-type TourVariantConfig = {
-  galleryIndex?: number;
-  heroBlurb?: string;
-  heroBadge?: string;
-  faqOverride?: FAQItem;
-};
-
-const tourVariantConfigs: Record<TourDetailVariant, TourVariantConfig> = {
-  party: {
-    galleryIndex: 1,
-    heroBlurb: "Bar abierto premium y DJ privado. El mejor plan para grupos de amigos antes de la boda.",
-    heroBadge: "Fiesta privada con barra premium",
-    faqOverride: {
-      question: "¿Puedo llevar música privada y barra premium?",
-      answer:
-        "Activamos DJ y mixólogo en cubierta privada; solo indícanos las preferencias y te enviamos la propuesta de barra por adelantado."
-    }
-  },
-  family: {
-    galleryIndex: 2,
-    heroBlurb: "Chalecos salvavidas para niños, equipo de snorkel infantil y guías enfocados en familias.",
-    heroBadge: "Kit familiar con snorkel infantil",
-    faqOverride: {
-      question: "¿Incluyen chalecos y snorkel para niños?",
-      answer:
-        "Contamos con kits infantiles, guías acompañantes y actividades seguras para familias, con espacios a bordo libres de multitudes."
-    }
-  },
-  cruise: {
-    galleryIndex: 0,
-    heroBlurb: "Ajustamos el horario a la llegada de tu crucero y recogemos desde los muelles oficiales.",
-    heroBadge: "Pick-up sincronizado con tu barco",
-    faqOverride: {
-      question: "¿Qué pasa si mi barco se retrasa?",
-      answer:
-        "Seguimos el estado del crucero en tiempo real, reprogramamos la recogida y nos aseguramos de que no te pierdas el atardecer."
-    }
-  },
-  couples: {
-    galleryIndex: 3,
-    heroBlurb: "Cena ligera a bordo y fotos profesionales del atardecer para parejas. Privacidad garantizada.",
-    heroBadge: "Atardecer íntimo para dos",
-    faqOverride: {
-      question: "¿Incluye cena ligera y fotos profesionales?",
-      answer:
-        "Ofrecemos un menú ligero de autor, cava de cortesía y fotógrafo profesional para que llevéis fotos inolvidables."
-    }
-  },
-  usa: {
-    galleryIndex: 4,
-    heroBlurb: "Precios en USD, guías bilingües y estándares de seguridad americanos.",
-    heroBadge: "Equipo bilingüe + seguridad USA",
-    faqOverride: {
-      question: "¿Aceptan pagos en USD y guías en inglés?",
-      answer:
-        "Trabajamos con tarifas en USD, guías bilingües y protocolos certificados para viajeros desde EEUU."
-    }
-  }
-};
-
-export async function renderTourDetailContent({
-  slug,
-  variant,
-  searchParams
-}: {
-  slug: string;
-  variant?: TourDetailVariant;
-  searchParams?: TourDetailSearchParams;
-}) {
-  if (!slug) notFound();
-  const hotelSlugFromQuery = resolveSearchParam(searchParams?.hotelSlug);
-  const bookingCodeFromQuery = resolveSearchParam(searchParams?.bookingCode);
+export default async function TourDetailPage({ params, searchParams }: TourDetailProps) {
+  const { slug } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const hotelSlugFromQuery = resolvedSearchParams?.hotelSlug;
+  const bookingCodeFromQuery = resolvedSearchParams?.bookingCode;
   const originHotel =
     hotelSlugFromQuery !== undefined
       ? await prisma.location.findUnique({
@@ -318,39 +165,13 @@ export async function renderTourDetailContent({
   const parsedAdminItinerary = parseAdminItinerary(tour.adminNote ?? "");
   const itinerarySource = parsedAdminItinerary.length ? parsedAdminItinerary : parseItinerary(tour.adminNote ?? "");
   const visualTimeline = itinerarySource.length ? itinerarySource : itineraryMock;
-  const heroImageFallback = gallery[0] ?? tour.heroImage ?? "/fototours/fotosimple.jpg";
+  const heroImage = tour.heroImage ?? gallery[0];
   const priceLabel = `$${tour.price.toFixed(0)} USD`;
   const needsReadMore = Boolean(tour.shortDescription && tour.shortDescription.length > 220);
-  const baseShortTeaser =
+  const shortTeaser =
     tour.shortDescription && tour.shortDescription.length > 220
       ? `${tour.shortDescription.slice(0, 220).trim()}…`
       : tour.shortDescription || "Explora esta aventura guiada por expertos locales.";
-  const variantConfig = variant ? tourVariantConfigs[variant] : undefined;
-  const variantGalleryImage =
-    typeof variantConfig?.galleryIndex === "number" &&
-    variantConfig.galleryIndex >= 0 &&
-    variantConfig.galleryIndex < gallery.length
-      ? gallery[variantConfig.galleryIndex]
-      : undefined;
-  const heroImage = variantGalleryImage ?? heroImageFallback;
-  const heroCopy = variantConfig?.heroBlurb ?? baseShortTeaser;
-  const heroBadge = variantConfig?.heroBadge;
-  const summaryDescription = tour.description ?? heroCopy;
-  const pickupTimeLabel = "2:15 PM";
-  const pickupHotelName = originHotel?.name ?? "tu hotel";
-  const hotelPickupMessage = `Ofrecemos recogida en ${pickupHotelName} a las ${pickupTimeLabel} para que llegues a tiempo al Sunset.`;
-  const variantFaq = variantConfig?.faqOverride;
-  const faqList = variantFaq
-    ? [variantFaq, ...defaultFaqs.filter((faq) => faq.question !== variantFaq.question)]
-    : defaultFaqs;
-  const variantReviewOverrides = variant ? variantReviewHighlights[variant] : [];
-  const variantReviewNames = new Set(variantReviewOverrides.map((review) => review.name));
-  const orderedReviewHighlights = variant
-    ? [
-        ...variantReviewOverrides,
-        ...baseReviewHighlights.filter((review) => !variantReviewNames.has(review.name))
-      ]
-    : baseReviewHighlights;
 
   const quickInfo = [
     {
@@ -412,10 +233,7 @@ export async function renderTourDetailContent({
             <h1 className="mb-6 text-3xl font-black leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
               {tour.title}
             </h1>
-            {heroBadge && (
-              <p className="text-xs uppercase tracking-[0.4em] text-indigo-500">{heroBadge}</p>
-            )}
-            <p className="mb-10 text-lg text-slate-500 leading-relaxed">{heroCopy}</p>
+            <p className="mb-10 text-lg text-slate-500 leading-relaxed">{shortTeaser}</p>
             <div className="flex items-center gap-8 border-t border-slate-100 pt-8">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Desde</p>
@@ -492,29 +310,7 @@ export async function renderTourDetailContent({
                 </Link>
               )}
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">{summaryDescription}</p>
-          </section>
-
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">FAQs</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">Preguntas frecuentes</h3>
-              </div>
-            </div>
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
-              {faqList.map((faq) => (
-                <article
-                  key={faq.question}
-                  className="rounded-[16px] border border-[#F1F5F9] bg-white/90 p-4 shadow-sm"
-                >
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
-                    {faq.question}
-                  </p>
-                  <p className="mt-2 text-sm text-slate-600">{faq.answer}</p>
-                </article>
-              ))}
-            </div>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">{shortTeaser}</p>
           </section>
 
           <section id="full-description" className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
@@ -648,7 +444,7 @@ export async function renderTourDetailContent({
                 </div>
               </div>
               <div className="space-y-4">
-                {orderedReviewHighlights.map((review) => (
+                {reviewHighlights.map((review) => (
                   <div key={review.name} className="rounded-[16px] border border-[#F1F5F9] bg-white p-4 shadow-sm">
                     <div className="flex items-center gap-3">
                       <Image
@@ -731,31 +527,10 @@ export async function renderTourDetailContent({
               <p>Operado por expertos en la región.</p>
             </div>
           </div>
-          <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Traslado desde tu hotel incluido</p>
-            <p className="mt-2 text-sm text-slate-600">{hotelPickupMessage}</p>
-            {originHotel?.slug && (
-              <Link
-                href={`/hotels/${originHotel.slug}`}
-                className="mt-4 inline-flex text-sm font-semibold text-indigo-600 hover:text-indigo-500"
-              >
-                Ver tu hotel
-              </Link>
-            )}
-          </div>
         </aside>
       </main>
 
       <ReserveFloatingButton targetId="booking" priceLabel={priceLabel} />
     </div>
   );
-}
-
-export default async function TourDetailPage({ params, searchParams }: TourDetailProps) {
-  const { slug } = params;
-  return renderTourDetailContent({
-    slug: slug ?? "",
-    variant: undefined,
-    searchParams
-  });
 }
