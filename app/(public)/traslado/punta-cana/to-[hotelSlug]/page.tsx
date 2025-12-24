@@ -7,6 +7,12 @@ import { prisma } from "@/lib/prisma";
 const BASE_ORIGIN_CODE = "PUJ";
 const BASE_ORIGIN_LABEL = "Aeropuerto de Punta Cana (PUJ)";
 
+const HOTEL_INCLUDE = {
+  destination: { select: { name: true } },
+  microZone: { select: { name: true, slug: true } },
+  assignedZoneId: true
+};
+
 const buildTrasladoSeoText = (hotelName: string) => {
   const keywords = [
     "Punta Cana Transfer",
@@ -14,10 +20,10 @@ const buildTrasladoSeoText = (hotelName: string) => {
     "Private Taxi Punta Cana",
     "Bavaro Shuttle"
   ];
-  const paragraphOne = `Reserva tu Traslado Privado en Punta Cana directamente hacia el ${hotelName}. Olvídate de las esperas en el Aeropuerto de Punta Cana (PUJ) gracias a nuestro ${keywords[0]} que te lleva rápido y seguro. Nuestro equipo repite el mantra "${keywords[1]}" cada vez que planifica la ruta para que el conductor llegue antes de que aterrices.`;
-  const paragraphTwo = `Las 100% unidades Originals Proactivitis operan como un ${keywords[2]} que mantiene señalizada la zona de Punta Cana, Cap Cana y Uvero Alto. Disfruta aire acondicionado, chofer bilingüe y respaldo en vivo porque así se diseñó nuestro ${keywords[0]} para no depender de taxis improvisados.`;
-  const paragraphThree = `El estilo ${keywords[3]} combina confort, limpieza y conectividad con tu hotel favorito. Ya sea que te hospedes en ${hotelName} o en otra propiedad cercana, ofrecemos apoyo para cambiar tu vuelo o actualizar el número de vuelo y mantener la plaza reservada.`;
-  const paragraphFour = `Selecciona el ${keywords[2]} desde el formulario y verás el precio transparente para Sedán, Van y SUV. Si requieres la reserva con copiloto o equipaje privado, solo confirma y el ${keywords[1]} seguirá el itinerario exacto.`;
+  const paragraphOne = `Reserva tu Traslado Privado en Punta Cana directamente hacia ${hotelName}. Olvidate las esperas en el aeropuerto (PUJ) gracias a nuestro ${keywords[0]} que te lleva rapido y seguro.`;
+  const paragraphTwo = `Las unidades Originals Proactivitis operan como un ${keywords[2]} con cobertura fija en Punta Cana, Cap Cana y Uvero Alto. Disfruta aire acondicionado, chofer bilingue y respaldo en vivo.`;
+  const paragraphThree = `El estilo ${keywords[3]} combina confort, limpieza y conectividad con tu hotel favorito. Cambia vuelos, actualiza datos y mantente en control del traslado.`;
+  const paragraphFour = `Selecciona el ${keywords[2]} desde el formulario y veras la tarifa transparente para Sedan, Van y SUV. Confirma y el ${keywords[1]} seguira el itinerario exacto.`;
   return [paragraphOne, paragraphTwo, paragraphThree, paragraphFour].join("\n\n");
 };
 
@@ -26,6 +32,32 @@ const getDefaultDateTime = () => {
   date.setMinutes(0, 0, 0);
   date.setHours(date.getHours() + 2);
   return date.toISOString().slice(0, 16);
+};
+
+const findHotelBySlug = async (slug?: string | null) => {
+  const cleaned = slug?.trim().toLowerCase();
+  if (!cleaned) return null;
+
+  let hotel = await prisma.location.findUnique({
+    where: { slug: cleaned },
+    include: HOTEL_INCLUDE
+  });
+  if (hotel) return hotel;
+
+  const fallbackSlug = cleaned.replace(/^to-/, "");
+  const fallbackName = fallbackSlug.replace(/-/g, " ");
+  hotel = await prisma.location.findFirst({
+    where: {
+      OR: [
+        { slug: { contains: fallbackSlug, mode: "insensitive" } },
+        { name: { contains: fallbackName, mode: "insensitive" } }
+      ]
+    },
+    orderBy: { updatedAt: "desc" },
+    include: HOTEL_INCLUDE
+  });
+
+  return hotel;
 };
 
 export async function generateMetadata({
@@ -41,19 +73,19 @@ export async function generateMetadata({
     };
   }
 
-  const hotel = await prisma.location.findUnique({
-    where: { slug: resolvedParams.hotelSlug }
-  });
+  const hotel = await findHotelBySlug(resolvedParams.hotelSlug);
   if (!hotel) {
     return {
       title: "Traslado Punta Cana | Proactivitis",
       description: "Programmatic SEO para traslados premium desde Punta Cana"
     };
   }
-    return {
-      title: `Traslado directo a ${hotel.name} | Proactivitis`,
-      description: `Reserva tu traslado Premium desde PUJ hacia ${hotel.name} con tarifas claras en vehículos privados.`
-    };
+  const canonical = new URL(`/traslado/punta-cana/to-${hotel.slug}`, "https://proactivitis.com").toString();
+  return {
+    title: `Traslado directo a ${hotel.name} | Proactivitis`,
+    description: `Reserva tu traslado Premium desde PUJ hacia ${hotel.name} con tarifas claras en vehiculos privados.`,
+    alternates: { canonical }
+  };
 }
 
 export async function generateStaticParams() {
@@ -73,12 +105,7 @@ export default async function HotelTrasladoPage({ params }: TrasladoPageProps) {
   if (!resolvedParams.hotelSlug) {
     notFound();
   }
-  const hotel = await prisma.location.findUnique({
-    where: { slug: resolvedParams.hotelSlug },
-    include: {
-      destination: { select: { name: true } }
-    }
-  });
+  const hotel = await findHotelBySlug(resolvedParams.hotelSlug);
   if (!hotel) {
     notFound();
   }
@@ -90,7 +117,8 @@ export default async function HotelTrasladoPage({ params }: TrasladoPageProps) {
       name: true,
       slug: true,
       destination: { select: { name: true } },
-      microZone: { select: { name: true, slug: true } }
+      microZone: { select: { name: true, slug: true } },
+      assignedZoneId: true
     }
   });
 
@@ -99,7 +127,8 @@ export default async function HotelTrasladoPage({ params }: TrasladoPageProps) {
     slug: item.slug,
     destinationName: item.destination?.name ?? null,
     microZoneName: item.microZone?.name ?? null,
-    microZoneSlug: item.microZone?.slug ?? null
+    microZoneSlug: item.microZone?.slug ?? null,
+    assignedZoneId: item.assignedZoneId ?? null
   }));
 
   const seoCopy = buildTrasladoSeoText(hotel.name);
@@ -113,7 +142,7 @@ export default async function HotelTrasladoPage({ params }: TrasladoPageProps) {
           <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Programmatic SEO · Traslado</p>
           <h1 className="text-4xl font-bold text-slate-900">Traslado directo a {hotel.name}</h1>
           <p className="max-w-3xl text-sm text-slate-600">
-            Nuestro motor carga el destino ya seleccionado, elige el vehículo y presenta precios claros para Sedán, Van y SUV sin necesidad de buscar de nuevo.
+            Nuestro motor carga el destino ya seleccionado, elige el vehiculo y presenta precios claros para Sedan, Van y SUV sin necesidad de buscar de nuevo.
           </p>
           <p className="text-sm text-slate-500 mt-2">Origen fijo: {BASE_ORIGIN_LABEL}</p>
         </div>

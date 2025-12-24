@@ -210,18 +210,19 @@ model MicroZone {
 }
 
 model Location {
-  id            String       @id @default(cuid())
-  name          String
-  slug          String       @unique
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  country       Country      @relation("CountryLocations", fields: [countryId], references: [code])
-  countryId     String       @default("RD")
-  destination   Destination? @relation("LocationDestination", fields: [destinationId], references: [id])
-  destinationId String?
-  microZone     MicroZone?   @relation("MicroZoneLocations", fields: [microZoneId], references: [id])
-  microZoneId   String?
-}
+    id            String       @id @default(cuid())
+    name          String
+    slug          String       @unique
+    createdAt     DateTime     @default(now())
+    updatedAt     DateTime     @updatedAt
+    country       Country      @relation("CountryLocations", fields: [countryId], references: [code])
+    countryId     String       @default("RD")
+    destination   Destination? @relation("LocationDestination", fields: [destinationId], references: [id])
+    destinationId String?
+    microZone     MicroZone?   @relation("MicroZoneLocations", fields: [microZoneId], references: [id])
+    microZoneId   String?
+    assignedZoneId String?
+  }
 
 model Session {
   id           String   @id

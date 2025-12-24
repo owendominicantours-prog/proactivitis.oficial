@@ -15,6 +15,19 @@ const destinationData = {
   shortDescription: "Zona turística premium del este de República Dominicana con sol, playa y experiencias exclusivas."
 };
 
+const microZoneToZoneIdMap: Record<string, string> = {
+  "cap-cana": "PUJ_BAVARO",
+  "cabeza-de-toro": "PUJ_BAVARO",
+  "bavaro-cortecito": "PUJ_BAVARO",
+  "arena-gorda": "PUJ_BAVARO",
+  "uvero-alto": "UVERO_MICHES",
+  "bavaro-majestic": "PUJ_BAVARO",
+  "bavaro-ocean": "PUJ_BAVARO",
+  "macao": "ROMANA_BAYAHIBE",
+  "punta-cana-resort": "PUJ_BAVARO",
+  "la-romana": "ROMANA_BAYAHIBE"
+};
+
 const microZoneDefinitions = [
   {
     slug: "cap-cana",
@@ -175,6 +188,8 @@ async function main() {
       }
     });
 
+    const assignedZoneId = microZoneToZoneIdMap[microZone.slug] ?? "PUJ_BAVARO";
+
     for (const hotel of microZone.hotels) {
       await prisma.location.upsert({
         where: { slug: hotel.slug },
@@ -182,14 +197,16 @@ async function main() {
           name: hotel.name,
           countryId: country.code,
           destinationId: destination.id,
-          microZoneId: locationGroup.id
+          microZoneId: locationGroup.id,
+          assignedZoneId
         },
         create: {
           name: hotel.name,
           slug: hotel.slug,
           countryId: country.code,
           destinationId: destination.id,
-          microZoneId: locationGroup.id
+          microZoneId: locationGroup.id,
+          assignedZoneId
         }
       });
       console.log(`seeded hotel ${hotel.slug} in ${microZone.slug}`);

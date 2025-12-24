@@ -140,11 +140,13 @@ const microZoneSlugToZoneId: Record<string, string> = {
 };
 
 export function resolveZoneId(hotel?: {
+  assignedZoneId?: string | null;
   microZoneSlug?: string | null;
   microZoneName?: string | null;
   destinationName?: string | null;
 }) {
   if (!hotel) return DEFAULT_ZONE_ID;
+  if (hotel.assignedZoneId) return hotel.assignedZoneId;
   const candidates = [hotel.microZoneName, hotel.destinationName].filter(Boolean) as string[];
   for (const candidate of candidates) {
     const match = microzoneIndex.get(candidate.toLowerCase());

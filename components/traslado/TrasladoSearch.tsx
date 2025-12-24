@@ -17,6 +17,7 @@ export type LocationOption = {
   destinationName?: string | null;
   microZoneName?: string | null;
   microZoneSlug?: string | null;
+  assignedZoneId?: string | null;
 };
 
 const airportOptions = [
@@ -152,7 +153,12 @@ export default function TrasladoSearch({
     [destinationSlug, hotels]
   );
 
-  const destinationZoneId = resolveZoneId(selectedHotel);
+  const destinationZoneId = resolveZoneId({
+    assignedZoneId: selectedHotel?.assignedZoneId,
+    microZoneSlug: selectedHotel?.microZoneSlug,
+    microZoneName: selectedHotel?.microZoneName,
+    destinationName: selectedHotel?.destinationName
+  });
   const zoneEntry = trasladoPricing.nodes.find((node) => node.id === destinationZoneId);
   const zoneLabel = zoneEntry?.name ?? "Punta Cana / República Dominicana";
   const originZoneId = airportZoneMapping[originCode] ?? DEFAULT_ZONE_ID;
@@ -396,6 +402,9 @@ export default function TrasladoSearch({
             <h2 className="text-2xl font-bold text-slate-900">
               Lleva a tu grupo de {passengers} pax a {selectedHotel?.name ?? "tu hotel"}
             </h2>
+            {selectedHotel && (
+              <p className="text-sm text-emerald-700">Mostrando tarifas privadas para {selectedHotel.name}</p>
+            )}
             <p className="text-sm text-slate-500">
               Zona del hotel: <span className="font-semibold text-slate-800">{zoneLabel}</span>
             </p>
