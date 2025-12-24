@@ -62,6 +62,7 @@ const uniqueByUrl = (entries: RouteEntry[]) => {
 export async function buildSitemapEntries(): Promise<SitemapEntries> {
   const [tours, locations, bookings, countries, destinations, microZones] = await Promise.all([
     prisma.tour.findMany({
+      where: { status: "published" },
       select: {
         id: true,
         slug: true,
