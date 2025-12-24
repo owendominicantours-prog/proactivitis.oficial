@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 
-type TourDetailSearchParams = {
+export type TourDetailSearchParams = {
   hotelSlug?: string;
   bookingCode?: string;
 };
@@ -118,8 +118,85 @@ const reviewHighlights = [
 
 const reviewTags = ["Excelente guía", "Mucha adrenalina", "Puntualidad"];
 
-export default async function TourDetailPage({ params, searchParams }: TourDetailProps) {
-  const { slug } = await params;
+type FAQItem = {
+  question: string;
+  answer: string;
+};
+
+type TourVariantConfig = {
+  heroImage?: string;
+  heroBlurb?: string;
+  heroBadge?: string;
+  faqOverride?: FAQItem;
+};
+
+export type TourDetailVariant = "party" | "family" | "cruise";
+
+const defaultFaqs: FAQItem[] = [
+  {
+    question: "¿Qué incluye la experiencia?",
+    answer:
+      "Traslado desde tu hotel, guía certificado, snorkel, bebidas selectas y una cena ligera frente al atardecer."
+  },
+  {
+    question: "¿Puedo modificar la fecha?",
+    answer: "Solo requerimos 24h de antelación para reprogramar, sujeto a disponibilidad del tour y del hotel."
+  },
+  {
+    question: "¿Qué pasa si llueve?",
+    answer:
+      "La experiencia se ajusta a condiciones moderadas; en caso de lluvia fuerte, se ofrece cambio de fecha o reembolso."
+  },
+  {
+    question: "¿Hay extras para grupos grandes?",
+    answer:
+      "Coordinamos DJ, barra o equipos especiales según el plan; comparte tu idea y te enviamos la propuesta."
+  }
+];
+
+const tourVariantConfigs: Record<TourDetailVariant, TourVariantConfig> = {
+  party: {
+    heroImage: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1400&q=80",
+    heroBlurb: "Bar abierto premium y DJ privado. El mejor plan para grupos de amigos antes de la boda.",
+    heroBadge: "Fiesta privada con barra premium",
+    faqOverride: {
+      question: "¿Puedo llevar música privada y barra premium?",
+      answer:
+        "Activamos DJ y mixólogo en cubierta privada, solo indícanos preferencias y te enviamos la propuesta de barra por adelantado."
+    }
+  },
+  family: {
+    heroImage: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80",
+    heroBlurb: "Chalecos salvavidas para niños, equipo de snorkel infantil y guías enfocados en familias.",
+    heroBadge: "Kit familiar con snorkel infantil",
+    faqOverride: {
+      question: "¿Incluyen chalecos y snorkel para niños?",
+      answer:
+        "Contamos con kits infantiles, guías acompañantes y actividades seguras para familias, con espacios a bordo libres de multitudes."
+    }
+  },
+  cruise: {
+    heroImage: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80",
+    heroBlurb: "Ajustamos el horario a la llegada de tu crucero y recogemos desde los muelles oficiales.",
+    heroBadge: "Pick-up sincronizado con tu barco",
+    faqOverride: {
+      question: "¿Qué pasa si mi barco se retrasa?",
+      answer:
+        "Seguimos el estado del crucero en tiempo real, reprogramamos la recogida y nos aseguramos de que no te pierdas el atardecer."
+    }
+  }
+};
+
+export async function renderTourDetailContent({
+  slug,
+  variant,
+  searchParams
+}: {
+  slug: string;
+  variant?: TourDetailVariant;
+  searchParams?: Promise<TourDetailSearchParams>;
+}) {
+  if (!slug) notFound();
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const hotelSlugFromQuery = resolvedSearchParams?.hotelSlug;
   const bookingCodeFromQuery = resolvedSearchParams?.bookingCode;
@@ -165,13 +242,22 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
   const parsedAdminItinerary = parseAdminItinerary(tour.adminNote ?? "");
   const itinerarySource = parsedAdminItinerary.length ? parsedAdminItinerary : parseItinerary(tour.adminNote ?? "");
   const visualTimeline = itinerarySource.length ? itinerarySource : itineraryMock;
-  const heroImage = tour.heroImage ?? gallery[0];
+  const heroImageFallback = tour.heroImage ?? gallery[0];
   const priceLabel = `$${tour.price.toFixed(0)} USD`;
   const needsReadMore = Boolean(tour.shortDescription && tour.shortDescription.length > 220);
-  const shortTeaser =
+  const baseShortTeaser =
     tour.shortDescription && tour.shortDescription.length > 220
       ? `${tour.shortDescription.slice(0, 220).trim()}…`
       : tour.shortDescription || "Explora esta aventura guiada por expertos locales.";
+  const variantConfig = variant ? tourVariantConfigs[variant] : undefined;
+  const heroImage = variantConfig?.heroImage ?? heroImageFallback;
+  const heroCopy = variantConfig?.heroBlurb ?? baseShortTeaser;
+  const heroBadge = variantConfig?.heroBadge;
+  const summaryDescription = tour.description ?? heroCopy;
+  const variantFaq = variantConfig?.faqOverride;
+  const faqList = variantFaq
+    ? [variantFaq, ...defaultFaqs.filter((faq) => faq.question !== variantFaq.question)]
+    : defaultFaqs;
 
   const quickInfo = [
     {
@@ -233,7 +319,10 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
             <h1 className="mb-6 text-3xl font-black leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
               {tour.title}
             </h1>
-            <p className="mb-10 text-lg text-slate-500 leading-relaxed">{shortTeaser}</p>
+            {heroBadge && (
+              <p className="text-xs uppercase tracking-[0.4em] text-indigo-500">{heroBadge}</p>
+            )}
+            <p className="mb-10 text-lg text-slate-500 leading-relaxed">{heroCopy}</p>
             <div className="flex items-center gap-8 border-t border-slate-100 pt-8">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Desde</p>
@@ -310,7 +399,29 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
                 </Link>
               )}
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">{shortTeaser}</p>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">{summaryDescription}</p>
+          </section>
+
+          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">FAQs</p>
+                <h3 className="text-[16px] font-semibold text-slate-900">Preguntas frecuentes</h3>
+              </div>
+            </div>
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              {faqList.map((faq) => (
+                <article
+                  key={faq.question}
+                  className="rounded-[16px] border border-[#F1F5F9] bg-white/90 p-4 shadow-sm"
+                >
+                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
+                    {faq.question}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-600">{faq.answer}</p>
+                </article>
+              ))}
+            </div>
           </section>
 
           <section id="full-description" className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
@@ -533,4 +644,13 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
       <ReserveFloatingButton targetId="booking" priceLabel={priceLabel} />
     </div>
   );
+}
+
+export default async function TourDetailPage({ params, searchParams }: TourDetailProps) {
+  const { slug } = await params;
+  return renderTourDetailContent({
+    slug: slug ?? "",
+    variant: undefined,
+    searchParams
+  });
 }
