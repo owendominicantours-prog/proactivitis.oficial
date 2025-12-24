@@ -45,6 +45,8 @@ export const ToursList = ({ tours }: { tours: SupplierTourSummary[] }) => {
   const [importing, setImporting] = useState(false);
   const [importMessage, setImportMessage] = useState<string | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+  const [jsonPanel, setJsonPanel] = useState(false);
+  const [importJson, setImportJson] = useState("");
 
   const destinations = useMemo(() => Array.from(new Set(tours.map((tour) => tour.destination ?? tour.location))), [tours]);
 
@@ -110,6 +112,12 @@ export const ToursList = ({ tours }: { tours: SupplierTourSummary[] }) => {
     };
   };
 
+  const normalizeRecords = (records: unknown[]) => {
+    return records
+      .map((row) => getMappedRecord(row as Record<string, unknown>))
+      .filter((record) => record.title);
+  };
+
   const rowsToImport = async (file: File) => {
     const text = await file.text();
     const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
@@ -121,7 +129,7 @@ export const ToursList = ({ tours }: { tours: SupplierTourSummary[] }) => {
         throw new Error("JSON inválido");
       }
       const rawRecords = Array.isArray(parsed) ? parsed : typeof parsed === "object" ? [parsed] : [];
-      return rawRecords.map((row) => getMappedRecord(row));
+      return normalizeRecords(rawRecords);
     }
     const parsed = Papa.parse<Record<string, unknown>>(text, {
       header: true,
@@ -130,7 +138,43 @@ export const ToursList = ({ tours }: { tours: SupplierTourSummary[] }) => {
     if (parsed.errors.length) {
       throw new Error("El CSV contiene errores, verifica las comillas y los saltos de línea.");
     }
-    return parsed.data.map((row) => getMappedRecord(row));
+    return normalizeRecords(parsed.data);
+  };
+
+  const parseJsonRecords = async () => {
+    if (!importJson.trim()) {
+      throw new Error("Pega un JSON válido.");
+    }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(importJson);
+    } catch {
+      throw new Error("JSON inválido");
+    }
+    const rawRecords = Array.isArray(parsed)
+      ? parsed
+      : typeof parsed === "object" && parsed !== null
+      ? [parsed]
+      : [];
+    return normalizeRecords(rawRecords);
+  };
+
+  const submitRecords = async (records: ReturnType<typeof normalizeRecords>) => {
+    const filteredRecords = records.filter((record) => record.title);
+    if (!filteredRecords.length) {
+      throw new Error("No se detectaron registros válidos.");
+    }
+    const response = await fetch("/api/supplier/tours/import", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ records: filteredRecords })
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error((body as { error?: string }).error ?? "No se pudo importar.");
+    }
+    setImportMessage(body.message ?? "Tours importados correctamente.");
+    window.location.href = body.redirectUrl ?? "/supplier/tours?status=draft";
   };
 
   const handleImportFile = async () => {
@@ -143,26 +187,30 @@ export const ToursList = ({ tours }: { tours: SupplierTourSummary[] }) => {
     setImportMessage(null);
     try {
       const normalized = await rowsToImport(importFile);
-      const filteredRecords = normalized.filter((record) => record.title);
-      if (!filteredRecords.length) {
-        throw new Error("No se detectaron registros válidos.");
-      }
-      const response = await fetch("/api/supplier/tours/import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ records: filteredRecords })
-      });
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error((body as { error?: string }).error ?? "No se pudo importar.");
-      }
-      setImportMessage(body.message ?? "Tours importados correctamente.");
-      window.location.href = body.redirectUrl ?? "/supplier/tours?status=draft";
+      await submitRecords(normalized);
     } catch (error) {
       setImportError(
         error instanceof Error
           ? error.message
           : "Ocurrió un error al subir el archivo, inténtalo de nuevo."
+      );
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleJsonImport = async () => {
+    setImporting(true);
+    setImportError(null);
+    setImportMessage(null);
+    try {
+      const normalized = await parseJsonRecords();
+      await submitRecords(normalized);
+    } catch (error) {
+      setImportError(
+        error instanceof Error
+          ? error.message
+          : "Ocurrió un error al procesar el JSON, inténtalo de nuevo."
       );
     } finally {
       setImporting(false);
@@ -263,51 +311,96 @@ const getProactiveMessage = (value: number) => {
             </option>
           ))}
         </select>
-        <button
-          type="button"
-          className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300"
-          onClick={() => {
-            setImportPanel((prev) => !prev);
-            setImportError(null);
-            setImportMessage(null);
-          }}
-        >
-          Importar Tours (CSV/Excel/JSON)
-        </button>
-      </div>
+          <button
+            type="button"
+            className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300"
+            onClick={() => {
+              setImportPanel((prev) => !prev);
+              setImportError(null);
+              setImportMessage(null);
+            }}
+          >
+            Importar Tours (CSV/Excel/JSON)
+          </button>
+          <button
+            type="button"
+            className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300"
+            onClick={() => {
+              setJsonPanel((prev) => !prev);
+              setImportError(null);
+              setImportMessage(null);
+            }}
+          >
+            Pegar JSON
+          </button>
+        </div>
 
-      {importPanel && (
-        <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <h3 className="mb-2 text-sm font-semibold text-slate-800">Carga masiva automatizada</h3>
-          <p className="mb-3 text-xs text-slate-500">
-            Usa un CSV o JSON con columnas como nombre, precio, hotel y destino. Excel puede exportarse como CSV. Nosotros detectamos los nombres automáticamente.
-          </p>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <input
-              type="file"
-              accept=".csv,.json"
-              onChange={(event) => {
-                setImportFile(event.target.files?.[0] ?? null);
-                setImportError(null);
-              }}
-              className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 file:cursor-pointer file:border-0 file:bg-slate-100 file:px-3 file:py-1 file:text-xs file:font-semibold"
+        {importPanel && (
+          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <h3 className="mb-2 text-sm font-semibold text-slate-800">Carga masiva automatizada</h3>
+            <p className="mb-3 text-xs text-slate-500">
+              Usa un CSV o JSON con columnas como nombre, precio, hotel y destino. Excel puede exportarse como CSV. Nosotros detectamos los nombres automáticamente.
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                type="file"
+                accept=".csv,.json"
+                onChange={(event) => {
+                  setImportFile(event.target.files?.[0] ?? null);
+                  setImportError(null);
+                }}
+                className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 file:cursor-pointer file:border-0 file:bg-slate-100 file:px-3 file:py-1 file:text-xs file:font-semibold"
+              />
+              <button
+                type="button"
+                onClick={handleImportFile}
+                disabled={importing || !importFile}
+                className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {importing ? "Importando..." : "Subir archivo"}
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-slate-500">
+              Al completar, irás a la vista de pendientes para solo asignar precios y fotos.
+            </p>
+            {importMessage && <p className="mt-2 text-sm text-emerald-600">{importMessage}</p>}
+            {importError && <p className="mt-2 text-sm text-rose-600">{importError}</p>}
+          </section>
+        )}
+        {jsonPanel && (
+          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <h3 className="mb-2 text-sm font-semibold text-slate-800">JSON directo</h3>
+            <p className="mb-3 text-xs text-slate-500">
+              Pega un JSON con un array de tours o colócalos bajo `records`, `data`, `tour_data` o `tour`. Detectamos los campos automáticamente.
+            </p>
+            <textarea
+              value={importJson}
+              onChange={(event) => setImportJson(event.target.value)}
+              rows={8}
+              className="w-full rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none"
+              placeholder='[{"title":"..."}]'
             />
-            <button
-              type="button"
-              onClick={handleImportFile}
-              disabled={importing || !importFile}
-              className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {importing ? "Importando..." : "Subir archivo"}
-            </button>
-          </div>
-          <p className="mt-2 text-xs text-slate-500">
-            Al completar, irás a la vista de pendientes para solo asignar precios y fotos.
-          </p>
-          {importMessage && <p className="mt-2 text-sm text-emerald-600">{importMessage}</p>}
-          {importError && <p className="mt-2 text-sm text-rose-600">{importError}</p>}
-        </section>
-      )}
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={handleJsonImport}
+                disabled={importing}
+                className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {importing ? "Importando..." : "Importar JSON"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setImportJson("")}
+                className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+              >
+                Limpiar
+              </button>
+            </div>
+            {importMessage && <p className="mt-2 text-sm text-emerald-600">{importMessage}</p>}
+            {importError && <p className="mt-2 text-sm text-rose-600">{importError}</p>}
+          </section>
+        )}
 
       <div className="space-y-3">
         {filtered.map((tour) => {
