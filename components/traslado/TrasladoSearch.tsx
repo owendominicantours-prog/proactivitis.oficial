@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import {
@@ -20,6 +20,21 @@ export type LocationOption = {
   microZoneSlug?: string | null;
   assignedZoneId?: string | null;
 };
+
+type OriginSelection =
+  | { type: "airport"; code: string; label: string }
+  | { type: "hotel"; hotel: LocationOption; label: string };
+
+const normalizeValue = (value?: string | null) =>
+  value?.trim().toLowerCase().replace(/\s+/g, " ") ?? "";
+
+const slugifyValue = (value?: string | null) =>
+  value
+    ?.trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-") ?? "";
 
 const airportOptions = [
   { code: "PUJ", label: "Aeropuerto de Punta Cana (PUJ)" },
@@ -201,12 +216,27 @@ export default function TrasladoSearch({
   const defaultAirport = airportOptions[0];
   const initialAirport =
     airportOptions.find((airport) => airport.code === initialOriginCode) ?? defaultAirport;
+  const createAirportSelection = (airportOption: (typeof airportOptions)[number]): OriginSelection => ({
+    type: "airport",
+    code: airportOption.code,
+    label: airportOption.label
+  });
+  const createHotelSelection = (hotel: LocationOption): OriginSelection => ({
+    type: "hotel",
+    hotel,
+    label: hotel.name
+  });
+  const initialOriginSelection = createAirportSelection(initialAirport);
   const [destinationSlug, setDestinationSlug] = useState(initialHotel?.slug ?? "hard-rock-punta-cana");
   const [destinationLabel, setDestinationLabel] = useState(
     initialHotel?.name ?? "Hard Rock Hotel & Casino Punta Cana"
   );
-  const [originLabel, setOriginLabel] = useState(initialOriginLabel ?? initialAirport.label);
-  const [originCode, setOriginCode] = useState(initialAirport.code);
+  const [originSelection, setOriginSelection] = useState<OriginSelection>(initialOriginSelection);
+  const [originLabel, setOriginLabel] = useState(initialOriginSelection.label);
+  const [showOriginSuggestions, setShowOriginSuggestions] = useState(false);
+  const [showDestinationSuggestions, setShowDestinationSuggestions] = useState(false);
+  const originBlurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const destinationBlurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [passengers, setPassengers] = useState(2);
   const [dateTime, setDateTime] = useState(initialDateTime ?? "");
   const initialResultsVisible = Boolean(autoShowResults && initialHotel && initialDateTime);
@@ -217,23 +247,51 @@ export default function TrasladoSearch({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const buildOriginParamValue = (selection: OriginSelection) =>
+    selection.type === "airport" ? `airport:${selection.code}` : `hotel:${selection.hotel.slug}`;
+
+  const resolveOriginSelectionFromParam = useCallback(
+    (value?: string | null): OriginSelection | null => {
+      if (!value) return null;
+      if (value.startsWith("airport:")) {
+        const encoded = value.split(":")[1] ?? "";
+        const match = airportOptions.find((option) => option.code === encoded);
+        if (match) return createAirportSelection(match);
+      }
+      if (value.startsWith("hotel:")) {
+        const slug = value.split(":")[1] ?? "";
+        const match = hotels.find((hotel) => hotel.slug === slug);
+        if (match) return createHotelSelection(match);
+      }
+      const normalized = value.trim();
+      const airportMatch =
+        airportOptions.find((option) => option.code === normalized.toUpperCase()) ??
+        airportOptions.find((option) => normalizeValue(option.label) === normalizeValue(normalized));
+      if (airportMatch) {
+        return createAirportSelection(airportMatch);
+      }
+      const hotelMatch =
+        hotels.find((hotel) => hotel.slug === normalized) ??
+        hotels.find((hotel) => normalizeValue(hotel.name) === normalizeValue(normalized));
+      if (hotelMatch) {
+        return createHotelSelection(hotelMatch);
+      }
+      return null;
+    },
+    [hotels]
+  );
+
+  const applyOriginSelection = useCallback((selection: OriginSelection) => {
+    setOriginSelection(selection);
+    setOriginLabel(selection.label);
+  }, []);
+
   useEffect(() => {
     if (autoShowResults && initialHotel && initialDateTime) {
       setShowResults(true);
       setFormCollapsed(true);
     }
   }, [autoShowResults, initialHotel, initialDateTime]);
-
-  const normalizeValue = (value?: string | null) =>
-    value?.trim().toLowerCase().replace(/\s+/g, " ") ?? "";
-
-  const slugifyValue = (value?: string | null) =>
-    value
-      ?.trim()
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "")
-      .replace(/-+/g, "-") ?? "";
 
   const matchHotel = (value?: string | null) => {
     const normalized = normalizeValue(value);
@@ -262,7 +320,17 @@ export default function TrasladoSearch({
   });
   const zoneEntry = trasladoPricing.nodes.find((node) => node.id === destinationZoneId);
   const zoneLabel = zoneEntry?.name ?? "Punta Cana / República Dominicana";
-  const originZoneId = airportZoneMapping[originCode] ?? DEFAULT_ZONE_ID;
+  const originZoneId = useMemo(() => {
+    if (originSelection.type === "hotel") {
+      return resolveZoneId({
+        assignedZoneId: originSelection.hotel.assignedZoneId,
+        microZoneSlug: originSelection.hotel.microZoneSlug,
+        microZoneName: originSelection.hotel.microZoneName,
+        destinationName: originSelection.hotel.destinationName
+      });
+    }
+    return airportZoneMapping[originSelection.code] ?? DEFAULT_ZONE_ID;
+  }, [originSelection]);
   const vehicles = useMemo<VehicleOption[]>(
     () =>
       vehicleCatalog.map((vehicle) => {
@@ -292,7 +360,9 @@ export default function TrasladoSearch({
       child: "0",
       hotelSlug: selectedHotel.slug,
       originHotelName: selectedHotel.name,
-      origin: originCode
+      origin:
+        originSelection.type === "airport" ? originSelection.code : originSelection.hotel.slug,
+      originLabel: originSelection.label
     };
     if (flightNumber.trim()) {
       payload.flightNumber = flightNumber.trim();
@@ -304,7 +374,7 @@ export default function TrasladoSearch({
       payload.tourImage = transferTourImage;
     }
     return payload;
-  }, [dateValue, timeValue, passengers, selectedHotel, originCode]);
+  }, [dateValue, timeValue, passengers, selectedHotel, originSelection, flightNumber]);
 
   const buildCheckoutHref = (vehicle: VehicleOption) => {
     if (!baseTransferParams) return "/checkout?type=transfer";
@@ -321,13 +391,15 @@ export default function TrasladoSearch({
     return `/checkout?${params.toString()}`;
   };
 
-  const syncQueryFromFilters = (slugParam?: string) => {
+  const syncQueryFromFilters = (slugParam?: string, overrideOrigin?: OriginSelection) => {
     const params = new URLSearchParams();
     const slugToUse = slugParam ?? destinationSlug;
     if (slugToUse) {
       params.set("hotelSlug", slugToUse);
     }
-    params.set("origin", originCode);
+    const originToUse = overrideOrigin ?? originSelection;
+    params.set("origin", buildOriginParamValue(originToUse));
+    params.set("originLabel", originToUse.label);
     router.replace(`${pathname}?${params.toString()}`);
   };
 
@@ -335,6 +407,7 @@ export default function TrasladoSearch({
     if (!searchParams) return;
     const hotelParam = searchParams.get("hotelSlug");
     const originParam = searchParams.get("origin");
+    const originLabelParam = searchParams.get("originLabel");
     if (hotelParam && hotelParam !== destinationSlug) {
       setDestinationSlug(hotelParam);
       const matched = hotels.find((hotel) => hotel.slug === hotelParam);
@@ -342,22 +415,34 @@ export default function TrasladoSearch({
         setDestinationLabel(matched.name);
       }
     }
-    if (originParam && originParam !== originCode) {
-      setOriginCode(originParam);
-      const matchAirport = airportOptions.find((option) => option.code === originParam);
-      if (matchAirport) {
-        setOriginLabel(matchAirport.label);
+    if (originParam) {
+      const resolved = resolveOriginSelectionFromParam(originParam);
+      if (resolved) {
+        applyOriginSelection(resolved);
       }
+    } else if (originLabelParam && originLabelParam !== originLabel) {
+      setOriginLabel(originLabelParam);
     }
     if (hotelParam) {
       setShowResults(true);
       setFormCollapsed(true);
     }
-  }, [searchParams, hotels, destinationSlug, originCode]);
+  }, [
+    searchParams,
+    hotels,
+    destinationSlug,
+    originLabel,
+    applyOriginSelection,
+    resolveOriginSelectionFromParam
+  ]);
 
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
     const matched = matchHotel(destinationLabel);
+    const resolvedOrigin = resolveOriginSelectionFromParam(originLabel);
+    if (resolvedOrigin) {
+      applyOriginSelection(resolvedOrigin);
+    }
     let slugToSync = destinationSlug;
     if (matched) {
       setDestinationSlug(matched.slug);
@@ -371,7 +456,84 @@ export default function TrasladoSearch({
     }
     setShowResults(true);
     setFormCollapsed(true);
-    syncQueryFromFilters(slugToSync);
+    syncQueryFromFilters(slugToSync, resolvedOrigin ?? originSelection);
+  };
+
+  const originSuggestionPool = useMemo(() => {
+    const baseOptions: OriginSelection[] = [
+      ...airportOptions.map((option) => createAirportSelection(option)),
+      ...hotels.map((hotel) => createHotelSelection(hotel))
+    ];
+    const normalizedQuery = normalizeValue(originLabel);
+    if (!normalizedQuery) {
+      return baseOptions.slice(0, 8);
+    }
+    const matches = baseOptions.filter((option) => {
+      const normalizedLabel = normalizeValue(option.label);
+      return (
+        normalizedLabel.includes(normalizedQuery) || normalizedQuery.includes(normalizedLabel)
+      );
+    });
+    return matches.length ? matches.slice(0, 8) : baseOptions.slice(0, 6);
+  }, [originLabel, hotels]);
+
+  const destinationSuggestions = useMemo(() => {
+    const normalizedQuery = normalizeValue(destinationLabel);
+    if (!normalizedQuery) return hotels.slice(0, 6);
+    const matches = hotels.filter((hotel) => {
+      const normalizedName = normalizeValue(hotel.name);
+      return normalizedName.includes(normalizedQuery) || normalizedQuery.includes(normalizedName);
+    });
+    return matches.length ? matches.slice(0, 6) : hotels.slice(0, 6);
+  }, [destinationLabel, hotels]);
+
+  const handleSelectOrigin = (selection: OriginSelection) => {
+    if (originBlurTimeout.current) {
+      clearTimeout(originBlurTimeout.current);
+      originBlurTimeout.current = null;
+    }
+    applyOriginSelection(selection);
+    setShowOriginSuggestions(false);
+  };
+
+  const handleOriginFocus = () => {
+    if (originBlurTimeout.current) {
+      clearTimeout(originBlurTimeout.current);
+      originBlurTimeout.current = null;
+    }
+    setShowOriginSuggestions(true);
+  };
+
+  const handleOriginBlur = () => {
+    originBlurTimeout.current = setTimeout(() => {
+      setShowOriginSuggestions(false);
+      originBlurTimeout.current = null;
+    }, 150);
+  };
+
+  const handleSelectDestination = (hotel: LocationOption) => {
+    if (destinationBlurTimeout.current) {
+      clearTimeout(destinationBlurTimeout.current);
+      destinationBlurTimeout.current = null;
+    }
+    setDestinationLabel(hotel.name);
+    setDestinationSlug(hotel.slug);
+    setShowDestinationSuggestions(false);
+  };
+
+  const handleDestinationFocus = () => {
+    if (destinationBlurTimeout.current) {
+      clearTimeout(destinationBlurTimeout.current);
+      destinationBlurTimeout.current = null;
+    }
+    setShowDestinationSuggestions(true);
+  };
+
+  const handleDestinationBlur = () => {
+    destinationBlurTimeout.current = setTimeout(() => {
+      setShowDestinationSuggestions(false);
+      destinationBlurTimeout.current = null;
+    }, 150);
   };
 
   const summaryDate =
@@ -429,52 +591,105 @@ export default function TrasladoSearch({
           <form className="mt-6 flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end" onSubmit={handleSearch}>
             <label className="flex-1 min-w-[180px] text-sm text-slate-500">
               Origen
-              <input
-                list="origin-suggestions"
-                value={originLabel}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setOriginLabel(value);
-                  const match = airportOptions.find((option) => option.label.toLowerCase() === value.toLowerCase());
-                  if (match) {
-                    setOriginCode(match.code);
-                  }
-                }}
-                placeholder="Selecciona origen (aeropuerto u hotel)"
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
-              />
-              <datalist id="origin-suggestions">
-                {airportOptions.map((airport) => (
-                  <option key={`airport-${airport.code}`} value={airport.label} />
-                ))}
-                {hotels.map((hotel) => (
-                  <option key={`hotel-${hotel.slug}`} value={hotel.name} />
-                ))}
-              </datalist>
+              <div className="relative mt-2">
+                <input
+                  value={originLabel}
+                  onFocus={handleOriginFocus}
+                  onBlur={handleOriginBlur}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setOriginLabel(value);
+                    const normalized = normalizeValue(value);
+                    if (!normalized) return;
+                    const airportMatch =
+                      airportOptions.find((option) => normalizeValue(option.label) === normalized) ??
+                      airportOptions.find((option) => option.code.toLowerCase() === normalized);
+                    if (airportMatch) {
+                      applyOriginSelection(createAirportSelection(airportMatch));
+                      return;
+                    }
+                    const slugMatch = slugifyValue(value);
+                    const hotelMatch =
+                      hotels.find((hotel) => normalizeValue(hotel.name) === normalized) ??
+                      hotels.find((hotel) => hotel.slug === slugMatch);
+                    if (hotelMatch) {
+                      applyOriginSelection(createHotelSelection(hotelMatch));
+                    }
+                  }}
+                  placeholder="Selecciona origen (aeropuerto u hotel)"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
+                />
+                {showOriginSuggestions && originSuggestionPool.length > 0 && (
+                  <ul className="absolute left-0 right-0 z-30 mt-1 max-h-60 overflow-auto rounded-2xl border border-slate-200 bg-white shadow-lg">
+                    {originSuggestionPool.map((option) => (
+                      <li
+                        key={`origin-option-${option.type === "airport" ? option.code : option.hotel.slug}`}
+                        className="border-b border-slate-100 last:border-0"
+                      >
+                        <button
+                          type="button"
+                          onMouseDown={(event) => event.preventDefault()}
+                          onClick={() => handleSelectOrigin(option)}
+                          className="flex w-full items-center justify-between px-4 py-3 text-left text-sm text-slate-800 transition hover:bg-slate-50"
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-semibold">{option.label}</span>
+                            <span className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
+                              {option.type === "airport"
+                                ? "Aeropuerto"
+                                : option.hotel.destinationName ?? "Hotel"}
+                            </span>
+                          </div>
+                          {option.type === "hotel" && (
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.4em] text-slate-500">
+                              Hotel
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </label>
             <label className="flex-1 min-w-[180px] text-sm text-slate-500">
               Destino
-            <input
-              list="hotels"
-              value={destinationLabel}
-              onChange={(event) => {
-                const value = event.target.value;
-                setDestinationLabel(value);
-                const matched = matchHotel(value);
-                if (matched) {
-                  setDestinationSlug(matched.slug);
-                }
-              }}
-              placeholder="Escribe tu hotel"
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
-              />
-              <datalist id="hotels">
-                {hotels.map((hotel) => (
-                  <option key={hotel.slug} value={hotel.name}>
-                    {hotel.name}
-                  </option>
-                ))}
-              </datalist>
+              <div className="relative mt-2">
+                <input
+                  value={destinationLabel}
+                  onFocus={handleDestinationFocus}
+                  onBlur={handleDestinationBlur}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setDestinationLabel(value);
+                    const matched = matchHotel(value);
+                    if (matched) {
+                      setDestinationSlug(matched.slug);
+                    }
+                  }}
+                  placeholder="Escribe tu hotel"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
+                />
+                {showDestinationSuggestions && destinationSuggestions.length > 0 && (
+                  <ul className="absolute left-0 right-0 z-30 mt-1 max-h-60 overflow-auto rounded-2xl border border-slate-200 bg-white shadow-lg">
+                    {destinationSuggestions.map((hotel) => (
+                      <li key={`destination-option-${hotel.slug}`} className="border-b border-slate-100 last:border-0">
+                        <button
+                          type="button"
+                          onMouseDown={(event) => event.preventDefault()}
+                          onClick={() => handleSelectDestination(hotel)}
+                          className="flex w-full flex-col px-4 py-3 text-left text-sm text-slate-800 transition hover:bg-slate-50"
+                        >
+                          <span className="font-semibold">{hotel.name}</span>
+                          <span className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
+                            {hotel.destinationName ?? "Hotel"}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </label>
             <label className="flex-1 min-w-[180px] text-sm text-slate-500">
               Fecha y hora de llegada

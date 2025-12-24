@@ -62,6 +62,7 @@ export type CheckoutPageParams = {
   bookingCode?: string;
   originHotelName?: string;
   origin?: string;
+  originLabel?: string;
   flowType?: "tour" | "transfer";
   flightNumber?: string;
 };
@@ -425,7 +426,9 @@ const buildSummary = (params: CheckoutPageParams) => {
 
     originHotelName: params.originHotelName,
 
-    origin: params.origin
+    origin: params.origin,
+
+    originLabel: params.originLabel
 
   };
 
@@ -1703,7 +1706,9 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                       <span className="flex items-center gap-2">
                         <MapPin className="h-5 w-5 text-slate-400" /> Origen
                       </span>
-                      <strong>{summary.origin ?? "Aeropuerto de Punta Cana (PUJ)"}</strong>
+                        <strong>
+                          {summary.originLabel ?? summary.origin ?? "Aeropuerto de Punta Cana (PUJ)"}
+                        </strong>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-2">
