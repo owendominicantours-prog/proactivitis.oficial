@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import {
   DEFAULT_ZONE_ID,
@@ -140,6 +141,9 @@ export default function TrasladoSearch({
   const [formCollapsed, setFormCollapsed] = useState(initialResultsVisible);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [flightNumber, setFlightNumber] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (autoShowResults && initialHotel && initialDateTime) {
@@ -214,6 +218,37 @@ export default function TrasladoSearch({
     return `/checkout?${params.toString()}`;
   };
 
+  const syncQueryFromFilters = () => {
+    const params = new URLSearchParams();
+    params.set("hotelSlug", destinationSlug);
+    params.set("origin", originCode);
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  useEffect(() => {
+    if (!searchParams) return;
+    const hotelParam = searchParams.get("hotelSlug");
+    const originParam = searchParams.get("origin");
+    if (hotelParam && hotelParam !== destinationSlug) {
+      setDestinationSlug(hotelParam);
+      const matched = hotels.find((hotel) => hotel.slug === hotelParam);
+      if (matched) {
+        setDestinationLabel(matched.name);
+      }
+    }
+    if (originParam && originParam !== originCode) {
+      setOriginCode(originParam);
+      const matchAirport = airportOptions.find((option) => option.code === originParam);
+      if (matchAirport) {
+        setOriginLabel(matchAirport.label);
+      }
+    }
+    if (hotelParam && dateParam) {
+      setShowResults(true);
+      setFormCollapsed(true);
+    }
+  }, [searchParams, hotels, destinationSlug, originCode]);
+
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
     if (!selectedHotel) {
@@ -227,6 +262,7 @@ export default function TrasladoSearch({
     setErrorMessage(null);
     setShowResults(true);
     setFormCollapsed(true);
+    syncQueryFromFilters();
   };
 
   const summaryDate =
