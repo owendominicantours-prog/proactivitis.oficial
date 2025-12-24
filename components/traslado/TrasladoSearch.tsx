@@ -488,6 +488,21 @@ export default function TrasladoSearch({
     return [...airportSelections.slice(0, 3), ...hotelSelections.slice(0, 5)];
   }, [originLabel, hotels, originSelection.type]);
 
+  const airportDestinationOptions = airportOptions.map((airport) => ({
+    label: airport.label,
+    slug: `airport-${airport.code}`,
+    type: "airport" as const
+  }));
+
+  type DestinationSuggestion =
+    | (LocationOption & { label: string; slug: string })
+    | { label: string; slug: string; type: "airport" };
+
+  const isAirportSuggestion = (
+    option: DestinationSuggestion
+  ): option is { label: string; slug: string; type: "airport" } =>
+    "type" in option && option.type === "airport";
+
   const destinationSuggestionPool = useMemo(() => {
     const normalizedQuery = normalizeValue(destinationLabel);
     const filterOptions = <T extends { label: string }>(options: T[], limit: number) => {
@@ -535,19 +550,6 @@ export default function TrasladoSearch({
       originBlurTimeout.current = null;
     }, 150);
   };
-
-  type DestinationSuggestion =
-    | (LocationOption & { label: string; slug: string })
-    | { label: string; slug: string; type: "airport" };
-
-  const airportDestinationOptions = airportOptions.map((airport) => ({
-    label: airport.label,
-    slug: `airport-${airport.code}`,
-    type: "airport" as const
-  }));
-
-  const isAirportSuggestion = (option: DestinationSuggestion): option is { label: string; slug: string; type: "airport" } =>
-    "type" in option && option.type === "airport";
 
   const handleSelectDestination = (option: DestinationSuggestion) => {
     if (destinationBlurTimeout.current) {
