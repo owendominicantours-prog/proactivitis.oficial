@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 const BASE_ORIGIN_CODE = "PUJ";
 const BASE_ORIGIN_LABEL = "Aeropuerto de Punta Cana (PUJ)";
 
-const buildTransportSeoText = (hotelName: string) => {
+const buildTrasladoSeoText = (hotelName: string) => {
   const keywords = [
     "Punta Cana Transfer",
     `PUJ to ${hotelName}`,
@@ -36,7 +36,7 @@ export async function generateMetadata({
   const resolvedParams = await params;
   if (!resolvedParams.hotelSlug) {
     return {
-      title: "Transporte Punta Cana | Proactivitis",
+      title: "Traslado Punta Cana | Proactivitis",
       description: "Programmatic SEO para traslados premium desde Punta Cana"
     };
   }
@@ -46,14 +46,14 @@ export async function generateMetadata({
   });
   if (!hotel) {
     return {
-      title: "Transporte Punta Cana | Proactivitis",
+      title: "Traslado Punta Cana | Proactivitis",
       description: "Programmatic SEO para traslados premium desde Punta Cana"
     };
   }
-  return {
-    title: `Transporte directo a ${hotel.name} | Proactivitis`,
-    description: `Reserva tu traslado Premium desde PUJ hacia ${hotel.name} con tarifas claras en vehículos privados.`
-  };
+    return {
+      title: `Traslado directo a ${hotel.name} | Proactivitis`,
+      description: `Reserva tu traslado Premium desde PUJ hacia ${hotel.name} con tarifas claras en vehículos privados.`
+    };
 }
 
 export async function generateStaticParams() {
@@ -64,11 +64,11 @@ export async function generateStaticParams() {
   return hotels.map((hotel) => ({ hotelSlug: hotel.slug }));
 }
 
-type TransportPageProps = {
+type TrasladoPageProps = {
   params: Promise<{ hotelSlug: string }>;
 };
 
-export default async function HotelTransportPage({ params }: TransportPageProps) {
+export default async function HotelTrasladoPage({ params }: TrasladoPageProps) {
   const resolvedParams = await params;
   if (!resolvedParams.hotelSlug) {
     notFound();
@@ -90,7 +90,7 @@ export default async function HotelTransportPage({ params }: TransportPageProps)
       name: true,
       slug: true,
       destination: { select: { name: true } },
-      microZone: { select: { name: true } }
+      microZone: { select: { name: true, slug: true } }
     }
   });
 
@@ -98,10 +98,11 @@ export default async function HotelTransportPage({ params }: TransportPageProps)
     name: item.name,
     slug: item.slug,
     destinationName: item.destination?.name ?? null,
-    microZoneName: item.microZone?.name ?? null
+    microZoneName: item.microZone?.name ?? null,
+    microZoneSlug: item.microZone?.slug ?? null
   }));
 
-  const seoCopy = buildTransportSeoText(hotel.name);
+  const seoCopy = buildTrasladoSeoText(hotel.name);
   const seoParagraphs = seoCopy.split("\n\n");
   const defaultDateTime = getDefaultDateTime();
 
@@ -109,7 +110,7 @@ export default async function HotelTransportPage({ params }: TransportPageProps)
     <div className="bg-slate-50">
       <section className="bg-gradient-to-br from-white via-slate-50 to-slate-100 border-b border-slate-200">
         <div className="mx-auto max-w-6xl px-4 py-12">
-          <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Programmatic SEO · Transporte</p>
+          <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Programmatic SEO · Traslado</p>
           <h1 className="text-4xl font-bold text-slate-900">Traslado directo a {hotel.name}</h1>
           <p className="max-w-3xl text-sm text-slate-600">
             Nuestro motor carga el destino ya seleccionado, elige el vehículo y presenta precios claros para Sedán, Van y SUV sin necesidad de buscar de nuevo.

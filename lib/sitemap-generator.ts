@@ -52,7 +52,7 @@ export async function buildSitemapEntries() {
     prisma.location.findMany({
       include: {
         microZone: { select: { id: true } },
-        destination: { select: { id: true } }
+        destination: { select: { id: true, slug: true } }
       }
     }),
     prisma.booking.groupBy({
@@ -123,6 +123,13 @@ export async function buildSitemapEntries() {
     }
   }
 
+  const trasladoHotelEntries = locations
+    .filter((location) => location.destination?.slug === "punta-cana")
+    .map((location) => ({
+      url: `${BASE_URL}/traslado/punta-cana/to-${location.slug}`,
+      priority: 0.65
+    }));
+
   const routeEntries: { url: string; priority: number }[] = [
     { url: `${BASE_URL}/`, priority: 1.0 },
     { url: `${BASE_URL}/tours`, priority: 0.9 },
@@ -147,6 +154,7 @@ export async function buildSitemapEntries() {
       url: `${BASE_URL}/traslado/${microZone.destination.country.slug}/${microZone.destination.slug}/${microZone.slug}`,
       priority: 0.6
     })),
+    ...trasladoHotelEntries,
     ...combos
   ];
 

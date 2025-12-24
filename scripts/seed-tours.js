@@ -21,7 +21,7 @@ async function main() {
       description:
         "Explora el campo dominicano, visita plantaciones y disfruta un almuerzo típico dentro de un camión safari.",
       language: "Español / Inglés",
-      includes: "Transporte desde hoteles, guía bilingüe, almuerzo buffet",
+      includes: "Traslado desde hoteles, guía bilingüe, almuerzo buffet",
       location: "República Dominicana",
       country: "República Dominicana",
       supplierCompany: "Aventuras Dominicanas",
@@ -49,7 +49,7 @@ async function main() {
       description:
         "Saborea la cocina colombiana, visita mercados y termina en rooftop con vista a la ciudad.",
       language: "Español",
-      includes: "Degustaciones, guía local, transporte urbano",
+      includes: "Degustaciones, guía local, traslado urbano",
       location: "Bogotá",
       country: "Colombia",
       supplierCompany: "Isla Adventures Co.",
@@ -63,7 +63,7 @@ async function main() {
       description:
         "Ruta por los pueblos de Boyacá con senderismo suave y experiencia de café con productores.",
       language: "Español / Inglés",
-      includes: "Guía, snacks, transporte, cata de café",
+      includes: "Guía, snacks, traslado, cata de café",
       location: "Boyacá",
       country: "Colombia",
       supplierCompany: "Aventuras Dominicanas",

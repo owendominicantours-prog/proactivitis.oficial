@@ -16,6 +16,7 @@ export type LocationOption = {
   slug: string;
   destinationName?: string | null;
   microZoneName?: string | null;
+  microZoneSlug?: string | null;
 };
 
 const airportOptions = [

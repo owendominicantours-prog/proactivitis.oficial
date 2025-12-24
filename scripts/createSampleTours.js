@@ -47,7 +47,7 @@ const slugify = (value) =>
       price: 140,
       duration: "8 horas",
       language: "Español / Inglés",
-      includes: "Transporte ida y vuelta;Guía profesional bilingüe;Almuerzo buffet",
+      includes: "Traslado ida y vuelta;Guía profesional bilingüe;Almuerzo buffet",
       heroImage: "/fototours/fotosimple.jpg",
       gallery: JSON.stringify(["/fototours/fotosimple.jpg"]),
       status: "published",

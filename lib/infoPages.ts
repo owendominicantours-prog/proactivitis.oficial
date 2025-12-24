@@ -679,7 +679,7 @@ export const infoPages: InfoPage[] = [
         title: "Áreas de Oportunidad",
         columns: [
           { title: "Tecnología y Desarrollo", items: ["Next.js, bases de datos escalables, seguridad en la nube."] },
-          { title: "Operaciones y Calidad", items: ["Auditoría de proveedores y optimización de servicios de transporte."] },
+          { title: "Operaciones y Calidad", items: ["Auditoría de proveedores y optimización de servicios de traslado."] },
           { title: "Growth & Marketing", items: ["SEO internacional, marketing de afiliados y alianzas estratégicas."] },
           { title: "Soporte Global", items: ["Agentes multilingües enfocados en servicio VIP."] }
         ]
@@ -714,7 +714,7 @@ export const infoPages: InfoPage[] = [
         title: "1. Relación Contractual",
         body: [
           "Proactivitis actúa exclusivamente como una plataforma tecnológica de intermediación entre usuarios finales y proveedores de servicios.",
-          "Al utilizar este sitio, usted reconoce que Proactivitis no es un operador de transporte ni una agencia física, sino un facilitador tecnológico global."
+          "Al utilizar este sitio, usted reconoce que Proactivitis no es un operador de traslados ni una agencia física, sino un facilitador tecnológico global."
         ]
       },
       {
@@ -967,7 +967,7 @@ export const infoPages: InfoPage[] = [
         title: "1. Relación Contractual",
         body: [
           "Proactivitis actúa exclusivamente como una plataforma tecnológica de intermediación entre usuarios finales y proveedores de servicios.",
-          "Al utilizar este sitio, usted reconoce que Proactivitis no es un operador de transporte ni una agencia física, sino un facilitador tecnológico global."
+          "Al utilizar este sitio, usted reconoce que Proactivitis no es un operador de traslados ni una agencia física, sino un facilitador tecnológico global."
         ]
       },
       {

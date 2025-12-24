@@ -18,7 +18,7 @@ const countryOptions = [
 const serviceOptions = [
   "Tours",
   "Hospedaje",
-  "Transporte",
+  "Traslado",
   "Experiencias al aire libre",
   "Planificación de grupos",
   "Vuelos",

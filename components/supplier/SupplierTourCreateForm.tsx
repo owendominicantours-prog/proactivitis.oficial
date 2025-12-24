@@ -107,7 +107,7 @@ const CATEGORY_OPTIONS = [
 
 const DAY_OPTIONS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
-const PICKUP_OPTION_PRESETS = ["Incluye transporte", "No incluye transporte"];
+const PICKUP_OPTION_PRESETS = ["Incluye traslado", "No incluye traslado"];
 
 const TIME_HOUR_OPTIONS = Array.from({ length: 12 }, (_, index) => index + 1);
 
@@ -1895,7 +1895,7 @@ export function SupplierTourCreateForm({
 
                       <span className="truncate text-slate-600">
 
-                        {pickupOptions.length ? pickupOptions[0] : "Selecciona si incluye transporte"}
+                        {pickupOptions.length ? pickupOptions[0] : "Selecciona si incluye traslado"}
 
                       </span>
 

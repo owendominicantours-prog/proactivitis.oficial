@@ -126,12 +126,33 @@ trasladoPricing.nodes.forEach((node) =>
 
 export const DEFAULT_ZONE_ID = "PUJ_BAVARO";
 
-export function resolveZoneId(hotel?: { microZoneName?: string | null; destinationName?: string | null }) {
+const microZoneSlugToZoneId: Record<string, string> = {
+  "cap-cana": "PUJ_BAVARO",
+  "cabeza-de-toro": "PUJ_BAVARO",
+  "bavaro-cortecito": "PUJ_BAVARO",
+  "arena-gorda": "PUJ_BAVARO",
+  "uvero-alto": "UVERO_MICHES",
+  "bavaro-majestic": "PUJ_BAVARO",
+  "bavaro-ocean": "PUJ_BAVARO",
+  "macao": "ROMANA_BAYAHIBE",
+  "punta-cana-resort": "PUJ_BAVARO",
+  "la-romana": "ROMANA_BAYAHIBE"
+};
+
+export function resolveZoneId(hotel?: {
+  microZoneSlug?: string | null;
+  microZoneName?: string | null;
+  destinationName?: string | null;
+}) {
   if (!hotel) return DEFAULT_ZONE_ID;
   const candidates = [hotel.microZoneName, hotel.destinationName].filter(Boolean) as string[];
   for (const candidate of candidates) {
     const match = microzoneIndex.get(candidate.toLowerCase());
     if (match) return match;
+  }
+  if (hotel.microZoneSlug) {
+    const slugMatch = microZoneSlugToZoneId[hotel.microZoneSlug.toLowerCase()];
+    if (slugMatch) return slugMatch;
   }
   return DEFAULT_ZONE_ID;
 }

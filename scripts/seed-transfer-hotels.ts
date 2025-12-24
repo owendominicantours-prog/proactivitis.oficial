@@ -226,7 +226,7 @@ async function main() {
       created++;
     }
   }
-  console.log(`Processed ${created} hoteles de transporte.`); 
+  console.log(`Processed ${created} hoteles de traslado.`); 
 }
 
 main()

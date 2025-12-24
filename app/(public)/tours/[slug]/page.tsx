@@ -99,7 +99,7 @@ const reviewHighlights = [
   {
     name: "Gabriela R.",
     date: "Mayo 2025 · Verified traveler",
-    quote: "Guía excepcional, recorridos emocionantes y transporte muy cómodo.",
+    quote: "Guía excepcional, recorridos emocionantes y traslado muy cómodo.",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
   },
   {
@@ -154,7 +154,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
 
   // --- Lógica de datos ---
   const gallery = (tour.gallery ? JSON.parse(tour.gallery as string) : [tour.heroImage ?? "/fototours/fotosimple.jpg"]) as string[];
-  const includes = tour.includes ? tour.includes.split(";").map((i) => i.trim()).filter(Boolean) : ["Transporte", "Guía", "Almuerzo"];
+  const includes = tour.includes ? tour.includes.split(";").map((i) => i.trim()).filter(Boolean) : ["Traslado", "Guía", "Almuerzo"];
   const excludes = ["Propinas", "Bebidas", "Fotos"];
   const categories = (tour.category ?? "").split(",").map((i) => i.trim()).filter(Boolean);
   const languages = (tour.language ?? "").split(",").map((i) => i.trim()).filter(Boolean);

@@ -114,7 +114,7 @@ export default async function DestinationPage({
               <div className="rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-600">
                 <p className="font-semibold text-slate-900">Datos prácticos</p>
                 <p>Temporada: {zoneInfo.practical.bestSeason}</p>
-                <p>Transporte: {zoneInfo.practical.transport}</p>
+                <p>Traslado: {zoneInfo.practical.transport}</p>
                 <p>Tip local: {zoneInfo.practical.localTip}</p>
               </div>
             </div>

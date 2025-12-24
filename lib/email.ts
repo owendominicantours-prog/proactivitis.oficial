@@ -6,9 +6,9 @@ const port = Number(process.env.SMTP_PORT ?? "587");
 const user = process.env.SMTP_USER;
 const pass = process.env.SMTP_PASS;
 
-let transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
+let mailAgent: ReturnType<typeof nodemailer.createTransport> | null = null;
 if (host && port && user && pass) {
-  transporter = nodemailer.createTransport({
+  mailAgent = nodemailer.createTransport({
     host,
     port,
     secure: port === 465,
@@ -30,11 +30,11 @@ export async function sendEmail({
   html: string;
   from?: string;
 }) {
-  if (!transporter) {
+  if (!mailAgent) {
     console.warn("SMTP credentials missing; email not sent", to, subject);
     return null;
   }
-  return transporter.sendMail({
+  return mailAgent.sendMail({
     from: from ?? `"Proactivitis" <${user}>`,
     to,
     subject,

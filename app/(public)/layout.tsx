@@ -45,12 +45,12 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
     "addressCountry": "DO"
   },
   "hasPart": [
-    {
-      "@type": "WebPage",
-      "name": "Traslados Privados",
-      "url": "https://proactivitis.com/transfers",
-      "description": "Transporte de lujo y traslados de aeropuerto con estándar internacional."
-    },
+        {
+          "@type": "WebPage",
+          "name": "Traslados Privados",
+          "url": "https://proactivitis.com/traslado",
+          "description": "Traslado de lujo y traslados de aeropuerto con estándar internacional."
+        },
     {
       "@type": "WebPage",
       "name": "Programa de Partners",
