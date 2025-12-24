@@ -28,6 +28,62 @@ const airportOptions = [
   { code: "LRM", label: "Aeropuerto Internacional La Romana (LRM)" }
 ];
 
+const CUSTOM_PUJ_ZONE_SLUGS: Record<string, string[]> = {
+  PUJ_BAVARO: ["puj-to-bavaro", "puj-to-cap-cana"],
+  UVERO_MICHES: ["puj-to-uvero-alto", "puj-to-miches"],
+  ROMANA_BAYAHIBE: ["puj-to-bayahibe"],
+  SANTO_DOMINGO: ["puj-to-santo-domingo"],
+  SAMANA: ["puj-to-samana"],
+  NORTE_CIBAO: ["puj-to-puerto-plata", "puj-to-santiago"],
+  SUR_PROFUNDO: ["puj-to-barahona"]
+};
+
+const PUJ_ZONE_RATES: Record<
+  string,
+  { SEDAN: number; VAN: number; SUV: number }
+> = {
+  "puj-to-bavaro": { SEDAN: 35, VAN: 45, SUV: 65 },
+  "puj-to-cap-cana": { SEDAN: 30, VAN: 40, SUV: 55 },
+  "puj-to-uvero-alto": { SEDAN: 60, VAN: 75, SUV: 95 },
+  "puj-to-miches": { SEDAN: 130, VAN: 160, SUV: 210 },
+  "puj-to-santo-domingo": { SEDAN: 180, VAN: 220, SUV: 280 },
+  "puj-to-samana": { SEDAN: 250, VAN: 300, SUV: 380 },
+  "puj-to-santiago": { SEDAN: 280, VAN: 340, SUV: 420 },
+  "puj-to-bayahibe": { SEDAN: 90, VAN: 110, SUV: 150 },
+  "puj-to-puerto-plata": { SEDAN: 350, VAN: 420, SUV: 550 },
+  "puj-to-barahona": { SEDAN: 450, VAN: 550, SUV: 700 }
+};
+
+const directZoneSlugMap: Record<string, string> = {
+  PUJ_BAVARO: "puj-to-bavaro",
+  ROMANA_BAYAHIBE: "puj-to-bayahibe",
+  SANTO_DOMINGO: "puj-to-santo-domingo",
+  SAMANA: "puj-to-samana",
+  SUR_PROFUNDO: "puj-to-barahona"
+};
+
+const detectZoneSlug = (
+  destinationZoneId: string,
+  destinationLabel: string,
+  hotel?: LocationOption | null
+) => {
+  const normalizedLabel = destinationLabel.trim().toLowerCase();
+  if (destinationZoneId === "PUJ_BAVARO") {
+    if (normalizedLabel.includes("cap cana")) return "puj-to-cap-cana";
+    return "puj-to-bavaro";
+  }
+  if (destinationZoneId === "UVERO_MICHES") {
+    const microName = hotel?.microZoneName?.toLowerCase() ?? "";
+    if (microName.includes("miches") || normalizedLabel.includes("miches")) return "puj-to-miches";
+    return "puj-to-uvero-alto";
+  }
+  if (destinationZoneId === "NORTE_CIBAO") {
+    if (normalizedLabel.includes("santiago")) return "puj-to-santiago";
+    return "puj-to-puerto-plata";
+  }
+  return directZoneSlugMap[destinationZoneId] ?? "puj-to-bavaro";
+};
+
 const vehicleCatalog = [
   {
     id: "sedan-standard",
@@ -103,6 +159,23 @@ const vehicleCategoryMap: Record<string, VehicleCategory> = {
   "sedan-standard": "SEDAN",
   "van-private": "VAN",
   "suv-vip": "SUV"
+};
+
+const getAdjustedPrice = (
+  originZoneId: string,
+  destinationZoneId: string,
+  vehicleCategory: VehicleCategory,
+  destinationLabel: string,
+  hotel?: LocationOption | null
+) => {
+  if (originZoneId === "PUJ_BAVARO") {
+    const zoneSlug = detectZoneSlug(destinationZoneId, destinationLabel, hotel);
+    const override = PUJ_ZONE_RATES[zoneSlug];
+    if (override && override[vehicleCategory] !== undefined) {
+      return override[vehicleCategory];
+    }
+  }
+  return getTransferPrice(originZoneId, destinationZoneId, vehicleCategory);
 };
 
 type Props = {
@@ -194,10 +267,16 @@ export default function TrasladoSearch({
     () =>
       vehicleCatalog.map((vehicle) => {
         const category = vehicleCategoryMap[vehicle.id] ?? "SEDAN";
-        const price = getTransferPrice(originZoneId, destinationZoneId, category);
+        const price = getAdjustedPrice(
+          originZoneId,
+          destinationZoneId,
+          category,
+          destinationLabel,
+          activeHotel
+        );
         return { ...vehicle, price };
       }),
-    [destinationZoneId, originZoneId]
+    [destinationZoneId, originZoneId, destinationLabel, activeHotel]
   );
 
   const dateValue = dateTime ? dateTime.split("T")[0] : "";
