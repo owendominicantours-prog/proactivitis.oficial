@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
-export const TOUR_DETAIL_VARIANTS = ["party", "family", "cruise"] as const;
+export const TOUR_DETAIL_VARIANTS = ["party", "family", "cruise", "couples", "usa"] as const;
 export type TourDetailVariant = (typeof TOUR_DETAIL_VARIANTS)[number];
 
 export async function ensureTourVariants(tourId: string) {
