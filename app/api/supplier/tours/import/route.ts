@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
         description,
         shortDescription,
         includes,
-        duration: typeof row.duration === "string" ? row.duration : undefined,
+        duration: typeof row.duration === "string" ? row.duration : "",
         location: typeof row.location === "string" ? row.location : "",
         language: typeof row.language === "string" ? row.language : "",
         category: typeof row.category === "string" ? row.category : "",
