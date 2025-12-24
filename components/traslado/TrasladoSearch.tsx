@@ -154,18 +154,6 @@ export default function TrasladoSearch({
   const normalizeValue = (value?: string | null) =>
     value?.trim().toLowerCase().replace(/\s+/g, " ") ?? "";
 
-  const matchHotel = (value?: string | null) => {
-    const normalized = normalizeValue(value);
-    if (!normalized) return null;
-    return (
-      hotels.find((hotel) => normalizeValue(hotel.name) === normalized) ??
-      hotels.find((hotel) => normalizeValue(hotel.slug).includes(normalized) || normalized.includes(normalizeValue(hotel.slug)))
-    );
-  };
-
-  const normalizeValue = (value?: string | null) =>
-    value?.trim().toLowerCase().replace(/\s+/g, " ") ?? "";
-
   const slugifyValue = (value?: string | null) =>
     value
       ?.trim()
