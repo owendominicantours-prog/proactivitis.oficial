@@ -30,6 +30,7 @@ const levelLabels: Record<LandingLevel, { badge: string; summary: string }> = {
 
 const buildSegmentsContext = async (segments: string[]): Promise<LandingContext | null> => {
   if (!segments.length || segments.length > 3) return null;
+  if (segments[0] === "punta-cana" && segments[1]?.startsWith("to-")) return null;
   const countrySlug = segments[0];
   const country = await prisma.country.findUnique({
     where: { slug: countrySlug }
