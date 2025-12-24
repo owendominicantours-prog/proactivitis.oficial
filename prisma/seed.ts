@@ -188,8 +188,6 @@ async function main() {
       }
     });
 
-    const assignedZoneId = microZoneToZoneIdMap[microZone.slug] ?? "PUJ_BAVARO";
-
     for (const hotel of microZone.hotels) {
       await prisma.location.upsert({
         where: { slug: hotel.slug },
@@ -198,7 +196,6 @@ async function main() {
           countryId: country.code,
           destinationId: destination.id,
           microZoneId: locationGroup.id,
-          assignedZoneId
         },
         create: {
           name: hotel.name,
@@ -206,7 +203,6 @@ async function main() {
           countryId: country.code,
           destinationId: destination.id,
           microZoneId: locationGroup.id,
-          assignedZoneId
         }
       });
       console.log(`seeded hotel ${hotel.slug} in ${microZone.slug}`);
