@@ -370,11 +370,20 @@ const CountdownTimer = ({ expires, onExpire }: { expires: number; onExpire: () =
 
 const buildSummary = (params: CheckoutPageParams) => {
 
+  const transferDefaults = {
+    tourName: "Transfer privado Proactivitis",
+    imageUrl: "/transfer/sedan.png",
+    date: "Fecha por confirmar",
+    time: "Hora por confirmar"
+  };
+
   const adults = parsePositiveInt(params.adults, 1);
 
   const youth = parsePositiveInt(params.youth, 0);
 
   const children = parsePositiveInt(params.child, 0);
+
+  const isTransferFlow = params.flowType === "transfer";
 
   const pricePerPerson = parsePriceValue(params.tourPrice, recommendedReservation.price);
 
@@ -388,15 +397,17 @@ const buildSummary = (params: CheckoutPageParams) => {
 
     tourId: params.tourId,
 
-    tourTitle: params.tourTitle || recommendedReservation.tourName,
+    tourTitle:
+      params.tourTitle || (isTransferFlow ? transferDefaults.tourName : recommendedReservation.tourName),
 
-    tourImage: params.tourImage || recommendedReservation.imageUrl,
+    tourImage:
+      params.tourImage || (isTransferFlow ? transferDefaults.imageUrl : recommendedReservation.imageUrl),
 
     tourPrice: pricePerPerson,
 
-    date: params.date || recommendedReservation.date,
+    date: params.date || (isTransferFlow ? transferDefaults.date : recommendedReservation.date),
 
-    time: params.time || recommendedReservation.time,
+    time: params.time || (isTransferFlow ? transferDefaults.time : recommendedReservation.time),
 
     adults,
 
