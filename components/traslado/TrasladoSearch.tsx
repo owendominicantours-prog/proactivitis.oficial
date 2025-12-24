@@ -609,7 +609,7 @@ export default function TrasladoSearch({
             <div>
               <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Reserva lista</p>
               <p className="text-lg font-semibold">
-                {originLabel} → {selectedHotel?.name ?? "tu hotel"}
+                {originLabel} → {destinationLabel || selectedHotel?.name || "tu hotel"}
               </p>
               <p className="text-sm text-slate-600">
                 {summaryDate ?? "Fecha pendiente"} · {passengers} pasajero{passengers > 1 ? "s" : ""}
@@ -809,9 +809,10 @@ export default function TrasladoSearch({
         <section className="space-y-6">
           <div className="flex flex-col gap-2">
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Opciones disponibles</p>
-            <h2 className="text-2xl font-bold text-slate-900">
-              Lleva a tu grupo de {passengers} pax a {selectedHotel?.name ?? "tu hotel"}
-            </h2>
+              <h2 className="text-2xl font-bold text-slate-900">
+                Lleva a tu grupo de {passengers} pax a{" "}
+                {destinationLabel || selectedHotel?.name || "tu hotel"}
+              </h2>
             {selectedHotel && (
               <p className="text-sm text-emerald-700">Mostrando tarifas privadas para {selectedHotel.name}</p>
             )}
