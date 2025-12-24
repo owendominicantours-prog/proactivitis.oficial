@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { resolveDestination, sanitized, slugify } from "@/lib/supplierTours";
+import { ensureCountryByCode, resolveDestination, sanitized, slugify } from "@/lib/supplierTours";
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
 
@@ -57,10 +57,13 @@ export async function createTourAction(formData: FormData) {
   const timeOptionsValue = timeSlots.length ? JSON.stringify(timeSlots) : null;
   const operatingDaysValue = formData.get("operatingDays")?.toString() ?? "[]";
   const blackoutDatesValue = formData.get("blackoutDates")?.toString() ?? "[]";
-  const departureDestinationId = await resolveDestination(
+  const resolvedDestination = await resolveDestination(
     formData.get("country")?.toString(),
     formData.get("destination")?.toString()
   );
+  const departureDestinationId = resolvedDestination?.destinationId ?? undefined;
+  const countryCode =
+    resolvedDestination?.countryCode ?? (await ensureCountryByCode("RD", "República Dominicana")).code;
 
   const galleryUrls = formData
     .getAll("galleryUrls")
@@ -104,7 +107,8 @@ export async function createTourAction(formData: FormData) {
       gallery: galleryUrls.length ? JSON.stringify(galleryUrls) : undefined,
       status: "pending",
       supplierId,
-      departureDestinationId
+      departureDestinationId,
+      countryId: countryCode
     }
   });
 
@@ -151,10 +155,13 @@ export async function updateTourAction(formData: FormData) {
   const timeOptionsValue = timeSlots.length ? JSON.stringify(timeSlots) : tour.timeOptions;
   const operatingDaysValue = formData.get("operatingDays")?.toString() ?? tour.operatingDays ?? "[]";
   const blackoutDatesValue = formData.get("blackoutDates")?.toString() ?? tour.blackoutDates ?? "[]";
-  const departureDestinationId = await resolveDestination(
+  const resolvedDestination = await resolveDestination(
     formData.get("country")?.toString(),
     formData.get("destination")?.toString()
   );
+  const departureDestinationId = resolvedDestination?.destinationId ?? undefined;
+  const countryCode =
+    resolvedDestination?.countryCode ?? (await ensureCountryByCode("RD", "República Dominicana")).code;
 
   const galleryUrls = formData
     .getAll("galleryUrls")
@@ -194,7 +201,8 @@ export async function updateTourAction(formData: FormData) {
       adminNote: itineraryValue,
       heroImage,
       gallery: galleryUrls.length ? JSON.stringify(galleryUrls) : tour.gallery,
-      departureDestinationId: departureDestinationId ?? tour.departureDestinationId
+      departureDestinationId: departureDestinationId ?? tour.departureDestinationId,
+      countryId: countryCode
     }
   });
 

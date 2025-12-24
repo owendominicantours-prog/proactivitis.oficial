@@ -45,6 +45,20 @@ export function slugify(value: string) {
     .replace(/(^-|-$)/g, "");
 }
 
+export async function ensureCountryByCode(code: string, name?: string) {
+  const upperCode = code.toUpperCase();
+  return prisma.country.upsert({
+    where: { code: upperCode },
+    update: { name: name ?? upperCode, code: upperCode },
+    create: {
+      id: randomUUID(),
+      name: name ?? upperCode,
+      slug: slugify(name ?? upperCode),
+      code: upperCode
+    }
+  });
+}
+
 export async function resolveDestination(countryInput?: string | null, destinationInput?: string | null) {
   if (!destinationInput) return null;
 
@@ -56,6 +70,7 @@ export async function resolveDestination(countryInput?: string | null, destinati
   const countrySlug = countryName ? slugify(countryName) : null;
 
   let countryId: string | undefined;
+  let countryRecord: { code: string } | undefined;
   if (countrySlug) {
     const code = countrySlug.toUpperCase();
     const country = await prisma.country.upsert({
@@ -69,6 +84,7 @@ export async function resolveDestination(countryInput?: string | null, destinati
       }
     });
     countryId = country.id;
+    countryRecord = country;
   }
 
   const destination = await prisma.destination.upsert({
@@ -93,5 +109,8 @@ export async function resolveDestination(countryInput?: string | null, destinati
     }
   });
 
-  return destination.id;
+  return {
+    destinationId: destination.id,
+    countryCode: countryRecord?.code
+  };
 }

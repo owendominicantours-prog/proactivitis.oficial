@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { randomUUID } from "crypto";
-import { resolveDestination, sanitized, slugify } from "@/lib/supplierTours";
+import { ensureCountryByCode, resolveDestination, sanitized, slugify } from "@/lib/supplierTours";
 
 const numericValue = (value: unknown) => {
   if (typeof value === "number") {
@@ -122,10 +122,15 @@ export async function POST(request: NextRequest) {
       slug = `${baseSlug}-${Math.floor(Math.random() * 9000 + 1000)}`;
     }
 
-    let destinationId = await resolveDestination(
+    const resolvedDestination = await resolveDestination(
       typeof row.country === "string" ? row.country : undefined,
       typeof row.destination === "string" ? row.destination : undefined
     );
+    let destinationId = resolvedDestination?.destinationId;
+    let countryCode = resolvedDestination?.countryCode;
+    if (!countryCode) {
+      countryCode = (await ensureCountryByCode("RD", "República Dominicana")).code;
+    }
     if (!destinationId) {
       destinationId = await ensureGlobalDestination();
     }
@@ -180,7 +185,8 @@ export async function POST(request: NextRequest) {
         gallery: galleryValues.length ? JSON.stringify(galleryValues) : undefined,
         status: "draft",
         supplierId: supplierProfile.id,
-        departureDestinationId: destinationId ?? undefined
+        departureDestinationId: destinationId ?? undefined,
+        countryId: countryCode
       }
     });
 
