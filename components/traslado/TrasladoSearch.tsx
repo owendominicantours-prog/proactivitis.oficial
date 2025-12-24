@@ -352,6 +352,9 @@ export default function TrasladoSearch({ hotels }: Props) {
             <h2 className="text-2xl font-bold text-slate-900">
               Lleva a tu grupo de {passengers} pax a {selectedHotel?.name ?? "tu hotel"}
             </h2>
+            <p className="text-sm text-slate-500">
+              Zona del hotel: <span className="font-semibold text-slate-800">{zoneLabel}</span>
+            </p>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {vehicles.map((vehicle) => (
