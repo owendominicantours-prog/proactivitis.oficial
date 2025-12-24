@@ -57,6 +57,7 @@
     "yarn": "^1.22.22"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^2.0.0",
     "@playwright/test": "^1.57.0",
     "@types/bcrypt": "^6.0.0",
     "@types/html-to-text": "^9.0.4",
