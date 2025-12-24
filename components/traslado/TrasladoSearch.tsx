@@ -3,6 +3,14 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import {
+  DEFAULT_ZONE_ID,
+  getTransferPrice,
+  resolveZoneId,
+  trasladoPricing,
+  VehicleCategory
+} from "@/data/traslado-pricing";
+
 export type LocationOption = {
   name: string;
   slug: string;
@@ -25,7 +33,6 @@ const vehicleCatalog = [
     description: "Perfecto para parejas o viajes de negocios ligeros.",
     pax: 3,
     luggage: 2,
-    basePrice: 35,
     image: "/transfer/sedan.png",
     features: ["Aire acondicionado potente", "Espacio para 2 maletas grandes", "Seguimiento del vuelo incluido"]
   },
@@ -36,7 +43,6 @@ const vehicleCatalog = [
     description: "Ideal para familias o grupos de amigos con equipaje.",
     pax: 8,
     luggage: 8,
-    basePrice: 55,
     image: "/transfer/mini van.png",
     features: ["Maletero amplio", "Puerta corredera", "Silla de bebé bajo petición"]
   },
@@ -47,7 +53,6 @@ const vehicleCatalog = [
     description: "Viaja con estilo y discreción con chofer bilingüe.",
     pax: 5,
     luggage: 5,
-    basePrice: 95,
     image: "/transfer/suv.png",
     features: ["Asientos de cuero", "Bebidas frías incluidas", "Chofer bilingüe profesional"]
   }
@@ -57,25 +62,6 @@ type VehicleOption = (typeof vehicleCatalog)[number] & { price: number };
 const transferTourId = process.env.NEXT_PUBLIC_TRANSFER_TOUR_ID;
 const transferTourTitle = process.env.NEXT_PUBLIC_TRANSFER_TITLE ?? "Transfer privado Proactivitis";
 const transferTourImage = process.env.NEXT_PUBLIC_TRANSFER_IMAGE ?? "/transfer/sedan.png";
-
-const pricingEngine = {
-  globalBase: 32 / 0.9,
-  roundTripFactor: 0.9,
-  vehicleMultipliers: {
-    sedan_economy: 1.0,
-    van_private: 1.65,
-    suv_premium: 2.85
-  },
-  zoneMatrix: {
-    PUJ_BAVARO: { m: 1.0, names: ["Punta Cana", "Bávaro", "Cap Cana", "Pueblo Bávaro"] },
-    UVERO_MICHES: { m: 1.7, names: ["Uvero Alto", "Miches", "Sabana de la Mar", "Macao"] },
-    ROMANA_BAYAHIBE: { m: 2.6, names: ["La Romana", "Bayahibe", "Dominicus", "LRM Airport"] },
-    SANTO_DOMINGO: { m: 4.5, names: ["Distrito Nacional", "SDQ Airport", "Boca Chica", "Juan Dolio"] },
-    SAMANA: { m: 8.5, names: ["Las Terrenas", "Samaná Port", "Las Galeras", "El Limón"] },
-    NORTE_CIBAO: { m: 9.5, names: ["Santiago", "STI Airport", "Puerto Plata", "Cabarete", "Sosúa"] },
-    SUR_PROFUNDO: { m: 12.0, names: ["Barahona", "Pedernales", "Bahía de las Águilas", "Baní"] }
-  }
-};
 
 const bookingSteps = [
   { step: 1, name: "Selección de vehículo" },
@@ -103,36 +89,17 @@ const pickupRules = [
   }
 ];
 
-type ZoneKey = keyof typeof pricingEngine.zoneMatrix;
-
-const vehicleMultiplierMap: Record<string, number> = {
-  sedan_standard: pricingEngine.vehicleMultipliers.sedan_economy,
-  van_private: pricingEngine.vehicleMultipliers.van_private,
-  suv_vip: pricingEngine.vehicleMultipliers.suv_premium
+const airportZoneMapping: Record<string, string> = {
+  PUJ: "PUJ_BAVARO",
+  SDQ: "SANTO_DOMINGO",
+  POP: "NORTE_CIBAO",
+  LRM: "ROMANA_BAYAHIBE"
 };
 
-const resolveZoneKey = (hotel?: LocationOption): ZoneKey => {
-  if (!hotel) return "PUJ_BAVARO";
-  const name = hotel.name.toLowerCase();
-  const destinationName = hotel.destinationName?.toLowerCase();
-  for (const [zoneKey, zone] of Object.entries(pricingEngine.zoneMatrix)) {
-    if (zone.names.some((zoneName) => zoneName.toLowerCase() === name)) {
-      return zoneKey as ZoneKey;
-    }
-    if (destinationName && zone.names.some((zoneName) => zoneName.toLowerCase() === destinationName)) {
-      return zoneKey as ZoneKey;
-    }
-  }
-  return "PUJ_BAVARO";
-};
-
-const computePrice = (vehicleId: string, zoneKey: ZoneKey) => {
-  const base = pricingEngine.globalBase;
-  const vehicleMult = vehicleMultiplierMap[vehicleId] ?? 1.0;
-  const zone = pricingEngine.zoneMatrix[zoneKey];
-  const zoneMult = zone?.m ?? 1.0;
-  const calculated = base * vehicleMult * zoneMult * pricingEngine.roundTripFactor;
-  return Number(calculated.toFixed(2));
+const vehicleCategoryMap: Record<string, VehicleCategory> = {
+  "sedan-standard": "SEDAN",
+  "van-private": "VAN",
+  "suv-vip": "SUV"
 };
 
 type Props = {
@@ -159,15 +126,18 @@ export default function TrasladoSearch({ hotels }: Props) {
     [destinationSlug, hotels]
   );
 
-  const zoneKey = resolveZoneKey(selectedHotel);
-  const zoneLabel = pricingEngine.zoneMatrix[zoneKey]?.names[0] ?? "Punta Cana";
+  const destinationZoneId = resolveZoneId(selectedHotel);
+  const zoneEntry = trasladoPricing.nodes.find((node) => node.id === destinationZoneId);
+  const zoneLabel = zoneEntry?.name ?? "Punta Cana / República Dominicana";
+  const originZoneId = airportZoneMapping[originCode] ?? DEFAULT_ZONE_ID;
   const vehicles = useMemo<VehicleOption[]>(
     () =>
-      vehicleCatalog.map((vehicle) => ({
-        ...vehicle,
-        price: computePrice(vehicle.id, zoneKey)
-      })),
-    [zoneKey]
+      vehicleCatalog.map((vehicle) => {
+        const category = vehicleCategoryMap[vehicle.id] ?? "SEDAN";
+        const price = getTransferPrice(originZoneId, destinationZoneId, category);
+        return { ...vehicle, price };
+      }),
+    [destinationZoneId, originZoneId]
   );
 
   const dateValue = dateTime ? dateTime.split("T")[0] : "";
@@ -264,7 +234,7 @@ export default function TrasladoSearch({ hotels }: Props) {
         </div>
       )}
       <div className={`rounded-[32px] border ${formCollapsed ? "border-transparent" : "border-slate-200"} bg-white/90 p-6 shadow-xl`}>
-        <p className="text-xs uppercase tracking-[0.4em] text-emerald-500">Transporte privado</p>
+        <p className="text-xs uppercase tracking-[0.4em] text-emerald-500">Traslado privado</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
           Traslados privados desde el aeropuerto
         </h1>
