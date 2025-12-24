@@ -25,6 +25,30 @@ const integerValue = (value: unknown) => {
 
 type ImportRecord = Record<string, unknown>;
 
+const ensureGlobalDestination = async () => {
+  const globalCountry = await prisma.country.upsert({
+    where: { slug: "global" },
+    update: {},
+    create: {
+      id: randomUUID(),
+      name: "Global",
+      slug: "global",
+      code: "GL"
+    }
+  });
+  const destination = await prisma.destination.upsert({
+    where: { slug: "global" },
+    update: {},
+    create: {
+      id: randomUUID(),
+      name: "Global",
+      slug: "global",
+      countryId: globalCountry.id
+    }
+  });
+  return destination.id;
+};
+
 const findRecords = (value: unknown): ImportRecord[] => {
   if (Array.isArray(value)) {
     return value
@@ -98,10 +122,13 @@ export async function POST(request: NextRequest) {
       slug = `${baseSlug}-${Math.floor(Math.random() * 9000 + 1000)}`;
     }
 
-    const destinationId = await resolveDestination(
+    let destinationId = await resolveDestination(
       typeof row.country === "string" ? row.country : undefined,
       typeof row.destination === "string" ? row.destination : undefined
     );
+    if (!destinationId) {
+      destinationId = await ensureGlobalDestination();
+    }
 
     const priceValue = numericValue(row.price) ?? 0;
     const priceChildValue = numericValue(row.priceChild);
