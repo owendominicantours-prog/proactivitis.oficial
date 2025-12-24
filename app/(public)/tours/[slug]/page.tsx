@@ -169,7 +169,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
   }
 
   if (tour) {
-    const canonicalSlug = tour.slug.replace(/-\d+$/, tour.slug);
+    const canonicalSlug = tour.slug.replace(/-\d+$/, "");
     if (canonicalSlug && canonicalSlug !== requestedSlug) {
       redirect(`/tours/${canonicalSlug}`);
     }
