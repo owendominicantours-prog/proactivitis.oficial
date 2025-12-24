@@ -8,6 +8,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum VehicleCategory {
+  SEDAN
+  VAN
+  SUV
+}
+
 model Account {
   id                String  @id
   userId            String
@@ -179,6 +185,8 @@ model Country {
   locations        Location[]    @relation("CountryLocations")
   tours            Tour[]        @relation("CountryTours")
   microZones       MicroZone[]   @relation("CountryMicroZones")
+  transferZones    TransferZone[]
+  transferRates    TransferRate[]
 }
 
 model Destination {
@@ -221,6 +229,38 @@ model Location {
   destinationId String?
   microZone     MicroZone?   @relation("MicroZoneLocations", fields: [microZoneId], references: [id])
   microZoneId   String?
+}
+
+model TransferZone {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  countryCode String
+  description String?
+  meta        Json?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  country     Country     @relation(fields: [countryCode], references: [code])
+  originRates TransferRate[] @relation("OriginRates")
+  destinationRates TransferRate[] @relation("DestinationRates")
+}
+
+model TransferRate {
+  id                 String          @id @default(cuid())
+  originZoneId       String
+  destinationZoneId  String
+  countryCode        String
+  vehicleCategory    VehicleCategory
+  price              Float
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  originZone         TransferZone    @relation("OriginRates", fields: [originZoneId], references: [id])
+  destinationZone    TransferZone    @relation("DestinationRates", fields: [destinationZoneId], references: [id])
+  country            Country         @relation(fields: [countryCode], references: [code])
+
+  @@unique([originZoneId, destinationZoneId, vehicleCategory])
+  @@index([countryCode])
 }
 
 model Session {
