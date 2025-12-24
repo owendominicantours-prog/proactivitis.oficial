@@ -26,6 +26,7 @@ export type BookingConfirmationData = {
   travelDateLabel: string;
   passengerLabel: string;
   startTimeLabel: string;
+  flowType?: "tour" | "transfer";
 };
 
 export async function getBookingConfirmationData(

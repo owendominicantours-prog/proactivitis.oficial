@@ -24,8 +24,26 @@ export function BookingConfirmedContent({
   travelDateLabel,
   passengerLabel,
   startTimeLabel,
-  orderCode
+  orderCode,
+  flowType
 }: BookingConfirmationData) {
+  const isTransfer = flowType === "transfer";
+  const heroTitle = isTransfer ? "Tu traslado privado está confirmado" : "Tu aventura comienza pronto!";
+  const heroSubtitle = isTransfer
+    ? "Nuestro chofer te espera con tu nombre en el punto acordado. Recibirás detalles adicionales en el correo."
+    : "Gracias por reservar con nosotros. Te enviamos una copia del voucher a tu bandeja y al celular.";
+  const instructionsList = isTransfer
+    ? [
+        "El chofer te esperará en el lobby principal o en la salida de llegadas del aeropuerto.",
+        "Compara tu número de vuelo con el del conductor y actualiza el dato si hay cambios.",
+        "Presenta tu e-ticket y tu identificación al momento del encuentro."
+      ]
+    : [
+        "Llega 15 minutos antes al punto de encuentro.",
+        "Lleva traje de baño, protector solar y agua.",
+        "Muestra tu e-ticket en el móvil o impreso.",
+        "¿Dudas? Usa el botón de contacto inmediato."
+      ];
   return (
     <div className="bg-slate-50 min-h-screen">
       <section className="bg-white border-b border-slate-200">
@@ -38,6 +56,7 @@ export function BookingConfirmedContent({
               <div>
                 <p className="text-xs uppercase tracking-[0.6em] text-emerald-700">Reserva confirmada</p>
                 <h1 className="text-3xl font-black text-slate-900 md:text-4xl">¡Tu aventura comienza pronto!</h1>
+                <p className="text-xl font-semibold text-slate-900">{heroTitle}</p>
               </div>
             </div>
             <div className="mt-6 grid gap-6 md:grid-cols-3">
@@ -73,7 +92,7 @@ export function BookingConfirmedContent({
               </a>
             </div>
             <p className="mt-4 text-sm text-slate-600">
-              Enviamos una copia del voucher a <span className="font-semibold">{booking.customerEmail}</span>.
+              {heroSubtitle} Enviamos una copia del voucher a <span className="font-semibold">{booking.customerEmail}</span>.
             </p>
           </div>
         </div>
@@ -87,8 +106,11 @@ export function BookingConfirmedContent({
               <p className="text-3xl font-bold text-slate-900">{booking.id}</p>
               <p className="text-sm text-slate-500 mt-2">{summary}</p>
               <div className="mt-6 grid gap-4 md:grid-cols-3">
-                <InfoRow label="Duración" value={tour.duration || "TBD"} />
-                <InfoRow label="Punto de encuentro" value={tour.meetingPoint || "No indicado"} />
+                <InfoRow label={isTransfer ? "Servicio reservado" : "Duración"} value={isTransfer ? "Transfer privado" : tour.duration || "TBD"} />
+                <InfoRow
+                  label="Punto de encuentro"
+                  value={isTransfer ? booking.pickup ?? "Lobby principal" : tour.meetingPoint || "No indicado"}
+                />
                 <InfoRow label="Total pagado" value={`$${booking.totalAmount.toFixed(0)} USD`} />
               </div>
             </div>
@@ -102,10 +124,9 @@ export function BookingConfirmedContent({
             <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
               <h2 className="text-2xl font-semibold text-slate-900">Instrucciones importantes</h2>
               <ul className="list-disc space-y-2 pl-5 text-sm text-slate-600">
-                <li>Llega 15 minutos antes al punto de encuentro.</li>
-                <li>Lleva traje de baño, protector solar y agua.</li>
-                <li>Muestra tu e-ticket en el móvil o impreso.</li>
-                <li>¿Dudas? Usa el botón de contacto inmediato.</li>
+                {instructionsList.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ul>
             </section>
           </div>
