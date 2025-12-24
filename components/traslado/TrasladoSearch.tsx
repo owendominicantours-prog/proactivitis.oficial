@@ -25,8 +25,14 @@ type OriginSelection =
   | { type: "airport"; code: string; label: string }
   | { type: "hotel"; hotel: LocationOption; label: string };
 
+const stripDiacritics = (value?: string | null) =>
+  value?.normalize("NFD").replace(/[\u0300-\u036f]/g, "") ?? "";
+
 const normalizeValue = (value?: string | null) =>
-  value?.trim().toLowerCase().replace(/\s+/g, " ") ?? "";
+  stripDiacritics(value)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ") ?? "";
 
 const slugifyValue = (value?: string | null) =>
   value
