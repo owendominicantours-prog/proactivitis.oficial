@@ -342,18 +342,22 @@ export default function TrasladoSearch({
             </label>
             <label className="flex-1 min-w-[180px] text-sm text-slate-500">
               Destino
-              <input
-                list="hotels"
-                value={destinationLabel}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setDestinationLabel(value);
-                  const matched = hotels.find((hotel) => hotel.name.toLowerCase() === value.toLowerCase());
-                  if (matched) {
-                    setDestinationSlug(matched.slug);
-                  }
-                }}
-                placeholder="Escribe tu hotel"
+            <input
+              list="hotels"
+              value={destinationLabel}
+              onChange={(event) => {
+                const value = event.target.value;
+                setDestinationLabel(value);
+                const normalized = value.trim().toLowerCase();
+                let matched = hotels.find((hotel) => hotel.name.toLowerCase() === normalized);
+                if (!matched) {
+                  matched = hotels.find((hotel) => normalized.includes(hotel.slug) || hotel.slug.includes(normalized));
+                }
+                if (matched) {
+                  setDestinationSlug(matched.slug);
+                }
+              }}
+              placeholder="Escribe tu hotel"
                 className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
               />
               <datalist id="hotels">
