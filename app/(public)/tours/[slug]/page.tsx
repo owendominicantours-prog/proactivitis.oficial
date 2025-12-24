@@ -131,18 +131,49 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
       : null;
   if (!slug) notFound();
 
-  const tour = await prisma.tour.findFirst({
-    where: { slug },
-    include: {
-      SupplierProfile: {
-        include: {
-          User: {
-            select: { name: true }
-          }
+  const standardInclude = {
+    SupplierProfile: {
+      include: {
+        User: {
+          select: { name: true }
         }
       }
     }
-  });
+  };
+
+  const fetchTourBySlug = (value?: string) =>
+    value
+      ? prisma.tour.findFirst({
+          where: { slug: value },
+          include: standardInclude
+        })
+      : null;
+
+  const requestedSlug = slug ?? "";
+  const slugWithoutSuffix = requestedSlug.replace(/-\d+$/, "");
+
+  let tour = await fetchTourBySlug(requestedSlug);
+  if (!tour && slugWithoutSuffix && slugWithoutSuffix !== requestedSlug) {
+    tour = await fetchTourBySlug(slugWithoutSuffix);
+  }
+  if (!tour && slugWithoutSuffix) {
+    tour = await prisma.tour.findFirst({
+      where: {
+        slug: {
+          startsWith: `${slugWithoutSuffix}-`
+        }
+      },
+      include: standardInclude,
+      orderBy: { createdAt: "desc" }
+    });
+  }
+
+  if (tour) {
+    const canonicalSlug = tour.slug.replace(/-\d+$/, tour.slug);
+    if (canonicalSlug && canonicalSlug !== requestedSlug) {
+      redirect(`/tours/${canonicalSlug}`);
+    }
+  }
 
   if (!tour) {
     const fallback = await prisma.tour.findUnique({ where: { id: slug } });
