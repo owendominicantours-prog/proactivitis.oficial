@@ -139,7 +139,6 @@ export default function TrasladoSearch({
   const initialResultsVisible = Boolean(autoShowResults && initialHotel && initialDateTime);
   const [showResults, setShowResults] = useState(initialResultsVisible);
   const [formCollapsed, setFormCollapsed] = useState(initialResultsVisible);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [flightNumber, setFlightNumber] = useState("");
   const router = useRouter();
   const pathname = usePathname();
@@ -164,16 +163,41 @@ export default function TrasladoSearch({
     );
   };
 
+  const normalizeValue = (value?: string | null) =>
+    value?.trim().toLowerCase().replace(/\s+/g, " ") ?? "";
+
+  const slugifyValue = (value?: string | null) =>
+    value
+      ?.trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-+/g, "-") ?? "";
+
+  const matchHotel = (value?: string | null) => {
+    const normalized = normalizeValue(value);
+    if (!normalized) return null;
+    return (
+      hotels.find((hotel) => normalizeValue(hotel.name) === normalized) ??
+      hotels.find(
+        (hotel) =>
+          normalizeValue(hotel.slug).includes(normalized) || normalized.includes(normalizeValue(hotel.slug))
+      )
+    );
+  };
+
   const selectedHotel = useMemo(
     () => hotels.find((hotel) => hotel.slug === destinationSlug),
     [destinationSlug, hotels]
   );
 
+  const fallbackHotel = useMemo(() => matchHotel(destinationLabel), [destinationLabel, hotels]);
+  const activeHotel = selectedHotel ?? fallbackHotel;
   const destinationZoneId = resolveZoneId({
-    assignedZoneId: selectedHotel?.assignedZoneId,
-    microZoneSlug: selectedHotel?.microZoneSlug,
-    microZoneName: selectedHotel?.microZoneName,
-    destinationName: selectedHotel?.destinationName
+    assignedZoneId: activeHotel?.assignedZoneId,
+    microZoneSlug: activeHotel?.microZoneSlug,
+    microZoneName: activeHotel?.microZoneName,
+    destinationName: activeHotel?.destinationName
   });
   const zoneEntry = trasladoPricing.nodes.find((node) => node.id === destinationZoneId);
   const zoneLabel = zoneEntry?.name ?? "Punta Cana / República Dominicana";
@@ -230,9 +254,12 @@ export default function TrasladoSearch({
     return `/checkout?${params.toString()}`;
   };
 
-  const syncQueryFromFilters = () => {
+  const syncQueryFromFilters = (slugParam?: string) => {
     const params = new URLSearchParams();
-    params.set("hotelSlug", destinationSlug);
+    const slugToUse = slugParam ?? destinationSlug;
+    if (slugToUse) {
+      params.set("hotelSlug", slugToUse);
+    }
     params.set("origin", originCode);
     router.replace(`${pathname}?${params.toString()}`);
   };
@@ -263,23 +290,21 @@ export default function TrasladoSearch({
 
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!selectedHotel) {
-      const matched = matchHotel(destinationLabel);
-      if (matched) {
-        setDestinationSlug(matched.slug);
-      } else {
-        setErrorMessage("Selecciona un hotel válido");
-        return;
+    const matched = matchHotel(destinationLabel);
+    let slugToSync = destinationSlug;
+    if (matched) {
+      setDestinationSlug(matched.slug);
+      slugToSync = matched.slug;
+    } else if (!destinationSlug) {
+      const slugified = slugifyValue(destinationLabel);
+      if (slugified) {
+        setDestinationSlug(slugified);
+        slugToSync = slugified;
       }
     }
-    if (!dateTime) {
-      setErrorMessage("Indica la fecha y hora de llegada");
-      return;
-    }
-    setErrorMessage(null);
     setShowResults(true);
     setFormCollapsed(true);
-    syncQueryFromFilters();
+    syncQueryFromFilters(slugToSync);
   };
 
   const summaryDate =
@@ -428,9 +453,6 @@ export default function TrasladoSearch({
               VER PRECIOS
             </button>
           </form>
-        )}
-        {errorMessage && !formCollapsed && (
-          <p className="mt-4 text-sm font-semibold text-rose-600">{errorMessage}</p>
         )}
       </div>
       <section className="grid gap-4 rounded-[28px] border border-slate-100 bg-white/90 p-6 shadow-sm md:grid-cols-4">
