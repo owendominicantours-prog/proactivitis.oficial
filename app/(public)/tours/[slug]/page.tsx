@@ -6,6 +6,7 @@ import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import { prisma } from "@/lib/prisma";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
+import { TourDetailVariant } from "@/lib/tourVariants";
 
 export type TourDetailSearchParams = {
   hotelSlug?: string;
@@ -129,8 +130,6 @@ type TourVariantConfig = {
   heroBadge?: string;
   faqOverride?: FAQItem;
 };
-
-export type TourDetailVariant = "party" | "family" | "cruise";
 
 const defaultFaqs: FAQItem[] = [
   {

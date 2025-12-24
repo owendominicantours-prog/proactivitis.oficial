@@ -324,6 +324,17 @@ model Tour {
   destinationId          String?
   microZone              MicroZone?      @relation("TourMicroZone", fields: [microZoneId], references: [id])
   microZoneId            String?
+  TourVariant            TourVariant[]
+}
+
+model TourVariant {
+  id        String   @id @default(cuid())
+  tourId    String
+  variant   String
+  createdAt DateTime @default(now()) @map("created_at")
+  Tour      Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@unique([tourId, variant])
 }
 
 model User {

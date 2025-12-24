@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 import { createNotification } from "@/lib/notificationService";
+import { ensureTourVariants } from "@/lib/tourVariants";
 import { NotificationType } from "@/lib/types/notificationTypes";
 import { TOUR_DELETE_REASONS } from "@/lib/constants/tourDeletion";
 
@@ -51,6 +52,7 @@ export async function approveTour(formData: FormData) {
   const note = formData.get("note");
   if (!tourId || typeof tourId !== "string") return;
   await changeTourStatus(tourId, "published", typeof note === "string" ? note : undefined);
+  await ensureTourVariants(tourId);
   await notifySupplier(
     tourId,
     "Tour aprobado",

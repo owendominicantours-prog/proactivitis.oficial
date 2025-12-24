@@ -1,13 +1,27 @@
-import { renderTourDetailContent, TourDetailVariant, TourDetailSearchParams } from "../page";
-
-const variantTargets: { slug: string; variants: TourDetailVariant[] }[] = [
-  { slug: "sunset-catamaran-snorkel", variants: ["party", "family", "cruise"] }
-];
+import { renderTourDetailContent, TourDetailSearchParams } from "../page";
+import { prisma } from "@/lib/prisma";
+import { TourDetailVariant } from "@/lib/tourVariants";
 
 export async function generateStaticParams() {
-  return variantTargets.flatMap(({ slug, variants }) =>
-    variants.map((variant) => ({ slug, variant }))
-  );
+  const variants = await prisma.tourVariant.findMany({
+    where: {
+      Tour: {
+        status: "published"
+      }
+    },
+    select: {
+      variant: true,
+      Tour: {
+        select: {
+          slug: true
+        }
+      }
+    }
+  });
+  return variants.map((variantEntry) => ({
+    slug: variantEntry.Tour.slug,
+    variant: variantEntry.variant as TourDetailVariant
+  }));
 }
 
 type TourDetailVariantProps = {
