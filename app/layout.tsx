@@ -28,6 +28,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://proactivitis.com"),
   title: "Proactivitis | Global Travel Experience Platform: Tours & Transfers",
   description:
     "Reserve tours auténticos, traslados privados premium y experiencias exclusivas con confirmación inmediata. Seguridad de pago global y soporte 24/7 en los mejores destinos del mundo.",
@@ -36,7 +37,29 @@ export const metadata: Metadata = {
     { rel: "shortcut icon", url: "/ico.ico" },
     { rel: "icon", url: "/icon.png", sizes: "96x96" },
     { rel: "apple-touch-icon", url: "/apple-icon.png", sizes: "96x96" }
-  ]
+  ],
+  openGraph: {
+    title: "Proactivitis | Global Travel Experience Platform: Tours & Transfers",
+    description:
+      "Reserva tours auténticos, traslados privados premium y experiencias exclusivas con confirmación inmediata. Seguridad de pago global y soporte 24/7 en los mejores destinos del mundo.",
+    url: "https://proactivitis.com",
+    siteName: "Proactivitis",
+    type: "website",
+    images: [
+      {
+        url: "https://www.proactivitis.com/logo.png",
+        alt: "Proactivitis logo"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@proactivitis",
+    title: "Proactivitis | Global Travel Experience Platform",
+    description:
+      "Reserva tours auténticos, traslados privados premium y experiencias exclusivas con confirmación inmediata. Seguridad de pago global y soporte 24/7 en los mejores destinos del mundo.",
+    images: ["https://www.proactivitis.com/logo.png"]
+  }
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
