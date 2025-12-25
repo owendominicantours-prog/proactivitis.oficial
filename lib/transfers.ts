@@ -29,14 +29,24 @@ async function ensureTransferCountry(countryCode: string) {
     slug: countryCode.toLowerCase()
   };
 
-  await prisma.country.upsert({
-    where: { code: countryCode },
-    update: {},
-    create: {
+  const existing = await prisma.country.findUnique({
+    where: { code: countryCode }
+  });
+  if (existing) {
+    return existing;
+  }
+
+  const slugConflict = await prisma.country.findFirst({
+    where: { slug: defaults.slug }
+  });
+  const slug = slugConflict ? `${defaults.slug}-${countryCode.toLowerCase()}` : defaults.slug;
+
+  return prisma.country.create({
+    data: {
       id: countryCode,
       code: countryCode,
       name: defaults.name,
-      slug: defaults.slug
+      slug
     }
   });
 }
