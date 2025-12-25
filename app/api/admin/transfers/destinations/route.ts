@@ -52,7 +52,10 @@ export async function POST(request: Request) {
     }
   }
 
-  const overridesValue = Object.keys(sanitizedOverrides).length ? sanitizedOverrides : null;
+  const overridesValue =
+    Object.keys(sanitizedOverrides).length > 0
+      ? (sanitizedOverrides as Record<VehicleCategory, number>)
+      : undefined;
 
   try {
     if (id) {
