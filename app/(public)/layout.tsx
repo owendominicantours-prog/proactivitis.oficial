@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import Script from "next/script";
 import { PublicAuthButtons } from "@/components/public/PublicAuthButtons";
 import { PublicCurrencyLanguage } from "@/components/public/PublicCurrencyLanguage";
 import { PublicFooter } from "@/components/public/PublicFooter";
@@ -16,7 +17,22 @@ const publicNavLinks = [
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900">
+    <>
+      <Script
+        async
+        src="https://www.googletagmanager.com/gtag/js?id=G-R3L9DE7KXL"
+        strategy="lazyOnload"
+      />
+      <Script id="gtag-init" strategy="lazyOnload">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-R3L9DE7KXL');
+        `}
+      </Script>
+      <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -83,5 +99,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
 
       <PublicFooter />
     </div>
+    </>
   );
 }
