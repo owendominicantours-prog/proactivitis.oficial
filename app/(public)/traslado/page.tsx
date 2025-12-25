@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import TrasladoSearch, { LocationOption } from "@/components/traslado/TrasladoSearch";
@@ -53,9 +54,18 @@ export default async function TrasladoPage() {
   return (
     <div className="bg-gradient-to-b from-[#E2FFF8] via-white to-[#F8FAFC]">
       <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-10 px-4 py-10">
-        <section className="space-y-6 rounded-[36px] border border-white/60 bg-white/80 p-8 shadow-xl backdrop-blur">
+        <section className="relative overflow-hidden space-y-6 rounded-[36px] border border-white/60 bg-white/80 p-8 shadow-xl backdrop-blur">
+          <Image
+            src="/transfer/sedan.png"
+            alt="Traslado premium Proactivitis"
+            fill
+            sizes="100vw"
+            priority
+            className="absolute inset-0 -z-10 h-full w-full object-cover opacity-90"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/70 to-white/90" />
           <p className="text-xs uppercase tracking-[0.5em] text-emerald-600">Proactivitis Traslado</p>
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="relative z-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="space-y-2">
               <h1 className="text-4xl font-black leading-tight text-slate-900 md:text-5xl">
                 Traslados privados para cualquier destino

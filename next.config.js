@@ -36,6 +36,16 @@ const nextConfig = {
         headers: securityHeaders
       }
     ];
+  },
+  async redirects() {
+    return [
+      {
+        source: "/(.*)",
+        has: [{ type: "host", value: "www.proactivitis.com" }],
+        destination: "https://proactivitis.com/:path*",
+        permanent: true
+      }
+    ];
   }
 };
 
