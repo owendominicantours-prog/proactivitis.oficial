@@ -3,6 +3,13 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
+import { getTransferPrice, resolveZoneId } from "@/data/traslado-pricing";
+import StructuredData from "@/components/schema/StructuredData";
+
+const SAME_AS_URLS = [
+  "https://www.facebook.com/proactivitis",
+  "https://www.instagram.com/proactivitis"
+];
 
 type LandingLevel = "country" | "destination" | "microzone";
 
@@ -213,6 +220,42 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
 
   const callToAction = `/traslado`;
 
+  const destinationZoneId = resolveZoneId({
+    microZoneSlug: microZone?.slug ?? undefined,
+    microZoneName: microZone?.name ?? undefined,
+    destinationName: destination?.name ?? country.name
+  });
+  const sedanPrice = getTransferPrice("PUJ_BAVARO", destinationZoneId, "SEDAN");
+  const schemaOriginLabel = `Aeropuerto Internacional de ${country.name}`;
+  const schemaDestinationLabel = microZone?.name ?? destination?.name ?? country.name;
+  const schemaAreaServed = [
+    { "@type": "Place", name: country.name },
+    ...(destination ? [{ "@type": "Place", name: destination.name }] : []),
+    ...(microZone ? [{ "@type": "Place", name: microZone.name }] : [])
+  ];
+  const landingSchema = {
+    "@context": "https://schema.org",
+    "@type": "TaxiService",
+    name: `Traslado desde ${schemaOriginLabel} a ${schemaDestinationLabel}`,
+    description: heroSubtitle,
+    provider: {
+      "@type": "Organization",
+      name: "Proactivitis",
+      sameAs: SAME_AS_URLS
+    },
+    areaServed: schemaAreaServed,
+    offers: {
+      "@type": "Offer",
+      availability: "https://schema.org/InStock",
+      priceSpecification: {
+        "@type": "PriceSpecification",
+        price: sedanPrice,
+        priceCurrency: "USD"
+      }
+    },
+    sameAs: SAME_AS_URLS
+  };
+
   const countryDestinations =
     level === "country"
       ? await prisma.destination.findMany({
@@ -248,6 +291,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <StructuredData data={landingSchema} />
       <section className="border-b border-slate-200 bg-gradient-to-br from-white via-emerald-50 to-slate-100">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-12">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-600">{levelCopy.badge}</p>
