@@ -60,22 +60,31 @@ const CUSTOM_PUJ_ZONE_SLUGS: Record<string, string[]> = {
   SUR_PROFUNDO: ["puj-to-barahona"]
 };
 
-const PUJ_ZONE_RATES: Record<string, Record<VehicleCategory, number>> = {
-  "puj-to-bavaro": { SEDAN: 35, VAN: 45, SUV: 65 },
-  "puj-to-cap-cana": { SEDAN: 30, VAN: 40, SUV: 55 },
-  "puj-to-uvero-alto": { SEDAN: 60, VAN: 75, SUV: 95 },
-  "puj-to-miches": { SEDAN: 130, VAN: 160, SUV: 210 },
-  "puj-to-santo-domingo": { SEDAN: 180, VAN: 220, SUV: 280 },
-  "puj-to-samana": { SEDAN: 250, VAN: 300, SUV: 380 },
-  "puj-to-santiago": { SEDAN: 280, VAN: 340, SUV: 420 },
-  "puj-to-bayahibe": { SEDAN: 90, VAN: 110, SUV: 150 },
-  "puj-to-puerto-plata": { SEDAN: 350, VAN: 420, SUV: 550 },
-  "puj-to-barahona": { SEDAN: 450, VAN: 550, SUV: 700 }
+const VEHICLE_CATEGORIES: VehicleCategory[] = ["SEDAN", "VAN", "SUV", "VIP", "BUS"];
+
+const fillRate = (base: Partial<Record<VehicleCategory, number>>) => {
+  const complete = {
+    SEDAN: base.SEDAN ?? 0,
+    VAN: base.VAN ?? 0,
+    SUV: base.SUV ?? 0,
+    VIP: base.SUV ?? 0,
+    BUS: base.SUV ?? 0
+  };
+  return complete;
 };
-for (const value of Object.values(PUJ_ZONE_RATES)) {
-  value.VIP = value.SUV;
-  value.BUS = value.SUV;
-}
+
+const PUJ_ZONE_RATES: Record<string, Record<VehicleCategory, number>> = {
+  "puj-to-bavaro": fillRate({ SEDAN: 35, VAN: 45, SUV: 65 }),
+  "puj-to-cap-cana": fillRate({ SEDAN: 30, VAN: 40, SUV: 55 }),
+  "puj-to-uvero-alto": fillRate({ SEDAN: 60, VAN: 75, SUV: 95 }),
+  "puj-to-miches": fillRate({ SEDAN: 130, VAN: 160, SUV: 210 }),
+  "puj-to-santo-domingo": fillRate({ SEDAN: 180, VAN: 220, SUV: 280 }),
+  "puj-to-samana": fillRate({ SEDAN: 250, VAN: 300, SUV: 380 }),
+  "puj-to-santiago": fillRate({ SEDAN: 280, VAN: 340, SUV: 420 }),
+  "puj-to-bayahibe": fillRate({ SEDAN: 90, VAN: 110, SUV: 150 }),
+  "puj-to-puerto-plata": fillRate({ SEDAN: 350, VAN: 420, SUV: 550 }),
+  "puj-to-barahona": fillRate({ SEDAN: 450, VAN: 550, SUV: 700 })
+};
 
 const directZoneSlugMap: Record<string, string> = {
   PUJ_BAVARO: "puj-to-bavaro",
