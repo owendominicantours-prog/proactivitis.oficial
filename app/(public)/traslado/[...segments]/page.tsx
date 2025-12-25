@@ -8,8 +8,14 @@ type LandingLevel = "country" | "destination" | "microzone";
 
 type LandingContext = {
   level: LandingLevel;
-  country: { id: string; name: string; slug: string };
-  destination?: { id: string; name: string; slug: string; shortDescription?: string };
+  country: { id: string; name: string; slug: string; heroImage?: string; shortDescription?: string };
+  destination?: {
+    id: string;
+    name: string;
+    slug: string;
+    shortDescription?: string;
+    heroImage?: string;
+  };
   microZone?: { id: string; name: string; slug: string };
 };
 
@@ -28,12 +34,29 @@ const levelLabels: Record<LandingLevel, { badge: string; summary: string }> = {
   }
 };
 
+const resolveHeroImageForContext = (context: LandingContext) => {
+  if (context.level === "microzone") {
+    return context.destination?.heroImage ?? context.country.heroImage;
+  }
+  if (context.level === "destination") {
+    return context.destination?.heroImage ?? context.country.heroImage;
+  }
+  return context.country.heroImage;
+};
+
 const buildSegmentsContext = async (segments: string[]): Promise<LandingContext | null> => {
   if (!segments.length || segments.length > 3) return null;
   if (segments[0] === "punta-cana" && segments[1]?.startsWith("to-")) return null;
   const countrySlug = segments[0];
   const country = await prisma.country.findUnique({
-    where: { slug: countrySlug }
+    where: { slug: countrySlug },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      heroImage: true,
+      shortDescription: true
+    }
   });
   if (!country) return null;
 
@@ -44,6 +67,13 @@ const buildSegmentsContext = async (segments: string[]): Promise<LandingContext 
       where: {
         slug: destinationSlug,
         countryId: country.id
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        shortDescription: true,
+        heroImage: true
       }
     });
     if (!destination) return null;
@@ -66,13 +96,20 @@ const buildSegmentsContext = async (segments: string[]): Promise<LandingContext 
 
   return {
     level,
-    country: { id: country.id, name: country.name, slug: country.slug },
+    country: {
+      id: country.id,
+      name: country.name,
+      slug: country.slug,
+      heroImage: country.heroImage ?? undefined,
+      shortDescription: country.shortDescription ?? undefined
+    },
     destination: destination
       ? {
           id: destination.id,
           name: destination.name,
           slug: destination.slug,
-          shortDescription: destination.shortDescription ?? undefined
+          shortDescription: destination.shortDescription ?? undefined,
+          heroImage: destination.heroImage ?? undefined
         }
       : undefined,
     microZone: microZone
@@ -83,6 +120,8 @@ const buildSegmentsContext = async (segments: string[]): Promise<LandingContext 
 
 const DEFAULT_TITLE = "Traslados Proactivitis";
 const DEFAULT_DESCRIPTION = "Descubre la red global de traslados premium de Proactivitis.";
+const DEFAULT_METADATA_IMAGE = "https://www.proactivitis.com/transfer/sedan.png";
+const TRANSFER_BASE_URL = "https://proactivitis.com/traslado";
 
 export async function generateMetadata({
   params
@@ -109,6 +148,36 @@ export async function generateMetadata({
     title = `${microZone.name} · Traslados Proactivitis`;
     description = `Descubre los hoteles y vehículos disponibles en ${microZone.name} con tarifas transparentes.`;
   }
+
+  const heroImage = resolveHeroImageForContext(context) ?? DEFAULT_METADATA_IMAGE;
+  const pageUrl =
+    segments.length === 0
+      ? `${TRANSFER_BASE_URL}`
+      : `${TRANSFER_BASE_URL}/${segments.map((segment) => encodeURIComponent(segment)).join("/")}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: pageUrl,
+      siteName: "Proactivitis",
+      type: "website",
+      images: [
+        {
+          url: heroImage,
+          alt: title
+        }
+      ]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [heroImage]
+    }
+  };
 
   return { title, description };
 }
