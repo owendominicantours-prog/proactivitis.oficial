@@ -5,7 +5,7 @@ import FeaturedToursSection from "@/components/public/FeaturedToursSection";
 export const metadata = {
   title: "Proactivitis | Traslados Privados y Tours de Calidad",
   description:
-    "Reserva traslados privados y tours con Proactivitis. Servicio profesional en Ecuador y los mejores destinos. ¡Precios fijos y confirmación inmediata!"
+    "Reserva traslados privados y tours con Proactivitis. Servicio profesional en los mejores destinos del mundo. ¡Precios fijos y confirmación inmediata!"
 };
 
 const benefits = [
