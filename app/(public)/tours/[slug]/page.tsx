@@ -7,6 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { formatReviewCountValue, getTourReviewCount } from "@/lib/reviewCounts";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
+import StructuredData from "@/components/schema/StructuredData";
+import { PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL, SAME_AS_URLS, getPriceValidUntil } from "@/lib/seo";
 
 type TourDetailSearchParams = {
   hotelSlug?: string;
@@ -225,8 +227,62 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
     }
   ];
 
+  const heroImageAbsolute = heroImage
+    ? heroImage.startsWith("http")
+      ? heroImage
+      : `${PROACTIVITIS_URL}${heroImage}`
+    : `${PROACTIVITIS_URL}/fototours/fotosimple.jpg`;
+  const tourUrl = `${PROACTIVITIS_URL}/tours/${tour.slug}`;
+  const priceValidUntil = getPriceValidUntil();
+  const itineraryList = visualTimeline.map((stop, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    item: {
+      "@type": "ListItem",
+      name: stop.title,
+      description: stop.description ?? stop.title
+    }
+  }));
+  const touristTypeFallback = categories.find((category) =>
+    ["Family", "Adventure", "Couples"].includes(category)
+  );
+  const aggregateRating =
+    detailReviewCount > 0
+      ? {
+          "@type": "AggregateRating",
+          ratingValue: 4.9,
+          reviewCount: detailReviewCount,
+          bestRating: "5"
+        }
+      : undefined;
+  const tourSchema = {
+    "@context": "https://schema.org",
+    "@type": "TouristTrip",
+    name: tour.title,
+    description: tour.description ?? shortTeaser,
+    image: [heroImageAbsolute],
+    url: tourUrl,
+    provider: PROACTIVITIS_LOCALBUSINESS,
+    touristType: touristTypeFallback ?? "Adventure",
+    itinerary: {
+      "@type": "ItemList",
+      itemListElement: itineraryList
+    },
+    offers: {
+      "@type": "Offer",
+      url: tourUrl,
+      price: tour.price,
+      priceCurrency: "USD",
+      priceValidUntil,
+      availability: "https://schema.org/InStock"
+    },
+    sameAs: SAME_AS_URLS,
+    ...(aggregateRating ? { aggregateRating } : {})
+  };
+
   return (
     <div className="min-h-screen bg-[#FDFDFD] text-slate-900 pb-24 overflow-x-hidden">
+      <StructuredData data={tourSchema} />
       {/* Hero */}
       <section className="mx-auto max-w-[1240px] px-4 pt-8 sm:pt-10">
         <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">

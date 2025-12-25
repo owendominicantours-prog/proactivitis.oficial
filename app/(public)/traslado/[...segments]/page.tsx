@@ -5,11 +5,17 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getTransferPrice, resolveZoneId } from "@/data/traslado-pricing";
 import StructuredData from "@/components/schema/StructuredData";
-
-const SAME_AS_URLS = [
-  "https://www.facebook.com/proactivitis",
-  "https://www.instagram.com/proactivitis"
-];
+import {
+  ECUADOR_SUPPORT_EMAIL,
+  ECUADOR_SUPPORT_PHONE,
+  buildGoogleMapsUrl,
+  getPriceValidUntil,
+  PROACTIVITIS_EMAIL,
+  PROACTIVITIS_LOCALBUSINESS,
+  PROACTIVITIS_PHONE,
+  PROACTIVITIS_URL,
+  SAME_AS_URLS
+} from "@/lib/seo";
 
 type LandingLevel = "country" | "destination" | "microzone";
 
@@ -39,6 +45,27 @@ const levelLabels: Record<LandingLevel, { badge: string; summary: string }> = {
     badge: "Nieto · Microzona",
     summary: "Hoteles y puntos de recogida definidos para transmitir confianza y claridad."
   }
+};
+
+const DURATION_ESTIMATES: Record<string, number> = {
+  "punta-cana": 35,
+  "bavaro": 30,
+  "cap-cana": 25,
+  "bavaro-cortecito": 27,
+  "los-corales": 28,
+  "arena-gorda": 28,
+  "uvero-alto": 45,
+  "miches": 65,
+  "santo-domingo": 80,
+  "quito": 40,
+  "manta": 115,
+  "cuenca": 180
+};
+
+const estimateDurationMinutes = (microZoneSlug?: string | null, destinationSlug?: string | null) => {
+  const key = (microZoneSlug ?? destinationSlug ?? "").toLowerCase().replace(/_/g, "-");
+  if (!key) return 45;
+  return DURATION_ESTIMATES[key] ?? 45;
 };
 
 const resolveHeroImageForContext = (context: LandingContext) => {
@@ -142,18 +169,29 @@ export async function generateMetadata({
   if (!context) return { title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION };
 
   const { level, country, destination, microZone } = context;
+  const countryName = country.name;
+  const destinationName = destination?.name;
+  const hotelName = microZone?.name;
   let title = DEFAULT_TITLE;
   let description = DEFAULT_DESCRIPTION;
+  const keywords: string[] = [];
 
   if (level === "country") {
     title = `Traslados en ${country.name} | Proactivitis`;
     description = `Covering ${country.name} with safe, hierarchical traslados and regional suppliers.`;
+    keywords.push(`proactivitis ${countryName}`);
   } else if (level === "destination" && destination) {
     title = `Traslados en ${destination.name} | Proactivitis`;
     description = `${destination.shortDescription ?? "Reservas con precios fijos y operadores certificados."}`;
+    keywords.push(`transporte ${destination.name}`, `proactivitis ${countryName}`);
   } else if (level === "microzone" && microZone) {
-    title = `${microZone.name} · Traslados Proactivitis`;
-    description = `Descubre los hoteles y vehículos disponibles en ${microZone.name} con tarifas transparentes.`;
+    title = `Traslado Privado a ${hotelName} | Proactivitis`;
+    description = `Reserva tu traslado privado a ${hotelName} en ${countryName}. Servicio premium, precio fijo y soporte 24/7. ¡Reserva ahora con Proactivitis!`;
+    keywords.push(`traslado ${hotelName}`, `transporte ${destinationName ?? countryName}`, `proactivitis ${countryName}`);
+  }
+
+  if (!keywords.length) {
+    keywords.push(`proactivitis ${countryName}`);
   }
 
   const heroImage = resolveHeroImageForContext(context) ?? DEFAULT_METADATA_IMAGE;
@@ -183,10 +221,12 @@ export async function generateMetadata({
       title,
       description,
       images: [heroImage]
+    },
+    keywords: keywords.filter(Boolean),
+    alternates: {
+      canonical: pageUrl
     }
   };
-
-  return { title, description };
 }
 
 type TrasladoLandingProps = {
@@ -219,6 +259,42 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       : "Elige tu hotel y confirma el punto exacto de recogida para sentir seguridad operativa.";
 
   const callToAction = `/traslado`;
+  const breadcrumbItems = [
+    { name: "Inicio", href: PROACTIVITIS_URL },
+    { name: country.name, href: `${TRANSFER_BASE_URL}/${country.slug}` },
+    ...(destination
+      ? [
+          {
+            name: destination.name,
+            href: `/traslado/${country.slug}/${destination.slug}`
+          }
+        ]
+      : []),
+    ...(microZone
+      ? [
+          {
+            name: microZone.name,
+            href: `/traslado/${country.slug}/${destination?.slug ?? country.slug}/${microZone.slug}`
+          }
+        ]
+      : [])
+  ];
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbItems.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.href
+    }))
+  };
+  const highlightHotelName = microZone?.name ?? destination?.name ?? country.name;
+  const durationMinutes = estimateDurationMinutes(microZone?.slug, destination?.slug);
+  const meetingDestinationName = destination?.name ?? country.name;
+  const durationCopy = `El tiempo estimado desde el Aeropuerto hasta ${highlightHotelName} es de aproximadamente ${durationMinutes} minutos.`;
+  const meetingCopy = `En el Aeropuerto de ${meetingDestinationName}, nuestro equipo te esperará en la puerta de salida de llegadas nacionales/internacionales con un cartel de Proactivitis.`;
+  const showTransferCopy = Boolean(destination || microZone);
 
   const destinationZoneId = resolveZoneId({
     microZoneSlug: microZone?.slug ?? undefined,
@@ -233,27 +309,64 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
     ...(destination ? [{ "@type": "Place", name: destination.name }] : []),
     ...(microZone ? [{ "@type": "Place", name: microZone.name }] : [])
   ];
+  const heroImage = resolveHeroImageForContext(context) ?? DEFAULT_METADATA_IMAGE;
+  const pageUrl =
+    segments.length === 0
+      ? `${TRANSFER_BASE_URL}`
+      : `${TRANSFER_BASE_URL}/${segments.map((segment) => encodeURIComponent(segment)).join("/")}`;
+  const priceValidUntil = getPriceValidUntil();
+  const locationMapUrl = buildGoogleMapsUrl(schemaDestinationLabel);
+  const sanitizedSegments = segments.filter(Boolean).map((segment) =>
+    segment.toUpperCase().replace(/[^A-Z0-9]/g, "")
+  );
+  const isEcuador =
+    country.slug.toLowerCase() === "ecuador" || country.slug.toLowerCase() === "ec";
+  const ecuadorIdentifier =
+    isEcuador && sanitizedSegments.length
+      ? `EC-TRANSFER-${sanitizedSegments.join("-")}`
+      : undefined;
+  const ecuadorLocation = isEcuador
+    ? { "@type": "Place", name: country.name, addressCountry: "EC" }
+    : undefined;
+  const providerContactPoint = {
+    ...PROACTIVITIS_LOCALBUSINESS.contactPoint,
+    email: isEcuador ? ECUADOR_SUPPORT_EMAIL : PROACTIVITIS_EMAIL,
+    telephone: isEcuador ? ECUADOR_SUPPORT_PHONE : PROACTIVITIS_PHONE
+  };
+  const providerAddress = {
+    ...PROACTIVITIS_LOCALBUSINESS.address,
+    addressCountry: isEcuador ? "EC" : PROACTIVITIS_LOCALBUSINESS.address.addressCountry
+  };
+  const provider = {
+    ...PROACTIVITIS_LOCALBUSINESS,
+    hasMap: locationMapUrl,
+    email: isEcuador ? ECUADOR_SUPPORT_EMAIL : PROACTIVITIS_EMAIL,
+    telephone: isEcuador ? ECUADOR_SUPPORT_PHONE : PROACTIVITIS_PHONE,
+    contactPoint: providerContactPoint,
+    address: providerAddress
+  };
+
   const landingSchema = {
     "@context": "https://schema.org",
     "@type": "TaxiService",
     name: `Traslado desde ${schemaOriginLabel} a ${schemaDestinationLabel}`,
     description: heroSubtitle,
-    provider: {
-      "@type": "Organization",
-      name: "Proactivitis",
-      sameAs: SAME_AS_URLS
-    },
+    image: heroImage,
+    provider,
+    publicAccess: true,
     areaServed: schemaAreaServed,
     offers: {
       "@type": "Offer",
       availability: "https://schema.org/InStock",
-      priceSpecification: {
-        "@type": "PriceSpecification",
-        price: sedanPrice,
-        priceCurrency: "USD"
-      }
+      price: sedanPrice ?? 0,
+      priceCurrency: "USD",
+      priceValidUntil,
+      url: pageUrl
     },
-    sameAs: SAME_AS_URLS
+    hasMap: locationMapUrl,
+    sameAs: SAME_AS_URLS,
+    ...(ecuadorIdentifier ? { identifier: ecuadorIdentifier } : {}),
+    ...(ecuadorLocation ? { location: ecuadorLocation } : {})
   };
 
   const countryDestinations =
@@ -288,12 +401,48 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
           select: { name: true, slug: true }
         })
       : [];
+  const relatedHotels =
+    destination && destination.id
+      ? await prisma.location.findMany({
+          where: { destinationId: destination.id },
+          orderBy: { name: "asc" },
+          select: { name: true, slug: true },
+          take: 4
+        })
+      : [];
+  const nearbyItems = [
+    {
+      label: `Aeropuerto Internacional de ${country.name}`,
+      href: `/traslado/${country.slug}`
+    },
+    ...(destination
+      ? [
+          {
+            label: `Tours y experiencias en ${destination.name}`,
+            href: `/tours?destination=${encodeURIComponent(destination.slug)}`
+          }
+        ]
+      : []),
+    ...relatedHotels.map((hotel) => ({
+      label: hotel.name,
+      href: `/recogida/${hotel.slug}`
+    }))
+  ].slice(0, 5);
 
   return (
     <div className="min-h-screen bg-slate-50">
       <StructuredData data={landingSchema} />
+      <StructuredData data={breadcrumbSchema} />
       <section className="border-b border-slate-200 bg-gradient-to-br from-white via-emerald-50 to-slate-100">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-12">
+          <nav className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-600">
+            {breadcrumbItems.map((item, index) => (
+              <span key={item.href} className="inline-flex items-center gap-1">
+                {index > 0 && <span aria-hidden>›</span>}
+                <Link href={item.href}>{item.name}</Link>
+              </span>
+            ))}
+          </nav>
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-600">{levelCopy.badge}</p>
           <h1 className="text-4xl font-bold text-slate-900">{heroTitle}</h1>
           <p className="max-w-3xl text-lg text-slate-600">{heroSubtitle}</p>
@@ -414,6 +563,37 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
                 >
                   <p className="text-lg font-semibold text-slate-900">{hotel.name}</p>
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reservar traslado</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+        {showTransferCopy && (
+          <section className="space-y-3 rounded-3xl border border-emerald-100 bg-emerald-50/60 p-6 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Detalle rápido</p>
+            <h2 className="text-2xl font-bold text-slate-900">Información del servicio</h2>
+            <p className="text-sm text-slate-600">{durationCopy}</p>
+            <p className="text-sm text-slate-600">{meetingCopy}</p>
+          </section>
+        )}
+        {nearbyItems.length > 0 && (
+          <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Destinos cercanos</p>
+                <h2 className="text-2xl font-bold text-slate-900">Explora puntos vinculados a esta ciudad</h2>
+              </div>
+              <span className="text-xs uppercase tracking-[0.4em] text-emerald-600">Red local</span>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {nearbyItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="rounded-2xl border border-slate-200 p-4 text-sm font-semibold text-slate-600 transition hover:border-emerald-300 hover:bg-emerald-50"
+                >
+                  <p className="text-xs uppercase tracking-[0.3em] text-emerald-500">Enlace relacionado</p>
+                  <p className="mt-2 text-lg font-semibold text-slate-900">{item.label}</p>
                 </Link>
               ))}
             </div>

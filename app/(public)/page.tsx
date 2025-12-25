@@ -2,6 +2,12 @@
 import Link from "next/link";
 import FeaturedToursSection from "@/components/public/FeaturedToursSection";
 
+export const metadata = {
+  title: "Proactivitis | Traslados Privados y Tours de Calidad",
+  description:
+    "Reserva traslados privados y tours con Proactivitis. Servicio profesional en Ecuador y los mejores destinos. ¡Precios fijos y confirmación inmediata!"
+};
+
 const benefits = [
   {
     title: "Soporte local inmediato",
