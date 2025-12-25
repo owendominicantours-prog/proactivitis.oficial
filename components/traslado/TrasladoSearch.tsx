@@ -249,6 +249,7 @@ export default function TrasladoSearch({
   const [showResults, setShowResults] = useState(initialResultsVisible);
   const [formCollapsed, setFormCollapsed] = useState(initialResultsVisible);
   const [flightNumber, setFlightNumber] = useState("");
+  const [liveRates, setLiveRates] = useState<Record<VehicleCategory, number> | null>(null);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -337,20 +338,53 @@ export default function TrasladoSearch({
     }
     return airportZoneMapping[originSelection.code] ?? DEFAULT_ZONE_ID;
   }, [originSelection]);
+
+  useEffect(() => {
+    if (!originZoneId || !destinationZoneId) {
+      setLiveRates(null);
+      return;
+    }
+    const controller = new AbortController();
+    const signal = controller.signal;
+    const fetchRates = async () => {
+      try {
+        const response = await fetch(
+          `/api/transfers/rates?originZoneId=${encodeURIComponent(originZoneId)}&destinationZoneId=${encodeURIComponent(
+            destinationZoneId
+          )}`,
+          { signal }
+        );
+        if (!response.ok) {
+          setLiveRates(null);
+          return;
+        }
+        const data = (await response.json()) as { rates?: Record<VehicleCategory, number> };
+        setLiveRates(data?.rates ?? null);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+        setLiveRates(null);
+      }
+    };
+    fetchRates();
+    return () => controller.abort();
+  }, [destinationZoneId, originZoneId]);
   const vehicles = useMemo<VehicleOption[]>(
     () =>
       vehicleCatalog.map((vehicle) => {
         const category = vehicleCategoryMap[vehicle.id] ?? "SEDAN";
-        const price = getAdjustedPrice(
+        const fallbackPrice = getAdjustedPrice(
           originZoneId,
           destinationZoneId,
           category,
           destinationLabel,
           activeHotel
         );
+        const price = liveRates?.[category] ?? fallbackPrice;
         return { ...vehicle, price };
       }),
-    [destinationZoneId, originZoneId, destinationLabel, activeHotel]
+    [destinationZoneId, originZoneId, destinationLabel, activeHotel, liveRates]
   );
 
   const dateValue = dateTime ? dateTime.split("T")[0] : "";
