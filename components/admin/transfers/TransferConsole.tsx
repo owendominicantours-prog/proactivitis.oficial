@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-import type { TransferZone, TransferDestination, TransferOrigin } from "@prisma/client";
+import type { TransferZone, TransferDestination, TransferPoint } from "@prisma/client";
 import type { VehicleCategory } from "@prisma/client";
 import type { TransferRateWithZones, TransferConfig } from "@/lib/transfers";
 
@@ -102,6 +102,44 @@ const EMPTY_DESTINATION_DRAFT: DestinationDraft = {
   pricingOverrides: buildOverrides()
 };
 
+type PointDraft = {
+  id?: string;
+  name: string;
+  slug: string;
+  type: string;
+  code?: string;
+  description: string;
+};
+
+const POINT_TYPES = [
+  { value: "airport", label: "Aeropuerto" },
+  { value: "hotel", label: "Hotel" },
+  { value: "general", label: "Otro punto" }
+];
+
+const buildPointDraftState = (points: TransferPoint[]) => {
+  const initial: Record<string, PointDraft> = {};
+  for (const point of points) {
+    initial[point.id] = {
+      id: point.id,
+      name: point.name,
+      slug: point.slug,
+      type: point.type ?? "general",
+      code: point.code ?? "",
+      description: point.description ?? ""
+    };
+  }
+  return initial;
+};
+
+const EMPTY_POINT_DRAFT: PointDraft = {
+  name: "",
+  slug: "",
+  type: "airport",
+  code: "",
+  description: ""
+};
+
 const buildRows = (zones: TransferZone[], rates: TransferRateWithZones[]) => {
   const rowMap = new Map<string, TransferConsoleRow>();
   const zoneById = new Map(zones.map((zone) => [zone.id, zone]));
@@ -157,6 +195,10 @@ export default function TransferConsole({ countries, activeCountryCode, config }
   const [newZoneDraft, setNewZoneDraft] = useState<ZoneDraft>(EMPTY_ZONE_DRAFT);
   const [savingZones, setSavingZones] = useState<Record<string, boolean>>({});
   const [creatingZone, setCreatingZone] = useState(false);
+  const [pointDrafts, setPointDrafts] = useState(() => buildPointDraftState(config.points));
+  const [newPointDraft, setNewPointDraft] = useState<PointDraft>(EMPTY_POINT_DRAFT);
+  const [savingPoints, setSavingPoints] = useState<Record<string, boolean>>({});
+  const [creatingPoint, setCreatingPoint] = useState(false);
   const [destinationDrafts, setDestinationDrafts] = useState(() => buildDestinationDraftState(config.destinations));
   const [newDestinationDraft, setNewDestinationDraft] = useState<DestinationDraft>(EMPTY_DESTINATION_DRAFT);
   const [priceMode, setPriceMode] = useState<"zone" | "hotel">("zone");
@@ -168,6 +210,10 @@ export default function TransferConsole({ countries, activeCountryCode, config }
   useEffect(() => {
     setZoneDrafts(buildZoneDraftState(config.zones));
   }, [config.zones]);
+
+  useEffect(() => {
+    setPointDrafts(buildPointDraftState(config.points));
+  }, [config.points]);
 
   useEffect(() => {
     setDestinationDrafts(buildDestinationDraftState(config.destinations));
@@ -479,16 +525,16 @@ export default function TransferConsole({ countries, activeCountryCode, config }
                   />
                 </label>
                 <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                  Origen
+                  Punto de partida
                   <select
                     value={zoneDrafts[zone.id]?.originId ?? zone.originId ?? ""}
                     onChange={(event) => handleZoneInputChange(zone.id, "originId", event.target.value)}
                     className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
                   >
                     <option value="">Sin asignar</option>
-                    {config.origins.map((origin) => (
-                      <option key={origin.id} value={origin.id}>
-                        {origin.name}
+                    {config.points.map((point) => (
+                      <option key={point.id} value={point.id}>
+                        {point.name} ({point.type})
                       </option>
                     ))}
                   </select>
@@ -563,7 +609,7 @@ export default function TransferConsole({ countries, activeCountryCode, config }
                     className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
                   >
                     <option value="">Sin asignar</option>
-                    {config.origins.map((origin) => (
+                    {config.points.map((origin) => (
                       <option key={origin.id} value={origin.id}>
                         {origin.name}
                       </option>

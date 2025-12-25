@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
-import type { VehicleCategory } from "@prisma/client";
+import type { Prisma, VehicleCategory } from "@prisma/client";
 
 const VEHICLE_CATEGORIES: VehicleCategory[] = ["SEDAN", "VAN", "SUV", "VIP", "BUS"];
 
@@ -15,7 +15,7 @@ type DestinationPayload = {
   heroImage?: string;
   zoneId: string;
   originId?: string;
-  pricingOverrides?: Record<VehicleCategory, number>;
+  pricingOverrides?: Record<VehicleCategory, number> | null;
 };
 
 export async function POST(request: Request) {
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
 
   const overridesValue =
     Object.keys(sanitizedOverrides).length > 0
-      ? (sanitizedOverrides as Record<VehicleCategory, number>)
+      ? (sanitizedOverrides as Prisma.JsonObject)
       : undefined;
 
   try {

@@ -234,17 +234,20 @@ model Location {
   microZoneId   String?
 }
 
-model TransferOrigin {
+model TransferPoint {
   id          String              @id @default(cuid())
   name        String
-  code        String              @unique
+  code        String?             @unique
   slug        String              @unique
+  type        String              @default("general")
   description String?
   meta        Json?
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
   zones       TransferZone[]
   destinations TransferDestination[]
+
+  @@map("TransferOrigin")
 }
 
 model TransferZone {
@@ -258,7 +261,7 @@ model TransferZone {
   updatedAt   DateTime    @updatedAt
   country     Country     @relation(fields: [countryCode], references: [code])
   originId    String?
-  origin      TransferOrigin? @relation(fields: [originId], references: [id])
+  origin      TransferPoint? @relation(fields: [originId], references: [id])
   destinations TransferDestination[]
   originRates TransferRate[] @relation("OriginRates")
   destinationRates TransferRate[] @relation("DestinationRates")
@@ -278,7 +281,7 @@ model TransferDestination {
   updatedAt        DateTime         @updatedAt
 
   zone   TransferZone  @relation(fields: [zoneId], references: [id])
-  origin TransferOrigin? @relation(fields: [originId], references: [id])
+  origin TransferPoint? @relation(fields: [originId], references: [id])
 
   @@index([zoneId])
 }

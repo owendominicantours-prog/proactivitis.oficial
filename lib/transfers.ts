@@ -3,7 +3,7 @@ import type {
   TransferRate,
   TransferZone,
   TransferDestination,
-  TransferOrigin
+  TransferPoint
 } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
@@ -29,24 +29,26 @@ const TRANSFER_COUNTRY_DEFAULTS: Record<
   }
 };
 
-async function ensureTransferOrigins() {
-  const map = new Map<string, TransferOrigin>();
-  for (const origin of DEFAULT_TRANSFER_ORIGINS) {
-    const record = await prisma.transferOrigin.upsert({
-      where: { code: origin.code },
+async function ensureTransferPoints() {
+  const map = new Map<string, TransferPoint>();
+  for (const point of DEFAULT_TRANSFER_POINTS) {
+    const record = await prisma.transferPoint.upsert({
+      where: { code: point.code },
       update: {
-        name: origin.name,
-        slug: origin.slug,
-        description: origin.name
+        name: point.name,
+        slug: point.slug,
+        description: point.name,
+        type: point.type
       },
       create: {
-        name: origin.name,
-        code: origin.code,
-        slug: origin.slug,
-        description: origin.name
+        name: point.name,
+        code: point.code,
+        slug: point.slug,
+        description: point.name,
+        type: point.type
       }
     });
-    map.set(origin.code, record);
+    map.set(point.code, record);
   }
   return map;
 }
@@ -79,14 +81,14 @@ async function ensureTransferCountry(countryCode: string) {
   });
 };
 
-const DEFAULT_TRANSFER_ORIGINS = [
-  { code: "PUJ", name: "Aeropuerto Punta Cana (PUJ)", slug: "airport-puj" },
-  { code: "SDQ", name: "Aeropuerto Las Américas (SDQ)", slug: "airport-sdq" },
-  { code: "POP", name: "Aeropuerto Gregorio Luperón (POP)", slug: "airport-pop" },
-  { code: "LRM", name: "Aeropuerto La Romana (LRM)", slug: "airport-lrm" }
+const DEFAULT_TRANSFER_POINTS = [
+  { code: "PUJ", name: "Aeropuerto Punta Cana (PUJ)", slug: "airport-puj", type: "airport" },
+  { code: "SDQ", name: "Aeropuerto Las Américas (SDQ)", slug: "airport-sdq", type: "airport" },
+  { code: "POP", name: "Aeropuerto Gregorio Luperón (POP)", slug: "airport-pop", type: "airport" },
+  { code: "LRM", name: "Aeropuerto La Romana (LRM)", slug: "airport-lrm", type: "airport" }
 ];
 
-const ZONE_ORIGIN_MAP: Record<string, string> = {
+const ZONE_POINT_MAP: Record<string, string> = {
   PUJ_BAVARO: "PUJ",
   UVERO_MICHES: "PUJ",
   ROMANA_BAYAHIBE: "PUJ",
@@ -99,14 +101,14 @@ const ZONE_ORIGIN_MAP: Record<string, string> = {
 type TransferConfig = {
   zones: TransferZone[];
   rates: TransferRateWithZones[];
-  origins: TransferOrigin[];
+  points: TransferPoint[];
   destinations: TransferDestination[];
 };
 
 export async function ensureDefaultTransferConfig(countryCode: string = DEFAULT_COUNTRY_CODE) {
   await ensureTransferCountry(countryCode);
-  const originMap = await ensureTransferOrigins();
-  await ensureTransferZones(countryCode, originMap);
+  const pointMap = await ensureTransferPoints();
+  await ensureTransferZones(countryCode, pointMap);
   await ensureTransferRates(countryCode);
 }
 
@@ -119,7 +121,7 @@ export async function getTransferConfig(countryCode: string): Promise<TransferCo
     where: { countryCode },
     include: { originZone: true, destinationZone: true }
   });
-  const origins = await prisma.transferOrigin.findMany({
+  const points = await prisma.transferPoint.findMany({
     orderBy: { name: "asc" }
   });
   const destinations = await prisma.transferDestination.findMany({
@@ -130,7 +132,7 @@ export async function getTransferConfig(countryCode: string): Promise<TransferCo
     },
     orderBy: { name: "asc" }
   });
-  return { zones, rates: rates as TransferRateWithZones[], origins, destinations };
+  return { zones, rates: rates as TransferRateWithZones[], points, destinations };
 }
 
 export async function getTransferCountryList() {
@@ -146,7 +148,7 @@ export async function getTransferCountryList() {
   });
 }
 
-async function ensureTransferZones(countryCode: string, originMap: Map<string, TransferOrigin>) {
+async function ensureTransferZones(countryCode: string, pointMap: Map<string, TransferPoint>) {
   const sky = trasladoPricing.nodes.map((node) => ({
     slug: node.id,
     name: node.name,
@@ -159,8 +161,8 @@ async function ensureTransferZones(countryCode: string, originMap: Map<string, T
 
   await Promise.all(
     sky.map((zone) => {
-      const zoneOriginCode = ZONE_ORIGIN_MAP[zone.slug];
-      const originId = zoneOriginCode ? originMap.get(zoneOriginCode)?.id ?? null : null;
+      const zonePointCode = ZONE_POINT_MAP[zone.slug];
+      const originId = zonePointCode ? pointMap.get(zonePointCode)?.id ?? null : null;
       return prisma.transferZone.upsert({
         where: { slug: zone.slug },
         create: {

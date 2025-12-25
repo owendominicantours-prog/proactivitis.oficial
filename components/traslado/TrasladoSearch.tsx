@@ -63,12 +63,12 @@ const CUSTOM_PUJ_ZONE_SLUGS: Record<string, string[]> = {
 const VEHICLE_CATEGORIES: VehicleCategory[] = ["SEDAN", "VAN", "SUV", "VIP", "BUS"];
 
 const fillRate = (base: Partial<Record<VehicleCategory, number>>) => {
-  const complete = {
+  const complete: Record<VehicleCategory, number> = {
     SEDAN: base.SEDAN ?? 0,
     VAN: base.VAN ?? 0,
     SUV: base.SUV ?? 0,
-    VIP: base.SUV ?? 0,
-    BUS: base.SUV ?? 0
+    VIP: base.VIP ?? 0,
+    BUS: base.BUS ?? 0
   };
   return complete;
 };
@@ -223,11 +223,14 @@ const getAdjustedPrice = (
 ) => {
   if (originZoneId === "PUJ_BAVARO") {
     const zoneSlug = detectZoneSlug(destinationZoneId, destinationLabel, hotel);
-  const override = PUJ_ZONE_RATES[zoneSlug];
-  const overrideCategory = vehicleCategory === "VIP" || vehicleCategory === "BUS" ? "SUV" : vehicleCategory;
-  if (override && override[overrideCategory] !== undefined) {
-    return override[overrideCategory];
-  }
+    const override = PUJ_ZONE_RATES[zoneSlug];
+    if (override) {
+      const overrideCategory: VehicleCategory =
+        vehicleCategory === "VIP" || vehicleCategory === "BUS" ? "SUV" : vehicleCategory;
+      if (override[overrideCategory] !== undefined) {
+        return override[overrideCategory];
+      }
+    }
   }
   return getTransferPrice(originZoneId, destinationZoneId, vehicleCategory);
 };
