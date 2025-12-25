@@ -110,7 +110,7 @@ export default async function HotelTrasladoPage({ params }: TrasladoPageProps) {
   }
 
   const hotelOptions = await prisma.location.findMany({
-    where: { countryId: "RD" },
+    where: { countryId: "RD", authorized: true },
     orderBy: { name: "asc" },
     select: {
       name: true,

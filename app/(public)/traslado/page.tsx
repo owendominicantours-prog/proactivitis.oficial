@@ -33,7 +33,7 @@ const heroStats = [
 
 export default async function TrasladoPage() {
   const hotels = await prisma.location.findMany({
-    where: { countryId: "RD" },
+    where: { countryId: "RD", authorized: true },
     orderBy: { name: "asc" },
     select: {
       name: true,

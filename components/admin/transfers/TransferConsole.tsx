@@ -26,6 +26,43 @@ type TransferConsoleProps = {
   };
 };
 
+type ZoneDraft = {
+  name: string;
+  slug: string;
+  description: string;
+  microzones: string;
+  featuredHotels: string;
+};
+
+const formatList = (items?: string[]) => (items ?? []).filter(Boolean).join(", ");
+const parseList = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
+
+const buildZoneDraftState = (zones: TransferZone[]) => {
+  const initial: Record<string, ZoneDraft> = {};
+  for (const zone of zones) {
+    const meta = (zone.meta || {}) as {
+      microzones?: string[];
+      featuredHotels?: string[];
+    };
+    initial[zone.id] = {
+      name: zone.name,
+      slug: zone.slug,
+      description: zone.description ?? "",
+      microzones: formatList(meta.microzones),
+      featuredHotels: formatList(meta.featuredHotels)
+    };
+  }
+  return initial;
+};
+
+const EMPTY_ZONE_DRAFT: ZoneDraft = {
+  name: "",
+  slug: "",
+  description: "",
+  microzones: "",
+  featuredHotels: ""
+};
+
 const buildRows = (zones: TransferZone[], rates: TransferRateWithZones[]) => {
   const rowMap = new Map<string, TransferConsoleRow>();
   const zoneById = new Map(zones.map((zone) => [zone.id, zone]));
@@ -79,10 +116,18 @@ export default function TransferConsole({ countries, activeCountryCode, config }
   const [drafts, setDrafts] = useState(() => buildDraftState(rows));
   const [savingRows, setSavingRows] = useState<Record<string, boolean>>({});
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [zoneDrafts, setZoneDrafts] = useState(() => buildZoneDraftState(config.zones));
+  const [newZoneDraft, setNewZoneDraft] = useState<ZoneDraft>(EMPTY_ZONE_DRAFT);
+  const [savingZones, setSavingZones] = useState<Record<string, boolean>>({});
+  const [creatingZone, setCreatingZone] = useState(false);
 
   useEffect(() => {
     setDrafts(buildDraftState(rows));
   }, [rows]);
+
+  useEffect(() => {
+    setZoneDrafts(buildZoneDraftState(config.zones));
+  }, [config.zones]);
 
   const originZone = selectedOriginId ? zonesById.get(selectedOriginId) : undefined;
   const destinationZone = selectedDestinationId ? zonesById.get(selectedDestinationId) : undefined;
@@ -147,6 +192,74 @@ export default function TransferConsole({ countries, activeCountryCode, config }
     }
   };
 
+  const handleZoneInputChange = (zoneId: string, field: keyof ZoneDraft, value: string) => {
+    setZoneDrafts((prev) => ({
+      ...prev,
+      [zoneId]: {
+        ...prev[zoneId],
+        [field]: value
+      }
+    }));
+  };
+
+  const handleSaveZone = async (zoneId: string) => {
+    const draft = zoneDrafts[zoneId];
+    if (!draft) return;
+    setStatusMessage(null);
+    setSavingZones((prev) => ({ ...prev, [zoneId]: true }));
+    const payload = {
+      id: zoneId,
+      countryCode: activeCountryCode,
+      name: draft.name.trim(),
+      slug: draft.slug.trim(),
+      description: draft.description.trim(),
+      microzones: parseList(draft.microzones),
+      featuredHotels: parseList(draft.featuredHotels)
+    };
+    const response = await fetch("/api/admin/transfers/zones", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    setSavingZones((prev) => ({ ...prev, [zoneId]: false }));
+    if (response.ok) {
+      setStatusMessage("Zona actualizada");
+      router.refresh();
+    } else {
+      setStatusMessage("No se pudo guardar la zona. Intenta de nuevo.");
+    }
+  };
+
+  const handleCreateZone = async () => {
+    if (!newZoneDraft.name.trim() || !newZoneDraft.slug.trim()) {
+      setStatusMessage("Nombre y slug son obligatorios para crear una zona.");
+      return;
+    }
+    setStatusMessage(null);
+    setCreatingZone(true);
+    const payload = {
+      countryCode: activeCountryCode,
+      name: newZoneDraft.name.trim(),
+      slug: newZoneDraft.slug.trim(),
+      description: newZoneDraft.description.trim(),
+      microzones: parseList(newZoneDraft.microzones),
+      featuredHotels: parseList(newZoneDraft.featuredHotels)
+    };
+    const response = await fetch("/api/admin/transfers/zones", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    setCreatingZone(false);
+    if (response.ok) {
+      setStatusMessage("Zona creada");
+      setNewZoneDraft(EMPTY_ZONE_DRAFT);
+      router.refresh();
+    } else {
+      setStatusMessage("No se pudo crear la zona. Intenta de nuevo.");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
@@ -168,6 +281,145 @@ export default function TransferConsole({ countries, activeCountryCode, config }
           </Link>
         ))}
       </div>
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Jerarquía y zonas</p>
+            <h3 className="text-lg font-semibold text-slate-900">Edita zonas y microzonas</h3>
+          </div>
+          <p className="text-sm text-slate-500">
+            Actualiza nombre, slug y listas de microzonas o hoteles destacados.
+          </p>
+        </div>
+        <div className="mt-4 space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            {config.zones.map((zone) => (
+              <div key={zone.id} className="space-y-3 rounded-2xl border border-slate-100 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-slate-900">{zone.name}</p>
+                  <span className="text-xs text-slate-400">{zone.slug}</span>
+                </div>
+                <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                  Nombre
+                  <input
+                    type="text"
+                    value={zoneDrafts[zone.id]?.name ?? ""}
+                    onChange={(event) => handleZoneInputChange(zone.id, "name", event.target.value)}
+                    className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  />
+                </label>
+                <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                  Slug
+                  <input
+                    type="text"
+                    value={zoneDrafts[zone.id]?.slug ?? ""}
+                    onChange={(event) => handleZoneInputChange(zone.id, "slug", event.target.value)}
+                    className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  />
+                </label>
+                <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                  Descripción
+                  <input
+                    type="text"
+                    value={zoneDrafts[zone.id]?.description ?? ""}
+                    onChange={(event) => handleZoneInputChange(zone.id, "description", event.target.value)}
+                    className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  />
+                </label>
+                <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                  Microzonas (coma-separated)
+                  <textarea
+                    rows={2}
+                    value={zoneDrafts[zone.id]?.microzones ?? ""}
+                    onChange={(event) => handleZoneInputChange(zone.id, "microzones", event.target.value)}
+                    className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  />
+                </label>
+                <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                  Hoteles destacados (coma-separated)
+                  <textarea
+                    rows={2}
+                    value={zoneDrafts[zone.id]?.featuredHotels ?? ""}
+                    onChange={(event) => handleZoneInputChange(zone.id, "featuredHotels", event.target.value)}
+                    className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  />
+                </label>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs text-slate-400">{zone.id}</span>
+                  <button
+                    type="button"
+                    className="rounded-2xl bg-emerald-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    onClick={() => handleSaveZone(zone.id)}
+                    disabled={savingZones[zone.id]}
+                  >
+                    {savingZones[zone.id] ? "Guardando..." : "Guardar zona"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+            <p className="text-sm font-semibold text-slate-900">Agregar nueva zona</p>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                Nombre
+                <input
+                  type="text"
+                  value={newZoneDraft.name}
+                  onChange={(event) => setNewZoneDraft((prev) => ({ ...prev, name: event.target.value }))}
+                  className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                />
+              </label>
+              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                Slug
+                <input
+                  type="text"
+                  value={newZoneDraft.slug}
+                  onChange={(event) => setNewZoneDraft((prev) => ({ ...prev, slug: event.target.value }))}
+                  className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                />
+              </label>
+              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 md:col-span-2">
+                Descripción
+                <input
+                  type="text"
+                  value={newZoneDraft.description}
+                  onChange={(event) => setNewZoneDraft((prev) => ({ ...prev, description: event.target.value }))}
+                  className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                />
+              </label>
+              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 md:col-span-2">
+                Microzonas (coma-separated)
+                <textarea
+                  rows={2}
+                  value={newZoneDraft.microzones}
+                  onChange={(event) => setNewZoneDraft((prev) => ({ ...prev, microzones: event.target.value }))}
+                  className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                />
+              </label>
+              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 md:col-span-2">
+                Hoteles destacados (coma-separated)
+                <textarea
+                  rows={2}
+                  value={newZoneDraft.featuredHotels}
+                  onChange={(event) => setNewZoneDraft((prev) => ({ ...prev, featuredHotels: event.target.value }))}
+                  className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                />
+              </label>
+            </div>
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                className="rounded-2xl bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={handleCreateZone}
+                disabled={creatingZone}
+              >
+                {creatingZone ? "Creando..." : "Agregar zona"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
       {statusMessage && (
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">{statusMessage}</div>
       )}
