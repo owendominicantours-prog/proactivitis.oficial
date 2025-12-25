@@ -15,6 +15,8 @@ CREATE TABLE "TransferZone" (
 CREATE UNIQUE INDEX "TransferZone_slug_unique" ON "TransferZone" ("slug");
 CREATE INDEX "TransferZone_countryCode_index" ON "TransferZone" ("countryCode");
 
+CREATE UNIQUE INDEX "Country_code_key" ON "Country" ("code");
+
 ALTER TABLE "TransferZone"
   ADD CONSTRAINT "TransferZone_countryCode_fkey" FOREIGN KEY ("countryCode") REFERENCES "Country" ("code") ON DELETE CASCADE;
 

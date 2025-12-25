@@ -1,0 +1,2 @@
+ALTER TABLE "Location"
+  ADD COLUMN "authorized" BOOLEAN NOT NULL DEFAULT true;
