@@ -60,10 +60,7 @@ const CUSTOM_PUJ_ZONE_SLUGS: Record<string, string[]> = {
   SUR_PROFUNDO: ["puj-to-barahona"]
 };
 
-const PUJ_ZONE_RATES: Record<
-  string,
-  { SEDAN: number; VAN: number; SUV: number }
-> = {
+const PUJ_ZONE_RATES: Record<string, Record<VehicleCategory, number>> = {
   "puj-to-bavaro": { SEDAN: 35, VAN: 45, SUV: 65 },
   "puj-to-cap-cana": { SEDAN: 30, VAN: 40, SUV: 55 },
   "puj-to-uvero-alto": { SEDAN: 60, VAN: 75, SUV: 95 },
@@ -75,6 +72,10 @@ const PUJ_ZONE_RATES: Record<
   "puj-to-puerto-plata": { SEDAN: 350, VAN: 420, SUV: 550 },
   "puj-to-barahona": { SEDAN: 450, VAN: 550, SUV: 700 }
 };
+for (const value of Object.values(PUJ_ZONE_RATES)) {
+  value.VIP = value.SUV;
+  value.BUS = value.SUV;
+}
 
 const directZoneSlugMap: Record<string, string> = {
   PUJ_BAVARO: "puj-to-bavaro",
@@ -213,10 +214,11 @@ const getAdjustedPrice = (
 ) => {
   if (originZoneId === "PUJ_BAVARO") {
     const zoneSlug = detectZoneSlug(destinationZoneId, destinationLabel, hotel);
-    const override = PUJ_ZONE_RATES[zoneSlug];
-    if (override && override[vehicleCategory] !== undefined) {
-      return override[vehicleCategory];
-    }
+  const override = PUJ_ZONE_RATES[zoneSlug];
+  const overrideCategory = vehicleCategory === "VIP" || vehicleCategory === "BUS" ? "SUV" : vehicleCategory;
+  if (override && override[overrideCategory] !== undefined) {
+    return override[overrideCategory];
+  }
   }
   return getTransferPrice(originZoneId, destinationZoneId, vehicleCategory);
 };
