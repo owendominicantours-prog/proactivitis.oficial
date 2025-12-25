@@ -19,6 +19,7 @@ export type LocationOption = {
   microZoneName?: string | null;
   microZoneSlug?: string | null;
   assignedZoneId?: string | null;
+  transferDestinationId?: string | null;
 };
 
 type OriginSelection =
@@ -106,38 +107,57 @@ const detectZoneSlug = (
 };
 
 const vehicleCatalog = [
-  {
-    id: "sedan-standard",
-    title: "Sedán Privado",
-    type: "Economy",
-    description: "Perfecto para parejas o viajes de negocios ligeros.",
-    pax: 3,
-    luggage: 2,
-    image: "/transfer/sedan.png",
-    features: ["Aire acondicionado potente", "Espacio para 2 maletas grandes", "Seguimiento del vuelo incluido"]
-  },
-  {
-    id: "van-private",
-    title: "Van Privada",
-    type: "Family",
-    description: "Ideal para familias o grupos de amigos con equipaje.",
-    pax: 8,
-    luggage: 8,
-    image: "/transfer/mini van.png",
-    features: ["Maletero amplio", "Puerta corredera", "Silla de bebé bajo petición"]
-  },
-  {
-    id: "suv-vip",
-    title: "SUV Premium",
-    type: "Luxury",
-    description: "Viaja con estilo y discreción con chofer bilingüe.",
-    pax: 5,
-    luggage: 5,
-    image: "/transfer/suv.png",
-    features: ["Asientos de cuero", "Bebidas frías incluidas", "Chofer bilingüe profesional"]
-  }
-];
-type VehicleOption = (typeof vehicleCatalog)[number] & { price: number };
+    {
+      id: "sedan-standard",
+      title: "Sedan Privado",
+      type: "Economy",
+      description: "Perfecto para parejas o viajes de negocios ligeros.",
+      pax: 3,
+      luggage: 2,
+      image: "/transfer/sedan.png",
+      features: ["Aire acondicionado potente", "Espacio para 2 maletas grandes", "Seguimiento del vuelo incluido"]
+    },
+    {
+      id: "van-private",
+      title: "Van Privada",
+      type: "Family",
+      description: "Ideal para familias o grupos de amigos con equipaje.",
+      pax: 8,
+      luggage: 8,
+      image: "/transfer/mini van.png",
+      features: ["Maletero amplio", "Puerta corredera", "Silla de bebe bajo peticion"]
+    },
+    {
+      id: "suv-vip",
+      title: "SUV Premium",
+      type: "Luxury",
+      description: "Viaja con estilo y discrecion con chofer bilingue.",
+      pax: 5,
+      luggage: 5,
+      image: "/transfer/suv.png",
+      features: ["Asientos de cuero", "Bebidas frias incluidas", "Chofer bilingue profesional"]
+    },
+    {
+      id: "vip-luxury",
+      title: "Limusina VIP",
+      type: "Premium",
+      description: "Privacidad total, bebidas premium y atencion dedicada.",
+      pax: 3,
+      luggage: 2,
+      image: "/transfer/suv.png",
+      features: ["Servicio champagne", "Chofer con traje", "Wi-Fi y cargadores"]
+    },
+    {
+      id: "bus-group",
+      title: "Bus Ejecutivo",
+      type: "Group",
+      description: "Ideal para grupos corporativos o bodas con equipaje y estilo.",
+      pax: 18,
+      luggage: 12,
+      image: "/transfer/mini van.png",
+      features: ["Wi-Fi a bordo", "Sistema de sonido", "Asientos reclinables"]
+    }
+  ];type VehicleOption = (typeof vehicleCatalog)[number] & { price: number };
 
 const transferTourId = process.env.NEXT_PUBLIC_TRANSFER_TOUR_ID;
 const transferTourTitle = process.env.NEXT_PUBLIC_TRANSFER_TITLE ?? "Transfer privado Proactivitis";
@@ -179,7 +199,9 @@ const airportZoneMapping: Record<string, string> = {
 const vehicleCategoryMap: Record<string, VehicleCategory> = {
   "sedan-standard": "SEDAN",
   "van-private": "VAN",
-  "suv-vip": "SUV"
+  "suv-vip": "SUV",
+  "vip-luxury": "VIP",
+  "bus-group": "BUS"
 };
 
 const getAdjustedPrice = (
@@ -348,12 +370,14 @@ export default function TrasladoSearch({
     const signal = controller.signal;
     const fetchRates = async () => {
       try {
-        const response = await fetch(
-          `/api/transfers/rates?originZoneId=${encodeURIComponent(originZoneId)}&destinationZoneId=${encodeURIComponent(
-            destinationZoneId
-          )}`,
-          { signal }
-        );
+        const params = new URLSearchParams({
+          originZoneId,
+          destinationZoneId
+        });
+        if (activeHotel?.transferDestinationId) {
+          params.set("destinationId", activeHotel.transferDestinationId);
+        }
+        const response = await fetch(`/api/transfers/rates?${params.toString()}`, { signal });
         if (!response.ok) {
           setLiveRates(null);
           return;
@@ -404,6 +428,9 @@ export default function TrasladoSearch({
         originSelection.type === "airport" ? originSelection.code : originSelection.hotel.slug,
       originLabel: originSelection.label
     };
+    if (activeHotel?.transferDestinationId) {
+      payload.destinationId = activeHotel.transferDestinationId;
+    }
     if (flightNumber.trim()) {
       payload.flightNumber = flightNumber.trim();
     }

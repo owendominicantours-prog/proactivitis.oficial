@@ -10,6 +10,7 @@ type ZonePayload = {
   slug: string;
   description?: string;
   countryCode: string;
+  originId?: string;
   microzones?: string[];
   featuredHotels?: string[];
 };
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing payload" }, { status: 400 });
   }
 
-  const { id, name, slug, description, countryCode, microzones, featuredHotels } = payload as ZonePayload;
+  const { id, name, slug, description, countryCode, originId, microzones, featuredHotels } = payload as ZonePayload;
   if (!name || !slug || !countryCode) {
     return NextResponse.json({ error: "Missing required zone fields" }, { status: 400 });
   }
@@ -44,7 +45,8 @@ export async function POST(request: Request) {
           slug,
           description: description ?? null,
           countryCode,
-          meta
+          meta,
+          originId: originId ?? null
         }
       });
     } else {
@@ -55,7 +57,8 @@ export async function POST(request: Request) {
           slug,
           description: description ?? null,
           countryCode,
-          meta
+          meta,
+          originId: originId ?? null
         }
       });
     }

@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-import type { TransferZone } from "@prisma/client";
+import type { TransferZone, TransferDestination, TransferOrigin } from "@prisma/client";
 import type { VehicleCategory } from "@prisma/client";
-import type { TransferRateWithZones } from "@/lib/transfers";
+import type { TransferRateWithZones, TransferConfig } from "@/lib/transfers";
 
 type TransferConsoleRow = {
   key: string;
@@ -15,15 +15,12 @@ type TransferConsoleRow = {
   prices: Record<VehicleCategory, number>;
 };
 
-const VEHICLE_CATEGORIES: VehicleCategory[] = ["SEDAN", "VAN", "SUV"];
+const VEHICLE_CATEGORIES: VehicleCategory[] = ["SEDAN", "VAN", "SUV", "VIP", "BUS"];
 
 type TransferConsoleProps = {
   countries: { code: string; name: string }[];
   activeCountryCode: string;
-  config: {
-    zones: TransferZone[];
-    rates: TransferRateWithZones[];
-  };
+  config: TransferConfig;
 };
 
 type ZoneDraft = {
@@ -32,6 +29,7 @@ type ZoneDraft = {
   description: string;
   microzones: string;
   featuredHotels: string;
+  originId: string;
 };
 
 const formatList = (items?: string[]) => (items ?? []).filter(Boolean).join(", ");
@@ -49,7 +47,8 @@ const buildZoneDraftState = (zones: TransferZone[]) => {
       slug: zone.slug,
       description: zone.description ?? "",
       microzones: formatList(meta.microzones),
-      featuredHotels: formatList(meta.featuredHotels)
+      featuredHotels: formatList(meta.featuredHotels),
+      originId: zone.originId ?? ""
     };
   }
   return initial;
@@ -60,7 +59,47 @@ const EMPTY_ZONE_DRAFT: ZoneDraft = {
   slug: "",
   description: "",
   microzones: "",
-  featuredHotels: ""
+  featuredHotels: "",
+  originId: ""
+};
+
+const buildOverrides = (): Record<VehicleCategory, number> =>
+  VEHICLE_CATEGORIES.reduce((acc, category) => ({ ...acc, [category]: 0 }), {} as Record<VehicleCategory, number>);
+
+type DestinationDraft = {
+  id?: string;
+  name: string;
+  slug: string;
+  description: string;
+  heroImage: string;
+  pricingOverrides: Record<VehicleCategory, number>;
+};
+
+const buildDestinationDraftState = (destinations: TransferDestination[]) => {
+  const initial: Record<string, DestinationDraft> = {};
+  for (const destination of destinations) {
+    const overrides = (destination.pricingOverrides || {}) as Record<VehicleCategory, number>;
+    initial[destination.id] = {
+      id: destination.id,
+      name: destination.name,
+      slug: destination.slug,
+      description: destination.description ?? "",
+      heroImage: destination.heroImage ?? "",
+      pricingOverrides: {
+        ...buildOverrides(),
+        ...overrides
+      }
+    };
+  }
+  return initial;
+};
+
+const EMPTY_DESTINATION_DRAFT: DestinationDraft = {
+  name: "",
+  slug: "",
+  description: "",
+  heroImage: "",
+  pricingOverrides: buildOverrides()
 };
 
 const buildRows = (zones: TransferZone[], rates: TransferRateWithZones[]) => {
@@ -79,9 +118,7 @@ const buildRows = (zones: TransferZone[], rates: TransferRateWithZones[]) => {
         origin,
         destination,
         prices: {
-          SEDAN: 0,
-          VAN: 0,
-          SUV: 0,
+          ...buildOverrides(),
           [rate.vehicleCategory]: rate.price
         }
       });
@@ -120,6 +157,9 @@ export default function TransferConsole({ countries, activeCountryCode, config }
   const [newZoneDraft, setNewZoneDraft] = useState<ZoneDraft>(EMPTY_ZONE_DRAFT);
   const [savingZones, setSavingZones] = useState<Record<string, boolean>>({});
   const [creatingZone, setCreatingZone] = useState(false);
+  const [destinationDrafts, setDestinationDrafts] = useState(() => buildDestinationDraftState(config.destinations));
+  const [newDestinationDraft, setNewDestinationDraft] = useState<DestinationDraft>(EMPTY_DESTINATION_DRAFT);
+  const [priceMode, setPriceMode] = useState<"zone" | "hotel">("zone");
 
   useEffect(() => {
     setDrafts(buildDraftState(rows));
@@ -129,8 +169,15 @@ export default function TransferConsole({ countries, activeCountryCode, config }
     setZoneDrafts(buildZoneDraftState(config.zones));
   }, [config.zones]);
 
+  useEffect(() => {
+    setDestinationDrafts(buildDestinationDraftState(config.destinations));
+  }, [config.destinations]);
+
   const originZone = selectedOriginId ? zonesById.get(selectedOriginId) : undefined;
   const destinationZone = selectedDestinationId ? zonesById.get(selectedDestinationId) : undefined;
+  const zoneDestinations = selectedDestinationId
+    ? config.destinations.filter((destination) => destination.zoneId === selectedDestinationId)
+    : [];
   const activeRowKey = originZone && destinationZone ? `${originZone.id}-${destinationZone.id}` : null;
   const mappedRow = activeRowKey ? rowsMap.get(activeRowKey) : undefined;
   const activeRow =
@@ -140,11 +187,7 @@ export default function TransferConsole({ countries, activeCountryCode, config }
           key: activeRowKey!,
           origin: originZone,
           destination: destinationZone,
-          prices: {
-            SEDAN: 0,
-            VAN: 0,
-            SUV: 0
-          }
+          prices: buildOverrides()
         }
       : null);
 
@@ -202,6 +245,46 @@ export default function TransferConsole({ countries, activeCountryCode, config }
     }));
   };
 
+  const handleDestinationPriceChange = (destinationId: string, category: VehicleCategory, value: string) => {
+    setDestinationDrafts((prev) => ({
+      ...prev,
+      [destinationId]: {
+        ...prev[destinationId],
+        pricingOverrides: {
+          ...prev[destinationId].pricingOverrides,
+          [category]: Number(value)
+        }
+      }
+    }));
+  };
+
+  const handleDestinationFieldChange = (destinationId: string, field: keyof DestinationDraft, value: string) => {
+    setDestinationDrafts((prev) => ({
+      ...prev,
+      [destinationId]: {
+        ...prev[destinationId],
+        [field]: value
+      }
+    }));
+  };
+
+  const handleNewDestinationFieldChange = (field: keyof DestinationDraft, value: string) => {
+    setNewDestinationDraft((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleNewDestinationPriceChange = (category: VehicleCategory, value: string) => {
+    setNewDestinationDraft((prev) => ({
+      ...prev,
+      pricingOverrides: {
+        ...prev.pricingOverrides,
+        [category]: Number(value)
+      }
+    }));
+  };
+
   const handleSaveZone = async (zoneId: string) => {
     const draft = zoneDrafts[zoneId];
     if (!draft) return;
@@ -213,6 +296,7 @@ export default function TransferConsole({ countries, activeCountryCode, config }
       name: draft.name.trim(),
       slug: draft.slug.trim(),
       description: draft.description.trim(),
+      originId: draft.originId || undefined,
       microzones: parseList(draft.microzones),
       featuredHotels: parseList(draft.featuredHotels)
     };
@@ -230,6 +314,35 @@ export default function TransferConsole({ countries, activeCountryCode, config }
     }
   };
 
+  const handleSaveDestination = async (destinationId: string) => {
+    const draft = destinationDrafts[destinationId];
+    if (!draft) return;
+    const destination = config.destinations.find((item) => item.id === destinationId);
+    if (!destination) return;
+    setStatusMessage(null);
+    const payload = {
+      id: destinationId,
+      name: draft.name.trim(),
+      slug: draft.slug.trim(),
+      description: draft.description.trim(),
+      heroImage: draft.heroImage.trim() || undefined,
+      zoneId: destination.zoneId,
+      originId: destination.originId ?? undefined,
+      pricingOverrides: draft.pricingOverrides
+    };
+    const response = await fetch("/api/admin/transfers/destinations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (response.ok) {
+      setStatusMessage("Hotel actualizado");
+      router.refresh();
+    } else {
+      setStatusMessage("No se pudo guardar el hotel. Intenta de nuevo.");
+    }
+  };
+
   const handleCreateZone = async () => {
     if (!newZoneDraft.name.trim() || !newZoneDraft.slug.trim()) {
       setStatusMessage("Nombre y slug son obligatorios para crear una zona.");
@@ -242,6 +355,7 @@ export default function TransferConsole({ countries, activeCountryCode, config }
       name: newZoneDraft.name.trim(),
       slug: newZoneDraft.slug.trim(),
       description: newZoneDraft.description.trim(),
+      originId: newZoneDraft.originId || undefined,
       microzones: parseList(newZoneDraft.microzones),
       featuredHotels: parseList(newZoneDraft.featuredHotels)
     };
@@ -257,6 +371,44 @@ export default function TransferConsole({ countries, activeCountryCode, config }
       router.refresh();
     } else {
       setStatusMessage("No se pudo crear la zona. Intenta de nuevo.");
+    }
+  };
+
+  const handleCreateDestination = async () => {
+    if (!selectedDestinationId) {
+      setStatusMessage("Selecciona una zona antes de agregar un hotel.");
+      return;
+    }
+    if (!newDestinationDraft.name.trim() || !newDestinationDraft.slug.trim()) {
+      setStatusMessage("Nombre y slug son obligatorios para crear un hotel.");
+      return;
+    }
+    const zone = zonesById.get(selectedDestinationId);
+    if (!zone) {
+      setStatusMessage("Zona no encontrada.");
+      return;
+    }
+    setStatusMessage(null);
+    const payload = {
+      name: newDestinationDraft.name.trim(),
+      slug: newDestinationDraft.slug.trim(),
+      description: newDestinationDraft.description.trim(),
+      heroImage: newDestinationDraft.heroImage.trim() || undefined,
+      zoneId: zone.id,
+      originId: zone.originId ?? undefined,
+      pricingOverrides: newDestinationDraft.pricingOverrides
+    };
+    const response = await fetch("/api/admin/transfers/destinations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (response.ok) {
+      setStatusMessage("Hotel creado");
+      setNewDestinationDraft(EMPTY_DESTINATION_DRAFT);
+      router.refresh();
+    } else {
+      setStatusMessage("No se pudo crear el hotel. Intenta de nuevo.");
     }
   };
 
@@ -327,6 +479,21 @@ export default function TransferConsole({ countries, activeCountryCode, config }
                   />
                 </label>
                 <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                  Origen
+                  <select
+                    value={zoneDrafts[zone.id]?.originId ?? zone.originId ?? ""}
+                    onChange={(event) => handleZoneInputChange(zone.id, "originId", event.target.value)}
+                    className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  >
+                    <option value="">Sin asignar</option>
+                    {config.origins.map((origin) => (
+                      <option key={origin.id} value={origin.id}>
+                        {origin.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
                   Microzonas (coma-separated)
                   <textarea
                     rows={2}
@@ -387,9 +554,24 @@ export default function TransferConsole({ countries, activeCountryCode, config }
                   onChange={(event) => setNewZoneDraft((prev) => ({ ...prev, description: event.target.value }))}
                   className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
                 />
-              </label>
-              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 md:col-span-2">
-                Microzonas (coma-separated)
+                </label>
+                <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 md:col-span-2">
+                  Origen
+                  <select
+                    value={newZoneDraft.originId}
+                    onChange={(event) => setNewZoneDraft((prev) => ({ ...prev, originId: event.target.value }))}
+                    className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  >
+                    <option value="">Sin asignar</option>
+                    {config.origins.map((origin) => (
+                      <option key={origin.id} value={origin.id}>
+                        {origin.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 md:col-span-2">
+                  Microzonas (coma-separated)
                 <textarea
                   rows={2}
                   value={newZoneDraft.microzones}
@@ -488,6 +670,151 @@ export default function TransferConsole({ countries, activeCountryCode, config }
                   )}
                 </ul>
               </div>
+            )}
+            <div className="flex flex-wrap items-center gap-3 pt-4">
+              <span className="text-xs uppercase tracking-[0.4em] text-slate-400">Modo de precio</span>
+              <button
+                type="button"
+                className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] ${
+                  priceMode === "zone"
+                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                    : "border-slate-200 text-slate-600"
+                }`}
+                onClick={() => setPriceMode("zone")}
+              >
+                Precio por zona
+              </button>
+              <button
+                type="button"
+                className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] ${
+                  priceMode === "hotel"
+                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                    : "border-slate-200 text-slate-600"
+                }`}
+                onClick={() => setPriceMode("hotel")}
+              >
+                Precio independiente
+              </button>
+            </div>
+            {priceMode === "hotel" && destinationZone && (
+              <section className="space-y-4 rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4 text-sm text-slate-600">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-600">Hoteles</p>
+                  <span className="text-xs text-slate-500">Zona {destinationZone.name}</span>
+                </div>
+                {zoneDestinations.length ? (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {zoneDestinations.map((destination) => (
+                      <div key={destination.id} className="space-y-2 rounded-2xl border border-slate-100 bg-white p-4">
+                        <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-slate-500">
+                          <span>{destination.name}</span>
+                          <span>{destination.slug}</span>
+                        </div>
+                        <label className="text-xs text-slate-500">
+                          DescripciÇün
+                          <input
+                            type="text"
+                            value={destinationDrafts[destination.id]?.description ?? ""}
+                            onChange={(event) => handleDestinationFieldChange(destination.id, "description", event.target.value)}
+                            className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+                          />
+                        </label>
+                        <label className="text-xs text-slate-500">
+                          Hero Image
+                          <input
+                            type="text"
+                            value={destinationDrafts[destination.id]?.heroImage ?? ""}
+                            onChange={(event) => handleDestinationFieldChange(destination.id, "heroImage", event.target.value)}
+                            className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+                          />
+                        </label>
+                        <div className="grid gap-2 md:grid-cols-3">
+                          {VEHICLE_CATEGORIES.map((category) => (
+                            <label key={`${destination.id}-${category}`} className="text-xs text-slate-500">
+                              {category}
+                              <input
+                                type="number"
+                                min={0}
+                                step={0.01}
+                                value={destinationDrafts[destination.id]?.pricingOverrides[category] ?? 0}
+                                onChange={(event) => handleDestinationPriceChange(destination.id, category, event.target.value)}
+                                className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+                              />
+                            </label>
+                          ))}
+                        </div>
+                        <div className="flex justify-end">
+                          <button
+                            type="button"
+                            className="rounded-2xl bg-emerald-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500"
+                            onClick={() => handleSaveDestination(destination.id)}
+                          >
+                            Guardar hotel
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500">No hay hoteles vinculados a esta zona.</p>
+                )}
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
+                  <p className="text-xs font-semibold tracking-[0.3em] text-slate-400">Agregar hotel</p>
+                  <div className="mt-2 flex flex-col gap-2 md:grid md:grid-cols-2">
+                    <input
+                      type="text"
+                      placeholder="Nombre"
+                      value={newDestinationDraft.name}
+                      onChange={(event) => handleNewDestinationFieldChange("name", event.target.value)}
+                      className="rounded-2xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Slug"
+                      value={newDestinationDraft.slug}
+                      onChange={(event) => handleNewDestinationFieldChange("slug", event.target.value)}
+                      className="rounded-2xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="DescripciÇün"
+                      value={newDestinationDraft.description}
+                      onChange={(event) => handleNewDestinationFieldChange("description", event.target.value)}
+                      className="rounded-2xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Hero Image URL"
+                      value={newDestinationDraft.heroImage}
+                      onChange={(event) => handleNewDestinationFieldChange("heroImage", event.target.value)}
+                      className="rounded-2xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+                    />
+                  </div>
+                  <div className="mt-2 grid gap-2 md:grid-cols-3">
+                    {VEHICLE_CATEGORIES.map((category) => (
+                      <input
+                        key={`new-${category}`}
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        placeholder={`${category} override`}
+                        value={newDestinationDraft.pricingOverrides[category] ?? 0}
+                        onChange={(event) => handleNewDestinationPriceChange(category, event.target.value)}
+                        className="rounded-2xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+                      />
+                    ))}
+                  </div>
+                  <div className="mt-3 flex justify-end">
+                    <button
+                      type="button"
+                      className="rounded-2xl bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-indigo-500"
+                      onClick={handleCreateDestination}
+                    >
+                      Guardar hotel
+                    </button>
+                  </div>
+                </div>
+              </section>
             )}
           </div>
         )}

@@ -1,4 +1,10 @@
-import type { VehicleCategory, TransferRate, TransferZone } from "@prisma/client";
+import type {
+  VehicleCategory,
+  TransferRate,
+  TransferZone,
+  TransferDestination,
+  TransferOrigin
+} from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { trasladoPricing } from "@/data/traslado-pricing";
@@ -22,6 +28,28 @@ const TRANSFER_COUNTRY_DEFAULTS: Record<
     slug: "dominican-republic"
   }
 };
+
+async function ensureTransferOrigins() {
+  const map = new Map<string, TransferOrigin>();
+  for (const origin of DEFAULT_TRANSFER_ORIGINS) {
+    const record = await prisma.transferOrigin.upsert({
+      where: { code: origin.code },
+      update: {
+        name: origin.name,
+        slug: origin.slug,
+        description: origin.name
+      },
+      create: {
+        name: origin.name,
+        code: origin.code,
+        slug: origin.slug,
+        description: origin.name
+      }
+    });
+    map.set(origin.code, record);
+  }
+  return map;
+}
 
 async function ensureTransferCountry(countryCode: string) {
   const defaults = TRANSFER_COUNTRY_DEFAULTS[countryCode] ?? {
@@ -49,15 +77,40 @@ async function ensureTransferCountry(countryCode: string) {
       slug
     }
   });
-}
+};
+
+const DEFAULT_TRANSFER_ORIGINS = [
+  { code: "PUJ", name: "Aeropuerto Punta Cana (PUJ)", slug: "airport-puj" },
+  { code: "SDQ", name: "Aeropuerto Las Américas (SDQ)", slug: "airport-sdq" },
+  { code: "POP", name: "Aeropuerto Gregorio Luperón (POP)", slug: "airport-pop" },
+  { code: "LRM", name: "Aeropuerto La Romana (LRM)", slug: "airport-lrm" }
+];
+
+const ZONE_ORIGIN_MAP: Record<string, string> = {
+  PUJ_BAVARO: "PUJ",
+  UVERO_MICHES: "PUJ",
+  ROMANA_BAYAHIBE: "PUJ",
+  SANTO_DOMINGO: "SDQ",
+  SAMANA: "SDQ",
+  NORTE_CIBAO: "POP",
+  SUR_PROFUNDO: "LRM"
+};
+
+type TransferConfig = {
+  zones: TransferZone[];
+  rates: TransferRateWithZones[];
+  origins: TransferOrigin[];
+  destinations: TransferDestination[];
+};
 
 export async function ensureDefaultTransferConfig(countryCode: string = DEFAULT_COUNTRY_CODE) {
   await ensureTransferCountry(countryCode);
-  await ensureTransferZones(countryCode);
+  const originMap = await ensureTransferOrigins();
+  await ensureTransferZones(countryCode, originMap);
   await ensureTransferRates(countryCode);
 }
 
-export async function getTransferConfig(countryCode: string) {
+export async function getTransferConfig(countryCode: string): Promise<TransferConfig> {
   const zones = await prisma.transferZone.findMany({
     where: { countryCode },
     orderBy: { name: "asc" }
@@ -66,7 +119,18 @@ export async function getTransferConfig(countryCode: string) {
     where: { countryCode },
     include: { originZone: true, destinationZone: true }
   });
-  return { zones, rates: rates as TransferRateWithZones[] };
+  const origins = await prisma.transferOrigin.findMany({
+    orderBy: { name: "asc" }
+  });
+  const destinations = await prisma.transferDestination.findMany({
+    where: {
+      zone: {
+        countryCode
+      }
+    },
+    orderBy: { name: "asc" }
+  });
+  return { zones, rates: rates as TransferRateWithZones[], origins, destinations };
 }
 
 export async function getTransferCountryList() {
@@ -82,7 +146,7 @@ export async function getTransferCountryList() {
   });
 }
 
-async function ensureTransferZones(countryCode: string) {
+async function ensureTransferZones(countryCode: string, originMap: Map<string, TransferOrigin>) {
   const sky = trasladoPricing.nodes.map((node) => ({
     slug: node.id,
     name: node.name,
@@ -94,8 +158,10 @@ async function ensureTransferZones(countryCode: string) {
   }));
 
   await Promise.all(
-    sky.map((zone) =>
-      prisma.transferZone.upsert({
+    sky.map((zone) => {
+      const zoneOriginCode = ZONE_ORIGIN_MAP[zone.slug];
+      const originId = zoneOriginCode ? originMap.get(zoneOriginCode)?.id ?? null : null;
+      return prisma.transferZone.upsert({
         where: { slug: zone.slug },
         create: {
           id: zone.slug,
@@ -103,16 +169,18 @@ async function ensureTransferZones(countryCode: string) {
           slug: zone.slug,
           countryCode,
           description: zone.description,
-          meta: zone.meta
+          meta: zone.meta,
+          originId
         },
         update: {
           name: zone.name,
           countryCode,
           description: zone.description,
-          meta: zone.meta
+          meta: zone.meta,
+          originId
         }
-      })
-    )
+      });
+    })
   );
 }
 
@@ -165,4 +233,4 @@ async function ensureTransferRates(countryCode: string) {
   }
 }
 
-export type { TransferRateWithZones };
+export type { TransferRateWithZones, TransferConfig };

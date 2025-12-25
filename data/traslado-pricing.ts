@@ -1,11 +1,11 @@
-export type VehicleCategory = "SEDAN" | "VAN" | "SUV";
+export type VehicleCategory = "SEDAN" | "VAN" | "SUV" | "VIP" | "BUS";
 
 export type TrasladoNode = {
   id: string;
   name: string;
   microzones: string[];
   featured_hotels: string[];
-  transfers: Record<string, Record<VehicleCategory, number>>;
+  transfers: Record<string, Partial<Record<VehicleCategory, number>>>;
 };
 
 export const trasladoPricing: { nodes: TrasladoNode[] } = {
@@ -139,6 +139,21 @@ const microZoneSlugToZoneId: Record<string, string> = {
   "la-romana": "ROMANA_BAYAHIBE"
 };
 
+const CATEGORY_MARKUPS: Record<VehicleCategory, number> = {
+  VIP: 40,
+  BUS: 80,
+  SEDAN: 0,
+  VAN: 0,
+  SUV: 0
+};
+
+const getBaseVehicle = (vehicle: VehicleCategory): VehicleCategory => {
+  if (vehicle === "VIP" || vehicle === "BUS") return "SUV";
+  return vehicle;
+};
+
+const applyMarkup = (vehicle: VehicleCategory, base: number) => base + (CATEGORY_MARKUPS[vehicle] ?? 0);
+
 export function resolveZoneId(hotel?: {
   assignedZoneId?: string | null;
   microZoneSlug?: string | null;
@@ -162,7 +177,19 @@ export function resolveZoneId(hotel?: {
 export function getTransferPrice(originId: string, destinationId: string, vehicle: VehicleCategory) {
   const originNode = trasladoPricing.nodes.find((node) => node.id === originId);
   const destinationRates = originNode?.transfers[destinationId];
-  if (destinationRates?.[vehicle]) return destinationRates[vehicle];
+  const baseVehicle = getBaseVehicle(vehicle);
+  const direct = destinationRates?.[baseVehicle];
+  if (direct != null) {
+    return applyMarkup(vehicle, direct);
+  }
   const fallback = trasladoPricing.nodes.find((node) => node.id === DEFAULT_ZONE_ID);
-  return fallback?.transfers[destinationId]?.[vehicle] ?? fallback?.transfers[DEFAULT_ZONE_ID]?.[vehicle] ?? 0;
+  const fallbackRate = fallback?.transfers[destinationId]?.[baseVehicle];
+  if (fallbackRate != null) {
+    return applyMarkup(vehicle, fallbackRate);
+  }
+  const defaultRate = fallback?.transfers[DEFAULT_ZONE_ID]?.[baseVehicle];
+  if (defaultRate != null) {
+    return applyMarkup(vehicle, defaultRate);
+  }
+  return 0;
 }

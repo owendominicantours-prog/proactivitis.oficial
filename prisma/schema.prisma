@@ -12,6 +12,8 @@ enum VehicleCategory {
   SEDAN
   VAN
   SUV
+  VIP
+  BUS
 }
 
 model Account {
@@ -232,6 +234,19 @@ model Location {
   microZoneId   String?
 }
 
+model TransferOrigin {
+  id          String              @id @default(cuid())
+  name        String
+  code        String              @unique
+  slug        String              @unique
+  description String?
+  meta        Json?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  zones       TransferZone[]
+  destinations TransferDestination[]
+}
+
 model TransferZone {
   id          String      @id @default(cuid())
   name        String
@@ -242,8 +257,30 @@ model TransferZone {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   country     Country     @relation(fields: [countryCode], references: [code])
+  originId    String?
+  origin      TransferOrigin? @relation(fields: [originId], references: [id])
+  destinations TransferDestination[]
   originRates TransferRate[] @relation("OriginRates")
   destinationRates TransferRate[] @relation("DestinationRates")
+}
+
+model TransferDestination {
+  id               String           @id @default(cuid())
+  name             String
+  slug             String           @unique
+  description      String?
+  heroImage        String?
+  zoneId           String
+  originId         String?
+  pricingOverrides Json?
+  locationSlug     String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  zone   TransferZone  @relation(fields: [zoneId], references: [id])
+  origin TransferOrigin? @relation(fields: [originId], references: [id])
+
+  @@index([zoneId])
 }
 
 model TransferRate {

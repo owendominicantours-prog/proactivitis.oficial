@@ -43,12 +43,26 @@ export default async function TrasladoPage() {
     }
   });
 
+  const transferDestinations = await prisma.transferDestination.findMany({
+    where: {
+      zone: {
+        countryCode: "RD"
+      }
+    },
+    select: {
+      id: true,
+      slug: true
+    }
+  });
+  const destinationMap = new Map(transferDestinations.map((destination) => [destination.slug, destination.id]));
+
   const options: LocationOption[] = hotels.map((hotel) => ({
     name: hotel.name,
     slug: hotel.slug,
     destinationName: hotel.destination?.name ?? null,
     microZoneName: hotel.microZone?.name ?? null,
-    microZoneSlug: hotel.microZone?.slug ?? null
+    microZoneSlug: hotel.microZone?.slug ?? null,
+    transferDestinationId: destinationMap.get(hotel.slug) ?? null
   }));
 
   return (
