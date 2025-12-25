@@ -10,7 +10,39 @@ type TransferRateWithZones = TransferRate & {
   destinationZone: TransferZone;
 };
 
+const TRANSFER_COUNTRY_DEFAULTS: Record<
+  string,
+  {
+    name: string;
+    slug: string;
+  }
+> = {
+  RD: {
+    name: "República Dominicana",
+    slug: "dominican-republic"
+  }
+};
+
+async function ensureTransferCountry(countryCode: string) {
+  const defaults = TRANSFER_COUNTRY_DEFAULTS[countryCode] ?? {
+    name: countryCode,
+    slug: countryCode.toLowerCase()
+  };
+
+  await prisma.country.upsert({
+    where: { code: countryCode },
+    update: {},
+    create: {
+      id: countryCode,
+      code: countryCode,
+      name: defaults.name,
+      slug: defaults.slug
+    }
+  });
+}
+
 export async function ensureDefaultTransferConfig(countryCode: string = DEFAULT_COUNTRY_CODE) {
+  await ensureTransferCountry(countryCode);
   await ensureTransferZones(countryCode);
   await ensureTransferRates(countryCode);
 }
