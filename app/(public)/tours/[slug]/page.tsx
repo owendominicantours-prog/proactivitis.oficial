@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import TourGalleryViewer from "@/components/shared/TourGalleryViewer";
@@ -46,6 +47,69 @@ const formatTimeSlot = (slot: PersistedTimeSlot) => {
   const minute = slot.minute.padStart(2, "0");
   return `${slot.hour.toString().padStart(2, "0")}:${minute} ${slot.period}`;
 };
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ slug?: string }>;
+}): Promise<Metadata> {
+  const resolvedParams = await params;
+  const slug = resolvedParams.slug;
+  if (!slug) {
+    return {
+      title: "Tours Proactivitis",
+      description: "Explora tours premium y traslados confiables operados por Proactivitis."
+    };
+  }
+
+  const tour = await prisma.tour.findFirst({
+    where: { slug },
+    select: {
+      title: true,
+      slug: true,
+      shortDescription: true,
+      heroImage: true,
+      gallery: true
+    }
+  });
+
+  if (!tour) {
+    return {
+      title: "Tours Proactivitis",
+      description: "Explora tours premium y traslados confiables operados por Proactivitis."
+    };
+  }
+
+  const title = `${tour.title} | Proactivitis`;
+  const description =
+    tour.shortDescription ?? "Explora esta experiencia guiada por expertos locales y reserva con Proactivitis.";
+  const heroImage = toAbsoluteUrl(resolveTourHeroImage(tour));
+  const tourUrl = `${PROACTIVITIS_URL}/tours/${tour.slug}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: tourUrl,
+      images: [
+        {
+          url: heroImage,
+          alt: title
+        }
+      ],
+      siteName: "Proactivitis",
+      type: "website"
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [heroImage]
+    }
+  };
+}
 
 const itineraryMock: ItineraryStop[] = [
   {
@@ -120,6 +184,25 @@ const reviewHighlights = [
 ];
 
 const reviewTags = ["Excelente guía", "Mucha adrenalina", "Puntualidad"];
+const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
+const parseGallery = (gallery?: string | null) => {
+  if (!gallery) return [];
+  try {
+    return (JSON.parse(gallery) as unknown as string[]) ?? [];
+  } catch {
+    return [];
+  }
+};
+const resolveTourHeroImage = (tour: { heroImage?: string | null; gallery?: string | null }) => {
+  const gallery = parseGallery(tour.gallery);
+  return tour.heroImage ?? gallery[0] ?? DEFAULT_TOUR_IMAGE;
+};
+const toAbsoluteUrl = (value: string) => {
+  if (!value) return `${PROACTIVITIS_URL}${DEFAULT_TOUR_IMAGE}`;
+  if (value.startsWith("http")) return value;
+  const normalized = value.startsWith("/") ? value : `/${value}`;
+  return `${PROACTIVITIS_URL}${normalized}`;
+};
 
 export default async function TourDetailPage({ params, searchParams }: TourDetailProps) {
   const { slug } = await params;
