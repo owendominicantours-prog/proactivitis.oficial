@@ -72,6 +72,10 @@ const buildDraftState = (rows: TransferConsoleRow[]) => {
 export default function TransferConsole({ countries, activeCountryCode, config }: TransferConsoleProps) {
   const router = useRouter();
   const rows = useMemo(() => buildRows(config.zones, config.rates), [config]);
+  const zonesById = useMemo(() => new Map(config.zones.map((zone) => [zone.id, zone])), [config.zones]);
+  const rowsMap = useMemo(() => new Map(rows.map((row) => [row.key, row])), [rows]);
+  const [selectedOriginId, setSelectedOriginId] = useState<string | undefined>();
+  const [selectedDestinationId, setSelectedDestinationId] = useState<string | undefined>();
   const [drafts, setDrafts] = useState(() => buildDraftState(rows));
   const [savingRows, setSavingRows] = useState<Record<string, boolean>>({});
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -79,6 +83,35 @@ export default function TransferConsole({ countries, activeCountryCode, config }
   useEffect(() => {
     setDrafts(buildDraftState(rows));
   }, [rows]);
+
+  const originZone = selectedOriginId ? zonesById.get(selectedOriginId) : undefined;
+  const destinationZone = selectedDestinationId ? zonesById.get(selectedDestinationId) : undefined;
+  const activeRowKey = originZone && destinationZone ? `${originZone.id}-${destinationZone.id}` : null;
+  const mappedRow = activeRowKey ? rowsMap.get(activeRowKey) : undefined;
+  const activeRow =
+    mappedRow ??
+    (originZone && destinationZone
+      ? {
+          key: activeRowKey!,
+          origin: originZone,
+          destination: destinationZone,
+          prices: {
+            SEDAN: 0,
+            VAN: 0,
+            SUV: 0
+          }
+        }
+      : null);
+
+  useEffect(() => {
+    if (!activeRow) return;
+    setDrafts((prev) => {
+      if (prev[activeRow.key]) {
+        return prev;
+      }
+      return { ...prev, [activeRow.key]: { ...activeRow.prices } };
+    });
+  }, [activeRow]);
 
   const handleInputChange = (key: string, category: VehicleCategory, value: string) => {
     setDrafts((prev) => ({
@@ -114,21 +147,10 @@ export default function TransferConsole({ countries, activeCountryCode, config }
     }
   };
 
-  const applyUniformPrice = (key: string, value: number) => {
-    setDrafts((prev) => ({
-      ...prev,
-      [key]: {
-        SEDAN: value,
-        VAN: value,
-        SUV: value
-      }
-    }));
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
-        <h2 className="text-2xl font-semibold text-slate-900">Transferencias por país</h2>
+        <h2 className="text-2xl font-semibold text-slate-900">Transferencias por países</h2>
         <p className="text-sm text-slate-500">Configura vehículos y precios para cada zona de origen/destino.</p>
       </div>
       <div className="flex flex-wrap gap-3">
@@ -149,65 +171,82 @@ export default function TransferConsole({ countries, activeCountryCode, config }
       {statusMessage && (
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">{statusMessage}</div>
       )}
-      <div className="space-y-4">
-        {rows.map((row) => {
-          const originMeta = row.origin.meta as { microzones?: string[] } | null;
-          const destinationMeta = row.destination.meta as { microzones?: string[] } | null;
-          const relatedZones = [
-            ...(Array.isArray(originMeta?.microzones) ? originMeta.microzones : []),
-            ...(Array.isArray(destinationMeta?.microzones) ? destinationMeta.microzones : [])
-          ]
-            .filter(Boolean)
-            .slice(0, 5);
-
-          return (
-            <article key={row.key} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3 text-sm text-slate-500">
-                <span className="font-semibold text-slate-900">
-                  {row.origin.name} → {row.destination.name}
-                </span>
-                <span className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                  {row.origin.slug} → {row.destination.slug}
-                </span>
-              </div>
-              <div className="mt-4 grid gap-4 md:grid-cols-4">
-                {VEHICLE_CATEGORIES.map((category) => (
-                  <label key={`${row.key}-${category}`} className="text-sm text-slate-500">
-                    {category}
-                    <input
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      value={drafts[row.key]?.[category] ?? row.prices[category] ?? 0}
-                      onChange={(event) => handleInputChange(row.key, category, event.target.value)}
-                      className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
-                    />
-                  </label>
+      <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700">Origen</label>
+          <select
+            value={selectedOriginId ?? ""}
+            onChange={(event) => {
+              const value = event.target.value;
+              setSelectedOriginId(value || undefined);
+              setSelectedDestinationId(undefined);
+            }}
+            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
+          >
+            <option value="">Selecciona un origen</option>
+            {config.zones.map((zone) => (
+              <option key={zone.id} value={zone.id}>
+                {zone.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        {selectedOriginId && (
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-700">Destino</label>
+            <select
+              value={selectedDestinationId ?? ""}
+              onChange={(event) => setSelectedDestinationId(event.target.value || undefined)}
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
+            >
+              <option value="">Selecciona un destino</option>
+              {config.zones
+                .filter((zone) => zone.id !== selectedOriginId)
+                .map((zone) => (
+                  <option key={zone.id} value={zone.id}>
+                    {zone.name}
+                  </option>
                 ))}
-              </div>
-              <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-                <button
-                  type="button"
-                  className="rounded-full border border-slate-200 px-4 py-2 font-semibold text-slate-600 transition hover:border-slate-300"
-                  onClick={() => applyUniformPrice(row.key, drafts[row.key]?.SEDAN ?? row.prices.SEDAN)}
-                >
-                  Aplicar tarifa de SEDAN a todos
-                </button>
-                <button
-                  type="button"
-                  className="rounded-2xl bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-indigo-500"
-                  onClick={() => handleSaveRow(row)}
-                  disabled={savingRows[row.key]}
-                >
-                  {savingRows[row.key] ? "Guardando..." : "Guardar"}
-                </button>
-              </div>
-              <p className="mt-3 text-xs text-slate-400">
-                Zonas relacionadas: {relatedZones.join(", ") || "N/A"}
-              </p>
-            </article>
-          );
-        })}
+            </select>
+          </div>
+        )}
+        {activeRow && (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3 text-sm text-slate-500">
+              <span className="font-semibold text-slate-900">
+                {activeRow.origin.name} → {activeRow.destination.name}
+              </span>
+              <span className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                {activeRow.origin.slug} → {activeRow.destination.slug}
+              </span>
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              {VEHICLE_CATEGORIES.map((category) => (
+                <label key={`${activeRow.key}-${category}`} className="text-sm text-slate-500">
+                  {category}
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={drafts[activeRow.key]?.[category] ?? activeRow.prices[category] ?? 0}
+                    onChange={(event) => handleInputChange(activeRow.key, category, event.target.value)}
+                    className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  />
+                </label>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <button
+                type="button"
+                className="rounded-2xl bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-indigo-500"
+                onClick={() => handleSaveRow(activeRow)}
+                disabled={savingRows[activeRow.key]}
+              >
+                {savingRows[activeRow.key] ? "Guardando..." : "Guardar ruta"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
