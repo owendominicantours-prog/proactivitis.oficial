@@ -420,6 +420,83 @@ export default function TransferConsole({ countries, activeCountryCode, config }
     }
   };
 
+  const handlePointFieldChange = (pointId: string, field: keyof PointDraft, value: string) => {
+    setPointDrafts((prev) => ({
+      ...prev,
+      [pointId]: {
+        ...prev[pointId],
+        [field]: value
+      }
+    }));
+  };
+
+  const handleSavePoint = async (pointId: string) => {
+    const draft = pointDrafts[pointId];
+    if (!draft) return;
+    if (!draft.name.trim() || !draft.slug.trim()) {
+      setStatusMessage("Nombre y slug son obligatorios para guardar el punto.");
+      return;
+    }
+    setStatusMessage(null);
+    setSavingPoints((prev) => ({ ...prev, [pointId]: true }));
+    const payload = {
+      id: pointId,
+      name: draft.name.trim(),
+      slug: draft.slug.trim(),
+      type: draft.type,
+      code: draft.code?.trim() || undefined,
+      description: draft.description?.trim() || undefined
+    };
+    const response = await fetch("/api/admin/transfers/points", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    setSavingPoints((prev) => ({ ...prev, [pointId]: false }));
+    if (response.ok) {
+      setStatusMessage("Punto actualizado");
+      router.refresh();
+    } else {
+      setStatusMessage("No se pudo guardar el punto. Intenta de nuevo.");
+    }
+  };
+
+  const handleNewPointFieldChange = (field: keyof PointDraft, value: string) => {
+    setNewPointDraft((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleCreatePoint = async () => {
+    if (!newPointDraft.name.trim() || !newPointDraft.slug.trim()) {
+      setStatusMessage("Nombre y slug son obligatorios para crear un punto.");
+      return;
+    }
+    setStatusMessage(null);
+    setCreatingPoint(true);
+    const payload = {
+      name: newPointDraft.name.trim(),
+      slug: newPointDraft.slug.trim(),
+      type: newPointDraft.type,
+      code: newPointDraft.code?.trim() || undefined,
+      description: newPointDraft.description?.trim() || undefined
+    };
+    const response = await fetch("/api/admin/transfers/points", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    setCreatingPoint(false);
+    if (response.ok) {
+      setStatusMessage("Punto creado");
+      setNewPointDraft(EMPTY_POINT_DRAFT);
+      router.refresh();
+    } else {
+      setStatusMessage("No se pudo crear el punto. Intenta de nuevo.");
+    }
+  };
+
   const handleCreateDestination = async () => {
     if (!selectedDestinationId) {
       setStatusMessage("Selecciona una zona antes de agregar un hotel.");
@@ -645,6 +722,144 @@ export default function TransferConsole({ countries, activeCountryCode, config }
                 {creatingZone ? "Creando..." : "Agregar zona"}
               </button>
             </div>
+          </div>
+        </div>
+      </section>
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Puntos de origen</p>
+            <h3 className="text-lg font-semibold text-slate-900">Gestiona aeropuertos, hoteles y otros puntos</h3>
+          </div>
+          <p className="text-sm text-slate-500">
+            Agrega y actualiza los puntos desde los que el cliente puede iniciar su traslado.
+          </p>
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {config.points.map((point) => (
+            <div key={point.id} className="space-y-3 rounded-2xl border border-slate-100 p-4">
+              <div className="flex items-center justify-between">
+                <p className="font-semibold text-slate-900">{point.name}</p>
+                <span className="rounded-full border border-slate-200 px-3 py-1 text-xs uppercase tracking-[0.3em] text-slate-500">
+                  {point.type}
+                </span>
+              </div>
+              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                Nombre
+                <input
+                  type="text"
+                  value={pointDrafts[point.id]?.name ?? ""}
+                  onChange={(event) => handlePointFieldChange(point.id, "name", event.target.value)}
+                  className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                />
+              </label>
+              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                Slug
+                <input
+                  type="text"
+                  value={pointDrafts[point.id]?.slug ?? ""}
+                  onChange={(event) => handlePointFieldChange(point.id, "slug", event.target.value)}
+                  className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                />
+              </label>
+              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                Código (opcional)
+                <input
+                  type="text"
+                  value={pointDrafts[point.id]?.code ?? ""}
+                  onChange={(event) => handlePointFieldChange(point.id, "code", event.target.value)}
+                  className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                />
+              </label>
+              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                Tipo
+                <select
+                  value={pointDrafts[point.id]?.type ?? point.type ?? "general"}
+                  onChange={(event) => handlePointFieldChange(point.id, "type", event.target.value)}
+                  className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                >
+                  {POINT_TYPES.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                Descripción
+                <textarea
+                  rows={2}
+                  value={pointDrafts[point.id]?.description ?? ""}
+                  onChange={(event) => handlePointFieldChange(point.id, "description", event.target.value)}
+                  className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none"
+                />
+              </label>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs text-slate-400">{point.id}</span>
+                <button
+                  type="button"
+                  className="rounded-2xl bg-emerald-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  onClick={() => handleSavePoint(point.id)}
+                  disabled={Boolean(savingPoints[point.id])}
+                >
+                  {savingPoints[point.id] ? "Guardando..." : "Guardar punto"}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 space-y-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-xs text-slate-500">
+          <p className="text-xs font-semibold tracking-[0.3em] text-slate-400">Agregar punto nuevo</p>
+          <div className="grid gap-3 md:grid-cols-2">
+            <input
+              type="text"
+              placeholder="Nombre"
+              value={newPointDraft.name}
+              onChange={(event) => handleNewPointFieldChange("name", event.target.value)}
+              className="rounded-2xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+            />
+            <input
+              type="text"
+              placeholder="Slug"
+              value={newPointDraft.slug}
+              onChange={(event) => handleNewPointFieldChange("slug", event.target.value)}
+              className="rounded-2xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+            />
+            <select
+              value={newPointDraft.type}
+              onChange={(event) => handleNewPointFieldChange("type", event.target.value)}
+              className="rounded-2xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+            >
+              {POINT_TYPES.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              placeholder="Código (opcional)"
+              value={newPointDraft.code}
+              onChange={(event) => handleNewPointFieldChange("code", event.target.value)}
+              className="rounded-2xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+            />
+          </div>
+          <textarea
+            rows={2}
+            placeholder="Descripción"
+            value={newPointDraft.description}
+            onChange={(event) => handleNewPointFieldChange("description", event.target.value)}
+            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+          />
+          <div className="flex justify-end">
+            <button
+              type="button"
+              className="rounded-2xl bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={handleCreatePoint}
+              disabled={creatingPoint}
+            >
+              {creatingPoint ? "Creando..." : "Agregar punto"}
+            </button>
           </div>
         </div>
       </section>

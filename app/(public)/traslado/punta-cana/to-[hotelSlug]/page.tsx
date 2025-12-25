@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import TrasladoSearch, { LocationOption } from "@/components/traslado/TrasladoSearch";
 import { prisma } from "@/lib/prisma";
+import { getTransferPointsForCountry } from "@/lib/transfers";
 
 const BASE_ORIGIN_CODE = "PUJ";
 const BASE_ORIGIN_LABEL = "Aeropuerto de Punta Cana (PUJ)";
@@ -142,6 +143,10 @@ export default async function HotelTrasladoPage({ params }: TrasladoPageProps) {
     transferDestinationId: destinationMap.get(item.slug) ?? null
   }));
 
+  const originPoints = await getTransferPointsForCountry("RD");
+  const baseOriginPoint =
+    originPoints.find((point) => point.code === BASE_ORIGIN_CODE) ?? originPoints[0] ?? null;
+
   const seoCopy = buildTrasladoSeoText(hotel.name);
   const seoParagraphs = seoCopy.split("\n\n");
   const defaultDateTime = getDefaultDateTime();
@@ -163,7 +168,9 @@ export default async function HotelTrasladoPage({ params }: TrasladoPageProps) {
         <section className="rounded-[32px] border border-slate-100 bg-white/90 p-6 shadow-2xl">
           <TrasladoSearch
             hotels={options}
+            originPoints={originPoints}
             initialHotelSlug={hotel.slug}
+            initialOriginPointSlug={baseOriginPoint?.slug ?? undefined}
             initialOriginCode={BASE_ORIGIN_CODE}
             initialOriginLabel={BASE_ORIGIN_LABEL}
             initialDateTime={defaultDateTime}

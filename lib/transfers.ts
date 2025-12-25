@@ -235,4 +235,61 @@ async function ensureTransferRates(countryCode: string) {
   }
 }
 
-export type { TransferRateWithZones, TransferConfig };
+type TransferPointOption = {
+  id: string;
+  name: string;
+  slug: string;
+  type: string;
+  code: string | null;
+  description: string | null;
+  zoneId: string | null;
+};
+
+export async function getTransferPointsForCountry(countryCode: string): Promise<TransferPointOption[]> {
+  const zones = await prisma.transferZone.findMany({
+    where: {
+      countryCode,
+      originId: {
+        not: null
+      }
+    },
+    select: {
+      id: true,
+      originId: true
+    }
+  });
+  const pointIds = Array.from(new Set(zones.map((zone) => zone.originId!).filter(Boolean)));
+  if (!pointIds.length) {
+    return [];
+  }
+  const points = await prisma.transferPoint.findMany({
+    where: {
+      id: {
+        in: pointIds
+      }
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      type: true,
+      code: true,
+      description: true
+    },
+    orderBy: {
+      name: "asc"
+    }
+  });
+  const zoneByPoint = new Map(zones.map((zone) => [zone.originId!, zone.id]));
+  return points.map((point) => ({
+    id: point.id,
+    name: point.name,
+    slug: point.slug,
+    type: point.type,
+    code: point.code ?? null,
+    description: point.description ?? null,
+    zoneId: zoneByPoint.get(point.id) ?? null
+  }));
+}
+
+export type { TransferRateWithZones, TransferConfig, TransferPointOption };

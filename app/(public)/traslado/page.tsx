@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import TrasladoSearch, { LocationOption } from "@/components/traslado/TrasladoSearch";
 import { prisma } from "@/lib/prisma";
+import { getTransferPointsForCountry, TransferPointOption } from "@/lib/transfers";
 
 export const metadata = {
   title: "Traslados Privados Proactivitis",
@@ -65,6 +66,8 @@ export default async function TrasladoPage() {
     transferDestinationId: destinationMap.get(hotel.slug) ?? null
   }));
 
+  const originPoints = await getTransferPointsForCountry("RD");
+
   return (
     <div className="bg-gradient-to-b from-[#E2FFF8] via-white to-[#F8FAFC]">
       <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-10 px-4 py-10">
@@ -109,7 +112,7 @@ export default async function TrasladoPage() {
 
         <section className="rounded-[36px] border border-slate-100 bg-white/90 p-6 shadow-2xl">
           <Suspense fallback={<div />}>
-            <TrasladoSearch hotels={options} />
+            <TrasladoSearch hotels={options} originPoints={originPoints} />
           </Suspense>
         </section>
 
