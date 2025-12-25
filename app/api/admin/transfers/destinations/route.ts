@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing required destination fields" }, { status: 400 });
   }
 
-  const sanitizedOverrides: Record<VehicleCategory, number> = {};
+  const sanitizedOverrides: Partial<Record<VehicleCategory, number>> = {};
   for (const category of VEHICLE_CATEGORIES) {
     const value = pricingOverrides?.[category];
     if (value != null && !Number.isNaN(Number(value))) {
