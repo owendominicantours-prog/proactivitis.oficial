@@ -208,6 +208,35 @@ export default function TransferConsole({ countries, activeCountryCode, config }
                   </option>
                 ))}
             </select>
+            {destinationZone && (
+              <div className="mt-4 space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-slate-900">Hoteles vinculados</span>
+                  <button
+                    type="button"
+                    className="rounded-full border border-emerald-400 bg-slate-100 px-3 py-1 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50"
+                    onClick={() => router.push(`/admin/hotels?zone=${destinationZone.slug}`)}
+                  >
+                    Agregar hotel
+                  </button>
+                </div>
+                <ul className="space-y-1 text-xs">
+                  {Array.isArray((destinationZone.meta as { featuredHotels?: string[] })?.featuredHotels) &&
+                  (destinationZone.meta as { featuredHotels?: string[] }).featuredHotels?.length ? (
+                    (destinationZone.meta as { featuredHotels?: string[] }).featuredHotels!.map(
+                      (hotel, index) => (
+                        <li key={`${destinationZone.id}-${hotel}-${index}`} className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                          <span>{hotel}</span>
+                        </li>
+                      )
+                    )
+                  ) : (
+                    <li className="text-slate-400">No hay hoteles listados para esta zona.</li>
+                  )}
+                </ul>
+              </div>
+            )}
           </div>
         )}
         {activeRow && (
