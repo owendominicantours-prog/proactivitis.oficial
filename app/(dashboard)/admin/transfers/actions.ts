@@ -213,10 +213,6 @@ export async function addTransferRouteAction(formData: FormData) {
   if (!zoneBId || typeof zoneBId !== "string" || !zoneBId.trim()) {
     throw new Error("Selecciona la zona de destino.");
   }
-  if (zoneAId.trim() === zoneBId.trim()) {
-    throw new Error("Origen y destino deben ser zonas diferentes.");
-  }
-
   const [zoneA, zoneB] = await Promise.all([
     prisma.transferZoneV2.findUnique({ where: { id: zoneAId.trim() } }),
     prisma.transferZoneV2.findUnique({ where: { id: zoneBId.trim() } })
