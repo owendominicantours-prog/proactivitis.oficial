@@ -80,11 +80,22 @@ const buildCheckoutHref = ({
   params.set("hotelSlug", destinationSlug);
   params.set("origin", originSlug);
   params.set("originLabel", originLabel);
+  params.set("originHotelName", originLabel);
   params.set("vehicleId", vehicleId);
   params.set("price", price.toFixed(2));
   params.set("passengers", String(passengers));
+  params.set("adults", String(passengers));
+  params.set("youth", "0");
+  params.set("child", "0");
   params.set("tripType", tripType);
   params.set("dateTime", dateTime);
+  const [datePart, timePart] = dateTime.split("T");
+  if (datePart) {
+    params.set("date", datePart);
+  }
+  if (timePart) {
+    params.set("time", timePart);
+  }
   if (returnDatetime) {
     params.set("returnDatetime", returnDatetime);
   }
