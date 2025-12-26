@@ -15,6 +15,7 @@ import {
 } from "./actions";
 import LocationList from "@/components/admin/transfers/LocationList";
 import TransferLocationImport from "@/components/admin/transfers/TransferLocationImport";
+import { allLandings } from "@/data/transfer-landings";
 
 const TRANSFERS_ENABLED = process.env.TRANSFERS_V2_ENABLED === "true";
 
@@ -69,6 +70,23 @@ export default async function TransfersAdminPage() {
     })
   ]);
 
+  const landingLinkMap = new Map<string, string>();
+  locations
+    .filter((location) => location.type === TransferLocationType.HOTEL)
+    .forEach((location) => {
+      const landingSlug = `punta-cana-international-airport-to-${location.slug}`;
+      landingLinkMap.set(landingSlug, location.name);
+    });
+  allLandings().forEach((landing) => {
+    if (!landingLinkMap.has(landing.landingSlug)) {
+      landingLinkMap.set(landing.landingSlug, landing.hotelName);
+    }
+  });
+
+  const landingLinks = Array.from(landingLinkMap.entries()).sort(([slugA], [slugB]) =>
+    slugA.localeCompare(slugB)
+  );
+
   return (
     <div className="space-y-10 pb-10">
       <header className="space-y-2">
@@ -79,6 +97,32 @@ export default async function TransfersAdminPage() {
           El formulario público consumirá los locations y precios una vez que actives el flag.
         </p>
       </header>
+
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Landing pages</p>
+            <h2 className="text-lg font-semibold text-slate-900">Copias públicas disponibles</h2>
+          </div>
+          <p className="text-xs text-slate-500">
+            Pulsa para abrir la landing correspondiente en producción (mismo slug que Google ya indexó).
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {landingLinks.map(([slug, label]) => (
+            <a
+              key={slug}
+              href={`https://proactivitis.com/transfer/${slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex flex-col gap-2 rounded-2xl border border-slate-100 bg-white/60 p-4 text-sm text-slate-600 transition hover:border-slate-400 hover:shadow-lg"
+            >
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">/transfer/{slug}</p>
+              <p className="font-semibold text-slate-900">{label}</p>
+            </a>
+          ))}
+        </div>
+      </section>
 
       <section className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between">
