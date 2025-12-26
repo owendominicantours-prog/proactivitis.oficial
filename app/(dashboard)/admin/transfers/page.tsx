@@ -10,6 +10,7 @@ import {
   addTransferVehicleAction,
   addTransferZoneAction,
   toggleTransferLocationActiveAction,
+  toggleTransferVehicleActiveAction,
   upsertTransferRoutePriceAction
 } from "./actions";
 import LocationList from "@/components/admin/transfers/LocationList";

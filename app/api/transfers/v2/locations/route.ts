@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
@@ -9,9 +10,9 @@ export async function GET(request: NextRequest) {
     ? {
         active: true,
         OR: [
-          { name: { contains: query, mode: "insensitive" } },
-          { slug: { contains: query, mode: "insensitive" } },
-          { zone: { name: { contains: query, mode: "insensitive" } } }
+          { name: { contains: query, mode: Prisma.QueryMode.insensitive } },
+          { slug: { contains: query, mode: Prisma.QueryMode.insensitive } },
+          { zone: { name: { contains: query, mode: Prisma.QueryMode.insensitive } } }
         ]
       }
     : { active: true };

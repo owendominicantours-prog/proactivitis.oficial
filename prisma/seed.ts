@@ -371,7 +371,7 @@ async function seedTransferV2() {
         description: location.description,
         address: location.address,
         zoneId: zoneMap[location.zoneSlug].id,
-        countryCode: ecuadorCountry.code,
+        countryCode: dominicanCountry.code,
         active: true
       },
       create: {
@@ -381,7 +381,7 @@ async function seedTransferV2() {
         description: location.description,
         address: location.address,
         zoneId: zoneMap[location.zoneSlug].id,
-        countryCode: ecuadorCountry.code
+        countryCode: dominicanCountry.code
       }
     });
   }
@@ -427,11 +427,11 @@ async function seedTransferV2() {
         zoneBId: sortedZoneIds[1]
       }
     },
-    update: { active: true, countryCode: ecuadorCountry.code },
+    update: { active: true, countryCode: dominicanCountry.code },
     create: {
       zoneAId: sortedZoneIds[0],
       zoneBId: sortedZoneIds[1],
-      countryCode: ecuadorCountry.code
+      countryCode: dominicanCountry.code
     }
   });
 

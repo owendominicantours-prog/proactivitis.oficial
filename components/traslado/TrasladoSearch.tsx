@@ -170,7 +170,9 @@ const vehicleCatalog = [
       image: "/transfer/mini van.png",
       features: ["Wi-Fi a bordo", "Sistema de sonido", "Asientos reclinables"]
     }
-  ];type VehicleOption = (typeof vehicleCatalog)[number] & { price: number };
+  ];
+
+type VehicleOption = (typeof vehicleCatalog)[number] & { price: number | null };
 
 const transferTourId = process.env.NEXT_PUBLIC_TRANSFER_TOUR_ID;
 const transferTourTitle = process.env.NEXT_PUBLIC_TRANSFER_TITLE ?? "Transfer privado Proactivitis";
@@ -359,24 +361,28 @@ export default function TrasladoSearch({
     }
   }, [autoShowResults, initialHotel, initialDateTime]);
 
-  const matchHotel = (value?: string | null) => {
-    const normalized = normalizeValue(value);
-    if (!normalized) return null;
-    return (
-      hotels.find((hotel) => normalizeValue(hotel.name) === normalized) ??
-      hotels.find(
-        (hotel) =>
-          normalizeValue(hotel.slug).includes(normalized) || normalized.includes(normalizeValue(hotel.slug))
-      )
-    );
-  };
-
-  const selectedHotel = useMemo(
-    () => hotels.find((hotel) => hotel.slug === destinationSlug),
-    [destinationSlug, hotels]
+  const matchHotel = useCallback(
+    (value?: string | null) => {
+      const normalized = normalizeValue(value);
+      if (!normalized) return null;
+      return (
+        hotels.find((hotel) => normalizeValue(hotel.name) === normalized) ??
+        hotels.find(
+          (hotel) =>
+            normalizeValue(hotel.slug).includes(normalized) ||
+            normalized.includes(normalizeValue(hotel.slug))
+        )
+      );
+    },
+    [hotels]
   );
 
-  const fallbackHotel = useMemo(() => matchHotel(destinationLabel), [destinationLabel, hotels]);
+  const selectedHotel = useMemo(() => hotels.find((hotel) => hotel.slug === destinationSlug), [
+    destinationSlug,
+    hotels
+  ]);
+
+  const fallbackHotel = useMemo(() => matchHotel(destinationLabel), [destinationLabel, matchHotel]);
   const activeHotel = selectedHotel ?? fallbackHotel;
   const destinationZoneId = resolveZoneId({
     assignedZoneId: activeHotel?.assignedZoneId,
@@ -434,6 +440,10 @@ export default function TrasladoSearch({
     fetchRates();
     return () => controller.abort();
   }, [destinationZoneId, originZoneId]);
+  const hidePricing = true;
+  const readOnlyMode = true;
+  const readonlyMessage = "En reconstrucción: el sistema de transferencias está siendo revisado.";
+
   const vehicles = useMemo<VehicleOption[]>(
     () =>
       vehicleCatalog.map((vehicle) => {
@@ -446,7 +456,7 @@ export default function TrasladoSearch({
           activeHotel
         );
         const price = liveRates?.[category] ?? fallbackPrice;
-        return { ...vehicle, price };
+        return { ...vehicle, price: hidePricing ? null : price };
       }),
     [destinationZoneId, originZoneId, destinationLabel, activeHotel, liveRates]
   );
@@ -489,7 +499,11 @@ export default function TrasladoSearch({
     const vehicleTitle = `${transferTourTitle} · ${vehicle.title}`;
     params.set("tourTitle", vehicleTitle);
     params.set("tourImage", vehicle.image);
-    params.set("tourPrice", vehicle.price.toFixed(2));
+    if (vehicle.price != null) {
+      params.set("tourPrice", vehicle.price.toFixed(2));
+    } else {
+      params.delete("tourPrice");
+    }
     params.set("vehicleId", vehicle.id);
     params.set("passengers", String(passengers));
     if (!transferTourId) {
@@ -595,13 +609,17 @@ export default function TrasladoSearch({
     return [...pointSelections.slice(0, 3), ...hotelSelections.slice(0, 5)];
   }, [originLabel, hotels, originPoints, originSelection.kind]);
 
-  const airportDestinationOptions = originPoints
-    .filter((point) => point.type === "airport")
-    .map((airport) => ({
-      label: airport.name,
-      slug: `airport-${airport.code ?? airport.slug}`,
-      type: "airport" as const
-    }));
+  const airportDestinationOptions = useMemo(
+    () =>
+      originPoints
+        .filter((point) => point.type === "airport")
+        .map((airport) => ({
+          label: airport.name,
+          slug: `airport-${airport.code ?? airport.slug}`,
+          type: "airport" as const
+        })),
+    [originPoints]
+  );
 
   type DestinationSuggestion =
     | (LocationOption & { label: string; slug: string })
@@ -635,7 +653,7 @@ export default function TrasladoSearch({
       return [...matchedAirports, ...matchedHotels];
     }
     return [...airportSelections.slice(0, 3), ...hotelSelections.slice(0, 6)];
-  }, [destinationLabel, hotels]);
+  }, [destinationLabel, hotels, airportDestinationOptions]);
   const handleSelectOrigin = (selection: OriginSelection) => {
     if (originBlurTimeout.current) {
       clearTimeout(originBlurTimeout.current);
@@ -749,30 +767,12 @@ export default function TrasladoSearch({
                   value={originLabel}
                   onFocus={handleOriginFocus}
                   onBlur={handleOriginBlur}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      setOriginLabel(value);
-                      const normalized = normalizeValue(value);
-                      if (!normalized) return;
-                      const slugMatch = slugifyValue(value);
-                      const pointMatch =
-                        originPoints.find((point) => normalizeValue(point.name) === normalized) ??
-                        originPoints.find((point) => point.slug === slugMatch);
-                      if (pointMatch) {
-                        applyOriginSelection(createPointSelection(pointMatch));
-                        return;
-                      }
-                      const hotelMatch =
-                        hotels.find((hotel) => normalizeValue(hotel.name) === normalized) ??
-                        hotels.find((hotel) => hotel.slug === slugMatch);
-                      if (hotelMatch) {
-                        applyOriginSelection(createHotelSelection(hotelMatch));
-                      }
-                    }}
-                  placeholder="Selecciona origen (aeropuerto u hotel)"
+                  onChange={(event) => setOriginLabel(event.target.value)}
+                  placeholder={readOnlyMode ? readonlyMessage : "Selecciona origen (aeropuerto u hotel)"}
+                  disabled={readOnlyMode}
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
                 />
-                {showOriginSuggestions && originSuggestionPool.length > 0 && (
+                {!readOnlyMode && showOriginSuggestions && originSuggestionPool.length > 0 && (
                   <ul className="absolute left-0 right-0 z-30 mt-1 max-h-60 overflow-auto rounded-2xl border border-slate-200 bg-white shadow-lg">
                     {originSuggestionPool.map((option) => (
                       <li
@@ -818,18 +818,12 @@ export default function TrasladoSearch({
                   value={destinationLabel}
                   onFocus={handleDestinationFocus}
                   onBlur={handleDestinationBlur}
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    setDestinationLabel(value);
-                    const matched = matchHotel(value);
-                    if (matched) {
-                      setDestinationSlug(matched.slug);
-                    }
-                  }}
-                  placeholder="Escribe tu hotel"
+                  onChange={(event) => setDestinationLabel(event.target.value)}
+                  placeholder={readOnlyMode ? readonlyMessage : "Escribe tu hotel"}
+                  disabled={readOnlyMode}
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
                 />
-                {showDestinationSuggestions && destinationSuggestionPool.length > 0 && (
+                {!readOnlyMode && showDestinationSuggestions && destinationSuggestionPool.length > 0 && (
                   <ul className="absolute left-0 right-0 z-30 mt-1 max-h-60 overflow-auto rounded-2xl border border-slate-200 bg-white shadow-lg">
                     {destinationSuggestionPool.map((option) => (
                       <li key={`destination-option-${option.slug}`} className="border-b border-slate-100 last:border-0">
@@ -890,12 +884,16 @@ export default function TrasladoSearch({
                 </button>
               </div>
             </div>
-            <button
-              type="submit"
-              className="md:ml-auto rounded-2xl bg-emerald-600 px-8 py-3 text-sm font-bold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500"
-            >
-              VER PRECIOS
-            </button>
+            <div className="md:ml-auto">
+              <p className="text-[11px] text-slate-500">{readonlyMessage}</p>
+              <button
+                type="submit"
+                disabled={readOnlyMode}
+                className="mt-2 rounded-2xl bg-emerald-600 px-8 py-3 text-sm font-bold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500 disabled:opacity-60"
+              >
+                VER PRECIOS
+              </button>
+            </div>
           </form>
         )}
       </div>
@@ -942,7 +940,9 @@ export default function TrasladoSearch({
                   <p className="text-sm font-semibold text-slate-900">
                     {vehicle.pax} pax · {vehicle.luggage} maletas
                   </p>
-                  <p className="text-3xl font-black text-indigo-600">${vehicle.price.toFixed(2)}</p>
+                  <p className="text-3xl font-black text-indigo-600">
+                    {vehicle.price != null ? `$${vehicle.price.toFixed(2)}` : "Consultar"}
+                  </p>
                 </div>
                 <ul className="mt-4 space-y-1 text-xs text-slate-500">
                   {vehicle.features.map((feature) => (

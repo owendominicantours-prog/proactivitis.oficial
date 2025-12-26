@@ -37,9 +37,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Origen o destino no encontrados." }, { status: 404 });
     }
 
-    const zonePair = [origin.zoneId, destination.zoneId].sort((a, b) => (a < b ? -1 : 1));
+    const [zoneAId, zoneBId] = [origin.zoneId, destination.zoneId].sort((a, b) =>
+      a.localeCompare(b)
+    );
     const route = await prisma.transferRoute.findFirst({
-      where: { zoneAId: zonePair[0], zoneBId: zonePair[1] },
+      where: {
+        OR: [
+          { zoneAId, zoneBId },
+          { zoneAId: zoneBId, zoneBId: zoneAId }
+        ]
+      },
       include: {
         prices: { include: { vehicle: true } },
         overrides: true

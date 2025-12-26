@@ -302,30 +302,46 @@ export async function addTransferRouteOverrideAction(formData: FormData) {
     throw new Error("Ingresa un precio válido.");
   }
 
-  await prisma.transferRoutePriceOverride.upsert({
-    where: {
-      routeId_vehicleId_originLocationId_destinationLocationId: {
-        routeId: routeId.trim(),
-        vehicleId: vehicleId.trim(),
-        originLocationId: originLocationId && typeof originLocationId === "string" ? originLocationId.trim() : null,
-        destinationLocationId:
-          destinationLocationId && typeof destinationLocationId === "string" ? destinationLocationId.trim() : null
-      }
-    },
-    update: {
-      price,
-      notes: typeof notes === "string" ? notes.trim() : undefined
-    },
-    create: {
-      routeId: routeId.trim(),
-      vehicleId: vehicleId.trim(),
-      originLocationId: originLocationId && typeof originLocationId === "string" ? originLocationId.trim() : null,
-      destinationLocationId:
-        destinationLocationId && typeof destinationLocationId === "string" ? destinationLocationId.trim() : null,
-      price,
-      notes: typeof notes === "string" ? notes.trim() : undefined
-    }
+  const sanitizedOriginLocationId =
+    originLocationId && typeof originLocationId === "string" ? originLocationId.trim() : null;
+  const sanitizedDestinationLocationId =
+    destinationLocationId && typeof destinationLocationId === "string"
+      ? destinationLocationId.trim()
+      : null;
+
+  const overrideWhere = {
+    routeId: routeId.trim(),
+    vehicleId: vehicleId.trim(),
+    originLocationId: sanitizedOriginLocationId ?? undefined,
+    destinationLocationId: sanitizedDestinationLocationId ?? undefined
+  };
+
+  const overrideData = {
+    routeId: routeId.trim(),
+    vehicleId: vehicleId.trim(),
+    originLocationId: sanitizedOriginLocationId ?? undefined,
+    destinationLocationId: sanitizedDestinationLocationId ?? undefined,
+    price,
+    notes: typeof notes === "string" ? notes.trim() : undefined
+  };
+
+  const existingOverride = await prisma.transferRoutePriceOverride.findFirst({
+    where: overrideWhere
   });
+
+  if (existingOverride) {
+    await prisma.transferRoutePriceOverride.update({
+      where: { id: existingOverride.id },
+      data: {
+        price,
+        notes: overrideData.notes
+      }
+    });
+  } else {
+    await prisma.transferRoutePriceOverride.create({
+      data: overrideData
+    });
+  }
 
   refreshTransfers();
 }
