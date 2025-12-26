@@ -16,6 +16,12 @@ enum VehicleCategory {
   BUS
 }
 
+enum TransferLocationType {
+  HOTEL
+  AIRPORT
+  PLACE
+}
+
 model Account {
   id                String  @id
   userId            String
@@ -189,6 +195,9 @@ model Country {
   microZones       MicroZone[]   @relation("CountryMicroZones")
   transferZones    TransferZone[]
   transferRates    TransferRate[]
+  transferZonesV2  TransferZoneV2[]
+  transferLocationsV2 TransferLocation[]
+  transferRoutesV2 TransferRoute[]
 }
 
 model Destination {
@@ -302,6 +311,113 @@ model TransferRate {
 
   @@unique([originZoneId, destinationZoneId, vehicleCategory])
   @@index([countryCode])
+}
+
+model TransferZoneV2 {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  description String?
+  countryCode String
+  active      Boolean      @default(true)
+  metadata    Json?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  country      Country            @relation(fields: [countryCode], references: [code])
+  locations    TransferLocation[]
+  zoneARoutes  TransferRoute[]     @relation("ZoneARoutes")
+  zoneBRoutes  TransferRoute[]     @relation("ZoneBRoutes")
+}
+
+model TransferLocation {
+  id          String               @id @default(cuid())
+  name        String
+  slug        String               @unique
+  type        TransferLocationType
+  zoneId      String
+  countryCode String
+  description String?
+  address     String?
+  heroImage   String?
+  active      Boolean              @default(true)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  zone                  TransferZoneV2                  @relation(fields: [zoneId], references: [id])
+  country               Country                         @relation(fields: [countryCode], references: [code])
+  originOverrides       TransferRoutePriceOverride[]    @relation("OriginOverrides")
+  destinationOverrides  TransferRoutePriceOverride[]    @relation("DestinationOverrides")
+}
+
+model TransferVehicle {
+  id          String          @id @default(cuid())
+  name        String
+  slug        String          @unique
+  minPax      Int
+  maxPax      Int
+  category    VehicleCategory
+  active      Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  routePrices TransferRoutePrice[]
+  overrides   TransferRoutePriceOverride[]
+}
+
+model TransferRoute {
+  id          String                  @id @default(cuid())
+  zoneAId     String
+  zoneBId     String
+  countryCode String
+  active      Boolean                 @default(true)
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  zoneA     TransferZoneV2          @relation("ZoneARoutes", fields: [zoneAId], references: [id])
+  zoneB     TransferZoneV2          @relation("ZoneBRoutes", fields: [zoneBId], references: [id])
+  country   Country                 @relation(fields: [countryCode], references: [code])
+  prices    TransferRoutePrice[]
+  overrides TransferRoutePriceOverride[]
+
+  @@unique([zoneAId, zoneBId])
+  @@index([countryCode])
+}
+
+model TransferRoutePrice {
+  id        String          @id @default(cuid())
+  routeId   String
+  vehicleId String
+  price     Float
+  currency  String          @default("USD")
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  route   TransferRoute  @relation(fields: [routeId], references: [id])
+  vehicle TransferVehicle @relation(fields: [vehicleId], references: [id])
+
+  @@unique([routeId, vehicleId])
+}
+
+model TransferRoutePriceOverride {
+  id                    String               @id @default(cuid())
+  routeId               String
+  vehicleId             String
+  originLocationId      String?
+  destinationLocationId String?
+  price                 Float
+  notes                 String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  route               TransferRoute   @relation(fields: [routeId], references: [id])
+  vehicle             TransferVehicle @relation(fields: [vehicleId], references: [id])
+  originLocation      TransferLocation? @relation("OriginOverrides", fields: [originLocationId], references: [id])
+  destinationLocation TransferLocation? @relation("DestinationOverrides", fields: [destinationLocationId], references: [id])
+
+  @@unique([routeId, vehicleId, originLocationId, destinationLocationId])
+  @@index([originLocationId])
+  @@index([destinationLocationId])
 }
 
 model Session {
