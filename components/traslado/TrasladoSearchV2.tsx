@@ -213,23 +213,31 @@ export default function TrasladoSearchV2() {
     return van?.id ?? quote[0]?.id ?? null;
   }, [quote]);
 
-  const buildReserveLink = (vehicle: QuoteVehicle) => {
+  const buildReserveLink = (vehicle: QuoteVehicle, price: number) => {
+    if (!selectedOrigin || !selectedDestination) {
+      return TRANSFER_FORM_PATH;
+    }
     const params = new URLSearchParams();
-    if (selectedDestination) {
-      params.set("hotelSlug", selectedDestination.slug);
-    }
-    if (selectedOrigin) {
-      params.set("origin", selectedOrigin.slug);
-      params.set("originLabel", selectedOrigin.name);
-    }
+    params.set("type", "transfer");
+    params.set("hotelSlug", selectedDestination.slug);
+    params.set("origin", selectedOrigin.slug);
+    params.set("originLabel", selectedOrigin.name);
     params.set("vehicleId", vehicle.id);
-    params.set("price", vehicle.price.toFixed(2));
-    params.set("passengers", String(passengers));
+    params.set("tourPrice", price.toFixed(2));
+    params.set("adults", String(passengers));
+    params.set("youth", "0");
+    params.set("child", "0");
     if (tripType === "round-trip") {
       params.set("tripType", "round-trip");
       params.set("trip", "round_trip");
     } else {
       params.set("tripType", "one-way");
+    }
+    if (departureDate) {
+      params.set("date", departureDate);
+    }
+    if (departureTime) {
+      params.set("time", departureTime);
     }
     if (departureDatetime) {
       params.set("dateTime", departureDatetime);
@@ -431,7 +439,7 @@ export default function TrasladoSearchV2() {
             const roundTripPrice = Number((vehicle.price * roundTripMultiplier).toFixed(2));
             const displayPrice = isRoundTrip ? roundTripPrice : oneWayPrice;
             const isRecommended = vehicle.id === recommendedVehicleId;
-            const reserveUrl = buildReserveLink(vehicle);
+            const reserveUrl = buildReserveLink(vehicle, displayPrice);
             return (
               <article
                 key={vehicle.id}
