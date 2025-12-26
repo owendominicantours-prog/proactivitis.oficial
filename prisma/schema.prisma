@@ -357,6 +357,7 @@ model TransferVehicle {
   minPax      Int
   maxPax      Int
   category    VehicleCategory
+  imageUrl    String?         @map("image_url")
   active      Boolean         @default(true)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt

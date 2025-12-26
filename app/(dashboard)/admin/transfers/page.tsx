@@ -271,8 +271,9 @@ export default async function TransfersAdminPage() {
 
       <section className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">4. Vehículos</h2>
-        <form action={addTransferVehicleAction} className="grid gap-4 md:grid-cols-4">
-          <label className="text-sm font-semibold text-slate-700">
+        <form action={addTransferVehicleAction} className="grid gap-4 md:grid-cols-5">
+          <input type="hidden" name="vehicleId" value="" />
+          <label className="text-sm font-semibold text-slate-700 md:col-span-2">
             Nombre
             <input name="name" type="text" required className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
           </label>
@@ -281,12 +282,8 @@ export default async function TransfersAdminPage() {
             <input name="slug" type="text" required className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
           </label>
           <label className="text-sm font-semibold text-slate-700">
-            Min pasajeros
-            <input name="minPax" type="number" min={1} required className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
-          </label>
-          <label className="text-sm font-semibold text-slate-700">
-            Máx pasajeros
-            <input name="maxPax" type="number" min={1} required className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
+            Imagen (URL)
+            <input name="imageUrl" type="url" placeholder="https://..." className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
           </label>
           <label className="text-sm font-semibold text-slate-700">
             Categoría
@@ -300,30 +297,113 @@ export default async function TransfersAdminPage() {
               <option value="BUS">MiniBus</option>
             </select>
           </label>
+          <label className="text-sm font-semibold text-slate-700">
+            Min pasajeros
+            <input name="minPax" type="number" min={1} required className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
+          </label>
+          <label className="text-sm font-semibold text-slate-700">
+            Máx pasajeros
+            <input name="maxPax" type="number" min={1} required className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
+          </label>
           <button
             type="submit"
-            className="md:col-span-4 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
+            className="md:col-span-5 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
           >
-            Guardar vehículo
+            Agregar vehículo
           </button>
         </form>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-4">
           {vehicles.map((vehicle) => (
-            <article key={vehicle.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-              <div className="flex items-baseline justify-between">
-                <h3 className="text-lg font-semibold text-slate-900">{vehicle.name}</h3>
-                <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{vehicle.category}</span>
+            <article key={vehicle.id} className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{vehicle.slug}</p>
+                  <h3 className="text-lg font-semibold text-slate-900">{vehicle.name}</h3>
+                </div>
+                <span
+                  className={`rounded-full px-3 py-1 text-[0.65rem] font-semibold ${
+                    vehicle.active ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                  }`}
+                >
+                  {vehicle.active ? "Activo" : "Inactivo"}
+                </span>
               </div>
-              <p className="mt-2 text-sm text-slate-600">
-                {vehicle.minPax}–{vehicle.maxPax} pasajeros
+              <p className="text-sm text-slate-600">
+                {vehicle.category} · {vehicle.minPax}–{vehicle.maxPax} pax
               </p>
+              {vehicle.imageUrl ? (
+                <p className="text-xs text-slate-500">
+                  Imagen: <a href={vehicle.imageUrl} target="_blank" rel="noreferrer" className="underline">{vehicle.imageUrl}</a>
+                </p>
+              ) : null}
+              <form action={addTransferVehicleAction} className="space-y-3">
+                <input type="hidden" name="vehicleId" value={vehicle.id} />
+                <div className="grid gap-4 md:grid-cols-4">
+                  <label className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                    Nombre
+                    <input name="name" defaultValue={vehicle.name} className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
+                  </label>
+                  <label className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                    Slug
+                    <input name="slug" defaultValue={vehicle.slug} className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
+                  </label>
+                  <label className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                    Min
+                    <input name="minPax" type="number" defaultValue={vehicle.minPax} className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
+                  </label>
+                  <label className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                    Máx
+                    <input name="maxPax" type="number" defaultValue={vehicle.maxPax} className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
+                  </label>
+                </div>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <label className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                    Categoría
+                    <select name="category" defaultValue={vehicle.category} className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm">
+                      <option value="SEDAN">Sedan</option>
+                      <option value="SUV">SUV</option>
+                      <option value="VAN">Van</option>
+                      <option value="BUS">MiniBus</option>
+                    </select>
+                  </label>
+                  <label className="text-xs uppercase tracking-[0.2em] text-slate-500 md:col-span-2">
+                    Imagen (URL)
+                    <input name="imageUrl" type="url" defaultValue={vehicle.imageUrl ?? ""} className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
+                  </label>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="submit"
+                    className="rounded-full bg-slate-900 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
+                  >
+                    Guardar cambios
+                  </button>
+                </div>
+              </form>
+              <form action={toggleTransferVehicleActiveAction} className="flex items-center gap-2">
+                <input type="hidden" name="vehicleId" value={vehicle.id} />
+                <button
+                  type="submit"
+                  className="rounded-full bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 border border-slate-200 transition hover:border-slate-400"
+                >
+                  {vehicle.active ? "Marcar inactivo" : "Marcar activo"}
+                </button>
+              </form>
             </article>
           ))}
         </div>
       </section>
 
       <section className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900">5. Rutas y precios</h2>
+        <div className="flex items-baseline justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Bidireccional</p>
+            <h2 className="text-lg font-semibold text-slate-900">5. Rutas y precios</h2>
+          </div>
+          <p className="text-xs text-slate-500">
+            Las rutas siempre usan min/max de zoneId para garantizar una entrada única por par de zonas.
+          </p>
+        </div>
         <form action={addTransferRouteAction} className="grid gap-4 md:grid-cols-2">
           <label className="text-sm font-semibold text-slate-700">
             Zona A
@@ -360,85 +440,53 @@ export default async function TransfersAdminPage() {
         </form>
 
         <div className="space-y-6">
-          {routes.map((route) => {
-            const pricedVehicleIds = new Set(route.prices.map((price) => price.vehicleId));
-            const unpricedVehicles = vehicles.filter((vehicle) => !pricedVehicleIds.has(vehicle.id));
-
-            return (
-              <article key={route.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <div className="flex items-center justify-between">
+          {routes.map((route) => (
+            <article key={route.id} className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{route.countryCode}</p>
                   <h3 className="text-lg font-semibold text-slate-900">
                     {route.zoneA.name} ↔ {route.zoneB.name}
                   </h3>
-                  <span className="text-xs text-slate-500">{route.countryCode}</span>
                 </div>
-                <p className="mt-1 text-xs uppercase tracking-[0.3em] text-slate-500">Precios actuales</p>
-                <div className="mt-3 space-y-3">
-                  {route.prices.length ? (
-                    route.prices.map((price) => (
-                      <form key={price.id} action={upsertTransferRoutePriceAction} className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3 sm:flex-row sm:items-center">
-                        <input type="hidden" name="routeId" value={route.id} />
-                        <input type="hidden" name="vehicleId" value={price.vehicle.id} />
-                        <div className="flex-1 text-sm font-semibold text-slate-900">{price.vehicle.name}</div>
-                        <label className="flex flex-1 flex-col text-sm text-slate-600">
-                          Precio (USD)
-                          <input
-                            name="price"
-                            type="number"
-                            min={0}
-                            step={0.5}
-                            defaultValue={price.price}
-                            required
-                            className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm"
-                          />
-                        </label>
-                        <button
-                          type="submit"
-                          className="whitespace-nowrap rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
-                        >
-                          Actualizar
-                        </button>
-                      </form>
-                    ))
-                  ) : (
-                    <p className="text-xs text-slate-500">{route.zoneA.name} y {route.zoneB.name} aún no tienen precios.</p>
-                  )}
-                  {unpricedVehicles.length ? (
-                    <form action={upsertTransferRoutePriceAction} className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3 sm:flex-row sm:items-center">
+                <span className="text-xs text-slate-500">Actualizado {new Date(route.updatedAt).toLocaleDateString()}</span>
+              </div>
+              <div className="grid gap-3">
+                {vehicles.map((vehicle) => {
+                  const priceEntry = route.prices.find((price) => price.vehicleId === vehicle.id);
+                  return (
+                    <form
+                      key={`${route.id}-${vehicle.id}`}
+                      action={upsertTransferRoutePriceAction}
+                      className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 text-sm"
+                    >
                       <input type="hidden" name="routeId" value={route.id} />
-                      <label className="flex flex-1 flex-col text-sm text-slate-600">
-                        Vehículo
-                        <select name="vehicleId" required className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm">
-                          {unpricedVehicles.map((vehicle) => (
-                            <option key={vehicle.id} value={vehicle.id}>
-                              {vehicle.name}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label className="flex flex-1 flex-col text-sm text-slate-600">
+                      <input type="hidden" name="vehicleId" value={vehicle.id} />
+                      <div className="flex-1 font-semibold text-slate-900">{vehicle.name}</div>
+                      <label className="flex flex-1 flex-col text-xs uppercase tracking-[0.3em] text-slate-500">
                         Precio (USD)
                         <input
                           name="price"
                           type="number"
                           min={0}
                           step={0.5}
-                          className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm"
+                          defaultValue={priceEntry?.price ?? ""}
                           required
+                          className="mt-1 rounded-lg border border-slate-200 p-2 text-sm"
                         />
                       </label>
                       <button
                         type="submit"
-                        className="whitespace-nowrap rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
+                        className="rounded-full bg-slate-900 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
                       >
-                        Crear precio
+                        {priceEntry ? "Actualizar" : "Guardar precio"}
                       </button>
                     </form>
-                  ) : null}
-                </div>
-              </article>
-            );
-          })}
+                  );
+                })}
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 

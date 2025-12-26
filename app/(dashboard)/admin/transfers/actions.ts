@@ -137,11 +137,13 @@ export async function addTransferLocationAction(formData: FormData) {
 }
 
 export async function addTransferVehicleAction(formData: FormData) {
+  const vehicleId = formData.get("vehicleId");
   const name = formData.get("name");
   const slug = formData.get("slug");
   const minPax = formData.get("minPax");
   const maxPax = formData.get("maxPax");
   const category = formData.get("category");
+  const imageUrl = formData.get("imageUrl");
 
   if (!name || typeof name !== "string" || !name.trim()) {
     throw new Error("Ingresa el nombre del vehículo.");
@@ -158,23 +160,45 @@ export async function addTransferVehicleAction(formData: FormData) {
     throw new Error("Selecciona la categoría del vehículo.");
   }
 
-  await prisma.transferVehicle.upsert({
-    where: { slug: slug.trim() },
-    update: {
-      name: name.trim(),
-      minPax: min,
-      maxPax: max,
-      category: category as VehicleCategory,
-      active: true
-    },
-    create: {
-      name: name.trim(),
-      slug: slug.trim(),
-      minPax: min,
-      maxPax: max,
-      category: category as VehicleCategory
+  const normalizedSlug = slug.trim();
+  const slugConflict = await prisma.transferVehicle.findFirst({
+    where: {
+      slug: normalizedSlug,
+      ...(vehicleId && typeof vehicleId === "string"
+        ? { NOT: { id: vehicleId.trim() } }
+        : undefined)
     }
   });
+  if (slugConflict) {
+    throw new Error("Ya existe un vehículo con ese slug.");
+  }
+
+  const payload = {
+    name: name.trim(),
+    slug: normalizedSlug,
+    minPax: min,
+    maxPax: max,
+    category: category as VehicleCategory,
+    imageUrl: typeof imageUrl === "string" && imageUrl.trim() ? imageUrl.trim() : undefined
+  };
+
+  if (vehicleId && typeof vehicleId === "string" && vehicleId.trim()) {
+    const existingVehicle = await prisma.transferVehicle.findUnique({ where: { id: vehicleId.trim() } });
+    if (!existingVehicle) {
+      throw new Error("Vehículo no encontrado.");
+    }
+    await prisma.transferVehicle.update({
+      where: { id: existingVehicle.id },
+      data: payload
+    });
+  } else {
+    await prisma.transferVehicle.create({
+      data: {
+        ...payload,
+        active: true
+      }
+    });
+  }
 
   refreshTransfers();
 }
@@ -321,6 +345,26 @@ export async function toggleTransferLocationActiveAction(formData: FormData) {
   await prisma.transferLocation.update({
     where: { id: location.id },
     data: { active: !location.active }
+  });
+
+  refreshTransfers();
+}
+
+export async function toggleTransferVehicleActiveAction(formData: FormData) {
+  const vehicleId = formData.get("vehicleId");
+
+  if (!vehicleId || typeof vehicleId !== "string" || !vehicleId.trim()) {
+    throw new Error("Vehículo inválido.");
+  }
+
+  const vehicle = await prisma.transferVehicle.findUnique({ where: { id: vehicleId.trim() } });
+  if (!vehicle) {
+    throw new Error("Vehículo no encontrado.");
+  }
+
+  await prisma.transferVehicle.update({
+    where: { id: vehicle.id },
+    data: { active: !vehicle.active }
   });
 
   refreshTransfers();
