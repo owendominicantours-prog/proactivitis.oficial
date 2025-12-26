@@ -141,6 +141,18 @@ export async function getNotificationUnreadCount(recipient: NotificationRecipien
   });
 }
 
+export async function markNotificationsForRecipientRead(recipient: NotificationRecipient) {
+  const where = buildRecipientFilters(recipient);
+  if (!where) return;
+  await prisma.notification.updateMany({
+    where: {
+      ...where,
+      isRead: false
+    },
+    data: { isRead: true }
+  });
+}
+
 export async function getContactNotifications(limit = 50) {
   return prisma.notification.findMany({
     where: {
