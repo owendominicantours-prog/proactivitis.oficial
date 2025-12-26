@@ -1,6 +1,6 @@
 "use client";
 
-import { FocusEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { markNotificationReadAction } from "@/app/(dashboard)/notifications/actions";
 import { parseNotificationMetadata } from "@/lib/notificationService";
@@ -57,6 +57,10 @@ export default function NotificationDropdown({
     setLocalUnreadCount(unreadCount);
   }, [unreadCount]);
 
+  useEffect(() => {
+    setHasMarked(false);
+  }, [notifications]);
+
   const groupedNotifications = useMemo(() => {
     return (notifications ?? []).reduce<Record<string, NotificationMenuItem[]>>((acc, next) => {
       const label = notificationGroupLabel(new Date(next.createdAt));
@@ -66,26 +70,23 @@ export default function NotificationDropdown({
     }, {});
   }, [notifications]);
 
-  const handleFocus = () => setIsOpen(true);
-  const handleBlur = (event: FocusEvent<HTMLDivElement>) => {
-    if (containerRef.current && event.relatedTarget && containerRef.current.contains(event.relatedTarget as Node)) {
-      return;
-    }
-    setIsOpen(false);
-  };
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const toggleOpen = () => setIsOpen((prev) => !prev);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative focus-within:outline-none"
-      tabIndex={0}
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-    >
+    <div ref={containerRef} className="relative focus-within:outline-none" tabIndex={0}>
       <button
         type="button"
+        onClick={toggleOpen}
         className="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-700 transition hover:bg-slate-50"
       >
         Notificaciones
@@ -95,11 +96,11 @@ export default function NotificationDropdown({
           </span>
         ) : null}
       </button>
-      <div
-        className={`absolute right-0 z-50 mt-2 w-96 min-w-[20rem] rounded-lg border border-slate-200 bg-white shadow-lg transition duration-150 ${
-          isOpen ? "visible opacity-100 pointer-events-auto" : "invisible opacity-0 pointer-events-none"
-        }`}
-      >
+        <div
+          className={`absolute right-0 z-50 mt-2 w-96 min-w-[20rem] rounded-lg border border-slate-200 bg-white shadow-lg transition duration-150 ${
+            isOpen ? "visible opacity-100 pointer-events-auto" : "invisible opacity-0 pointer-events-none"
+          }`}
+        >
         <div className="space-y-4 p-4">
           {(notifications ?? []).length ? (
             GROUP_ORDER.map((groupLabel) => {
@@ -125,7 +126,7 @@ export default function NotificationDropdown({
                         >
                           <input type="hidden" name="notificationId" value={notification.id} />
                           <input type="hidden" name="redirectTo" value={redirectUrl} />
-                          <button type="submit" className="w-full text-left p-3">
+                          <button type="submit" className="w-full text-left p-3" onClick={() => setIsOpen(false)}>
                             <div className="flex items-center gap-3">
                               <div className="relative">
                                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white">
