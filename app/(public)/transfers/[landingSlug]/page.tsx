@@ -1,8 +1,14 @@
+"use server";
+
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TransferLandingQuote, getTransferLandingQuote } from "@/lib/transfers/landing-quote";
-import { getPromotionByDestination, transferLandingPromotions } from "@/data/promotions";
+import {
+  getLandingSlugs,
+  getPromotionByLandingSlug,
+  transferLandingPromotions
+} from "@/data/promotions";
 import { TransferLandingPromotion } from "@/data/promotions/puj-to-hotels";
 
 const DEFAULT_ORIGIN_SLUG = "puj-airport";
@@ -35,18 +41,13 @@ const buildCheckoutHref = (
   return `/checkout?${params.toString()}`;
 };
 
-type TransferLandingPageProps = {
-  params: { hotelSlug: string };
-  searchParams?: Record<string, string | string[] | undefined>;
-};
-
 const buildSchema = (promotion: TransferLandingPromotion, quote: TransferLandingQuote) => {
   const topVehicle = quote.vehicles[0];
   return {
     "@context": "https://schema.org",
     "@type": "Service",
     name: promotion.heroTitle,
-    url: `${BASE_URL}/transfers/puj-to-hotel/${promotion.destinationSlug}`,
+    url: `${BASE_URL}/transfers/${promotion.landingSlug}`,
     provider: {
       "@type": "Organization",
       name: "Proactivitis",
@@ -85,24 +86,20 @@ const buildFaqSchema = (promotion: TransferLandingPromotion) => ({
 });
 
 export async function generateStaticParams() {
-  return transferLandingPromotions.map((promotion) => ({
-    hotelSlug: promotion.destinationSlug
-  }));
+  return getLandingSlugs().map((landingSlug) => ({ landingSlug }));
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ hotelSlug: string }> }) {
-  const { hotelSlug } = await params;
-  const promotion = getPromotionByDestination(hotelSlug);
-  if (!promotion) {
-    return {};
-  }
+export async function generateMetadata({ params }: { params: Promise<{ landingSlug: string }> }) {
+  const { landingSlug } = await params;
+  const promotion = getPromotionByLandingSlug(landingSlug);
+  if (!promotion) return {};
   return {
     title: promotion.seoTitle,
     description: promotion.metaDescription,
     openGraph: {
       title: promotion.seoTitle,
       description: promotion.metaDescription,
-      url: `${BASE_URL}/transfers/puj-to-hotel/${promotion.destinationSlug}`,
+      url: `${BASE_URL}/transfers/${promotion.landingSlug}`,
       images: [
         {
           url: `${BASE_URL}${promotion.heroImage}`,
@@ -114,9 +111,9 @@ export async function generateMetadata({ params }: { params: Promise<{ hotelSlug
   };
 }
 
-export default async function TransferLandingPage({ params }: { params: Promise<{ hotelSlug: string }> }) {
-  const { hotelSlug } = await params;
-  const promotion = getPromotionByDestination(hotelSlug);
+export default async function TransferLandingPage({ params }: { params: Promise<{ landingSlug: string }> }) {
+  const { landingSlug } = await params;
+  const promotion = getPromotionByLandingSlug(landingSlug);
   if (!promotion) {
     return notFound();
   }

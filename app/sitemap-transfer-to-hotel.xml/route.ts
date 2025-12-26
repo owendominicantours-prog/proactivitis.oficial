@@ -6,7 +6,7 @@ const BASE_URL = "https://proactivitis.com";
 export async function GET() {
   const urls = transferLandingPromotions.map((promotion) => {
     const lastMod = new Date().toISOString();
-    const url = `${BASE_URL}/transfers/puj-to-hotel/${promotion.destinationSlug}`;
+    const url = `${BASE_URL}/transfers/${promotion.landingSlug}`;
     return `
       <url>
         <loc>${url}</loc>

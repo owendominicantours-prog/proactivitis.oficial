@@ -1,4 +1,5 @@
 export type TransferLandingPromotion = {
+  landingSlug: string;
   destinationSlug: string;
   hotelName: string;
   heroTitle: string;
@@ -23,6 +24,7 @@ export type TransferLandingPromotion = {
 
 export const pujToHotelPromotions: TransferLandingPromotion[] = [
   {
+    landingSlug: "puj-to-hard-rock-hotel-punta-cana",
     destinationSlug: "hard-rock-punta-cana",
     hotelName: "Hard Rock Hotel & Casino Punta Cana",
     heroTitle: "PUJ → Hard Rock Punta Cana en 30 minutos",
@@ -68,6 +70,7 @@ export const pujToHotelPromotions: TransferLandingPromotion[] = [
     schemaReviewCount: 120
   },
   {
+    landingSlug: "puj-to-barcelo-bavaro-palace",
     destinationSlug: "barcelo-bavaro-palace",
     hotelName: "Barceló Bávaro Palace",
     heroTitle: "PUJ al Barceló Bávaro Palace con traslado diseñado para familias",
@@ -112,6 +115,7 @@ export const pujToHotelPromotions: TransferLandingPromotion[] = [
     schemaReviewCount: 92
   },
   {
+    landingSlug: "puj-to-riu-republica",
     destinationSlug: "riu-republica",
     hotelName: "Riu República",
     heroTitle: "PUJ a Riu República con traslado sin sorpresas",
