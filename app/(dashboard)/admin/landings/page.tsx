@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
+import { landingPages } from "@/lib/landing";
 
 type SearchParams = {
   zone?: string;
@@ -60,7 +61,9 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
     });
   });
 
-  const landingSlugs = Array.from(landingMap.keys());
+  const transferLandingSlugs = Array.from(landingMap.keys());
+  const tourLandingSlugs = landingPages.map((landing) => landing.slug);
+  const landingSlugs = Array.from(new Set([...transferLandingSlugs, ...tourLandingSlugs]));
   const trafficRows = await prisma.landingPageTraffic.findMany({
     where: { slug: { in: landingSlugs } },
     select: { slug: true, visits: true }
@@ -157,7 +160,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
                 <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
                 <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.type}</p>
               </div>
-              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-3">
                 <div className="flex flex-col gap-1 text-xs text-slate-500">
                   <p>{entry.slug}</p>
                   <p>Visitas: {entry.visits.toLocaleString()}</p>
@@ -169,6 +172,39 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
                 >
                   {entry.active ? "Activo" : "Inactivo"}
                 </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Tour landings</p>
+            <h2 className="text-lg font-semibold text-slate-900">Landings públicas de tours</h2>
+          </div>
+          <p className="text-xs text-slate-500">
+            Cada slug usa el builder principal y puede mostrarse con su propio SEO + FAQ.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {landingPages.map((landing) => (
+            <Link
+              key={landing.slug}
+              href={`https://proactivitis.com/landing/${landing.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-700 transition hover:border-slate-400 hover:shadow-lg"
+            >
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">Tour</p>
+                <h3 className="text-lg font-semibold text-slate-900">{landing.title}</h3>
+                <p className="text-[0.75rem] text-slate-500">{landing.tagline}</p>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                <p>{landing.slug}</p>
+                <p>Visitas {trafficMap.get(landing.slug)?.toLocaleString() ?? "0"}</p>
               </div>
             </Link>
           ))}
