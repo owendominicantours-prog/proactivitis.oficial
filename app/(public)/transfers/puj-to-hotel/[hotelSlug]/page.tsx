@@ -35,6 +35,11 @@ const buildCheckoutHref = (
   return `/checkout?${params.toString()}`;
 };
 
+type TransferLandingPageProps = {
+  params: { hotelSlug: string };
+  searchParams?: Record<string, string | string[] | undefined>;
+};
+
 const buildSchema = (promotion: TransferLandingPromotion, quote: TransferLandingQuote) => {
   const topVehicle = quote.vehicles[0];
   return {
@@ -85,7 +90,7 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: { params: { hotelSlug: string } }) {
+export async function generateMetadata({ params }: TransferLandingPageProps) {
   const promotion = getPromotionByDestination(params.hotelSlug);
   if (!promotion) {
     return {};
@@ -108,7 +113,7 @@ export async function generateMetadata({ params }: { params: { hotelSlug: string
   };
 }
 
-export default async function TransferLandingPage({ params }: { params: { hotelSlug: string } }) {
+export default async function TransferLandingPage({ params }: TransferLandingPageProps) {
   const promotion = getPromotionByDestination(params.hotelSlug);
   if (!promotion) {
     return notFound();
