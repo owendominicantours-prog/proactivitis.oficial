@@ -125,6 +125,13 @@ model LandingPage {
   updatedAt DateTime @default(now()) @updatedAt
 }
 
+model LandingPageTraffic {
+  slug      String   @id
+  visits    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
 model Message {
   id             String       @id
   conversationId String

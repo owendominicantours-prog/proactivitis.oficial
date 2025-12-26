@@ -35,14 +35,18 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
   ]);
 
   const manual = allLandings();
-  const landingMap = new Map<string, { slug: string; name: string; type: string; active: boolean; zone: string }>();
+  const landingMap = new Map<
+    string,
+    { slug: string; name: string; type: string; active: boolean; zone: string; visits: number }
+  >();
   locations.forEach((location) => {
     landingMap.set(buildLandingSlug(location.slug), {
       slug: buildLandingSlug(location.slug),
       name: location.name,
       type: location.type,
       active: location.active,
-      zone: location.zone.name
+      zone: location.zone.name,
+      visits: 0
     });
   });
   manual.forEach((landing) => {
@@ -51,11 +55,23 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       name: landing.hotelName,
       type: "HOTEL",
       active: true,
-      zone: TRANSFER_ZONE
+      zone: TRANSFER_ZONE,
+      visits: 0
     });
   });
 
-  let entries = Array.from(landingMap.values());
+  const landingSlugs = Array.from(landingMap.keys());
+  const trafficRows = await prisma.landingPageTraffic.findMany({
+    where: { slug: { in: landingSlugs } },
+    select: { slug: true, visits: true }
+  });
+  const trafficMap = new Map(trafficRows.map((row) => [row.slug, row.visits]));
+
+
+  let entries = Array.from(landingMap.values()).map((entry) => ({
+    ...entry,
+    visits: trafficMap.get(entry.slug) ?? 0
+  }));
   if (params.zone) {
     entries = entries.filter((entry) => entry.zone.toLowerCase().includes(params.zone!.toLowerCase()));
   }
@@ -141,8 +157,11 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
                 <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
                 <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.type}</p>
               </div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-slate-500">{entry.slug}</p>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col gap-1 text-xs text-slate-500">
+                  <p>{entry.slug}</p>
+                  <p>Visitas: {entry.visits.toLocaleString()}</p>
+                </div>
                 <span
                   className={`rounded-full px-3 py-1 text-[0.65rem] font-semibold ${
                     entry.active ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"

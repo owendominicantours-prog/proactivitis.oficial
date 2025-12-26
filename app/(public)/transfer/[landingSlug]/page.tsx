@@ -6,7 +6,8 @@
  import { prisma } from "@/lib/prisma";
  import { allLandings } from "@/data/transfer-landings";
  import type { TransferLandingData } from "@/data/transfer-landings";
- import TransferQuoteCards from "@/components/transfers/TransferQuoteCards";
+import TransferQuoteCards from "@/components/transfers/TransferQuoteCards";
+import LandingViewTracker from "@/components/transfers/LandingViewTracker";
  
  const AIRPORT_SLUG = "puj-airport";
  const AIRPORT_NAME = "Punta Cana International Airport (PUJ)";
@@ -258,6 +259,7 @@ export default async function TransferLandingPage({
 
   return (
     <main className="bg-white">
+      <LandingViewTracker landingSlug={landing.landingSlug} />
       <section className="relative overflow-hidden bg-gradient-to-br from-emerald-50 to-white">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 lg:grid-cols-2">
           <div className="space-y-4">
