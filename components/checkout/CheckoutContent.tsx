@@ -29,8 +29,11 @@ export default function CheckoutContent() {
       hotelSlug: get("hotelSlug"),
       bookingCode: get("bookingCode"),
       originHotelName: get("originHotelName"),
+      origin: get("origin"),
+      originLabel: get("originLabel"),
       flowType: get("type") === "transfer" ? "transfer" : undefined,
-      flightNumber: get("flightNumber")
+      flightNumber: get("flightNumber"),
+      totalPrice: get("totalPrice")
     };
   }, [searchParams]);
 

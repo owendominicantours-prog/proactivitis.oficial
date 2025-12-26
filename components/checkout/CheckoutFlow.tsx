@@ -65,6 +65,7 @@ export type CheckoutPageParams = {
   originLabel?: string;
   flowType?: "tour" | "transfer";
   flightNumber?: string;
+  totalPrice?: string;
 };
 
 
@@ -386,11 +387,17 @@ const buildSummary = (params: CheckoutPageParams) => {
 
   const isTransferFlow = params.flowType === "transfer";
 
-  const pricePerPerson = parsePriceValue(params.tourPrice, recommendedReservation.price);
+  const overrideTotalPrice = parsePriceValue(params.totalPrice);
+
+  const basePricePerPerson = parsePriceValue(params.tourPrice, recommendedReservation.price);
 
   const totalTravelers = Math.max(1, adults + youth + children);
 
-  const totalPrice = totalTravelers * pricePerPerson;
+  const totalPrice =
+    overrideTotalPrice > 0 ? overrideTotalPrice : totalTravelers * basePricePerPerson;
+
+  const pricePerPerson =
+    overrideTotalPrice > 0 ? totalPrice / totalTravelers : basePricePerPerson;
 
 
 

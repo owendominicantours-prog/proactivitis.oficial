@@ -223,7 +223,8 @@ export default function TrasladoSearchV2() {
     params.set("origin", selectedOrigin.slug);
     params.set("originLabel", selectedOrigin.name);
     params.set("vehicleId", vehicle.id);
-    params.set("tourPrice", price.toFixed(2));
+    params.set("tourPrice", (price / Math.max(1, passengers)).toFixed(2));
+    params.set("totalPrice", price.toFixed(2));
     params.set("adults", String(passengers));
     params.set("youth", "0");
     params.set("child", "0");
