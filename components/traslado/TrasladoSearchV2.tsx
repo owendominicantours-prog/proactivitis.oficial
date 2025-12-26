@@ -498,7 +498,7 @@ export default function TrasladoSearchV2() {
                   href={reserveUrl}
                   className="mt-4 inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
                 >
-                  Reserve Now
+                  Reservar ahora
                 </Link>
               </article>
             );
