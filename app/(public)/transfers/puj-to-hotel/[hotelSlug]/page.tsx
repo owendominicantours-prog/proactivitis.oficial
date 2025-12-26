@@ -90,8 +90,9 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: TransferLandingPageProps) {
-  const promotion = getPromotionByDestination(params.hotelSlug);
+export async function generateMetadata({ params }: { params: Promise<{ hotelSlug: string }> }) {
+  const { hotelSlug } = await params;
+  const promotion = getPromotionByDestination(hotelSlug);
   if (!promotion) {
     return {};
   }
@@ -113,8 +114,9 @@ export async function generateMetadata({ params }: TransferLandingPageProps) {
   };
 }
 
-export default async function TransferLandingPage({ params }: TransferLandingPageProps) {
-  const promotion = getPromotionByDestination(params.hotelSlug);
+export default async function TransferLandingPage({ params }: { params: Promise<{ hotelSlug: string }> }) {
+  const { hotelSlug } = await params;
+  const promotion = getPromotionByDestination(hotelSlug);
   if (!promotion) {
     return notFound();
   }
