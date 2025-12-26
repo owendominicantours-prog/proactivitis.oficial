@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import TrasladoSearch, { LocationOption } from "@/components/traslado/TrasladoSearch";
+import TrasladoSearchV2 from "@/components/traslado/TrasladoSearchV2";
 import { prisma } from "@/lib/prisma";
 import { getTransferPointsForCountry, TransferPointOption } from "@/lib/transfers";
 
@@ -33,40 +34,46 @@ const heroStats = [
 ];
 
 export default async function TrasladoPage() {
-  const hotels = await prisma.location.findMany({
-    where: { countryId: "RD", authorized: true },
-    orderBy: { name: "asc" },
-    select: {
-      name: true,
-      slug: true,
-      destination: { select: { name: true } },
-      microZone: { select: { name: true, slug: true } }
-    }
-  });
+  const transfersV2Enabled = process.env.TRANSFERS_V2_ENABLED === "true";
+  let options: LocationOption[] = [];
+  let originPoints: TransferPointOption[] = [];
 
-  const transferDestinations = await prisma.transferDestination.findMany({
-    where: {
-      zone: {
-        countryCode: "RD"
+  if (!transfersV2Enabled) {
+    const hotels = await prisma.location.findMany({
+      where: { countryId: "RD", authorized: true },
+      orderBy: { name: "asc" },
+      select: {
+        name: true,
+        slug: true,
+        destination: { select: { name: true } },
+        microZone: { select: { name: true, slug: true } }
       }
-    },
-    select: {
-      id: true,
-      slug: true
-    }
-  });
-  const destinationMap = new Map(transferDestinations.map((destination) => [destination.slug, destination.id]));
+    });
 
-  const options: LocationOption[] = hotels.map((hotel) => ({
-    name: hotel.name,
-    slug: hotel.slug,
-    destinationName: hotel.destination?.name ?? null,
-    microZoneName: hotel.microZone?.name ?? null,
-    microZoneSlug: hotel.microZone?.slug ?? null,
-    transferDestinationId: destinationMap.get(hotel.slug) ?? null
-  }));
+    const transferDestinations = await prisma.transferDestination.findMany({
+      where: {
+        zone: {
+          countryCode: "RD"
+        }
+      },
+      select: {
+        id: true,
+        slug: true
+      }
+    });
+    const destinationMap = new Map(transferDestinations.map((destination) => [destination.slug, destination.id]));
 
-  const originPoints = await getTransferPointsForCountry("RD");
+    options = hotels.map((hotel) => ({
+      name: hotel.name,
+      slug: hotel.slug,
+      destinationName: hotel.destination?.name ?? null,
+      microZoneName: hotel.microZone?.name ?? null,
+      microZoneSlug: hotel.microZone?.slug ?? null,
+      transferDestinationId: destinationMap.get(hotel.slug) ?? null
+    }));
+
+    originPoints = await getTransferPointsForCountry("RD");
+  }
 
   return (
     <div className="bg-gradient-to-b from-[#E2FFF8] via-white to-[#F8FAFC]">
@@ -112,7 +119,11 @@ export default async function TrasladoPage() {
 
         <section className="rounded-[36px] border border-slate-100 bg-white/90 p-6 shadow-2xl">
           <Suspense fallback={<div />}>
-            <TrasladoSearch hotels={options} originPoints={originPoints} />
+            {transfersV2Enabled ? (
+              <TrasladoSearchV2 />
+            ) : (
+              <TrasladoSearch hotels={options} originPoints={originPoints} />
+            )}
           </Suspense>
         </section>
 
