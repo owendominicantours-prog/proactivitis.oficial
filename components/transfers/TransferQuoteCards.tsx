@@ -61,6 +61,7 @@ const buildCheckoutHref = ({
   originSlug,
   destinationSlug,
   originLabel,
+  destinationLabel,
   tripType,
   dateTime,
   returnDatetime
@@ -71,6 +72,7 @@ const buildCheckoutHref = ({
   originSlug: string;
   destinationSlug: string;
   originLabel: string;
+  destinationLabel: string;
   tripType: "one-way" | "round-trip";
   dateTime: string;
   returnDatetime?: string;
@@ -80,7 +82,7 @@ const buildCheckoutHref = ({
   params.set("hotelSlug", destinationSlug);
   params.set("origin", originSlug);
   params.set("originLabel", originLabel);
-  params.set("originHotelName", originLabel);
+  params.set("originHotelName", destinationLabel);
   params.set("vehicleId", vehicleId);
   params.set("price", price.toFixed(2));
   params.set("passengers", String(passengers));
@@ -255,6 +257,7 @@ export default function TransferQuoteCards({
               originSlug,
               destinationSlug,
               originLabel,
+              destinationLabel,
               tripType,
               dateTime: departureDatetime,
               returnDatetime: tripType === "round-trip" ? returnDatetime : undefined
