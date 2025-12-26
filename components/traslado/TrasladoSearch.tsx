@@ -310,8 +310,8 @@ export default function TrasladoSearch({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const buildOriginParamValue = (selection: OriginSelection) =>
-    selection.kind === "point" ? `point:${selection.point.slug}` : `hotel:${selection.hotel.slug}`;
+  const getOriginQuerySlug = (selection: OriginSelection) =>
+    selection.kind === "point" ? selection.point.slug : selection.hotel.slug;
 
   const resolveOriginSelectionFromParam = useCallback(
     (value?: string | null): OriginSelection | null => {
@@ -512,50 +512,41 @@ export default function TrasladoSearch({
     return `/checkout?${params.toString()}`;
   };
 
-  const syncQueryFromFilters = (slugParam?: string, overrideOrigin?: OriginSelection) => {
+  const syncQueryFromFilters = (originSlug?: string, destinationSlugParam?: string) => {
     const params = new URLSearchParams();
-    const slugToUse = slugParam ?? destinationSlug;
-    if (slugToUse) {
-      params.set("hotelSlug", slugToUse);
+    if (originSlug) {
+      params.set("from", originSlug);
     }
-    const originToUse = overrideOrigin ?? originSelection;
-    params.set("origin", buildOriginParamValue(originToUse));
-    params.set("originLabel", originToUse.label);
+    if (destinationSlugParam) {
+      params.set("to", destinationSlugParam);
+    }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   useEffect(() => {
     if (!searchParams) return;
-    const hotelParam = searchParams.get("hotelSlug");
-    const originParam = searchParams.get("origin");
-    const originLabelParam = searchParams.get("originLabel");
-    if (hotelParam && hotelParam !== destinationSlug) {
-      setDestinationSlug(hotelParam);
-      const matched = hotels.find((hotel) => hotel.slug === hotelParam);
+    const fromParam = searchParams.get("from") ?? searchParams.get("origin");
+    const toParam = searchParams.get("to") ?? searchParams.get("hotelSlug");
+    if (toParam && toParam !== destinationSlug) {
+      setDestinationSlug(toParam);
+      const matched = hotels.find((hotel) => hotel.slug === toParam);
       if (matched) {
         setDestinationLabel(matched.name);
       }
     }
-    if (originParam) {
-      const resolved = resolveOriginSelectionFromParam(originParam);
+    if (fromParam) {
+      const resolved = resolveOriginSelectionFromParam(fromParam);
       if (resolved) {
         applyOriginSelection(resolved);
+      } else if (fromParam !== originLabel) {
+        setOriginLabel(fromParam);
       }
-    } else if (originLabelParam && originLabelParam !== originLabel) {
-      setOriginLabel(originLabelParam);
     }
-    if (hotelParam) {
+    if (toParam) {
       setShowResults(true);
       setFormCollapsed(true);
     }
-  }, [
-    searchParams,
-    hotels,
-    destinationSlug,
-    originLabel,
-    applyOriginSelection,
-    resolveOriginSelectionFromParam
-  ]);
+  }, [searchParams, hotels, destinationSlug, originLabel, applyOriginSelection, resolveOriginSelectionFromParam]);
 
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
@@ -577,7 +568,9 @@ export default function TrasladoSearch({
     }
     setShowResults(true);
     setFormCollapsed(true);
-    syncQueryFromFilters(slugToSync, resolvedOrigin ?? originSelection);
+    const finalOrigin = resolvedOrigin ?? originSelection;
+    const originSlugForQuery = finalOrigin ? getOriginQuerySlug(finalOrigin) : undefined;
+    syncQueryFromFilters(originSlugForQuery, slugToSync);
   };
 
   const originSuggestionPool = useMemo(() => {
