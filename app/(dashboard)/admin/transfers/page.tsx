@@ -9,11 +9,11 @@ import {
   addTransferRouteOverrideAction,
   addTransferVehicleAction,
   addTransferZoneAction,
-  importTransferLocationsAction,
   toggleTransferLocationActiveAction,
   upsertTransferRoutePriceAction
 } from "./actions";
 import LocationList from "@/components/admin/transfers/LocationList";
+import TransferLocationImport from "@/components/admin/transfers/TransferLocationImport";
 
 const TRANSFERS_ENABLED = process.env.TRANSFERS_V2_ENABLED === "true";
 
@@ -232,40 +232,14 @@ export default async function TransfersAdminPage() {
             Guardar location
           </button>
         </form>
-        <form
-          action={importTransferLocationsAction}
-          encType="multipart/form-data"
-          method="post"
-          className="space-y-4 rounded-2xl border border-dashed border-slate-200 p-4"
-        >
-          <div className="grid gap-4 md:grid-cols-3">
-            <label className="text-sm font-semibold text-slate-700">
-              Zona por defecto (opcional)
-              <select name="zoneId" defaultValue="" className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm">
-                <option value="">Usar zona del CSV</option>
-                {zones.map((zone) => (
-                  <option key={zone.id} value={zone.id}>
-                    {zone.name} ({zone.country.code})
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="text-sm font-semibold text-slate-700 md:col-span-2">
-              Importar CSV de hoteles/aeropuertos
-              <input name="csvFile" type="file" accept=".csv" required className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
-            </label>
-            <p className="text-xs text-slate-500 md:col-span-3">
-              El archivo debe tener cabeceras: <code>name,slug,type</code> y opcionalmente <code>zoneSlug,description,address</code>.
-              Usa el slug de la zona para sobreescribir donde no indiques una zona por defecto.
-            </p>
-          </div>
-          <button
-            type="submit"
-            className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
-          >
-            Importar CSV
-          </button>
-        </form>
+        <TransferLocationImport
+          zones={zones.map((zone) => ({
+            id: zone.id,
+            name: zone.name,
+            slug: zone.slug,
+            countryCode: zone.country.code
+          }))}
+        />
         <LocationList locations={locations} toggleAction={toggleTransferLocationActiveAction} />
         <div className="grid gap-4 lg:grid-cols-2">
           {zones.map((zone) => (
