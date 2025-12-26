@@ -173,9 +173,9 @@ export default function TransferLocationImport({ zones }: { zones: ZoneOption[] 
             >
               <option value="">Selecciona zona (solo si falta zoneSlug)</option>
               {zones.map((zone) => (
-              <option key={zone.id} value={zone.id}>
-                {zone.name} ({zone.countryCode})
-              </option>
+                <option key={zone.id} value={zone.id}>
+                  {zone.name} ({zone.countryCode})
+                </option>
               ))}
             </select>
           </label>
