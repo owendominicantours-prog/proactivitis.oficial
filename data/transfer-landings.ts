@@ -517,6 +517,32 @@ export const transferLandings: TransferLandingData[] = [
     keywords: ["PUJ Bahia Principe Grand Bávaro transfer", "transfer privado Bahia Principe Grand", "Bahia Principe Grand Bávaro transfer"],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-bahia-principe-grand-bavaro"
   }
+  ,
+  {
+    landingSlug: "punta-cana-international-airport-to-dreams-macao-beach",
+    reverseSlug: "dreams-macao-beach-to-punta-cana-international-airport",
+    hotelSlug: "dreams-macao-beach",
+    hotelName: "Dreams Macao Beach Punta Cana",
+    heroTitle: "Punta Cana International Airport (PUJ) → Dreams Macao Beach Punta Cana",
+    heroSubtitle: "Minivan premium directo a este resort familiar frente al mar, con chofer bilingüe y atención personalizada.",
+    heroTagline: "Vacaciones seguras, sin escalas ni esperas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Mini van premium rumbo a Dreams Macao Beach",
+    priceFrom: 42,
+    priceDetails: [
+      "Confirmación instantánea con conductor asignado",
+      "Espera gratuita de 60 minutos en el aeropuerto",
+      "Cuenta con Wi-Fi por ruta y bebidas frías"
+    ],
+    longCopy: buildLongCopy("Dreams Macao Beach Punta Cana"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingüe | Wi-Fi a bordo", "Cancelación flexible 24h"],
+    faq: buildFaq("Dreams Macao Beach Punta Cana"),
+    seoTitle: "Transfer privado PUJ a Dreams Macao Beach Punta Cana | Proactivitis",
+    metaDescription:
+      "Reserva tu traslado privado desde Punta Cana International Airport (PUJ) al Dreams Macao Beach Punta Cana con chofer bilingüe, confirmación inmediata y atención 24/7.",
+    keywords: ["PUJ Dreams Macao transfer", "transfer privado Dreams Macao", "Dreams Macao Beach Punta Cana transfer"],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-dreams-macao-beach"
+  }
 ];
 
 export const findLandingBySlug = (slug: string) => transferLandings.find((landing) => landing.landingSlug === slug);
