@@ -237,31 +237,6 @@ export const transferLandings: TransferLandingData[] = [
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-hyatt-zilara-cap-cana"
   },
   {
-    landingSlug: "punta-cana-international-airport-to-majestic-colonial",
-    reverseSlug: "majestic-colonial-to-punta-cana-international-airport",
-    hotelSlug: "majestic-colonial",
-    hotelName: "Majestic Colonial Punta Cana",
-    heroTitle: "Punta Cana International Airport (PUJ) → Majestic Colonial Punta Cana",
-    heroSubtitle: "Transporte elegante que combina historia con playa, cobrando solo el tiempo real de viaje.",
-    heroTagline: "Entrada con estilo a tu suite Colonial",
-    heroImage: "/transfer/sedan.png",
-    heroImageAlt: "Sedan llegando a Majestic Colonial Punta Cana",
-    priceFrom: 42,
-    priceDetails: [
-      "Coordinación con concierge y servicio de bienvenida",
-      "Chofer experto en la zona de Bávaro",
-      "Vehículos con Wi-Fi y aire acondicionado constante"
-    ],
-    longCopy: buildLongCopy("Majestic Colonial Punta Cana"),
-    trustBadges: ["Servicio privado garantizado", "Chofer bilingüe | Wi-Fi a bordo", "Cancelación flexible 24h"],
-    faq: buildFaq("Majestic Colonial Punta Cana"),
-    seoTitle: "Transfer privado PUJ a Majestic Colonial Punta Cana | Proactivitis",
-    metaDescription:
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Majestic Colonial Punta Cana con chofer bilingüe, confirmación inmediata y vehículos premium.",
-    keywords: ["PUJ Majestic Colonial transfer", "Majestic Colonial Punta Cana private transfer", "transfer privado Majestic Colonial"],
-    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-majestic-colonial"
-  },
-  {
     landingSlug: "punta-cana-international-airport-to-majestic-elegance",
     reverseSlug: "majestic-elegance-to-punta-cana-international-airport",
     hotelSlug: "majestic-elegance",
@@ -413,27 +388,6 @@ export const transferLandings: TransferLandingData[] = [
   }
   ,
   {
-    landingSlug: "punta-cana-international-airport-to-iberostar-bavaro-suites",
-    reverseSlug: "iberostar-bavaro-suites-to-punta-cana-international-airport",
-    hotelSlug: "iberostar-bavaro-suites",
-    hotelName: "Iberostar Selection Bávaro Suites",
-    heroTitle: "Punta Cana International Airport (PUJ) → Iberostar Selection Bávaro Suites",
-    heroSubtitle: "Traslado directo y elegante para huéspedes que priorizan la comodidad del complejo frente al mar.",
-    heroTagline: "Conductor profesional listo para tu welcome VIP",
-    heroImage: "/transfer/sedan.png",
-    heroImageAlt: "Sedan llegando a Iberostar Selection Bávaro Suites",
-    priceFrom: 43,
-    priceDetails: ["Chofer bilingüe con conocimientos del resort", "Actualización constante del vuelo", "Vehículo climatizado con Wi-Fi"],
-    longCopy: buildLongCopy("Iberostar Selection Bávaro Suites"),
-    trustBadges: ["Servicio privado garantizado", "Chofer bilingüe | Wi-Fi a bordo", "Cancelación flexible 24h"],
-    faq: buildFaq("Iberostar Selection Bávaro Suites"),
-    seoTitle: "Transfer privado PUJ a Iberostar Selection Bávaro Suites | Proactivitis",
-    metaDescription:
-      "Reserva tu traslado privado desde Punta Cana International Airport (PUJ) hasta Iberostar Selection Bávaro Suites con chofer bilingüe y confirmación inmediata.",
-    keywords: ["PUJ Iberostar Selection transfer", "transfer privado Iberostar Bávaro Suites", "Iberostar Selection transfer Punta Cana"],
-    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-iberostar-bavaro-suites"
-  },
-  {
     landingSlug: "punta-cana-international-airport-to-iberostar-grand-bavaro",
     reverseSlug: "iberostar-grand-bavaro-to-punta-cana-international-airport",
     hotelSlug: "iberostar-grand-bavaro",
@@ -562,53 +516,6 @@ export const transferLandings: TransferLandingData[] = [
       "Traslado privado desde Punta Cana International Airport (PUJ) hasta Bahia Principe Grand Bávaro con minibuses y confirmación inmediata para grupos grandes.",
     keywords: ["PUJ Bahia Principe Grand Bávaro transfer", "transfer privado Bahia Principe Grand", "Bahia Principe Grand Bávaro transfer"],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-bahia-principe-grand-bavaro"
-  },
-  {
-    landingSlug: "punta-cana-international-airport-to-nickelodeon-punta-cana",
-    reverseSlug: "nickelodeon-punta-cana-to-punta-cana-international-airport",
-    hotelSlug: "nickelodeon-punta-cana",
-    hotelName: "Nickelodeon Hotels & Resorts Punta Cana",
-    heroTitle:
-      "Punta Cana International Airport (PUJ) → Nickelodeon Hotels & Resorts Punta Cana",
-    heroSubtitle: "Llegada divertida y segura para familias con niños y paquetes privados con personajes.",
-    heroTagline: "Diversión familiar desde el minuto uno",
-    heroImage: "/transfer/mini van.png",
-    heroImageAlt: "Mini van con familia frente a Nickelodeon Punta Cana",
-    priceFrom: 44,
-    priceDetails: [
-      "Chofer bilingüe con experiencia en grupos familiares",
-      "Vehículos con espacio extra para cochecitos y maletas",
-      "Coordinación con el hotel para check-in rápido"
-    ],
-    longCopy: buildLongCopy("Nickelodeon Hotels & Resorts Punta Cana"),
-    trustBadges: ["Servicio privado garantizado", "Chofer bilingüe | Wi-Fi a bordo", "Cancelación flexible 24h"],
-    faq: buildFaq("Nickelodeon Hotels & Resorts Punta Cana"),
-    seoTitle: "Transfer privado PUJ a Nickelodeon Hotels & Resorts Punta Cana | Proactivitis",
-    metaDescription:
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Nickelodeon Hotels & Resorts Punta Cana con vehículos familiares y atención a los niños.",
-    keywords: ["PUJ Nickelodeon Punta Cana transfer", "transfer familiar Nickelodeon Punta Cana", "Nickelodeon resort transfer"],
-    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-nickelodeon-punta-cana"
-  },
-  {
-    landingSlug: "punta-cana-international-airport-to-zoetry-agua",
-    reverseSlug: "zoetry-agua-to-punta-cana-international-airport",
-    hotelSlug: "zoetry-agua",
-    hotelName: "Zoetry Agua Punta Cana",
-    heroTitle: "Punta Cana International Airport (PUJ) → Zoetry Agua Punta Cana",
-    heroSubtitle: "Traslado exclusivo para viajeros que buscan tranquilidad y bienestar antes de llegar al spa.",
-    heroTagline: "Llegada wellness con chofer discreto",
-    heroImage: "/transfer/sedan.png",
-    heroImageAlt: "Sedan Premium ingresando a Zoetry Agua",
-    priceFrom: 49,
-    priceDetails: ["Chofer bilingüe con enfoque wellness", "Vehículos silenciosos y limpios", "Coordinación con el spa del hotel"],
-    longCopy: buildLongCopy("Zoetry Agua Punta Cana"),
-    trustBadges: ["Servicio privado garantizado", "Chofer bilingüe | Wi-Fi a bordo", "Cancelación flexible 24h"],
-    faq: buildFaq("Zoetry Agua Punta Cana"),
-    seoTitle: "Transfer privado PUJ a Zoetry Agua Punta Cana | Proactivitis",
-    metaDescription:
-      "Reserva tu traslado exclusivo desde Punta Cana International Airport (PUJ) hasta Zoetry Agua Punta Cana con chofer y vehículo premium.",
-    keywords: ["PUJ Zoetry Agua transfer", "transfer privado Zoetry Agua", "Zoetry Agua Punta Cana transfer"],
-    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-zoetry-agua"
   }
 ];
 
