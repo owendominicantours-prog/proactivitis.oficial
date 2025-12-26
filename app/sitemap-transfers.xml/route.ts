@@ -1,16 +1,37 @@
 import { NextResponse } from "next/server";
-import { transferLandings } from "@/data/transfer-landings";
+import { prisma } from "@/lib/prisma";
 
 const BASE_URL = "https://proactivitis.com";
+const ZONE_SLUG = "punta-cana";
+export const revalidate = 86400;
 
 export async function GET() {
-  const urlEntries = transferLandings.flatMap((landing) => [
-    landing.landingSlug,
-    landing.reverseSlug
-  ]);
+  const hotels = await prisma.transferLocation.findMany({
+    where: {
+      type: "HOTEL",
+      active: true,
+      zone: {
+        slug: ZONE_SLUG
+      }
+    },
+    select: {
+      slug: true,
+      updatedAt: true
+    }
+  });
+
+  const urlEntries = hotels.flatMap((hotel) => {
+    const lastMod = hotel.updatedAt.toISOString();
+    const forwardSlug = `punta-cana-international-airport-to-${hotel.slug}`;
+    const reverseSlug = `${hotel.slug}-to-punta-cana-international-airport`;
+    return [
+      { slug: forwardSlug, lastMod },
+      { slug: reverseSlug, lastMod }
+    ];
+  });
+
   const urls = urlEntries
-    .map((slug) => {
-      const lastMod = new Date().toISOString();
+    .map(({ slug, lastMod }) => {
       return `
         <url>
           <loc>${BASE_URL}/transfer/${slug}</loc>
