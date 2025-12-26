@@ -46,6 +46,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
       roleLabel="Administración"
       title="Dashboard"
       navItems={adminNav}
+      navDisplay="dropdown"
       notifications={notifications}
       unreadCount={unreadCount}
       notificationLink={isAdmin ? "/admin/notifications" : undefined}
