@@ -204,6 +204,44 @@ const toAbsoluteUrl = (value: string) => {
   return `${PROACTIVITIS_URL}${normalized}`;
 };
 
+const buildTourMarketingCopy = (
+  tourTitle: string,
+  location: string,
+  durationLabel: string,
+  priceLabel: string,
+  categories: string[]
+) => [
+  `Vive ${location} a través de ${tourTitle}, una experiencia diseñada para tomar el pulso de la cultura local durante ${durationLabel} sin apresurarte.`,
+  `Durante el recorrido, los guías resaltan cada detalle: gastronomía, historia y paisajes naturales, con paradas pensadas para fotos, snacks y conexión con comunidades locales.`,
+  `Con tarifas desde ${priceLabel} garantizas transporte privado, entradas priorizadas, asistencia 24/7 y un ambiente familiar sin sobrecostos ocultos.`,
+  (categories.length ? `Ideal para quienes buscan ${categories.slice(0, 2).join(" y ")}.` : "Diseñado para viajeros que buscan autenticidad y comodidad.")
+];
+
+const buildTourTrustBadges = (languages: string[], categories: string[]) => {
+  const languageLabel = languages.length ? languages.join(" · ") : "Español · Inglés";
+  const categoryLabel = categories.length ? categories[0] : "Experiencia premium";
+  return [
+    `Guías bilingües certificados (${languageLabel})`,
+    `Diseñado para ${categoryLabel} con grupos reducidos`,
+    "Confirmación inmediata y soporte 24/7"
+  ];
+};
+
+const buildTourFaq = (tourTitle: string, durationLabel: string, displayTime: string, priceLabel: string) => [
+  {
+    question: `¿Cómo reservo el tour ${tourTitle}?`,
+    answer: `No tienes que escribir nada: elige fecha y pasajeros, haz clic en “Reservar experiencia” y el formulario del checkout se llena en segundos con la tarifa de ${priceLabel}.`
+  },
+  {
+    question: "¿Qué incluye el precio?",
+    answer: `El costo de ${priceLabel} cubre transporte privado, guía local, entradas pautadas, seguro básico y atención personalizada durante ${durationLabel}.`
+  },
+  {
+    question: "¿Qué pasa si mi vuelo se retrasa?",
+    answer: `Nos mantenemos en contacto: ajustamos el toque en destino y tu guía espera en la hora de encuentro pactada (${displayTime}) con comunicación directa.`
+  }
+];
+
 export default async function TourDetailPage({ params, searchParams }: TourDetailProps) {
   const { slug } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
@@ -258,6 +296,10 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
     tour.shortDescription && tour.shortDescription.length > 220
       ? `${tour.shortDescription.slice(0, 220).trim()}…`
       : tour.shortDescription || "Explora esta aventura guiada por expertos locales.";
+
+  const marketingCopy = buildTourMarketingCopy(tour.title, tour.location, durationLabel, priceLabel, categories);
+  const trustBadges = buildTourTrustBadges(languages, categories);
+  const faqList = buildTourFaq(tour.title, durationLabel, displayTime, priceLabel);
 
   const detailReviewCount = getTourReviewCount(tour.slug, "detail");
   const detailReviewLabel = formatReviewCountValue(detailReviewCount);
@@ -363,9 +405,23 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
     ...(aggregateRating ? { aggregateRating } : {})
   };
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqList.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer
+      }
+    }))
+  };
+
   return (
     <div className="min-h-screen bg-[#FDFDFD] text-slate-900 pb-24 overflow-x-hidden">
       <StructuredData data={tourSchema} />
+      <StructuredData data={faqSchema} />
       {/* Hero */}
       <section className="mx-auto max-w-[1240px] px-4 pt-8 sm:pt-10">
         <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">
@@ -409,6 +465,28 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
               backgroundImage: `url(${heroImage})`
             }}
           />
+        </div>
+      </section>
+
+      <section className="mx-auto mt-10 max-w-[1240px] space-y-8 px-4 pb-10">
+        <header className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Experiencia Proactivitis</p>
+          <h2 className="text-3xl font-bold text-slate-900">Beneficios que importan de esta experiencia</h2>
+          <p className="text-sm text-slate-500">
+            Cada párrafo resume la promesa del tour; los elementos de confianza refuerzan que te espera un servicio premium.
+          </p>
+        </header>
+        <div className="space-y-4 text-sm leading-relaxed text-slate-600">
+          {marketingCopy.map((paragraph, index) => (
+            <p key={`marketing-${index}`}>{paragraph}</p>
+          ))}
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          {trustBadges.map((badge) => (
+            <div key={badge} className="rounded-2xl border border-slate-100 bg-white/80 p-4 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700 shadow-sm">
+              {badge}
+            </div>
+          ))}
         </div>
       </section>
 
@@ -644,6 +722,21 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
                 </li>
               ))}
             </ul>
+          </section>
+
+          <section id="faq" className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">FAQ</p>
+              <h3 className="text-[16px] font-semibold text-slate-900">Preguntas frecuentes</h3>
+            </div>
+            <div className="mt-4 space-y-4 text-sm text-slate-600">
+              {faqList.map((item) => (
+                <article key={item.question} className="rounded-[16px] border border-[#F1F5F9] bg-white/60 p-4">
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{item.question}</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-900">{item.answer}</p>
+                </article>
+              ))}
+            </div>
           </section>
         </div>
 
