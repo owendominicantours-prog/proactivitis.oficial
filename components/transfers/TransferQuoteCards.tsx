@@ -89,6 +89,10 @@ const buildCheckoutHref = ({
   params.set("child", "0");
   params.set("tripType", tripType);
   params.set("dateTime", dateTime);
+  const totalPrice = price;
+  const perPersonPrice = totalPrice / Math.max(1, passengers);
+  params.set("totalPrice", totalPrice.toFixed(2));
+  params.set("tourPrice", perPersonPrice.toFixed(2));
   const [datePart, timePart] = dateTime.split("T");
   if (datePart) {
     params.set("date", datePart);
