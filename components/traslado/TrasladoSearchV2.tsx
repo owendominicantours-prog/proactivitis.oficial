@@ -15,7 +15,7 @@ const ROUND_TRIP_DISCOUNT_PERCENT = (() => {
 })();
 
 const LOCATION_DEBOUNCE_MS = 350;
-const TRANSFER_FORM_PATH = "/traslado";
+const TRANSFER_FORM_PATH = "/checkout";
 const TRUST_BULLETS = ["Servicio privado", "Aire acondicionado incluido", "Soporte 24/7"];
 
 type LocationSummary = {
