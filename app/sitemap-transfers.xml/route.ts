@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { allLandings } from "@/data/transfer-landings";
 
 const BASE_URL = "https://proactivitis.com";
 const ZONE_SLUG = "punta-cana";
 export const revalidate = 86400;
 
 export async function GET() {
+  const manualLandings = allLandings().map((landing) => ({
+    slug: landing.landingSlug,
+    lastMod: new Date().toISOString()
+  }));
+
   const hotels = await prisma.transferLocation.findMany({
     where: {
       type: "HOTEL",
@@ -20,17 +26,17 @@ export async function GET() {
     }
   });
 
-  const urlEntries = hotels.flatMap((hotel) => {
-    const lastMod = hotel.updatedAt.toISOString();
-    const forwardSlug = `punta-cana-international-airport-to-${hotel.slug}`;
-    const reverseSlug = `${hotel.slug}-to-punta-cana-international-airport`;
-    return [
-      { slug: forwardSlug, lastMod },
-      { slug: reverseSlug, lastMod }
-    ];
+  const dynamicLandings = hotels.map((hotel) => ({
+    slug: `punta-cana-international-airport-to-${hotel.slug}`,
+    lastMod: hotel.updatedAt.toISOString()
+  }));
+
+  const landingMap = new Map<string, { slug: string; lastMod: string }>();
+  [...manualLandings, ...dynamicLandings].forEach((entry) => {
+    landingMap.set(entry.slug, entry);
   });
 
-  const urls = urlEntries
+  const urls = Array.from(landingMap.values())
     .map(({ slug, lastMod }) => {
       return `
         <url>
