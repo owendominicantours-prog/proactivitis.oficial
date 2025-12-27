@@ -16,6 +16,7 @@ import {
 import LocationList from "@/components/admin/transfers/LocationList";
 import TransferLocationImport from "@/components/admin/transfers/TransferLocationImport";
 import { allLandings } from "@/data/transfer-landings";
+import CollapsibleSection from "@/components/admin/CollapsibleSection";
 
 const TRANSFERS_ENABLED = process.env.TRANSFERS_V2_ENABLED === "true";
 
@@ -98,7 +99,11 @@ export default async function TransfersAdminPage() {
         </p>
       </header>
 
-      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <CollapsibleSection
+        title="Landing pages"
+        description="Convierte cualquier slug de transfers en landing pública y revisa el tráfico."
+        badge={`${landingLinks.length} disponibles`}
+      >
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Landing pages</p>
@@ -122,9 +127,12 @@ export default async function TransfersAdminPage() {
             </a>
           ))}
         </div>
-      </section>
+      </CollapsibleSection>
 
-      <section className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <CollapsibleSection
+        title="Países"
+        description="Registra países y edita su descripción."
+      >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-900">1. Países</h2>
           <span className="text-xs text-slate-500">Los países alimentan las zonas.</span>
@@ -171,9 +179,12 @@ export default async function TransfersAdminPage() {
             </article>
           ))}
         </div>
-      </section>
+      </CollapsibleSection>
 
-      <section className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <CollapsibleSection
+        title="Zonas"
+        description="Agrupa hoteles y aeropuertos por región."
+      >
         <h2 className="text-lg font-semibold text-slate-900">2. Zonas por país</h2>
         <form action={addTransferZoneAction} className="grid gap-4 md:grid-cols-3">
           <label className="text-sm font-semibold text-slate-700">
@@ -226,9 +237,12 @@ export default async function TransfersAdminPage() {
             </article>
           ))}
         </div>
-      </section>
+      </CollapsibleSection>
 
-      <section className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <CollapsibleSection
+        title="Locations"
+        description="Importa hoteles, aeropuertos o lugares por CSV y controla su visibilidad."
+      >
         <h2 className="text-lg font-semibold text-slate-900">3. Locations (hoteles / aeropuertos)</h2>
         <form action={addTransferLocationAction} className="grid gap-4 md:grid-cols-3">
           <label className="text-sm font-semibold text-slate-700">
@@ -312,9 +326,12 @@ export default async function TransfersAdminPage() {
             </article>
           ))}
         </div>
-      </section>
+      </CollapsibleSection>
 
-      <section className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <CollapsibleSection
+        title="Vehículos"
+        description="Administra tipos de vehículo y capacidades."
+      >
         <h2 className="text-lg font-semibold text-slate-900">4. Vehículos</h2>
         <form action={addTransferVehicleAction} className="grid gap-4 md:grid-cols-5">
           <input type="hidden" name="vehicleId" value="" />
@@ -437,9 +454,12 @@ export default async function TransfersAdminPage() {
             </article>
           ))}
         </div>
-      </section>
+      </CollapsibleSection>
 
-      <section className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <CollapsibleSection
+        title="Rutas y precios"
+        description="Define rutas bidireccionales y precios por vehículo."
+      >
         <div className="flex items-baseline justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Bidireccional</p>
@@ -533,9 +553,12 @@ export default async function TransfersAdminPage() {
             </article>
           ))}
         </div>
-      </section>
+      </CollapsibleSection>
 
-      <section className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <CollapsibleSection
+        title="Overrides"
+        description="Tarifas especiales por hotel, origen o destino."
+      >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-900">6. Overrides</h2>
           <p className="text-xs text-slate-500">Prioridad: pair exacto → solo origen → solo destino → base.</p>
@@ -624,7 +647,7 @@ export default async function TransfersAdminPage() {
             ))
           )}
         </div>
-      </section>
+      </CollapsibleSection>
     </div>
   );
 }
