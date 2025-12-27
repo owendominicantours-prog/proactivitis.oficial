@@ -4,6 +4,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import { landingPages } from "@/lib/landing";
+import CollapsibleSection from "@/components/admin/CollapsibleSection";
 
 type SearchParams = {
   zone?: string;
@@ -141,7 +142,11 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
         </form>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <CollapsibleSection
+        title="Landings de transfer"
+        description="Lista las páginas de transfer generadas automáticamente con visitas."
+        badge={`${entries.length} items`}
+      >
         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resultados</p>
         <p className="text-sm text-slate-500">
           {entries.length} landings encontradas ({landingMap.size} en total).
@@ -160,7 +165,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
                 <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
                 <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.type}</p>
               </div>
-                <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex flex-col gap-1 text-xs text-slate-500">
                   <p>{entry.slug}</p>
                   <p>Visitas: {entry.visits.toLocaleString()}</p>
@@ -176,9 +181,12 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
             </Link>
           ))}
         </div>
-      </section>
+      </CollapsibleSection>
 
-      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <CollapsibleSection
+        title="Tour landings"
+        description="Minisites de tours creados con el builder."
+      >
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Tour landings</p>
@@ -209,7 +217,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
             </Link>
           ))}
         </div>
-      </section>
+      </CollapsibleSection>
     </div>
   );
 }
