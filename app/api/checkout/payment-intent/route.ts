@@ -144,8 +144,13 @@ export async function POST(request: NextRequest) {
     const payload = (await request.json().catch(() => ({}))) as PaymentIntentPayload;
     const tourId = payload.tourId;
 
-    if (!tourId) {
-      return NextResponse.json({ error: "Necesitamos saber qué tour estás reservando." }, { status: 400 });
+    const transferTourFallback = process.env.TRANSFER_TOUR_ID ?? process.env.NEXT_PUBLIC_TRANSFER_TOUR_ID;
+    const resolvedTourId = tourId ?? (payload.flowType === "transfer" ? transferTourFallback : undefined);
+    if (!resolvedTourId) {
+      return NextResponse.json(
+        { error: "Necesitamos saber qué tour o transfer estás reservando." },
+        { status: 400 }
+      );
     }
 
   if (!payload.firstName || !payload.lastName) {
@@ -166,8 +171,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "La fecha debe ser posterior a hoy." }, { status: 400 });
   }
 
-  const tour = await prisma.tour.findUnique({
-    where: { id: tourId },
+    const tour = await prisma.tour.findUnique({
+      where: { id: resolvedTourId },
     include: {
       SupplierProfile: {
         include: {
@@ -235,7 +240,7 @@ export async function POST(request: NextRequest) {
 
   const booking = await prisma.booking.create({
     data: {
-      tourId,
+      tourId: resolvedTourId,
       customerName,
       customerEmail,
       customerPhone,
