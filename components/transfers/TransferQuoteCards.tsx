@@ -54,6 +54,12 @@ const fetchQuote = async ({
   return data as { vehicles: QuoteVehicle[] };
 };
 
+const transferTourId = process.env.NEXT_PUBLIC_TRANSFER_TOUR_ID;
+const transferTourTitle =
+  process.env.NEXT_PUBLIC_TRANSFER_TITLE ?? "Transfer privado Proactivitis";
+const transferTourImage =
+  process.env.NEXT_PUBLIC_TRANSFER_IMAGE ?? "/transfer/sedan.png";
+
 const buildCheckoutHref = ({
   vehicleId,
   price,
@@ -83,6 +89,11 @@ const buildCheckoutHref = ({
   params.set("origin", originSlug);
   params.set("originLabel", originLabel);
   params.set("originHotelName", destinationLabel);
+  if (transferTourId) {
+    params.set("tourId", transferTourId);
+  }
+  params.set("tourTitle", transferTourTitle);
+  params.set("tourImage", transferTourImage);
   params.set("vehicleId", vehicleId);
   params.set("price", price.toFixed(2));
   params.set("passengers", String(passengers));
