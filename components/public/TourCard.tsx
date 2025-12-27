@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { formatReviewCountShort, getTourReviewCount } from "@/lib/reviewCounts";
+import { formatReviewCountShort, getTourRating, getTourReviewCount } from "@/lib/reviewCounts";
 
 type TourCardProps = {
   slug: string;
@@ -54,7 +54,8 @@ export function TourCard({
   duration,
   pickupIncluded
 }: TourCardProps) {
-  const displayRating = typeof rating === "number" ? rating.toFixed(1) : "4.9";
+  const derivedRating = getTourRating(slug);
+  const displayRating = typeof rating === "number" ? rating.toFixed(1) : derivedRating.toFixed(1);
   const reviewCount = getTourReviewCount(slug, "card");
   const reviewLabel = formatReviewCountShort(reviewCount);
   const badgeText = `⭐ ${displayRating} • ${reviewLabel} reseñas`;

@@ -3,7 +3,7 @@ const REVIEW_COUNT_VARIATION = 620;
 
 export type ReviewContext = "card" | "detail";
 
-const hashString = (value: string) => {
+export const hashString = (value: string) => {
   let hash = 0;
   for (let i = 0; i < value.length; i += 1) {
     // eslint-disable-next-line no-bitwise
@@ -21,6 +21,12 @@ const deriveCount = (slug: string | undefined, context: ReviewContext) => {
 
 export const getTourReviewCount = (slug: string | undefined, context: ReviewContext) => {
   return deriveCount(slug, context);
+};
+
+export const getTourRating = (slug: string | undefined) => {
+  const normalizedSlug = (slug ?? "tour").trim() || "tour";
+  const hashed = hashString(`${normalizedSlug}:rating`);
+  return Number((4.4 + ((hashed % 40) / 100)).toFixed(1));
 };
 
 export const formatReviewCountShort = (count: number) => {
