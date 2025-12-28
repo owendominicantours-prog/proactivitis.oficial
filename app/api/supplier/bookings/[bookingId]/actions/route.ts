@@ -1,17 +1,25 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/notificationService";
 import { sendEmail } from "@/lib/email";
 
 const ACTION_TEMPLATES = {
-  confirmTime: ({ customerName, startTime, hotel, note }: { customerName: string; startTime?: string | null; hotel?: string | null; note?: string }) => `
+  confirmTime: ({
+    customerName,
+    startTime,
+    hotel,
+    note
+  }: {
+    customerName: string;
+    startTime?: string | null;
+    hotel?: string | null;
+    note?: string;
+  }) => `
     <p>Hola ${customerName},</p>
     <p>Tu suplidor ha confirmado los detalles de tu servicio:</p>
-    <ul>
-      <li><strong>Punto de encuentro:</strong> ${hotel ?? "Pendiente"}</li>
-      <li><strong>Hora exacta:</strong> ${startTime ?? "Por confirmar"}</li>
-      <li><strong>Nota del suplidor:</strong> ${note ?? "Por favor espera en el lobby principal."}</li>
-    </ul>
+    <p><strong>Punto de encuentro:</strong> ${hotel ?? "Pendiente"}</p>
+    <p><strong>Hora exacta:</strong> ${startTime ?? "Por confirmar"}</p>
+    <p><strong>Nota del suplidor:</strong> ${note ?? "Por favor espera en el lobby principal."}</p>
     <p>Gracias por confiar en Proactivitis.</p>
   `,
   requestInfo: ({ customerName, note }: { customerName: string; note: string }) => `
@@ -46,9 +54,10 @@ export async function POST(request: NextRequest, { params }: { params: { booking
         hotel: booking.hotel ?? booking.pickup,
         note: body.note
       });
+      const serviceName = booking.Tour?.title ?? booking.serviceTitle ?? "tu servicio";
       await sendEmail({
         to: booking.customerEmail,
-        subject: `🕒 Hora de recogida confirmada - ${booking.Tour?.title ?? "tu servicio"}`,
+        subject: `🕒 Hora de recogida confirmada - ${serviceName}`,
         html
       });
       return NextResponse.json({ ok: true });
@@ -58,8 +67,8 @@ export async function POST(request: NextRequest, { params }: { params: { booking
         body.type === "room"
           ? "Necesitamos el número de habitación."
           : body.type === "paymentProof"
-            ? "Envía, por favor, el comprobante de pago."
-            : "Infórmanos si tienes un retraso.";
+          ? "Envía, por favor, el comprobante de pago."
+          : "Infórmanos si tienes un retraso.";
       const html = ACTION_TEMPLATES.requestInfo({ customerName, note: option });
       await sendEmail({
         to: booking.customerEmail,
