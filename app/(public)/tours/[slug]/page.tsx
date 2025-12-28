@@ -25,6 +25,8 @@ type TourDetailProps = {
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
 
+const HIDDEN_TRANSFER_SLUG = "transfer-privado-proactivitis";
+
 const parseJsonArray = <T,>(value?: string | null): T[] => {
   if (!value) return [];
   try {
@@ -60,6 +62,10 @@ export async function generateMetadata({
       title: "Tours Proactivitis",
       description: "Explora tours premium y traslados confiables operados por Proactivitis."
     };
+  }
+
+  if (slug === HIDDEN_TRANSFER_SLUG) {
+    return { title: "Tour no disponible" };
   }
 
   const tour = await prisma.tour.findFirst({
@@ -254,6 +260,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
         })
       : null;
   if (!slug) notFound();
+  if (slug === HIDDEN_TRANSFER_SLUG) notFound();
 
   const tour = await prisma.tour.findFirst({
     where: { slug },
