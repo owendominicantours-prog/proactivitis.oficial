@@ -135,7 +135,10 @@ export default async function ToursGridPage({ searchParams }: Props) {
   const durationOptions = buildDurationOptions(durationsRaw.map((entry) => entry.duration));
   const durationLabelLookup = new Map(durationOptions.map((option) => [option.value, option.label]));
 
-  const where = buildTourFilter(params);
+  const where = {
+    ...buildTourFilter(params),
+    slug: { not: "transfer-privado-proactivitis" }
+  };
 
   let tours: TourWithDeparture[] = [];
   try {
