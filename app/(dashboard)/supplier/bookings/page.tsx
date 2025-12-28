@@ -51,7 +51,7 @@ export default async function SupplierBookingsPage() {
     flightNumber: booking.flightNumber,
     pickupNotes: booking.pickupNotes,
     createdAt: booking.createdAt.toISOString(),
-    updatedAt: booking.updatedAt.toISOString(),
+    updatedAt: booking.updatedAt?.toISOString() ?? booking.createdAt.toISOString(),
     whatsappNumber: booking.customerPhone
   }));
 
