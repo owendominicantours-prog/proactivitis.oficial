@@ -118,6 +118,12 @@ export default async function SupplierNotificationsPage() {
                 </div>
                 <p className="mt-4 text-sm text-slate-600">{message}</p>
                 <div className="mt-4 border-t border-slate-100 pt-4 text-xs text-slate-500">
+                  <Link
+                    href={`/dashboard/notifications/${notification.id}`}
+                    className="font-semibold text-slate-900 hover:underline"
+                  >
+                    Ver detalles completos
+                  </Link>
                   {bookingSummary ?? (
                     <Link href={redirectUrl} className="font-semibold text-sky-600 hover:underline">
                       Ver reserva relacionada

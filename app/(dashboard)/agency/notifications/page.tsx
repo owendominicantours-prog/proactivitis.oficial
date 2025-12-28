@@ -58,6 +58,12 @@ export default async function AgencyNotificationsPage() {
                 </div>
                 <p className="mt-4 text-sm text-slate-600">{message}</p>
                 <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                  <Link
+                    href={`/dashboard/notifications/${notification.id}`}
+                    className="font-semibold text-slate-900 hover:underline"
+                  >
+                    Ver detalles completos
+                  </Link>
                   <Link href={redirectUrl} className="font-semibold text-sky-600 hover:underline">
                     Ver reserva relacionada
                   </Link>
