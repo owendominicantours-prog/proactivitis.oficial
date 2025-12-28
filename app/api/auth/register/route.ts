@@ -132,7 +132,7 @@ export async function POST(request: Request) {
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="font-size:28px;">🐬</span>
               <div style="color:#f8fbff;font-weight:600;letter-spacing:0.08em;font-size:12px;text-transform:uppercase;">
-                Nuevas experiencias
+                Bienvenido a Proactivitis
               </div>
             </div>
             <div style="display:flex;align-items:center;">
@@ -150,13 +150,13 @@ export async function POST(request: Request) {
           <div style="padding:32px 40px 28px;line-height:1.7;">
             <p style="margin:0 0 4px;font-size:16px;">Hola ${rawName || "viajero"},</p>
             <h1 style="font-size:26px;margin:8px 0 16px;font-weight:600;color:#0f172a;">
-              Gracias por unirte a Proactivitis.
+              Tu espacio de viajes ya está listo
             </h1>
             <p style="margin:0;font-size:16px;color:#475569;">
-              Desde hoy tienes acceso a experiencias auténticas, seguras y verificadas, con confirmación instantánea y atención 24/7 en tu idioma.
+              Acabas de activar un canal directo con operadores verificados, confirmaciones en minutos y soporte 24/7 en español.
             </p>
             <p style="margin:12px 0 24px;font-size:15px;color:#475569;">
-              🎯 Muy pronto recibirás recomendaciones diseñadas especialmente para ti según tus intereses y destinos.
+              ✨Tu próxima propuesta personalizada se está preparando; mientras tanto puedes explorar las rutas más populares.
             </p>
 
             <!-- BENEFICIOS -->
@@ -171,14 +171,10 @@ export async function POST(request: Request) {
 
             <!-- RECOMENDACIONES -->
             <div style="background:#f0f9ff;padding:20px 22px;border-radius:20px;margin-bottom:28px;">
-              <p style="margin:0 0 8px;font-weight:600;color:#0f172a;">Recomendaciones para ti</p>
-              <p style="margin:0 0 12px;font-size:14px;color:#475569;">
-                ${
-                  recommendedTours.length
-                    ? "Estos son algunos tours destacados que pronto podrás ver en tu cuenta:"
-                    : "Estamos preparando experiencias increíbles. Muy pronto verás sugerencias personalizadas en tu cuenta."
-                }
-              </p>
+            <p style="margin:0 0 8px;font-weight:600;color:#0f172a;">Sugerencias que puedes revisar</p>
+            <p style="margin:0 0 12px;font-size:14px;color:#475569;">
+              ${recommendedTours.length ? "Descubre algunas salidas que ya están confirmadas para ti:" : "No hay sugerencias todavía, pero muy pronto te mostraremos novedades exclusivas."}
+            </p>
               <table style="width:100%;border-collapse:collapse;">
                 ${
                   tourHtml ||
@@ -214,7 +210,7 @@ export async function POST(request: Request) {
 
     await sendEmail({
       to: normalizedEmail,
-      subject: "Tu cuenta en Proactivitis está lista",
+      subject: "Bienvenido a Proactivitis — tu panel de viajes",
       html: htmlBody
     }).catch((err) => {
       console.warn(
