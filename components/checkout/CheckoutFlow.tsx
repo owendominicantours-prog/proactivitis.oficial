@@ -767,11 +767,36 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
   };
 
+  useEffect(() => {
+    if (!isTransferFlow) return;
+    if (travelerName.trim()) return;
+    const derivedName = `${contact.firstName} ${contact.lastName}`.trim();
+    if (derivedName) {
+      setTravelerName(derivedName);
+    }
+  }, [isTransferFlow, contact.firstName, contact.lastName, travelerName]);
 
+  useEffect(() => {
+    if (!isTransferFlow || pickupPreference !== "pickup") return;
+    if (pickupLocation.trim()) return;
+    const defaultPickup = summary.originLabel ?? summary.origin ?? "";
+    if (defaultPickup) {
+      setPickupLocation(defaultPickup);
+    }
+  }, [isTransferFlow, pickupPreference, pickupLocation, summary.originLabel, summary.origin]);
+
+
+
+  const transferTourId = process.env.NEXT_PUBLIC_TRANSFER_TOUR_ID;
 
   const triggerPaymentIntent = async () => {
 
-    if (intentReady || intentLoading || !summary.tourId) return;
+    const needsTransferFallback = isTransferFlow && !summary.tourId;
+    if (needsTransferFallback && !transferTourId) {
+      return;
+    }
+
+    if (intentReady || intentLoading || (!summary.tourId && !isTransferFlow)) return;
 
     setIntentLoading(true);
 
@@ -984,9 +1009,6 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
       const next = [...prev];
 
       next[currentIndex] = true;
-      if (isTransferFlow && currentIndex === 0) {
-        next[1] = true;
-      }
 
       return next;
 
@@ -994,7 +1016,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
 
 
-    const nextStep = isTransferFlow && currentIndex === 0 ? 2 : Math.min(2, currentIndex + 1);
+    const nextStep = Math.min(2, currentIndex + 1);
     setActiveStep(nextStep);
 
   };
@@ -1245,8 +1267,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
               </article>
 
 
-            {!isTransferFlow && (
-              <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
 
               <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
 
@@ -1254,7 +1275,9 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Paso 2 · Detalles</p>
 
-                  <p className="text-lg font-semibold text-slate-900">Detalles de la actividad</p>
+                  <p className="text-lg font-semibold text-slate-900">
+                    {isTransferFlow ? "Detalles del traslado" : "Detalles de la actividad"}
+                  </p>
 
                   {travelerSummary && <p className="text-sm text-slate-500">{travelerSummary}</p>}
 
@@ -1497,7 +1520,6 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
               )}
 
               </article>
-            )}
             <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
 
               <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
