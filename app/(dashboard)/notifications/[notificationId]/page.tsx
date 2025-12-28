@@ -30,7 +30,7 @@ export default async function NotificationDetailPage(props: unknown) {
 
   const metadata = parseNotificationMetadata(notification.metadata);
   const display = getNotificationDisplayProps(notification.type as any);
-  const referenceUrl = metadata.referenceUrl ?? notification.metadata?.referenceUrl ?? "/dashboard";
+  const referenceUrl = metadata.referenceUrl ?? "/dashboard";
   const bookingId = metadata.bookingId ?? notification.bookingId ?? null;
   const booking = bookingId
     ? await prisma.booking.findUnique({
