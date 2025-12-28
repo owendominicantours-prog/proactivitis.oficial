@@ -3,9 +3,9 @@ import Link from "next/link";
 import FeaturedToursSection from "@/components/public/FeaturedToursSection";
 
 export const metadata = {
-  title: "Proactivitis | Tours y experiencias de calidad",
+  title: "Proactivitis | Traslados Privados y Tours de Calidad",
   description:
-    "Reserva tours exclusivos y movilidad personalizada con Proactivitis. Servicio profesional en los mejores destinos del mundo, precios fijos y confirmación inmediata."
+    "Reserva traslados privados y tours con Proactivitis. Servicio profesional en los mejores destinos del mundo. ¡Precios fijos y confirmación inmediata!"
 };
 
 const benefits = [
@@ -90,7 +90,7 @@ export default function PublicHomePage() {
 
       <section className="mx-auto max-w-6xl space-y-4 px-4 sm:px-6">
         <div className="space-y-3 text-center">
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Recomendado</p>
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Recomendado</p>
           <h2 className="text-3xl font-semibold text-slate-900">Tours más populares</h2>
         </div>
         <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-sm">
@@ -140,27 +140,27 @@ export default function PublicHomePage() {
       "name": "Proactivitis",
       "url": "https://proactivitis.com/",
       "logo": "https://proactivitis.com/logo.png",
-  "description": "Plataforma global de gestión turística: Soluciones de movilidad y tours para Clientes, Agencias de Viajes y Suplidores.",
+      "description": "Plataforma global de gestión turística: Soluciones de traslados y tours para Clientes, Agencias de Viajes y Suplidores.",
       "hasOfferCatalog": {
         "@type": "OfferCatalog",
         "name": "Servicios Proactivitis",
         "itemListElement": [
-              {
-                "@type": "Offer",
-                "itemOffered": {
-                  "@type": "Service",
-                  "name": "Tours y Excursiones",
-                  "url": "https://proactivitis.com/tours"
-                }
-              },
-              {
-                "@type": "Offer",
-                "itemOffered": {
-                  "@type": "Service",
-                  "name": "Movilidad y transporte",
-                  "url": "https://proactivitis.com/traslado"
-                }
-              },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Tours y Excursiones",
+              "url": "https://proactivitis.com/tours"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Traslados Privados",
+              "url": "https://proactivitis.com/traslado"
+            }
+          },
           {
             "@type": "Offer",
             "itemOffered": {
@@ -177,10 +177,10 @@ export default function PublicHomePage() {
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "¿Cómo reservar tours y movilidad en Proactivitis?",
+          "name": "¿Cómo reservar tours y traslados en Proactivitis?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Puedes reservar directamente desde nuestras secciones de /tours para experiencias o /traslado para transporte personalizado al aeropuerto."
+            "text": "Puede reservar directamente desde nuestras secciones de /tours para excursiones o /traslado para transporte privado al aeropuerto."
           }
         },
         {
