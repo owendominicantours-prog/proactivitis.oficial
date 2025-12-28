@@ -60,7 +60,7 @@ export async function POST(request: NextRequest, context: any) {
         hotel: booking.hotel ?? booking.pickup,
         note: body.note
       });
-      const serviceName = booking.Tour?.title ?? booking.serviceTitle ?? "tu servicio";
+      const serviceName = booking.Tour?.title ?? "tu servicio";
       await sendEmail({
         to: booking.customerEmail,
         subject: `🕒 Hora de recogida confirmada - ${serviceName}`,
