@@ -1,10 +1,13 @@
+"use client";
+
+import { FormEvent, useRef, useState } from "react";
 import Link from "next/link";
 import { Mail, MessageCircle, Phone, Smartphone } from "lucide-react";
 
 export const metadata = {
   title: "Contacto | Proactivitis — Global Support",
   description:
-    "Asistencia profesional directa con nuestros correos oficiales, WhatsApp Business y atención telefónica 24/7. | Direct professional support with official emails, WhatsApp Business, and 24/7 phone availability."
+    "Asistencia profesional directa con nuestros correos oficiales, WhatsApp Business y atención telefónica 24/7."
 };
 
 const contactEmails = [
@@ -14,6 +17,36 @@ const contactEmails = [
 ];
 
 export default function ContactPage() {
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatusMessage(null);
+    setStatusError(null);
+    setIsSubmitting(true);
+    try {
+      const form = event.currentTarget;
+      const payload = new FormData(form);
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        body: payload
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result?.error ?? "No se pudo enviar la solicitud.");
+      }
+      setStatusMessage("Gracias, recibimos tu mensaje y te respondemos en breve.");
+      form.reset();
+    } catch (error) {
+      setStatusError((error as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900">
       <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-16 lg:px-0">
@@ -21,8 +54,8 @@ export default function ContactPage() {
           <p className="text-xs uppercase tracking-[0.5em] text-slate-500">Asistencia Global</p>
           <h1 className="text-3xl font-semibold text-slate-900 md:text-4xl">Soporte profesional directo</h1>
           <p className="text-lg text-slate-600">
-            Nuestro equipo de atención responde rápidamente por correo, WhatsApp Business y teléfono en el +1 (809) 394-9877.
-            La línea está disponible 24/7 y mantenemos el formato internacional para que te ubicamos desde cualquier país.
+            Nuestro equipo responde rápidamente por correo, WhatsApp Business y atención telefónica 24/7. La línea está
+            disponible todo el día para que nos ubiques desde cualquier país.
           </p>
         </section>
 
@@ -61,7 +94,7 @@ export default function ContactPage() {
               <MessageCircle className="h-6 w-6 text-slate-700" />
               <p className="text-sm font-semibold uppercase tracking-[0.4em] text-slate-500">Formulario inteligente</p>
             </div>
-            <form className="mt-6 space-y-4" method="POST" action="/api/contact">
+            <form className="mt-6 space-y-4" onSubmit={handleSubmit} ref={formRef}>
               <div className="space-y-1">
                 <label className="text-sm font-semibold text-slate-600">Nombre</label>
                 <input
@@ -106,11 +139,14 @@ export default function ContactPage() {
                   placeholder="Cuéntanos en detalle cómo podemos ayudarte."
                 />
               </div>
+              {statusError && <p className="text-sm text-rose-500">{statusError}</p>}
+              {statusMessage && <p className="text-sm text-emerald-600">{statusMessage}</p>}
               <button
                 type="submit"
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold uppercase tracking-[0.35em] text-white transition hover:bg-emerald-500"
+                disabled={isSubmitting}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold uppercase tracking-[0.35em] text-white transition hover:bg-emerald-500 disabled:opacity-60"
               >
-                Enviar consulta
+                {isSubmitting ? "Enviando..." : "Enviar consulta"}
               </button>
             </form>
           </div>
