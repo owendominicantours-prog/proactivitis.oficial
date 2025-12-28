@@ -33,7 +33,7 @@ export default async function SupplierBookingsPage() {
 
   const summaries = bookings.map<SupplierBookingSummary>((booking) => ({
     id: booking.id,
-    bookingCode: booking.bookingCode,
+    bookingCode: booking.bookingCode ?? booking.id,
     travelDate: booking.travelDate.toLocaleDateString("es-ES"),
     travelDateValue: booking.travelDate.toISOString(),
     startTime: booking.startTime,
