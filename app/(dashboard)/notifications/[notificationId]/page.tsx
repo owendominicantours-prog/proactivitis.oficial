@@ -19,11 +19,11 @@ const flattenMetadata = (metadata: Record<string, unknown>) =>
     .map(([key, value]) => ({ key, value }))
     .filter((entry) => entry.value !== null && entry.value !== undefined && String(entry.value).trim() !== "");
 
-export default async function NotificationDetailPage({
-  params
-}: {
+type NotificationDetailPageProps = {
   params: { notificationId: string };
-}) {
+};
+
+export default async function NotificationDetailPage({ params }: NotificationDetailPageProps) {
   const notification = await prisma.notification.findUnique({
     where: { id: params.notificationId }
   });
