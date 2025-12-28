@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { parseAdminItinerary } from "@/lib/itinerary";
 import { TimelineStop } from "@/components/itinerary/ItineraryTimeline";
+import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 
 const shuffleArray = <T,>(items: T[]) => items.slice().sort(() => Math.random() - 0.5);
 
@@ -73,7 +74,11 @@ export async function getBookingConfirmationData(
 
   const recommendedTours = shuffleArray(
     await prisma.tour.findMany({
-      where: { status: "published", id: { not: tour.id } },
+      where: {
+        status: "published",
+        slug: { not: HIDDEN_TRANSFER_SLUG },
+        id: { not: tour.id }
+      },
       select: {
         id: true,
         slug: true,

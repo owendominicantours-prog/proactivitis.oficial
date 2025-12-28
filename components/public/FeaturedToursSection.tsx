@@ -1,12 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { TourCard } from "@/components/public/TourCard";
+import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 
 const fetchFeaturedTours = async () =>
   prisma.tour.findMany({
     where: {
       status: {
         not: "draft"
-      }
+      },
+      slug: { not: HIDDEN_TRANSFER_SLUG }
     },
     orderBy: [
       { featured: "desc" },

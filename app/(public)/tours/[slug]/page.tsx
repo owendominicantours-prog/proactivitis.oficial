@@ -10,6 +10,7 @@ import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itiner
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 import StructuredData from "@/components/schema/StructuredData";
 import { PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL, SAME_AS_URLS, getPriceValidUntil } from "@/lib/seo";
+import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 
 type TourDetailSearchParams = {
   hotelSlug?: string;
@@ -24,8 +25,6 @@ type TourDetailProps = {
 };
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
-
-const HIDDEN_TRANSFER_SLUG = "transfer-privado-proactivitis";
 
 const parseJsonArray = <T,>(value?: string | null): T[] => {
   if (!value) return [];

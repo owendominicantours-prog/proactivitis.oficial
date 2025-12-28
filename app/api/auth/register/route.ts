@@ -6,6 +6,7 @@ import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { notifyAdminNewUser } from "@/lib/mailers/adminNotifications";
+import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 
 const SALT_ROUNDS = 12;
 
@@ -75,7 +76,7 @@ export async function POST(request: Request) {
     });
 
     const recommendedTours = await prisma.tour.findMany({
-      where: { status: "published" },
+      where: { status: "published", slug: { not: HIDDEN_TRANSFER_SLUG } },
       orderBy: { createdAt: "desc" },
       take: 3,
       select: {
