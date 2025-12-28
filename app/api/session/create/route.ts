@@ -9,8 +9,8 @@ import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 
 import { sendEmail } from "@/lib/email";
-
 import { buildCustomerEticketEmail, buildSupplierBookingEmail } from "@/lib/emailTemplates";
+import { notifyAdminBookingConfirmed } from "@/lib/mailers/adminNotifications";
 
 
 
@@ -327,6 +327,19 @@ export async function POST(request: NextRequest) {
   }
 
   await Promise.all(emailTasks);
+
+  void notifyAdminBookingConfirmed({
+    bookingId: booking.id,
+    orderCode,
+    totalAmount: booking.totalAmount,
+    customerName: booking.customerName,
+    customerEmail: booking.customerEmail,
+    tourTitle: tour.title,
+    tourSlug: tour.slug,
+    flowType: booking.flowType ?? "tour",
+    travelDate: booking.travelDate,
+    startTime: booking.startTime ?? null
+  });
 
 
 

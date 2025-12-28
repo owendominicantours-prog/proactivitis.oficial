@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notificationService";
 import { NotificationType } from "@/lib/types/notificationTypes";
 import { TOUR_DELETE_REASONS } from "@/lib/constants/tourDeletion";
+import { notifyAdminTourModeration } from "@/lib/mailers/adminNotifications";
 
 const notifySupplier = async (
   tourId: string,
@@ -18,15 +19,19 @@ const notifySupplier = async (
     where: { id: tourId },
     include: { SupplierProfile: { include: { User: true } } }
   });
-  if (!tour?.SupplierProfile?.User?.id) return;
-  await createNotification({
-    type,
-    role: "SUPPLIER",
-    title,
-    message: body,
-    metadata: metadata ? { tourId, ...metadata } : { tourId },
-    recipientUserId: tour.SupplierProfile.User.id
-  });
+  if (!tour) return null;
+  const supplierUserId = tour.SupplierProfile?.User?.id;
+  if (supplierUserId) {
+    await createNotification({
+      type,
+      role: "SUPPLIER",
+      title,
+      message: body,
+      metadata: metadata ? { tourId, ...metadata } : { tourId },
+      recipientUserId: supplierUserId
+    });
+  }
+  return tour;
 };
 
 const changeTourStatus = async (tourId: string, status: string, note?: string) => {
@@ -51,12 +56,22 @@ export async function approveTour(formData: FormData) {
   const note = formData.get("note");
   if (!tourId || typeof tourId !== "string") return;
   await changeTourStatus(tourId, "published", typeof note === "string" ? note : undefined);
-  await notifySupplier(
+  const tour = await notifySupplier(
     tourId,
     "Tour aprobado",
     "Tu tour fue aprobado y ya está publicado para clientes.",
     "SUPPLIER_ACCOUNT_STATUS"
   );
+  if (tour) {
+    await notifyAdminTourModeration({
+      action: "approved",
+      tourId: tour.id,
+      tourTitle: tour.title,
+      tourSlug: tour.slug,
+      supplierName: tour.SupplierProfile?.company ?? undefined,
+      note: typeof note === "string" ? note : undefined
+    });
+  }
 }
 
 export async function requestChanges(formData: FormData) {
@@ -64,24 +79,43 @@ export async function requestChanges(formData: FormData) {
   const note = formData.get("note");
   if (!tourId || typeof tourId !== "string") return;
   await changeTourStatus(tourId, "needs_changes", typeof note === "string" ? note : undefined);
-  await notifySupplier(
+  const tour = await notifySupplier(
     tourId,
     "Cambios requeridos",
     "El admin solicitó correcciones antes de publicar.",
     "SUPPLIER_ACCOUNT_STATUS"
   );
+  if (tour) {
+    await notifyAdminTourModeration({
+      action: "changes_requested",
+      tourId: tour.id,
+      tourTitle: tour.title,
+      tourSlug: tour.slug,
+      supplierName: tour.SupplierProfile?.company ?? undefined,
+      note: typeof note === "string" ? note : undefined
+    });
+  }
 }
 
 export async function sendToReview(formData: FormData) {
   const tourId = formData.get("tourId");
   if (!tourId || typeof tourId !== "string") return;
   await changeTourStatus(tourId, "under_review");
-  await notifySupplier(
+  const tour = await notifySupplier(
     tourId,
     "Tour en revisión",
     "Tu tour fue enviado a revisión. El equipo de Proactivitis lo revisará pronto.",
     "SUPPLIER_ACCOUNT_STATUS"
   );
+  if (tour) {
+    await notifyAdminTourModeration({
+      action: "sent_to_review",
+      tourId: tour.id,
+      tourTitle: tour.title,
+      tourSlug: tour.slug,
+      supplierName: tour.SupplierProfile?.company ?? undefined
+    });
+  }
 }
 
 export async function togglePauseTour(formData: FormData) {
@@ -99,13 +133,23 @@ export async function deleteTourAction(formData: FormData) {
   const reasonLabel =
     typeof reasonValue === "string" ? deleteReasonLookup[reasonValue] : undefined;
   const note = reasonLabel ?? "Motivo no especificado";
-  await notifySupplier(
+  const tour = await notifySupplier(
     tourId,
     "Tour eliminado",
     `Tu tour ha sido eliminado por: ${note}`,
     "SUPPLIER_TOUR_REMOVED",
     { reason: note }
   );
+  if (tour) {
+    await notifyAdminTourModeration({
+      action: "deleted",
+      tourId: tour.id,
+      tourTitle: tour.title,
+      tourSlug: tour.slug,
+      supplierName: tour.SupplierProfile?.company ?? undefined,
+      reason: note
+    });
+  }
   await prisma.tour.delete({ where: { id: tourId } });
   revalidatePath("/admin/tours");
   revalidatePath("/supplier/tours");

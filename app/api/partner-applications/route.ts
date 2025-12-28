@@ -4,7 +4,9 @@ import path from "node:path";
 import bcrypt from "bcrypt";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import { sendEmail } from "@/lib/email";
 import { createPartnerApplicationNotification } from "@/lib/notificationService";
+import { notifyAdminPartnerApplication } from "@/lib/mailers/adminNotifications";
 
 const REQUIRED_FIELDS = [
   "role",
@@ -24,6 +26,12 @@ const sanitizeFileName = (value: string) =>
   value
     .replace(/[^a-zA-Z0-9.\-_]/g, "_")
     .slice(0, 120);
+
+const APP_BASE_URL =
+  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") ??
+  process.env.NEXTAUTH_URL ??
+  "https://proactivitis.com";
+const NOTIFY_FROM_EMAIL = process.env.NOTIFY_FROM_EMAIL ?? "info@proactivitis.com";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -119,6 +127,28 @@ export async function POST(request: NextRequest) {
   });
 
   await createPartnerApplicationNotification({ applicationId: application.id, companyName: application.companyName });
+  void notifyAdminPartnerApplication({ application });
+
+  const applicantHtml = `
+    <div style="font-family:'Inter',system-ui,sans-serif;background:#f8fafc;padding:32px;">
+      <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:24px;padding:28px;box-shadow:0 20px 60px rgba(15,23,42,0.15);">
+        <h1 style="margin:0 0 16px;font-size:20px;color:#0f172a;">Solicitud recibida</h1>
+        <p style="margin:0 0 12px;font-size:15px;color:#475569;">
+          Hola ${application.contactName ?? "aliado"}, gracias por registrarte en Proactivitis. Tu solicitud fue enviada al equipo y la revisaremos en breve.
+        </p>
+        <p style="margin:0;font-size:14px;color:#64748b;">Puedes seguir el estatus desde tu correo o ingresando a <a href="${APP_BASE_URL}" style="color:#0ea5e9;">${APP_BASE_URL}</a>.</p>
+      </div>
+    </div>
+  `;
+
+  void sendEmail({
+    to: application.email,
+    subject: "Recibimos tu solicitud",
+    html: applicantHtml,
+    from: NOTIFY_FROM_EMAIL
+  }).catch((error) => {
+    console.warn("No se pudo enviar el correo al solicitante", error);
+  });
 
   return NextResponse.json({ id: application.id }, { status: 201 });
 }

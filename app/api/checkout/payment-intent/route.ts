@@ -3,7 +3,6 @@
 import type Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
 import { BookingSourceEnum, BookingStatusEnum } from "@/lib/types/booking";
-import { createNotification } from "@/lib/notificationService";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -263,32 +262,6 @@ export async function POST(request: NextRequest) {
       paymentMethod: payload.paymentOption === "later" ? "PAY_LATER" : "CARD"
     }
   });
-
-  await createNotification({
-    type: "ADMIN_BOOKING_CREATED",
-    role: "ADMIN",
-    title: "Nueva reserva en la web",
-    message: `Reserva para ${summary}.`,
-    bookingId: booking.id,
-    metadata: {
-      tourId: tour.id,
-      pax: passengerCount.toString()
-    }
-  });
-
-  if (tour.SupplierProfile?.userId) {
-    await createNotification({
-      type: "SUPPLIER_BOOKING_CREATED",
-      role: "SUPPLIER",
-      title: `Reserva nueva en ${tour.title}`,
-      message: `Tienes una reserva para ${summary}.`,
-      bookingId: booking.id,
-      metadata: {
-        tourId: tour.id
-      },
-      recipientUserId: tour.SupplierProfile.userId
-    });
-  }
 
   const stripeClient = getStripe();
   const currency = (process.env.STRIPE_CURRENCY ?? "usd").toLowerCase();

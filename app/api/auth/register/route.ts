@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
+import { notifyAdminNewUser } from "@/lib/mailers/adminNotifications";
 
 const SALT_ROUNDS = 12;
 
@@ -52,7 +53,6 @@ export async function POST(request: Request) {
     const existing = await prisma.user.findUnique({
       where: { email: normalizedEmail }
     });
-
     if (existing) {
       return NextResponse.json(
         { error: "Ese correo ya tiene una cuenta registrada" },
@@ -222,6 +222,13 @@ export async function POST(request: Request) {
         normalizedEmail,
         err?.message ?? err
       );
+    });
+
+    void notifyAdminNewUser({
+      userId: user.id,
+      email: normalizedEmail,
+      name: rawName || null,
+      role: user.role
     });
 
     return NextResponse.json({ ok: true, userId: user.id }, { status: 201 });
