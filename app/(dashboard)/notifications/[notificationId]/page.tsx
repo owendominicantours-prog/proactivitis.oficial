@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { PageProps } from "next";
 
 import { prisma } from "@/lib/prisma";
 import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
@@ -20,9 +19,8 @@ const flattenMetadata = (metadata: Record<string, unknown>) =>
     .map(([key, value]) => ({ key, value }))
     .filter((entry) => entry.value !== null && entry.value !== undefined && String(entry.value).trim() !== "");
 
-type NotificationDetailPageProps = PageProps<{ notificationId: string }>;
-
-export default async function NotificationDetailPage({ params }: NotificationDetailPageProps) {
+export default async function NotificationDetailPage(props: unknown) {
+  const { params } = props as { params: { notificationId: string } };
   const notification = await prisma.notification.findUnique({
     where: { id: params.notificationId }
   });
