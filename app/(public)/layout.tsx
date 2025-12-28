@@ -36,7 +36,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: `{"@context":"https://schema.org","@graph":[{"@type":"OnlineBusiness","@id":"https://proactivitis.com/#organization","name":"Proactivitis","url":"https://proactivitis.com/","logo":"https://proactivitis.com/logo.png","description":"Plataforma global de gestión turística: Soluciones de traslados y tours para Clientes, Agencias de Viajes y Suplidores.","hasOfferCatalog":{"@type":"OfferCatalog","name":"Servicios Proactivitis","itemListElement":[{"@type":"Offer","itemOffered":{"@type":"Service","name":"Tours y Excursiones","url":"https://proactivitis.com/tours"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Traslados Privados","url":"https://proactivitis.com/traslado"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Portal para Agencias y Suplidores","url":"https://proactivitis.com/become-a-supplier"}}]}}]}`
+          __html: `{"@context":"https://schema.org","@graph":[{"@type":"OnlineBusiness","@id":"https://proactivitis.com/#organization","name":"Proactivitis","url":"https://proactivitis.com/","logo":"https://proactivitis.com/logo.png","description":"Plataforma global de gestión turística: Soluciones de movilidad y tours para Clientes, Agencias de Viajes y Suplidores.","hasOfferCatalog":{"@type":"OfferCatalog","name":"Servicios Proactivitis","itemListElement":[{"@type":"Offer","itemOffered":{"@type":"Service","name":"Tours y Excursiones","url":"https://proactivitis.com/tours"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Movilidad personalizada","url":"https://proactivitis.com/traslado"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Portal para Agencias y Suplidores","url":"https://proactivitis.com/become-a-supplier"}}]}}]}`
         }}
       />
       <script
@@ -51,7 +51,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
   "logo": "https://proactivitis.com/logo.png",
   "telephone": "+1-809-394-9877",
   "email": "info@proactivitis.com",
-  "description": "Plataforma líder en la gestión de experiencias turísticas y traslados privados a nivel global.",
+          "description": "Plataforma líder en la gestión de experiencias turísticas y movilidad premium a nivel global.",
   "areaServed": {
     "@type": "Country",
     "name": "Worldwide"
@@ -63,9 +63,9 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
   "hasPart": [
         {
           "@type": "WebPage",
-          "name": "Traslados Privados",
+          "name": "Movilidad premium",
           "url": "https://proactivitis.com/traslado",
-          "description": "Traslado de lujo y traslados de aeropuerto con estándar internacional."
+          "description": "Movilidad personalizada y traslados de aeropuerto con estándar internacional."
         },
     {
       "@type": "WebPage",
