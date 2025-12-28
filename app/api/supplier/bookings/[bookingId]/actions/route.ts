@@ -29,9 +29,15 @@ const ACTION_TEMPLATES = {
   `
 };
 
-export async function POST(request: NextRequest, { params }: { params: { bookingId: string } }) {
+export async function POST(request: NextRequest, context: any) {
+  const { params } = context;
+  const bookingId = params?.bookingId;
+  if (!bookingId) {
+    return NextResponse.json({ error: "ID de reserva faltante." }, { status: 400 });
+  }
+
   const booking = await prisma.booking.findUnique({
-    where: { id: params.bookingId },
+    where: { id: bookingId },
     include: { Tour: true }
   });
   if (!booking) {
