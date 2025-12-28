@@ -84,7 +84,7 @@ export default function ContactPage() {
               <div className="space-y-1">
                 <label className="text-sm font-semibold text-slate-600">Asunto</label>
                 <select
-                  name="subject"
+                  name="topic"
                   required
                   className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none"
                 >
