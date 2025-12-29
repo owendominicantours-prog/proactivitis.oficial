@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic"; // Needs fresh reservation & cancellation data in every render.
 
 import type { ReactNode } from "react";
-import type { PageProps } from "next";
 import { prisma } from "@/lib/prisma";
 import type { BookingStatus } from "@/lib/types/booking";
 import { BookingTable, BookingRow } from "@/components/bookings/BookingTable";
@@ -31,7 +30,7 @@ const statusOptions: BookingStatus[] = [
   "CANCELLATION_REQUESTED"
 ];
 
-export default async function AdminBookingsPage({ searchParams }: PageProps) {
+export default async function AdminBookingsPage({ searchParams }: any) {
   const bookings = await prisma.booking.findMany({
     include: { Tour: true },
     orderBy: { createdAt: "desc" }
