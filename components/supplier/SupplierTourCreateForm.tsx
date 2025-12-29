@@ -443,6 +443,13 @@ export function SupplierTourCreateForm({
     setHighlights((prev) => prev.filter((_, idx) => idx !== index));
   };
 
+  const highlightCountValid = highlights.length >= 3 && highlights.length <= 6;
+  const highlightFeedbackText = highlightCountValid
+    ? "Añade entre 3 y 6 puntos destacados para que se vean en el detalle del tour."
+    : highlights.length < 3
+      ? `Faltan ${3 - highlights.length} puntos destacados para llegar al mínimo de 3.`
+      : `Elimina ${highlights.length - 6} puntos destacados para cumplir con el máximo de 6.`;
+
   const addIncludeItem = () => {
     const trimmed = includeInput.trim();
     if (!trimmed) return;
@@ -1447,8 +1454,12 @@ export function SupplierTourCreateForm({
                       Añadir
                     </button>
                   </div>
-                  <p className="text-[0.7rem] text-slate-500">
-                    Añade entre 3 y 6 puntos destacados para que se vean en el detalle del tour.
+                  <p
+                    className={`text-[0.7rem] ${
+                      highlightCountValid ? "text-slate-500" : "text-rose-500"
+                    }`}
+                  >
+                    {highlightFeedbackText}
                   </p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -2688,8 +2699,9 @@ export function SupplierTourCreateForm({
 
             <button
               type="submit"
-              disabled={submitting}
-              className={`primary-btn ${submitting ? "opacity-70" : ""}`}
+              disabled={submitting || !highlightCountValid}
+              className={`primary-btn ${submitting || !highlightCountValid ? "opacity-70" : ""}`}
+              title={!highlightCountValid ? "Añade entre 3 y 6 highlights antes de enviar." : undefined}
 
             >
 
