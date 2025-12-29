@@ -21,7 +21,7 @@ const tabs: { key: TabKey; label: string }[] = [
   { key: "payment", label: "Pendientes de pago" }
 ];
 
-const statusOptions: BookingStatus[] = [
+const statusOptions = [
   "PENDING",
   "CONFIRMED",
   "PAYMENT_PENDING",
