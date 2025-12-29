@@ -445,7 +445,22 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
         <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">
           <div className="flex flex-col justify-center gap-6 p-6 sm:p-8 lg:p-16">
             <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
-              ?? {tour.location}
+              <svg
+                aria-hidden
+                className="h-3 w-3 text-indigo-600"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 12.5 7 12.5s7-7.25 7-12.5c0-3.866-3.134-7-7-7zm0 4a3 3 0 100-6 3 3 0 000 6z"
+                />
+                <circle cx="12" cy="8.4" r="2.4" />
+              </svg>
+              <span>{tour.location ?? "Punta Cana"}</span>
             </div>
             <h1 className="text-3xl font-black text-slate-900 sm:text-4xl lg:text-5xl">{tour.title}</h1>
             <div className="flex flex-col gap-4">
@@ -456,8 +471,11 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Rating</p>
-                  <p className="text-xl font-black">? {detailReviewLabel}</p>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{detailReviewCount} rese?as</p>
+                  <div className="flex items-center gap-2">
+                    <span aria-hidden className="text-2xl text-indigo-600">★</span>
+                    <p className="text-xl font-black">{detailReviewLabel}</p>
+                  </div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{detailReviewCount} reseñas</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
@@ -516,7 +534,9 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
             <ul className="space-y-2 text-sm font-semibold text-slate-700">
               {highlights.map((item) => (
                 <li key={item} className="flex items-center gap-2">
-                  <span className="text-lg text-emerald-600">?</span>
+                  <span aria-hidden className="text-lg text-emerald-600">
+                    ✓
+                  </span>
                   {item}
                 </li>
               ))}
@@ -559,7 +579,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Incluye / No incluye</p>
                 <h2 className="text-[20px] font-semibold text-slate-900">Cobertura</h2>
               </div>
-              <p className="text-xs text-slate-500">Informaci?n precisa</p>
+              <p className="text-xs text-slate-500">Información precisa</p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
@@ -567,7 +587,9 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
                 <ul className="mt-3 space-y-2 text-sm font-semibold text-emerald-600">
                   {includes.map((item) => (
                     <li key={item} className="flex items-center gap-2">
-                      <span className="text-lg">?</span>
+                      <span aria-hidden className="text-lg text-emerald-500">
+                        ✓
+                      </span>
                       {item}
                     </li>
                   ))}
@@ -578,7 +600,9 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
                 <ul className="mt-3 space-y-2 text-sm font-semibold text-rose-500">
                   {excludes.map((item) => (
                     <li key={item} className="flex items-center gap-2">
-                      <span className="text-lg">?</span>
+                      <span aria-hidden className="text-lg text-rose-500">
+                        ✕
+                      </span>
                       {item}
                     </li>
                   ))}
@@ -591,7 +615,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Itinerario</p>
-                <h2 className="text-[20px] font-semibold text-slate-900">L?nea de tiempo</h2>
+                <h2 className="text-[20px] font-semibold text-slate-900">Línea de tiempo</h2>
               </div>
             </div>
             <div className="space-y-4">
@@ -604,7 +628,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
                   <div className="text-sm leading-relaxed text-slate-600">
                     <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{stop.time}</p>
                     <p className="text-base font-semibold text-slate-900">{stop.title}</p>
-                    <p>{stop.description ?? "Detalle pr?ximamente."}</p>
+                    <p>{stop.description ?? "Detalle próximamente."}</p>
                   </div>
                 </div>
               ))}
@@ -617,7 +641,9 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Prueba social</p>
                 <h2 className="text-[20px] font-semibold text-slate-900">Opiniones</h2>
               </div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">? 4.9 ? {detailReviewLabel} rese?as</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                4.9/5 · {detailReviewLabel} reseñas
+              </p>
             </div>
             <div className="grid gap-6 lg:grid-cols-[1.2fr,1fr]">
               <div className="space-y-4">
