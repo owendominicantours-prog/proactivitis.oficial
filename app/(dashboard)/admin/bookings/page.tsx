@@ -214,7 +214,6 @@ export default async function AdminBookingsPage({ searchParams }: AdminBookingsP
       </details>
     );
   });
-  });
 
   return (
     <div className="space-y-6">
