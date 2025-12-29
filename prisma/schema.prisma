@@ -441,10 +441,30 @@ model SupplierProfile {
   userId          String      @unique
   company         String
   approved        Boolean     @default(false)
+  productsEnabled Boolean     @default(false)
   stripeAccountId String?     @map("stripe_account_id")
   User            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   Tour            Tour[]
   drafts          TourDraft[]
+  minisite        SupplierMinisite?
+}
+
+model SupplierMinisite {
+  id         String          @id @default(cuid())
+  supplierId String          @unique
+  slug       String          @unique
+  isActive   Boolean         @default(false)
+  themeId    Int             @default(1)
+  brandName  String
+  logoUrl    String?
+  whatsapp   String?
+  phone      String?
+  email      String?
+  bio        String?         @db.Text
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  Supplier   SupplierProfile @relation(fields: [supplierId], references: [id])
 }
 
 model TourDraft {
