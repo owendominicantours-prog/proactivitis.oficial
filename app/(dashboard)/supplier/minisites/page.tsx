@@ -55,6 +55,14 @@ export default async function SupplierMinisiteDashboardPage() {
     : undefined;
 
   const eligible = supplier.productsEnabled && approvedTours > 0;
+  const marketingBenefits = [
+    "Landing en dominio Proactivitis con diseño premium",
+    "Tus tours aprobados aparecen automáticamente",
+    "WhatsApp + botón de llamadas directo",
+    "Control total desde tu panel de proveedor"
+  ];
+  const previewSlug = supplier.minisite?.slug ?? initialData?.slug ?? baseSlug;
+  const previewUrl = `${PROACTIVITIS_URL}/s/${previewSlug}?preview=1`;
 
   return (
     <main className="space-y-6 pb-16">
@@ -75,31 +83,51 @@ export default async function SupplierMinisiteDashboardPage() {
             Hosted on Proactivitis
           </span>
         </div>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href={previewUrl}
+            target="_blank"
+            rel="noreferrer"
+            className={`primary-btn text-xs ${!previewSlug ? "pointer-events-none opacity-40" : ""}`}
+          >
+            Preview minisite
+          </a>
+          <span className="text-xs text-slate-500">
+            {previewSlug ? "Abre el minisite en modo preview (propietario)" : "Guarda para generar la URL y habilitar la vista previa"}
+          </span>
+        </div>
       </header>
 
       {!eligible && (
-        <section className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700 shadow-sm">
-          <p className="text-lg font-semibold text-rose-700">Mini sitio aún no disponible</p>
-          {!supplier.productsEnabled && (
-            <p className="mt-2">
-              Solo los proveedores con productos habilitados pueden crear minisites. Contacta a operaciones para activar <strong>productsEnabled</strong>.
-            </p>
-          )}
-          {supplier.productsEnabled && approvedTours === 0 && (
-            <p className="mt-2">
-              Publica al menos un tour aprobado para desbloquear el minisite. Ve a{" "}
-              <Link className="font-semibold text-rose-700 underline" href="/supplier/tours">
-                Mis tours
-              </Link>{" "}
-              para enviar uno.
-            </p>
-          )}
+        <section className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 p-6 shadow-sm">
+          <p className="text-lg font-semibold text-slate-900">Tu minisite necesita un pequeño impulso</p>
+          <p className="mt-2 text-sm text-slate-500">
+            Activa productos y publica al menos un tour para habilitar la landing premium.
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {marketingBenefits.map((benefit) => (
+              <div key={benefit} className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
+                {benefit}
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <a
+              href="https://wa.me/+18093949877?text=Quiero+activar+mis+productos+del+minisite"
+              className="primary-btn text-xs"
+            >
+              Activate products
+            </a>
+            <Link href="/supplier/tours" className="text-xs font-semibold text-slate-800 underline">
+              Ver mis tours
+            </Link>
+          </div>
         </section>
       )}
 
       {eligible && (
         <SupplierMinisiteWizard
-          supplierName={supplier.company ?? session.user.name ?? "Proveedor Proactivitis"}
+          supplierName={supplier.company ?? session.user?.name ?? "Proveedor Proactivitis"}
           baseSlug={baseSlug}
           baseUrl={PROACTIVITIS_URL}
           initial={initialData}

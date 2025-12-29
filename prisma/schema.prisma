@@ -465,6 +465,16 @@ model SupplierMinisite {
   updatedAt  DateTime        @updatedAt
 
   Supplier   SupplierProfile @relation(fields: [supplierId], references: [id])
+  clicks     SupplierMinisiteClick[]
+}
+
+model SupplierMinisiteClick {
+  id         String             @id @default(cuid())
+  minisiteId String
+  tourSlug   String
+  createdAt  DateTime           @default(now())
+
+  Minisite   SupplierMinisite   @relation(fields: [minisiteId], references: [id])
 }
 
 model TourDraft {

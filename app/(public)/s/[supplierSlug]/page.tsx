@@ -1,9 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Metadata } from "next";
+import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_URL } from "@/lib/seo";
+import { authOptions } from "@/lib/auth";
+import { MinisiteTourGrid } from "@/components/minisite/MinisiteTourGrid";
 
 export const dynamic = "force-dynamic";
 
@@ -83,10 +86,17 @@ const WHY_BOOK_LIST = [
   { title: "Instant support", detail: "Comunicación directa por WhatsApp, sin esperas." }
 ];
 
-const formatCurrency = (value: number) => `$${value.toFixed(0)} USD`;
+const MARKETING_BENEFITS = [
+  "Landing brandable en dominio Proactivitis",
+  "Tours aprobados muestran disponibilidad real",
+  "WhatsApp directo y CTA “Book now”",
+  "Control completo desde tu panel"
+];
+
 
 type PageProps = {
   params: Promise<Params>;
+  searchParams?: Promise<{ preview?: string }>;
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -99,10 +109,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function SupplierMinisitePublicPage({ params }: PageProps) {
+export default async function SupplierMinisitePublicPage({ params, searchParams }: PageProps) {
   const resolved = await params;
+  const resolvedSearch = searchParams ? await searchParams : {};
   const slugParam = resolved.supplierSlug;
   if (!slugParam) return notFound();
+
+  const previewMode = resolvedSearch.preview === "1";
+  const session = previewMode ? await getServerSession(authOptions) : null;
+  const ownerId = session?.user?.id;
 
   const minisite = await prisma.supplierMinisite.findUnique({
     where: { slug: slugParam },
@@ -115,8 +130,7 @@ export default async function SupplierMinisitePublicPage({ params }: PageProps) 
     }
   });
 
-  if (!minisite || !minisite.isActive) return notFound();
-  if (!minisite.Supplier.productsEnabled) return notFound();
+  if (!minisite) return notFound();
 
   const tours = await prisma.tour.findMany({
     where: {
@@ -133,10 +147,15 @@ export default async function SupplierMinisitePublicPage({ params }: PageProps) 
     }
   });
 
-  if (!tours.length) return notFound();
-
   const theme = THEMES[minisite.themeId] ?? THEMES[1];
   const whatsappLink = minisite.whatsapp ? `https://wa.me/${minisite.whatsapp}` : undefined;
+  const isOwner = !!ownerId && minisite.Supplier.userId === ownerId;
+  const allowPreview = previewMode && isOwner;
+  const eligible = minisite.isActive && minisite.Supplier.productsEnabled && tours.length > 0;
+  
+  if (!minisite.isActive && !allowPreview) return notFound();
+  if (!minisite.Supplier.productsEnabled && !allowPreview) return notFound();
+  const showMarketing = !eligible && !allowPreview;
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -186,8 +205,49 @@ export default async function SupplierMinisitePublicPage({ params }: PageProps) 
               View tours
             </a>
           </div>
+          {allowPreview && (
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white">
+              Preview mode activo
+            </div>
+          )}
         </div>
       </div>
+
+      {showMarketing && (
+        <section className="mx-auto max-w-6xl space-y-4 px-6 py-16">
+          <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 p-6 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Supplier Minisite</p>
+            <h2 className="text-3xl font-semibold text-slate-900">Tu landing está casi lista</h2>
+            <p className="mt-2 text-sm text-slate-500">
+              {minisite.Supplier.productsEnabled
+                ? "Aún no se ha publicado ningún tour aprobado; publica uno para mostrarlo aquí."
+                : "Activa tus productos con operaciones y prepara tus tours para enviarlos a Proactivitis."}
+            </p>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {MARKETING_BENEFITS.map((benefit) => (
+                <div key={benefit} className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
+                  {benefit}
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <a
+                href={
+                  minisite.Supplier.productsEnabled
+                    ? "/supplier/tours"
+                    : "https://wa.me/+18093949877?text=Quiero+activar+productos+del+minisite"
+                }
+                className="primary-btn text-xs"
+              >
+                {minisite.Supplier.productsEnabled ? "Publicar un tour" : "Activate products"}
+              </a>
+              <Link href="/contact" className="text-xs font-semibold text-slate-800 underline">
+                Contacta al equipo Proactivitis
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section id="tours" className="mx-auto max-w-6xl space-y-6 px-6 py-16">
         <header className="flex flex-col gap-2">
@@ -195,38 +255,15 @@ export default async function SupplierMinisitePublicPage({ params }: PageProps) 
           <h2 className="text-3xl font-semibold text-slate-900">Experiencias aprobadas</h2>
           <p className="text-sm text-slate-500">Solo tours publicados y aprobados de este proveedor.</p>
         </header>
-        <div className="grid gap-6 md:grid-cols-2">
-          {tours.map((tour) => (
-            <article key={tour.slug} className={`flex flex-col justify-between overflow-hidden rounded-3xl p-6 shadow-xl ${theme.card}`}>
-              <div className="space-y-3">
-                {tour.heroImage ? (
-                  <Image
-                    src={tour.heroImage}
-                    alt={tour.title}
-                    width={800}
-                    height={480}
-                    className="h-40 w-full rounded-2xl object-cover shadow-md"
-                  />
-                ) : (
-                  <div className="h-40 w-full rounded-2xl bg-slate-200" />
-                )}
-                <div className="flex items-center justify-between">
-                  <h3 className="text-2xl font-semibold">{tour.title}</h3>
-                  <span className="text-sm text-slate-500">{tour.duration}</span>
-                </div>
-                <p className="text-sm font-semibold text-slate-900">{formatCurrency(tour.price)} desde</p>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Link
-                  href={`/tours/${tour.slug}`}
-                  className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold ${theme.button}`}
-                >
-                  View details
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
+        {eligible || allowPreview ? (
+          <MinisiteTourGrid minisiteSlug={minisite.slug} theme={theme} tours={tours} />
+        ) : (
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
+            {allowPreview
+              ? "Preview active: aún no tienes tours publicados en vivo."
+              : "Los tours aparecerán aquí una vez que estén aprobados y el minisite esté activo."}
+          </div>
+        )}
       </section>
 
       <section className="mx-auto max-w-6xl space-y-6 px-6 py-16">
@@ -306,7 +343,10 @@ export default async function SupplierMinisitePublicPage({ params }: PageProps) 
       <footer className="border-t border-slate-200 bg-white py-10">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 text-xs uppercase tracking-[0.3em] text-slate-500 md:flex-row md:items-center md:justify-between">
           <p>
-            {minisite.brandName} · {new Date().getFullYear()} · Powered by Proactivitis
+            {minisite.brandName} · {new Date().getFullYear()} · Powered by{" "}
+            <Link href={PROACTIVITIS_URL} className="font-semibold text-slate-900">
+              Proactivitis
+            </Link>
           </p>
           <div className="flex gap-3">
             <Link href="/terms" className="hover:text-slate-800">
