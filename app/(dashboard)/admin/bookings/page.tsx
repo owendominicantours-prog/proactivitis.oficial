@@ -174,9 +174,8 @@ export default async function AdminBookingsPage({ searchParams }: any) {
       .reduce((total, booking) => total + booking.totalAmount, 0),
     nextDepartureMinutes: (() => {
       const upcoming = rows
-        .map((booking) => {
+      .map((booking) => {
           const travel = new Date(booking.travelDateValue);
-          const travelTime = booking.startTime ? `00:00` : "00:00";
           return travel;
         })
         .filter((date) => date > now)
