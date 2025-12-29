@@ -71,6 +71,14 @@ const statusColors: Record<string, string> = {
   COMPLETED: "bg-slate-100 text-slate-700 border-slate-200"
 };
 
+const statusOptions = [
+  { label: "Pendiente", value: "PENDING" },
+  { label: "Confirmado", value: "CONFIRMED" },
+  { label: "Pago pendiente", value: "PAYMENT_PENDING" },
+  { label: "Cancelado", value: "CANCELLED" },
+  { label: "Completado", value: "COMPLETED" }
+];
+
 const tabs: { key: TabKey; label: string }[] = [
   { key: "today", label: "Hoy" },
   { key: "tomorrow", label: "Mañana" },
