@@ -50,6 +50,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     status: booking.status as BookingStatus,
     source: booking.source as BookingRow["source"],
     hotel: booking.hotel,
+    pickup: booking.pickup,
     cancellationReason: booking.cancellationReason,
     cancellationByRole: booking.cancellationByRole,
     cancellationAt: booking.cancellationAt?.toISOString() ?? null

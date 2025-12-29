@@ -19,6 +19,7 @@ export type BookingRow = {
   source: "WEB" | "SUPPLIER" | "AGENCY";
   customerEmail: string;
   hotel?: string | null;
+  pickup?: string | null;
   cancellationReason?: string | null;
   cancellationByRole?: string | null;
   cancellationAt?: string | null;
@@ -27,7 +28,7 @@ export type BookingRow = {
 
 type Props = {
   bookings: BookingRow[];
-  showFields?: { showHotel?: boolean; showSource?: boolean };
+  showFields?: { showHotel?: boolean; showSource?: boolean; showPickup?: boolean };
   rowActions?: Record<string, ReactNode>;
 };
 
@@ -78,6 +79,7 @@ export const BookingTable = ({ bookings, showFields, rowActions }: Props) => {
               <th className="px-3 py-2 text-left">Cliente</th>
               <th className="px-3 py-2 text-left">Pax</th>
               {showFields?.showHotel && <th className="px-3 py-2 text-left">Hotel</th>}
+              {showFields?.showPickup && <th className="px-3 py-2 text-left">Pickup</th>}
               <th className="px-3 py-2 text-left">Total</th>
               <th className="px-3 py-2 text-left">Estado</th>
               {showFields?.showSource && <th className="px-3 py-2 text-left">Origen</th>}
@@ -94,6 +96,9 @@ export const BookingTable = ({ bookings, showFields, rowActions }: Props) => {
                 <td className="px-3 py-3">{booking.customerName}</td>
                 <td className="px-3 py-3">{booking.pax}</td>
                 {showFields?.showHotel && <td className="px-3 py-3">{booking.hotel ?? "-"}</td>}
+                {showFields?.showPickup && (
+                  <td className="px-3 py-3">{booking.pickup ?? "Pendiente"}</td>
+                )}
                 <td className="px-3 py-3">${booking.totalAmount.toFixed(2)}</td>
                 <td className="px-3 py-3">
                   <BookingStatusBadge status={booking.status} />
@@ -113,7 +118,10 @@ export const BookingTable = ({ bookings, showFields, rowActions }: Props) => {
                 <tr>
                   <td
                   colSpan={
-                    (showFields?.showSource ? 9 : 8) + (rowActions ? 1 : 0) + 1
+                    (showFields?.showSource ? 9 : 8) +
+                    (showFields?.showPickup ? 1 : 0) +
+                    (rowActions ? 1 : 0) +
+                    1
                   }
                     className="px-3 py-6 text-center text-xs text-slate-400"
                   >
