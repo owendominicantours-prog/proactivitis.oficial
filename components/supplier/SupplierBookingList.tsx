@@ -12,6 +12,18 @@ import {
   Slack
 } from "lucide-react";
 
+export type SupplierTimelineEntry = {
+  title: string;
+  description: string;
+  timestamp: string;
+};
+
+export type SupplierNote = {
+  author: string;
+  message: string;
+  timestamp: string;
+};
+
 export type SupplierBookingSummary = {
   id: string;
   bookingCode: string;
@@ -34,6 +46,8 @@ export type SupplierBookingSummary = {
   createdAt: string;
   updatedAt: string;
   whatsappNumber?: string | null;
+  timeline: SupplierTimelineEntry[];
+  notes: SupplierNote[];
 };
 
 type RequestInfoOption = {
@@ -707,12 +721,54 @@ export function SupplierBookingList({ bookings }: Props) {
                 ${selectedBooking.supplierAmount?.toFixed(2) ?? "0.00"}
               </p>
             </div>
-            <div className="space-y-2 text-sm text-slate-600">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Historial</p>
-              {historyEntries?.map((entry) => (
-                <p key={entry}>{entry}</p>
-              ))}
+          <div className="space-y-2 text-sm text-slate-600">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Historial</p>
+            {historyEntries?.map((entry) => (
+              <p key={entry}>{entry}</p>
+            ))}
+          </div>
+
+          <div className="space-y-3 rounded-lg border border-slate-100 bg-slate-50 p-4 text-sm text-slate-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Centro de evidencia</p>
+            <div className="space-y-2">
+              {selectedBooking.timeline.length ? (
+                selectedBooking.timeline.slice(0, 4).map((event) => (
+                  <article key={`${selectedBooking.id}-${event.timestamp}-${event.title}`} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                    <p className="text-[10px] uppercase tracking-[0.4em] text-slate-400">
+                      {new Date(event.timestamp).toLocaleString("es-ES")}
+                    </p>
+                    <p className="text-sm font-semibold text-slate-900">{event.title}</p>
+                    <p className="text-xs text-slate-500">{event.description}</p>
+                  </article>
+                ))
+              ) : (
+                <p className="text-xs text-slate-500">Sin actividad registrada.</p>
+              )}
             </div>
+          </div>
+
+          <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 text-sm shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Notas internas</p>
+              {selectedBooking.notes.length ? (
+                <span className="text-[11px] text-slate-400">{selectedBooking.notes.length} nota(s)</span>
+              ) : null}
+            </div>
+            <div className="space-y-2">
+              {selectedBooking.notes.length ? (
+                selectedBooking.notes.map((note) => (
+                  <article key={`${selectedBooking.id}-${note.timestamp}-${note.author}`} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                    <p className="text-[11px] text-slate-500">
+                      {new Date(note.timestamp).toLocaleString("es-ES")} · {note.author}
+                    </p>
+                    <p className="text-sm text-slate-700">{note.message}</p>
+                  </article>
+                ))
+              ) : (
+                <p className="text-xs text-slate-500">No hay notas internas todavía.</p>
+              )}
+            </div>
+          </div>
 
             <div className="space-y-3 rounded-lg border border-slate-100 bg-slate-50 p-4">
               <div className="flex items-center justify-between">

@@ -4,6 +4,7 @@ export type NotificationType =
   | "ADMIN_BOOKING_CREATED"
   | "ADMIN_BOOKING_CANCELLED"
   | "ADMIN_BOOKING_MODIFIED"
+  | "ADMIN_BOOKING_NOTE"
   | "ADMIN_SUPPLIER_PAYOUT_SENT"
   | "ADMIN_PAYMENT_FAILED"
   | "ADMIN_SUPPLIER_LOW_AVAILABILITY"
@@ -73,6 +74,7 @@ export const notificationTypeConfig: Record<NotificationType, NotificationDispla
   ),
   ADMIN_BOOKING_CANCELLED: createConfig("Reserva cancelada", "danger"),
   ADMIN_BOOKING_MODIFIED: createConfig("Reserva modificada", "info"),
+  ADMIN_BOOKING_NOTE: createConfig("Nota interna", "info"),
   ADMIN_SUPPLIER_PAYOUT_SENT: createConfig(
     "Pago al proveedor",
     "success",
