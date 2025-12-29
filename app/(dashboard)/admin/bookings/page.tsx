@@ -45,6 +45,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     customerName: booking.customerName,
     pax: booking.paxAdults + booking.paxChildren,
     totalAmount: booking.totalAmount,
+    bookingCode: booking.bookingCode ?? booking.id,
     status: booking.status as BookingStatus,
     source: booking.source as BookingRow["source"],
     hotel: booking.hotel,
@@ -144,7 +145,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
       const query = searchQuery.trim().toLowerCase();
       return (
         booking.customerName?.toLowerCase().includes(query) ||
-        booking.bookingCode.toLowerCase().includes(query) ||
+        (booking.bookingCode ?? booking.id).toLowerCase().includes(query) ||
         booking.customerEmail.toLowerCase().includes(query)
       );
     })
