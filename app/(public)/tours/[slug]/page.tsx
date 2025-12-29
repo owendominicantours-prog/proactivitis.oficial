@@ -427,7 +427,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
       <div className="mt-4">
         <TourBookingWidget {...bookingWidgetProps} />
       </div>
-      <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-600">
+      <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-700">
         <p className="font-semibold text-slate-900">
           {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Proveedor local"}
         </p>
@@ -437,7 +437,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
   );
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] text-slate-900 pb-24 overflow-x-hidden">
+  <div className="min-h-screen bg-[#FDFDFD] text-slate-950 pb-24 overflow-x-hidden">
       <StructuredData data={tourSchema} />
       <StructuredData data={faqSchema} />
 
@@ -478,13 +478,16 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{detailReviewCount} reseñas</p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
-                {trustBadges.map((badge) => (
-                  <span key={badge} className="rounded-full border border-slate-200 bg-white/60 px-3 py-1 text-slate-700 shadow-sm">
-                    {badge}
-                  </span>
-                ))}
-              </div>
+                <div className="flex flex-wrap gap-3 text-sm font-medium text-slate-700">
+                  {trustBadges.map((badge) => (
+                    <span
+                      key={badge}
+                      className="rounded-full border border-slate-200 bg-white/80 px-4 py-1 text-sm font-semibold text-slate-700 shadow-sm"
+                    >
+                      {badge}
+                    </span>
+                  ))}
+                </div>
               <div className="flex flex-wrap gap-3">
                 <Link
                   href="#booking"
@@ -495,7 +498,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
                 <GalleryLightbox
                   images={gallery}
                   buttonLabel="View gallery"
-                  buttonClassName="rounded-2xl border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+                  buttonClassName="rounded-2xl border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-50"
                 />
               </div>
             </div>
@@ -505,7 +508,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
       </section>
 
       <section className="mx-auto mt-6 max-w-[1240px] px-4">
-        <nav className="sticky top-16 z-10 rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 shadow-sm backdrop-blur lg:top-8">
+        <nav className="sticky top-16 z-10 rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 shadow-lg backdrop-blur lg:top-8">
           <div className="flex gap-3 overflow-x-auto py-1 text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">
             {[
               { label: "Overview", href: "#overview" },
@@ -527,9 +530,9 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
       </section>
 
       <section id="overview" className="mx-auto mt-8 max-w-[1240px] px-4">
-        <div className="space-y-4 rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
+        <div className="space-y-4 rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Overview</p>
-          <p className="text-lg text-slate-600 line-clamp-3">{tour.shortDescription ?? shortTeaser}</p>
+          <p className="text-lg text-slate-800 line-clamp-3">{tour.shortDescription ?? shortTeaser}</p>
           {highlights.length ? (
             <ul className="space-y-2 text-sm font-semibold text-slate-700">
               {highlights.map((item) => (
@@ -550,12 +553,12 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
           {quickInfo.map((item) => (
             <div
               key={item.label}
-              className="rounded-[16px] border border-slate-100 bg-white/80 px-5 py-4 text-center shadow-sm"
+              className="rounded-[16px] border border-slate-100 bg-white/80 px-5 py-4 text-center shadow-md"
             >
               <span className="mb-2 inline-block text-2xl">{item.icon}</span>
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400">{item.label}</p>
-              <p className="text-sm font-black text-slate-900">{item.value}</p>
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400">{item.detail}</p>
+              <p className="text-[10px] font-semibold text-slate-500 tracking-[0.2em]">{item.label}</p>
+              <p className="text-sm font-semibold text-slate-900">{item.value}</p>
+              <p className="text-xs text-slate-500">{item.detail}</p>
             </div>
           ))}
         </div>
@@ -620,17 +623,17 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
             </div>
             <div className="space-y-4">
               {visualTimeline.map((stop, index) => (
-                <div key={`${stop.title}-${index}`} className="flex gap-4 rounded-[16px] border border-[#F1F5F9] bg-white/70 px-4 py-3">
-                  <div className="flex flex-col items-center text-sm text-slate-500">
-                    <span className="h-3 w-3 rounded-full bg-indigo-600" />
-                    {index !== visualTimeline.length - 1 && <span className="mt-2 h-6 w-px bg-slate-200" />}
+                  <div key={`${stop.title}-${index}`} className="flex gap-4 rounded-[16px] border border-[#F1F5F9] bg-white/70 px-4 py-3">
+                    <div className="flex flex-col items-center text-sm text-slate-500">
+                      <span className="h-3 w-3 rounded-full bg-indigo-600" />
+                      {index !== visualTimeline.length - 1 && <span className="mt-2 h-6 w-px bg-slate-200" />}
+                    </div>
+                    <div className="text-sm leading-relaxed text-slate-700">
+                      <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{stop.time}</p>
+                      <p className="text-base font-semibold text-slate-900">{stop.title}</p>
+                      <p>{stop.description ?? "Detalle próximamente."}</p>
+                    </div>
                   </div>
-                  <div className="text-sm leading-relaxed text-slate-600">
-                    <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{stop.time}</p>
-                    <p className="text-base font-semibold text-slate-900">{stop.title}</p>
-                    <p>{stop.description ?? "Detalle próximamente."}</p>
-                  </div>
-                </div>
               ))}
             </div>
           </section>
@@ -651,7 +654,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
                   <p className="text-4xl font-semibold text-slate-900">4.9</p>
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">de 5</p>
                 </div>
-                <div className="space-y-3 text-sm text-slate-600">
+                <div className="space-y-3 text-sm text-slate-700">
                   {reviewBreakdown.map((item) => (
                     <div key={item.label} className="flex items-center gap-3">
                       <span className="w-24 text-xs text-slate-500">{item.label}</span>
@@ -668,7 +671,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
               </div>
               <div className="space-y-4">
                 {reviewHighlights.map((review) => (
-                  <div key={review.name} className="rounded-[16px] border border-[#F1F5F9] bg-white p-4 shadow-sm">
+                  <div key={review.name} className="rounded-[16px] border border-[#F1F5F9] bg-white p-4 shadow">
                     <div className="flex items-center gap-3">
                       <Image
                         src={review.avatar}
@@ -682,7 +685,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
                         <p className="text-xs text-slate-500">{review.date}</p>
                       </div>
                     </div>
-                    <p className="mt-2 text-sm text-slate-600">{review.quote}</p>
+                    <p className="mt-2 text-sm text-slate-700">{review.quote}</p>
                   </div>
                 ))}
               </div>
@@ -694,7 +697,7 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
               <p className="text-xs uppercase tracking-[0.4em] text-slate-500">FAQ</p>
               <h2 className="text-[20px] font-semibold text-slate-900">Preguntas frecuentes</h2>
             </div>
-            <div className="space-y-4 text-sm text-slate-600">
+            <div className="space-y-4 text-sm text-slate-700">
               {faqList.map((item) => (
                 <article key={item.question} className="rounded-[16px] border border-[#F1F5F9] bg-white/60 p-4">
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{item.question}</p>
