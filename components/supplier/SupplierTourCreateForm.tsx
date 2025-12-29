@@ -355,6 +355,9 @@ export type SavedDraft = {
   duration?: { value: string; unit: string };
   heroImage?: UploadedImage | null;
   galleryImages?: UploadedImage[];
+  highlights?: string[];
+  includesList?: string[];
+  notIncludedList?: string[];
 };
 
 
@@ -421,6 +424,46 @@ export function SupplierTourCreateForm({
   const [stopDurationValue, setStopDurationValue] = useState("1");
 
   const [stopDurationUnit, setStopDurationUnit] = useState("horas");
+
+  const [highlights, setHighlights] = useState<string[]>(initialDraft?.highlights ?? []);
+  const [highlightInput, setHighlightInput] = useState("");
+  const [includesList, setIncludesList] = useState<string[]>(initialDraft?.includesList ?? []);
+  const [includeInput, setIncludeInput] = useState("");
+  const [notIncludedList, setNotIncludedList] = useState<string[]>(initialDraft?.notIncludedList ?? []);
+  const [notIncludedInput, setNotIncludedInput] = useState("");
+
+  const addHighlight = () => {
+    const trimmed = highlightInput.trim();
+    if (!trimmed || highlights.length >= 6) return;
+    setHighlights((prev) => [...prev, trimmed]);
+    setHighlightInput("");
+  };
+
+  const removeHighlight = (index: number) => {
+    setHighlights((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const addIncludeItem = () => {
+    const trimmed = includeInput.trim();
+    if (!trimmed) return;
+    setIncludesList((prev) => [...prev, trimmed]);
+    setIncludeInput("");
+  };
+
+  const removeIncludeItem = (index: number) => {
+    setIncludesList((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const addNotIncludedItem = () => {
+    const trimmed = notIncludedInput.trim();
+    if (!trimmed) return;
+    setNotIncludedList((prev) => [...prev, trimmed]);
+    setNotIncludedInput("");
+  };
+
+  const removeNotIncludedItem = (index: number) => {
+    setNotIncludedList((prev) => prev.filter((_, idx) => idx !== index));
+  };
 
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
 
@@ -499,6 +542,9 @@ export function SupplierTourCreateForm({
         pickupOptions,
         heroImage,
         galleryImages,
+        highlights,
+        includesList,
+        notIncludedList,
         duration: { value: durationValue, unit: durationUnit }
       } as SavedDraft),
     [
@@ -515,6 +561,9 @@ export function SupplierTourCreateForm({
       pickupOptions,
       heroImage,
       galleryImages,
+      highlights,
+      includesList,
+      notIncludedList,
       durationValue,
       durationUnit
     ]
@@ -626,6 +675,10 @@ export function SupplierTourCreateForm({
           setGalleryImages(parsed.galleryImages);
 
         }
+
+        setHighlights(parsed.highlights ?? []);
+        setIncludesList(parsed.includesList ?? []);
+        setNotIncludedList(parsed.notIncludedList ?? []);
 
       });
 
@@ -1355,6 +1408,128 @@ export function SupplierTourCreateForm({
 
               </div>
 
+            </SectionCard>
+
+            <SectionCard title="Highlights e inclusiones" description="Agrega lo que diferencia este tour (3 a 6 destacados) y las listas de incluye/no incluye.">
+              <div className="space-y-6">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Highlights</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {highlights.map((item, index) => (
+                      <div
+                        key={`${item}-${index}`}
+                        className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700"
+                      >
+                        <span>{item}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeHighlight(index)}
+                          className="text-rose-500 hover:text-rose-600"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      value={highlightInput}
+                      onChange={(event) => setHighlightInput(event.target.value)}
+                      placeholder="Añade un punto distintivo"
+                      className={baseInputClass}
+                    />
+                    <button
+                      type="button"
+                      disabled={highlights.length >= 6 || !highlightInput.trim()}
+                      onClick={addHighlight}
+                      className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white disabled:opacity-50"
+                    >
+                      Añadir
+                    </button>
+                  </div>
+                  <p className="text-[0.7rem] text-slate-500">
+                    Añade entre 3 y 6 puntos destacados para que se vean en el detalle del tour.
+                  </p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Incluye</p>
+                    <div className="mt-2 space-y-2">
+                      {includesList.map((item, index) => (
+                        <div
+                          key={`include-${item}-${index}`}
+                          className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700"
+                        >
+                          <span className="flex items-center gap-1">
+                            <span className="text-lg">✓</span>
+                            {item}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeIncludeItem(index)}
+                            className="text-xs text-slate-500 hover:text-slate-700"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 flex gap-2">
+                      <input
+                        value={includeInput}
+                        onChange={(event) => setIncludeInput(event.target.value)}
+                        placeholder="Ej: Transporte privado"
+                        className={baseInputClass}
+                      />
+                      <button
+                        type="button"
+                        onClick={addIncludeItem}
+                        className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700"
+                      >
+                        Agregar
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">No incluye</p>
+                    <div className="mt-2 space-y-2">
+                      {notIncludedList.map((item, index) => (
+                        <div
+                          key={`not-${item}-${index}`}
+                          className="flex items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700"
+                        >
+                          <span className="flex items-center gap-1">
+                            <span className="text-lg">✕</span>
+                            {item}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeNotIncludedItem(index)}
+                            className="text-xs text-slate-500 hover:text-slate-700"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 flex gap-2">
+                      <input
+                        value={notIncludedInput}
+                        onChange={(event) => setNotIncludedInput(event.target.value)}
+                        placeholder="Ej: Propinas"
+                        className={baseInputClass}
+                      />
+                      <button
+                        type="button"
+                        onClick={addNotIncludedItem}
+                        className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700"
+                      >
+                        Agregar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </SectionCard>
 
           </>
@@ -2442,6 +2617,10 @@ export function SupplierTourCreateForm({
       <input type="hidden" name="itineraryStops" value={JSON.stringify(itineraryStops)} />
 
       <input type="hidden" name="duration" value={JSON.stringify({ value: durationValue, unit: durationUnit })} />
+
+      <input type="hidden" name="highlights" value={JSON.stringify(highlights)} />
+      <input type="hidden" name="includesList" value={JSON.stringify(includesList)} />
+      <input type="hidden" name="notIncludedList" value={JSON.stringify(notIncludedList)} />
 
       {heroImage && <input type="hidden" name="heroImageUrl" value={heroImage.url} />}
 

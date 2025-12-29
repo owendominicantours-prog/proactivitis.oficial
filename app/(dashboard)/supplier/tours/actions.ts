@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 import { ensureCountryByCode, resolveDestination, sanitized, slugify } from "@/lib/supplierTours";
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
@@ -18,6 +19,26 @@ function parseTimeSlots(formData: FormData): PersistedTimeSlot[] {
   } catch {
     return [];
   }
+}
+
+function parseStringArrayField(formData: FormData, fieldName: string) {
+  const rawValue = formData.get(fieldName);
+  if (!rawValue || typeof rawValue !== "string") return [];
+  try {
+    const parsed = JSON.parse(rawValue);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((item) => (typeof item === "string" ? sanitized(item, "includes") : ""))
+      .map((item) => item.trim())
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function normalizeJsonInput(value: Prisma.JsonValue | null | undefined): Prisma.InputJsonValue | undefined {
+  if (value === null || value === undefined) return undefined;
+  return value as Prisma.InputJsonValue;
 }
 
 export async function createTourAction(formData: FormData) {
@@ -73,6 +94,12 @@ export async function createTourAction(formData: FormData) {
 
   const heroImage = formData.get("heroImageUrl")?.toString() || "/fototours/fototour.jpeg";
   const includes = sanitized(formData.get("includes"), "includes");
+  const highlightsList = parseStringArrayField(formData, "highlights");
+  if (highlightsList.length < 3 || highlightsList.length > 6) {
+    throw new Error("Los highlights deben ser entre 3 y 6 elementos.");
+  }
+  const includesArray = parseStringArrayField(formData, "includesList");
+  const notIncludedArray = parseStringArrayField(formData, "notIncludedList");
 
   await prisma.tour.create({
     data: {
@@ -105,6 +132,9 @@ export async function createTourAction(formData: FormData) {
       adminNote: itineraryValue,
       heroImage,
       gallery: galleryUrls.length ? JSON.stringify(galleryUrls) : undefined,
+      highlights: highlightsList.length ? highlightsList : undefined,
+      includesList: includesArray.length ? includesArray : undefined,
+      notIncludedList: notIncludedArray.length ? notIncludedArray : undefined,
       status: "pending",
       supplierId,
       departureDestinationId,
@@ -137,6 +167,10 @@ export async function duplicateTourAction(formData: FormData) {
     newSlug = `${candidateSlugBase || fallbackSlugBase}-${Math.floor(Math.random() * 9999)}`;
   }
 
+  const duplicateHighlights = normalizeJsonInput(tour.highlights);
+  const duplicateIncludesList = normalizeJsonInput(tour.includesList);
+  const duplicateNotIncludedList = normalizeJsonInput(tour.notIncludedList);
+
   const newTour = await prisma.tour.create({
     data: {
       id: randomUUID(),
@@ -168,6 +202,9 @@ export async function duplicateTourAction(formData: FormData) {
       adminNote: tour.adminNote,
       heroImage: tour.heroImage,
       gallery: tour.gallery,
+      highlights: duplicateHighlights,
+      includesList: duplicateIncludesList,
+      notIncludedList: duplicateNotIncludedList,
       status: "draft",
       supplierId: supplierProfile.id,
       departureDestinationId: tour.departureDestinationId,
@@ -235,6 +272,16 @@ export async function updateTourAction(formData: FormData) {
     );
   const heroImage = formData.get("heroImageUrl")?.toString() || tour.heroImage;
   const includes = sanitized(formData.get("includes"), "includes") || tour.includes;
+  const highlightsList = parseStringArrayField(formData, "highlights");
+  const includesArray = parseStringArrayField(formData, "includesList");
+  const notIncludedArray = parseStringArrayField(formData, "notIncludedList");
+  const highlightsToStore =
+    highlightsList.length || !Array.isArray(tour.highlights)
+      ? highlightsList
+      : tour.highlights;
+  if (highlightsToStore.length && (highlightsToStore.length < 3 || highlightsToStore.length > 6)) {
+    throw new Error("Los highlights deben ser entre 3 y 6 elementos.");
+  }
 
   await prisma.tour.update({
     where: { id: tourId },
@@ -266,6 +313,9 @@ export async function updateTourAction(formData: FormData) {
       adminNote: itineraryValue,
       heroImage,
       gallery: galleryUrls.length ? JSON.stringify(galleryUrls) : tour.gallery,
+      highlights: highlightsToStore.length ? highlightsToStore : undefined,
+      includesList: includesArray.length ? includesArray : normalizeJsonInput(tour.includesList),
+      notIncludedList: notIncludedArray.length ? notIncludedArray : normalizeJsonInput(tour.notIncludedList),
       departureDestinationId: departureDestinationId ?? tour.departureDestinationId,
       countryId: countryCode
     }

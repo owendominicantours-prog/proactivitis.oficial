@@ -479,7 +479,7 @@ model AgencyProLink {
 }
 
 model Tour {
-  id                     String          @id
+    id                     String          @id
   title                  String
   slug                   String          @unique
   productId              String          @unique @default(uuid())
@@ -502,12 +502,15 @@ model Tour {
   meetingPoint           String?
   meetingInstructions    String?
   pickup                 String?
-  requirements           String?
-  cancellationPolicy     String?
-  terms                  String?
-  language               String
-  includes               String
-  location               String
+    requirements           String?
+    cancellationPolicy     String?
+    terms                  String?
+    highlights             Json?
+    language               String
+    includes               String
+    includesList           Json?
+    notIncludedList        Json?
+    location               String
   supplierId             String
   featured               Boolean         @default(false)
   status                 String          @default("draft")
@@ -520,10 +523,10 @@ model Tour {
   Booking                Booking[]
   Offer                  Offer[]
   platformSharePercent   Int             @default(20)
-  SupplierProfile        SupplierProfile @relation(fields: [supplierId], references: [id])
-  AgencyProLinks         AgencyProLink[]
-  country                Country         @relation("CountryTours", fields: [countryId], references: [code])
-  countryId              String          @default("RD")
+    SupplierProfile        SupplierProfile @relation(fields: [supplierId], references: [id])
+    AgencyProLinks         AgencyProLink[]
+    country                Country         @relation("CountryTours", fields: [countryId], references: [code])
+    countryId              String          @default("RD")
   destination            Destination?    @relation("TourDestination", fields: [destinationId], references: [id])
   destinationId          String?
   microZone              MicroZone?      @relation("TourMicroZone", fields: [microZoneId], references: [id])

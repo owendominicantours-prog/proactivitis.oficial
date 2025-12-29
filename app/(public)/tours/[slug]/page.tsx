@@ -11,6 +11,7 @@ import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 import StructuredData from "@/components/schema/StructuredData";
 import { PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL, SAME_AS_URLS, getPriceValidUntil } from "@/lib/seo";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
+import type { Prisma } from "@prisma/client";
 
 type TourDetailSearchParams = {
   hotelSlug?: string;
@@ -26,13 +27,20 @@ type TourDetailProps = {
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
 
-const parseJsonArray = <T,>(value?: string | null): T[] => {
-  if (!value) return [];
-  try {
-    return JSON.parse(value) as T[];
-  } catch {
-    return [];
+const parseJsonArray = <T,>(value?: string | null | Prisma.JsonValue): T[] => {
+  if (value === undefined || value === null) return [];
+  if (Array.isArray(value)) {
+    return value.filter((item) => item !== null && item !== undefined) as T[];
   }
+  if (!value) return [];
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value) as T[];
+    } catch {
+      return [];
+    }
+  }
+  return [];
 };
 
 const parseDuration = (value?: string | null) => {
@@ -284,8 +292,12 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
 
   // --- Lógica de datos ---
   const gallery = (tour.gallery ? JSON.parse(tour.gallery as string) : [tour.heroImage ?? "/fototours/fotosimple.jpg"]) as string[];
-  const includes = tour.includes ? tour.includes.split(";").map((i) => i.trim()).filter(Boolean) : ["Traslado", "Guía", "Almuerzo"];
-  const excludes = ["Propinas", "Bebidas", "Fotos"];
+  const highlights = parseJsonArray<string>(tour.highlights);
+  const includesFromString = tour.includes ? tour.includes.split(";").map((i) => i.trim()).filter(Boolean) : ["Traslado", "Guía", "Almuerzo"];
+  const includesList = parseJsonArray<string>(tour.includesList);
+  const notIncludedList = parseJsonArray<string>(tour.notIncludedList);
+  const includes = includesList.length ? includesList : includesFromString;
+  const excludes = notIncludedList.length ? notIncludedList : ["Propinas", "Bebidas", "Fotos"];
   const categories = (tour.category ?? "").split(",").map((i) => i.trim()).filter(Boolean);
   const languages = (tour.language ?? "").split(",").map((i) => i.trim()).filter(Boolean);
   const timeSlots = parseJsonArray<PersistedTimeSlot>(tour.timeOptions);
@@ -473,6 +485,27 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
           />
         </div>
       </section>
+
+      {highlights.length ? (
+        <section className="mx-auto mt-6 max-w-[1240px] space-y-4 px-4">
+          <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Highlights</p>
+                <h2 className="text-[18px] font-semibold text-slate-900">Lo mejor de este tour</h2>
+              </div>
+            </div>
+            <ul className="mt-4 grid gap-3 md:grid-cols-3">
+              {highlights.map((item) => (
+                <li key={item} className="flex items-center gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 shadow-sm">
+                  <span className="text-lg">★</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ) : null}
 
       <section className="mx-auto mt-10 max-w-[1240px] space-y-8 px-4 pb-10">
         <header className="space-y-2">
