@@ -718,7 +718,7 @@ export function SupplierBookingList({ bookings }: Props) {
               <div className="grid gap-3 sm:grid-cols-2">
                 <button
                   type="button"
-                  onClick={handleConfirmTime}
+                  onClick={() => handleConfirmTime()}
                   className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-white"
                 >
                   Confirmar hora
