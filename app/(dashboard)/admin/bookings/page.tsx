@@ -12,18 +12,6 @@ import {
 import { formatTimeUntil } from "@/lib/bookings";
 
 type TabKey = "today" | "tomorrow" | "upcoming" | "past" | "payment";
-type AdminBookingsPageProps = {
-  searchParams?: {
-    tab?: TabKey;
-    date?: "today" | "tomorrow" | "week" | "range";
-    startDate?: string;
-    endDate?: string;
-    status?: string | string[];
-    tour?: string;
-    query?: string;
-    pickup?: string;
-  };
-};
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: "today", label: "Hoy" },
@@ -42,7 +30,11 @@ const statusOptions: BookingStatus[] = [
   "CANCELLATION_REQUESTED"
 ];
 
-export default async function AdminBookingsPage({ searchParams }: AdminBookingsPageProps) {
+export default async function AdminBookingsPage({
+  searchParams
+}: {
+  searchParams?: Record<string, string | string[] | undefined>;
+}) {
   const bookings = await prisma.booking.findMany({
     include: { Tour: true },
     orderBy: { createdAt: "desc" }
@@ -66,18 +58,26 @@ export default async function AdminBookingsPage({ searchParams }: AdminBookingsP
   }));
   const cancellationRequests = rows.filter((booking) => booking.status === "CANCELLATION_REQUESTED");
 
-  const tab = searchParams?.tab ?? "today";
-  const dateMode = searchParams?.date ?? "today";
-  const customStart = searchParams?.startDate;
-  const customEnd = searchParams?.endDate;
-  const selectedStatus = searchParams?.status
-    ? Array.isArray(searchParams.status)
-      ? searchParams.status
-      : [searchParams.status]
+  const getParam = (key: string) => {
+    const value = searchParams?.[key];
+    return Array.isArray(value) ? value[0] : value;
+  };
+
+  const tab = (getParam("tab") as TabKey) ?? "today";
+  const dateMode = (getParam("date") as "today" | "tomorrow" | "week" | "range") ?? "today";
+  const customStart = getParam("startDate");
+  const customEnd = getParam("endDate");
+
+  const statusParam = searchParams?.status;
+  const selectedStatus = statusParam
+    ? Array.isArray(statusParam)
+      ? statusParam
+      : [statusParam]
     : statusOptions;
-  const selectedTour = searchParams?.tour ?? "all";
-  const searchQuery = searchParams?.query ?? "";
-  const pickupSearch = searchParams?.pickup ?? "";
+
+  const selectedTour = getParam("tour") ?? "all";
+  const searchQuery = getParam("query") ?? "";
+  const pickupSearch = getParam("pickup") ?? "";
 
   const uniqueTours = Array.from(
     new Set(bookings.map((booking) => booking.Tour?.title ?? "Tour sin título"))
