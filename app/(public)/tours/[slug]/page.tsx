@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import TourGalleryViewer from "@/components/shared/TourGalleryViewer";
 import { notFound, redirect } from "next/navigation";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import { prisma } from "@/lib/prisma";
@@ -11,6 +10,7 @@ import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 import StructuredData from "@/components/schema/StructuredData";
 import { PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL, SAME_AS_URLS, getPriceValidUntil } from "@/lib/seo";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
+import GalleryLightbox from "@/components/shared/GalleryLightbox";
 import type { Prisma } from "@prisma/client";
 
 type TourDetailSearchParams = {
@@ -152,21 +152,6 @@ const itineraryMock: ItineraryStop[] = [
   }
 ];
 
-const additionalInfo = [
-  "Confirmamos el punto exacto de encuentro con 24h de antelación.",
-  "No apto para personas con movilidad reducida.",
-  "No recomendado para embarazadas.",
-  "Sillas infantiles disponibles bajo solicitud.",
-  "Reserva confirmada desde 2 huéspedes."
-];
-
-const packingList = [
-  { icon: "👟", label: "Calzado cerrado", detail: "Protección en terrenos irregulares." },
-  { icon: "🕶️", label: "Gafas de sol", detail: "Ideal para brillo y brisa marina." },
-  { icon: "🧴", label: "Protector solar", detail: "Elige una opción biodegradable." },
-  { icon: "👕", label: "Ropa que se pueda ensuciar", detail: "Capas ligeras y cómodas." }
-];
-
 const reviewBreakdown = [
   { label: "5 estrellas", percent: 90 },
   { label: "4 estrellas", percent: 8 },
@@ -216,19 +201,6 @@ const toAbsoluteUrl = (value: string) => {
   const normalized = value.startsWith("/") ? value : `/${value}`;
   return `${PROACTIVITIS_URL}${normalized}`;
 };
-
-const buildTourMarketingCopy = (
-  tourTitle: string,
-  location: string,
-  durationLabel: string,
-  priceLabel: string,
-  categories: string[]
-) => [
-  `Vive ${location} a través de ${tourTitle}, una experiencia diseñada para tomar el pulso de la cultura local durante ${durationLabel} sin apresurarte.`,
-  `Durante el recorrido, los guías resaltan cada detalle: gastronomía, historia y paisajes naturales, con paradas pensadas para fotos, snacks y conexión con comunidades locales.`,
-  `Con tarifas desde ${priceLabel} garantizas transporte privado, entradas priorizadas, asistencia 24/7 y un ambiente familiar sin sobrecostos ocultos.`,
-  (categories.length ? `Ideal para quienes buscan ${categories.slice(0, 2).join(" y ")}.` : "Diseñado para viajeros que buscan autenticidad y comodidad.")
-];
 
 const buildTourTrustBadges = (languages: string[], categories: string[]) => {
   const languageLabel = languages.length ? languages.join(" · ") : "Español · Inglés";
@@ -314,8 +286,11 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
     tour.shortDescription && tour.shortDescription.length > 220
       ? `${tour.shortDescription.slice(0, 220).trim()}…`
       : tour.shortDescription || "Explora esta aventura guiada por expertos locales.";
+  const collageImages = gallery.slice(0, 4);
+  const primaryCollageImage = collageImages[0] ?? heroImage;
+  const secondaryCollageImages = collageImages.slice(1, 4);
 
-  const marketingCopy = buildTourMarketingCopy(tour.title, tour.location, durationLabel, priceLabel, categories);
+
   const trustBadges = buildTourTrustBadges(languages, categories);
   const faqList = buildTourFaq(tour.title, durationLabel, displayTime, priceLabel);
 
@@ -436,246 +411,259 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
     }))
   };
 
+  const bookingWidgetProps = {
+    tourId: tour.id,
+    basePrice: tour.price,
+    timeSlots,
+    supplierHasStripeAccount: Boolean(tour.SupplierProfile?.stripeAccountId),
+    platformSharePercent: tour.platformSharePercent ?? 20,
+    tourTitle: tour.title,
+    tourImage: heroImage,
+    hotelSlug: hotelSlugFromQuery ?? undefined,
+    bookingCode: bookingCodeFromQuery ?? undefined,
+    originHotelName: originHotel?.name ?? undefined
+  };
+
+  const BookingPanel = ({ className = "" }: { className?: string }) => (
+    <div className={`rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl ${className}`}>
+      <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva</p>
+      <h3 className="mt-2 text-2xl font-bold text-slate-900">Confirma tu cupo</h3>
+      <div className="mt-4">
+        <TourBookingWidget {...bookingWidgetProps} />
+      </div>
+      <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-600">
+        <p className="font-semibold text-slate-900">
+          {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Proveedor local"}
+        </p>
+        <p>Operado por expertos en la región.</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[#FDFDFD] text-slate-900 pb-24 overflow-x-hidden">
       <StructuredData data={tourSchema} />
       <StructuredData data={faqSchema} />
-      {/* Hero */}
+
       <section className="mx-auto max-w-[1240px] px-4 pt-8 sm:pt-10">
         <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">
           <div className="flex flex-col justify-center gap-6 p-6 sm:p-8 lg:p-16">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
-              📍 {tour.location}
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
+              ?? {tour.location}
             </div>
-            <h1 className="mb-6 text-3xl font-black leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
-              {tour.title}
-            </h1>
-            <p className="mb-10 text-lg text-slate-500 leading-relaxed">{shortTeaser}</p>
-            <div className="flex items-center gap-8 border-t border-slate-100 pt-8">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Desde</p>
-                <p className="text-4xl font-black text-indigo-600">{priceLabel}</p>
+            <h1 className="text-3xl font-black text-slate-900 sm:text-4xl lg:text-5xl">{tour.title}</h1>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-end gap-8">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Desde</p>
+                  <p className="text-4xl font-black text-indigo-600">{priceLabel}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Rating</p>
+                  <p className="text-xl font-black">? {detailReviewLabel}</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{detailReviewCount} rese?as</p>
+                </div>
               </div>
-              <div className="h-10 w-px bg-slate-200" />
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Rating</p>
-                <p className="text-xl font-black">⭐ 4.9</p>
+              <div className="flex flex-wrap gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
+                {trustBadges.map((badge) => (
+                  <span key={badge} className="rounded-full border border-slate-200 bg-white/60 px-3 py-1 text-slate-700 shadow-sm">
+                    {badge}
+                  </span>
+                ))}
               </div>
-            </div>
-            <div className="mt-10 flex flex-wrap gap-4">
-              <Link
-                href="#booking"
-                className="rounded-2xl bg-indigo-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-indigo-100 transition-transform hover:scale-105 active:scale-95"
-              >
-                Reservar experiencia
-              </Link>
-              <Link
-                href="#gallery"
-                className="rounded-2xl border border-slate-200 bg-white px-8 py-4 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50"
-              >
-                Ver galería
-              </Link>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="#booking"
+                  className="rounded-3xl bg-indigo-600 px-10 py-4 text-base font-bold text-white shadow-xl shadow-indigo-100 transition-transform hover:scale-105 active:scale-95"
+                >
+                  Reserve now
+                </Link>
+                <GalleryLightbox
+                  images={gallery}
+                  buttonLabel="View gallery"
+                  buttonClassName="rounded-2xl border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+                />
+              </div>
             </div>
           </div>
-          <div
-            className="h-[400px] lg:h-full bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${heroImage})`
-            }}
-          />
+          <div className="relative h-[420px] w-full overflow-hidden rounded-[36px] bg-slate-100 p-3 lg:h-full">
+            <GalleryLightbox
+              images={gallery}
+              showDefaultTrigger={false}
+              renderTrigger={(open) => (
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => open()}
+                  className="relative grid h-full w-full cursor-pointer grid-cols-2 gap-2"
+                >
+                  <div className="relative overflow-hidden rounded-[28px] bg-slate-200">
+                    <Image
+                      src={primaryCollageImage}
+                      alt={tour.title}
+                      fill
+                      className="object-cover transition duration-500 hover:scale-105"
+                      sizes="(min-width: 1024px) 50vw, 100vw"
+                      priority
+                    />
+                  </div>
+                  <div className="grid w-full grid-rows-2 gap-2">
+                    {secondaryCollageImages.map((image, index) => (
+                      <div key={image ?? index} className="relative overflow-hidden rounded-[24px] bg-slate-200">
+                        <Image
+                          src={image ?? primaryCollageImage}
+                          alt={`${tour.title} imagen ${index + 2}`}
+                          fill
+                          className="object-cover transition duration-500 hover:scale-105"
+                          sizes="(min-width: 1024px) 25vw, 50vw"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="absolute bottom-4 left-4 right-4 rounded-[24px] border border-white/60 bg-black/50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white backdrop-blur">
+                    View gallery
+                  </div>
+                </div>
+              )}
+            />
+          </div>
         </div>
       </section>
 
-      {highlights.length ? (
-        <section className="mx-auto mt-6 max-w-[1240px] space-y-4 px-4">
-          <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Highlights</p>
-                <h2 className="text-[18px] font-semibold text-slate-900">Lo mejor de este tour</h2>
-              </div>
-            </div>
-            <ul className="mt-4 grid gap-3 md:grid-cols-3">
+      <section className="mx-auto mt-6 max-w-[1240px] px-4">
+        <nav className="sticky top-16 z-10 rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 shadow-sm backdrop-blur lg:top-8">
+          <div className="flex gap-3 overflow-x-auto py-1 text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">
+            {[
+              { label: "Overview", href: "#overview" },
+              { label: "Incluye", href: "#includes" },
+              { label: "Itinerario", href: "#itinerary" },
+              { label: "Opiniones", href: "#reviews" },
+              { label: "FAQ", href: "#faq" }
+            ].map((tab) => (
+              <a
+                key={tab.href}
+                href={tab.href}
+                className="whitespace-nowrap rounded-full px-4 py-2 transition hover:bg-slate-100 hover:text-slate-700"
+              >
+                {tab.label}
+              </a>
+            ))}
+          </div>
+        </nav>
+      </section>
+
+      <section id="overview" className="mx-auto mt-8 max-w-[1240px] px-4">
+        <div className="space-y-4 rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Overview</p>
+          <p className="text-lg text-slate-600 line-clamp-3">{tour.shortDescription ?? shortTeaser}</p>
+          {highlights.length ? (
+            <ul className="space-y-2 text-sm font-semibold text-slate-700">
               {highlights.map((item) => (
-                <li key={item} className="flex items-center gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 shadow-sm">
-                  <span className="text-lg">★</span>
+                <li key={item} className="flex items-center gap-2">
+                  <span className="text-lg text-emerald-600">?</span>
                   {item}
                 </li>
               ))}
             </ul>
-          </div>
-        </section>
-      ) : null}
-
-      <section className="mx-auto mt-10 max-w-[1240px] space-y-8 px-4 pb-10">
-        <header className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Experiencia Proactivitis</p>
-          <h2 className="text-3xl font-bold text-slate-900">Beneficios que importan de esta experiencia</h2>
-          <p className="text-sm text-slate-500">
-            Cada párrafo resume la promesa del tour; los elementos de confianza refuerzan que te espera un servicio premium.
-          </p>
-        </header>
-        <div className="space-y-4 text-sm leading-relaxed text-slate-600">
-          {marketingCopy.map((paragraph, index) => (
-            <p key={`marketing-${index}`}>{paragraph}</p>
-          ))}
-        </div>
-        <div className="grid gap-3 md:grid-cols-3">
-          {trustBadges.map((badge) => (
-            <div key={badge} className="rounded-2xl border border-slate-100 bg-white/80 p-4 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700 shadow-sm">
-              {badge}
-            </div>
-          ))}
+          ) : null}
         </div>
       </section>
 
-      {/* Quick Info */}
-      <section className="mx-auto mt-10 max-w-[1240px] px-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section id="key-info" className="mx-auto mt-6 max-w-[1240px] px-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {quickInfo.map((item) => (
             <div
               key={item.label}
-              className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+              className="rounded-[16px] border border-slate-100 bg-white/80 px-5 py-4 text-center shadow-sm"
             >
-              <span className="mb-3 block text-2xl">{item.icon}</span>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{item.label}</p>
+              <span className="mb-2 inline-block text-2xl">{item.icon}</span>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400">{item.label}</p>
               <p className="text-sm font-black text-slate-900">{item.value}</p>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400 mt-2">{item.detail}</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400">{item.detail}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Main Grid */}
-      <main className="mx-auto mt-12 grid max-w-[1240px] gap-10 px-4 lg:grid-cols-[1fr,400px]">
+      <section id="booking" className="mx-auto mt-6 max-w-[1240px] px-4 lg:hidden">
+        <div className="md:hidden mb-3">
+          <p className="text-sm font-semibold text-gray-900">Reserve in 30 seconds</p>
+          <p className="text-xs text-gray-600">Select date & travelers, then confirm.</p>
+        </div>
+        <div className="md:hidden ring-1 ring-black/10 shadow-md">
+          <BookingPanel />
+        </div>
+      </section>
+
+      <main className="mx-auto mt-10 grid max-w-[1240px] gap-10 px-4 lg:grid-cols-[1fr,420px]">
         <div className="space-y-10">
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <TourGalleryViewer
-              images={gallery.map((img, index) => ({
-                url: img,
-                label: `${tour.title} ${index + 1}`
-              }))}
-            />
-          </section>
-
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
+          <section id="includes" className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resumen</p>
-                <h2 className="text-[20px] font-semibold text-slate-900">Visión general</h2>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Incluye / No incluye</p>
+                <h2 className="text-[20px] font-semibold text-slate-900">Cobertura</h2>
               </div>
-              {needsReadMore && (
-                <Link href="#full-description" className="text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">
-                  Leer más
-                </Link>
-              )}
+              <p className="text-xs text-slate-500">Informaci?n precisa</p>
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">{shortTeaser}</p>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Incluye</p>
+                <ul className="mt-3 space-y-2 text-sm font-semibold text-emerald-600">
+                  {includes.map((item) => (
+                    <li key={item} className="flex items-center gap-2">
+                      <span className="text-lg">?</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">No incluye</p>
+                <ul className="mt-3 space-y-2 text-sm font-semibold text-rose-500">
+                  {excludes.map((item) => (
+                    <li key={item} className="flex items-center gap-2">
+                      <span className="text-lg">?</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </section>
 
-          <section id="full-description" className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Descripción</p>
-              <h2 className="text-[20px] font-semibold text-slate-900">Detalles completos</h2>
-            </div>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">
-              {tour.description || "La descripción completa estará disponible pronto."}
-            </p>
-          </section>
-
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
+          <section id="itinerary" className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">Detalles</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">Información clave</h3>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Itinerario</p>
+                <h2 className="text-[20px] font-semibold text-slate-900">L?nea de tiempo</h2>
               </div>
-              <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">Categorías</span>
             </div>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              {[
-                { title: "Categorías", value: categories.join(", ") || "Premium" },
-                { title: "Idiomas", value: languages.join(", ") || "Español / Inglés" },
-                { title: "Capacidad", value: `${tour.capacity ?? 15} personas` },
-                { title: "Nivel físico", value: tour.physicalLevel ?? "Moderado" }
-              ].map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-[16px] border border-[#F1F5F9] bg-white/40 px-4 py-3"
-                >
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-slate-500">
-                    {item.title}
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">{item.value}</p>
+            <div className="space-y-4">
+              {visualTimeline.map((stop, index) => (
+                <div key={`${stop.title}-${index}`} className="flex gap-4 rounded-[16px] border border-[#F1F5F9] bg-white/70 px-4 py-3">
+                  <div className="flex flex-col items-center text-sm text-slate-500">
+                    <span className="h-3 w-3 rounded-full bg-indigo-600" />
+                    {index !== visualTimeline.length - 1 && <span className="mt-2 h-6 w-px bg-slate-200" />}
+                  </div>
+                  <div className="text-sm leading-relaxed text-slate-600">
+                    <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{stop.time}</p>
+                    <p className="text-base font-semibold text-slate-900">{stop.title}</p>
+                    <p>{stop.description ?? "Detalle pr?ximamente."}</p>
+                  </div>
                 </div>
               ))}
             </div>
           </section>
 
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <h3 className="text-[16px] font-semibold text-slate-900">Incluye / No incluye</h3>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Incluye</p>
-                <div className="mt-3 space-y-2">
-                  {includes.map((item) => (
-                    <p key={item} className="flex items-center gap-2 text-sm font-semibold text-emerald-600">
-                      <span className="text-lg">✔︎</span>
-                      {item}
-                    </p>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">No incluye</p>
-                <div className="mt-3 space-y-2">
-                  {excludes.map((item) => (
-                    <p key={item} className="flex items-center gap-2 text-sm font-semibold text-rose-500">
-                      <span className="text-lg">✘</span>
-                      {item}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
+          <section id="reviews" className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Itinerario</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">Línea de tiempo</h3>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Prueba social</p>
+                <h2 className="text-[20px] font-semibold text-slate-900">Opiniones</h2>
               </div>
-              <span className="text-[0.65rem] uppercase tracking-[0.4em] text-slate-400">Paso a paso</span>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">? 4.9 ? {detailReviewLabel} rese?as</p>
             </div>
-            <div className="relative mt-4 pl-0 lg:pl-10">
-              <div className="absolute left-4 top-0 bottom-0 w-px border-l-2 border-dashed border-slate-200" />
-              <div className="space-y-5">
-                {visualTimeline.map((stop, index) => (
-                  <div key={`${stop.title}-${index}`} className="relative flex gap-4">
-                    <div className="flex flex-col items-center">
-                      <span className="h-3 w-3 rounded-full bg-indigo-600" />
-                      {index !== visualTimeline.length - 1 && <span className="mt-2 h-6 w-px bg-slate-200" />}
-                    </div>
-                    <div className="flex-1 rounded-[16px] border border-[#F1F5F9] bg-white/70 px-4 py-3">
-                      <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{stop.time}</p>
-                      <p className="mt-1 text-[16px] font-semibold text-slate-900">{stop.title}</p>
-                      <p className="mt-1 text-sm text-slate-600">{stop.description ?? "Detalle próximamente."}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Prueba social</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">Opiniones</h3>
-              </div>
-              <div className="text-xs uppercase tracking-[0.3em] text-slate-400">⭐ 4.9 · {detailReviewLabel} reseñas</div>
-            </div>
-            <div className="mt-4 grid gap-6 lg:grid-cols-[1.2fr,1fr]">
+            <div className="grid gap-6 lg:grid-cols-[1.2fr,1fr]">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <p className="text-4xl font-semibold text-slate-900">4.9</p>
@@ -693,13 +681,6 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
                       </div>
                       <span className="ml-2 text-xs font-semibold text-slate-500">{item.percent}%</span>
                     </div>
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
-                  {reviewTags.map((tag) => (
-                    <span key={tag} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
-                      {tag}
-                    </span>
                   ))}
                 </div>
               </div>
@@ -726,49 +707,12 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
             </div>
           </section>
 
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Prepárate</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">Qué llevar</h3>
-              </div>
-              <span className="text-xs uppercase tracking-[0.35em] text-slate-400">Consejos</span>
-            </div>
-            <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-              {packingList.map((item) => (
-                <div
-                  key={item.label}
-                  className="flex min-w-[140px] flex-col items-center gap-2 rounded-[16px] border border-[#F1F5F9] bg-white/0 px-3 py-4 text-center"
-                >
-                  <span className="text-2xl">{item.icon}</span>
-                  <p className="text-sm font-semibold text-slate-900">{item.label}</p>
-                  <p className="text-xs text-slate-500">{item.detail}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
+          <section id="faq" className="space-y-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Extras</p>
-              <h3 className="text-[16px] font-semibold text-slate-900">Información adicional</h3>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">FAQ</p>
+              <h2 className="text-[20px] font-semibold text-slate-900">Preguntas frecuentes</h2>
             </div>
-            <ul className="mt-3 space-y-2 text-sm text-slate-600">
-              {additionalInfo.map((info) => (
-                <li key={info} className="flex items-start gap-3">
-                  <span className="mt-1 h-2 w-2 rounded-full bg-slate-400" />
-                  <span>{info}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section id="faq" className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">FAQ</p>
-              <h3 className="text-[16px] font-semibold text-slate-900">Preguntas frecuentes</h3>
-            </div>
-            <div className="mt-4 space-y-4 text-sm text-slate-600">
+            <div className="space-y-4 text-sm text-slate-600">
               {faqList.map((item) => (
                 <article key={item.question} className="rounded-[16px] border border-[#F1F5F9] bg-white/60 p-4">
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{item.question}</p>
@@ -779,28 +723,9 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
           </section>
         </div>
 
-        <aside className="space-y-6 lg:w-[400px] w-full">
-          <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva</p>
-            <h3 className="mt-2 text-2xl font-bold text-slate-900">Confirma tu cupo</h3>
-          <TourBookingWidget
-            tourId={tour.id}
-            basePrice={tour.price}
-            timeSlots={timeSlots}
-            supplierHasStripeAccount={Boolean(tour.SupplierProfile?.stripeAccountId)}
-            platformSharePercent={tour.platformSharePercent ?? 20}
-            tourTitle={tour.title}
-            tourImage={heroImage}
-            hotelSlug={hotelSlugFromQuery ?? undefined}
-            bookingCode={bookingCodeFromQuery ?? undefined}
-            originHotelName={originHotel?.name ?? undefined}
-          />
-            <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-600">
-              <p className="font-semibold text-slate-900">
-                {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Proveedor local"}
-              </p>
-              <p>Operado por expertos en la región.</p>
-            </div>
+        <aside className="hidden lg:block">
+          <div className="sticky top-10 space-y-6">
+            <BookingPanel />
           </div>
         </aside>
       </main>
