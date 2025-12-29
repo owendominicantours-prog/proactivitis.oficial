@@ -16,13 +16,21 @@ export type NotificationRecipient = {
   limit?: number;
 };
 
-export const parseNotificationMetadata = (value?: string | null): NotificationMetadata => {
+export const parseNotificationMetadata = (
+  value?: string | Record<string, unknown> | null
+): NotificationMetadata => {
   if (!value) return {};
-  try {
-    return JSON.parse(value);
-  } catch {
-    return {};
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return {};
+    }
   }
+  if (typeof value === "object") {
+    return value as NotificationMetadata;
+  }
+  return {};
 };
 
 const buildRecipientFilters = ({ userId, role }: NotificationRecipient) => {
