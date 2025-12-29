@@ -113,15 +113,18 @@ export default async function SupplierMinisiteDashboardPage() {
           </div>
           <div className="mt-4 flex flex-wrap gap-3">
             <a
-              href="https://wa.me/+18093949877?text=Quiero+activar+mis+productos+del+minisite"
+              href={`mailto:info@proactivitis.com?subject=Minisite%20Activation%20Request&body=Hello%20Proactivitis%2C%20I%20want%20to%20activate%20my%20minisite.%20My%20supplier%20ID%20is%3A%20${supplier.id}%20and%20my%20company%20name%20is%3A%20${encodeURIComponent(
+                supplier.company ?? ""
+              )}`}
               className="primary-btn text-xs"
             >
-              Activate products
+              Request activation
             </a>
             <Link href="/supplier/tours" className="text-xs font-semibold text-slate-800 underline">
               Ver mis tours
             </Link>
           </div>
+          <p className="mt-2 text-xs text-slate-500">Activation is available only for partners.</p>
         </section>
       )}
 
