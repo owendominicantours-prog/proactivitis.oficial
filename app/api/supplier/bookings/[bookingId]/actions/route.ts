@@ -100,6 +100,38 @@ export async function POST(request: NextRequest, context: any) {
       });
       return NextResponse.json({ ok: true });
     }
+    case "markComplete": {
+      await prisma.booking.update({
+        where: { id: bookingId },
+        data: { status: "COMPLETED" }
+      });
+      await createNotification({
+        type: "SUPPLIER_BOOKING_MODIFIED",
+        role: "ADMIN",
+        title: `Reserva ${booking.bookingCode ?? booking.id} completada`,
+        message: `${customerName} confirmó el servicio.`,
+        metadata: { bookingId }
+      });
+      return NextResponse.json({ ok: true });
+    }
+    case "cancel": {
+      await prisma.booking.update({
+        where: { id: bookingId },
+        data: {
+          status: "CANCELLED",
+          cancellationAt: new Date(),
+          cancellationByRole: "SUPPLIER"
+        }
+      });
+      await createNotification({
+        type: "SUPPLIER_BOOKING_CANCELLED",
+        role: "ADMIN",
+        title: `Reserva ${booking.bookingCode ?? booking.id} cancelada`,
+        message: `${customerName} canceló el servicio.`,
+        metadata: { bookingId }
+      });
+      return NextResponse.json({ ok: true });
+    }
     default:
       return NextResponse.json({ error: "Acción no soportada." }, { status: 400 });
   }

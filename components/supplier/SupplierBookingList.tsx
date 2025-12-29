@@ -1,7 +1,16 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { Check, Phone, MessageCircle, Slack } from "lucide-react";
+import {
+  Check,
+  Clipboard,
+  ClipboardCheck,
+  MessageCircle,
+  Phone,
+  Printer,
+  Send,
+  Slack
+} from "lucide-react";
 
 export type SupplierBookingSummary = {
   id: string;
@@ -33,19 +42,42 @@ type RequestInfoOption = {
   message: string;
 };
 
+type DateFilterMode = "today" | "tomorrow" | "week" | "range";
+type TabKey = "today" | "tomorrow" | "upcoming" | "past" | "payment";
+
 const requestOptions: RequestInfoOption[] = [
-  { label: "Solicitar número de habitación", value: "room", message: "Por favor envíanos tu número de habitación para coordinar el pickup." },
-  { label: "Solicitar comprobante de pago", value: "paymentProof", message: "Nos puedes enviar el comprobante de pago para cerrar los detalles financieros." },
-  { label: "Informar retraso", value: "delay", message: "Tu transporte podría tener un retraso; te avisaremos cuándo salimos." }
+  {
+    label: "Solicitar número de habitación",
+    value: "room",
+    message: "Por favor envíanos tu número de habitación para coordinar el pickup."
+  },
+  {
+    label: "Solicitar comprobante de pago",
+    value: "paymentProof",
+    message: "Nos puedes enviar el comprobante de pago para cerrar los detalles financieros."
+  },
+  {
+    label: "Informar retraso",
+    value: "delay",
+    message: "Tu transporte podría tener un retraso; te avisaremos cuándo salimos."
+  }
 ];
 
 const statusColors: Record<string, string> = {
-  CONFIRMED: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  CONFIRMED: "bg-emerald-100 text-emerald-800 border-emerald-200",
   PENDING: "bg-amber-100 text-amber-700 border-amber-200",
   CANCELLED: "bg-rose-100 text-rose-700 border-rose-200",
   PAYMENT_PENDING: "bg-amber-100 text-amber-700 border-amber-200",
   COMPLETED: "bg-slate-100 text-slate-700 border-slate-200"
 };
+
+const tabs: { key: TabKey; label: string }[] = [
+  { key: "today", label: "Hoy" },
+  { key: "tomorrow", label: "Mañana" },
+  { key: "upcoming", label: "Próximos" },
+  { key: "past", label: "Pasados" },
+  { key: "payment", label: "Pendientes de pago" }
+];
 
 type Props = {
   bookings: SupplierBookingSummary[];
@@ -56,6 +88,236 @@ export function SupplierBookingList({ bookings }: Props) {
   const [modalStatus, setModalStatus] = useState<string | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
   const [requestOption, setRequestOption] = useState<RequestInfoOption | null>(null);
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, string>>({});
+  const [actionFeedbacks, setActionFeedbacks] = useState<Record<string, string>>({});
+  const [dateFilterMode, setDateFilterMode] = useState<DateFilterMode>("today");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+  const [statusFilters, setStatusFilters] = useState<string[]>(["CONFIRMED", "PENDING", "PAYMENT_PENDING"]);
+  const [selectedTour, setSelectedTour] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [pickupFilter, setPickupFilter] = useState("");
+  const [activeTab, setActiveTab] = useState<TabKey>("today");
+
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  const weekLater = new Date(now);
+  weekLater.setDate(now.getDate() + 7);
+
+  const enrichedBookings = useMemo(
+    () => bookings.map((booking) => ({ ...booking, status: statusOverrides[booking.id] ?? booking.status })),
+    [bookings, statusOverrides]
+  );
+
+  const tourOptions = useMemo(() => {
+    const set = new Set<string>();
+    enrichedBookings.forEach((booking) => set.add(booking.tourTitle));
+    return Array.from(set).sort();
+  }, [enrichedBookings]);
+
+  const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const bookingDate = (booking: SupplierBookingSummary) => new Date(booking.travelDateValue);
+  const bookingDateTime = (booking: SupplierBookingSummary) => {
+    if (!booking.startTime) return null;
+    const base = bookingDate(booking);
+    const [hours = "08", minutes = "00"] = booking.startTime.split(":");
+    const copy = new Date(base);
+    copy.setHours(Number(hours) || 8, Number(minutes) || 0, 0, 0);
+    return copy;
+  };
+
+  const matchesDateMode = (booking: SupplierBookingSummary) => {
+    const travel = bookingDate(booking);
+    switch (dateFilterMode) {
+      case "today":
+        return startOfDay(travel).getTime() === startOfDay(now).getTime();
+      case "tomorrow":
+        return startOfDay(travel).getTime() === startOfDay(tomorrow).getTime();
+      case "week":
+        return travel >= now && travel <= weekLater;
+      case "range": {
+        const start = customStart ? new Date(customStart) : null;
+        const end = customEnd ? new Date(customEnd) : null;
+        if (start && end) {
+          return travel >= startOfDay(start) && travel <= startOfDay(end);
+        }
+        return true;
+      }
+      default:
+        return true;
+    }
+  };
+
+  const tabPredicate = (booking: SupplierBookingSummary) => {
+    const travel = bookingDate(booking);
+    switch (activeTab) {
+      case "today":
+        return startOfDay(travel).getTime() === startOfDay(now).getTime();
+      case "tomorrow":
+        return startOfDay(travel).getTime() === startOfDay(tomorrow).getTime();
+      case "upcoming":
+        return travel > tomorrow && travel <= weekLater;
+      case "past":
+        return travel < startOfDay(now);
+      case "payment":
+        return booking.status === "PAYMENT_PENDING";
+      default:
+        return true;
+    }
+  };
+
+  const filteredBookings = useMemo(() => {
+    return enrichedBookings
+      .filter(matchesDateMode)
+      .filter((booking) => (statusFilters.length ? statusFilters.includes(booking.status) : true))
+      .filter((booking) => (selectedTour === "all" ? true : booking.tourTitle === selectedTour))
+      .filter((booking) => {
+        if (!searchQuery.trim()) return true;
+        const query = searchQuery.trim().toLowerCase();
+        return (
+          booking.customerName?.toLowerCase().includes(query) ||
+          booking.bookingCode.toLowerCase().includes(query) ||
+          booking.customerEmail.toLowerCase().includes(query)
+        );
+      })
+      .filter((booking) => {
+        if (!pickupFilter.trim()) return true;
+        const target = pickupFilter.trim().toLowerCase();
+        const pickupText = `${booking.hotel ?? ""} ${booking.pickup ?? ""}`.toLowerCase();
+        return pickupText.includes(target);
+      })
+      .filter(tabPredicate);
+  }, [
+    enrichedBookings,
+    dateFilterMode,
+    customStart,
+    customEnd,
+    statusFilters,
+    selectedTour,
+    searchQuery,
+    pickupFilter,
+    activeTab
+  ]);
+
+  const summary = useMemo(() => {
+    const todayStart = startOfDay(now);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayEnd.getDate() + 1);
+    let reservasHoy = 0;
+    let totalPaxHoy = 0;
+    let totalDelDia = 0;
+    let pendientesPago = 0;
+    let nextDepartureMinutes: number | null = null;
+
+    enrichedBookings.forEach((booking) => {
+      const travel = bookingDate(booking);
+      if (travel >= todayStart && travel < todayEnd) {
+        reservasHoy += 1;
+        totalPaxHoy += booking.pax;
+        totalDelDia += booking.totalAmount;
+      }
+      if (["PAYMENT_PENDING", "PENDING"].includes(booking.status)) {
+        pendientesPago += 1;
+      }
+      const travelTime = bookingDateTime(booking);
+      if (travelTime && travelTime > now) {
+        const diff = Math.round((travelTime.getTime() - now.getTime()) / 60000);
+        if (nextDepartureMinutes === null || diff < nextDepartureMinutes) {
+          nextDepartureMinutes = diff;
+        }
+      }
+    });
+
+    return { reservasHoy, totalPaxHoy, totalDelDia, pendientesPago, nextDepartureMinutes };
+  }, [enrichedBookings, now]);
+
+  const addFeedback = (bookingId: string, message: string) => {
+    setActionFeedbacks((prev) => ({ ...prev, [bookingId]: message }));
+    setTimeout(() => {
+      setActionFeedbacks((prev) => {
+        const copy = { ...prev };
+        delete copy[bookingId];
+        return copy;
+      });
+    }, 3500);
+  };
+
+  const sendSupplierAction = async (bookingId: string, payload: Record<string, unknown>) => {
+    const response = await fetch(`/api/supplier/bookings/${bookingId}/actions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error((error && (error.error ?? error.message)) || "Acción fallida.");
+    }
+    return true;
+  };
+
+  const handleMarkComplete = async (booking: SupplierBookingSummary) => {
+    try {
+      await sendSupplierAction(booking.id, { action: "markComplete" });
+      setStatusOverrides((prev) => ({ ...prev, [booking.id]: "COMPLETED" }));
+      addFeedback(booking.id, "Reserva marcada como completada.");
+    } catch (error) {
+      addFeedback(booking.id, (error as Error).message);
+    }
+  };
+
+  const handleCancel = async (booking: SupplierBookingSummary) => {
+    try {
+      await sendSupplierAction(booking.id, { action: "cancel" });
+      setStatusOverrides((prev) => ({ ...prev, [booking.id]: "CANCELLED" }));
+      addFeedback(booking.id, "Reserva cancelada.");
+    } catch (error) {
+      addFeedback(booking.id, (error as Error).message);
+    }
+  };
+
+  const handleCopyDetails = (booking: SupplierBookingSummary) => {
+    const text = `Reserva ${booking.bookingCode} · ${booking.tourTitle} · ${booking.customerName ?? "Cliente"} · ${booking.hotel ?? booking.pickup ?? "Pickup pendiente"} · ${booking.startTime ?? "Hora por confirmar"}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+    } else {
+      addFeedback(booking.id, "Navegador no soporta portapapeles.");
+      return;
+    }
+    addFeedback(booking.id, "Información copiada.");
+  };
+
+  const handlePrintDetails = (booking: SupplierBookingSummary) => {
+    if (typeof window === "undefined") return;
+    const content = `
+      <div style="font-family:Arial,sans-serif;padding:24px;">
+        <h2>${booking.tourTitle}</h2>
+        <p><strong>ID:</strong> ${booking.bookingCode}</p>
+        <p><strong>Cliente:</strong> ${booking.customerName ?? "Invitado"}</p>
+        <p><strong>Pickup:</strong> ${booking.hotel ?? booking.pickup ?? "Pendiente"}</p>
+        <p><strong>Hora:</strong> ${booking.startTime ?? "Pendiente"}</p>
+      </div>
+    `;
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      addFeedback(booking.id, "No se pudo abrir la ventana de impresión.");
+      return;
+    }
+    printWindow.document.write(content);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  };
+
+  const handleSendToDriver = (booking: SupplierBookingSummary) => {
+    if (typeof window === "undefined") return;
+    const phone = booking.whatsappNumber?.replace(/\D/g, "") ?? "18093949877";
+    const message = encodeURIComponent(
+      `Pickup: ${booking.hotel ?? booking.pickup ?? "Pendiente"} · ${booking.startTime ?? "Hora por confirmar"} · ${booking.customerName ?? "Cliente"}`
+    );
+    window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+    addFeedback(booking.id, "Mensaje enviado al chofer.");
+  };
 
   const openModal = (booking: SupplierBookingSummary) => {
     setSelectedBooking(booking);
@@ -68,30 +330,29 @@ export function SupplierBookingList({ bookings }: Props) {
     setRequestOption(null);
   };
 
-  const handleConfirmTime = async () => {
-    if (!selectedBooking) return;
+  const handleConfirmTime = async (booking?: SupplierBookingSummary) => {
+    const target = booking ?? selectedBooking;
+    if (!target) return;
     try {
-      const response = await fetch(`/api/supplier/bookings/${selectedBooking.id}/actions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "confirmTime" })
-      });
-      if (!response.ok) throw new Error("No se pudo confirmar la hora.");
-      setModalStatus("Correo de confirmación enviado.");
+      await sendSupplierAction(target.id, { action: "confirmTime" });
+      addFeedback(target.id, "Correo de confirmación enviado.");
+      if (!booking) {
+        setModalStatus("Correo de confirmación enviado.");
+      }
     } catch (error) {
-      setModalError((error as Error).message);
+      const errorMessage = (error as Error).message;
+      if (!booking) {
+        setModalError(errorMessage);
+      } else {
+        addFeedback(target.id, errorMessage);
+      }
     }
   };
 
   const handleRequestInfo = async (option: RequestInfoOption) => {
     if (!selectedBooking) return;
     try {
-      const response = await fetch(`/api/supplier/bookings/${selectedBooking.id}/actions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "requestInfo", type: option.value })
-      });
-      if (!response.ok) throw new Error("No se pudo enviar la solicitud.");
+      await sendSupplierAction(selectedBooking.id, { action: "requestInfo", type: option.value });
       setRequestOption(option);
       setModalStatus("Solicitud enviada al cliente.");
     } catch (error) {
@@ -102,12 +363,7 @@ export function SupplierBookingList({ bookings }: Props) {
   const handleSendNote = async (message: string) => {
     if (!selectedBooking) return;
     try {
-      const response = await fetch(`/api/supplier/bookings/${selectedBooking.id}/actions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "note", message })
-      });
-      if (!response.ok) throw new Error("No se pudo enviar la nota.");
+      await sendSupplierAction(selectedBooking.id, { action: "note", message });
       setModalStatus("Nota registrada.");
     } catch (error) {
       setModalError((error as Error).message);
@@ -125,64 +381,266 @@ export function SupplierBookingList({ bookings }: Props) {
     [selectedBooking]
   );
 
+  const toggleStatusFilter = (status: string) => {
+    setStatusFilters((prev) =>
+      prev.includes(status) ? prev.filter((item) => item !== status) : [...prev, status]
+    );
+  };
+
   return (
     <>
-      <div className="space-y-4">
-        {bookings.map((booking) => (
-          <article key={booking.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                  ID {booking.bookingCode.slice(-6).toUpperCase()}
-                </p>
-                <h2 className="text-lg font-semibold text-slate-900">{booking.tourTitle}</h2>
-                <p className="text-sm text-slate-500">
-                  {booking.pax} personas · Pickup {booking.hotel ?? booking.pickup ?? "Pendiente"} · {booking.startTime ?? "Hora por confirmar"}
-                </p>
+      <section className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-5">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Reservas hoy</p>
+            <p className="text-3xl font-semibold text-slate-900">{summary.reservasHoy}</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Pend. de pago</p>
+            <p className="text-3xl font-semibold text-slate-900">{summary.pendientesPago}</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Total pax hoy</p>
+            <p className="text-3xl font-semibold text-slate-900">{summary.totalPaxHoy}</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Próxima salida</p>
+            <p className="text-3xl font-semibold text-slate-900">
+              {summary.nextDepartureMinutes !== null
+                ? `en ${summary.nextDepartureMinutes} min`
+                : "sin salidas"}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Total día</p>
+            <p className="text-3xl font-semibold text-slate-900">
+              ${summary.totalDelDia.toFixed(2)}
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="grid gap-4 lg:grid-cols-5">
+            <div>
+              <label className="text-xs uppercase text-slate-500">Fecha</label>
+              <select
+                value={dateFilterMode}
+                onChange={(event) => setDateFilterMode(event.target.value as DateFilterMode)}
+                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              >
+                <option value="today">Hoy</option>
+                <option value="tomorrow">Mañana</option>
+                <option value="week">Semana</option>
+                <option value="range">Rango</option>
+              </select>
+              {dateFilterMode === "range" && (
+                <div className="mt-2 flex gap-2">
+                  <input
+                    type="date"
+                    value={customStart}
+                    onChange={(event) => setCustomStart(event.target.value)}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                  />
+                  <input
+                    type="date"
+                    value={customEnd}
+                    onChange={(event) => setCustomEnd(event.target.value)}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                  />
+                </div>
+              )}
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs uppercase text-slate-500">Estado</p>
+              <div className="flex flex-wrap gap-2">
+                {statusOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => toggleStatusFilter(option.value)}
+                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${
+                      statusFilters.includes(option.value)
+                        ? "border-slate-900 bg-slate-900 text-white"
+                        : "border-slate-200 bg-slate-50 text-slate-600"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
               </div>
-              <span className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] ${statusColors[booking.status] ?? "bg-slate-100 text-slate-700 border-slate-200"}`}>
-                {booking.status}
-              </span>
             </div>
-            <div className="mt-4 grid gap-4 md:grid-cols-3">
-              <p className="text-sm text-slate-700">
-                <span className="text-xs uppercase text-slate-500">Cliente</span>
-                <br />
-                <strong>{booking.customerName ?? "Invitado"}</strong>
-              </p>
-              <p className="text-sm text-slate-700">
-                <span className="text-xs uppercase text-slate-500">Pickup</span>
-                <br />
-                {booking.hotel ?? booking.pickup ?? "Pendiente"}
-              </p>
-              <p className="text-sm text-slate-700">
-                <span className="text-xs uppercase text-slate-500">Hora</span>
-                <br />
-                {booking.startTime ?? "Pendiente"}
-              </p>
-            </div>
-            <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em]">
-              <a
-                href={`https://wa.me/${booking.whatsappNumber?.replace(/\D/g, "") ?? "18093949877"}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-600"
+            <div>
+              <label className="text-xs uppercase text-slate-500">Tour</label>
+              <select
+                value={selectedTour}
+                onChange={(event) => setSelectedTour(event.target.value)}
+                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               >
-                <Phone className="h-4 w-4" />
-                WhatsApp
-              </a>
-              <button
-                type="button"
-                onClick={() => openModal(booking)}
-                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700"
-              >
-                <Check className="h-4 w-4 text-slate-500" />
-                Ver detalles
-              </button>
+                <option value="all">Todos</option>
+                {tourOptions.map((tour) => (
+                  <option key={tour} value={tour}>
+                    {tour}
+                  </option>
+                ))}
+              </select>
             </div>
-          </article>
-        ))}
-      </div>
+            <div>
+              <label className="text-xs uppercase text-slate-500">Buscar</label>
+              <input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Cliente o ID"
+                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs uppercase text-slate-500">Pickup</label>
+              <input
+                value={pickupFilter}
+                onChange={(event) => setPickupFilter(event.target.value)}
+                placeholder="Hotel o zona"
+                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.4em]">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`rounded-full px-4 py-2 transition ${
+                activeTab === tab.key
+                  ? "border border-slate-900 bg-slate-900 text-white"
+                  : "border border-slate-200 bg-white text-slate-600"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="space-y-4">
+          {filteredBookings.map((booking) => (
+            <article key={booking.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                    ID {booking.bookingCode.slice(-6).toUpperCase()}
+                  </p>
+                  <h2 className="text-xl font-semibold text-slate-900">{booking.tourTitle}</h2>
+                  <p className="text-sm text-slate-500">
+                    {booking.startTime ?? "Hora por confirmar"} · {new Date(booking.travelDateValue).toLocaleDateString("es-ES")}
+                  </p>
+                </div>
+                <span
+                  className={`rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] ${
+                    statusColors[booking.status] ?? "bg-slate-100 text-slate-700 border-slate-200"
+                  }`}
+                >
+                  {booking.status}
+                </span>
+              </div>
+              <div className="mt-4 grid gap-4 md:grid-cols-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Cliente</p>
+                  <p className="text-sm font-semibold text-slate-900">{booking.customerName ?? "Invitado"}</p>
+                  <p className="text-xs text-slate-500">{booking.customerEmail}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pax</p>
+                  <p className="text-lg font-semibold text-slate-900">{booking.pax}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pickup</p>
+                  <p className="text-sm font-semibold text-slate-900">{booking.hotel ?? booking.pickup ?? "Pendiente"}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pago</p>
+                  <p className="text-sm font-semibold text-slate-900">${booking.totalAmount.toFixed(2)}</p>
+                </div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleConfirmTime(booking)}
+                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+                >
+                  <Check className="h-4 w-4" />
+                  Confirmar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleMarkComplete(booking)}
+                  className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700"
+                >
+                  <ClipboardCheck className="h-4 w-4" />
+                  Completada
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCancel(booking)}
+                  className="flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-700"
+                >
+                  <Slack className="h-4 w-4" />
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCopyDetails(booking)}
+                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700"
+                >
+                  <Clipboard className="h-4 w-4" />
+                  Copiar info
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePrintDetails(booking)}
+                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700"
+                >
+                  <Printer className="h-4 w-4" />
+                  Imprimir
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSendToDriver(booking)}
+                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-sky-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-sky-700"
+                >
+                  <Send className="h-4 w-4" />
+                  Enviar al chofer
+                </button>
+                <a
+                  href={`https://wa.me/${booking.whatsappNumber?.replace(/\D/g, "") ?? "18093949877"}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700"
+                >
+                  <Phone className="h-4 w-4" />
+                  WhatsApp
+                </a>
+                <button
+                  type="button"
+                  onClick={() => openModal(booking)}
+                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Ver detalles
+                </button>
+              </div>
+              {actionFeedbacks[booking.id] && (
+                <p className="mt-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                  {actionFeedbacks[booking.id]}
+                </p>
+              )}
+            </article>
+          ))}
+          {!filteredBookings.length && (
+            <p className="text-sm text-slate-500">No hay reservas que coincidan con los filtros seleccionados.</p>
+          )}
+        </div>
+      </section>
 
       {selectedBooking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
@@ -210,7 +668,8 @@ export function SupplierBookingList({ bookings }: Props) {
                 <p>
                   <span className="text-xs uppercase text-slate-500">Logística</span>
                   <br />
-                  Pickup {selectedBooking.hotel ?? selectedBooking.pickup ?? "Pendiente"}, hora {selectedBooking.startTime ?? "Pendiente"}
+                  Pickup {selectedBooking.hotel ?? selectedBooking.pickup ?? "Pendiente"}, hora{" "}
+                  {selectedBooking.startTime ?? "Pendiente"}
                 </p>
                 <p>
                   <span className="text-xs uppercase text-slate-500">Vuelo</span>
