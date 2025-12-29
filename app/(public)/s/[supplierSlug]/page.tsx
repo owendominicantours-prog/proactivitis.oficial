@@ -111,10 +111,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function SupplierMinisitePublicPage({ params, searchParams }: PageProps) {
   const resolved = await params;
-  const resolvedSearch = searchParams ? await searchParams : {};
   const slugParam = resolved.supplierSlug;
   if (!slugParam) return notFound();
 
+  const resolvedSearch = searchParams ? await searchParams : {};
   const previewMode = resolvedSearch.preview === "1";
   const session = previewMode ? await getServerSession(authOptions) : null;
   const ownerId = session?.user?.id;
