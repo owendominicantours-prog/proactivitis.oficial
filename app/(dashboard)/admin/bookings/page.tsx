@@ -43,6 +43,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     createdAtValue: booking.createdAt.toISOString(),
     tourTitle: booking.Tour?.title ?? "Tour no disponible",
     customerName: booking.customerName,
+    customerEmail: booking.customerEmail,
     pax: booking.paxAdults + booking.paxChildren,
     totalAmount: booking.totalAmount,
     bookingCode: booking.bookingCode ?? booking.id,

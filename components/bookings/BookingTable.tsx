@@ -17,10 +17,12 @@ export type BookingRow = {
   totalAmount: number;
   status: BookingStatus;
   source: "WEB" | "SUPPLIER" | "AGENCY";
+  customerEmail: string;
   hotel?: string | null;
   cancellationReason?: string | null;
   cancellationByRole?: string | null;
   cancellationAt?: string | null;
+  bookingCode?: string | null;
 };
 
 type Props = {
