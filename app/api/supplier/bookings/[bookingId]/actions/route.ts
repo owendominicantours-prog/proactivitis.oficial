@@ -132,6 +132,20 @@ export async function POST(request: NextRequest, context: any) {
       });
       return NextResponse.json({ ok: true });
     }
+    case "requestCancel": {
+      const reason = (body.reason as string | undefined)?.trim();
+      if (!reason) {
+        return NextResponse.json({ error: "El motivo es requerido." }, { status: 400 });
+      }
+      await createNotification({
+        type: "ADMIN_SYSTEM_ALERT",
+        role: "ADMIN",
+        title: `Solicitud de cancelación ${booking.bookingCode ?? booking.id}`,
+        message: `Motivo: ${reason}`,
+        metadata: { bookingId, supplier: customerName }
+      });
+      return NextResponse.json({ ok: true });
+    }
     default:
       return NextResponse.json({ error: "Acción no soportada." }, { status: 400 });
   }

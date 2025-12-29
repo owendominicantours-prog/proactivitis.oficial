@@ -275,10 +275,14 @@ export function SupplierBookingList({ bookings }: Props) {
   };
 
   const handleCancel = async (booking: SupplierBookingSummary) => {
+    const reason = typeof window !== "undefined" ? window.prompt("Motivo de cancelación:") : null;
+    if (!reason?.trim()) {
+      addFeedback(booking.id, "Se canceló la acción, se requiere motivo.");
+      return;
+    }
     try {
-      await sendSupplierAction(booking.id, { action: "cancel" });
-      setStatusOverrides((prev) => ({ ...prev, [booking.id]: "CANCELLED" }));
-      addFeedback(booking.id, "Reserva cancelada.");
+      await sendSupplierAction(booking.id, { action: "requestCancel", reason: reason.trim() });
+      addFeedback(booking.id, "Solicitud de cancelación enviada al equipo.");
     } catch (error) {
       addFeedback(booking.id, (error as Error).message);
     }
@@ -593,7 +597,7 @@ export function SupplierBookingList({ bookings }: Props) {
                   className="flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-700"
                 >
                   <Slack className="h-4 w-4" />
-                  Cancelar
+                  Solicitar cancelación
                 </button>
                 <button
                   type="button"
