@@ -287,6 +287,12 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
     tour.shortDescription && tour.shortDescription.length > 220
       ? `${tour.shortDescription.slice(0, 220).trim()}…`
       : tour.shortDescription || "Explora esta aventura guiada por expertos locales.";
+  const longDescriptionParagraphs = tour.description
+    ? tour.description
+        .split(/\r?\n\s*\r?\n/)
+        .map((paragraph) => paragraph.trim())
+        .filter(Boolean)
+    : [];
   const trustBadges = buildTourTrustBadges(languages, categories);
   const faqList = buildTourFaq(tour.title, durationLabel, displayTime, priceLabel);
 
@@ -547,6 +553,19 @@ export default async function TourDetailPage({ params, searchParams }: TourDetai
           ) : null}
         </div>
       </section>
+
+      {longDescriptionParagraphs.length ? (
+        <section className="mx-auto mt-6 max-w-[1240px] px-4">
+          <div className="space-y-3 rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Descripción</p>
+            <div className="space-y-3 text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+              {longDescriptionParagraphs.map((paragraph, index) => (
+                <p key={index}>{paragraph}</p>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section id="key-info" className="mx-auto mt-6 max-w-[1240px] px-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
