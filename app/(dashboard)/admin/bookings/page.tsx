@@ -11,7 +11,38 @@ import {
 } from "@/lib/actions/bookingCancellation";
 import { formatTimeUntil } from "@/lib/bookings";
 
-export default async function AdminBookingsPage() {
+type TabKey = "today" | "tomorrow" | "upcoming" | "past" | "payment";
+type AdminBookingsPageProps = {
+  searchParams?: {
+    tab?: TabKey;
+    date?: "today" | "tomorrow" | "week" | "range";
+    startDate?: string;
+    endDate?: string;
+    status?: string | string[];
+    tour?: string;
+    query?: string;
+    pickup?: string;
+  };
+};
+
+const tabs: { key: TabKey; label: string }[] = [
+  { key: "today", label: "Hoy" },
+  { key: "tomorrow", label: "Mañana" },
+  { key: "upcoming", label: "Próximos" },
+  { key: "past", label: "Pasados" },
+  { key: "payment", label: "Pendientes de pago" }
+];
+
+const statusOptions: BookingStatus[] = [
+  "PENDING",
+  "CONFIRMED",
+  "PAYMENT_PENDING",
+  "CANCELLED",
+  "COMPLETED",
+  "CANCELLATION_REQUESTED"
+];
+
+export default async function AdminBookingsPage({ searchParams }: AdminBookingsPageProps) {
   const bookings = await prisma.booking.findMany({
     include: { Tour: true },
     orderBy: { createdAt: "desc" }
@@ -35,6 +66,129 @@ export default async function AdminBookingsPage() {
   }));
   const cancellationRequests = rows.filter((booking) => booking.status === "CANCELLATION_REQUESTED");
 
+  const tab = searchParams?.tab ?? "today";
+  const dateMode = searchParams?.date ?? "today";
+  const customStart = searchParams?.startDate;
+  const customEnd = searchParams?.endDate;
+  const selectedStatus = searchParams?.status
+    ? Array.isArray(searchParams.status)
+      ? searchParams.status
+      : [searchParams.status]
+    : statusOptions;
+  const selectedTour = searchParams?.tour ?? "all";
+  const searchQuery = searchParams?.query ?? "";
+  const pickupSearch = searchParams?.pickup ?? "";
+
+  const uniqueTours = Array.from(
+    new Set(bookings.map((booking) => booking.Tour?.title ?? "Tour sin título"))
+  ).sort();
+
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  const weekLater = new Date(now);
+  weekLater.setDate(now.getDate() + 7);
+
+  const withinDateMode = (booking: BookingRow) => {
+    const travel = new Date(booking.travelDateValue);
+    switch (dateMode) {
+      case "today":
+        return (
+          travel.getFullYear() === now.getFullYear() &&
+          travel.getMonth() === now.getMonth() &&
+          travel.getDate() === now.getDate()
+        );
+      case "tomorrow":
+        return (
+          travel.getFullYear() === tomorrow.getFullYear() &&
+          travel.getMonth() === tomorrow.getMonth() &&
+          travel.getDate() === tomorrow.getDate()
+        );
+      case "week":
+        return travel >= now && travel <= weekLater;
+      case "range": {
+        if (!customStart || !customEnd) return true;
+        const start = new Date(customStart);
+        const end = new Date(customEnd);
+        return travel >= start && travel <= end;
+      }
+      default:
+        return true;
+    }
+  };
+
+  const tabFilter = (booking: BookingRow) => {
+    const travel = new Date(booking.travelDateValue);
+    switch (tab) {
+      case "today":
+        return withinDateMode(booking);
+      case "tomorrow":
+        return (
+          travel.getFullYear() === tomorrow.getFullYear() &&
+          travel.getMonth() === tomorrow.getMonth() &&
+          travel.getDate() === tomorrow.getDate()
+        );
+      case "upcoming":
+        return travel > tomorrow && travel <= weekLater;
+      case "past":
+        return travel < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      case "payment":
+        return booking.status === "PAYMENT_PENDING";
+      default:
+        return true;
+    }
+  };
+
+  const filteredRows = rows
+    .filter(withinDateMode)
+    .filter((booking) => (selectedStatus.length ? selectedStatus.includes(booking.status) : true))
+    .filter((booking) => (selectedTour === "all" ? true : booking.tourTitle === selectedTour))
+    .filter((booking) => {
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.trim().toLowerCase();
+      return (
+        booking.customerName?.toLowerCase().includes(query) ||
+        booking.bookingCode.toLowerCase().includes(query) ||
+        booking.customerEmail.toLowerCase().includes(query)
+      );
+    })
+    .filter((booking) => {
+      if (!pickupSearch.trim()) return true;
+      const target = pickupSearch.trim().toLowerCase();
+      const pickupText = `${booking.hotel ?? ""} ${booking.status}`;
+      return pickupText.toLowerCase().includes(target);
+    })
+    .filter(tabFilter);
+
+  const summary = {
+    reservasHoy: rows.filter(
+      (booking) =>
+        new Date(booking.travelDateValue).toDateString() === now.toDateString()
+    ).length,
+    pendientesPago: rows.filter((booking) =>
+      ["PAYMENT_PENDING", "PENDING"].includes(booking.status)
+    ).length,
+    totalPaxHoy: rows
+      .filter((booking) => new Date(booking.travelDateValue).toDateString() === now.toDateString())
+      .reduce((total, booking) => total + booking.pax, 0),
+    totalDelDia: rows
+      .filter((booking) => new Date(booking.travelDateValue).toDateString() === now.toDateString())
+      .reduce((total, booking) => total + booking.totalAmount, 0),
+    nextDepartureMinutes: (() => {
+      const upcoming = rows
+        .map((booking) => {
+          const travel = new Date(booking.travelDateValue);
+          const travelTime = booking.startTime ? `00:00` : "00:00";
+          return travel;
+        })
+        .filter((date) => date > now)
+        .sort((a, b) => a.getTime() - b.getTime());
+      if (!upcoming.length) return null;
+      const diff = Math.round((upcoming[0].getTime() - now.getTime()) / 60000);
+      return diff;
+    })()
+  };
+
   const rowActions: Record<string, ReactNode> = {};
   bookings.forEach((booking) => {
     rowActions[booking.id] = (
@@ -47,31 +201,156 @@ export default async function AdminBookingsPage() {
           <textarea
             name="reason"
             required
-            placeholder="Motivo de cancelaci?n"
+            placeholder="Motivo de cancelación"
             className="w-full rounded-md border border-slate-200 px-3 py-2 text-xs text-slate-700"
           />
           <button
             type="submit"
             className="w-full rounded-md bg-rose-600 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white"
           >
-            Confirmar cancelaci?n
+            Confirmar cancelación
           </button>
         </form>
       </details>
     );
   });
+  });
 
   return (
     <div className="space-y-6">
-      <section className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-6 shadow-sm">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Reservas</h1>
-          <p className="text-sm text-slate-500">Vista general de todas las reservas creadas en la plataforma.</p>
-        </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <BookingTable bookings={rows} showFields={{ showHotel: true, showSource: true }} rowActions={rowActions} />
-        </div>
+      <section className="grid gap-4 md:grid-cols-5">
+        <DashboardMetric label="Reservas hoy" value={summary.reservasHoy} />
+        <DashboardMetric label="Pendientes de pago" value={summary.pendientesPago} />
+        <DashboardMetric label="Total pax hoy" value={summary.totalPaxHoy} />
+        <DashboardMetric
+          label="Próxima salida"
+          value={summary.nextDepartureMinutes !== null ? `en ${summary.nextDepartureMinutes} min` : "sin salidas"}
+        />
+        <DashboardMetric label="Total día" value={`$${summary.totalDelDia.toFixed(2)}`} />
       </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="grid gap-4 lg:grid-cols-5">
+          <div>
+            <label className="text-xs uppercase text-slate-500">Fecha</label>
+            <select
+              name="date"
+              form="filters-form"
+              defaultValue={dateMode}
+              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            >
+              <option value="today">Hoy</option>
+              <option value="tomorrow">Mañana</option>
+              <option value="week">Semana</option>
+              <option value="range">Rango</option>
+            </select>
+            {dateMode === "range" && (
+              <div className="mt-2 flex gap-2">
+                <input
+                  type="date"
+                  name="startDate"
+                  form="filters-form"
+                  defaultValue={customStart}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                />
+                <input
+                  type="date"
+                  name="endDate"
+                  form="filters-form"
+                  defaultValue={customEnd}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                />
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="text-xs uppercase text-slate-500">Estado</label>
+            <select
+              name="status"
+              form="filters-form"
+              defaultValue={selectedStatus?.[0]}
+              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            >
+              <option value="">Todos</option>
+              {statusOptions.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs uppercase text-slate-500">Tour</label>
+            <select
+              name="tour"
+              form="filters-form"
+              defaultValue={selectedTour}
+              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            >
+              <option value="all">Todos</option>
+              {uniqueTours.map((title) => (
+                <option key={title} value={title}>
+                  {title}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs uppercase text-slate-500">Buscar</label>
+            <input
+              name="query"
+              form="filters-form"
+              defaultValue={searchQuery}
+              placeholder="Cliente o ID"
+              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs uppercase text-slate-500">Pickup/Notas</label>
+            <input
+              name="pickup"
+              form="filters-form"
+              defaultValue={pickupSearch}
+              placeholder="Hotel o zona"
+              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            />
+          </div>
+        </div>
+        <form id="filters-form" method="get" className="mt-4 flex flex-wrap gap-2">
+          <input type="hidden" name="tab" value={tab} />
+          <button
+            type="submit"
+            className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+          >
+            Aplicar filtros
+          </button>
+        </form>
+      </section>
+
+      <section className="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.4em]">
+        {tabs.map((item) => (
+          <a
+            key={item.key}
+            href={`?tab=${item.key}`}
+            className={`rounded-full px-4 py-2 transition ${
+              tab === item.key
+                ? "border border-slate-900 bg-slate-900 text-white"
+                : "border border-slate-200 bg-white text-slate-600"
+            }`}
+          >
+            {item.label}
+          </a>
+        ))}
+      </section>
+
+      <section className="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+        <BookingTable
+          bookings={filteredRows}
+          showFields={{ showHotel: true, showSource: true, showPickup: true }}
+          rowActions={rowActions}
+        />
+      </section>
+
       <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -132,5 +411,14 @@ export default async function AdminBookingsPage() {
         )}
       </section>
     </div>
+  );
+}
+
+function DashboardMetric({ label, value }: { label: string; value: string | number }) {
+  return (
+    <article className="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm">
+      <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{label}</p>
+      <p className="text-3xl font-semibold text-slate-900">{value}</p>
+    </article>
   );
 }
