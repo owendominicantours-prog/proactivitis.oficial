@@ -3,8 +3,9 @@ import Link from "next/link";
 import { TourCard } from "@/components/public/TourCard";
 import ContactoProveedor from "@/components/booking/ContactoProveedor";
 import Eticket from "@/components/booking/Eticket";
-import { ItineraryTimeline, TimelineStop } from "@/components/itinerary/ItineraryTimeline";
+import { ItineraryTimeline } from "@/components/itinerary/ItineraryTimeline";
 import { BookingConfirmationData } from "./helpers";
+import { useTranslation } from "@/context/LanguageProvider";
 
 const InfoRow = ({ label, value }: { label: string; value: string }) => (
   <div className="space-y-1">
@@ -28,22 +29,41 @@ export function BookingConfirmedContent({
   flowType
 }: BookingConfirmationData) {
   const isTransfer = flowType === "transfer";
-  const heroTitle = isTransfer ? "Tu traslado privado está confirmado" : "Tu aventura comienza pronto!";
-  const heroSubtitle = isTransfer
-    ? "Nuestro chofer te espera con tu nombre en el punto acordado. Recibirás detalles adicionales en el correo."
-    : "Gracias por reservar con nosotros. Te enviamos una copia del voucher a tu bandeja y al celular.";
-  const instructionsList = isTransfer
-    ? [
-        "El chofer te esperará en el lobby principal o en la salida de llegadas del aeropuerto.",
-        "Compara tu número de vuelo con el del conductor y actualiza el dato si hay cambios.",
-        "Presenta tu e-ticket y tu identificación al momento del encuentro."
-      ]
-    : [
-        "Llega 15 minutos antes al punto de encuentro.",
-        "Lleva traje de baño, protector solar y agua.",
-        "Muestra tu e-ticket en el móvil o impreso.",
-        "¿Dudas? Usa el botón de contacto inmediato."
-      ];
+  const { t } = useTranslation();
+  const heroHeadline = t("booking.confirmation.hero.headline");
+  const heroBody = isTransfer
+    ? t("booking.confirmation.hero.body.transfer")
+    : t("booking.confirmation.hero.body.tour");
+  const heroNote = isTransfer
+    ? t("booking.confirmation.hero.note.transfer", { email: booking.customerEmail })
+    : t("booking.confirmation.hero.note.tour", { email: booking.customerEmail });
+  const transferInstructionKeys = [
+    "booking.confirmation.instructions.transfer.driverMeet",
+    "booking.confirmation.instructions.transfer.matchFlight",
+    "booking.confirmation.instructions.transfer.showVoucher"
+  ];
+  const tourInstructionKeys = [
+    "booking.confirmation.instructions.tour.arriveEarly",
+    "booking.confirmation.instructions.tour.packEssentials",
+    "booking.confirmation.instructions.tour.showVoucher",
+    "booking.confirmation.instructions.tour.askQuestions"
+  ];
+  const instructionKeys = isTransfer ? transferInstructionKeys : tourInstructionKeys;
+  const serviceLabel = isTransfer
+    ? t("booking.confirmation.labels.service")
+    : t("booking.confirmation.labels.duration");
+  const serviceValue = isTransfer
+    ? t("booking.confirmation.values.transferService")
+    : tour.duration || t("booking.confirmation.values.durationPending");
+  const pickupLabel = t("booking.confirmation.labels.meetingPoint");
+  const pickupValue = isTransfer
+    ? booking.pickup ?? t("booking.confirmation.values.defaultPickup")
+    : tour.meetingPoint ?? t("booking.confirmation.values.noMeetingPoint");
+  const totalLabel = t("booking.confirmation.labels.totalPaid");
+  const totalValue = t("booking.confirmation.values.totalPaid", { amount: booking.totalAmount.toFixed(0) });
+  const itineraryStart = tour.meetingPoint
+    ? t("booking.confirmation.itinerary.start", { meetingPoint: tour.meetingPoint })
+    : undefined;
   return (
     <div className="bg-slate-50 min-h-screen">
       <section className="bg-white border-b border-slate-200">
@@ -54,9 +74,9 @@ export function BookingConfirmedContent({
                 ✓
               </span>
               <div>
-                <p className="text-xs uppercase tracking-[0.6em] text-emerald-700">Reserva confirmada</p>
-                <h1 className="text-3xl font-black text-slate-900 md:text-4xl">¡Tu aventura comienza pronto!</h1>
-                <p className="text-xl font-semibold text-slate-900">{heroTitle}</p>
+                <p className="text-xs uppercase tracking-[0.6em] text-emerald-700">{t("booking.confirmation.statusLabel")}</p>
+                <h1 className="text-3xl font-black text-slate-900 md:text-4xl">{heroHeadline}</h1>
+                <p className="text-xl font-semibold text-slate-900">{heroBody}</p>
               </div>
             </div>
             <div className="mt-6 grid gap-6 md:grid-cols-3">
@@ -65,12 +85,12 @@ export function BookingConfirmedContent({
                 <p className="text-3xl font-black text-slate-900">{orderCode}</p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Tour reservado</p>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">{t("booking.confirmation.labels.bookedTour")}</p>
                 <p className="text-base font-semibold text-slate-700">{tour.title}</p>
                 <p className="text-sm text-slate-500">{travelDateLabel}</p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Pasajeros</p>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">{t("booking.confirmation.labels.passengers")}</p>
                 <p className="text-lg font-semibold text-slate-700">{passengerLabel}</p>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{startTimeLabel}</p>
               </div>
@@ -80,7 +100,7 @@ export function BookingConfirmedContent({
                 href="#eticket"
                 className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
               >
-                Descargar mi E-Ticket
+                {t("booking.confirmation.buttons.downloadEticket")}
               </a>
               <a
                 href={whatsappLink}
@@ -88,11 +108,11 @@ export function BookingConfirmedContent({
                 rel="noreferrer"
                 className="inline-flex items-center justify-center rounded-full border border-slate-900 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-slate-900 hover:text-white"
               >
-                ¿Dudas sobre el encuentro? Chatea por WhatsApp
+                {t("booking.confirmation.buttons.whatsapp")}
               </a>
             </div>
             <p className="mt-4 text-sm text-slate-600">
-              {heroSubtitle} Enviamos una copia del voucher a <span className="font-semibold">{booking.customerEmail}</span>.
+              {heroNote}
             </p>
           </div>
         </div>
@@ -102,30 +122,27 @@ export function BookingConfirmedContent({
         <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
           <div className="space-y-6">
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Código de reserva</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("booking.confirmation.labels.orderCode")}</p>
               <p className="text-3xl font-bold text-slate-900">{booking.id}</p>
               <p className="text-sm text-slate-500 mt-2">{summary}</p>
               <div className="mt-6 grid gap-4 md:grid-cols-3">
-                <InfoRow label={isTransfer ? "Servicio reservado" : "Duración"} value={isTransfer ? "Transfer privado" : tour.duration || "TBD"} />
-                <InfoRow
-                  label="Punto de encuentro"
-                  value={isTransfer ? booking.pickup ?? "Lobby principal" : tour.meetingPoint || "No indicado"}
-                />
-                <InfoRow label="Total pagado" value={`$${booking.totalAmount.toFixed(0)} USD`} />
+                <InfoRow label={serviceLabel} value={serviceValue} />
+                <InfoRow label={pickupLabel} value={pickupValue} />
+                <InfoRow label={totalLabel} value={totalValue} />
               </div>
             </div>
 
             <ItineraryTimeline
               stops={timelineStops}
-              startDescription={tour.meetingPoint ? `Encuentro en ${tour.meetingPoint}.` : undefined}
+              startDescription={itineraryStart}
               finishDescription={tour.meetingInstructions || undefined}
             />
 
             <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-              <h2 className="text-2xl font-semibold text-slate-900">Instrucciones importantes</h2>
+              <h2 className="text-2xl font-semibold text-slate-900">{t("booking.confirmation.section.instructions")}</h2>
               <ul className="list-disc space-y-2 pl-5 text-sm text-slate-600">
-                {instructionsList.map((item) => (
-                  <li key={item}>{item}</li>
+                {instructionKeys.map((key) => (
+                  <li key={key}>{t(key)}</li>
                 ))}
               </ul>
             </section>
@@ -133,7 +150,7 @@ export function BookingConfirmedContent({
 
           <aside className="space-y-6">
             <div className="rounded-3xl border border-emerald-200 bg-white p-6 shadow-lg">
-              <p className="text-xs uppercase tracking-[0.3em] text-emerald-600">Tu tour</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-emerald-600">{t("booking.confirmation.section.yourTour")}</p>
               <h3 className="text-xl font-semibold text-slate-900">{tour.title}</h3>
               {tour.heroImage && (
                 <div className="relative mt-4 h-48 w-full overflow-hidden rounded-2xl bg-slate-100">
@@ -141,15 +158,16 @@ export function BookingConfirmedContent({
                 </div>
               )}
               <div className="mt-4 space-y-2 text-sm text-slate-500">
-                <p>Proveedor: {supplier?.name ?? "Proactivitis"}</p>
                 <p>
-                  Zona: {tour.departureDestination?.name ?? "Global"} ·{" "}
-                  {tour.departureDestination?.country?.name ?? "Destino internacional"}
+                  {t("booking.confirmation.labels.provider")}: {supplier?.name ?? t("booking.confirmation.values.providerFallback")}
+                </p>
+                <p>
+                  {t("booking.confirmation.labels.zone")}: {tour.departureDestination?.name ?? t("booking.confirmation.values.destinationFallback")} - {tour.departureDestination?.country?.name ?? t("booking.confirmation.values.countryFallback")}
                 </p>
               </div>
               <Link href="/dashboard/customer" className="block">
                 <button className="mt-4 w-full rounded-full bg-emerald-600 px-4 py-2 text-white font-semibold hover:bg-emerald-700 transition">
-                  Ver mis reservas
+                  {t("booking.confirmation.buttons.viewBookings")}
                 </button>
               </Link>
             </div>
@@ -160,14 +178,14 @@ export function BookingConfirmedContent({
 
         {recommendedTours.length > 0 && (
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-semibold text-slate-900 mb-4">Otros clientes también reservaron</h2>
+            <h2 className="text-2xl font-semibold text-slate-900 mb-4">{t("booking.confirmation.section.recommended")}</h2>
             <div className="grid gap-4 md:grid-cols-3">
               {recommendedTours.map((item) => (
                 <TourCard
                   key={item.id}
                   slug={item.slug}
                   title={item.title}
-                  location={item.location ?? "Destino"}
+                  location={item.location ?? t("booking.confirmation.values.destinationFallback")}
                   price={item.price}
                   rating={4}
                   image={item.heroImage ?? "/fototours/fototour.jpeg"}
@@ -178,10 +196,8 @@ export function BookingConfirmedContent({
         )}
 
         <section className="space-y-6 border-t border-slate-200 pt-8">
-          <h2 className="text-2xl font-semibold text-slate-900">Tu e-ticket digital</h2>
-          <p className="text-sm text-slate-500">
-            Guarda este voucher en tu celular o descárgalo para mostrarlo cuando te reciban en el tour.
-          </p>
+          <h2 className="text-2xl font-semibold text-slate-900">{t("booking.confirmation.section.eticket")}</h2>
+          <p className="text-sm text-slate-500">{t("booking.confirmation.eticket.copy")}</p>
           <Eticket
             booking={{
               id: booking.id,
