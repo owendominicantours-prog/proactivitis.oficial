@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { en } from "../../../../lib/translations";
-import PublicTransferPage from "../../../../components/public/PublicTransferPage";
+import { en } from "@/lib/translations";
+import PublicTransferPage from "@/components/public/PublicTransferPage";
 
 const canonicalUrl = "https://proactivitis.com/en/traslado";
 
