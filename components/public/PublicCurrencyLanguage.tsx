@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Locale, useTranslation } from "../../context/LanguageProvider";
+import { Locale, useTranslation } from "@/context/LanguageProvider";
 
 const currencyOptions = ["USD", "EUR"];
 type LanguageOption = {
