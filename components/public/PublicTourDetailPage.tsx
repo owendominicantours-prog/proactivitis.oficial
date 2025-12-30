@@ -220,10 +220,12 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       notIncludedList: true,
       category: true,
       language: true,
+      location: true,
       timeOptions: true,
       duration: true,
       adminNote: true,
       price: true,
+      capacity: true,
       platformSharePercent: true,
       SupplierProfile: {
         select: {
