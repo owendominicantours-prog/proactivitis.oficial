@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { PublicAuthButtons } from "@/components/public/PublicAuthButtons";
@@ -88,7 +88,9 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         rightSlot={
           <div className="flex items-center gap-3">
             <PublicHeaderSearch />
-            <PublicCurrencyLanguage />
+            <Suspense fallback={null}>
+              <PublicCurrencyLanguage />
+            </Suspense>
             <PublicWishlistButton />
             <PublicAuthButtons />
           </div>

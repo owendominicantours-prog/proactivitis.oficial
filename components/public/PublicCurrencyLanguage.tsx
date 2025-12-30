@@ -1,18 +1,47 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Locale, useTranslation } from "@/context/LanguageProvider";
 
 const currencyOptions = ["USD", "EUR"];
-const languageOptions = [
-  { label: "ES", value: "ES" },
-  { label: "EN", value: "EN" }
+type LanguageOption = {
+  label: string;
+  value: Locale;
+  textKey: "language.spanish" | "language.english" | "language.french";
+};
+
+const languageOptions: LanguageOption[] = [
+  { label: "ES", value: "es", textKey: "language.spanish" },
+  { label: "EN", value: "en", textKey: "language.english" },
+  { label: "FR", value: "fr", textKey: "language.french" }
 ];
 
 export function PublicCurrencyLanguage() {
+  const { locale, setLocale, t } = useTranslation();
   const [currency, setCurrency] = useState("USD");
-  const [language, setLanguage] = useState("ES");
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname() ?? "/";
+  const searchParams = useSearchParams();
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const normalizedSegments =
+    pathSegments.length > 0 && ["en", "fr"].includes(pathSegments[0]) ? pathSegments.slice(1) : pathSegments;
+
+  const buildLocalizedPath = (target: Locale) => {
+    const pathPart = normalizedSegments.length ? `/${normalizedSegments.join("/")}` : "";
+    const prefix = target === "es" ? "" : `/${target}`;
+    const path = `${prefix}${pathPart}` || "/";
+    const query = searchParams.toString();
+    return `${path}${query ? `?${query}` : ""}`;
+  };
+
+  const handleLocaleChange = (target: Locale) => {
+    setLanguageOpen(false);
+    setLocale(target);
+    router.push(buildLocalizedPath(target));
+  };
 
   return (
     <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-600">
@@ -25,9 +54,15 @@ export function PublicCurrencyLanguage() {
           }}
           className="flex h-10 items-center justify-center gap-1 rounded-full border border-slate-200 px-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-600"
         >
-          <span aria-hidden="true">💲</span>
+          <span>{t("header.currency.label")}</span>
           {currency}
-          <svg className="h-3 w-3" viewBox="0 0 8 6" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <svg
+            className="h-3 w-3"
+            viewBox="0 0 8 6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.2"
+          >
             <path d="M1 1l3 3 3-3" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
@@ -58,9 +93,15 @@ export function PublicCurrencyLanguage() {
           }}
           className="flex h-10 items-center justify-center gap-1 rounded-full border border-slate-200 px-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-600"
         >
-          <span aria-hidden="true">🌐</span>
-          {language}
-          <svg className="h-3 w-3" viewBox="0 0 8 6" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <span>{t("header.language.label")}</span>
+          {locale.toUpperCase()}
+          <svg
+            className="h-3 w-3"
+            viewBox="0 0 8 6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.2"
+          >
             <path d="M1 1l3 3 3-3" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
@@ -71,12 +112,9 @@ export function PublicCurrencyLanguage() {
                 type="button"
                 key={option.value}
                 className="w-full px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-600 hover:bg-slate-50"
-                onClick={() => {
-                  setLanguage(option.value);
-                  setLanguageOpen(false);
-                }}
+                onClick={() => handleLocaleChange(option.value)}
               >
-                {option.label}
+                {t(option.textKey)}
               </button>
             ))}
           </div>
