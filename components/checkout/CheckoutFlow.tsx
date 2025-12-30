@@ -45,6 +45,7 @@ import {
 import { recommendedReservation } from "@/lib/checkout";
 
 import Link from "next/link";
+import { useTranslation } from "../../context/LanguageProvider";
 
 
 
@@ -69,23 +70,39 @@ export type CheckoutPageParams = {
 };
 
 
+type TransferDefaults = {
+  tourName: string;
+  imageUrl: string;
+  date: string;
+  time: string;
+};
+
+
 type ContactState = {
-
   firstName: string;
-
   lastName: string;
-
   email: string;
-
   confirmEmail: string;
-
   phone: string;
+};
 
+type ContactField = {
+  label: string;
+  key: keyof ContactState;
+  type: string;
+  placeholder: string;
 };
 
 
 
 type PaymentMethodId = "card" | "paypal" | "google_pay" | "klarna";
+
+type PaymentMethodDefinition = {
+  id: PaymentMethodId;
+  label: string;
+  description: string;
+  icon: LucideIcon;
+};
 
 
 
@@ -239,24 +256,6 @@ const paymentCountryOptions = [
 
 
 
-const paymentMethods: { id: PaymentMethodId; label: string; description: string; icon: LucideIcon }[] = [
-
-  {
-
-    id: "card",
-
-    label: "Tarjeta de crédito",
-
-    description: "Visa, Mastercard y American Express",
-
-    icon: CreditCard
-
-  }
-
-];
-
-
-
 const cardLogos = [
   { id: "visa", label: "Visa" },
   { id: "mastercard", label: "Mastercard" },
@@ -370,15 +369,7 @@ const CountdownTimer = ({ expires, onExpire }: { expires: number; onExpire: () =
 
 
 
-const buildSummary = (params: CheckoutPageParams) => {
-
-  const transferDefaults = {
-    tourName: "Transfer privado Proactivitis",
-    imageUrl: "/transfer/sedan.png",
-    date: "Fecha por confirmar",
-    time: "Hora por confirmar"
-  };
-
+const buildSummary = (params: CheckoutPageParams, transferDefaults: TransferDefaults) => {
   const adults = parsePositiveInt(params.adults, 1);
 
   const youth = parsePositiveInt(params.youth, 0);
@@ -443,21 +434,60 @@ const buildSummary = (params: CheckoutPageParams) => {
 
 
 
-const contactFields: { label: string; key: keyof ContactState; type: string; placeholder: string }[] = [
-
-  { label: "Nombre", key: "firstName", type: "text", placeholder: "Idelkis" },
-
-  { label: "Apellido", key: "lastName", type: "text", placeholder: "Marín" },
-
-  { label: "Correo electrónico", key: "email", type: "email", placeholder: "tucorreo@proactivitis.com" },
-
-  { label: "Confirmar correo", key: "confirmEmail", type: "email", placeholder: "Confirma tu correo" }
-
-];
-
 export default function CheckoutFlow({ initialParams }: { initialParams: CheckoutPageParams }) {
+  const { t } = useTranslation();
 
-  const summary = useMemo(() => buildSummary(initialParams), [initialParams]);
+  const transferDefaults = useMemo(
+    () => ({
+      tourName: t("checkout.transfer.tourName"),
+      imageUrl: "/transfer/sedan.png",
+      date: t("checkout.transfer.date"),
+      time: t("checkout.transfer.time")
+    }),
+    [t]
+  );
+
+  const summary = useMemo(() => buildSummary(initialParams, transferDefaults), [initialParams, transferDefaults]);
+
+  const contactFields = useMemo<ContactField[]>(() => {
+    return [
+      {
+        label: t("checkout.contact.fields.firstName.label"),
+        key: "firstName",
+        type: "text",
+        placeholder: t("checkout.contact.fields.firstName.placeholder")
+      },
+      {
+        label: t("checkout.contact.fields.lastName.label"),
+        key: "lastName",
+        type: "text",
+        placeholder: t("checkout.contact.fields.lastName.placeholder")
+      },
+      {
+        label: t("checkout.contact.fields.email.label"),
+        key: "email",
+        type: "email",
+        placeholder: t("checkout.contact.fields.email.placeholder")
+      },
+      {
+        label: t("checkout.contact.fields.confirmEmail.label"),
+        key: "confirmEmail",
+        type: "email",
+        placeholder: t("checkout.contact.fields.confirmEmail.placeholder")
+      }
+    ];
+  }, [t]);
+  const paymentMethods = useMemo<PaymentMethodDefinition[]>(
+    () => [
+      {
+        id: "card" as PaymentMethodId,
+        label: t("checkout.payment.methods.cardLabel"),
+        description: t("checkout.payment.methods.cardDescription"),
+        icon: CreditCard
+      }
+    ],
+    [t]
+  );
 
   const [activeStep, setActiveStep] = useState(0);
 
@@ -645,13 +675,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
     ? `$${summary.totalPrice.toFixed(2)} USD`
 
-    : "Precio bajo consulta";
+    : t("checkout.summary.priceOnRequest");
 
   const perPersonLabel = Number.isFinite(summary.tourPrice)
 
-    ? `${summary.tourPrice.toFixed(2)} USD por viajero`
+    ? t("checkout.summary.perTraveler", { amount: summary.tourPrice.toFixed(2) })
 
-    : "Precio por viajero";
+    : t("checkout.summary.pricePerTravelerFallback");
 
 
 
@@ -659,33 +689,38 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
     if (!contact.firstName && !contact.email) return "";
 
-    const traveler = `${contact.firstName} ${contact.lastName}`.trim() || "Viajero principal";
+    const traveler =
+      `${contact.firstName} ${contact.lastName}`.trim() || t("checkout.contact.summary.travelerPlaceholder");
 
-    const emailLabel = contact.email || "sin correo";
+    const emailLabel = contact.email || t("checkout.contact.summary.noEmail");
 
-    const phoneLabel = contact.phone ? `${phoneCountry.dial} ${contact.phone}` : "sin teléfono";
+    const phoneLabel = contact.phone ? `${phoneCountry.dial} ${contact.phone}` : t("checkout.contact.summary.noPhone");
 
-    const flightLabel = flightNumber.trim() ? `Vuelo ${flightNumber.trim()}` : "Vuelo pendiente";
+    const flightLabel = flightNumber.trim()
+      ? t("checkout.contact.summary.flightPrefix", { flightNumber: flightNumber.trim() })
+      : t("checkout.contact.summary.flightPending");
     const sections = [`${traveler} · ${emailLabel} · ${phoneLabel}`];
     if (isTransferFlow) {
       sections.push(flightLabel);
     }
     return sections.join(" · ");
-  }, [contact, phoneCountry, flightNumber, isTransferFlow]);
+  }, [contact, phoneCountry, flightNumber, isTransferFlow, t]);
 
 
 
   const travelerSummary = useMemo(() => {
 
-    if (!travelerName) return "Completa los datos del viajero principal.";
+    if (!travelerName) return t("checkout.details.travelerSummary.empty");
 
     const pickupLabel =
 
-      pickupPreference === "pickup" ? pickupLocation || "Elige un punto de encuentro" : "Punto por definir";
+      pickupPreference === "pickup"
+        ? pickupLocation || t("checkout.details.pickup.defaultPoint")
+        : t("checkout.details.pickup.pendingPoint");
 
     return `${travelerName} · ${pickupLabel}`;
 
-  }, [travelerName, pickupLocation, pickupPreference]);
+  }, [travelerName, pickupLocation, pickupPreference, t]);
 
 
 
@@ -1033,11 +1068,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
           <header className="space-y-2">
 
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Pasarela profesional</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400">{t("checkout.hero.tagline")}</p>
 
-            <h1 className="text-3xl font-semibold text-slate-900">Verifica disponibilidad y asegura tu plaza</h1>
+            <h1 className="text-3xl font-semibold text-slate-900">{t("checkout.hero.title")}</h1>
 
-            <p className="text-sm text-slate-600">Completa cada paso para preparar la experiencia antes de pagar.</p>
+            <p className="text-sm text-slate-600">{t("checkout.hero.description")}</p>
 
           </header>
 
@@ -1047,9 +1082,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
             <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
 
-              Tu sesión para <strong>{summary.tourTitle}</strong> expiró y el tiempo seguro venció. Te reenviaremos a{" "}
-
-              <strong>{sessionRedirectTarget ?? "/tours"}</strong> para volver a reservar.
+              <p>
+                {t("checkout.sessionExpired.beforeTour")}
+                <strong>{summary.tourTitle}</strong>
+                {t("checkout.sessionExpired.middle")}
+                <strong>{sessionRedirectTarget ?? "/tours"}</strong>
+                {t("checkout.sessionExpired.afterRedirect")}
+              </p>
 
             </div>
 
@@ -1061,11 +1100,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
             <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
 
-              <p>Para continuar debes llegar desde la ficha del tour. Verifica la disponibilidad y regresa.</p>
+              <p>{t("checkout.missingTour.message")}</p>
 
               <Link href="/tours" className="font-semibold text-rose-600 underline">
 
-                Ver tours
+                {t("checkout.missingTour.cta")}
 
               </Link>
 
@@ -1091,37 +1130,38 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
             <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
 
-              <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
+                  <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
 
-                <div>
+                    <div>
 
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Paso 1 · Datos de contacto</p>
+                      <p className="text-xs uppercase tracking-[0.4em] text-slate-400">{t("checkout.step.contact")}</p>
 
-                  <p className="text-lg font-semibold text-slate-900">Completa tus datos</p>
+                      <p className="text-lg font-semibold text-slate-900">{t("checkout.section.contact.heading")}</p>
 
-                  {contactSummary && <p className="text-sm text-slate-500">{contactSummary}</p>}
+                      {contactSummary && <p className="text-sm text-slate-500">{contactSummary}</p>}
 
-                </div>
+                    </div>
 
-                <span className="flex items-center gap-2 text-sm font-semibold text-[#008768]">
+                    <span className="flex items-center gap-2 text-sm font-semibold text-[#008768]">
 
-                  {completedSteps[0] ? (
+                      {completedSteps[0] ? (
 
-                    <>
+                        <>
 
-                      <BadgeCheck className="h-4 w-4 text-emerald-500" /> <span className="text-emerald-700">Completado</span>
+                          <BadgeCheck className="h-4 w-4 text-emerald-500" />{" "}
+                          <span className="text-emerald-700">{t("checkout.status.completed")}</span>
 
-                    </>
+                        </>
 
-                  ) : (
+                      ) : (
 
-                    <span>{activeStep === 0 ? "Activo" : "Pendiente"}</span>
+                        <span>{activeStep === 0 ? t("checkout.status.active") : t("checkout.status.pending")}</span>
 
-                  )}
+                      )}
 
-                </span>
+                    </span>
 
-              </div>
+                  </div>
 
               {activeStep === 0 && (
 
@@ -1167,7 +1207,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                     <label className="text-xs uppercase tracking-[0.3em] text-slate-500" htmlFor="phone">
 
-                      Teléfono
+                      {t("checkout.contact.phone.label")}
 
                     </label>
 
@@ -1230,7 +1270,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                   {isTransferFlow && (
                     <div className="space-y-2">
                       <label htmlFor="flightNumber" className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                        Numero de vuelo (opcional)
+                        {t("checkout.flightNumber.label")}
                       </label>
                       <input
                         id="flightNumber"
@@ -1239,7 +1279,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                         placeholder="PUJ 123"
                         className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                       />
-                      <p className="text-xs text-slate-500">Puedes indicar tu vuelo ahora o actualizarlo despues.</p>
+                      <p className="text-xs text-slate-500">{t("checkout.flightNumber.help")}</p>
                     </div>
                   )}
                   <div className="flex justify-end">
@@ -1254,7 +1294,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                     >
 
-                      Siguiente
+                      {t("checkout.buttons.next")}
 
                     </button>
 
@@ -1269,39 +1309,40 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
             <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
 
-              <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
+                <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
 
-                <div>
+                  <div>
 
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Paso 2 · Detalles</p>
+                    <p className="text-xs uppercase tracking-[0.4em] text-slate-400">{t("checkout.step.details")}</p>
 
-                  <p className="text-lg font-semibold text-slate-900">
-                    {isTransferFlow ? "Detalles del traslado" : "Detalles de la actividad"}
-                  </p>
+                    <p className="text-lg font-semibold text-slate-900">
+                      {isTransferFlow ? t("checkout.details.transferHeading") : t("checkout.details.activityHeading")}
+                    </p>
 
-                  {travelerSummary && <p className="text-sm text-slate-500">{travelerSummary}</p>}
+                    {travelerSummary && <p className="text-sm text-slate-500">{travelerSummary}</p>}
+
+                  </div>
+
+                  <span className="flex items-center gap-2 text-sm font-semibold text-[#008768]">
+
+                    {completedSteps[1] ? (
+
+                      <>
+
+                        <BadgeCheck className="h-4 w-4 text-emerald-500" />{" "}
+                        <span className="text-emerald-700">{t("checkout.status.completed")}</span>
+
+                      </>
+
+                    ) : (
+
+                      <span>{activeStep === 1 ? t("checkout.status.active") : t("checkout.status.pending")}</span>
+
+                    )}
+
+                  </span>
 
                 </div>
-
-                <span className="flex items-center gap-2 text-sm font-semibold text-[#008768]">
-
-                  {completedSteps[1] ? (
-
-                    <>
-
-                      <BadgeCheck className="h-4 w-4 text-emerald-500" /> <span className="text-emerald-700">Completado</span>
-
-                    </>
-
-                  ) : (
-
-                    <span>{activeStep === 1 ? "Activo" : "Pendiente"}</span>
-
-                  )}
-
-                </span>
-
-              </div>
 
               {activeStep === 1 && (
 
@@ -1311,7 +1352,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                     <label htmlFor="travelerName" className="text-xs uppercase tracking-[0.3em] text-slate-500">
 
-                      Viajero principal
+                      {t("checkout.details.mainTraveler")}
 
                     </label>
 
@@ -1323,7 +1364,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                       onChange={(event) => handleTravelerChange(event.target.value)}
 
-                      placeholder="Nombre completo"
+                      placeholder={t("checkout.details.travelerPlaceholder")}
 
                       className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
 
@@ -1339,7 +1380,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <div className="space-y-2">
 
-                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Punto de recogida</p>
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("checkout.details.pickupPoint")}</p>
 
                     <div className="grid gap-3 md:grid-cols-2">
 
@@ -1365,7 +1406,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                         />
 
-                        Prefiero que me recojan
+                        {t("checkout.details.pickupOption.pickup")}
 
                       </label>
 
@@ -1391,7 +1432,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                         />
 
-                        Lo decidiré más tarde
+                        {t("checkout.details.pickupOption.later")}
 
                       </label>
 
@@ -1403,7 +1444,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                         <label htmlFor="pickupLocation" className="text-xs uppercase tracking-[0.3em] text-slate-500">
 
-                          Localización preferida
+                          {t("checkout.details.pickupLocation.label")}
 
                         </label>
 
@@ -1419,7 +1460,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                             onChange={(event) => handlePickupLocationChange(event.target.value)}
 
-                            placeholder="Hotel o punto de encuentro"
+                            placeholder={t("checkout.details.pickupLocation.placeholder")}
 
                             className="w-full bg-transparent text-sm outline-none"
 
@@ -1437,7 +1478,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <div className="grid gap-4 md:grid-cols-2">
 
-                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Idioma del tour</label>
+                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("checkout.details.language.label")}</label>
 
                     <select
 
@@ -1465,7 +1506,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <div className="space-y-2">
 
-                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Requisitos especiales</label>
+                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("checkout.details.specialRequirements.label")}</label>
 
                     <textarea
 
@@ -1475,7 +1516,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                       rows={3}
 
-                      placeholder="Indica necesidades especiales"
+                      placeholder={t("checkout.details.specialRequirements.placeholder")}
 
                       className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
 
@@ -1485,19 +1526,19 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <div className="flex items-center justify-between">
 
-                    <button
+                      <button
 
-                      type="button"
+                        type="button"
 
-                      onClick={() => setActiveStep(0)}
+                        onClick={() => setActiveStep(0)}
 
-                      className="flex items-center gap-2 text-sm font-semibold text-slate-600"
+                        className="flex items-center gap-2 text-sm font-semibold text-slate-600"
 
-                    >
+                      >
 
-                      <ArrowLeft className="h-4 w-4" /> Regresar
+                        <ArrowLeft className="h-4 w-4" /> {t("checkout.buttons.back")}
 
-                    </button>
+                      </button>
 
                     <button
 
@@ -1509,7 +1550,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                     >
 
-                      Siguiente
+                      {t("checkout.buttons.next")}
 
                     </button>
 
@@ -1526,11 +1567,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                 <div>
 
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Paso 3 · Pago</p>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">{t("checkout.step.payment")}</p>
 
-                  <p className="text-lg font-semibold text-slate-900">Información de pago</p>
+                  <p className="text-lg font-semibold text-slate-900">{t("checkout.section.payment.heading")}</p>
 
-                  <p className="text-sm text-slate-500">{summary.totalTravelers} viajeros · {summary.date} · {summary.time}</p>
+                  <p className="text-sm text-slate-500">
+                    {summary.totalTravelers} viajeros · {summary.date} · {summary.time}
+                  </p>
 
                 </div>
 
@@ -1540,13 +1583,14 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                     <>
 
-                      <BadgeCheck className="h-4 w-4 text-emerald-500" /> <span className="text-emerald-700">Completado</span>
+                      <BadgeCheck className="h-4 w-4 text-emerald-500" />{" "}
+                      <span className="text-emerald-700">{t("checkout.status.completed")}</span>
 
                     </>
 
                   ) : (
 
-                    <span>{activeStep === 2 ? "Activo" : "Pendiente"}</span>
+                    <span>{activeStep === 2 ? t("checkout.status.active") : t("checkout.status.pending")}</span>
 
                   )}
 
@@ -1560,7 +1604,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <div className="rounded-2xl border border-slate-200 bg-[#F8FAFC] p-4 text-sm text-slate-600">
 
-                    <p className="text-sm font-semibold text-slate-900">Resumen antes del pago</p>
+                    <p className="text-sm font-semibold text-slate-900">{t("checkout.payment.summaryHeading")}</p>
 
                     <p>
 
@@ -1568,14 +1612,19 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                     </p>
 
-                    <p className="text-slate-400">Reserva provisional · ID: {bookingId ?? "pendiente"}</p>
+                    <p className="text-slate-400">
+                      {t("checkout.payment.provisionalPrefix")}
+                      {bookingId ?? t("checkout.payment.provisionalPending")}
+                    </p>
 
                   </div>
 
                   <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
 
-                    {!stripePromise && <p className="text-sm text-rose-500">Stripe no está configurado.</p>}
-                    {intentLoading && <p className="text-sm text-slate-600">Preparando el pago seguro.</p>}
+                    {!stripePromise && (
+                      <p className="text-sm text-rose-500">{t("checkout.payment.stripeMissing")}</p>
+                    )}
+                    {intentLoading && <p className="text-sm text-slate-600">{t("checkout.payment.preparing")}</p>}
 
                     {clientSecret && stripePromise ? (
 
@@ -1602,6 +1651,9 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                           paymentCountry={paymentCountry}
 
                           setPaymentCountry={setPaymentCountry}
+
+                          paymentMethods={paymentMethods}
+
                           returnUrl={successRedirectBase}
 
                           onBack={goBackFromPayment}
@@ -1616,7 +1668,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                       !intentLoading && (
 
-                        <p className="text-sm text-slate-500">Confirma los pasos anteriores para habilitar el pago.</p>
+                        <p className="text-sm text-slate-500">{t("checkout.payment.requirements")}</p>
 
                       )
 
@@ -1642,7 +1694,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
               <div className="flex items-center gap-3 rounded-2xl bg-pink-50 px-3 py-2 text-sm font-semibold text-rose-600">
 
-                <Clock3 className="h-4 w-4" /> Te guardamos la plaza durante{" "}
+                <Clock3 className="h-4 w-4" /> {t("checkout.summary.hold")}{" "}
 
                 <CountdownTimer expires={countdownExpires} onExpire={countdownOnExpire} />
 
@@ -1668,7 +1720,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
 
-                    {isTransferFlow ? "Transfer" : "Tour"}
+                    {isTransferFlow ? t("checkout.summary.type.transfer") : t("checkout.summary.type.tour")}
 
                   </p>
 
@@ -1678,7 +1730,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                     <p className="text-[11px] uppercase tracking-[0.4em] text-slate-500">
 
-                      {summary.originHotelName ?? "Tu hotel"}
+                    {summary.originHotelName ?? t("checkout.summary.defaultHotel")}
 
                     </p>
 
@@ -1694,7 +1746,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <span className="flex items-center gap-2">
 
-                    <Users className="h-5 w-5 text-slate-400" /> Personas
+                    <Users className="h-5 w-5 text-slate-400" /> {t("checkout.summary.persons")}
 
                   </span>
 
@@ -1710,7 +1762,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <span className="flex items-center gap-2">
 
-                    <CalendarCheck className="h-5 w-5 text-slate-400" /> Fecha
+                    <CalendarCheck className="h-5 w-5 text-slate-400" /> {t("checkout.summary.date")}
 
                   </span>
 
@@ -1722,7 +1774,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <span className="flex items-center gap-2">
 
-                    <Clock3 className="h-5 w-5 text-slate-400" /> Hora
+                    <Clock3 className="h-5 w-5 text-slate-400" /> {t("checkout.summary.time")}
 
                   </span>
 
@@ -1733,15 +1785,15 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                   <>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5 text-slate-400" /> Origen
+                        <MapPin className="h-5 w-5 text-slate-400" /> {t("checkout.summary.origin")}
                       </span>
                         <strong>
-                          {summary.originLabel ?? summary.origin ?? "Aeropuerto de Punta Cana (PUJ)"}
+                          {summary.originLabel ?? summary.origin ?? t("checkout.summary.originFallback")}
                         </strong>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5 text-slate-400" /> Destino
+                        <MapPin className="h-5 w-5 text-slate-400" /> {t("checkout.summary.destination")}
                       </span>
                       <strong>{summary.originHotelName ?? "Tu hotel"}</strong>
                     </div>
@@ -1754,17 +1806,17 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                 <div className="flex items-center gap-2 text-[13px] font-semibold">
 
-                  <BadgeCheck className="h-4 w-4" /> Reserva con confianza · Trustpilot 5 estrellas
+                  <BadgeCheck className="h-4 w-4" /> {t("checkout.summary.confidence")}
 
                 </div>
 
-                <p>Flexibilidad excepcional · Cancelación gratuita hasta 24 h antes</p>
+                <p>{t("checkout.summary.flexibility")}</p>
 
               </div>
 
               <div className="mt-4 rounded-3xl border border-slate-200 bg-gray-50 p-5 text-slate-900 shadow-sm">
 
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Precio total</p>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{t("checkout.summary.priceLabel")}</p>
 
                 <p className="text-3xl font-semibold text-slate-900">{displayAmount}</p>
 
@@ -1776,19 +1828,19 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                 <div className="flex items-center gap-2">
 
-                  <ShieldCheck className="h-4 w-4 text-emerald-500" /> Pagos verificados y protegidos
+                  <ShieldCheck className="h-4 w-4 text-emerald-500" /> {t("checkout.summary.paymentSecurity")}
 
                 </div>
 
                 <div className="flex items-center gap-2">
 
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Soporte 24/7 en tu destino
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" /> {t("checkout.summary.support")}
 
                 </div>
 
                 <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.4em] text-slate-400">
 
-                  <Globe className="h-4 w-4 text-slate-400" /> Infraestructura global de cobros
+                  <Globe className="h-4 w-4 text-slate-400" /> {t("checkout.summary.globalInfrastructure")}
 
                 </div>
 
@@ -1832,6 +1884,8 @@ type PaymentFormProps = {
 
   setPaymentCountry: Dispatch<SetStateAction<string>>;
 
+  paymentMethods: PaymentMethodDefinition[];
+
   returnUrl: string;
 
   onBack: () => void;
@@ -1853,10 +1907,13 @@ const PaymentForm = memo(function PaymentForm({
   setActivePaymentMethod,
   paymentCountry,
   setPaymentCountry,
+  paymentMethods,
   returnUrl,
   onBack,
   onSuccess
 }: PaymentFormProps) {
+  const { t } = useTranslation();
+
   const stripe = useStripe();
 
   const elements = useElements();
@@ -1869,7 +1926,7 @@ const PaymentForm = memo(function PaymentForm({
 
     if (!stripe || !elements) {
 
-      setPaymentFeedback("Stripe aún no está listo");
+      setPaymentFeedback(t("checkout.paymentForm.stripeNotReady"));
 
       return;
 
@@ -1901,7 +1958,7 @@ const PaymentForm = memo(function PaymentForm({
 
     if (result.error) {
 
-      setPaymentFeedback(result.error.message ?? "Error procesando el pago");
+      setPaymentFeedback(result.error.message ?? t("checkout.paymentForm.errorProcessing"));
 
       setPaymentLoading(false);
 
@@ -1921,7 +1978,7 @@ const PaymentForm = memo(function PaymentForm({
 
 
 
-    setPaymentFeedback("Pago iniciado. Te redirigimos en breve para cerrar la reserva.");
+    setPaymentFeedback(t("checkout.paymentForm.paymentInitiated"));
 
     setPaymentLoading(false);
 
@@ -1937,7 +1994,7 @@ const PaymentForm = memo(function PaymentForm({
 
         <label className="text-xs uppercase tracking-[0.3em] text-slate-500" htmlFor="paymentEmail">
 
-          Email para recibo
+          {t("checkout.paymentForm.emailLabel")}
 
         </label>
 
@@ -1953,7 +2010,7 @@ const PaymentForm = memo(function PaymentForm({
 
           className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
 
-          placeholder="tucorreo@proactivitis.com"
+          placeholder={t("checkout.paymentForm.emailPlaceholder")}
 
         />
 
@@ -2001,7 +2058,9 @@ const PaymentForm = memo(function PaymentForm({
 
                 </div>
 
-                <span className="text-xs font-semibold text-slate-500">{isActive ? "Activo" : "Seleccionar"}</span>
+                <span className="text-xs font-semibold text-slate-500">
+                  {isActive ? t("checkout.paymentForm.active") : t("checkout.paymentForm.select")}
+                </span>
 
               </button>
 
@@ -2021,7 +2080,7 @@ const PaymentForm = memo(function PaymentForm({
 
                     <p className="text-sm text-slate-600">
 
-                      {method.description}. Esta opción se maneja a través de Stripe a medida que avanzas.
+                      {t("checkout.paymentForm.methodFallback", { methodDescription: method.description })}
 
                     </p>
 
@@ -2045,7 +2104,7 @@ const PaymentForm = memo(function PaymentForm({
 
         <label htmlFor="paymentCountry" className="text-xs uppercase tracking-[0.3em] text-slate-500">
 
-          País
+          {t("checkout.paymentForm.countryLabel")}
 
         </label>
 
@@ -2061,7 +2120,7 @@ const PaymentForm = memo(function PaymentForm({
 
           className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
 
-          placeholder="Busca tu país"
+          placeholder={t("checkout.paymentForm.countryPlaceholder")}
 
         />
 
@@ -2095,7 +2154,7 @@ const PaymentForm = memo(function PaymentForm({
 
         >
 
-          <ArrowLeft className="h-4 w-4" /> Regresar
+          <ArrowLeft className="h-4 w-4" /> {t("checkout.paymentForm.back")}
 
         </button>
 
@@ -2109,7 +2168,7 @@ const PaymentForm = memo(function PaymentForm({
 
         >
 
-          {paymentLoading ? "Procesando." : "Confirmar y pagar"}
+          {paymentLoading ? t("checkout.paymentForm.processing") : t("checkout.paymentForm.confirmAndPay")}
 
         </button>
 

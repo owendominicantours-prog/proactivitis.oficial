@@ -5,7 +5,7 @@ import ContactoProveedor from "@/components/booking/ContactoProveedor";
 import Eticket from "@/components/booking/Eticket";
 import { ItineraryTimeline } from "@/components/itinerary/ItineraryTimeline";
 import { BookingConfirmationData } from "./helpers";
-import { useTranslation } from "@/context/LanguageProvider";
+import { useTranslation } from "../../../context/LanguageProvider";
 
 const InfoRow = ({ label, value }: { label: string; value: string }) => (
   <div className="space-y-1">
@@ -41,13 +41,13 @@ export function BookingConfirmedContent({
     "booking.confirmation.instructions.transfer.driverMeet",
     "booking.confirmation.instructions.transfer.matchFlight",
     "booking.confirmation.instructions.transfer.showVoucher"
-  ];
+  ] as const;
   const tourInstructionKeys = [
     "booking.confirmation.instructions.tour.arriveEarly",
     "booking.confirmation.instructions.tour.packEssentials",
     "booking.confirmation.instructions.tour.showVoucher",
     "booking.confirmation.instructions.tour.askQuestions"
-  ];
+  ] as const;
   const instructionKeys = isTransfer ? transferInstructionKeys : tourInstructionKeys;
   const serviceLabel = isTransfer
     ? t("booking.confirmation.labels.service")

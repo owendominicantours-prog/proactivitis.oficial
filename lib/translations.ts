@@ -1,6 +1,6 @@
-import esMessages from "@/messages/es.json";
-import enMessages from "@/messages/en.json";
-import frMessages from "@/messages/fr.json";
+import esMessages from "../messages/es.json";
+import enMessages from "../messages/en.json";
+import frMessages from "../messages/fr.json";
 
 export const translations = {
   es: esMessages,

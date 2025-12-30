@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
-import { translations, type TranslationKey, Locale as TranslationLocale } from "@/lib/translations";
+import { translations, type TranslationKey, Locale as TranslationLocale } from "../lib/translations";
 
 export type Locale = TranslationLocale;
 export const defaultLocale: Locale = "es";
