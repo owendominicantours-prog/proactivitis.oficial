@@ -508,18 +508,24 @@ model AgencyProLink {
   Booking      Booking[] @relation("AgencyProBookings")
 }
 
+enum TourTranslationStatus {
+  PENDING
+  TRANSLATED
+  NEEDS_REVIEW
+}
+
 model Tour {
-    id                     String          @id
+  id                     String                     @id
   title                  String
-  slug                   String          @unique
-  productId              String          @unique @default(uuid())
+  slug                   String                     @unique
+  productId              String                     @unique @default(uuid())
   price                  Float
   priceChild             Float?
   priceYouth             Float?
   duration               String
-  description            String          @db.Text
+  description            String                     @db.Text
   subtitle               String?
-  shortDescription       String?         @db.Text
+  shortDescription       String?                    @db.Text
   category               String?
   physicalLevel          String?
   minAge                 Int?
@@ -532,35 +538,54 @@ model Tour {
   meetingPoint           String?
   meetingInstructions    String?
   pickup                 String?
-    requirements           String?
-    cancellationPolicy     String?
-    terms                  String?
-    highlights             Json?
-    language               String
-    includes               String
-    includesList           Json?
-    notIncludedList        Json?
-    location               String
+  requirements           String?
+  cancellationPolicy     String?
+  terms                  String?
+  highlights             Json?
+  language               String
+  includes               String
+  includesList           Json?
+  notIncludedList        Json?
+  location               String
   supplierId             String
-  featured               Boolean         @default(false)
-  status                 String          @default("draft")
+  featured               Boolean                    @default(false)
+  status                 String                     @default("draft")
   adminNote              String?
-  createdAt              DateTime        @default(now())
+  createdAt              DateTime                   @default(now())
   gallery                String?
   heroImage              String?
   departureDestinationId String?
-  departureDestination   Destination?    @relation("TourDepartureDestination", fields: [departureDestinationId], references: [id])
+  departureDestination   Destination?               @relation("TourDepartureDestination", fields: [departureDestinationId], references: [id])
   Booking                Booking[]
   Offer                  Offer[]
-  platformSharePercent   Int             @default(20)
-    SupplierProfile        SupplierProfile @relation(fields: [supplierId], references: [id])
-    AgencyProLinks         AgencyProLink[]
-    country                Country         @relation("CountryTours", fields: [countryId], references: [code])
-    countryId              String          @default("RD")
-  destination            Destination?    @relation("TourDestination", fields: [destinationId], references: [id])
+  platformSharePercent   Int                        @default(20)
+  SupplierProfile        SupplierProfile            @relation(fields: [supplierId], references: [id])
+  AgencyProLinks         AgencyProLink[]
+  country                Country                    @relation("CountryTours", fields: [countryId], references: [code])
+  countryId              String                     @default("RD")
+  destination            Destination?               @relation("TourDestination", fields: [destinationId], references: [id])
   destinationId          String?
-  microZone              MicroZone?      @relation("TourMicroZone", fields: [microZoneId], references: [id])
+  microZone              MicroZone?                 @relation("TourMicroZone", fields: [microZoneId], references: [id])
   microZoneId            String?
+  translationHash        String?
+  translations           TourTranslation[]
+}
+
+model TourTranslation {
+  id             String                @id @default(cuid())
+  tourId         String
+  locale         String
+  title          String?
+  subtitle       String?
+  shortDescription String?             @db.Text
+  description    String?               @db.Text
+  status         TourTranslationStatus @default(PENDING)
+  sourceHash     String?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  Tour           Tour                  @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@unique([tourId, locale])
 }
 
 model User {

@@ -20,7 +20,8 @@
     "incremental": true,
     "types": [
       "node",
-      "next"
+      "next",
+      "jest"
     ],
     "baseUrl": ".",
     "paths": {
@@ -38,6 +39,12 @@
       ],
       "@/app/*": [
         "app/*"
+      ],
+      "@/context/*": [
+        "context/*"
+      ],
+      "@/messages/*": [
+        "messages/*"
       ]
     },
     "plugins": [

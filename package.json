@@ -15,6 +15,7 @@
     "seed:countries": "node scripts/seed-countries.cjs",
     "generate:sitemap": "ts-node --project tsconfig.seed.json scripts/generate-sitemap.ts",
     "seed:destinations": "node scripts/seed-destinations.ts",
+    "translate:tours": "node --loader ts-node/esm scripts/translateTours.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {
