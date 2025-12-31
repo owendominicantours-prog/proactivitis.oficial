@@ -16,6 +16,7 @@ import {
   PROACTIVITIS_URL,
   SAME_AS_URLS
 } from "@/lib/seo";
+import { Locale, translate, es } from "@/lib/translations";
 
 type LandingLevel = "country" | "destination" | "microzone";
 
@@ -32,20 +33,10 @@ type LandingContext = {
   microZone?: { id: string; name: string; slug: string };
 };
 
-const levelLabels: Record<LandingLevel, { badge: string; summary: string }> = {
-  country: {
-    badge: "Abuelo · País",
-    summary: "Cobertura nacional y rutas homologadas de traslados en un solo lugar."
-  },
-  destination: {
-    badge: "Padre · Destino",
-    summary: "Programamos zonas específicas con tarifas claras y proveedores verificados."
-  },
-  microzone: {
-    badge: "Nieto · Microzona",
-    summary: "Hoteles y puntos de recogida definidos para transmitir confianza y claridad."
-  }
-};
+const getLevelCopy = (level: LandingLevel, locale: Locale) => ({
+  badge: translate(locale, `transfer.level.${level}.badge`),
+  summary: translate(locale, `transfer.level.${level}.summary`)
+});
 
 const DURATION_ESTIMATES: Record<string, number> = {
   "punta-cana": 35,
@@ -156,6 +147,7 @@ const DEFAULT_TITLE = "Traslados Proactivitis";
 const DEFAULT_DESCRIPTION = "Descubre la red global de traslados premium de Proactivitis.";
 const DEFAULT_METADATA_IMAGE = "https://www.proactivitis.com/transfer/sedan.png";
 const TRANSFER_BASE_URL = "https://proactivitis.com/traslado";
+const LOCALE: Locale = es;
 
 export async function generateMetadata({
   params
@@ -170,23 +162,28 @@ export async function generateMetadata({
 
   const { level, country, destination, microZone } = context;
   const countryName = country.name;
-  const destinationName = destination?.name;
-  const hotelName = microZone?.name;
+  const destinationName = destination?.name ?? "";
+  const hotelName = microZone?.name ?? "";
   let title = DEFAULT_TITLE;
   let description = DEFAULT_DESCRIPTION;
   const keywords: string[] = [];
 
   if (level === "country") {
-    title = `Traslados en ${country.name} | Proactivitis`;
-    description = `Covering ${country.name} with safe, hierarchical traslados and regional suppliers.`;
+    title = translate(LOCALE, "transfer.metadata.title.country", { country: countryName });
+    description = translate(LOCALE, "transfer.metadata.description.country", { country: countryName });
     keywords.push(`proactivitis ${countryName}`);
   } else if (level === "destination" && destination) {
-    title = `Traslados en ${destination.name} | Proactivitis`;
-    description = `${destination.shortDescription ?? "Reservas con precios fijos y operadores certificados."}`;
-    keywords.push(`transporte ${destination.name}`, `proactivitis ${countryName}`);
+    title = translate(LOCALE, "transfer.metadata.title.destination", { destination: destinationName });
+    description =
+      destination.shortDescription ??
+      translate(LOCALE, "transfer.metadata.description.destination", { destination: destinationName });
+    keywords.push(`transporte ${destinationName}`, `proactivitis ${countryName}`);
   } else if (level === "microzone" && microZone) {
-    title = `Traslado Privado a ${hotelName} | Proactivitis`;
-    description = `Reserva tu traslado privado a ${hotelName} en ${countryName}. Servicio premium, precio fijo y soporte 24/7. ¡Reserva ahora con Proactivitis!`;
+    title = translate(LOCALE, "transfer.metadata.title.microzone", { hotel: hotelName });
+    description = translate(LOCALE, "transfer.metadata.description.microzone", {
+      hotel: hotelName,
+      country: countryName
+    });
     keywords.push(`traslado ${hotelName}`, `transporte ${destinationName ?? countryName}`, `proactivitis ${countryName}`);
   }
 
@@ -242,21 +239,23 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
   }
 
   const { level, country, destination, microZone } = context;
-  const levelCopy = levelLabels[level];
+  const levelCopy = getLevelCopy(level, LOCALE);
+  const destinationName = destination?.name ?? "";
+  const microzoneName = microZone?.name ?? "";
 
   const heroTitle =
     level === "microzone"
-      ? `${microZone?.name} · Recogida premium`
+      ? translate(LOCALE, "transfer.hero.title.microzone", { name: microzoneName })
       : level === "destination"
-      ? `${destination?.name} · Zonas de traslado`
-      : `Traslados en ${country.name}`;
+      ? translate(LOCALE, "transfer.hero.title.destination", { name: destinationName })
+      : translate(LOCALE, "transfer.hero.title.country", { name: country.name });
 
   const heroSubtitle =
     level === "country"
-      ? "Descubre la red de destinos, microzonas y hoteles que operan con nuestros traslados."
+      ? translate(LOCALE, "transfer.hero.subtitle.country", { country: country.name })
       : level === "destination"
-      ? "Elige la microzona que conecta tu hotel con el aeropuerto y recibe la tarifa clara."
-      : "Elige tu hotel y confirma el punto exacto de recogida para sentir seguridad operativa.";
+      ? translate(LOCALE, "transfer.hero.subtitle.destination", { destination: destinationName })
+      : translate(LOCALE, "transfer.hero.subtitle.microzone", { hotel: microzoneName });
 
   const callToAction = `/traslado`;
   const breadcrumbItems = [
@@ -292,8 +291,13 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
   const highlightHotelName = microZone?.name ?? destination?.name ?? country.name;
   const durationMinutes = estimateDurationMinutes(microZone?.slug, destination?.slug);
   const meetingDestinationName = destination?.name ?? country.name;
-  const durationCopy = `El tiempo estimado desde el Aeropuerto hasta ${highlightHotelName} es de aproximadamente ${durationMinutes} minutos.`;
-  const meetingCopy = `En el Aeropuerto de ${meetingDestinationName}, nuestro equipo te esperará en la puerta de salida de llegadas nacionales/internacionales con un cartel de Proactivitis.`;
+  const durationCopy = translate(LOCALE, "transfer.detail.duration", {
+    hotel: highlightHotelName,
+    minutes: durationMinutes
+  });
+  const meetingCopy = translate(LOCALE, "transfer.detail.meeting", {
+    destination: meetingDestinationName
+  });
   const showTransferCopy = Boolean(destination || microZone);
 
   const destinationZoneId = resolveZoneId({
@@ -448,12 +452,12 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
           <p className="max-w-3xl text-lg text-slate-600">{heroSubtitle}</p>
           <p className="text-sm text-slate-500">{levelCopy.summary}</p>
           <div className="flex flex-wrap gap-3">
-            <Link
-              href={callToAction}
-              className="rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500"
-            >
-              Reservar un traslado
-            </Link>
+              <Link
+                href={callToAction}
+                className="rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500"
+              >
+                {translate(LOCALE, "transfer.button.primary")}
+              </Link>
             <Link
               href="/tours"
               className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-slate-700 transition hover:border-slate-400"

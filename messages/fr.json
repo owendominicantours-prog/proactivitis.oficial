@@ -350,5 +350,27 @@
   "tour.fallback.exclude.drinks": "Boissons",
   "tour.fallback.exclude.photos": "Photos",
   "tour.card.tag.topExperience": "Expérience haut de gamme"
+  ,
+  "transfer.level.country.badge": "Couverture nationale",
+  "transfer.level.country.summary": "Couverture dans tout le pays avec des transferts standardisés et unifiés.",
+  "transfer.level.destination.badge": "Focus destination",
+  "transfer.level.destination.summary": "Nous planifions les zones avec des tarifs transparents et des prestataires certifiés.",
+  "transfer.level.microzone.badge": "Microzone hôtelière",
+  "transfer.level.microzone.summary": "Hôtels et points de prise en charge définis pour clarté et confiance.",
+  "transfer.hero.title.country": "Transferts en {name}",
+  "transfer.hero.title.destination": "Transferts en {name}",
+  "transfer.hero.title.microzone": "{name} · Prise en charge premium",
+  "transfer.hero.subtitle.country": "Découvrez le réseau de destinations, microzones et hôtels opérés par nos transferts.",
+  "transfer.hero.subtitle.destination": "Choisissez la microzone qui relie votre hôtel à l'aéroport et obtenez le tarif clair.",
+  "transfer.hero.subtitle.microzone": "Choisissez votre hôtel et confirmez le point exact de prise en charge pour une tranquillité totale.",
+  "transfer.metadata.title.country": "Transferts en {country} | Proactivitis",
+  "transfer.metadata.description.country": "Couverture en {country} avec des transferts sécurisés et des prestataires régionaux.",
+  "transfer.metadata.title.destination": "Transferts en {destination} | Proactivitis",
+  "transfer.metadata.description.destination": "Réservations avec tarifs verrouillés et opérateurs certifiés.",
+  "transfer.metadata.title.microzone": "Transfert privé vers {hotel} | Proactivitis",
+  "transfer.metadata.description.microzone": "Réservez votre transfert privé vers {hotel} en {country}. Service premium, prix fixe et support 24/7.",
+  "transfer.detail.duration": "Le temps estimé de l'aéroport à {hotel} est d'environ {minutes} minutes.",
+  "transfer.detail.meeting": "À l'aéroport de {destination}, notre équipe vous attendra à la sortie des arrivées avec une pancarte Proactivitis.",
+  "transfer.button.primary": "Réserver un transfert"
 }
 
