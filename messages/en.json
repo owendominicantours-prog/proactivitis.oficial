@@ -76,7 +76,6 @@
   "destinations.action.explore": "Explore it",
   "destinations.action.notify": "Traveling here? Tell us",
   "destinations.footer": "Proactivitis operates under a selective expansion model. We don’t open destinations en masse; instead we manually validate each carrier and local guide so the Proactivitis standard stays intact across five continents.",
-
   "destinations.region.caribbean": "Caribbean",
   "destinations.region.northAmerica": "North America",
   "destinations.region.europe": "Europe",
@@ -315,8 +314,7 @@
   "booking.confirmation.eticket.copy": "Save this voucher on your phone or download it to show when you arrive on the tour.",
   "contact.hero.tagline": "Global assistance",
   "contact.hero.title": "Direct professional support",
-  "contact.hero.description":
-    "Our team replies fast by email, WhatsApp Business, and phone 24/7. We're available around the clock so you can reach us from anywhere in the world.",
+  "contact.hero.description": "Our team replies fast by email, WhatsApp Business, and phone 24/7. We're available around the clock so you can reach us from anywhere in the world.",
   "contact.section.phone.label": "Direct support line",
   "contact.section.phone.details": "International format +1",
   "contact.whatsapp.label": "WhatsApp Business",
@@ -340,5 +338,14 @@
   "contact.form.status.sending": "Sending...",
   "contact.form.status.success": "Thanks, we received your message and will reply shortly.",
   "contact.form.status.error.generic": "We couldn't send your request, please try again.",
-  "contact.form.submit": "Send message"
+  "contact.form.submit": "Send message",
+  "featured.tours.empty.title": "You will soon see the best of the catalog here.",
+  "featured.tours.empty.body": "We will post real tours as soon as they are approved by the team.",
+  "tour.fallback.include.transfer": "Transfer",
+  "tour.fallback.include.guide": "Guide",
+  "tour.fallback.include.lunch": "Lunch",
+  "tour.fallback.exclude.tips": "Tips",
+  "tour.fallback.exclude.drinks": "Drinks",
+  "tour.fallback.exclude.photos": "Photos",
+  "tour.card.tag.topExperience": "Top experience"
 }

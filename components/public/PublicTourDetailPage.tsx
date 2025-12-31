@@ -252,11 +252,21 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   // --- Lógica de datos ---
   const gallery = (tour.gallery ? JSON.parse(tour.gallery as string) : [tour.heroImage ?? "/fototours/fotosimple.jpg"]) as string[];
   const highlights = parseJsonArray<string>(tour.highlights);
-  const includesFromString = tour.includes ? tour.includes.split(";").map((i) => i.trim()).filter(Boolean) : ["Traslado", "Guía", "Almuerzo"];
+  const includesFromString = tour.includes ? tour.includes.split(";").map((i) => i.trim()).filter(Boolean) : [];
   const includesList = parseJsonArray<string>(tour.includesList);
   const notIncludedList = parseJsonArray<string>(tour.notIncludedList);
-  const includes = includesList.length ? includesList : includesFromString;
-  const excludes = notIncludedList.length ? notIncludedList : ["Propinas", "Bebidas", "Fotos"];
+  const fallbackIncludes = [
+    translate(locale, "tour.fallback.include.transfer"),
+    translate(locale, "tour.fallback.include.guide"),
+    translate(locale, "tour.fallback.include.lunch")
+  ];
+  const includes = includesList.length ? includesList : (includesFromString.length ? includesFromString : fallbackIncludes);
+  const fallbackExcludes = [
+    translate(locale, "tour.fallback.exclude.tips"),
+    translate(locale, "tour.fallback.exclude.drinks"),
+    translate(locale, "tour.fallback.exclude.photos")
+  ];
+  const excludes = notIncludedList.length ? notIncludedList : fallbackExcludes;
   const categories = (tour.category ?? "").split(",").map((i) => i.trim()).filter(Boolean);
   const languages = (tour.language ?? "").split(",").map((i) => i.trim()).filter(Boolean);
   const timeSlots = parseJsonArray<PersistedTimeSlot>(tour.timeOptions);
