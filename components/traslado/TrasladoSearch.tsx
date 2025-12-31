@@ -11,6 +11,8 @@ import {
   trasladoPricing,
   VehicleCategory
 } from "@/data/traslado-pricing";
+import type { TranslationKey } from "@/lib/translations";
+import { useTranslation } from "@/context/LanguageProvider";
 
 export type LocationOption = {
   name: string;
@@ -119,88 +121,113 @@ const detectZoneSlug = (
   return directZoneSlugMap[destinationZoneId] ?? "puj-to-bavaro";
 };
 
-const vehicleCatalog = [
+type VehicleCatalogEntry = {
+  id: string;
+  titleKey: TranslationKey;
+  descriptionKey: TranslationKey;
+  pax: number;
+  luggage: number;
+  image: string;
+  features: TranslationKey[];
+};
+
+const vehicleCatalog: VehicleCatalogEntry[] = [
     {
       id: "sedan-standard",
-      title: "Sedan Privado",
-      type: "Economy",
-      description: "Perfecto para parejas o viajes de negocios ligeros.",
+      titleKey: "transfer.search.vehicle.sedan.title",
+      descriptionKey: "transfer.search.vehicle.sedan.description",
       pax: 3,
       luggage: 2,
       image: "/transfer/sedan.png",
-      features: ["Aire acondicionado potente", "Espacio para 2 maletas grandes", "Seguimiento del vuelo incluido"]
+      features: [
+        "transfer.search.vehicle.sedan.feature.airConditioning",
+        "transfer.search.vehicle.sedan.feature.storage",
+        "transfer.search.vehicle.sedan.feature.flightTracking"
+      ]
     },
     {
       id: "van-private",
-      title: "Van Privada",
-      type: "Family",
-      description: "Ideal para familias o grupos de amigos con equipaje.",
+      titleKey: "transfer.search.vehicle.van.title",
+      descriptionKey: "transfer.search.vehicle.van.description",
       pax: 8,
       luggage: 8,
       image: "/transfer/mini van.png",
-      features: ["Maletero amplio", "Puerta corredera", "Silla de bebe bajo peticion"]
+      features: [
+        "transfer.search.vehicle.van.feature.storage",
+        "transfer.search.vehicle.van.feature.slidingDoor",
+        "transfer.search.vehicle.van.feature.babySeat"
+      ]
     },
     {
       id: "suv-vip",
-      title: "SUV Premium",
-      type: "Luxury",
-      description: "Viaja con estilo y discrecion con chofer bilingue.",
+      titleKey: "transfer.search.vehicle.suv.title",
+      descriptionKey: "transfer.search.vehicle.suv.description",
       pax: 5,
       luggage: 5,
       image: "/transfer/suv.png",
-      features: ["Asientos de cuero", "Bebidas frias incluidas", "Chofer bilingue profesional"]
+      features: [
+        "transfer.search.vehicle.suv.feature.leatherSeats",
+        "transfer.search.vehicle.suv.feature.beverage",
+        "transfer.search.vehicle.suv.feature.bilingualDriver"
+      ]
     },
     {
       id: "vip-luxury",
-      title: "Limusina VIP",
-      type: "Premium",
-      description: "Privacidad total, bebidas premium y atencion dedicada.",
+      titleKey: "transfer.search.vehicle.vip.title",
+      descriptionKey: "transfer.search.vehicle.vip.description",
       pax: 3,
       luggage: 2,
       image: "/transfer/suv.png",
-      features: ["Servicio champagne", "Chofer con traje", "Wi-Fi y cargadores"]
+      features: [
+        "transfer.search.vehicle.vip.feature.champagneService",
+        "transfer.search.vehicle.vip.feature.formalDriver",
+        "transfer.search.vehicle.vip.feature.wifi"
+      ]
     },
     {
       id: "bus-group",
-      title: "Bus Ejecutivo",
-      type: "Group",
-      description: "Ideal para grupos corporativos o bodas con equipaje y estilo.",
+      titleKey: "transfer.search.vehicle.bus.title",
+      descriptionKey: "transfer.search.vehicle.bus.description",
       pax: 18,
       luggage: 12,
       image: "/transfer/mini van.png",
-      features: ["Wi-Fi a bordo", "Sistema de sonido", "Asientos reclinables"]
+      features: [
+        "transfer.search.vehicle.bus.feature.wifi",
+        "transfer.search.vehicle.bus.feature.soundSystem",
+        "transfer.search.vehicle.bus.feature.recliningSeats"
+      ]
     }
   ];
 
-type VehicleOption = (typeof vehicleCatalog)[number] & { price: number | null };
+type VehicleOption = VehicleCatalogEntry & { price: number | null };
 
 const transferTourId = process.env.NEXT_PUBLIC_TRANSFER_TOUR_ID;
 const transferTourTitle = process.env.NEXT_PUBLIC_TRANSFER_TITLE ?? "Transfer privado Proactivitis";
 const transferTourImage = process.env.NEXT_PUBLIC_TRANSFER_IMAGE ?? "/transfer/sedan.png";
 
-const bookingSteps = [
-  { step: 1, name: "Selección de vehículo" },
-  { step: 2, name: "Detalles del vuelo" },
-  { step: 3, name: "Confirmación inmediata" }
+const bookingSteps: { step: number; nameKey: TranslationKey }[] = [
+  { step: 1, nameKey: "transfer.search.step.vehicle" },
+  { step: 2, nameKey: "transfer.search.step.flight" },
+  { step: 3, nameKey: "transfer.search.step.confirmation" }
 ];
 
-const trustLabels = [
-  "Precio final sin sorpresas",
-  "Conductores profesionales",
-  "Seguro de viaje incluido",
-  "Cancelación gratis (24h)"
+const trustLabels: TranslationKey[] = [
+  "transfer.search.trust.finalPrice",
+  "transfer.search.trust.professionalDrivers",
+  "transfer.search.trust.insuranceIncluded",
+  "transfer.search.trust.freeCancellation"
 ];
 
-const pickupRules = [
+const pickupRules: { titleKey: TranslationKey; descriptionKey: TranslationKey; noteKey: TranslationKey }[] = [
   {
-    title: "Datos de vuelo",
-    description: "Aerolínea · Número de vuelo · Hora estimada de aterrizaje",
-    note: "60 min de espera gratuita en el aeropuerto"
+    titleKey: "transfer.search.pickup.flight.title",
+    descriptionKey: "transfer.search.pickup.flight.description",
+    noteKey: "transfer.search.pickup.flight.note"
   },
   {
-    title: "Recogida en hotel",
-    description: "Hotel/dirección · Hora preferida de recogida",
-    note: "15 min de espera en lobby · Recomendamos 4h antes de la salida"
+    titleKey: "transfer.search.pickup.hotel.title",
+    descriptionKey: "transfer.search.pickup.hotel.description",
+    noteKey: "transfer.search.pickup.hotel.note"
   }
 ];
 
@@ -289,6 +316,7 @@ export default function TrasladoSearch({
 
   const fallbackOriginHotel = initialHotel ?? hotels[0] ?? { name: "Destino", slug: "fallback" };
   const initialOriginSelection = resolveStartingPoint() ?? createHotelSelection(fallbackOriginHotel);
+  const { t } = useTranslation();
   const [destinationSlug, setDestinationSlug] = useState(initialHotel?.slug ?? "hard-rock-punta-cana");
   const [destinationLabel, setDestinationLabel] = useState(
     initialHotel?.name ?? "Hard Rock Hotel & Casino Punta Cana"
@@ -442,7 +470,7 @@ export default function TrasladoSearch({
   }, [destinationZoneId, originZoneId]);
   const hidePricing = true;
   const readOnlyMode = true;
-  const readonlyMessage = "En reconstrucción: el sistema de transferencias está siendo revisado.";
+  const readonlyMessage = t("transfer.search.form.readOnlyMessage");
 
   const vehicles = useMemo<VehicleOption[]>(
     () =>
@@ -496,7 +524,8 @@ export default function TrasladoSearch({
   const buildCheckoutHref = (vehicle: VehicleOption) => {
     if (!baseTransferParams) return "/checkout?type=transfer";
     const params = new URLSearchParams(baseTransferParams);
-    const vehicleTitle = `${transferTourTitle} · ${vehicle.title}`;
+    const vehicleLabel = t(vehicle.titleKey);
+    const vehicleTitle = `${transferTourTitle} · ${vehicleLabel}`;
     params.set("tourTitle", vehicleTitle);
     params.set("tourImage", vehicle.image);
     if (vehicle.price != null) {
@@ -721,16 +750,23 @@ export default function TrasladoSearch({
         <div className="rounded-[28px] border border-emerald-200 bg-emerald-50/80 p-6 text-slate-900 shadow">
           <div className="flex flex-col gap-3 text-sm md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Reserva lista</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">
+                {t("transfer.search.status.ready")}
+              </p>
               <p className="text-lg font-semibold">
-                {originLabel} → {destinationLabel || selectedHotel?.name || "tu hotel"}
+                {t("transfer.search.status.summary", {
+                  origin: originLabel,
+                  hotel: destinationLabel || selectedHotel?.name || t("transfer.search.placeholder.hotel")
+                })}
               </p>
               <p className="text-sm text-slate-600">
-                {summaryDate ?? "Fecha pendiente"} · {passengers} pasajero{passengers > 1 ? "s" : ""}
+                {summaryDate ?? t("transfer.search.status.pendingDate")} ·{" "}
+                {t("transfer.search.status.passengers", { count: passengers })}
               </p>
               {flightNumber.trim() && (
                 <p className="text-sm text-slate-600">
-                  Vuelo: <span className="font-semibold text-slate-900">{flightNumber.trim()}</span>
+                  {t("transfer.search.status.flight")}{" "}
+                  <span className="font-semibold text-slate-900">{flightNumber.trim()}</span>
                 </p>
               )}
             </div>
@@ -739,29 +775,31 @@ export default function TrasladoSearch({
               onClick={resetSearchForm}
               className="rounded-full border border-emerald-300 bg-white px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700 shadow-sm transition hover:bg-emerald-50"
             >
-              Modificar
+              {t("transfer.search.action.modify")}
             </button>
           </div>
         </div>
       )}
       <div className={`rounded-[32px] border ${formCollapsed ? "border-transparent" : "border-slate-200"} bg-white/90 p-6 shadow-xl`}>
-        <p className="text-xs uppercase tracking-[0.4em] text-emerald-500">Traslado privado</p>
+        <p className="text-xs uppercase tracking-[0.4em] text-emerald-500">{t("transfer.search.hero.label")}</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
-          Traslados privados desde el aeropuerto
+          {t("transfer.search.hero.title")}
         </h1>
-        <p className="text-sm text-slate-500">Confirma tu traslado premium con chofer bilingüe y cancelación flexible.</p>
-        <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Zona estimada: {zoneLabel}</p>
+        <p className="text-sm text-slate-500">{t("transfer.search.hero.description")}</p>
+        <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
+          {t("transfer.search.hero.zone", { zone: zoneLabel })}
+        </p>
         {!formCollapsed && (
           <form className="mt-6 flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end" onSubmit={handleSearch}>
             <label className="flex-1 min-w-[180px] text-sm text-slate-500">
-              Origen
+              {t("transfer.search.field.origin")}
               <div className="relative mt-2">
                 <input
                   value={originLabel}
                   onFocus={handleOriginFocus}
                   onBlur={handleOriginBlur}
                   onChange={(event) => setOriginLabel(event.target.value)}
-                  placeholder={readOnlyMode ? readonlyMessage : "Selecciona origen (aeropuerto u hotel)"}
+                  placeholder={readOnlyMode ? readonlyMessage : t("transfer.search.placeholder.origin")}
                   disabled={readOnlyMode}
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
                 />
@@ -782,19 +820,19 @@ export default function TrasladoSearch({
                         >
                           <div className="flex flex-col">
                             <span className="font-semibold">{option.label}</span>
-                            <span className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
-                              {option.kind === "point"
-                                ? option.point.type === "airport"
-                                  ? "Aeropuerto"
-                                  : option.point.type === "hotel"
-                                  ? "Hotel"
-                                  : option.point.type
-                                : option.hotel.destinationName ?? "Hotel"}
-                            </span>
+                              <span className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
+                                {option.kind === "point"
+                                  ? option.point.type === "airport"
+                                    ? t("transfer.search.suggestion.airport")
+                                    : option.point.type === "hotel"
+                                    ? t("transfer.search.suggestion.hotel")
+                                    : option.point.type
+                                  : option.hotel.destinationName ?? t("transfer.search.suggestion.hotel")}
+                              </span>
                           </div>
                           {option.kind === "hotel" && (
                             <span className="text-[11px] font-semibold uppercase tracking-[0.4em] text-slate-500">
-                              Hotel
+                              {t("transfer.search.suggestion.hotel")}
                             </span>
                           )}
                         </button>
@@ -805,14 +843,14 @@ export default function TrasladoSearch({
               </div>
             </label>
             <label className="flex-1 min-w-[180px] text-sm text-slate-500">
-              Destino
+              {t("transfer.search.field.destination")}
               <div className="relative mt-2">
                 <input
                   value={destinationLabel}
                   onFocus={handleDestinationFocus}
                   onBlur={handleDestinationBlur}
                   onChange={(event) => setDestinationLabel(event.target.value)}
-                  placeholder={readOnlyMode ? readonlyMessage : "Escribe tu hotel"}
+                  placeholder={readOnlyMode ? readonlyMessage : t("transfer.search.placeholder.destination")}
                   disabled={readOnlyMode}
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-emerald-500 focus:outline-none"
                 />
@@ -827,9 +865,11 @@ export default function TrasladoSearch({
                           className="flex w-full flex-col px-4 py-3 text-left text-sm text-slate-800 transition hover:bg-slate-50"
                         >
                           <span className="font-semibold">{option.label}</span>
-                          <span className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
-                            {isAirportSuggestion(option) ? "Aeropuerto" : option.destinationName ?? "Hotel"}
-                          </span>
+                              <span className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
+                                {isAirportSuggestion(option)
+                                  ? t("transfer.search.suggestion.airport")
+                                  : option.destinationName ?? t("transfer.search.suggestion.hotel")}
+                              </span>
                         </button>
                       </li>
                     ))}
@@ -838,7 +878,7 @@ export default function TrasladoSearch({
               </div>
             </label>
             <label className="flex-1 min-w-[180px] text-sm text-slate-500">
-              Fecha y hora de llegada
+              {t("transfer.search.field.arrivalDateTime")}
               <input
                 type="datetime-local"
                 value={dateTime}
@@ -848,7 +888,7 @@ export default function TrasladoSearch({
               />
             </label>
             <label className="flex-1 min-w-[180px] text-sm text-slate-500">
-              Número de vuelo
+              {t("transfer.search.field.flightNumber")}
               <input
                 type="text"
                 value={flightNumber}
@@ -858,7 +898,7 @@ export default function TrasladoSearch({
               />
             </label>
             <div className="flex flex-1 min-w-[140px] items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base">
-              <span className="text-sm text-slate-600">Pasajeros</span>
+              <span className="text-sm text-slate-600">{t("transfer.search.field.passengers")}</span>
               <div className="flex items-center gap-2 text-slate-900">
                 <button
                   type="button"
@@ -884,7 +924,7 @@ export default function TrasladoSearch({
                 disabled={readOnlyMode}
                 className="mt-2 rounded-2xl bg-emerald-600 px-8 py-3 text-sm font-bold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500 disabled:opacity-60"
               >
-                VER PRECIOS
+                {t("transfer.search.action.viewPrices")}
               </button>
             </div>
           </form>
@@ -893,31 +933,39 @@ export default function TrasladoSearch({
       <section className="grid gap-4 rounded-[28px] border border-slate-100 bg-white/90 p-6 shadow-sm md:grid-cols-4">
         {trustLabels.map((label) => (
           <div key={label} className="text-center text-sm text-slate-600">
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{label}</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{t(label)}</p>
           </div>
         ))}
       </section>
       <section className="grid gap-3 rounded-[28px] border border-slate-100 bg-white/90 p-6 shadow-sm md:grid-cols-3">
-        {bookingSteps.map((step) => (
-          <div key={step.step} className="text-center text-sm text-slate-600">
-            <span className="text-lg font-bold text-slate-900">Paso {step.step}</span>
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{step.name}</p>
-          </div>
-        ))}
+          {bookingSteps.map((step) => (
+            <div key={step.step} className="text-center text-sm text-slate-600">
+              <span className="text-lg font-bold text-slate-900">
+                {t("transfer.search.stepLabel", { step: step.step })}
+              </span>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{t(step.nameKey)}</p>
+            </div>
+          ))}
       </section>
       {showResults && (
         <section className="space-y-6">
           <div className="flex flex-col gap-2">
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Opciones disponibles</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+              {t("transfer.search.section.available.label")}
+            </p>
               <h2 className="text-2xl font-bold text-slate-900">
-                Lleva a tu grupo de {passengers} pax a{" "}
-                {destinationLabel || selectedHotel?.name || "tu hotel"}
+                {t("transfer.search.section.available.title", {
+                  passengers,
+                  hotel: destinationLabel || selectedHotel?.name || t("transfer.search.placeholder.hotel")
+                })}
               </h2>
             {selectedHotel && (
-              <p className="text-sm text-emerald-700">Mostrando tarifas privadas para {selectedHotel.name}</p>
+              <p className="text-sm text-emerald-700">
+                {t("transfer.search.section.available.subtitle", { hotel: selectedHotel.name })}
+              </p>
             )}
             <p className="text-sm text-slate-500">
-              Zona del hotel: <span className="font-semibold text-slate-800">{zoneLabel}</span>
+              {t("transfer.search.section.available.zoneLabel", { zone: zoneLabel })}
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
@@ -926,27 +974,30 @@ export default function TrasladoSearch({
                 key={vehicle.id}
                 className="flex h-full flex-col justify-between rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-lg"
               >
-                <img src={vehicle.image} alt={vehicle.title} className="h-32 w-full rounded-2xl object-cover" />
+                <img src={vehicle.image} alt={t(vehicle.titleKey)} className="h-32 w-full rounded-2xl object-cover" />
                 <div className="mt-4 space-y-2">
-                  <h3 className="text-lg font-semibold text-slate-900">{vehicle.title}</h3>
-                  <p className="text-sm text-slate-500">{vehicle.description}</p>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {vehicle.pax} pax · {vehicle.luggage} maletas
-                  </p>
+                      <h3 className="text-lg font-semibold text-slate-900">{t(vehicle.titleKey)}</h3>
+                      <p className="text-sm text-slate-500">{t(vehicle.descriptionKey)}</p>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {t("transfer.search.vehicle.capacityDetail", {
+                          pax: vehicle.pax,
+                          luggage: vehicle.luggage
+                        })}
+                      </p>
                   <p className="text-3xl font-black text-indigo-600">
-                    {vehicle.price != null ? `$${vehicle.price.toFixed(2)}` : "Consultar"}
+                    {vehicle.price != null ? `$${vehicle.price.toFixed(2)}` : t("transfer.search.vehicle.priceUnavailable")}
                   </p>
                 </div>
-                <ul className="mt-4 space-y-1 text-xs text-slate-500">
-                  {vehicle.features.map((feature) => (
-                    <li key={`${vehicle.id}-${feature}`}>{feature}</li>
-                  ))}
-                </ul>
+                  <ul className="mt-4 space-y-1 text-xs text-slate-500">
+                    {vehicle.features.map((feature) => (
+                      <li key={`${vehicle.id}-${feature}`}>{t(feature)}</li>
+                    ))}
+                  </ul>
                 <Link
                   href={buildCheckoutHref(vehicle)}
                   className="mt-6 inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-indigo-500"
                 >
-                  SELECCIONAR Y PAGAR
+                  {t("transfer.search.action.selectAndPay")}
                 </Link>
               </article>
             ))}
@@ -954,8 +1005,8 @@ export default function TrasladoSearch({
           <section className="rounded-[28px] border border-slate-200 bg-white/80 p-6 shadow-sm">
             <div className="flex flex-col gap-3 text-sm text-slate-600 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pago seguro</p>
-                <p className="text-lg font-semibold text-slate-900">Elige tu método favorito</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("transfer.search.section.payment.label")}</p>
+                <p className="text-lg font-semibold text-slate-900">{t("transfer.search.section.payment.title")}</p>
               </div>
               <div className="flex flex-wrap gap-3">
                 {paymentMethods.map((method) => (
@@ -965,17 +1016,15 @@ export default function TrasladoSearch({
                 ))}
               </div>
             </div>
-            <p className="mt-4 text-xs text-slate-500">
-              Conectarás al checkout con la nota «Reserva de traslado» y nuestra tarifa cifrada.
-            </p>
+            <p className="mt-4 text-xs text-slate-500">{t("transfer.search.section.payment.note")}</p>
           </section>
           <section className="rounded-[28px] border border-slate-200 bg-white/80 p-6 shadow-sm">
             <div className="grid gap-4 md:grid-cols-2">
               {pickupRules.map((rule) => (
-                <div key={rule.title} className="space-y-1 text-sm text-slate-600">
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{rule.title}</p>
-                  <p className="font-semibold text-slate-900">{rule.description}</p>
-                  <p className="text-xs text-slate-500">{rule.note}</p>
+                <div key={rule.titleKey} className="space-y-1 text-sm text-slate-600">
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{t(rule.titleKey)}</p>
+                  <p className="font-semibold text-slate-900">{t(rule.descriptionKey)}</p>
+                  <p className="text-xs text-slate-500">{t(rule.noteKey)}</p>
                 </div>
               ))}
             </div>

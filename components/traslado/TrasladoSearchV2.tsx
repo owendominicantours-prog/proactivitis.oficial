@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "@/context/LanguageProvider";
 
 const DEFAULT_ROUND_TRIP_DISCOUNT = 5;
 const ROUND_TRIP_DISCOUNT_PERCENT = (() => {
@@ -16,7 +17,12 @@ const ROUND_TRIP_DISCOUNT_PERCENT = (() => {
 
 const LOCATION_DEBOUNCE_MS = 350;
 const TRANSFER_FORM_PATH = "/checkout";
-const TRUST_BULLETS = ["Servicio privado", "Aire acondicionado incluido", "Soporte 24/7"];
+const TRUST_BULLETS = [
+  "transfer.search.trust.finalPrice",
+  "transfer.search.trust.professionalDrivers",
+  "transfer.search.trust.insuranceIncluded",
+  "transfer.search.trust.freeCancellation"
+] as const;
 
 type LocationSummary = {
   id: string;
@@ -37,6 +43,7 @@ type QuoteVehicle = {
 };
 
 export default function TrasladoSearchV2() {
+  const { t } = useTranslation();
   const [originQuery, setOriginQuery] = useState("");
   const [destinationQuery, setDestinationQuery] = useState("");
   const [originOptions, setOriginOptions] = useState<LocationSummary[]>([]);
@@ -157,11 +164,11 @@ export default function TrasladoSearchV2() {
 
   const handleQuote = async () => {
     if (!selectedOrigin || !selectedDestination) {
-      setQuoteError("Selecciona origen y destino válidos.");
+      setQuoteError(t("transfer.search.error.originDestination"));
       return;
     }
     if (isRoundTrip && (!returnDate || !returnTime)) {
-      setQuoteError("Agrega fecha y hora de regreso para encontrar tarifas redondas.");
+      setQuoteError(t("transfer.search.error.roundTripDate"));
       return;
     }
     setQuoteLoading(true);
@@ -183,13 +190,15 @@ export default function TrasladoSearchV2() {
       });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "No se pudo calcular la tarifa.");
+        throw new Error(body?.error ?? t("transfer.search.error.quoteFailed"));
       }
       const data = await response.json();
       setQuote(data.vehicles ?? []);
     } catch (error) {
       setQuote([]);
-      setQuoteError(error instanceof Error ? error.message : "Error desconocido");
+      const fallbackMessage =
+        error instanceof Error ? error.message : t("transfer.search.error.unknown");
+      setQuoteError(fallbackMessage);
     } finally {
       setQuoteLoading(false);
     }
@@ -262,7 +271,7 @@ export default function TrasladoSearchV2() {
                 : "border border-slate-200 bg-white text-slate-600 hover:border-emerald-400"
             }`}
           >
-            Solo ida
+            {t("transfer.search.tripType.oneWay")}
           </button>
           <button
             type="button"
@@ -273,23 +282,27 @@ export default function TrasladoSearchV2() {
                 : "border border-slate-200 bg-white text-slate-600 hover:border-emerald-400"
             }`}
           >
-            Ida y vuelta
+            {t("transfer.search.tripType.roundTrip")}
           </button>
           <span className="text-xs text-slate-500">
-            Round trip = doble tarifa con {normalizedDiscountPercent}% de descuento
+            {t("transfer.search.tripType.roundTripDiscount", {
+              discount: normalizedDiscountPercent
+            })}
           </span>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="relative" ref={originRef}>
-            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Origen</label>
+            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+              {t("transfer.search.field.origin")}
+            </label>
             <div className="relative">
               <input
                 className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 transition focus:border-emerald-500"
                 value={originDisplay}
                 onChange={(event) => handleOriginChange(event.target.value)}
                 onFocus={() => setOriginOpen(true)}
-                placeholder="Ej. Aeropuerto PUJ o hotel"
+                placeholder={t("transfer.search.placeholder.originExample")}
               />
               {originLoading && (
                 <div className="pointer-events-none absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center">
@@ -323,14 +336,16 @@ export default function TrasladoSearchV2() {
           </div>
 
           <div className="relative" ref={destinationRef}>
-            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Destino</label>
+            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+              {t("transfer.search.field.destination")}
+            </label>
             <div className="relative">
               <input
                 className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 transition focus:border-emerald-500"
                 value={destinationDisplay}
                 onChange={(event) => handleDestinationChange(event.target.value)}
                 onFocus={() => setDestinationOpen(true)}
-                placeholder="Ej. JW Marriott o aeropuerto SDQ"
+                placeholder={t("transfer.search.placeholder.destinationExample")}
               />
               {destinationLoading && (
                 <div className="pointer-events-none absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center">
@@ -364,7 +379,9 @@ export default function TrasladoSearchV2() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Pasajeros</label>
+            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+              {t("transfer.search.field.passengers")}
+            </label>
             <input
               type="number"
               min={1}
@@ -377,7 +394,7 @@ export default function TrasladoSearchV2() {
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-            Fecha de recogida
+            {t("transfer.search.field.pickupDate")}
             <input
               type="date"
               value={departureDate}
@@ -386,7 +403,7 @@ export default function TrasladoSearchV2() {
             />
           </label>
           <label className="space-y-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-            Hora de recogida
+            {t("transfer.search.field.pickupTime")}
             <input
               type="time"
               value={departureTime}
@@ -399,7 +416,7 @@ export default function TrasladoSearchV2() {
         {isRoundTrip && (
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-              Fecha de regreso
+              {t("transfer.search.field.returnDate")}
               <input
                 type="date"
                 value={returnDate}
@@ -408,7 +425,7 @@ export default function TrasladoSearchV2() {
               />
             </label>
             <label className="space-y-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-              Hora de regreso
+              {t("transfer.search.field.returnTime")}
               <input
                 type="time"
                 value={returnTime}
@@ -423,7 +440,7 @@ export default function TrasladoSearchV2() {
           onClick={handleQuote}
           className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500"
         >
-          {quoteLoading ? "Buscando tarifas..." : "Buscar transfer"}
+          {quoteLoading ? t("transfer.search.action.loading") : t("transfer.search.action.search")}
         </button>
 
         {quoteError && (
@@ -454,12 +471,15 @@ export default function TrasladoSearchV2() {
                       </p>
                       <h3 className="text-2xl font-semibold text-slate-900">{vehicle.name}</h3>
                       <p className="text-sm text-slate-500">
-                        {vehicle.minPax}–{vehicle.maxPax} pasajeros
+                        {t("transfer.search.vehicle.capacityRange", {
+                          min: vehicle.minPax,
+                          max: vehicle.maxPax
+                        })}
                       </p>
                     </div>
                     {isRecommended && (
                       <span className="rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-emerald-700">
-                        Más popular
+                        {t("transfer.search.vehicle.badge.mostPopular")}
                       </span>
                     )}
                   </div>
@@ -474,12 +494,16 @@ export default function TrasladoSearchV2() {
 
                   <div className="space-y-2 text-right">
                     <p className="text-sm text-slate-500">
-                      {isRoundTrip ? "Ida y vuelta" : "Tarifa por trayecto"}
+                      {isRoundTrip
+                        ? t("transfer.search.vehicle.priceLabel.roundTrip")
+                        : t("transfer.search.vehicle.priceLabel.oneWay")}
                     </p>
                     <p className="text-3xl font-bold text-slate-900">${displayPrice.toFixed(2)}</p>
                     {isRoundTrip && (
                       <p className="text-[11px] text-slate-500">
-                        Incluye {normalizedDiscountPercent}% de descuento sobre la tarifa doble
+                        {t("transfer.search.vehicle.roundTripSavings", {
+                          discount: normalizedDiscountPercent
+                        })}
                       </p>
                     )}
                   </div>
@@ -488,7 +512,7 @@ export default function TrasladoSearchV2() {
                     {TRUST_BULLETS.map((bullet) => (
                       <li key={bullet} className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        {bullet}
+                        {t(bullet)}
                       </li>
                     ))}
                   </ul>
@@ -498,7 +522,7 @@ export default function TrasladoSearchV2() {
                   href={reserveUrl}
                   className="mt-4 inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
                 >
-                  Reservar ahora
+                  {t("transfer.search.action.reserve")}
                 </Link>
               </article>
             );
@@ -506,8 +530,8 @@ export default function TrasladoSearchV2() {
         ) : (
           <div className="rounded-3xl border border-dashed border-slate-200 bg-white/80 p-6 text-sm text-slate-500">
             {quoteError
-              ? "Ajusta el origen o destino para encontrar una ruta disponible."
-              : "Selecciona origen, destino y pasajeros para ver los vehículos disponibles."}
+              ? t("transfer.search.noVehicles.adjustRoute")
+              : t("transfer.search.noVehicles.selectDetails")}
           </div>
         )}
       </div>
