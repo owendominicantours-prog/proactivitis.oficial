@@ -1,6 +1,8 @@
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { TourTranslationStatus } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
+import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
 
 type LocaleConfig = { code: string; target: string };
 
@@ -53,11 +55,42 @@ async function translateText(text: string, target: string) {
   return segments.map((segment: unknown[]) => segment[0]).join("");
 }
 
+function parseJsonArray(value?: string | null | Prisma.JsonValue) {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string");
+  }
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((item) => typeof item === "string");
+      }
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+async function translateEntries(items: string[], target: string) {
+  return Promise.all(items.map((item) => translateText(item, target)));
+}
+
 async function upsertTranslationEntry(
   tourId: string,
   locale: string,
   hash: string,
-  translation: { title?: string; subtitle?: string; shortDescription?: string; description?: string }
+  translation: {
+    title?: string;
+    subtitle?: string;
+    shortDescription?: string;
+    description?: string;
+    includesList?: string[];
+    notIncludedList?: string[];
+    itineraryStops?: string[];
+    highlights?: string[];
+  }
 ) {
   await prisma.tourTranslation.upsert({
     where: {
@@ -73,8 +106,13 @@ async function upsertTranslationEntry(
       subtitle: translation.subtitle,
       shortDescription: translation.shortDescription,
       description: translation.description,
+      includesList: translation.includesList && translation.includesList.length ? translation.includesList : undefined,
+      notIncludedList:
+        translation.notIncludedList && translation.notIncludedList.length ? translation.notIncludedList : undefined,
+      itineraryStops: translation.itineraryStops && translation.itineraryStops.length ? translation.itineraryStops : undefined,
+      highlights: translation.highlights && translation.highlights.length ? translation.highlights : undefined,
       status: TourTranslationStatus.TRANSLATED,
-      sourceHash: hash
+      sourceHash: hash,
     },
     update: {
       title: translation.title,
@@ -82,7 +120,15 @@ async function upsertTranslationEntry(
       shortDescription: translation.shortDescription,
       description: translation.description,
       status: TourTranslationStatus.TRANSLATED,
-      sourceHash: hash
+      sourceHash: hash,
+      includesList:
+        translation.includesList && translation.includesList.length ? translation.includesList : undefined,
+      notIncludedList:
+        translation.notIncludedList && translation.notIncludedList.length ? translation.notIncludedList : undefined,
+      itineraryStops:
+        translation.itineraryStops && translation.itineraryStops.length ? translation.itineraryStops : undefined,
+      highlights:
+        translation.highlights && translation.highlights.length ? translation.highlights : undefined
     }
   });
 }
@@ -96,6 +142,25 @@ export async function translateTourById(tourId: string) {
     throw new Error("Tour not found");
   }
 
+  const includesListFromDb = parseJsonArray(tour.includesList);
+  const includesFromString = tour.includes
+    ? tour.includes
+        .split(";")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+  const includes = includesListFromDb.length ? includesListFromDb : includesFromString;
+
+  const notIncludedList = parseJsonArray(tour.notIncludedList);
+
+  const highlights = parseJsonArray(tour.highlights?.toString());
+
+  const adminItinerary = parseAdminItinerary(tour.adminNote ?? "");
+  const parsedItinerary = adminItinerary.length ? adminItinerary : parseItinerary(tour.adminNote ?? "");
+  const itineraryStops = parsedItinerary
+    .map((stop) => stop.title ?? stop.description ?? "")
+    .filter(Boolean);
+
   const sourceHash = hashSource(tour);
   for (const locale of LOCALES) {
     const existing = tour.translations.find((translation) => translation.locale === locale.code);
@@ -103,18 +168,35 @@ export async function translateTourById(tourId: string) {
       continue;
     }
 
-    const [title, subtitle, shortDescription, description] = await Promise.all([
+    const [
+      title,
+      subtitle,
+      shortDescription,
+      description,
+      translatedIncludes,
+      translatedNotIncludes,
+      translatedItinerary,
+      translatedHighlights
+    ] = await Promise.all([
       translateText(tour.title, locale.target),
       translateText(tour.subtitle ?? "", locale.target),
       translateText(tour.shortDescription ?? "", locale.target),
-      translateText(tour.description, locale.target)
+      translateText(tour.description, locale.target),
+      includes.length ? translateEntries(includes, locale.target) : Promise.resolve([]),
+      notIncludedList.length ? translateEntries(notIncludedList, locale.target) : Promise.resolve([]),
+      itineraryStops.length ? translateEntries(itineraryStops, locale.target) : Promise.resolve([]),
+      highlights.length ? translateEntries(highlights, locale.target) : Promise.resolve([])
     ]);
 
     await upsertTranslationEntry(tourId, locale.code, sourceHash, {
       title,
       subtitle,
       shortDescription,
-      description
+      description,
+      includesList: translatedIncludes,
+      notIncludedList: translatedNotIncludes,
+      itineraryStops: translatedItinerary,
+      highlights: translatedHighlights
     });
   }
 

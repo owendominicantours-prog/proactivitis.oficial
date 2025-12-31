@@ -251,7 +251,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
 
   // --- Lógica de datos ---
   const gallery = (tour.gallery ? JSON.parse(tour.gallery as string) : [tour.heroImage ?? "/fototours/fotosimple.jpg"]) as string[];
-  const highlights = parseJsonArray<string>(tour.highlights);
+  const rawHighlights = parseJsonArray<string>(tour.highlights);
   const includesFromString = tour.includes ? tour.includes.split(";").map((i) => i.trim()).filter(Boolean) : [];
   const includesList = parseJsonArray<string>(tour.includesList);
   const notIncludedList = parseJsonArray<string>(tour.notIncludedList);
@@ -260,13 +260,11 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     translate(locale, "tour.fallback.include.guide"),
     translate(locale, "tour.fallback.include.lunch")
   ];
-  const includes = includesList.length ? includesList : (includesFromString.length ? includesFromString : fallbackIncludes);
   const fallbackExcludes = [
     translate(locale, "tour.fallback.exclude.tips"),
     translate(locale, "tour.fallback.exclude.drinks"),
     translate(locale, "tour.fallback.exclude.photos")
   ];
-  const excludes = notIncludedList.length ? notIncludedList : fallbackExcludes;
   const categories = (tour.category ?? "").split(",").map((i) => i.trim()).filter(Boolean);
   const languages = (tour.language ?? "").split(",").map((i) => i.trim()).filter(Boolean);
   const timeSlots = parseJsonArray<PersistedTimeSlot>(tour.timeOptions);
@@ -275,9 +273,33 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const displayTime = timeSlots.length ? formatTimeSlot(timeSlots[0]) : "09:00 AM";
   const parsedAdminItinerary = parseAdminItinerary(tour.adminNote ?? "");
   const itinerarySource = parsedAdminItinerary.length ? parsedAdminItinerary : parseItinerary(tour.adminNote ?? "");
-  const visualTimeline = itinerarySource.length ? itinerarySource : itineraryMock;
   const heroImage = tour.heroImage ?? gallery[0];
   const translation = translations.find((entry) => entry.locale === locale);
+  const translationIncludes = (translation?.includesList as string[] | undefined) ?? [];
+  const translationNotIncluded = (translation?.notIncludedList as string[] | undefined) ?? [];
+  const translationHighlights = (translation?.highlights as string[] | undefined) ?? [];
+  const translationItineraryStops = (translation?.itineraryStops as string[] | undefined) ?? [];
+  const includes = translationIncludes.length
+    ? translationIncludes
+    : includesList.length
+      ? includesList
+      : includesFromString.length
+        ? includesFromString
+        : fallbackIncludes;
+  const excludes = translationNotIncluded.length
+    ? translationNotIncluded
+    : notIncludedList.length
+      ? notIncludedList
+      : fallbackExcludes;
+  const highlights = translationHighlights.length ? translationHighlights : rawHighlights;
+  const visualTimelineBase = itinerarySource.length ? itinerarySource : itineraryMock;
+  const visualTimeline =
+    translationItineraryStops.length > 0
+      ? visualTimelineBase.map((stop, index) => ({
+          ...stop,
+          title: translationItineraryStops[index] ?? stop.title
+        }))
+      : visualTimelineBase;
   const localizedTitle = translation?.title ?? tour.title;
   const localizedSubtitle = translation?.subtitle ?? tour.subtitle ?? "";
   const localizedShortDescription = translation?.shortDescription ?? tour.shortDescription;
