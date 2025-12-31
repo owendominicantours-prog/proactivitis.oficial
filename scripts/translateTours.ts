@@ -16,7 +16,7 @@ const LOCALES: { code: string; target: string }[] = [
   { code: "fr", target: "fr" }
 ];
 
-const TRANSLATION_URL = process.env.TRANSLATION_API_URL ?? "https://libretranslate.de/translate";
+const TRANSLATION_URL = process.env.TRANSLATION_API_URL;
 
 function hashSource(tour: { title: string; description: string; subtitle?: string | null; shortDescription?: string | null }) {
   const payload = [tour.title, tour.subtitle ?? "", tour.shortDescription ?? "", tour.description].join("||");
@@ -26,20 +26,38 @@ function hashSource(tour: { title: string; description: string; subtitle?: strin
 async function translateText(text: string, target: string) {
   if (!text) return text;
 
-  const response = await fetch(TRANSLATION_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      q: text,
-      source: "es",
-      target
-    })
+  if (TRANSLATION_URL) {
+    const response = await fetch(TRANSLATION_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        q: text,
+        source: "es",
+        target
+      })
+    });
+    if (!response.ok) {
+      throw new Error(`translation failed: ${response.statusText}`);
+    }
+    const json = await response.json();
+    return json.translatedText as string;
+  }
+
+  const params = new URLSearchParams({
+    client: "gtx",
+    sl: "es",
+    tl: target,
+    dt: "t",
+    q: text
   });
+  const response = await fetch(`https://translate.googleapis.com/translate_a/single?${params.toString()}`);
   if (!response.ok) {
     throw new Error(`translation failed: ${response.statusText}`);
   }
-  const json = await response.json();
-  return json.translatedText as string;
+  const body = await response.text();
+  const json = JSON.parse(body);
+  const segments = json[0];
+  return segments.map((segment: unknown[]) => segment[0]).join("");
 }
 
 async function upsertTourTranslation(tourId: string, locale: string, hash: string, translation: { title?: string; subtitle?: string; shortDescription?: string; description?: string }) {
