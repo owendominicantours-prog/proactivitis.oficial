@@ -977,21 +977,21 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
     if (currentIndex === 0) {
 
-      if (!contact.firstName.trim()) nextErrors.firstName = "Ingresa tu nombre";
+      if (!contact.firstName.trim()) nextErrors.firstName = t("checkout.validation.firstNameRequired");
 
-      if (!contact.lastName.trim()) nextErrors.lastName = "Ingresa tu apellido";
+      if (!contact.lastName.trim()) nextErrors.lastName = t("checkout.validation.lastNameRequired");
 
-      if (!contact.email.trim()) nextErrors.email = "Ingresa un correo";
+      if (!contact.email.trim()) nextErrors.email = t("checkout.validation.emailRequired");
 
-      if (!contact.confirmEmail.trim()) nextErrors.confirmEmail = "Confirma tu correo";
+      if (!contact.confirmEmail.trim()) nextErrors.confirmEmail = t("checkout.validation.confirmEmailRequired");
 
       if (contact.email && contact.confirmEmail && contact.email !== contact.confirmEmail) {
 
-        nextErrors.confirmEmail = "Los correos deben coincidir";
+        nextErrors.confirmEmail = t("checkout.validation.emailsMustMatch");
 
       }
 
-      if (!contact.phone.trim()) nextErrors.phone = "Ingresa un teléfono";
+      if (!contact.phone.trim()) nextErrors.phone = t("checkout.validation.phoneRequired");
 
     }
 
@@ -999,11 +999,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
     if (currentIndex === 1) {
 
-      if (!travelerName.trim()) nextErrors.travelerName = "Indica el nombre del viajero principal";
+      if (!travelerName.trim()) nextErrors.travelerName = t("checkout.validation.travelerNameRequired");
 
       if (pickupPreference === "pickup" && !pickupLocation.trim()) {
 
-        nextErrors.pickupLocation = "Agrega un punto de recogida";
+        nextErrors.pickupLocation = t("checkout.validation.pickupLocationRequired");
 
       }
 
@@ -1572,7 +1572,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                   <p className="text-lg font-semibold text-slate-900">{t("checkout.section.payment.heading")}</p>
 
                   <p className="text-sm text-slate-500">
-                    {summary.totalTravelers} viajeros · {summary.date} · {summary.time}
+                    {t("checkout.summary.tripMeta", {
+                      travelers: summary.totalTravelers,
+                      date: summary.date,
+                      time: summary.time
+                    })}
                   </p>
 
                 </div>
@@ -1608,7 +1612,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                     <p>
 
-                      {summary.totalTravelers} viajeros · {summary.date} · {summary.time}
+                      {t("checkout.summary.tripMeta", {
+                        travelers: summary.totalTravelers,
+                        date: summary.date,
+                        time: summary.time
+                      })}
 
                     </p>
 
@@ -1688,7 +1696,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
         <aside className="space-y-4">
 
-          <div className="sticky top-8 space-y-6">
+          <div className="space-y-6 lg:sticky lg:top-8">
 
             <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-lg">
 
@@ -1750,11 +1758,14 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   </span>
 
-                  <strong>
+                    <strong>
 
-                    {summary.adults} adultos y {summary.children} niños
+                      {t("checkout.summary.travelersBreakdown", {
+                        adults: summary.adults,
+                        children: summary.children
+                      })}
 
-                  </strong>
+                    </strong>
 
                 </div>
 
@@ -1792,10 +1803,10 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                         </strong>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5 text-slate-400" /> {t("checkout.summary.destination")}
-                      </span>
-                      <strong>{summary.originHotelName ?? "Tu hotel"}</strong>
+                        <span className="flex items-center gap-2">
+                          <MapPin className="h-5 w-5 text-slate-400" /> {t("checkout.summary.destination")}
+                        </span>
+                        <strong>{summary.originHotelName ?? t("checkout.summary.defaultHotel")}</strong>
                     </div>
                   </>
                 )}
