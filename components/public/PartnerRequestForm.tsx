@@ -2,27 +2,37 @@
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import { useTranslation } from "@/context/LanguageProvider";
+import type { TranslationKey } from "@/lib/translations";
 
-const countryOptions = [
-  "Dominican Republic",
-  "Mexico",
-  "Colombia",
-  "United States",
-  "Spain",
-  "Brazil",
-  "Peru",
-  "Argentina",
-  "Panama"
+type FieldDefinition = {
+  labelKey: TranslationKey;
+  value: string;
+  setter: (value: string) => void;
+  type?: string;
+  isSelect?: boolean;
+};
+
+const countryOptions: { value: string; labelKey: TranslationKey }[] = [
+  { value: "Dominican Republic", labelKey: "partner.form.country.dominicanRepublic" },
+  { value: "Mexico", labelKey: "partner.form.country.mexico" },
+  { value: "Colombia", labelKey: "partner.form.country.colombia" },
+  { value: "United States", labelKey: "partner.form.country.unitedStates" },
+  { value: "Spain", labelKey: "partner.form.country.spain" },
+  { value: "Brazil", labelKey: "partner.form.country.brazil" },
+  { value: "Peru", labelKey: "partner.form.country.peru" },
+  { value: "Argentina", labelKey: "partner.form.country.argentina" },
+  { value: "Panama", labelKey: "partner.form.country.panama" }
 ];
 
-const serviceOptions = [
-  "Tours",
-  "Hospedaje",
-  "Traslado",
-  "Experiencias al aire libre",
-  "Planificación de grupos",
-  "Vuelos",
-  "Eventos privados"
+const serviceOptions: { value: string; labelKey: TranslationKey }[] = [
+  { value: "tours", labelKey: "partner.form.service.tours" },
+  { value: "hospitality", labelKey: "partner.form.service.hospitality" },
+  { value: "transfer", labelKey: "partner.form.service.transfer" },
+  { value: "outdoorExperiences", labelKey: "partner.form.service.outdoor" },
+  { value: "groupPlanning", labelKey: "partner.form.service.groupPlanning" },
+  { value: "flights", labelKey: "partner.form.service.flights" },
+  { value: "privateEvents", labelKey: "partner.form.service.privateEvents" }
 ];
 
 const fileToBase64 = async (file: File): Promise<string> => {
@@ -49,7 +59,7 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
   const [contactRole, setContactRole] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [country, setCountry] = useState(countryOptions[0]);
+  const [country, setCountry] = useState(countryOptions[0].value);
   const [website, setWebsite] = useState("");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -63,6 +73,7 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const toastTimeoutRef = useRef<number | null>(null);
+  const { t } = useTranslation();
 
   const hasServices = useMemo(() => selectedServices.length > 0, [selectedServices]);
 
@@ -96,21 +107,43 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
     }, 4500);
   };
 
+  const fieldDefinitions = useMemo<FieldDefinition[]>(
+    () => [
+      { labelKey: "partner.form.field.companyName", value: companyName, setter: setCompanyName },
+      { labelKey: "partner.form.field.contactName", value: contactName, setter: setContactName },
+      { labelKey: "partner.form.field.contactRole", value: contactRole, setter: setContactRole },
+      {
+        labelKey: "partner.form.field.email",
+        value: email,
+        setter: setEmail,
+        type: "email"
+      },
+      { labelKey: "partner.form.field.phone", value: phone, setter: setPhone },
+      {
+        labelKey: "partner.form.field.country",
+        value: country,
+        setter: (val: string) => setCountry(val),
+        isSelect: true
+      }
+    ],
+    [companyName, contactName, contactRole, email, phone, country]
+  );
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMessage(null);
     if (!hasServices) {
-      setMessage("Selecciona al menos un tipo de servicio.");
+      setMessage(t("partner.form.errors.selectService"));
       return;
     }
 
     if (password.length < 8) {
-      setMessage("La contraseña debe tener al menos 8 caracteres.");
+      setMessage(t("partner.form.errors.passwordLength"));
       return;
     }
 
     if (password !== confirmPassword) {
-      setMessage("Las contraseñas no coinciden.");
+      setMessage(t("partner.form.errors.passwordMismatch"));
       return;
     }
 
@@ -154,7 +187,7 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
       setContactRole("");
       setEmail("");
       setPhone("");
-      setCountry(countryOptions[0]);
+      setCountry(countryOptions[0].value);
       setWebsite("");
       setDescription("");
       setSelectedServices([]);
@@ -162,7 +195,7 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
       setPassword("");
       setConfirmPassword("");
       setMessage(null);
-      handleToast("Solicitud recibida. Un gestor de cuentas se pondrá en contacto en breve.");
+      handleToast(t("partner.form.toast.success"));
     } catch (error) {
       setMessage((error as Error).message);
     } finally {
@@ -188,7 +221,7 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
       >
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">
-            Solicitud de {role === "SUPPLIER" ? "Supplier" : "Agency"}
+            {role === "SUPPLIER" ? t("partner.form.title.supplier") : t("partner.form.title.agency")}
           </p>
           {subtitle ? (
             <p className="mt-1 text-lg font-semibold text-slate-900">{subtitle}</p>
@@ -196,51 +229,45 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-        {[
-          { label: "Nombre de la empresa", value: companyName, setter: setCompanyName },
-          { label: "Nombre del contacto", value: contactName, setter: setContactName },
-          { label: "Cargo del contacto", value: contactRole, setter: setContactRole },
-          { label: "Correo electrónico", value: email, setter: setEmail, type: "email" },
-          { label: "Teléfono", value: phone, setter: setPhone },
-          { label: "País de operación", value: country, setter: (val: string) => setCountry(val), isSelect: true }
-        ].map((field) => (
-          <label key={field.label} className="block">
-            <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{field.label}</span>
-            {field.isSelect ? (
-              <select
-                value={country}
-                onChange={(event) => field.setter(event.target.value)}
-                required
-                className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
-              >
-                {countryOptions.map((option) => (
-                  <option value={option} key={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type={field.type ?? "text"}
-                value={field.value}
-                onChange={(event) => field.setter(event.target.value)}
-                required
-                className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
-              />
-            )}
-          </label>
-        ))}
+          {fieldDefinitions.map((field) => (
+            <label key={field.labelKey} className="block">
+              <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{t(field.labelKey)}</span>
+              {field.isSelect ? (
+                <select
+                  value={country}
+                  onChange={(event) => field.setter(event.target.value)}
+                  required
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+                >
+                  {countryOptions.map((option) => (
+                    <option value={option.value} key={option.value}>
+                      {t(option.labelKey)}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type={field.type ?? "text"}
+                  value={field.value}
+                  onChange={(event) => field.setter(event.target.value)}
+                  required
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+                />
+              )}
+            </label>
+          ))}
           <label className="block">
-            <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Sitio web</span>
+            <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("partner.form.website.label")}</span>
             <input
               value={website}
               onChange={(event) => setWebsite(event.target.value)}
               className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
-              placeholder="https://"
+              placeholder={t("partner.form.website.placeholder")}
             />
           </label>
+        </div>
         <label className="block relative">
-          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Contraseña</span>
+          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("partner.form.field.password")}</span>
           <input
             type={showPassword ? "text" : "password"}
             value={password}
@@ -253,11 +280,11 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
             onClick={() => setShowPassword((prev) => !prev)}
             className="absolute right-3 top-8 text-[0.65rem] uppercase tracking-[0.3em] text-slate-500"
           >
-            {showPassword ? "Ocultar" : "Ver"}
+            {showPassword ? t("partner.form.toggle.hide") : t("partner.form.toggle.show")}
           </button>
         </label>
         <label className="block relative">
-          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Repite la contraseña</span>
+          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("partner.form.field.confirmPassword")}</span>
           <input
             type={showConfirmPassword ? "text" : "password"}
             value={confirmPassword}
@@ -270,34 +297,37 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
             onClick={() => setShowConfirmPassword((prev) => !prev)}
             className="absolute right-3 top-8 text-[0.65rem] uppercase tracking-[0.3em] text-slate-500"
           >
-            {showConfirmPassword ? "Ocultar" : "Ver"}
+            {showConfirmPassword ? t("partner.form.toggle.hide") : t("partner.form.toggle.show")}
           </button>
         </label>
-        </div>
 
         <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Tipo de servicio</p>
-          <p className="text-sm text-slate-500">Selecciona los servicios que ofreces.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+            {t("partner.form.services.label")}
+          </p>
+          <p className="text-sm text-slate-500">{t("partner.form.services.hint")}</p>
           <div className="flex flex-wrap gap-2">
             {serviceOptions.map((option) => (
-              <button
-                type="button"
-                key={option}
-                onClick={() => handleServiceToggle(option)}
-                className={`rounded-full border px-4 py-1 text-sm ${
-                  selectedServices.includes(option)
-                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                    : "border-slate-200 bg-white text-slate-600"
-                }`}
-              >
-                {option}
-              </button>
+                <button
+                  type="button"
+                  key={option.value}
+                  onClick={() => handleServiceToggle(option.value)}
+                  className={`rounded-full border px-4 py-1 text-sm ${
+                    selectedServices.includes(option.value)
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                      : "border-slate-200 bg-white text-slate-600"
+                  }`}
+                >
+                  {t(option.labelKey)}
+                </button>
             ))}
           </div>
         </div>
 
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Descripción breve del servicio</span>
+          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">
+            {t("partner.form.description.label")}
+          </span>
           <textarea
             value={description}
             onChange={(event) => setDescription(event.target.value)}
@@ -308,15 +338,21 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
         </label>
 
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Documentación adjunta (opcional)</span>
+          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">
+            {t("partner.form.file.label")}
+          </span>
           <input
             type="file"
             className="mt-1"
             accept=".pdf,.doc,.docx,.zip,.png,.jpg,.jpeg"
             onChange={handleFileChange}
           />
-          <p className="mt-1 text-xs text-slate-500">Aceptamos PDF, JPG, PNG y ZIP para respaldar tu operación.</p>
-          {file && <p className="mt-1 text-xs text-slate-500">Archivo listo: {file.name}</p>}
+          <p className="mt-1 text-xs text-slate-500">{t("partner.form.file.hint")}</p>
+          {file && (
+            <p className="mt-1 text-xs text-slate-500">
+              {t("partner.form.file.ready", { fileName: file.name })}
+            </p>
+          )}
         </label>
 
         <div className="flex flex-col gap-2">
@@ -328,10 +364,10 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin text-white" />
-                Procesando...
+                {t("partner.form.processing")}
               </>
             ) : (
-              "Enviar solicitud"
+              t("partner.form.submit")
             )}
           </button>
           {message ? <p className="text-sm text-rose-500">{message}</p> : null}
