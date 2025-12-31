@@ -1,19 +1,7 @@
-import { Suspense, type ReactNode } from "react";
-import Link from "next/link";
+import { type ReactNode } from "react";
 import Script from "next/script";
-import { PublicAuthButtons } from "@/components/public/PublicAuthButtons";
-import { PublicCurrencyLanguage } from "@/components/public/PublicCurrencyLanguage";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import { PublicHeaderSearch } from "@/components/public/PublicHeaderSearch";
-import { PublicWishlistButton } from "@/components/public/PublicWishlistButton";
-import { Header } from "@/components/shared/Header";
-
-const publicNavLinks = [
-  { label: "Inicio", href: "/" },
-  { label: "Tours", href: "/tours" },
-  { label: "Traslado", href: "/traslado" },
-  { label: "Contacto", href: "/contact" }
-];
+import { PublicHeader } from "@/components/public/PublicHeader";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -83,19 +71,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
 }`
         }}
       />
-      <Header
-        navItems={publicNavLinks}
-        rightSlot={
-          <div className="flex items-center gap-3">
-            <PublicHeaderSearch />
-            <Suspense fallback={null}>
-              <PublicCurrencyLanguage />
-            </Suspense>
-            <PublicWishlistButton />
-            <PublicAuthButtons />
-          </div>
-        }
-      />
+      <PublicHeader />
 
       <main className="flex-1">{children}</main>
 
