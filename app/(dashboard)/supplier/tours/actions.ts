@@ -327,6 +327,10 @@ export async function updateTourAction(formData: FormData) {
     }
   });
 
+  void translateTourById(tourId).catch((error) => {
+    console.error("translation job failed on update", error);
+  });
+
   redirect("/supplier/tours?status=updated");
 }
 
