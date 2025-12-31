@@ -525,12 +525,12 @@ export function SupplierTourCreateForm({
   const [galleryImages, setGalleryImages] = useState<UploadedImage[]>(initialDraft?.galleryImages ?? []);
 
   const formAction = action ?? createTourAction;
-
   const shouldPersistDraft = mode === "create";
-
   const shouldLoadLocalDraft = shouldPersistDraft && !initialDraft;
-
   const [submitting, setSubmitting] = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   const buildDraftSnapshot = useMemo(
     () => () =>
@@ -927,18 +927,31 @@ export function SupplierTourCreateForm({
 
   const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
 
+    if (!termsAccepted) {
+      event.preventDefault();
+      setTermsModalOpen(true);
+      return;
+    }
+
     setSubmitting(true);
 
     if (shouldPersistDraft && typeof window !== "undefined") {
-
       window.localStorage.removeItem(STORAGE_KEY);
 
       if (draftId) {
         void fetch(`/api/supplier/drafts?draftId=${draftId}`, { method: "DELETE" });
       }
-
     }
+  };
 
+  const confirmTerms = () => {
+    setTermsAccepted(true);
+    setTermsModalOpen(false);
+    formRef.current?.requestSubmit();
+  };
+
+  const cancelTerms = () => {
+    setTermsModalOpen(false);
   };
 
 
@@ -2505,7 +2518,7 @@ export function SupplierTourCreateForm({
           </div>
 
           <div className="panel-card rounded-[32px] p-6">
-            <form action={formAction} onSubmit={handleFormSubmit} className="space-y-6 text-slate-900">
+          <form ref={formRef} action={formAction} onSubmit={handleFormSubmit} className="space-y-6 text-slate-900">
 
           <div className="max-h-[70vh] min-h-[420px] space-y-3 overflow-y-auto pr-2 sm:pr-6">
 
@@ -2722,6 +2735,33 @@ export function SupplierTourCreateForm({
         </div>
 
       </div>
+
+      {termsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 text-slate-900 shadow-lg">
+            <h3 className="text-lg font-semibold">Acepta las condiciones</h3>
+            <p className="mt-3 text-sm text-slate-600">
+              Para enviar tu tour a revisión es necesario que aceptes los términos del ecosistema Proactivitis. Al hacerlo autorizas que el sistema traduzca automáticamente el contenido antes de publicarlo en otros idiomas.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={confirmTerms}
+                className="flex-1 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500"
+              >
+                Aceptar y continuar
+              </button>
+              <button
+                type="button"
+                onClick={cancelTerms}
+                className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-slate-600 transition hover:bg-slate-100"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
 

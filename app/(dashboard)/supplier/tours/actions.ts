@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import type { Prisma } from "@prisma/client";
 import { ensureCountryByCode, resolveDestination, sanitized, slugify } from "@/lib/supplierTours";
+import { translateTourById } from "@/lib/translationWorker";
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
 
@@ -101,9 +102,10 @@ export async function createTourAction(formData: FormData) {
   const includesArray = parseStringArrayField(formData, "includesList");
   const notIncludedArray = parseStringArrayField(formData, "notIncludedList");
 
+  const tourId = randomUUID();
   await prisma.tour.create({
     data: {
-      id: randomUUID(),
+      id: tourId,
       title,
       slug,
       description,
@@ -140,6 +142,10 @@ export async function createTourAction(formData: FormData) {
       departureDestinationId,
       countryId: countryCode
     }
+  });
+
+  void translateTourById(tourId).catch((error) => {
+    console.error("translation job failed", error);
   });
 
   redirect("/supplier/tours?status=sent");
