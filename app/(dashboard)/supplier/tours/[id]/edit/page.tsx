@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { SupplierTourCreateForm, type SavedDraft } from "@/components/supplier/SupplierTourCreateForm";
 import { updateTourAction } from "@/app/(dashboard)/supplier/tours/actions";
+import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -40,13 +41,26 @@ export default async function SupplierTourEditPage({ params }: Props) {
     orderBy: { name: "asc" }
   });
 
-  const parseJsonArray = <T,>(value?: string | null): T[] => {
+  const parseJsonArray = <T extends string>(value?: string | null | Prisma.JsonValue): T[] => {
     if (!value) return [];
-    try {
-      return JSON.parse(value) as T[];
-    } catch {
-      return [];
+
+    if (Array.isArray(value)) {
+      const strings = value.filter((item): item is string => typeof item === "string");
+      return strings as T[];
     }
+
+    if (typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((item) => typeof item === "string") as T[];
+        }
+      } catch {
+        return [];
+      }
+    }
+
+    return [];
   };
 
   const parseDuration = () => {
@@ -83,6 +97,17 @@ export default async function SupplierTourEditPage({ params }: Props) {
   }));
   const heroImage = tour.heroImage ? { url: tour.heroImage, name: "hero" } : null;
 
+  const includesFromString = tour.includes
+    ? tour.includes
+        .split(";")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+  const parsedIncludesList = parseJsonArray<string>(tour.includesList);
+  const fallbackIncludesList = parsedIncludesList.length ? parsedIncludesList : includesFromString;
+  const parsedNotIncludedList = parseJsonArray<string>(tour.notIncludedList);
+  const parsedHighlights = parseJsonArray<string>(tour.highlights);
+
   const initialDraft: SavedDraft = {
     state: {
       title: tour.title,
@@ -118,7 +143,10 @@ export default async function SupplierTourEditPage({ params }: Props) {
     heroImage,
     galleryImages,
     pickupOptions: [],
-    itineraryStops: []
+    itineraryStops: [],
+    highlights: parsedHighlights,
+    includesList: fallbackIncludesList,
+    notIncludedList: parsedNotIncludedList
   };
 
   return (
