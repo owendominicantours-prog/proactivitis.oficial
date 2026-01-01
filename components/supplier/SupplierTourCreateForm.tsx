@@ -10,6 +10,7 @@ import { createTourAction } from "@/app/(dashboard)/supplier/tours/actions";
 
 import type { UploadedImage } from "@/components/supplier/MediaUploader";
 import { ItineraryTimeline } from "@/components/itinerary/ItineraryTimeline";
+import { TranslationPreview } from "@/components/supplier/TranslationPreview";
 
 
 
@@ -532,6 +533,7 @@ export function SupplierTourCreateForm({
   const [termsAccepted, setTermsAccepted] = useState(false);
   const formRef = useRef<HTMLFormElement | null>(null);
   const translationToken = process.env.NEXT_PUBLIC_TRANSLATION_CRON_TOKEN;
+  const [previewRefreshKey, setPreviewRefreshKey] = useState(0);
 
   const buildDraftSnapshot = useMemo(
     () => () =>
@@ -957,6 +959,8 @@ export function SupplierTourCreateForm({
       });
     } catch (error) {
       console.error("auto translation trigger failed", error);
+    } finally {
+      setPreviewRefreshKey((prev) => prev + 1);
     }
   }, [translationToken]);
 
@@ -2746,6 +2750,12 @@ export function SupplierTourCreateForm({
       </div>
 
             </form>
+
+            {tourId && (
+              <div className="mt-6">
+                <TranslationPreview tourId={tourId} refreshKey={previewRefreshKey} />
+              </div>
+            )}
 
           </div>
 
