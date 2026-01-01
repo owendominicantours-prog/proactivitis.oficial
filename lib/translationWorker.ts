@@ -13,8 +13,26 @@ const LOCALES: LocaleConfig[] = [
 
 const TRANSLATION_URL = process.env.TRANSLATION_API_URL;
 
-function hashSource(payload: { title: string; subtitle?: string | null; shortDescription?: string | null; description: string }) {
-  const normalized = [payload.title, payload.subtitle ?? "", payload.shortDescription ?? "", payload.description].join("||");
+function hashSource(payload: {
+  title: string;
+  subtitle?: string | null;
+  shortDescription?: string | null;
+  description: string;
+  includes: string[];
+  notIncludes: string[];
+  itinerary: string[];
+  highlights: string[];
+}) {
+  const normalized = [
+    payload.title,
+    payload.subtitle ?? "",
+    payload.shortDescription ?? "",
+    payload.description,
+    payload.includes.join("|"),
+    payload.notIncludes.join("|"),
+    payload.itinerary.join("|"),
+    payload.highlights.join("|")
+  ].join("||");
   return crypto.createHash("sha256").update(normalized).digest("hex");
 }
 
@@ -161,7 +179,16 @@ export async function translateTourById(tourId: string) {
     .map((stop) => stop.title ?? stop.description ?? "")
     .filter(Boolean);
 
-  const sourceHash = hashSource(tour);
+  const sourceHash = hashSource({
+    title: tour.title,
+    subtitle: tour.subtitle,
+    shortDescription: tour.shortDescription,
+    description: tour.description,
+    includes,
+    notIncludes: notIncludedList,
+    itinerary: itineraryStops,
+    highlights
+  });
   for (const locale of LOCALES) {
     const existing = tour.translations.find((translation) => translation.locale === locale.code);
     if (existing?.sourceHash === sourceHash && existing.status === TourTranslationStatus.TRANSLATED) {
