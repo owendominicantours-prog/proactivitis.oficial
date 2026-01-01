@@ -111,26 +111,39 @@ const reviewBreakdown: { labelKey: TranslationKey; percent: number }[] = [
   { labelKey: "tour.reviews.breakdown.1", percent: 0 }
 ];
 
-const reviewHighlights = [
-  {
-    name: "Gabriela R.",
-    date: "Mayo 2025 · Verified traveler",
-    quote: "Guía excepcional, recorridos emocionantes y traslado muy cómodo.",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
-  },
-  {
-    name: "James T.",
-    date: "Abril 2025 · Verified traveler",
-    quote: "Muy bien organizado, adrenalina sin perder la seguridad y tiempo para fotos.",
-    avatar: "https://images.unsplash.com/photo-1504593811423-6dd665756598"
-  },
-  {
-    name: "Anna L.",
-    date: "Marzo 2025 · Verified traveler",
-    quote: "El viaje al cenote fue mágico y el equipo muy puntual.",
-    avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39"
-  }
-];
+const reviewerProfiles = [
+  { name: "Gabriela R.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330" },
+  { name: "James T.", avatar: "https://images.unsplash.com/photo-1504593811423-6dd665756598" },
+  { name: "Anna L.", avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39" },
+  { name: "Miguel P.", avatar: "https://images.unsplash.com/photo-1544723795-432537d2c8a3" },
+  { name: "Sofía M.", avatar: "https://images.unsplash.com/photo-1544723795-3f7118e5f72d" }
+] as const;
+
+const reviewTemplates = [
+  "Un equipo impecable y un {keyword} en el momento justo durante toda la experiencia.",
+  "Nos encantó el {keyword}: el tour fue perfecto y seguro.",
+  "La organización del {keyword} y la atención del guía fue de otro nivel.",
+  "Todo fluyó gracias al {keyword}; realmente nos sentimos en buenas manos.",
+  "Recomendado para quienes buscan {keyword} y tranquilidad."
+] as const;
+
+const buildReviewHighlights = (
+  locale: Locale,
+  keywords: string[],
+  locationLabel: string
+) =>
+  reviewerProfiles.map((profile, index) => {
+    const phraseTemplate = reviewTemplates[index % reviewTemplates.length];
+    const keyword = keywords[index % keywords.length] ?? "experiencias únicas";
+    const localeChunk = locale === "es" ? "Verified traveler" : "Verified traveler";
+    const quote = phraseTemplate.replace("{keyword}", keyword);
+    return {
+      name: profile.name,
+      date: `${["Mayo 2025", "Abril 2025", "Marzo 2025", "Febrero 2025", "Enero 2025"][index]} · ${localeChunk}`,
+      quote: `${quote} ${locationLabel ? `El punto de partida en ${locationLabel} te hará repetir.` : ""}`.trim(),
+      avatar: profile.avatar
+    };
+  });
 
 const reviewTags = ["Excelente guía", "Mucha adrenalina", "Puntualidad"];
 const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
@@ -356,6 +369,9 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const languagesDetail = languages.length
     ? translate(locale, "tour.quickInfo.languages.detailAvailable", { count: languages.length })
     : translate(locale, "tour.quickInfo.languages.detailPending");
+
+  const keywordPool = Array.from(new Set([...highlights, ...includes, ...excludes, ...categories])).filter(Boolean);
+  const reviewHighlights = buildReviewHighlights(locale, keywordPool, tour.location ?? languagesValue);
 
   const quickInfo = [
     {
