@@ -120,27 +120,31 @@ const reviewerProfiles = [
 ] as const;
 
 const reviewTemplates = [
-  "Un equipo impecable y un {keyword} en el momento justo durante toda la experiencia.",
-  "Nos encantó el {keyword}: el tour fue perfecto y seguro.",
-  "La organización del {keyword} y la atención del guía fue de otro nivel.",
-  "Todo fluyó gracias al {keyword}; realmente nos sentimos en buenas manos.",
-  "Recomendado para quienes buscan {keyword} y tranquilidad."
+  "El tour {title} explota el {keyword} justo cuando lo necesitas para sentir el Caribe de verdad.",
+  "Cada paso del {title} reforzó el {keyword} y no hubo ni un momento sin emoción.",
+  "El {keyword} de este tour fue impecable y me dio un montón de confianza en el equipo.",
+  "Mantuvieron el ritmo del {title} perfecto gracias al {keyword}; repetimos sin dudar.",
+  "Si buscas {keyword}, el {title} es la experiencia para sentirte en casa y en la playa."
 ] as const;
 
 const buildReviewHighlights = (
   locale: Locale,
   keywords: string[],
+  title: string,
   locationLabel: string
 ) =>
   reviewerProfiles.map((profile, index) => {
     const phraseTemplate = reviewTemplates[index % reviewTemplates.length];
-    const keyword = keywords[index % keywords.length] ?? "experiencias únicas";
+    const keyword = keywords[index % keywords.length] ?? "momentos inolvidables";
     const localeChunk = locale === "es" ? "Verified traveler" : "Verified traveler";
-    const quote = phraseTemplate.replace("{keyword}", keyword);
+    const quote = phraseTemplate
+      .replace("{keyword}", keyword)
+      .replace("{title}", title || "este tour");
+    const suffix = locationLabel ? `El punto de partida en ${locationLabel} te hará repetir.` : "";
     return {
       name: profile.name,
       date: `${["Mayo 2025", "Abril 2025", "Marzo 2025", "Febrero 2025", "Enero 2025"][index]} · ${localeChunk}`,
-      quote: `${quote} ${locationLabel ? `El punto de partida en ${locationLabel} te hará repetir.` : ""}`.trim(),
+      quote: `${quote} ${suffix}`.trim(),
       avatar: profile.avatar
     };
   });
@@ -371,7 +375,12 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     : translate(locale, "tour.quickInfo.languages.detailPending");
 
   const keywordPool = Array.from(new Set([...highlights, ...includes, ...excludes, ...categories])).filter(Boolean);
-  const reviewHighlights = buildReviewHighlights(locale, keywordPool, tour.location ?? languagesValue);
+  const reviewHighlights = buildReviewHighlights(
+    locale,
+    keywordPool,
+    localizedTitle,
+    tour.location ?? languagesValue
+  );
 
   const quickInfo = [
     {
