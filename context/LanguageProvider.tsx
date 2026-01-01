@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import { translations, type TranslationKey, Locale as TranslationLocale } from "../lib/translations";
 
 export type Locale = TranslationLocale;
@@ -23,13 +24,14 @@ const LanguageContext = createContext<LanguageContextValue | undefined>(undefine
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [locale, setLocale] = useState<Locale>(defaultLocale);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
 
-    const [, firstSegment] = window.location.pathname.split("/");
+    const [, firstSegment] = (pathname ?? window.location.pathname).split("/");
     const normalizedSegment = firstSegment?.toLowerCase();
     if (normalizedSegment && normalizedSegment in translations) {
       setLocale(normalizedSegment as Locale);
@@ -40,7 +42,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     if (stored && stored in translations) {
       setLocale(stored as Locale);
     }
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
