@@ -531,6 +531,7 @@ export function SupplierTourCreateForm({
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const formRef = useRef<HTMLFormElement | null>(null);
+  const translationToken = process.env.NEXT_PUBLIC_TRANSLATION_CRON_TOKEN;
 
   const buildDraftSnapshot = useMemo(
     () => () =>
@@ -944,7 +945,23 @@ export function SupplierTourCreateForm({
     }
   };
 
+  const runAutoTranslation = useCallback(async () => {
+    if (!translationToken) {
+      return;
+    }
+
+    try {
+      await fetch("/api/translation/auto", {
+        method: "POST",
+        headers: { "x-translation-token": translationToken }
+      });
+    } catch (error) {
+      console.error("auto translation trigger failed", error);
+    }
+  }, [translationToken]);
+
   const confirmTerms = () => {
+    void runAutoTranslation();
     setTermsAccepted(true);
     setTermsModalOpen(false);
     formRef.current?.requestSubmit();
