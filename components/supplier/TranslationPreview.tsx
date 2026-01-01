@@ -41,6 +41,22 @@ const SectionItem = ({ title, children }: { title: string; children: React.React
   </div>
 );
 
+const renderParagraphs = (text?: string | null) => {
+  if (!text) return null;
+  const paragraphs = text
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+  if (!paragraphs.length) return null;
+  return (
+    <div className="space-y-2 text-sm text-slate-700">
+      {paragraphs.map((paragraph, index) => (
+        <p key={`${paragraph}-${index}`}>{paragraph}</p>
+      ))}
+    </div>
+  );
+};
+
 export function TranslationPreview({ tourId, refreshKey }: Props) {
   const [locale, setLocale] = useState<Locale>("en");
   const [preview, setPreview] = useState<PreviewData | null>(null);
@@ -120,16 +136,35 @@ export function TranslationPreview({ tourId, refreshKey }: Props) {
         {!loading && !preview && !error && <EmptyState />}
         {preview && (
           <>
-            <SectionItem title="Título">
-              <p className="text-sm font-semibold text-slate-900">{preview.title ?? "Sin título"}</p>
-            </SectionItem>
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Título principal</p>
+              <p className="text-lg font-semibold text-slate-900">{preview.title ?? "Sin título"}</p>
+              {preview.subtitle && <p className="text-sm text-slate-500">{preview.subtitle}</p>}
+            </div>
             <SectionItem title="Descripción corta">
-              <p className="text-sm text-slate-700">{preview.shortDescription ?? "Sin descripción"}</p>
+              <p className="text-sm text-slate-700">{preview.shortDescription ?? "Sin descripción corta"}</p>
             </SectionItem>
-            <SectionItem title="Includes">
+            {renderParagraphs(preview.description) && (
+              <SectionItem title="Descripción extendida">{renderParagraphs(preview.description)}</SectionItem>
+            )}
+            <SectionItem title="Itinerario">
+              {preview.itineraryStops.length ? (
+                <ol className="space-y-1 text-sm text-slate-700">
+                  {preview.itineraryStops.map((stop, index) => (
+                    <li key={`${stop}-${index}`} className="flex gap-2">
+                      <span className="font-semibold text-slate-900">{index + 1}.</span>
+                      <span>{stop}</span>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="text-xs text-slate-500 italic">El tour no tiene itinerario para este idioma aún.</p>
+              )}
+            </SectionItem>
+            <SectionItem title="Incluye">
               {renderList(preview.includesList)}
             </SectionItem>
-            <SectionItem title="Excludes">
+            <SectionItem title="No incluye">
               {renderList(preview.notIncludedList)}
             </SectionItem>
             <SectionItem title="Highlights">

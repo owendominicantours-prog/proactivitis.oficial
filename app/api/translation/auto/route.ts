@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { translateTourById } from "@/lib/translationWorker";
 
@@ -20,12 +21,16 @@ export async function POST(request: NextRequest) {
 
   const tours = await prisma.tour.findMany({
     where: { status: "published" },
-    select: { id: true }
+    select: { id: true, slug: true }
   });
 
   for (const tour of tours) {
     try {
       await translateTourById(tour.id);
+      if (tour.slug) {
+        await revalidatePath(`/en/tours/${tour.slug}`);
+        await revalidatePath(`/fr/tours/${tour.slug}`);
+      }
     } catch (error) {
       console.error("auto translate failed for", tour.id, error);
     }

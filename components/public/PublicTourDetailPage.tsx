@@ -292,14 +292,25 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       ? notIncludedList
       : fallbackExcludes;
   const highlights = translationHighlights.length ? translationHighlights : rawHighlights;
-  const visualTimelineBase = itinerarySource.length ? itinerarySource : itineraryMock;
+  const hasBaseItinerary = itinerarySource.length > 0;
+  const hasTranslationItinerary = translationItineraryStops.length > 0;
   const visualTimeline =
-    translationItineraryStops.length > 0
-      ? visualTimelineBase.map((stop, index) => ({
+    hasTranslationItinerary && hasBaseItinerary
+      ? itinerarySource.map((stop, index) => ({
           ...stop,
-          title: translationItineraryStops[index] ?? stop.title
+          title: translationItineraryStops[index] ?? stop.title,
+          description: stop.description
         }))
-      : visualTimelineBase;
+      : hasTranslationItinerary
+        ? translationItineraryStops.map((title) => ({
+            time: "",
+            title,
+            description: ""
+          }))
+        : hasBaseItinerary
+          ? itinerarySource
+          : [];
+  const hasVisualTimeline = visualTimeline.length > 0;
   const localizedTitle = translation?.title ?? tour.title;
   const localizedSubtitle = translation?.subtitle ?? tour.subtitle ?? "";
   const localizedShortDescription = translation?.shortDescription ?? tour.shortDescription;
@@ -401,15 +412,17 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     : `${PROACTIVITIS_URL}/fototours/fotosimple.jpg`;
   const tourUrl = `${PROACTIVITIS_URL}/tours/${tour.slug}`;
   const priceValidUntil = getPriceValidUntil();
-  const itineraryList = visualTimeline.map((stop, index) => ({
-    "@type": "ListItem",
-    position: index + 1,
-    item: {
+  const itineraryList = hasVisualTimeline
+    ? visualTimeline.map((stop, index) => ({
       "@type": "ListItem",
-      name: stop.title,
-      description: stop.description ?? stop.title
-    }
-  }));
+      position: index + 1,
+      item: {
+        "@type": "ListItem",
+        name: stop.title,
+        description: stop.description ?? stop.title
+      }
+    }))
+    : [];
   const touristTypeFallback = categories.find((category) =>
     ["Family", "Adventure", "Couples"].includes(category)
   );
@@ -703,21 +716,27 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                 </h2>
               </div>
             </div>
-            <div className="space-y-4">
-              {visualTimeline.map((stop, index) => (
-                  <div key={`${stop.title}-${index}`} className="flex gap-4 rounded-[16px] border border-[#F1F5F9] bg-white/70 px-4 py-3">
-                    <div className="flex flex-col items-center text-sm text-slate-500">
-                      <span className="h-3 w-3 rounded-full bg-indigo-600" />
-                      {index !== visualTimeline.length - 1 && <span className="mt-2 h-6 w-px bg-slate-200" />}
-                    </div>
-                    <div className="text-sm leading-relaxed text-slate-700">
-                      <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{stop.time}</p>
-                      <p className="text-base font-semibold text-slate-900">{stop.title}</p>
-                      <p>{stop.description ?? translate(locale, "tour.section.itinerary.detailPending")}</p>
-                    </div>
+          <div className="space-y-4">
+            {hasVisualTimeline ? (
+              visualTimeline.map((stop, index) => (
+                <div key={`${stop.title}-${index}`} className="flex gap-4 rounded-[16px] border border-[#F1F5F9] bg-white/70 px-4 py-3">
+                  <div className="flex flex-col items-center text-sm text-slate-500">
+                    <span className="h-3 w-3 rounded-full bg-indigo-600" />
+                    {index !== visualTimeline.length - 1 && <span className="mt-2 h-6 w-px bg-slate-200" />}
                   </div>
-              ))}
-            </div>
+                  <div className="text-sm leading-relaxed text-slate-700">
+                    <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{stop.time}</p>
+                    <p className="text-base font-semibold text-slate-900">{stop.title}</p>
+                    <p>{stop.description ?? translate(locale, "tour.section.itinerary.detailPending")}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-[16px] border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+                {translate(locale, "tour.section.itinerary.detailPending")}
+              </div>
+            )}
+          </div>
           </section>
 
           <section id="reviews" className="space-y-6">
