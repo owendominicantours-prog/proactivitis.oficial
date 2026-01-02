@@ -2,55 +2,133 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
-const footerGroups = [
+import { Locale } from "@/lib/translations";
+
+type FooterSectionKey = "support" | "company" | "collaborate" | "legal";
+
+type SectionDefinition = {
+  key: FooterSectionKey;
+  hrefs: string[];
+};
+
+type FooterSectionCopy = {
+  title: string;
+  links: string[];
+};
+
+type FooterCopy = {
+  [key in FooterSectionKey]: FooterSectionCopy;
+} & { tagline: string };
+
+const FOOTER_STRUCTURE: SectionDefinition[] = [
   {
-    title: "Soporte",
-    links: [
-      { title: "Centro de ayuda", href: "/help-center" },
-      { title: "Contacto", href: "/contact" },
-      { title: "Cómo funciona", href: "/how-it-works" },
-      { title: "FAQs", href: "/faqs" }
-    ]
+    key: "support",
+    hrefs: ["/help-center", "/contact", "/how-it-works", "/faqs"]
   },
   {
-    title: "Empresa",
-    links: [
-      { title: "Sobre Proactivitis", href: "/about" },
-      { title: "Nuestra misión", href: "/our-mission" },
-      { title: "Prensa", href: "/press" },
-      { title: "Aliados", href: "/partners" }
-    ]
+    key: "company",
+    hrefs: ["/about", "/our-mission", "/press", "/partners"]
   },
   {
-    title: "Colabora",
-    links: [
-      { title: "Conviértete en Partner", href: "/become-a-supplier" },
-      { title: "Alianzas con Agencias", href: "/agency-partners" },
-      { title: "Afiliados", href: "/affiliates" },
-      { title: "Carreras", href: "/careers" }
-    ]
+    key: "collaborate",
+    hrefs: ["/become-a-supplier", "/agency-partners", "/affiliates", "/careers"]
   },
   {
-    title: "Legal",
-    links: [
-      { title: "Términos y Condiciones", href: "/legal/terms" },
-      { title: "Privacidad", href: "/legal/privacy" },
-      { title: "Cookies", href: "/legal/cookies" },
-      { title: "Información Legal", href: "/legal/information" }
-    ]
+    key: "legal",
+    hrefs: ["/legal/terms", "/legal/privacy", "/legal/cookies", "/legal/information"]
   }
 ];
 
+const FOOTER_TRANSLATIONS: Record<Locale, FooterCopy> = {
+  es: {
+    support: {
+      title: "Soporte",
+      links: ["Centro de ayuda", "Contacto", "Cómo funciona", "FAQs"]
+    },
+    company: {
+      title: "Empresa",
+      links: ["Sobre Proactivitis", "Nuestra misión", "Prensa", "Aliados"]
+    },
+    collaborate: {
+      title: "Colabora",
+      links: ["Conviértete en Partner", "Alianzas con Agencias", "Afiliados", "Carreras"]
+    },
+    legal: {
+      title: "Legal",
+      links: ["Términos y Condiciones", "Privacidad", "Cookies", "Información Legal"]
+    },
+    tagline: "Proactivitis — Turismo impulsado por personas, no por bots. Oficina central global."
+  },
+  en: {
+    support: {
+      title: "Support",
+      links: ["Help Center", "Contact", "How it works", "FAQs"]
+    },
+    company: {
+      title: "Company",
+      links: ["About Proactivitis", "Our mission", "Press", "Partners"]
+    },
+    collaborate: {
+      title: "Collaborate",
+      links: ["Become a Partner", "Agency alliances", "Affiliates", "Careers"]
+    },
+    legal: {
+      title: "Legal",
+      links: ["Terms & Conditions", "Privacy", "Cookies", "Legal information"]
+    },
+    tagline: "Proactivitis — Tourism powered by people, not bots. Global headquarters."
+  },
+  fr: {
+    support: {
+      title: "Support",
+      links: ["Centre d'aide", "Contact", "Comment ça marche", "FAQs"]
+    },
+    company: {
+      title: "Entreprise",
+      links: ["À propos de Proactivitis", "Notre mission", "Presse", "Partenaires"]
+    },
+    collaborate: {
+      title: "Collaborer",
+      links: ["Devenir partenaire", "Partenariats agences", "Affiliés", "Carrières"]
+    },
+    legal: {
+      title: "Mentions légales",
+      links: ["Conditions", "Confidentialité", "Cookies", "Informations juridiques"]
+    },
+    tagline: "Proactivitis — Le tourisme porté par des personnes, pas des robots. Siège mondial."
+  }
+};
+
 const paymentMethods = ["Visa", "Mastercard", "Amex", "PayPal", "Apple Pay", "Google Pay"];
+
+const normalizeLocale = (value: string | null): Locale => {
+  if (!value) return "es";
+  const segment = value.split("/").filter(Boolean)[0];
+  if (segment === "en" || segment === "fr") {
+    return segment;
+  }
+  return "es";
+};
 
 export function PublicFooter() {
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const locale = normalizeLocale(usePathname());
+  const copy = FOOTER_TRANSLATIONS[locale] ?? FOOTER_TRANSLATIONS.es;
+
+  const groups = FOOTER_STRUCTURE.map((section) => ({
+    title: copy[section.key].title,
+    links: section.hrefs.map((href, index) => ({
+      href,
+      label: copy[section.key].links[index]
+    }))
+  }));
 
   return (
     <footer className="border-t border-slate-900 bg-slate-950 px-6 py-10 text-sm text-gray-200 font-[var(--font-open-sans)]">
       <div className="mx-auto max-w-6xl space-y-6 px-0 text-gray-400 md:hidden">
-        {footerGroups.map((group) => (
+        {groups.map((group) => (
           <div key={group.title} className="rounded-2xl border border-white/10 bg-slate-900/80">
             <button
               type="button"
@@ -63,7 +141,7 @@ export function PublicFooter() {
               <div className="space-y-1 px-4 pb-4 text-xs uppercase tracking-[0.3em]">
                 {group.links.map((link) => (
                   <Link key={link.href} href={link.href} className="block text-slate-200 transition hover:text-sky-300">
-                    {link.title}
+                    {link.label}
                   </Link>
                 ))}
               </div>
@@ -71,7 +149,7 @@ export function PublicFooter() {
           </div>
         ))}
         <div className="space-y-2 border-t border-white/10 pt-4 text-[0.65rem] uppercase tracking-[0.3em] text-gray-500">
-          <p className="text-center font-semibold text-slate-100">Proactivitis — Tourism powered by people, not bots. Global Headquarters.</p>
+          <p className="text-center font-semibold text-slate-100">{copy.tagline}</p>
           <p className="text-center">&copy; {new Date().getFullYear()} Proactivitis</p>
         </div>
       </div>
@@ -79,12 +157,12 @@ export function PublicFooter() {
       <div className="hidden md:block">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {footerGroups.map((group) => (
+            {groups.map((group) => (
               <div key={group.title} className="space-y-3">
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{group.title}</p>
                 {group.links.map((link) => (
                   <Link key={link.href} href={link.href} className="block text-white transition hover:text-sky-300">
-                    {link.title}
+                    {link.label}
                   </Link>
                 ))}
               </div>
@@ -105,7 +183,7 @@ export function PublicFooter() {
               &copy; {new Date().getFullYear()} Proactivitis
             </p>
             <p className="text-center text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-slate-200 md:text-left">
-              Proactivitis — Tourism powered by people, not bots. Global Headquarters.
+              {copy.tagline}
             </p>
           </div>
         </div>
