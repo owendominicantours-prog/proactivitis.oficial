@@ -120,11 +120,11 @@ const reviewerProfiles = [
 ] as const;
 
 const reviewTemplates = [
-  "El tour {title} explota el {keyword} justo cuando lo necesitas para sentir el Caribe de verdad.",
-  "Cada paso del {title} reforzó el {keyword} y no hubo ni un momento sin emoción.",
-  "El {keyword} de este tour fue impecable y me dio un montón de confianza en el equipo.",
-  "Mantuvieron el ritmo del {title} perfecto gracias al {keyword}; repetimos sin dudar.",
-  "Si buscas {keyword}, el {title} es la experiencia para sentirte en casa y en la playa."
+  "Sentí el {keyword} justo al principio y el resto del tour fluyó sin parar.",
+  "El {keyword} estuvo presente en cada parada y el equipo lo mantuvo con energía.",
+  "Ese {keyword} inesperado me hizo creer que estaba viviendo una experiencia premium.",
+  "Cuando el {keyword} apareció, supe que este era el tour que decía ofrecer aventuras reales.",
+  "Basta con mencionar {keyword} para describir lo que viví; todo fue muy auténtico."
 ] as const;
 
 const buildReviewHighlights = (
@@ -623,7 +623,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
             {translate(locale, "tour.section.overview.label")}
           </p>
-          <p className="text-lg text-slate-800 line-clamp-3">{tour.shortDescription ?? shortTeaser}</p>
+          <p className="text-lg text-slate-800 line-clamp-3">{shortDescriptionText ?? shortTeaser}</p>
           {highlights.length ? (
             <ul className="space-y-2 text-sm font-semibold text-slate-700">
               {highlights.map((item) => (
