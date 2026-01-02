@@ -22,6 +22,7 @@ function hashSource(payload: {
   notIncludes: string[];
   itinerary: string[];
   highlights: string[];
+  durationUnit: string;
 }) {
   const normalized = [
     payload.title,
@@ -32,6 +33,9 @@ function hashSource(payload: {
     payload.notIncludes.join("|"),
     payload.itinerary.join("|"),
     payload.highlights.join("|")
+    // duration unit appended for change detection
+    ,
+    payload.durationUnit
   ].join("||");
   return crypto.createHash("sha256").update(normalized).digest("hex");
 }
@@ -91,6 +95,15 @@ function parseJsonArray(value?: string | null | Prisma.JsonValue) {
   return [];
 }
 
+function parseDurationValue(value?: string | null) {
+  if (!value) return { value: "4", unit: "Horas" };
+  try {
+    return JSON.parse(value) as { value: string; unit: string };
+  } catch {
+    return { value, unit: "Horas" };
+  }
+}
+
 async function translateEntries(items: string[], target: string) {
   return Promise.all(items.map((item) => translateText(item, target)));
 }
@@ -108,6 +121,7 @@ async function upsertTranslationEntry(
     notIncludedList?: string[];
     itineraryStops?: string[];
     highlights?: string[];
+    durationUnit?: string;
   }
 ) {
   await prisma.tourTranslation.upsert({
@@ -129,6 +143,7 @@ async function upsertTranslationEntry(
         translation.notIncludedList && translation.notIncludedList.length ? translation.notIncludedList : undefined,
       itineraryStops: translation.itineraryStops && translation.itineraryStops.length ? translation.itineraryStops : undefined,
       highlights: translation.highlights && translation.highlights.length ? translation.highlights : undefined,
+      durationUnit: translation.durationUnit,
       status: TourTranslationStatus.TRANSLATED,
       sourceHash: hash,
     },
@@ -146,7 +161,8 @@ async function upsertTranslationEntry(
       itineraryStops:
         translation.itineraryStops && translation.itineraryStops.length ? translation.itineraryStops : undefined,
       highlights:
-        translation.highlights && translation.highlights.length ? translation.highlights : undefined
+        translation.highlights && translation.highlights.length ? translation.highlights : undefined,
+      durationUnit: translation.durationUnit
     }
   });
 }
@@ -178,6 +194,7 @@ export async function translateTourById(tourId: string) {
   const itineraryStops = parsedItinerary
     .map((stop) => stop.title ?? stop.description ?? "")
     .filter(Boolean);
+  const durationValue = parseDurationValue(tour.duration);
 
   const sourceHash = hashSource({
     title: tour.title,
@@ -188,6 +205,8 @@ export async function translateTourById(tourId: string) {
     notIncludes: notIncludedList,
     itinerary: itineraryStops,
     highlights
+    ,
+    durationUnit: durationValue.unit
   });
   for (const locale of LOCALES) {
     const existing = tour.translations.find((translation) => translation.locale === locale.code);
@@ -214,6 +233,7 @@ export async function translateTourById(tourId: string) {
       itineraryStops.length ? translateEntries(itineraryStops, locale.target) : Promise.resolve([]),
       highlights.length ? translateEntries(highlights, locale.target) : Promise.resolve([])
     ]);
+    const translatedDurationUnit = await translateText(durationValue.unit, locale.target);
 
     await upsertTranslationEntry(tourId, locale.code, sourceHash, {
       title,
@@ -223,7 +243,8 @@ export async function translateTourById(tourId: string) {
       includesList: translatedIncludes,
       notIncludedList: translatedNotIncludes,
       itineraryStops: translatedItinerary,
-      highlights: translatedHighlights
+      highlights: translatedHighlights,
+      durationUnit: translatedDurationUnit
     });
   }
 

@@ -583,6 +583,7 @@ model TourTranslation {
   notIncludedList Json?
   itineraryStops Json?
   highlights     Json?
+  durationUnit   String?
   status         TourTranslationStatus @default(PENDING)
   sourceHash     String?
   createdAt      DateTime              @default(now())

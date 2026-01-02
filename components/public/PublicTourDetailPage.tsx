@@ -286,7 +286,6 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const languages = (tour.language ?? "").split(",").map((i) => i.trim()).filter(Boolean);
   const timeSlots = parseJsonArray<PersistedTimeSlot>(tour.timeOptions);
   const durationValue = parseDuration(tour.duration);
-  const durationLabel = `${durationValue.value} ${durationValue.unit}`;
   const displayTime = timeSlots.length ? formatTimeSlot(timeSlots[0]) : "09:00 AM";
   const parsedAdminItinerary = parseAdminItinerary(tour.adminNote ?? "");
   const itinerarySource = parsedAdminItinerary.length ? parsedAdminItinerary : parseItinerary(tour.adminNote ?? "");
@@ -332,6 +331,8 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const localizedSubtitle = translation?.subtitle ?? tour.subtitle ?? "";
   const localizedShortDescription = translation?.shortDescription ?? tour.shortDescription;
   const localizedDescription = translation?.description ?? tour.description;
+  const durationUnit = translation?.durationUnit ?? durationValue.unit;
+  const durationLabel = `${durationValue.value} ${durationUnit}`;
   const priceLabel = `$${tour.price.toFixed(0)} USD`;
   const shortDescriptionText = localizedShortDescription ?? localizedDescription;
   const needsReadMore = Boolean(shortDescriptionText && shortDescriptionText.length > 220);
