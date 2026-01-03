@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function InfoPage({ params }: Props) {
+export default async function InfoPageEnglish({ params }: Props) {
   const resolved = await params;
   const slugSegments = Array.isArray(resolved?.slug) ? resolved.slug : [];
   const page = findInfoPage(slugSegments);
