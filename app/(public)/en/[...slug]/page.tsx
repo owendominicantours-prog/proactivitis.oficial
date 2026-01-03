@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { InfoRenderer } from "@/components/public/InfoRenderer";
-import { findInfoPage } from "@/lib/infoRoutes";
+import { resolveInfoPageContent } from "@/lib/infoTranslationService";
+import { findInfoPage, parseInfoSlug } from "@/lib/infoRoutes";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -13,7 +14,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolved = await params;
   const slugSegments = Array.isArray(resolved?.slug) ? resolved.slug : [];
-  const page = findInfoPage(slugSegments);
+  const { normalizedSegments } = parseInfoSlug(slugSegments);
+  const page = findInfoPage(normalizedSegments);
   if (!page) return {};
   return {
     title: page.seoTitle ?? page.title,
@@ -24,15 +26,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function InfoPageEnglish({ params }: Props) {
   const resolved = await params;
   const slugSegments = Array.isArray(resolved?.slug) ? resolved.slug : [];
-  const page = findInfoPage(slugSegments);
+  const { locale, normalizedSegments } = parseInfoSlug(slugSegments);
+  const page = findInfoPage(normalizedSegments);
   if (!page) {
     notFound();
   }
+  const resolvedPage = (await resolveInfoPageContent(page.key, locale)) ?? page;
 
   return (
     <div className="bg-slate-50 pb-16">
       <div className="mx-auto max-w-5xl px-6 py-12">
-        <InfoRenderer page={page} />
+        <InfoRenderer page={resolvedPage} />
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { TourTranslationStatus } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
+import { translateEntries, translateText } from "@/lib/translationService";
 
 type LocaleConfig = { code: string; target: string };
 
@@ -10,8 +11,6 @@ const LOCALES: LocaleConfig[] = [
   { code: "en", target: "en" },
   { code: "fr", target: "fr" }
 ];
-
-const TRANSLATION_URL = process.env.TRANSLATION_API_URL;
 
 function hashSource(payload: {
   title: string;
@@ -40,43 +39,6 @@ function hashSource(payload: {
   return crypto.createHash("sha256").update(normalized).digest("hex");
 }
 
-async function translateText(text: string, target: string) {
-  if (!text) return text;
-
-  if (TRANSLATION_URL) {
-    const response = await fetch(TRANSLATION_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        q: text,
-        source: "es",
-        target
-      })
-    });
-    if (!response.ok) {
-      throw new Error(`translation failed: ${response.statusText}`);
-    }
-    const json = await response.json();
-    return json.translatedText as string;
-  }
-
-  const params = new URLSearchParams({
-    client: "gtx",
-    sl: "es",
-    tl: target,
-    dt: "t",
-    q: text
-  });
-  const response = await fetch(`https://translate.googleapis.com/translate_a/single?${params.toString()}`);
-  if (!response.ok) {
-    throw new Error(`translation failed: ${response.statusText}`);
-  }
-  const body = await response.text();
-  const json = JSON.parse(body);
-  const segments = json[0];
-  return segments.map((segment: unknown[]) => segment[0]).join("");
-}
-
 function parseJsonArray(value?: string | null | Prisma.JsonValue) {
   if (!value) return [];
   if (Array.isArray(value)) {
@@ -102,10 +64,6 @@ function parseDurationValue(value?: string | null) {
   } catch {
     return { value, unit: "Horas" };
   }
-}
-
-async function translateEntries(items: string[], target: string) {
-  return Promise.all(items.map((item) => translateText(item, target)));
 }
 
 async function upsertTranslationEntry(

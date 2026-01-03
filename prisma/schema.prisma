@@ -514,6 +514,11 @@ enum TourTranslationStatus {
   NEEDS_REVIEW
 }
 
+enum TranslationStatus {
+  PENDING
+  TRANSLATED
+}
+
 model Tour {
   id                     String                     @id
   title                  String
@@ -591,6 +596,20 @@ model TourTranslation {
   Tour           Tour                  @relation(fields: [tourId], references: [id], onDelete: Cascade)
 
   @@unique([tourId, locale])
+}
+
+model InfoPageTranslation {
+  id        String           @id @default(cuid())
+  pageKey   String
+  locale    String
+  hero      Json
+  sections  Json
+  status    TranslationStatus @default(PENDING)
+  sourceHash String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@unique([pageKey, locale])
 }
 
 model User {
