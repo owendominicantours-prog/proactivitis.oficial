@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import { landingPages } from "@/lib/landing";
 import CollapsibleSection from "@/components/admin/CollapsibleSection";
+import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import LandingRefreshControl from "@/components/admin/LandingRefreshControl";
 
 type SearchParams = {
@@ -24,7 +25,7 @@ const buildLandingSlug = (slug: string) => `punta-cana-international-airport-to-
 export default async function LandingsAdminPage({ searchParams }: LandingsAdminPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const params = resolvedSearchParams ?? {};
-  const [zones, locations] = await Promise.all([
+  const [zones, locations, dynamicCombos] = await Promise.all([
     prisma.transferZoneV2.findMany({
       where: { countryCode: "RD" },
       select: { id: true, name: true, slug: true },
@@ -34,10 +35,12 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       where: { zone: { slug: TRANSFER_ZONE } },
       include: { zone: true },
       orderBy: { name: "asc" }
-    })
+    }),
+    getDynamicTransferLandingCombos()
   ]);
 
   const manual = allLandings();
+  const zoneNameById = new Map(zones.map((zone) => [zone.id, zone.name]));
   const landingMap = new Map<
     string,
     { slug: string; name: string; type: string; active: boolean; zone: string; visits: number }
@@ -59,6 +62,16 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       type: "HOTEL",
       active: true,
       zone: TRANSFER_ZONE,
+      visits: 0
+    });
+  });
+  dynamicCombos.forEach((combo) => {
+    landingMap.set(combo.landingSlug, {
+      slug: combo.landingSlug,
+      name: combo.destinationName,
+      type: "TRANSFER",
+      active: true,
+      zone: zoneNameById.get(combo.destination.zoneId) ?? "Transfers",
       visits: 0
     });
   });
