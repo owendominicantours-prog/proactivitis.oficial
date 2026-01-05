@@ -85,6 +85,68 @@ export async function addTransferZoneAction(formData: FormData) {
   refreshTransfers();
 }
 
+export async function updateTransferZoneAction(formData: FormData) {
+  const zoneId = formData.get("zoneId");
+  const name = formData.get("name");
+  const slug = formData.get("slug");
+  const description = formData.get("description");
+
+  if (!zoneId || typeof zoneId !== "string" || !zoneId.trim()) {
+    throw new Error("Identificador de zona inválido.");
+  }
+  if (!name || typeof name !== "string" || !name.trim()) {
+    throw new Error("Ingresa el nombre de la zona.");
+  }
+  if (!slug || typeof slug !== "string" || !slug.trim()) {
+    throw new Error("Ingresa un slug para la zona.");
+  }
+
+  const zone = await prisma.transferZoneV2.findUnique({ where: { id: zoneId.trim() } });
+  if (!zone) {
+    throw new Error("Zona no encontrada.");
+  }
+
+  const slugConflict = await prisma.transferZoneV2.findFirst({
+    where: {
+      slug: slug.trim(),
+      NOT: { id: zone.id }
+    }
+  });
+  if (slugConflict) {
+    throw new Error("Ya existe otra zona con ese slug.");
+  }
+
+  await prisma.transferZoneV2.update({
+    where: { id: zone.id },
+    data: {
+      name: name.trim(),
+      slug: slug.trim(),
+      description: typeof description === "string" ? description.trim() : undefined
+    }
+  });
+
+  refreshTransfers();
+}
+
+export async function deleteTransferZoneAction(formData: FormData) {
+  const zoneId = formData.get("zoneId");
+
+  if (!zoneId || typeof zoneId !== "string" || !zoneId.trim()) {
+    throw new Error("Identificador de zona inválido.");
+  }
+
+  const zone = await prisma.transferZoneV2.findUnique({ where: { id: zoneId.trim() }, include: { locations: true } });
+  if (!zone) {
+    throw new Error("Zona no encontrada.");
+  }
+  if (zone.locations.length > 0) {
+    throw new Error("No se puede eliminar una zona que tiene locations asignadas.");
+  }
+
+  await prisma.transferZoneV2.delete({ where: { id: zone.id } });
+  refreshTransfers();
+}
+
 export async function addTransferLocationAction(formData: FormData) {
   const name = formData.get("name");
   const slug = formData.get("slug");

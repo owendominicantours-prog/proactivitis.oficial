@@ -9,8 +9,10 @@ import {
   addTransferRouteOverrideAction,
   addTransferVehicleAction,
   addTransferZoneAction,
+  deleteTransferZoneAction,
   toggleTransferLocationActiveAction,
   toggleTransferVehicleActiveAction,
+  updateTransferZoneAction,
   upsertTransferRoutePriceAction
 } from "./actions";
 import LocationList from "@/components/admin/transfers/LocationList";
@@ -222,18 +224,67 @@ export default async function TransfersAdminPage() {
         <div className="grid gap-4 md:grid-cols-2">
           {zones.map((zone) => (
             <article key={zone.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{zone.slug}</p>
-                  <h3 className="text-xl font-semibold text-slate-900">{zone.name}</h3>
+              <form action={updateTransferZoneAction} className="space-y-3">
+                <input type="hidden" name="zoneId" value={zone.id} />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{zone.slug}</p>
+                    <h3 className="text-xl font-semibold text-slate-900">{zone.name}</h3>
+                  </div>
+                  <span className="text-xs text-slate-500">{zone.country.code}</span>
                 </div>
-                <span className="text-xs text-slate-500">{zone.country.code}</span>
-              </div>
-              <p className="mt-2 text-sm text-slate-600">{zone.description ?? "Sin descripción."}</p>
-              <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
-                <span>{zone.locations.length} locations</span>
-                <span>{zone.active ? "Activa" : "Inactiva"}</span>
-              </div>
+                <label className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                  Nombre
+                  <input
+                    name="name"
+                    defaultValue={zone.name}
+                    className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm"
+                  />
+                </label>
+                <label className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                  Slug
+                  <input
+                    name="slug"
+                    defaultValue={zone.slug}
+                    className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm"
+                  />
+                </label>
+                <label className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                  Descripción
+                  <textarea
+                    name="description"
+                    rows={2}
+                    defaultValue={zone.description ?? ""}
+                    className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm"
+                  />
+                </label>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="submit"
+                    className="rounded-full bg-slate-900 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
+                  >
+                    Guardar cambios
+                  </button>
+                  <span className="text-xs text-slate-500">
+                    {zone.locations.length} locations · {zone.active ? "Activa" : "Inactiva"}
+                  </span>
+                </div>
+              </form>
+              <form action={deleteTransferZoneAction} className="mt-3 flex flex-col gap-2">
+                <input type="hidden" name="zoneId" value={zone.id} />
+                <button
+                  type="submit"
+                  disabled={zone.locations.length > 0}
+                  className="rounded-full bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 border border-slate-200 transition hover:border-slate-400 disabled:cursor-not-allowed disabled:border-rose-200 disabled:text-rose-500"
+                >
+                  {zone.locations.length > 0 ? "Desasocia locations antes" : "Eliminar zona"}
+                </button>
+                {zone.locations.length > 0 ? (
+                  <p className="text-[0.65rem] text-rose-600">
+                    No puedes borrar esta zona mientras tenga {zone.locations.length} locations asignadas.
+                  </p>
+                ) : null}
+              </form>
             </article>
           ))}
         </div>
