@@ -10,6 +10,7 @@ export type DynamicTransferLanding = {
   lastMod: Date;
   originZoneId: string;
   destinationZoneId: string;
+  aliasSlugs: string[];
 };
 
 type LocationSummary = {
@@ -18,6 +19,22 @@ type LocationSummary = {
   zoneId: string;
   updatedAt: Date;
 };
+
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+const normalizeSlug = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "");
 
 const groupByZone = (locations: LocationSummary[]) => {
   const map = new Map<string, LocationSummary[]>();
@@ -81,18 +98,27 @@ export async function getDynamicTransferLandingCombos(): Promise<DynamicTransfer
     }
     for (const origin of originLocations) {
       for (const destination of destinationLocations) {
-        const landingSlug = `${origin.slug}-to-${destination.slug}`;
-        if (!combos.has(landingSlug)) {
-      combos.set(landingSlug, {
-        landingSlug,
-        originSlug: origin.slug,
-        originName: origin.name,
-        destinationSlug: destination.slug,
-        destinationName: destination.name,
-        lastMod: destination.updatedAt,
-        originZoneId: origin.zoneId,
-        destinationZoneId: destination.zoneId
-      });
+        const canonicalOriginNameSlug = slugify(origin.name);
+        const canonicalDestinationNameSlug = slugify(destination.name);
+        const canonicalSlug = `${canonicalOriginNameSlug}-to-${canonicalDestinationNameSlug}`;
+        const aliasSet = new Set<string>([
+          `${origin.slug}-to-${destination.slug}`,
+          `${origin.slug}-to-${canonicalDestinationNameSlug}`,
+          `${canonicalOriginNameSlug}-to-${destination.slug}`
+        ]);
+        aliasSet.delete(canonicalSlug);
+        if (!combos.has(canonicalSlug)) {
+          combos.set(canonicalSlug, {
+            landingSlug: canonicalSlug,
+            originSlug: origin.slug,
+            originName: origin.name,
+            destinationSlug: destination.slug,
+            destinationName: destination.name,
+            lastMod: destination.updatedAt,
+            originZoneId: origin.zoneId,
+            destinationZoneId: destination.zoneId,
+            aliasSlugs: Array.from(aliasSet)
+          });
         }
       }
     }
@@ -107,17 +133,23 @@ export async function getDynamicTransferLandingCombos(): Promise<DynamicTransfer
 }
 
 export async function findDynamicLandingBySlug(slug: string) {
-  const parts = slug.split("-to-");
-  if (parts.length !== 2) {
+  const combos = await getDynamicTransferLandingCombos();
+  const normalized = normalizeSlug(slug);
+  const matches = (candidate: string) => candidate === slug || normalizeSlug(candidate) === normalized;
+  const landing = combos.find(
+    (combo) =>
+      matches(combo.landingSlug) ||
+      combo.aliasSlugs.some(matches) ||
+      combo.aliasSlugs.some((alias) => matches(alias))
+  );
+  if (!landing) {
     return null;
   }
-  const [originSlug, destinationSlug] = parts;
+
   const [origin, destination] = await Promise.all([
-    prisma.transferLocation.findFirst({
+    prisma.transferLocation.findUnique({
       where: {
-        slug: originSlug,
-        type: TransferLocationType.AIRPORT,
-        active: true
+        slug: landing.originSlug
       },
       select: {
         slug: true,
@@ -125,11 +157,9 @@ export async function findDynamicLandingBySlug(slug: string) {
         zoneId: true
       }
     }),
-    prisma.transferLocation.findFirst({
+    prisma.transferLocation.findUnique({
       where: {
-        slug: destinationSlug,
-        type: TransferLocationType.HOTEL,
-        active: true
+        slug: landing.destinationSlug
       },
       select: {
         slug: true,
@@ -138,20 +168,10 @@ export async function findDynamicLandingBySlug(slug: string) {
       }
     })
   ]);
+
   if (!origin || !destination) {
     return null;
   }
-  const route = await prisma.transferRoute.findFirst({
-    where: {
-      active: true,
-      OR: [
-        { zoneAId: origin.zoneId, zoneBId: destination.zoneId },
-        { zoneAId: destination.zoneId, zoneBId: origin.zoneId }
-      ]
-    }
-  });
-  if (!route) {
-    return null;
-  }
-  return { origin, destination };
+
+  return { origin, destination, landing };
 }

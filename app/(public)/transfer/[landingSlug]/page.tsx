@@ -97,9 +97,15 @@ const resolveLanding = async (landingSlug: string): Promise<TransferLandingData 
 export async function generateStaticParams() {
   const combos = await getDynamicTransferLandingCombos();
   const slugs = new Set<string>();
-  const dynamicParams = combos.map((entry) => {
-    slugs.add(entry.landingSlug);
-    return { landingSlug: entry.landingSlug };
+  const dynamicParams: { landingSlug: string }[] = [];
+  combos.forEach((combo) => {
+    const paths = [combo.landingSlug, ...combo.aliasSlugs];
+    paths.forEach((slug) => {
+      if (!slugs.has(slug)) {
+        slugs.add(slug);
+        dynamicParams.push({ landingSlug: slug });
+      }
+    });
   });
   const manualParams = allLandings()
     .filter((landing) => !slugs.has(landing.landingSlug))
