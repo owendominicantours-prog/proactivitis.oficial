@@ -162,31 +162,38 @@ export default async function HipHopLandingPage() {
   };
 
   const heroStats = [
-    {label:"+1,500 happy travelers", value:"★ 4.8/5"},
+    {label:"+1,500 happy travelers", value:"4.8/5 reviews"},
     {label:"Sunset Slot", value: timeSlots[0]? `${timeSlots[0].hour}:${timeSlots[0].minute} ${timeSlots[0].period}`:"08:00 AM / 01:00 PM"},
     {label:"Duration", value:"4 Hours"}
   ];
 
+
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="min-h-screen bg-[#f5f6fb] text-slate-900">
       <StructuredData data={schema} />
-      <section className="relative overflow-hidden bg-[#121212]">
-        <div className="absolute inset-0 opacity-60">
-          <Image src={heroImage} alt={tour.title ?? SEO_TITLE} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/80 to-[#050505]" />
+      <section className="relative overflow-hidden bg-[#f5f6fb]">
+        <div className="absolute inset-0">
+          <Image
+            src={heroImage}
+            alt={tour.title ?? SEO_TITLE}
+            fill
+            className="object-cover filter saturate-110"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/80 to-[#f5f6fb]" />
         </div>
         <div className="relative mx-auto flex max-w-6xl flex-col gap-10 px-4 py-20 lg:flex-row">
           <div className="space-y-6">
             <p className="text-xs uppercase tracking-[0.6em] text-[#00e5ff]">Urban Party Cruise</p>
-            <h1 className="text-4xl font-extrabold uppercase leading-tight text-white lg:text-5xl">Punta Cana's #1 Rated Urban Party Boat & Snorkel Experience</h1>
-            <p className="max-w-xl text-lg text-white/80">
+            <h1 className="text-4xl font-black uppercase leading-tight text-slate-900 lg:text-5xl">{SEO_TITLE}</h1>
+            <p className="max-w-xl text-lg text-slate-700">
               Dance to hip hop & reggaeton while sailing turquoise waters, snorkel over Bibijagua and toast under a cinematic sunset with premium service.
             </p>
             <div className="flex flex-wrap gap-4">
               {heroStats.map((stat) => (
-                <div key={stat.label} className="rounded-[12px] border border-white/20 bg-white/5 px-4 py-3 text-sm">
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{stat.label}</p>
-                  <p className="text-lg font-semibold text-white">{stat.value}</p>
+                <div key={stat.label} className="rounded-[16px] border border-slate-200 bg-white/80 px-5 py-4 text-sm shadow-md">
+                  <p className="text-[9px] uppercase tracking-[0.3em] text-slate-500">{stat.label}</p>
+                  <p className="text-lg font-semibold text-slate-900">{stat.value}</p>
                 </div>
               ))}
             </div>
@@ -199,26 +206,26 @@ export default async function HipHopLandingPage() {
               </a>
               <Link
                 href={`/tours/${tour.slug}`}
-                className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-white transition hover:border-[#00e5ff]"
+                className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-slate-900 transition hover:border-[#00e5ff]"
               >
                 View official tour
               </Link>
             </div>
-            <div className="flex flex-wrap items-center gap-8 text-xs uppercase tracking-[0.3em] text-slate-400">
+            <div className="flex flex-wrap items-center gap-8 text-xs uppercase tracking-[0.3em] text-slate-500">
               <div className="flex items-center gap-2">
                 <span className="h-1 w-8 bg-[#00e5ff]" />
                 Rating powered by TripAdvisor
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-1 w-8 bg-[#d4af37]" />
-                Google Reviews ★ 4.8/5
+                Google Reviews 4.8/5
               </div>
             </div>
           </div>
-          <div className="w-full rounded-[28px] border border-white/20 bg-[#0b0b0b]/90 p-6 shadow-[0_30px_60px_rgba(0,0,0,0.5)] lg:w-[420px]">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Secure Your Spot on the Party Boat</p>
-            <h3 className="mt-2 text-2xl font-black text-white">Hip Hop Party Boat</h3>
-            <p className="text-sm text-white/70">Limited tables for 2026, book your crew now.</p>
+          <div id="booking" className="w-full rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_30px_60px_rgba(15,23,42,0.15)] lg:w-[420px]">
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Secure Your Spot on the Party Boat</p>
+            <h3 className="mt-2 text-2xl font-black text-slate-900">Hip Hop Party Boat</h3>
+            <p className="text-sm text-slate-600">Limited tables for 2026, book your crew now.</p>
             <div className="mt-4">
               <TourBookingWidget {...bookingWidgetProps} />
             </div>
@@ -232,38 +239,38 @@ export default async function HipHopLandingPage() {
       </section>
 
       <section className="mx-auto max-w-6xl space-y-6 px-4 py-16">
-        <div className="rounded-[32px] bg-[#111111]/90 p-8 shadow-[0_25px_60px_rgba(0,0,0,0.45)]">
+        <div className="rounded-[32px] bg-white p-8 shadow-[0_25px_60px_rgba(0,0,0,0.08)]">
           <p className="text-xs uppercase tracking-[0.4em] text-[#00e5ff]">Social Proof</p>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
-            <div className="rounded-[12px] border border-[#222222] bg-[#1a1a1a]/80 p-5 text-sm">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400">TripAdvisor</p>
-              <p className="text-lg font-black text-white">★ 4.8/5</p>
-              <p className="text-xs text-slate-300">+1,500 reviews</p>
+            <div className="rounded-[16px] border border-slate-100 bg-[#fafbff] p-5 text-sm">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">TripAdvisor</p>
+              <p className="text-lg font-black text-slate-900">4.8/5</p>
+              <p className="text-xs text-slate-400">+1,500 reviews</p>
             </div>
-            <div className="rounded-[12px] border border-[#222222] bg-[#1a1a1a]/80 p-5 text-sm">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400">Google</p>
-              <p className="text-lg font-black text-white">★ 4.8/5</p>
-              <p className="text-xs text-slate-300">Verified travelers</p>
+            <div className="rounded-[16px] border border-slate-100 bg-[#fafbff] p-5 text-sm">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Google</p>
+              <p className="text-lg font-black text-slate-900">4.8/5</p>
+              <p className="text-xs text-slate-400">Verified travelers</p>
             </div>
-            <div className="rounded-[12px] border border-[#222222] bg-[#1a1a1a]/80 p-5 text-sm">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400">Space Left</p>
+            <div className="rounded-[16px] border border-slate-100 bg-[#fafbff] p-5 text-sm">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Space Left</p>
               <p className="text-lg font-black text-[#d4af37]">22 spots</p>
-              <p className="text-xs text-slate-300">Updated daily</p>
+              <p className="text-xs text-slate-400">Updated daily</p>
             </div>
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl space-y-6 px-4 pb-16">
-        <div className="grid gap-5 lg:grid-cols-4">
+        <div className="grid gap-6 lg:grid-cols-4">
           {features.map((feature) => (
             <article
               key={feature.title}
-              className="space-y-3 rounded-[16px] border border-white/10 bg-[#111111]/80 p-5 shadow-[0_18px_45px_rgba(0,0,0,0.5)]"
+              className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.1)]"
             >
               <div className="text-[#00e5ff]">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-white">{feature.title}</h3>
-              <p className="text-sm text-slate-300">{feature.copy}</p>
+              <h3 className="text-xl font-semibold text-slate-900">{feature.title}</h3>
+              <p className="text-sm text-slate-600">{feature.copy}</p>
             </article>
           ))}
         </div>
@@ -271,23 +278,23 @@ export default async function HipHopLandingPage() {
 
       <section className="mx-auto max-w-6xl space-y-6 px-4 pb-16">
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-[28px] border border-white/10 bg-[#0f0f0f]/90 p-6">
-            <h3 className="text-2xl font-black text-white">Itinerario Express</h3>
-            <ul className="mt-4 space-y-3 text-sm text-slate-300">
+          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_20px_45px_rgba(15,23,42,0.08)]">
+            <h3 className="text-2xl font-black text-slate-900">Itinerario Express</h3>
+            <ul className="mt-4 space-y-3 text-sm text-slate-600">
               {itinerary.map((line) => (
-                <li key={line} className="rounded-[12px] border border-white/5 bg-white/5 p-4">
+                <li key={line} className="rounded-[12px] border border-slate-100 bg-[#f8f9fb] p-4">
                   {line}
                 </li>
               ))}
             </ul>
           </div>
-          <div className="rounded-[28px] border border-white/10 bg-[#111111]/80 p-6">
-            <h3 className="text-2xl font-black text-white">FAQs</h3>
-            <div className="mt-4 space-y-4 text-sm text-slate-300">
+          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_20px_45px_rgba(15,23,42,0.08)]">
+            <h3 className="text-2xl font-black text-slate-900">FAQs</h3>
+            <div className="mt-4 space-y-4 text-sm text-slate-600">
               {faqs.map((faq) => (
-                <article key={faq} className="rounded-[12px] border border-white/5 bg-white/5 p-4">
-                  <p className="font-semibold text-white">{faq.split("?")[0]}?</p>
-                  <p className="text-sm text-slate-300">{faq}</p>
+                <article key={faq} className="rounded-[12px] border border-slate-100 bg-[#f8f9fb] p-4">
+                  <p className="font-semibold text-slate-900">{faq.split("?")[0]}?</p>
+                  <p className="text-sm text-slate-600">{faq}</p>
                 </article>
               ))}
             </div>
@@ -296,6 +303,7 @@ export default async function HipHopLandingPage() {
       </section>
     </div>
   );
+
 }
 
 export { metadata };
