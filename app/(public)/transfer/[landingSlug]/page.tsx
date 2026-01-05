@@ -13,6 +13,8 @@ import {
   getDynamicTransferLandingCombos
 } from "@/lib/transfer-landing-utils";
  
+const DEFAULT_AIRPORT_SLUG = "puj-airport";
+const DEFAULT_AIRPORT_NAME = "Punta Cana International Airport (PUJ)";
 const BASE_URL = "https://proactivitis.com";
 const FALLBACK_PRICE = 44;
 const FALLBACK_HERO_IMAGES = ["/transfer/mini van.png", "/transfer/sedan.png", "/transfer/suv.png"];
@@ -148,8 +150,9 @@ export default async function TransferLandingPage({
     return notFound();
   }
 
+  const originSlug = landing.landingSlug.includes("-to-") ? landing.landingSlug.split("-to-")[0] : DEFAULT_AIRPORT_SLUG;
   const [originLocation, destinationLocation] = await Promise.all([
-    prisma.transferLocation.findUnique({ where: { slug: AIRPORT_SLUG } }),
+    prisma.transferLocation.findUnique({ where: { slug: originSlug } }),
     prisma.transferLocation.findUnique({ where: { slug: landing.hotelSlug } })
   ]);
   if (!originLocation || !destinationLocation) {
@@ -264,8 +267,8 @@ export default async function TransferLandingPage({
           destinationId={destinationLocation.id}
           originSlug={originLocation.slug}
           destinationSlug={destinationLocation.slug}
-          originLabel={AIRPORT_NAME}
-          destinationLabel={landing.hotelName}
+          originLabel={originLocation.name ?? DEFAULT_AIRPORT_NAME}
+          destinationLabel={destinationLocation.name ?? landing.hotelName}
           defaultDeparture={defaultDeparture}
           priceFrom={landing.priceFrom}
         />
