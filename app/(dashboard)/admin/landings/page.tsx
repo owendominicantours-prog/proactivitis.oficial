@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import { landingPages } from "@/lib/landing";
 import CollapsibleSection from "@/components/admin/CollapsibleSection";
+import LandingRefreshControl from "@/components/admin/LandingRefreshControl";
 
 type SearchParams = {
   zone?: string;
@@ -141,6 +142,8 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
           </button>
         </form>
       </section>
+
+      <LandingRefreshControl />
 
       <CollapsibleSection
         title="Landings de transfer"
