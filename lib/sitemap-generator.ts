@@ -180,7 +180,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
     ...trasladoHotelEntries,
     ...combos.map(({ url, priority }) => ({ url, priority })),
     ...landingPages.map((landing) => ({
-      url: `${BASE_URL}/landing/tours/${landing.slug}`,
+      url: `${BASE_URL}/thingtodo/tours/${landing.slug}`,
       priority: 0.7
     }))
   ]);

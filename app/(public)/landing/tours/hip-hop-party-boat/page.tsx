@@ -77,12 +77,12 @@ const metadata: Metadata = {
   description: SEO_DESCRIPTION,
   keywords: SEO_KEYWORDS,
   alternates: {
-    canonical: `https://proactivitis.com/landing/tours/${LANDING_SLUG}`
+    canonical: `https://proactivitis.com/thingtodo/tours/${LANDING_SLUG}`
   },
   openGraph: {
     title: SEO_TITLE,
     description: SEO_DESCRIPTION,
-    url: `https://proactivitis.com/landing/tours/${LANDING_SLUG}`
+    url: `https://proactivitis.com/thingtodo/tours/${LANDING_SLUG}`
   }
 };
 
