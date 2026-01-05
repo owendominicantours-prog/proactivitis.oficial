@@ -1164,6 +1164,27 @@ export const transferLandings: TransferLandingData[] = [
     keywords: ["PUJ Zoetry Agua transfer", "Zoetry Agua transfer privado", "transfer Zoetry Agua"],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-zoetry-agua"
   }
+  ,
+  {
+    landingSlug: "punta-cana-international-airport-to-bahia-principe-grand-punta-cana",
+    reverseSlug: "bahia-principe-grand-punta-cana-to-punta-cana-international-airport",
+    hotelSlug: "bahia-principe-grand-punta-cana",
+    hotelName: "Bahia Principe Grand Punta Cana",
+    heroTitle: "Punta Cana International Airport (PUJ) → Bahia Principe Grand Punta Cana",
+    heroSubtitle: "Traslado privado con chofer bilingüe, Wi-Fi y asistencia personalizada hasta Bahia Principe Grand Punta Cana.",
+    heroTagline: "Servicio premium sin esperas ni filas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Transporte premium hacia Bahia Principe Grand Punta Cana",
+    priceFrom: 45,
+    priceDetails: ["Confirmación instantánea con chofer asignado", "60 minutos de espera gratuita en PUJ", "Wi-Fi y agua embotellada durante el trayecto"],
+    longCopy: buildLongCopy("Bahia Principe Grand Punta Cana"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingüe | Wi-Fi a bordo", "Cancelación flexible 24h"],
+    faq: buildFaq("Bahia Principe Grand Punta Cana"),
+    seoTitle: "Transfer privado PUJ a Bahia Principe Grand Punta Cana | Proactivitis",
+    metaDescription: "Traslado sin esperas desde Punta Cana International Airport (PUJ) hasta Bahia Principe Grand Punta Cana con confirmación inmediata, Wi-Fi y chofer bilingüe.",
+    keywords: ["PUJ Bahia Principe Grand Punta Cana transfer", "Bahia Principe Grand Punta Cana transfer privado", "transfer Bahia Principe Grand Punta Cana"],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-bahia-principe-grand-punta-cana"
+  }
 ];
 
 export const findLandingBySlug = (slug: string) => transferLandings.find((landing) => landing.landingSlug === slug);
