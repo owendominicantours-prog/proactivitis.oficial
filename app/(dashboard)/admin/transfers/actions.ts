@@ -9,6 +9,7 @@ const TRANSFER_ADMIN_PATH = "/(dashboard)/admin/transfers";
 function refreshTransfers() {
   revalidatePath("/dashboard");
   revalidatePath(TRANSFER_ADMIN_PATH);
+  revalidatePath("/sitemap-transfers.xml");
 }
 
 export async function addTransferCountryAction(formData: FormData) {

@@ -3,122 +3,106 @@
  import { notFound } from "next/navigation";
  import Image from "next/image";
  import Link from "next/link";
- import { prisma } from "@/lib/prisma";
- import { allLandings } from "@/data/transfer-landings";
- import type { TransferLandingData } from "@/data/transfer-landings";
+import { prisma } from "@/lib/prisma";
+import { allLandings } from "@/data/transfer-landings";
+import type { TransferLandingData } from "@/data/transfer-landings";
 import TransferQuoteCards from "@/components/transfers/TransferQuoteCards";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
+import {
+  findDynamicLandingBySlug,
+  getDynamicTransferLandingCombos
+} from "@/lib/transfer-landing-utils";
  
- const AIRPORT_SLUG = "puj-airport";
- const AIRPORT_NAME = "Punta Cana International Airport (PUJ)";
- const BASE_URL = "https://proactivitis.com";
- const ZONE_SLUG = "punta-cana";
- const FALLBACK_PRICE = 44;
- const FALLBACK_HERO_IMAGES = ["/transfer/mini van.png", "/transfer/sedan.png", "/transfer/suv.png"];
+const BASE_URL = "https://proactivitis.com";
+const FALLBACK_PRICE = 44;
+const FALLBACK_HERO_IMAGES = ["/transfer/mini van.png", "/transfer/sedan.png", "/transfer/suv.png"];
  
  const pickHeroImage = (slug: string) => {
    const hash = slug.split("").reduce((value, char) => value + char.charCodeAt(0), 0);
    return FALLBACK_HERO_IMAGES[Math.abs(hash) % FALLBACK_HERO_IMAGES.length];
  };
  
- const buildFallbackLanding = (locationSlug: string, locationName: string): TransferLandingData => {
-   const landingSlug = `punta-cana-international-airport-to-${locationSlug}`;
-   return {
-     landingSlug,
-     reverseSlug: `${locationSlug}-to-punta-cana-international-airport`,
-     hotelSlug: locationSlug,
-     hotelName: locationName,
-     heroTitle: `Punta Cana International Airport (PUJ) → ${locationName}`,
-     heroSubtitle: `Traslado privado con chofer bilingüe y Wi-Fi directo al lobby de ${locationName}.`,
-     heroTagline: "Servicio flexible y seguro desde la pista de PUJ",
-     heroImage: pickHeroImage(locationSlug),
-     heroImageAlt: `Transfer hacia ${locationName}`,
-     priceFrom: FALLBACK_PRICE,
-     priceDetails: ["Confirmación instantánea", "Espera gratuita de 60 minutos", "Wi-Fi incluido"],
-     longCopy: [
-       `Conecta PUJ con ${locationName} sin esperas ni sorpresas.`,
-       `El chofer bilingüe te espera con cartel, maneja la ruta más rápida y cuida tu equipaje.`,
-       `El precio incluye 60 minutos de cortesía, asistencia 24/7 y soporte local durante el traslado.`
-     ],
-     trustBadges: ["Servicio privado garantizado", "Chofer bilingüe | Wi-Fi a bordo", "Cancelación flexible 24h"],
-     faq: [
-       {
-         question: "¿Qué pasa si mi vuelo se retrasa?",
-         answer: "Monitoreamos tu vuelo y esperamos hasta 60 minutos sin costo adicional."
-       },
-       {
-         question: "¿Puedo pedir un vehículo más grande?",
-         answer: "Sí; puedes solicitar una van o minibús y ajustamos la tarifa."
-       },
-       {
-         question: "¿Hay algo extra que necesite saber?",
-         answer: "Mantenemos comunicación continua por WhatsApp y confirmamos el pickup antes de tu llegada."
-       }
-     ],
-     seoTitle: `Transfer privado PUJ a ${locationName} | Proactivitis`,
-     metaDescription: `Servicio premium del aeropuerto Punta Cana International Airport (PUJ) a ${locationName} con chofer bilingüe y confirmación inmediata.`,
-     keywords: [
-       `PUJ ${locationName} transfer`,
-       `${locationName} transfer privado Punta Cana`,
-       `transfer ${locationName} Punta Cana`
-     ],
-     canonical: `${BASE_URL}/transfer/${landingSlug}`
-   };
- };
- 
- const resolveLanding = async (landingSlug: string): Promise<TransferLandingData | null> => {
-   const manual = allLandings().find((landing) => landing.landingSlug === landingSlug);
-   if (manual) return manual;
-   if (!landingSlug.startsWith("punta-cana-international-airport-to-")) {
-     return null;
-   }
-   const hotelSlug = landingSlug.replace("punta-cana-international-airport-to-", "");
-   const location = await prisma.transferLocation.findFirst({
-     where: {
-       slug: hotelSlug,
-       type: "HOTEL",
-       active: true,
-       zone: {
-         slug: ZONE_SLUG
-       }
-     },
-     select: {
-       slug: true,
-       name: true
-     }
-   });
-   if (!location) {
-     return null;
-   }
-   return buildFallbackLanding(location.slug, location.name);
- };
- 
- export async function generateStaticParams() {
-  const locations = await prisma.transferLocation.findMany({
-    where: {
-      type: "HOTEL",
-      active: true,
-      zone: {
-        slug: ZONE_SLUG
+const buildFallbackLanding = ({
+  originName,
+  originSlug,
+  destinationName,
+  destinationSlug
+}: {
+  originName: string;
+  originSlug: string;
+  destinationName: string;
+  destinationSlug: string;
+}): TransferLandingData => {
+  const landingSlug = `${originSlug}-to-${destinationSlug}`;
+  return {
+    landingSlug,
+    reverseSlug: `${destinationSlug}-to-${originSlug}`,
+    hotelSlug: destinationSlug,
+    hotelName: destinationName,
+    heroTitle: `${originName} → ${destinationName}`,
+    heroSubtitle: `Traslado privado con chofer bilingüe y Wi-Fi directo a ${destinationName}.`,
+    heroTagline: `Servicio flexible y seguro desde ${originName}`,
+    heroImage: pickHeroImage(destinationSlug),
+    heroImageAlt: `Transfer desde ${originName} a ${destinationName}`,
+    priceFrom: FALLBACK_PRICE,
+    priceDetails: ["Confirmación instantánea", "Espera gratuita de 60 minutos", "Wi-Fi incluido"],
+    longCopy: [
+      `${originName} conecta con ${destinationName} sin esperas ni sorpresas.`,
+      `El chofer bilingüe te espera con cartel, maneja la ruta más rápida y cuida tu equipaje.`,
+      `El precio incluye 60 minutos de cortesía, asistencia 24/7 y soporte local durante el traslado.`
+    ],
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingüe | Wi-Fi a bordo", "Cancelación flexible 24h"],
+    faq: [
+      {
+        question: "¿Qué pasa si mi vuelo se retrasa?",
+        answer: "Monitoreamos tu vuelo y esperamos hasta 60 minutos sin costo adicional."
+      },
+      {
+        question: "¿Puedo pedir un vehículo más grande?",
+        answer: "Sí; puedes solicitar una van o minibús y ajustamos la tarifa."
+      },
+      {
+        question: "¿Hay algo extra que necesite saber?",
+        answer: "Mantenemos comunicación continua por WhatsApp y confirmamos el pickup antes de tu llegada."
       }
-    },
-    select: {
-      slug: true
-    }
-  });
-  const slugs = new Set<string>();
-  const params = locations.map((location) => {
-    const landingSlug = `punta-cana-international-airport-to-${location.slug}`;
-    slugs.add(landingSlug);
-    return { landingSlug };
-  });
-  // add manual slugs if any missing
-  for (const landing of allLandings()) {
-    if (!slugs.has(landing.landingSlug)) {
-      params.push({ landingSlug: landing.landingSlug });
-    }
+    ],
+    seoTitle: `Transfer privado ${originName} a ${destinationName} | Proactivitis`,
+    metaDescription: `Servicio premium desde ${originName} hasta ${destinationName} con chofer bilingüe y confirmación inmediata.`,
+    keywords: [
+      `${originName} ${destinationName} transfer`,
+      `${destinationName} transfer privado`,
+      `transfer ${destinationName}`
+    ],
+    canonical: `${BASE_URL}/transfer/${landingSlug}`
+  };
+};
+ 
+const resolveLanding = async (landingSlug: string): Promise<TransferLandingData | null> => {
+  const manual = allLandings().find((landing) => landing.landingSlug === landingSlug);
+  if (manual) return manual;
+  const dynamic = await findDynamicLandingBySlug(landingSlug);
+  if (!dynamic) {
+    return null;
   }
-  return params;
+  return buildFallbackLanding({
+    originName: dynamic.origin.name,
+    originSlug: dynamic.origin.slug,
+    destinationName: dynamic.destination.name,
+    destinationSlug: dynamic.destination.slug
+  });
+};
+ 
+export async function generateStaticParams() {
+  const combos = await getDynamicTransferLandingCombos();
+  const slugs = new Set<string>();
+  const dynamicParams = combos.map((entry) => {
+    slugs.add(entry.landingSlug);
+    return { landingSlug: entry.landingSlug };
+  });
+  const manualParams = allLandings()
+    .filter((landing) => !slugs.has(landing.landingSlug))
+    .map((landing) => ({ landingSlug: landing.landingSlug }));
+  return [...dynamicParams, ...manualParams];
 }
 
 export async function generateMetadata({
