@@ -261,7 +261,9 @@ export default async function TransferLandingPage({
         </div>
       </section>
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <p className="text-sm text-slate-500">Ruta fija: {AIRPORT_NAME} → {landing.hotelName}</p>
+        <p className="text-sm text-slate-500">
+          Ruta fija: {originLocation.name ?? DEFAULT_AIRPORT_NAME} → {landing.hotelName}
+        </p>
         <TransferQuoteCards
           originId={originLocation.id}
           destinationId={destinationLocation.id}
