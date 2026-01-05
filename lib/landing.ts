@@ -14,5 +14,15 @@ export const landingPages = [
     title: "Caribbean Adventure Agency",
     tagline: "Reserva, paga y comunica desde un mismo lugar.",
     sections: ["Portal Agency", "Reportes CSV", "Chat CRM integrado"]
+  },
+  {
+    slug: "hip-hop-party-boat",
+    title: "Hip Hop Party Boat with Snorkeling",
+    tagline: "Una fiesta en catamarán con DJ, snorkel y sunset premium en Punta Cana.",
+    sections: [
+      "Barra abierta premium con snacks tropicales.",
+      "Snorkel guiado en arrecifes de Bávaro y Cap Cana.",
+      "Transporte privado desde hoteles clave y foam party."
+    ]
   }
 ];

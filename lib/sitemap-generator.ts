@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { landingPages } from "@/lib/landing";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -177,7 +178,11 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
       priority: 0.6
     })),
     ...trasladoHotelEntries,
-    ...combos.map(({ url, priority }) => ({ url, priority }))
+    ...combos.map(({ url, priority }) => ({ url, priority })),
+    ...landingPages.map((landing) => ({
+      url: `${BASE_URL}/landing/tours/${landing.slug}`,
+      priority: 0.7
+    }))
   ]);
 
   const hotelEntries: RouteEntry[] = uniqueByUrl([
