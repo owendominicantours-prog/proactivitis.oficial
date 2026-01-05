@@ -8,6 +8,8 @@ export type DynamicTransferLanding = {
   destinationSlug: string;
   destinationName: string;
   lastMod: Date;
+  originZoneId: string;
+  destinationZoneId: string;
 };
 
 type LocationSummary = {
@@ -81,14 +83,16 @@ export async function getDynamicTransferLandingCombos(): Promise<DynamicTransfer
       for (const destination of destinationLocations) {
         const landingSlug = `${origin.slug}-to-${destination.slug}`;
         if (!combos.has(landingSlug)) {
-          combos.set(landingSlug, {
-            landingSlug,
-            originSlug: origin.slug,
-            originName: origin.name,
-            destinationSlug: destination.slug,
-            destinationName: destination.name,
-            lastMod: destination.updatedAt
-          });
+      combos.set(landingSlug, {
+        landingSlug,
+        originSlug: origin.slug,
+        originName: origin.name,
+        destinationSlug: destination.slug,
+        destinationName: destination.name,
+        lastMod: destination.updatedAt,
+        originZoneId: origin.zoneId,
+        destinationZoneId: destination.zoneId
+      });
         }
       }
     }

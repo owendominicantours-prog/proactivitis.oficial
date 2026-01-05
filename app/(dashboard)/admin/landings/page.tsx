@@ -32,7 +32,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       orderBy: { name: "asc" }
     }),
     prisma.transferLocation.findMany({
-      where: { zone: { slug: TRANSFER_ZONE } },
+      where: { type: "HOTEL" },
       include: { zone: true },
       orderBy: { name: "asc" }
     }),
@@ -71,7 +71,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       name: combo.destinationName,
       type: "TRANSFER",
       active: true,
-      zone: zoneNameById.get(combo.destination.zoneId) ?? "Transfers",
+      zone: zoneNameById.get(combo.destinationZoneId) ?? "Transfers",
       visits: 0
     });
   });
