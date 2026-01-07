@@ -694,4 +694,52 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   }
 
+  ,
+  {
+    slug: "party-boat-estrella-015",
+    clusterId: "seguridad_comparativa",
+    titles: {
+      es: "El Party Boat #1 de Punta Cana 2026 | The Ultimate Booze Cruise Experience",
+      en: "#1 Party Boat in Punta Cana 2026 | The Ultimate Booze Cruise Experience",
+      fr: "#1 Party Boat a Punta Cana 2026 | The Ultimate Booze Cruise Experience"
+    },
+    heroSubtitles: {
+      es: "No aceptes imitaciones. El mejor ambiente, barra libre premium y el equipo mas vibrante de Bavaro.",
+      en: "No imitations. The best vibe, premium open bar, and the most vibrant crew in Bavaro.",
+      fr: "Pas d'imitations. Meilleure ambiance, open bar premium et equipe la plus vibrante de Bavaro."
+    },
+    metaDescriptions: {
+      es: "El Party Boat #1 de Punta Cana: experiencia premiada con open bar premium, sonido pro y snorkel en arrecifes top.",
+      en: "Punta Cana's #1 Party Boat: award-winning experience with premium open bar, pro sound, and top reef snorkel.",
+      fr: "Le #1 Party Boat de Punta Cana: experience prim?e avec open bar premium, son pro et snorkel top."
+    },
+    bodyBlocks: {
+      es: [
+        "Mas de 5,000 resenas de 5 estrellas. Elegido por viajeros como la mejor experiencia de fiesta en el dia.",
+        "Mientras otros ofrecen un paseo simple, aqui tienes una produccion completa con sonido pro y animacion total.",
+        "Logistica impecable para que tu unica preocupacion sea disfrutar el sol y la musica."
+      ],
+      en: [
+        "Over 5,000 five-star reviews. Chosen by travelers as the best daytime party experience.",
+        "While others offer a simple ride, this is a full production with pro sound and top entertainment.",
+        "Impeccable logistics so your only job is enjoying the sun and the music."
+      ],
+      fr: [
+        "Plus de 5 000 avis 5 etoiles. Elu meilleure experience de fete en journee.",
+        "Quand d'autres proposent une simple balade, ici c'est une production complete avec son pro.",
+        "Logistique impeccable pour profiter du soleil et de la musique."
+      ]
+    },
+    faqs: {
+      es: [{ q: "Por que son el #1?", a: "Por consistencia en seguridad, calidad de bebidas y ambiente. Priorizamos comodidad." }],
+      en: [{ q: "Why are you #1?", a: "Consistency in safety, drink quality, and vibe. We prioritize comfort." }],
+      fr: [{ q: "Pourquoi etes-vous #1?", a: "Consistance en securite, qualite des boissons et ambiance. Confort prioritaire." }]
+    },
+    ctas: {
+      es: ["Reserva el Tour #1 Ahora", "Cupos limitados"],
+      en: ["Book the #1 Tour Now", "Limited spots"],
+      fr: ["Reserver le tour #1", "Places limitees"]
+    }
+  }
+
 ];
