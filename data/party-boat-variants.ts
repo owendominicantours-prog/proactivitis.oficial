@@ -508,4 +508,190 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
       fr: ["Reserver", "Voir disponibilite"]
     }
   }
+  ,
+  {
+    slug: "party-boat-adults-only-011",
+    clusterId: "nicho_exclusivo",
+    titles: {
+      es: "Adults Only Party Boat Punta Cana: fiesta solo adultos",
+      en: "Adults Only Party Boat Punta Cana: premium no-kids vibe",
+      fr: "Party Boat Adults Only Punta Cana: ambiance premium sans enfants"
+    },
+    heroSubtitles: {
+      es: "Ambiente exclusivo para mayores de 18 anos, open bar y musica nonstop.",
+      en: "Exclusive 18+ crowd, open bar, and nonstop music.",
+      fr: "Ambiance 18+ exclusive, open bar et musique continue."
+    },
+    metaDescriptions: {
+      es: "Party Boat solo adultos en Punta Cana: open bar premium, DJ en vivo y snorkel lejos de multitudes.",
+      en: "Adults-only party boat in Punta Cana: premium open bar, live DJ, and snorkel away from crowds.",
+      fr: "Party boat adults only a Punta Cana: open bar premium, DJ live et snorkel loin des foules."
+    },
+    bodyBlocks: {
+      es: [
+        "Escapa de lo familiar: ambiente pensado solo para adultos.",
+        "Open bar con bebidas seleccionadas, DJ en vivo y paradas para snorkel.",
+        "Perfecto para parejas y grupos que buscan nivel y privacidad."
+      ],
+      en: [
+        "Skip the family vibe: this is designed for adults only.",
+        "Premium open bar, live DJ, and snorkel stops included.",
+        "Ideal for couples and groups who want a higher level."
+      ],
+      fr: [
+        "Oublie l'ambiance familiale: experience reservee aux adultes.",
+        "Open bar premium, DJ live et stops snorkeling inclus.",
+        "Ideal pour couples et groupes qui veulent plus de niveau."
+      ]
+    },
+    faqs: {
+      es: [{ q: "Es realmente solo adultos?", a: "Si, el ambiente esta pensado para mayores de 18 anos." }],
+      en: [{ q: "Is it truly adults only?", a: "Yes, the vibe is designed for 18+ guests." }],
+      fr: [{ q: "C'est vraiment adults only?", a: "Oui, l'ambiance est reservee aux 18+." }]
+    },
+    ctas: {
+      es: ["Reserva VIP", "Ver opciones premium"],
+      en: ["Book VIP", "View premium options"],
+      fr: ["Reserver VIP", "Options premium"]
+    }
+  },
+  {
+    slug: "party-boat-bachelorette-private-012",
+    clusterId: "nicho_exclusivo",
+    titles: {
+      es: "Private Bachelorette Boat Party Punta Cana: despedida en barco",
+      en: "Private Bachelorette Boat Party Punta Cana: girls-only charter",
+      fr: "Private Bachelorette Boat Party Punta Cana: charter prive entre filles"
+    },
+    heroSubtitles: {
+      es: "Charter privado, musica personalizada y celebracion epica.",
+      en: "Private charter, custom music, and an epic celebration.",
+      fr: "Charter prive, musique personnalisee et celebration epique."
+    },
+    metaDescriptions: {
+      es: "Despedida de soltera privada en Punta Cana: charter exclusivo, cocteles y parada en Natural Pool.",
+      en: "Private bachelorette party in Punta Cana: exclusive charter, cocktails, and Natural Pool stop.",
+      fr: "EVJF prive a Punta Cana: charter exclusif, cocktails et arret Natural Pool."
+    },
+    bodyBlocks: {
+      es: [
+        "Planificacion facil para la dama de honor: charter privado y opciones personalizadas.",
+        "Cocteles, fotos, musica del grupo y paradas perfectas para celebrar.",
+        "Traslado privado ida y vuelta desde Bavaro incluido."
+      ],
+      en: [
+        "Easy planning for the maid of honor: private charter and custom options.",
+        "Cocktails, photos, your music, and perfect celebration stops.",
+        "Private round-trip transport from Bavaro included."
+      ],
+      fr: [
+        "Organisation facile pour la temoin: charter prive et options sur mesure.",
+        "Cocktails, photos, votre musique et arrets parfaits pour celebrer.",
+        "Transport prive aller-retour depuis Bavaro inclus."
+      ]
+    },
+    faqs: {
+      es: [{ q: "Se puede personalizar decoracion o menu?", a: "Si, ofrecemos opciones de decoracion y catering." }],
+      en: [{ q: "Can we customize decor or menu?", a: "Yes, we offer decoration and catering options." }],
+      fr: [{ q: "Peut-on personnaliser deco ou menu?", a: "Oui, options deco et catering disponibles." }]
+    },
+    ctas: {
+      es: ["Cotizar privado", "Reservar ahora"],
+      en: ["Get private quote", "Book now"],
+      fr: ["Devis prive", "Reserver"]
+    }
+  },
+  {
+    slug: "party-boat-singles-013",
+    clusterId: "seguridad_comparativa",
+    titles: {
+      es: "Best Booze Cruise for Singles Punta Cana: conoce gente",
+      en: "Best Booze Cruise for Singles Punta Cana: meet new people",
+      fr: "Best Booze Cruise pour singles Punta Cana: rencontrer du monde"
+    },
+    heroSubtitles: {
+      es: "El punto social numero 1 para viajeros solteros.",
+      en: "The #1 social spot for solo travelers.",
+      fr: "Le spot social numero 1 pour voyageurs solos."
+    },
+    metaDescriptions: {
+      es: "Booze Cruise para singles en Punta Cana: juegos, staff social y ambiente seguro para conocer gente.",
+      en: "Singles booze cruise in Punta Cana: games, social staff, and a safe vibe to meet people.",
+      fr: "Booze cruise pour singles a Punta Cana: jeux, staff social et ambiance sure."
+    },
+    bodyBlocks: {
+      es: [
+        "Viajas solo? Esta salida esta pensada para socializar sin presion.",
+        "Juegos, musica y equipo bilingue para romper el hielo.",
+        "Regresas con nuevos amigos y recuerdos reales."
+      ],
+      en: [
+        "Traveling solo? This departure is designed to socialize without pressure.",
+        "Games, music, and bilingual staff to break the ice.",
+        "Leave with new friends and real memories."
+      ],
+      fr: [
+        "Voyage solo? Cette sortie est faite pour socialiser sans pression.",
+        "Jeux, musique et staff bilingue pour briser la glace.",
+        "Tu repars avec de nouveaux amis et de vrais souvenirs."
+      ]
+    },
+    faqs: {
+      es: [{ q: "Es seguro para viajeros solos?", a: "Si, el staff esta enfocado en integrar y cuidar el grupo." }],
+      en: [{ q: "Is it safe for solo travelers?", a: "Yes, staff focuses on integrating and supporting the group." }],
+      fr: [{ q: "C'est sur pour les voyageurs solos?", a: "Oui, le staff integre et veille sur le groupe." }]
+    },
+    ctas: {
+      es: ["Ver disponibilidad", "Reservar"],
+      en: ["Check availability", "Book"],
+      fr: ["Voir disponibilite", "Reserver"]
+    }
+  },
+  {
+    slug: "party-boat-last-minute-deals-014",
+    clusterId: "urgencia_last_minute",
+    titles: {
+      es: "Last minute boat party deals Punta Cana: cupos de hoy",
+      en: "Last minute boat party deals Punta Cana: today spots",
+      fr: "Last minute boat party deals Punta Cana: places du jour"
+    },
+    heroSubtitles: {
+      es: "Ofertas de ultimo minuto con confirmacion rapida.",
+      en: "Last-minute deals with fast confirmation.",
+      fr: "Offres last minute avec confirmation rapide."
+    },
+    metaDescriptions: {
+      es: "Descuentos last minute: open bar, snorkel y transporte con confirmacion inmediata.",
+      en: "Last-minute discounts: open bar, snorkel, and transport with instant confirmation.",
+      fr: "Promos last minute: open bar, snorkel et transport avec confirmation immediate."
+    },
+    bodyBlocks: {
+      es: [
+        "Si tienes flexibilidad, accede a cupos de ultimo minuto.",
+        "Confirmacion por WhatsApp en minutos y salida el mismo dia.",
+        "Pagas menos, celebras igual."
+      ],
+      en: [
+        "If you are flexible, access last-minute spots.",
+        "WhatsApp confirmation in minutes and same-day departure.",
+        "Pay less, party the same."
+      ],
+      fr: [
+        "Si tu es flexible, profite des places last minute.",
+        "Confirmation WhatsApp en minutes et depart le jour meme.",
+        "Tu payes moins, tu fais la fete pareil."
+      ]
+    },
+    faqs: {
+      es: [{ q: "Hay descuentos hoy?", a: "Depende del cupo, confirmamos en tiempo real." }],
+      en: [{ q: "Any discounts today?", a: "Depends on availability, we confirm in real time." }],
+      fr: [{ q: "Des promos aujourd'hui?", a: "Selon disponibilite, confirmation en temps reel." }]
+    },
+    ctas: {
+      es: ["Cupo hoy", "Reservar ahora"],
+      en: ["Today spots", "Book now"],
+      fr: ["Places aujourd'hui", "Reserver maintenant"]
+    }
+  }
+
 ];
