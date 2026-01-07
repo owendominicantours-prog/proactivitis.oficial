@@ -45,13 +45,85 @@ const parseJsonArray = <T,>(value?: string | null | Prisma.JsonValue): T[] => {
   return [];
 };
 
-const parseDuration = (value?: string | null) => {
-  if (!value) return { value: "4", unit: "Horas" };
-  try {
-    return JSON.parse(value) as { value: string; unit: string };
-  } catch {
-    return { value: value ?? "4", unit: "Horas" };
+type CanonicalDurationUnit = "minute" | "hour" | "day" | "week" | "month";
+
+const DURATION_UNIT_SYNONYMS = new Map<string, CanonicalDurationUnit>([
+  ["min", "minute"],
+  ["mins", "minute"],
+  ["minute", "minute"],
+  ["minutes", "minute"],
+  ["minuto", "minute"],
+  ["minutos", "minute"],
+  ["heure", "hour"],
+  ["heures", "hour"],
+  ["hour", "hour"],
+  ["hours", "hour"],
+  ["hora", "hour"],
+  ["horas", "hour"],
+  ["jour", "day"],
+  ["jours", "day"],
+  ["day", "day"],
+  ["days", "day"],
+  ["dia", "day"],
+  ["d\u00eda", "day"],
+  ["dias", "day"],
+  ["d\u00edas", "day"],
+  ["week", "week"],
+  ["weeks", "week"],
+  ["semana", "week"],
+  ["semanas", "week"],
+  ["month", "month"],
+  ["months", "month"],
+  ["mes", "month"],
+  ["meses", "month"]
+]);
+
+const DURATION_UNIT_LABELS: Record<Locale, Record<CanonicalDurationUnit, string>> = {
+  es: {
+    minute: "minutos",
+    hour: "horas",
+    day: "d\u00edas",
+    week: "semanas",
+    month: "meses"
+  },
+  en: {
+    minute: "minutes",
+    hour: "hours",
+    day: "days",
+    week: "weeks",
+    month: "months"
+  },
+  fr: {
+    minute: "minutes",
+    hour: "heures",
+    day: "jours",
+    week: "semaines",
+    month: "mois"
   }
+};
+
+const normalizeDurationUnit = (unit: string, locale: Locale) => {
+  const key = DURATION_UNIT_SYNONYMS.get(unit.trim().toLowerCase());
+  if (!key) return unit.trim();
+  return DURATION_UNIT_LABELS[locale][key] ?? unit.trim();
+};
+
+const parseDuration = (value?: string | null) => {
+  if (!value) return { value: "4", unit: "hour" };
+  try {
+    const parsed = JSON.parse(value) as { value?: string; unit?: string };
+    if (parsed?.value && parsed?.unit) {
+      return { value: parsed.value.trim(), unit: parsed.unit.trim() };
+    }
+  } catch {
+    // fall back to plain string
+  }
+  const trimmed = value.trim();
+  const match = trimmed.match(/^(\d+(?:[.,]\d+)?)\s*(\D+)$/);
+  if (match) {
+    return { value: match[1], unit: match[2].trim() };
+  }
+  return { value: trimmed || "4", unit: "hour" };
 };
 
 const fetchTourTranslations = async (tourId: string) => {
@@ -331,7 +403,8 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const localizedSubtitle = translation?.subtitle ?? tour.subtitle ?? "";
   const localizedShortDescription = translation?.shortDescription ?? tour.shortDescription;
   const localizedDescription = translation?.description ?? tour.description;
-  const durationUnit = translation?.durationUnit ?? durationValue.unit;
+  const durationUnitSource = translation?.durationUnit ?? durationValue.unit;
+  const durationUnit = normalizeDurationUnit(durationUnitSource, locale);
   const durationLabel = `${durationValue.value} ${durationUnit}`;
   const priceLabel = `$${tour.price.toFixed(0)} USD`;
   const shortDescriptionText = localizedShortDescription ?? localizedDescription;
