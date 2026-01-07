@@ -288,9 +288,14 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                         </span>
                       </div>
                       <p className="text-sm font-semibold text-slate-900 line-clamp-2">{localizedTitle}</p>
-                      <div className="flex flex-wrap items-center justify-between text-xs text-slate-500">
-                        <span>{`${fromLabel} $${tour.price.toFixed(0)}`}</span>
-                        <span>{formatDurationLabel(tour.duration)}</span>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-sm font-semibold text-slate-900">
+                          {fromLabel}{" "}
+                          <span className="text-base font-black text-indigo-600">
+                            ${tour.price.toFixed(0)}
+                          </span>
+                        </span>
+                        <span className="text-xs text-slate-500">{formatDurationLabel(tour.duration)}</span>
                       </div>
                       <p className="text-xs text-slate-500">
                         {languagesLabel}: {languageValue}
