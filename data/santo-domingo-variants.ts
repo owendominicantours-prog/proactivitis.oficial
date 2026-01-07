@@ -71,19 +71,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-historia-001",
     clusterId: "historica",
     titles: {
-      es: "Viaje al origen de America: Santo Domingo historico en un dia",
-      en: "Origin of the Americas: Santo Domingo history day trip",
-      fr: "Origine des Ameriques: journee historique a Saint Domingue"
+      es: "Santo Domingo historico en un dia: origen de America", 
+      en: "Historic Santo Domingo in one day: origin of the Americas", 
+      fr: "Saint Domingue historique en un jour: origine des Ameriques", 
     },
     heroSubtitles: {
-      es: "Sal del resort y conoce la primera ciudad europea en America con guia experto.",
-      en: "Leave the resort and explore the first European city in the Americas with an expert guide.",
-      fr: "Sortez du resort et explorez la premiere ville europeenne des Ameriques avec un guide expert."
+      es: "Un viaje cultural a la primera ciudad europea de America.", 
+      en: "A cultural trip to the first European city in the Americas.", 
+      fr: "Un voyage culturel vers la premiere ville europeenne des Ameriques.", 
     },
     metaDescriptions: {
-      es: "Tour historico a Santo Domingo desde Punta Cana: Zona Colonial, museos y arquitectura en un dia.",
-      en: "Historic Santo Domingo tour from Punta Cana: Colonial Zone, museums, and architecture in one day.",
-      fr: "Tour historique a Saint Domingue depuis Punta Cana: Zone coloniale, musees et architecture en une journee."
+      es: "Recorrido historico con Zona Colonial, museos y arquitectura colonial en un dia.", 
+      en: "Historic route with the Colonial Zone, museums, and colonial architecture in one day.", 
+      fr: "Parcours historique avec Zone coloniale, musees et architecture coloniale en une journee.", 
     },
     bodyBlocks: {
       es: [
@@ -132,19 +132,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-historia-002",
     clusterId: "historica",
     titles: {
-      es: "Zona Colonial y Faro a Colon: historia viva desde Punta Cana",
-      en: "Colonial Zone and Columbus Lighthouse: history from Punta Cana",
-      fr: "Zone coloniale et Faro a Colon: histoire depuis Punta Cana"
+      es: "Zona Colonial y Faro a Colon: historia viva de la capital", 
+      en: "Colonial Zone and Columbus Lighthouse: living history of the capital", 
+      fr: "Zone coloniale et Faro a Colon: histoire vivante de la capitale", 
     },
     heroSubtitles: {
-      es: "Museos, plazas y monumentos en el corazon historico de la capital.",
-      en: "Museums, plazas, and monuments in the historic heart of the capital.",
-      fr: "Musees, places et monuments au coeur historique de la capitale."
+      es: "Monumentos clave y un recorrido claro por el corazon historico.", 
+      en: "Key landmarks and a clear route through the historic core.", 
+      fr: "Monuments cles et itineraire clair dans le coeur historique.", 
     },
     metaDescriptions: {
-      es: "Explora la Zona Colonial y el Faro a Colon en un tour completo con transporte desde Punta Cana.",
-      en: "Explore the Colonial Zone and Columbus Lighthouse with transport from Punta Cana.",
-      fr: "Explorez la Zone coloniale et le Faro a Colon avec transport depuis Punta Cana."
+      es: "Tour cultural con paradas historicas y transporte desde Punta Cana.", 
+      en: "Cultural tour with historic stops and transport from Punta Cana.", 
+      fr: "Tour culturel avec arrets historiques et transport depuis Punta Cana.", 
     },
     bodyBlocks: {
       es: [
@@ -193,19 +193,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-historia-003",
     clusterId: "historica",
     titles: {
-      es: "Catedral, Alcazar y Calle Las Damas en un solo dia",
-      en: "Cathedral, Alcazar, and Las Damas Street in one day",
-      fr: "Cathedrale, Alcazar et Calle Las Damas en une journee"
+      es: "Catedral, Alcazar y Calle Las Damas en la Zona Colonial", 
+      en: "Cathedral, Alcazar, and Las Damas Street in the Colonial Zone", 
+      fr: "Cathedrale, Alcazar et Calle Las Damas dans la Zone coloniale", 
     },
     heroSubtitles: {
-      es: "Una inmersion directa en la herencia colonial con guia bilingue.",
-      en: "A direct immersion into colonial heritage with a bilingual guide.",
-      fr: "Une immersion directe dans l heritage colonial avec guide bilingue."
+      es: "Arquitectura, patrimonio y guia bilingue en un solo dia.", 
+      en: "Architecture, heritage, and a bilingual guide in one day.", 
+      fr: "Architecture, patrimoine et guide bilingue en une journee.", 
     },
     metaDescriptions: {
-      es: "Tour cultural con los edificios mas antiguos del continente en Santo Domingo.",
-      en: "Cultural tour with the oldest buildings of the continent in Santo Domingo.",
-      fr: "Tour culturel avec les batiments les plus anciens du continent a Saint Domingue."
+      es: "Visita guiada a los edificios mas antiguos del continente en Santo Domingo.", 
+      en: "Guided visit to the oldest buildings on the continent in Santo Domingo.", 
+      fr: "Visite guidee des batiments les plus anciens du continent a Saint Domingue.", 
     },
     bodyBlocks: {
       es: [
@@ -254,19 +254,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-historia-004",
     clusterId: "historica",
     titles: {
-      es: "Patrimonio UNESCO en Santo Domingo: excursion desde Punta Cana",
-      en: "UNESCO heritage in Santo Domingo: day trip from Punta Cana",
-      fr: "Patrimoine UNESCO a Saint Domingue: excursion depuis Punta Cana"
+      es: "Patrimonio UNESCO en Santo Domingo desde Punta Cana", 
+      en: "UNESCO heritage in Santo Domingo from Punta Cana", 
+      fr: "Patrimoine UNESCO a Saint Domingue depuis Punta Cana", 
     },
     heroSubtitles: {
-      es: "Una visita a la ciudad primada con narrativa historica y organizada.",
-      en: "A visit to the first city with an organized historical narrative.",
-      fr: "Une visite de la premiere ville avec un recit historique organise."
+      es: "Recorrido organizado por la ciudad primada de America.", 
+      en: "An organized tour through the first city of the Americas.", 
+      fr: "Un tour organise a travers la premiere ville des Ameriques.", 
     },
     metaDescriptions: {
-      es: "Descubre la primera ciudad del Nuevo Mundo con rutas UNESCO y guia bilingue.",
-      en: "Discover the first city of the New World with UNESCO routes and a bilingual guide.",
-      fr: "Decouvrez la premiere ville du Nouveau Monde avec routes UNESCO et guide bilingue."
+      es: "Ruta UNESCO con guia bilingue y paradas en la Zona Colonial.", 
+      en: "UNESCO route with bilingual guide and Colonial Zone stops.", 
+      fr: "Route UNESCO avec guide bilingue et arrets en Zone coloniale.", 
     },
     bodyBlocks: {
       es: [
@@ -315,19 +315,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-explora-005",
     clusterId: "exploradora",
     titles: {
-      es: "Los Tres Ojos y cenotes de Santo Domingo en un dia",
-      en: "Los Tres Ojos and cenotes of Santo Domingo in one day",
-      fr: "Los Tres Ojos et cenotes de Saint Domingue en une journee"
+      es: "Los Tres Ojos y naturaleza subterranea en Santo Domingo", 
+      en: "Los Tres Ojos and underground nature in Santo Domingo", 
+      fr: "Los Tres Ojos et nature souterraine a Saint Domingue", 
     },
     heroSubtitles: {
-      es: "Naturaleza subterranea, lagos azules y un recorrido bien guiado.",
-      en: "Underground nature, blue lakes, and a well guided route.",
-      fr: "Nature souterraine, lacs bleus et itineraire bien guide."
+      es: "Lagos azules y paisajes unicos en una ruta bien guiada.", 
+      en: "Blue lakes and unique landscapes on a well guided route.", 
+      fr: "Lacs bleus et paysages uniques sur un itineraire bien guide.", 
     },
     metaDescriptions: {
-      es: "Explora Los Tres Ojos y la Zona Colonial en una excursion completa desde Punta Cana.",
-      en: "Explore Los Tres Ojos and the Colonial Zone on a full day trip from Punta Cana.",
-      fr: "Explorez Los Tres Ojos et la Zone coloniale lors d une excursion depuis Punta Cana."
+      es: "Explora Los Tres Ojos y combina naturaleza con historia en un solo dia.", 
+      en: "Explore Los Tres Ojos and blend nature with history in one day.", 
+      fr: "Explorez Los Tres Ojos et combinez nature et histoire en une journee.", 
     },
     bodyBlocks: {
       es: [
@@ -376,19 +376,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-explora-006",
     clusterId: "exploradora",
     titles: {
-      es: "Malecon y panoramicas urbanas: Santo Domingo desde Punta Cana",
-      en: "Malecon and urban panoramas: Santo Domingo from Punta Cana",
-      fr: "Malecon et panoramas urbains: Saint Domingue depuis Punta Cana"
+      es: "Malecon y vistas urbanas: Santo Domingo completo", 
+      en: "Malecon and urban views: complete Santo Domingo", 
+      fr: "Malecon et vues urbaines: Saint Domingue complet", 
     },
     heroSubtitles: {
-      es: "Una mirada completa a la capital con vistas al Caribe.",
-      en: "A complete view of the capital with Caribbean vistas.",
-      fr: "Une vue complete de la capitale avec horizons caraibes."
+      es: "Ciudad y mar en una ruta equilibrada con paradas clave.", 
+      en: "City and sea in a balanced route with key stops.", 
+      fr: "Ville et mer dans un itineraire equilibre avec arrets cles.", 
     },
     metaDescriptions: {
-      es: "Tour panoramico con Malecon, Palacio Nacional y paradas emblematicas.",
-      en: "Panoramic tour with Malecon, National Palace, and iconic stops.",
-      fr: "Tour panoramique avec Malecon, Palais national et arrets emblematiques."
+      es: "Recorrido panoramico con Malecon, Palacio Nacional y Zona Colonial.", 
+      en: "Panoramic route with Malecon, National Palace, and Colonial Zone.", 
+      fr: "Parcours panoramique avec Malecon, Palais national et Zone coloniale.", 
     },
     bodyBlocks: {
       es: [
@@ -437,19 +437,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-explora-007",
     clusterId: "exploradora",
     titles: {
-      es: "Naturaleza + monumentos: Los Tres Ojos y Faro a Colon",
-      en: "Nature + monuments: Los Tres Ojos and Columbus Lighthouse",
-      fr: "Nature + monuments: Los Tres Ojos et Faro a Colon"
+      es: "Naturaleza y monumentos: Los Tres Ojos y Faro a Colon", 
+      en: "Nature and monuments: Los Tres Ojos and Columbus Lighthouse", 
+      fr: "Nature et monuments: Los Tres Ojos et Faro a Colon", 
     },
     heroSubtitles: {
-      es: "Un mix perfecto entre paisajes naturales y arquitectura simbolica.",
-      en: "A perfect mix of natural scenery and symbolic architecture.",
-      fr: "Un mix parfait entre paysages naturels et architecture symbolique."
+      es: "Paisaje natural y arquitectura simbolica en la misma ruta.", 
+      en: "Natural scenery and symbolic architecture on the same route.", 
+      fr: "Paysage naturel et architecture symbolique sur le meme parcours.", 
     },
     metaDescriptions: {
-      es: "Excursion con naturaleza subterranea y monumentos iconicos en Santo Domingo.",
-      en: "Day trip with underground nature and iconic monuments in Santo Domingo.",
-      fr: "Excursion avec nature souterraine et monuments iconiques a Saint Domingue."
+      es: "Excursion combinada con parques naturales y monumentos iconicos.", 
+      en: "Combined excursion with natural parks and iconic monuments.", 
+      fr: "Excursion combinee avec parcs naturels et monuments iconiques.", 
     },
     bodyBlocks: {
       es: [
@@ -498,19 +498,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-explora-008",
     clusterId: "exploradora",
     titles: {
-      es: "Ruta panoramica completa: capital, mar y parques naturales",
-      en: "Full panoramic route: capital, sea, and nature parks",
-      fr: "Route panoramique complete: capitale, mer et parcs naturels"
+      es: "Ruta panoramica: capital, mar y parques naturales", 
+      en: "Panoramic route: capital, sea, and natural parks", 
+      fr: "Route panoramique: capitale, mer et parcs naturels", 
     },
     heroSubtitles: {
-      es: "Un dia completo con vistas, historia y naturaleza.",
-      en: "A full day with views, history, and nature.",
-      fr: "Une journee complete avec vues, histoire et nature."
+      es: "Un dia completo con vistas, historia y naturaleza.", 
+      en: "A full day with views, history, and nature.", 
+      fr: "Une journee complete avec vues, histoire et nature.", 
     },
     metaDescriptions: {
-      es: "Itinerario completo con paradas urbanas y naturales en Santo Domingo.",
-      en: "Complete itinerary with urban and natural stops in Santo Domingo.",
-      fr: "Itineraire complet avec arrets urbains et naturels a Saint Domingue."
+      es: "Itinerario completo con paradas urbanas y naturales en Santo Domingo.", 
+      en: "Complete itinerary with urban and natural stops in Santo Domingo.", 
+      fr: "Itineraire complet avec arrets urbains et naturels a Saint Domingue.", 
     },
     bodyBlocks: {
       es: [
@@ -559,19 +559,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-gastro-009",
     clusterId: "gastronomica",
     titles: {
-      es: "Almuerzo tipico y cultura local en Santo Domingo",
-      en: "Local lunch and culture in Santo Domingo",
-      fr: "Dejeuner local et culture a Saint Domingue"
+      es: "Cultura y almuerzo tipico en Santo Domingo", 
+      en: "Culture and traditional lunch in Santo Domingo", 
+      fr: "Culture et dejeuner traditionnel a Saint Domingue", 
     },
     heroSubtitles: {
-      es: "Historia por la manana y sabor dominicano al mediodia.",
-      en: "History in the morning and Dominican flavor at midday.",
-      fr: "Histoire le matin et saveurs dominicaines a midi."
+      es: "Historia por la manana, sabor local al mediodia.", 
+      en: "History in the morning, local flavor at midday.", 
+      fr: "Histoire le matin, saveur locale a midi.", 
     },
     metaDescriptions: {
-      es: "Excursion con almuerzo tipico incluido y visita a la Zona Colonial.",
-      en: "Day trip with traditional lunch included and Colonial Zone visit.",
-      fr: "Excursion avec dejeuner traditionnel inclus et visite de la Zone coloniale."
+      es: "Excursion cultural con almuerzo tipico incluido y visita a la Zona Colonial.", 
+      en: "Cultural day trip with traditional lunch included and Colonial Zone visit.", 
+      fr: "Excursion culturelle avec dejeuner traditionnel inclus et visite de la Zone coloniale.", 
     },
     bodyBlocks: {
       es: [
@@ -620,19 +620,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-gastro-010",
     clusterId: "gastronomica",
     titles: {
-      es: "Compras culturales en la Zona Colonial: ambar y larimar",
-      en: "Cultural shopping in the Colonial Zone: amber and larimar",
-      fr: "Shopping culturel dans la Zone coloniale: ambre et larimar"
+      es: "Compras culturales en la Zona Colonial: ambar y larimar", 
+      en: "Cultural shopping in the Colonial Zone: amber and larimar", 
+      fr: "Shopping culturel dans la Zone coloniale: ambre et larimar", 
     },
     heroSubtitles: {
-      es: "Tiempo para artesanias y recuerdos autenticos sin presion.",
-      en: "Time for authentic crafts and souvenirs without pressure.",
-      fr: "Du temps pour artisanat et souvenirs authentiques sans pression."
+      es: "Tiempo para recuerdos autenticos y artesanias locales.", 
+      en: "Time for authentic souvenirs and local crafts.", 
+      fr: "Du temps pour souvenirs authentiques et artisanat local.", 
     },
     metaDescriptions: {
-      es: "Ruta con paradas para compras culturales y patrimonio en Santo Domingo.",
-      en: "Route with cultural shopping stops and heritage in Santo Domingo.",
-      fr: "Itineraire avec arrets shopping culturel et patrimoine a Saint Domingue."
+      es: "Ruta con paradas para compras culturales y patrimonio en Santo Domingo.", 
+      en: "Route with cultural shopping stops and heritage in Santo Domingo.", 
+      fr: "Itineraire avec arrets shopping culturel et patrimoine a Saint Domingue.", 
     },
     bodyBlocks: {
       es: [
@@ -681,19 +681,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-gastro-011",
     clusterId: "gastronomica",
     titles: {
-      es: "Sabores de la capital: tour historico con pausa gastronomica",
-      en: "Capital flavors: historic tour with a food stop",
-      fr: "Saveurs de la capitale: tour historique avec pause gourmande"
+      es: "Sabores de la capital: historia y pausa gastronomica", 
+      en: "Capital flavors: history with a food stop", 
+      fr: "Saveurs de la capitale: histoire avec pause gourmande", 
     },
     heroSubtitles: {
-      es: "Descubre la ciudad y disfruta de una comida local bien servida.",
-      en: "Discover the city and enjoy a well served local meal.",
-      fr: "Decouvrez la ville et profitez d un repas local bien servi."
+      es: "Tour cultural con comida local bien servida.", 
+      en: "Cultural tour with a well served local meal.", 
+      fr: "Tour culturel avec un repas local bien servi.", 
     },
     metaDescriptions: {
-      es: "Una mezcla de cultura y comida dominicana en un tour guiado.",
-      en: "A mix of culture and Dominican food in a guided tour.",
-      fr: "Un melange de culture et cuisine dominicaine dans un tour guide."
+      es: "Cultura, historia y comida dominicana en una excursion guiada.", 
+      en: "Culture, history, and Dominican food in a guided excursion.", 
+      fr: "Culture, histoire et cuisine dominicaine dans une excursion guidee.", 
     },
     bodyBlocks: {
       es: [
@@ -742,19 +742,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-gastro-012",
     clusterId: "gastronomica",
     titles: {
-      es: "Ruta cultural con pausa de compras y almuerzo local",
-      en: "Cultural route with shopping stop and local lunch",
-      fr: "Route culturelle avec shopping et dejeuner local"
+      es: "Ruta cultural con compras y almuerzo local", 
+      en: "Cultural route with shopping and local lunch", 
+      fr: "Route culturelle avec shopping et dejeuner local", 
     },
     heroSubtitles: {
-      es: "Patrimonio, souvenirs y un almuerzo tipico en una sola excursion.",
-      en: "Heritage, souvenirs, and a local lunch in one excursion.",
-      fr: "Patrimoine, souvenirs et dejeuner local en une excursion."
+      es: "Patrimonio, souvenirs y un almuerzo tipico en una sola ruta.", 
+      en: "Heritage, souvenirs, and a traditional lunch in one route.", 
+      fr: "Patrimoine, souvenirs et dejeuner traditionnel dans une seule route.", 
     },
     metaDescriptions: {
-      es: "Santo Domingo con compras culturales y almuerzo tipico, todo incluido.",
-      en: "Santo Domingo with cultural shopping and traditional lunch, all included.",
-      fr: "Saint Domingue avec shopping culturel et dejeuner traditionnel, tout inclus."
+      es: "Santo Domingo con compras culturales y almuerzo tipico, todo incluido.", 
+      en: "Santo Domingo with cultural shopping and traditional lunch, all included.", 
+      fr: "Saint Domingue avec shopping culturel et dejeuner traditionnel, tout inclus.", 
     },
     bodyBlocks: {
       es: [
@@ -803,19 +803,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-logistica-013",
     clusterId: "logistica",
     titles: {
-      es: "Bus de lujo y guia oficial: Santo Domingo sin estres",
-      en: "Luxury coach and official guide: Santo Domingo without stress",
-      fr: "Bus premium et guide officiel: Saint Domingue sans stress"
+      es: "Bus de lujo y guia oficial: Santo Domingo sin estres", 
+      en: "Luxury coach and official guide: stress-free Santo Domingo", 
+      fr: "Bus premium et guide officiel: Saint Domingue sans stress", 
     },
     heroSubtitles: {
-      es: "Logistica clara, traslado directo y horarios confirmados.",
-      en: "Clear logistics, direct transport, and confirmed schedules.",
-      fr: "Logistique claire, transport direct et horaires confirmes."
+      es: "Logistica clara, traslado directo y horarios confirmados.", 
+      en: "Clear logistics, direct transport, and confirmed schedules.", 
+      fr: "Logistique claire, transport direct et horaires confirmes.", 
     },
     metaDescriptions: {
-      es: "Excursion organizada con bus comodo, guia bilingue y ruta directa.",
-      en: "Organized day trip with comfortable coach, bilingual guide, and direct route.",
-      fr: "Excursion organisee avec bus confortable, guide bilingue et trajet direct."
+      es: "Excursion organizada con bus comodo, guia bilingue y ruta directa.", 
+      en: "Organized day trip with comfortable coach, bilingual guide, and direct route.", 
+      fr: "Excursion organisee avec bus confortable, guide bilingue et trajet direct.", 
     },
     bodyBlocks: {
       es: [
@@ -864,19 +864,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-logistica-014",
     clusterId: "logistica",
     titles: {
-      es: "Horarios claros y salida garantizada a Santo Domingo",
-      en: "Clear schedules and guaranteed departure to Santo Domingo",
-      fr: "Horaires clairs et depart garanti vers Saint Domingue"
+      es: "Horarios claros y salida garantizada a Santo Domingo", 
+      en: "Clear schedules and guaranteed departure to Santo Domingo", 
+      fr: "Horaires clairs et depart garanti vers Saint Domingue", 
     },
     heroSubtitles: {
-      es: "El plan ideal si quieres saber tiempos exactos y regreso seguro.",
-      en: "Ideal if you want exact timing and a safe return.",
-      fr: "Ideal si vous voulez des horaires exacts et un retour sur."
+      es: "Para quien quiere tiempos exactos y regreso seguro.", 
+      en: "For travelers who want exact timing and a safe return.", 
+      fr: "Pour ceux qui veulent des horaires exacts et un retour sur.", 
     },
     metaDescriptions: {
-      es: "Tour con horarios definidos, recogida por zonas y regreso el mismo dia.",
-      en: "Tour with defined schedule, zone pickups, and same day return.",
-      fr: "Tour avec horaires definis, pickups par zones et retour le meme jour."
+      es: "Tour con horarios definidos, recogida por zonas y regreso el mismo dia.", 
+      en: "Tour with defined schedule, zone pickups, and same day return.", 
+      fr: "Tour avec horaires definis, pickups par zones et retour le meme jour.", 
     },
     bodyBlocks: {
       es: [
@@ -925,19 +925,19 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     slug: "santo-domingo-logistica-015",
     clusterId: "logistica",
     titles: {
-      es: "Traslado directo Punta Cana - Santo Domingo con guia bilingue",
-      en: "Direct transfer Punta Cana - Santo Domingo with bilingual guide",
-      fr: "Transfert direct Punta Cana - Saint Domingue avec guide bilingue"
+      es: "Traslado directo Punta Cana - Santo Domingo con guia bilingue", 
+      en: "Direct transfer Punta Cana - Santo Domingo with bilingual guide", 
+      fr: "Transfert direct Punta Cana - Saint Domingue avec guide bilingue", 
     },
     heroSubtitles: {
-      es: "Comodidad y organizacion para un viaje largo bien resuelto.",
-      en: "Comfort and organization for a long trip done right.",
-      fr: "Confort et organisation pour un long trajet bien gere."
+      es: "Comodidad y organizacion para un viaje largo bien resuelto.", 
+      en: "Comfort and organization for a long trip done right.", 
+      fr: "Confort et organisation pour un long trajet bien gere.", 
     },
     metaDescriptions: {
-      es: "Viaje directo por Autovia del Este, guia bilingue y paradas clave en la capital.",
-      en: "Direct ride via Autovia del Este, bilingual guide, and key stops in the capital.",
-      fr: "Trajet direct via Autovia del Este, guide bilingue et arrets cles dans la capitale."
+      es: "Viaje directo por Autovia del Este, guia bilingue y paradas clave en la capital.", 
+      en: "Direct ride via Autovia del Este, bilingual guide, and key stops in the capital.", 
+      fr: "Trajet direct via Autovia del Este, guide bilingue et arrets cles dans la capitale.", 
     },
     bodyBlocks: {
       es: [

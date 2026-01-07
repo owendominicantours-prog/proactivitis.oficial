@@ -52,19 +52,19 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     slug: "party-boat-logistica-001",
     clusterId: "logistica",
     titles: {
-      es: "A que hora pasa el transporte? Horarios de recogida del Party Boat en Punta Cana",
-      en: "Pick-up Times in Punta Cana: Party Boat Transfer Guide",
-      fr: "Horaires de pick-up a Punta Cana: guide Party Boat"
+      es: "Horarios reales de recogida para el Party Boat en Punta Cana", 
+      en: "Real pick-up schedule for the Party Boat in Punta Cana", 
+      fr: "Horaires reels de pick-up pour le Party Boat a Punta Cana", 
     },
     heroSubtitles: {
-      es: "Pick-up confirmado y regreso sin estres. Todo claro antes de subir al boat.",
-      en: "Confirmed pick-up and smooth return. Everything clear before you board.",
-      fr: "Pick-up confirme et retour simple. Tout est clair avant l'embarquement."
+      es: "Recogida clara, regreso facil y todo confirmado antes de salir.", 
+      en: "Clear pick-up, easy return, everything confirmed before you go.", 
+      fr: "Pick-up clair, retour simple, tout confirme avant de partir.", 
     },
     metaDescriptions: {
-      es: "Guia rapida de pick-up en Punta Cana: tiempos estimados, que llevar y como reservar directo sin comisiones.",
-      en: "Quick pick-up guide in Punta Cana: estimated times, what to bring, and how to book direct with no hidden fees.",
-      fr: "Guide rapide de pick-up a Punta Cana: temps estimes, quoi apporter, reservation directe sans frais caches."
+      es: "Horarios, punto de encuentro y que llevar para tu salida en Party Boat. Reserva directa y sin sorpresas.", 
+      en: "Pick-up timing, meeting point, and what to bring for your Party Boat. Book direct with no surprises.", 
+      fr: "Horaires, point de rencontre et quoi apporter pour votre Party Boat. Reservation directe sans surprises.", 
     },
     bodyBlocks: {
       es: [
@@ -98,19 +98,19 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     slug: "party-boat-logistica-002",
     clusterId: "logistica",
     titles: {
-      es: "Party Boat Punta Cana: salidas confirmadas con transporte incluido",
-      en: "Party Boat Punta Cana: confirmed departures with hotel pick-up",
-      fr: "Party Boat Punta Cana: departs confirmes avec pick-up hotel"
+      es: "Salidas confirmadas del Party Boat con pick-up en hotel", 
+      en: "Confirmed Party Boat departures with hotel pick-up", 
+      fr: "Departs confirmes du Party Boat avec pick-up hotel", 
     },
     heroSubtitles: {
-      es: "Te buscamos y te llevamos directo al check-in del catamaran.",
-      en: "We pick you up and take you straight to catamaran check-in.",
-      fr: "On vient te chercher et on t'emmene au check-in du catamaran."
+      es: "Te buscamos en el hotel y vas directo al check-in.", 
+      en: "We pick you up at the hotel and go straight to check-in.", 
+      fr: "On te prend a l'hotel et on va direct au check-in.", 
     },
     metaDescriptions: {
-      es: "Evita tours improvisados: salida real, transporte incluido, snorkel y Natural Pool con open bar.",
-      en: "Skip random sellers: real departures, transport included, snorkel and Natural Pool with open bar.",
-      fr: "Evite les vendeurs au hasard: departs reels, transport inclus, snorkel et Natural Pool."
+      es: "Salida organizada con transporte incluido, snorkel y Natural Pool. Todo coordinado y claro.", 
+      en: "Organized departure with transport included, snorkel and Natural Pool. Clear, coordinated.", 
+      fr: "Depart organise avec transport inclus, snorkel et Natural Pool. Clair et coordonne.", 
     },
     bodyBlocks: {
       es: [
@@ -144,19 +144,19 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     slug: "party-boat-logistica-003",
     clusterId: "logistica",
     titles: {
-      es: "Como llegar al Party Boat en Punta Cana (sin perder tiempo)",
-      en: "How to reach the Party Boat in Punta Cana (no time wasted)",
-      fr: "Comment rejoindre le Party Boat a Punta Cana (sans perdre du temps)"
+      es: "Como llegar al Party Boat sin perder tiempo en Punta Cana", 
+      en: "How to get to the Party Boat without wasting time in Punta Cana", 
+      fr: "Comment rejoindre le Party Boat sans perdre de temps a Punta Cana", 
     },
     heroSubtitles: {
-      es: "Ruta simple: lobby, transporte, check-in, catamaran.",
-      en: "Simple route: lobby, shuttle, check-in, catamaran.",
-      fr: "Itineraire simple: lobby, navette, check-in, catamaran."
+      es: "Paso a paso: lobby, transporte, check-in y catamaran.", 
+      en: "Step by step: lobby, transport, check-in, catamaran.", 
+      fr: "Etape par etape: lobby, transport, check-in, catamaran.", 
     },
     metaDescriptions: {
-      es: "Guia practica: que esperar, tiempos estimados y consejos para llegar relajado al catamaran.",
-      en: "Practical guide: what to expect, estimated times, and tips to arrive relaxed.",
-      fr: "Guide pratique: a quoi s'attendre, temps estimes, conseils pour arriver detendu."
+      es: "Guia simple para llegar al Party Boat: tiempos, punto de encuentro y consejos utiles.", 
+      en: "Simple guide to reach the Party Boat: timing, meeting point, and practical tips.", 
+      fr: "Guide simple pour rejoindre le Party Boat: horaires, point de rencontre, conseils utiles.", 
     },
     bodyBlocks: {
       es: [
@@ -190,19 +190,19 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     slug: "party-boat-nicho-exclusivo-004",
     clusterId: "nicho_exclusivo",
     titles: {
-      es: "Adults Only en Punta Cana: Party Boat sin ambiente familiar",
-      en: "Adults-only Party Boat in Punta Cana: no kids, premium vibe",
-      fr: "Party Boat adults only a Punta Cana: sans enfants, ambiance premium"
+      es: "Party Boat solo adultos en Punta Cana: ambiente premium", 
+      en: "Adults-only Party Boat in Punta Cana with a premium vibe", 
+      fr: "Party Boat adults only a Punta Cana avec ambiance premium", 
     },
     heroSubtitles: {
-      es: "Para adultos que quieren open bar y musica sin ruido de familias.",
-      en: "For adults who want open bar and music without family crowds.",
-      fr: "Pour adultes: open bar et musique sans ambiance familiale."
+      es: "Musica, open bar y ambiente adulto, sin enfoque familiar.", 
+      en: "Music, open bar, adult vibe, no family focus.", 
+      fr: "Musique, open bar, ambiance adulte, sans focus familial.", 
     },
     metaDescriptions: {
-      es: "Boat party premium: mejores vibes, sin ninos, con transporte incluido y open bar.",
-      en: "Premium boat party vibes: no kids, transport included, open bar.",
-      fr: "Boat party premium: sans enfants, transport inclus, open bar."
+      es: "Salida solo adultos con open bar y snorkel. Un plan mas fino para parejas y grupos.", 
+      en: "Adults-only departure with open bar and snorkel. A more refined plan for couples and groups.", 
+      fr: "Sortie adults only avec open bar et snorkel. Plan plus raffine pour couples et groupes.", 
     },
     bodyBlocks: {
       es: [
@@ -236,19 +236,19 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     slug: "party-boat-nicho-exclusivo-005",
     clusterId: "nicho_exclusivo",
     titles: {
-      es: "Catamaran VIP con open bar premium en Punta Cana",
-      en: "VIP catamaran with premium open bar in Punta Cana",
-      fr: "Catamaran VIP avec open bar premium a Punta Cana"
+      es: "Catamaran VIP con open bar en Punta Cana", 
+      en: "VIP catamaran with open bar in Punta Cana", 
+      fr: "Catamaran VIP avec open bar a Punta Cana", 
     },
     heroSubtitles: {
-      es: "Ambiente social con musica, open bar y servicio premium.",
-      en: "Social vibe with music, open bar, and premium service.",
-      fr: "Ambiance sociale, musique, open bar et service premium."
+      es: "Servicio premium, musica y paradas en el mar.", 
+      en: "Premium service, music, and sea stops.", 
+      fr: "Service premium, musique et arrets en mer.", 
     },
     metaDescriptions: {
-      es: "Boat party premium con open bar, snorkel y Natural Pool. Reserva directa.",
-      en: "Premium boat party with open bar, snorkel, and Natural Pool. Book direct.",
-      fr: "Boat party premium avec open bar, snorkel et Natural Pool. Reservation directe."
+      es: "Una experiencia VIP con open bar, snorkel y Natural Pool, todo coordinado.", 
+      en: "A VIP experience with open bar, snorkel, and Natural Pool, fully coordinated.", 
+      fr: "Experience VIP avec open bar, snorkel et Natural Pool, bien coordonnee.", 
     },
     bodyBlocks: {
       es: [
@@ -282,19 +282,19 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     slug: "party-boat-seguridad-comparativa-006",
     clusterId: "seguridad_comparativa",
     titles: {
-      es: "Precio directo del Party Boat en Punta Cana (sin intermediarios)",
-      en: "Direct Party Boat price in Punta Cana (no middlemen)",
-      fr: "Prix direct Party Boat a Punta Cana (sans intermediaires)"
+      es: "Precio directo del Party Boat en Punta Cana, sin comisiones", 
+      en: "Direct Party Boat price in Punta Cana, no commissions", 
+      fr: "Prix direct du Party Boat a Punta Cana, sans commissions", 
     },
     heroSubtitles: {
-      es: "Compra directo con pick-up confirmado y soporte real.",
-      en: "Book direct with confirmed pick-up and real support.",
-      fr: "Reserve direct avec pick-up confirme et support."
+      es: "Reserva directa, pick-up confirmado y soporte real.", 
+      en: "Book direct, confirmed pick-up, real support.", 
+      fr: "Reservation directe, pick-up confirme, support reel.", 
     },
     metaDescriptions: {
-      es: "Comparativa real: reserva directa, sin comisiones ocultas, con el mismo servicio y transporte.",
-      en: "Honest comparison: book direct, no hidden commissions, same service and transport.",
-      fr: "Comparatif honnete: reserve direct, pas de commissions cachees, meme service et transport."
+      es: "Reserva directa con el mismo servicio, sin sobrecargos. Transparencia total.", 
+      en: "Book direct with the same service, no markups. Full transparency.", 
+      fr: "Reservation directe avec le meme service, sans surcout. Transparence totale.", 
     },
     bodyBlocks: {
       es: [
@@ -328,19 +328,19 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     slug: "party-boat-seguridad-comparativa-007",
     clusterId: "seguridad_comparativa",
     titles: {
-      es: "Comparativa 2026: cual es el mejor Party Boat de Punta Cana?",
-      en: "2026 comparison: which Party Boat is best in Punta Cana?",
-      fr: "Comparatif 2026: quel est le meilleur Party Boat a Punta Cana?"
+      es: "Comparativa 2026 del Party Boat: que incluye de verdad", 
+      en: "2026 Party Boat comparison: what is really included", 
+      fr: "Comparatif 2026 Party Boat: ce qui est vraiment inclus", 
     },
     heroSubtitles: {
-      es: "Datos claros, precio directo y servicio con soporte real.",
-      en: "Clear facts, direct price, and real support.",
-      fr: "Faits clairs, prix direct et support reel."
+      es: "Lo importante en claro: transporte, open bar y paradas.", 
+      en: "The essentials, clear: transport, open bar, and stops.", 
+      fr: "L'essentiel, clair: transport, open bar et arrets.", 
     },
     metaDescriptions: {
-      es: "Comparativa honesta: que incluye, como es la salida y por que conviene reservar directo.",
-      en: "Honest comparison: inclusions, departure flow, and why direct booking helps.",
-      fr: "Comparatif honnete: inclusions, depart, et pourquoi reserver direct."
+      es: "Compara inclusiones reales y evita cargos ocultos. Reserva directa y clara.", 
+      en: "Compare real inclusions and avoid hidden fees. Direct, clear booking.", 
+      fr: "Comparez les vraies inclusions et evitez les frais caches. Reservation claire.", 
     },
     bodyBlocks: {
       es: [
@@ -374,19 +374,19 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     slug: "party-boat-urgencia-008",
     clusterId: "urgencia_last_minute",
     titles: {
-      es: "Plan para hoy? Party Boat con cupos last minute en Punta Cana",
-      en: "Looking for today? Party Boat last-minute spots in Punta Cana",
-      fr: "Plan pour aujourd'hui? Party Boat last minute a Punta Cana"
+      es: "Plan para hoy? Party Boat con cupos limitados", 
+      en: "Plan for today? Party Boat with limited spots", 
+      fr: "Plan pour aujourd'hui? Party Boat avec places limitees", 
     },
     heroSubtitles: {
-      es: "Si quieres fiesta hoy, te lo resolvemos rapido.",
-      en: "If you want to party today, we handle it fast.",
-      fr: "Si tu veux faire la fete aujourd'hui, on gere vite."
+      es: "Reserva rapida y salida el mismo dia.", 
+      en: "Fast booking and same-day departure.", 
+      fr: "Reservation rapide et depart le jour meme.", 
     },
     metaDescriptions: {
-      es: "Cupos limitados para hoy: snorkel, Natural Pool y open bar con transporte incluido.",
-      en: "Limited spots for today: snorkel, Natural Pool, and open bar with transport included.",
-      fr: "Places limitees aujourd'hui: snorkel, Natural Pool et open bar avec transport inclus."
+      es: "Cupos para hoy con confirmacion rapida, transporte incluido y open bar.", 
+      en: "Spots for today with fast confirmation, transport included, and open bar.", 
+      fr: "Places pour aujourd'hui avec confirmation rapide, transport inclus et open bar.", 
     },
     bodyBlocks: {
       es: [
@@ -420,19 +420,19 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     slug: "party-boat-urgencia-009",
     clusterId: "urgencia_last_minute",
     titles: {
-      es: "Reserva ahora y sube hoy: Party Boat Punta Cana",
-      en: "Book now and sail today: Party Boat Punta Cana",
-      fr: "Reserve maintenant et partez aujourd'hui: Party Boat Punta Cana"
+      es: "Reserva ahora y navega hoy en Punta Cana", 
+      en: "Book now and sail today in Punta Cana", 
+      fr: "Reserve maintenant et partez aujourd'hui a Punta Cana", 
     },
     heroSubtitles: {
-      es: "Reservas rapido, confirmacion inmediata, salida el mismo dia.",
-      en: "Fast booking, instant confirmation, same-day departure.",
-      fr: "Reservation rapide, confirmation immediate, depart le jour meme."
+      es: "Confirmacion inmediata y salida sin vueltas.", 
+      en: "Instant confirmation and no-hassle departure.", 
+      fr: "Confirmation immediate et depart sans stress.", 
     },
     metaDescriptions: {
-      es: "Oferta last minute con confirmacion rapida, open bar y snorkel incluidos.",
-      en: "Last-minute offer with fast confirmation, open bar and snorkel included.",
-      fr: "Offre last minute avec confirmation rapide, open bar et snorkel inclus."
+      es: "Salida el mismo dia con pick-up coordinado y open bar incluido.", 
+      en: "Same-day departure with coordinated pick-up and open bar included.", 
+      fr: "Depart le jour meme avec pick-up coordonne et open bar inclus.", 
     },
     bodyBlocks: {
       es: [
@@ -466,19 +466,19 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     slug: "party-boat-general-010",
     clusterId: "logistica",
     titles: {
-      es: "Party Boat con snorkel y Piscina Natural en Punta Cana",
-      en: "Party Boat with snorkel and Natural Pool in Punta Cana",
-      fr: "Party Boat avec snorkel et Natural Pool a Punta Cana"
+      es: "Party Boat con snorkel y Piscina Natural", 
+      en: "Party Boat with snorkel and Natural Pool", 
+      fr: "Party Boat avec snorkel et Natural Pool", 
     },
     heroSubtitles: {
-      es: "La combinacion perfecta: musica, open bar y paradas en el mar.",
-      en: "The perfect combo: music, open bar, and sea stops.",
-      fr: "Le combo parfait: musique, open bar et arrets en mer."
+      es: "Musica, open bar y paradas en el mar Caribe.", 
+      en: "Music, open bar, and stops in the Caribbean.", 
+      fr: "Musique, open bar et arrets dans les Caraibes.", 
     },
     metaDescriptions: {
-      es: "Excursion completa con musica, open bar, snorkel y parada en la Natural Pool. Reserva directa.",
-      en: "Full excursion with music, open bar, snorkel, and Natural Pool stop. Book direct.",
-      fr: "Excursion complete avec musique, open bar, snorkel et arret Natural Pool. Reservation directe."
+      es: "Excursion completa con snorkel, Natural Pool y open bar. Reserva directa.", 
+      en: "Full excursion with snorkel, Natural Pool, and open bar. Book direct.", 
+      fr: "Excursion complete avec snorkel, Natural Pool et open bar. Reservation directe.", 
     },
     bodyBlocks: {
       es: [
@@ -508,24 +508,23 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
       fr: ["Reserver", "Voir disponibilite"]
     }
   }
-  ,
   {
     slug: "party-boat-adults-only-011",
     clusterId: "nicho_exclusivo",
     titles: {
-      es: "Adults Only Party Boat Punta Cana: fiesta solo adultos",
-      en: "Adults Only Party Boat Punta Cana: premium no-kids vibe",
-      fr: "Party Boat Adults Only Punta Cana: ambiance premium sans enfants"
+      es: "Adults Only Party Boat: fiesta solo adultos en Punta Cana", 
+      en: "Adults Only Party Boat: adults-only party in Punta Cana", 
+      fr: "Party Boat Adults Only: fete adultes a Punta Cana", 
     },
     heroSubtitles: {
-      es: "Ambiente exclusivo para mayores de 18 anos, open bar y musica nonstop.",
-      en: "Exclusive 18+ crowd, open bar, and nonstop music.",
-      fr: "Ambiance 18+ exclusive, open bar et musique continue."
+      es: "Open bar, DJ y ambiente 18+ sin ruido de familias.", 
+      en: "Open bar, DJ, and an 18+ vibe without family crowds.", 
+      fr: "Open bar, DJ et ambiance 18+ sans foule familiale.", 
     },
     metaDescriptions: {
-      es: "Party Boat solo adultos en Punta Cana: open bar premium, DJ en vivo y snorkel lejos de multitudes.",
-      en: "Adults-only party boat in Punta Cana: premium open bar, live DJ, and snorkel away from crowds.",
-      fr: "Party boat adults only a Punta Cana: open bar premium, DJ live et snorkel loin des foules."
+      es: "Salida solo adultos con musica, open bar y snorkel lejos de multitudes.", 
+      en: "Adults-only departure with music, open bar, and snorkel away from crowds.", 
+      fr: "Sortie adults only avec musique, open bar et snorkel loin des foules.", 
     },
     bodyBlocks: {
       es: [
@@ -559,19 +558,19 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     slug: "party-boat-bachelorette-private-012",
     clusterId: "nicho_exclusivo",
     titles: {
-      es: "Private Bachelorette Boat Party Punta Cana: despedida en barco",
-      en: "Private Bachelorette Boat Party Punta Cana: girls-only charter",
-      fr: "Private Bachelorette Boat Party Punta Cana: charter prive entre filles"
+      es: "Bachelorette privada en barco: Punta Cana", 
+      en: "Private bachelorette boat party in Punta Cana", 
+      fr: "Bachelorette privee en bateau a Punta Cana", 
     },
     heroSubtitles: {
-      es: "Charter privado, musica personalizada y celebracion epica.",
-      en: "Private charter, custom music, and an epic celebration.",
-      fr: "Charter prive, musique personnalisee et celebration epique."
+      es: "Charter privado y celebracion a tu medida.", 
+      en: "Private charter and a celebration tailored to your group.", 
+      fr: "Charter prive et celebration sur mesure.", 
     },
     metaDescriptions: {
-      es: "Despedida de soltera privada en Punta Cana: charter exclusivo, cocteles y parada en Natural Pool.",
-      en: "Private bachelorette party in Punta Cana: exclusive charter, cocktails, and Natural Pool stop.",
-      fr: "EVJF prive a Punta Cana: charter exclusif, cocktails et arret Natural Pool."
+      es: "Charter privado con musica, cocteles y parada en Natural Pool.", 
+      en: "Private charter with music, cocktails, and a Natural Pool stop.", 
+      fr: "Charter prive avec musique, cocktails et arret Natural Pool.", 
     },
     bodyBlocks: {
       es: [
@@ -605,19 +604,19 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     slug: "party-boat-singles-013",
     clusterId: "seguridad_comparativa",
     titles: {
-      es: "Best Booze Cruise for Singles Punta Cana: conoce gente",
-      en: "Best Booze Cruise for Singles Punta Cana: meet new people",
-      fr: "Best Booze Cruise pour singles Punta Cana: rencontrer du monde"
+      es: "Booze Cruise para solteros en Punta Cana", 
+      en: "Booze Cruise for singles in Punta Cana", 
+      fr: "Booze Cruise pour singles a Punta Cana", 
     },
     heroSubtitles: {
-      es: "El punto social numero 1 para viajeros solteros.",
-      en: "The #1 social spot for solo travelers.",
-      fr: "Le spot social numero 1 pour voyageurs solos."
+      es: "Ambiente social y seguro para conocer gente.", 
+      en: "A social and safe vibe to meet people.", 
+      fr: "Ambiance sociale et sure pour rencontrer du monde.", 
     },
     metaDescriptions: {
-      es: "Booze Cruise para singles en Punta Cana: juegos, staff social y ambiente seguro para conocer gente.",
-      en: "Singles booze cruise in Punta Cana: games, social staff, and a safe vibe to meet people.",
-      fr: "Booze cruise pour singles a Punta Cana: jeux, staff social et ambiance sure."
+      es: "Salida para viajeros solteros con juegos, musica y equipo bilingue.", 
+      en: "Singles-friendly departure with games, music, and bilingual crew.", 
+      fr: "Sortie pour voyageurs solos avec jeux, musique et equipe bilingue.", 
     },
     bodyBlocks: {
       es: [
@@ -651,19 +650,19 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     slug: "party-boat-last-minute-deals-014",
     clusterId: "urgencia_last_minute",
     titles: {
-      es: "Last minute boat party deals Punta Cana: cupos de hoy",
-      en: "Last minute boat party deals Punta Cana: today spots",
-      fr: "Last minute boat party deals Punta Cana: places du jour"
+      es: "Ofertas last minute para Party Boat en Punta Cana", 
+      en: "Last-minute Party Boat deals in Punta Cana", 
+      fr: "Offres last minute Party Boat a Punta Cana", 
     },
     heroSubtitles: {
-      es: "Ofertas de ultimo minuto con confirmacion rapida.",
-      en: "Last-minute deals with fast confirmation.",
-      fr: "Offres last minute avec confirmation rapide."
+      es: "Cupos de ultimo minuto con confirmacion rapida.", 
+      en: "Last-minute spots with fast confirmation.", 
+      fr: "Places last minute avec confirmation rapide.", 
     },
     metaDescriptions: {
-      es: "Descuentos last minute: open bar, snorkel y transporte con confirmacion inmediata.",
-      en: "Last-minute discounts: open bar, snorkel, and transport with instant confirmation.",
-      fr: "Promos last minute: open bar, snorkel et transport avec confirmation immediate."
+      es: "Ahorra con cupos de ultimo minuto: open bar, snorkel y transporte incluidos.", 
+      en: "Save with last-minute spots: open bar, snorkel, and transport included.", 
+      fr: "Economisez avec places last minute: open bar, snorkel et transport inclus.", 
     },
     bodyBlocks: {
       es: [
@@ -694,24 +693,23 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   }
 
-  ,
   {
     slug: "party-boat-estrella-015",
     clusterId: "seguridad_comparativa",
     titles: {
-      es: "El Party Boat #1 de Punta Cana 2026 | The Ultimate Booze Cruise Experience",
-      en: "#1 Party Boat in Punta Cana 2026 | The Ultimate Booze Cruise Experience",
-      fr: "#1 Party Boat a Punta Cana 2026 | The Ultimate Booze Cruise Experience"
+      es: "El Party Boat #1 de Punta Cana en 2026", 
+      en: "#1 Party Boat in Punta Cana for 2026", 
+      fr: "Le Party Boat #1 a Punta Cana pour 2026", 
     },
     heroSubtitles: {
-      es: "No aceptes imitaciones. El mejor ambiente, barra libre premium y el equipo mas vibrante de Bavaro.",
-      en: "No imitations. The best vibe, premium open bar, and the most vibrant crew in Bavaro.",
-      fr: "Pas d'imitations. Meilleure ambiance, open bar premium et equipe la plus vibrante de Bavaro."
+      es: "Produccion completa, open bar premium y ambiente top en Bavaro.", 
+      en: "Full production, premium open bar, and top vibe in Bavaro.", 
+      fr: "Production complete, open bar premium et ambiance top a Bavaro.", 
     },
     metaDescriptions: {
-      es: "El Party Boat #1 de Punta Cana: experiencia premiada con open bar premium, sonido pro y snorkel en arrecifes top.",
-      en: "Punta Cana's #1 Party Boat: award-winning experience with premium open bar, pro sound, and top reef snorkel.",
-      fr: "Le #1 Party Boat de Punta Cana: experience prim?e avec open bar premium, son pro et snorkel top."
+      es: "Experiencia premiada con sonido pro, open bar premium y snorkel en arrecifes top.", 
+      en: "Awarded experience with pro sound, premium open bar, and top reef snorkel.", 
+      fr: "Experience primee avec son pro, open bar premium et snorkel sur recifs top.", 
     },
     bodyBlocks: {
       es: [
