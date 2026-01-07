@@ -4,8 +4,19 @@ import Link from "next/link";
 import { parseNotificationMetadata, getContactNotifications } from "@/lib/notificationService";
 import { markNotificationReadAction } from "@/app/(dashboard)/admin/notifications/actions";
 import { prisma } from "@/lib/prisma";
-import { PartnerApplication } from "@prisma/client";
+import { PartnerApplication, TransferLocationType } from "@prisma/client";
 import { approveApplication, rejectApplication } from "@/app/(dashboard)/admin/partner-applications/actions";
+import { allLandings } from "@/data/transfer-landings";
+import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
+
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 
 const formatDate = (value: Date) =>
   new Intl.DateTimeFormat("es-ES", {
@@ -20,6 +31,38 @@ export default async function AdminCrmPage() {
     orderBy: { createdAt: "desc" },
     take: 5
   });
+  const [airports, hotels, dynamicCombos] = await Promise.all([
+    prisma.transferLocation.findMany({
+      where: { type: TransferLocationType.AIRPORT, active: true },
+      select: { id: true, name: true, slug: true }
+    }),
+    prisma.transferLocation.findMany({
+      where: { type: TransferLocationType.HOTEL, active: true },
+      select: { id: true, name: true, slug: true }
+    }),
+    getDynamicTransferLandingCombos()
+  ]);
+  const primaryAirport =
+    airports.find((airport) => airport.name.toLowerCase().includes("punta cana")) ??
+    airports.find((airport) => airport.slug.includes("punta-cana")) ??
+    airports[0];
+  const canonicalOriginSlug = primaryAirport ? slugify(primaryAirport.name) : null;
+  const knownLandingSlugs = new Set<string>();
+  allLandings().forEach((landing) => knownLandingSlugs.add(landing.landingSlug));
+  dynamicCombos.forEach((combo) => {
+    knownLandingSlugs.add(combo.landingSlug);
+    combo.aliasSlugs.forEach((alias) => knownLandingSlugs.add(alias));
+  });
+  const missingTransferLandings =
+    canonicalOriginSlug === null
+      ? []
+      : hotels
+          .map((hotel) => ({
+            hotel,
+            slug: `${canonicalOriginSlug}-to-${hotel.slug}`
+          }))
+          .filter((entry) => !knownLandingSlugs.has(entry.slug))
+          .sort((a, b) => a.hotel.name.localeCompare(b.hotel.name, "es"));
 
   return (
     <div className="space-y-6">
@@ -164,6 +207,42 @@ export default async function AdminCrmPage() {
         ) : (
           <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
             Aún no hay solicitudes nuevas de registro.
+          </div>
+        )}
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">CRM</p>
+          <h2 className="text-2xl font-semibold text-slate-900">Landings con posible 404</h2>
+          <p className="text-sm text-slate-500">
+            Lista de hoteles activos sin landing de traslado para el aeropuerto principal. Usa estos links para revisar
+            si estan devolviendo 404 y corregirlos.
+          </p>
+        </div>
+        {missingTransferLandings.length ? (
+          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+              {missingTransferLandings.length} hoteles sin landing detectada
+            </p>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {missingTransferLandings.map(({ hotel, slug }) => (
+                <Link
+                  key={hotel.id}
+                  href={`https://proactivitis.com/transfer/${slug}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex flex-col gap-1 rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 hover:border-slate-300"
+                >
+                  <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{hotel.name}</span>
+                  <span>{slug}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
+            No se detectaron hoteles sin landing de traslado.
           </div>
         )}
       </section>
