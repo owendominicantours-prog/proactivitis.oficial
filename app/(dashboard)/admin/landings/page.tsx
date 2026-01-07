@@ -77,8 +77,15 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
   });
 
   const transferLandingSlugs = Array.from(landingMap.keys());
+  const hotelThingsToDoEntries = locations.map((location) => ({
+    slug: `things-to-do/${location.slug}`,
+    name: location.name,
+    zone: location.zone.name,
+    active: location.active
+  }));
   const tourLandingSlugs = landingPages.map((landing) => landing.slug);
-  const landingSlugs = Array.from(new Set([...transferLandingSlugs, ...tourLandingSlugs]));
+  const thingsToDoSlugs = hotelThingsToDoEntries.map((entry) => entry.slug);
+  const landingSlugs = Array.from(new Set([...transferLandingSlugs, ...tourLandingSlugs, ...thingsToDoSlugs]));
   const trafficRows = await prisma.landingPageTraffic.findMany({
     where: { slug: { in: landingSlugs } },
     select: { slug: true, visits: true }
@@ -185,6 +192,46 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
                 <div className="flex flex-col gap-1 text-xs text-slate-500">
                   <p>{entry.slug}</p>
                   <p>Visitas: {entry.visits.toLocaleString()}</p>
+                </div>
+                <span
+                  className={`rounded-full px-3 py-1 text-[0.65rem] font-semibold ${
+                    entry.active ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                  }`}
+                >
+                  {entry.active ? "Activo" : "Inactivo"}
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Landings de hoteles (Things to do)"
+        description="Lista las paginas /things-to-do/{hotelSlug} generadas automaticamente por hotel."
+        badge={`${hotelThingsToDoEntries.length} items`}
+      >
+        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resultados</p>
+        <p className="text-sm text-slate-500">
+          {hotelThingsToDoEntries.length} landings encontradas.
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {hotelThingsToDoEntries.map((entry) => (
+            <Link
+              key={entry.slug}
+              href={`https://proactivitis.com/${entry.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-700 transition hover:border-slate-400 hover:shadow-lg"
+            >
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.zone}</p>
+                <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">HOTEL</p>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col gap-1 text-xs text-slate-500">
+                  <p>{entry.slug}</p>
                 </div>
                 <span
                   className={`rounded-full px-3 py-1 text-[0.65rem] font-semibold ${
