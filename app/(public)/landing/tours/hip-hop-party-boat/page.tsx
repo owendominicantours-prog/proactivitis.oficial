@@ -1,5 +1,4 @@
-import Image from "next/image";
-import Link from "next/link";
+﻿import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
@@ -8,18 +7,20 @@ import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL, SAME_AS_URLS, getPriceValidUntil } from "@/lib/seo";
 import CountdownUrgency from "@/components/landing/CountdownUrgency";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
+import TourGalleryCollage from "@/components/tours/TourGalleryCollage";
+import GalleryLightbox from "@/components/shared/GalleryLightbox";
 
 const TOUR_SLUG = "sunset-catamaran-snorkel";
 const LANDING_SLUG = "hip-hop-party-boat";
 const CTA_TEXT = "RESERVA MI FIESTA";
-// El contenido de esta landing está en español para preservar la estrategia SEO multilingüe sin duplicación.
-const SEO_TITLE = "Punta Cana's #1 Rated Urban Party Boat & Snorkel Experience";
+// El contenido de esta landing esta en espanol para preservar la estrategia SEO multilingue sin duplicacion.
+const SEO_TITLE = "Hip Hop Party Boat con Snorkel en Punta Cana";
 const SEO_DESCRIPTION =
-  "Baila hip hop y reggaetón en el Hip Hop Party Boat mientras navegas el Caribe. Barra libre premium, snorkel y atardeceres de lujo para grupos y despedidas.";
+  "Baila hip hop y reggaeton en el Hip Hop Party Boat mientras navegas el Caribe. Barra libre premium, snorkel y atardeceres de lujo para grupos y despedidas.";
 const TAXONOMY = {
-  amenities: ["barra libre", "dj en vivo", "snorkel guiado", "tobogÃ¡n", "foam party", "transporte incluido"],
+  amenities: ["barra libre", "dj en vivo", "snorkel guiado", "tobogan", "foam party", "transporte incluido"],
   niches: ["despedida de soltera", "grupos grandes", "spring break", "parejas"],
-  locations: ["Playa BÃ¡varo", "Cap Cana", "Piscina Natural", "Bibijagua"]
+  locations: ["Playa Bavaro", "Cap Cana", "Piscina Natural", "Bibijagua"]
 };
 
 const metadata: Metadata = {
@@ -47,8 +48,8 @@ const parseGallery = (gallery?: string | null) => {
 
 const features = [
   {
-    title: "The Beats",
-    copy: "DJ en vivo con selecciones curadas de hip hop, reggaetÃ³n y soca para una fiesta continua sobre el mar.",
+    title: "El Beat",
+    copy: "DJ en vivo con selecciones curadas de hip hop, reggaeton y soca para una fiesta continua sobre el mar.",
     icon: (
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.4}>
         <path d="M4 16h16M4 12h16M4 8h16" />
@@ -56,7 +57,7 @@ const features = [
     )
   },
   {
-    title: "The Drinks",
+    title: "La Barra",
     copy: "Barra libre con marcas premium, mocktails artesanales y snacks tropicales durante todo el recorrido.",
     icon: (
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.4}>
@@ -65,8 +66,8 @@ const features = [
     )
   },
   {
-    title: "The Reef",
-    copy: "Snorkel guiado en el arrecife de Bibijagua y foam party al atardecer para fotos Ã©picas.",
+    title: "El Arrecife",
+    copy: "Snorkel guiado en el arrecife de Bibijagua y foam party al atardecer para fotos epicas.",
     icon: (
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.4}>
         <path d="M5 17c3-4 8-4 11 0" />
@@ -75,7 +76,7 @@ const features = [
     )
   },
   {
-    title: "The Ride",
+    title: "El Ride",
     copy: "Traslados privados desde hoteles de Punta Cana y Cap Cana; olvida las filas de taxis.",
     icon: (
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.4}>
@@ -89,16 +90,16 @@ const features = [
 ];
 
 const faqs = [
-  "¿Incluye transporte desde los hoteles de Playa Bávaro y Cap Cana? Sí, pickups privados incluidos.",
-  "¿Qué incluye la barra libre? Ron premium, vodka, cerveza local y mocktails tropicales ilimitados.",
-  "¿Hay snorkel guiado? Sí, equipo profesional y guías certificados para explorar el arrecife."
+  "Incluye transporte desde los hoteles de Playa Bavaro y Cap Cana? Si, pickups privados incluidos.",
+  "Que incluye la barra libre? Ron premium, vodka, cerveza local y mocktails tropicales ilimitados.",
+  "Hay snorkel guiado? Si, equipo profesional y guias certificados para explorar el arrecife."
 ];
 
 const itinerary = [
-  "Encuentro en el club náutico con bienvenida y barra libre.",
-  "Set en vivo del DJ con coreografías urbanas y beats contagiosos.",
+  "Encuentro en el club nautico con bienvenida y barra libre.",
+  "Set en vivo del DJ con coreografias urbanas y beats contagiosos.",
   "Snorkel guiado en Bibijagua seguido de la foam party al atardecer.",
-  "Brindis al sunset con tragos premium y música nonstop."
+  "Brindis al sunset con tragos premium y musica nonstop."
 ];
 
 export const runtime = "edge";
@@ -121,7 +122,8 @@ export default async function HipHopLandingPage() {
           company: true
         }
       },
-      platformSharePercent: true
+      platformSharePercent: true,
+      location: true
     }
   });
 
@@ -163,72 +165,147 @@ export default async function HipHopLandingPage() {
     sameAs: SAME_AS_URLS
   };
 
-  const heroStats = [
-    {label:"+1,500 viajeros felices", value:"4,8/5 reseÃ±as"},
-    {label:"Horario sunset", value: timeSlots[0]? `${timeSlots[0].hour}:${timeSlots[0].minute} ${timeSlots[0].period}`:"08:00 AM / 01:00 PM"},
-    {label:"DuraciÃ³n", value:"4 horas"}
-  ];
-
-
   return (
-    <div className="min-h-screen bg-[#f5f6fb] text-slate-900">
+    <div className="min-h-screen bg-[#FDFDFD] text-slate-950 pb-24 overflow-x-hidden">
       <LandingViewTracker landingSlug={LANDING_SLUG} />
       <StructuredData data={schema} />
-      <section className="relative overflow-hidden bg-[#f5f6fb]">
-        <div className="absolute inset-0">
-          <Image
-            src={heroImage}
-            alt={tour.title ?? SEO_TITLE}
-            fill
-            className="object-cover filter saturate-110"
-            sizes="(max-width: 1024px) 100vw, 50vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/80 to-[#f5f6fb]" />
-        </div>
-        <div className="relative mx-auto flex max-w-6xl flex-col gap-10 px-4 py-20 lg:flex-row">
-          <div className="space-y-6">
-            <p className="text-xs uppercase tracking-[0.6em] text-[#00e5ff]">Crucero Urbano</p>
-            <h1 className="text-4xl font-black uppercase leading-tight text-slate-900 lg:text-5xl">{SEO_TITLE}</h1>
-            <p className="max-w-xl text-lg text-slate-700">
-              Baila hip hop y reggaetÃ³n mientras navegas por aguas turquesas, practicas snorkel en Bibijagua y brindas con un atardecer cinematogrÃ¡fico y servicio premium.
+
+      <section className="mx-auto max-w-[1240px] px-4 pt-8 sm:pt-10">
+        <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">
+          <div className="flex flex-col justify-center gap-6 p-6 sm:p-8 lg:p-16">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
+              <svg
+                aria-hidden
+                className="h-3 w-3 text-indigo-600"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 12.5 7 12.5s7-7.25 7-12.5c0-3.866-3.134-7-7-7zm0 4a3 3 0 100-6 3 3 0 000 6z"
+                />
+                <circle cx="12" cy="8.4" r="2.4" />
+              </svg>
+              <span>{tour.location ?? "Punta Cana"}</span>
+            </div>
+            <h1 className="text-3xl font-black text-slate-900 sm:text-4xl lg:text-5xl">{SEO_TITLE}</h1>
+            <p className="max-w-xl text-base text-slate-600 sm:text-lg">
+              Baila hip hop y reggaeton mientras navegas por aguas turquesas, haces snorkel en Bibijagua y brindas con un
+              atardecer cinematografico y servicio premium.
             </p>
-            <div className="flex flex-wrap gap-4">
-              {heroStats.map((stat) => (
-                <div key={stat.label} className="rounded-[16px] border border-slate-200 bg-white/80 px-5 py-4 text-sm shadow-md">
-                  <p className="text-[9px] uppercase tracking-[0.3em] text-slate-500">{stat.label}</p>
-                  <p className="text-lg font-semibold text-slate-900">{stat.value}</p>
+            <div className="flex items-end gap-8">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Precio por persona</p>
+                <p className="text-4xl font-black text-indigo-600">{priceLabel}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Rating</p>
+                <div className="flex items-center gap-2">
+                  <span aria-hidden className="text-2xl text-indigo-600">★</span>
+                  <p className="text-xl font-black">4.8/5</p>
                 </div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">+1,500 reviews</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3 text-sm font-medium text-slate-700">
+              {["Guia bilingue", "Open bar", "Snorkel guiado", "Transporte incluido"].map((badge) => (
+                <span
+                  key={badge}
+                  className="rounded-full border border-slate-200 bg-white/80 px-4 py-1 text-sm font-semibold text-slate-700 shadow-sm"
+                >
+                  {badge}
+                </span>
               ))}
             </div>
             <div className="flex flex-wrap gap-3">
-              <a
+              <Link
                 href="#booking"
-                className="rounded-full bg-[#d4af37] px-6 py-3 text-sm font-bold uppercase tracking-[0.25em] text-[#0d0d0d] shadow-[0_20px_35px_rgba(212,175,55,0.35)] transition hover:bg-[#b58f2e]"
+                className="rounded-3xl bg-indigo-600 px-10 py-4 text-base font-bold text-white shadow-xl shadow-indigo-100 transition-transform hover:scale-105 active:scale-95"
               >
                 {CTA_TEXT}
-              </a>
-              <Link
-                href={`/tours/${tour.slug}`}
-                className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-slate-900 transition hover:border-[#00e5ff]"
-              >
-                Ver tour oficial
               </Link>
-            </div>
-            <div className="flex flex-wrap items-center gap-8 text-xs uppercase tracking-[0.3em] text-slate-500">
-              <div className="flex items-center gap-2">
-                <span className="h-1 w-8 bg-[#00e5ff]" />
-                Valorado en TripAdvisor
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-1 w-8 bg-[#d4af37]" />
-                Opiniones en Google 4.8/5
-              </div>
+              <GalleryLightbox
+                images={gallery}
+                buttonLabel="Ver galeria"
+                buttonClassName="rounded-2xl border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-50"
+              />
             </div>
           </div>
-          <div id="booking" className="w-full rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_30px_60px_rgba(15,23,42,0.15)] lg:w-[420px]">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Asegura tu mesa en el party boat</p>
-            <h3 className="mt-2 text-2xl font-black text-slate-900">Hip Hop Party Boat</h3>
-            <p className="text-sm text-slate-600">Mesas limitadas para 2026, reserva ya tu tripulaciÃ³n.</p>
+          <TourGalleryCollage images={gallery} title={tour.title ?? SEO_TITLE} fallbackImage={heroImage} />
+        </div>
+      </section>
+
+      <section id="booking" className="mx-auto mt-6 max-w-[1240px] px-4 lg:hidden">
+        <div className="md:hidden mb-3">
+          <p className="text-sm font-semibold text-gray-900">Reserva tu lugar</p>
+          <p className="text-xs text-gray-600">Mesas limitadas para 2026, reserva ya tu tripulacion.</p>
+        </div>
+        <div className="md:hidden ring-1 ring-black/10 shadow-md rounded-[28px] border border-slate-100 bg-white p-6">
+          <TourBookingWidget {...bookingWidgetProps} />
+          <CountdownUrgency spots={22} />
+        </div>
+      </section>
+
+      <main className="mx-auto mt-10 grid max-w-[1240px] gap-10 px-4 lg:grid-cols-[1fr,420px]">
+        <div className="space-y-10">
+          <section id="overview" className="space-y-4">
+            <div className="space-y-4 rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Overview</p>
+              <p className="text-lg text-slate-800">
+                Hip Hop Party Boat es la mejor forma de vivir Punta Cana: musica en vivo, barra libre premium, snorkel y
+                sunset party con fotos epicas.
+              </p>
+              <div className="grid gap-4 md:grid-cols-2">
+                {features.map((feature) => (
+                  <article
+                    key={feature.title}
+                    className="space-y-3 rounded-[16px] border border-slate-100 bg-white p-4 shadow-sm"
+                  >
+                    <div className="text-indigo-600">{feature.icon}</div>
+                    <h3 className="text-base font-semibold text-slate-900">{feature.title}</h3>
+                    <p className="text-sm text-slate-600">{feature.copy}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section id="itinerary" className="space-y-4">
+            <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Itinerario express</p>
+              <ul className="mt-4 space-y-3 text-sm text-slate-600">
+                {itinerary.map((line) => (
+                  <li key={line} className="rounded-[12px] border border-slate-100 bg-[#f8f9fb] p-4">
+                    {line}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+
+          <section id="faq" className="space-y-4">
+            <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">FAQs</p>
+              <div className="mt-4 space-y-4 text-sm text-slate-600">
+                {faqs.map((faq) => (
+                  <article key={faq} className="rounded-[12px] border border-slate-100 bg-[#f8f9fb] p-4">
+                    <p className="font-semibold text-slate-900">{faq.split("?")[0]}?</p>
+                    <p className="text-sm text-slate-600">{faq}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside className="hidden lg:block">
+          <div className="sticky top-10 space-y-6 rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva tu lugar</p>
+            <h3 className="mt-2 text-2xl font-bold text-slate-900">Hip Hop Party Boat</h3>
+            <p className="text-sm text-slate-600">Mesas limitadas para 2026, reserva ya tu tripulacion.</p>
             <div className="mt-4">
               <TourBookingWidget {...bookingWidgetProps} />
             </div>
@@ -238,75 +315,10 @@ export default async function HipHopLandingPage() {
               <span>{tour.SupplierProfile?.company ?? "Local Crew"}</span>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl space-y-6 px-4 py-16">
-        <div className="rounded-[32px] bg-white p-8 shadow-[0_25px_60px_rgba(0,0,0,0.08)]">
-          <p className="text-xs uppercase tracking-[0.4em] text-[#00e5ff]">Testimonios reales</p>
-          <div className="mt-4 grid gap-4 md:grid-cols-3">
-            <div className="rounded-[16px] border border-slate-100 bg-[#fafbff] p-5 text-sm">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">TripAdvisor</p>
-              <p className="text-lg font-black text-slate-900">4.8/5</p>
-              <p className="text-xs text-slate-400">+1,500 opiniones</p>
-            </div>
-            <div className="rounded-[16px] border border-slate-100 bg-[#fafbff] p-5 text-sm">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Google</p>
-              <p className="text-lg font-black text-slate-900">4.8/5</p>
-              <p className="text-xs text-slate-400">Viajeros verificados</p>
-            </div>
-            <div className="rounded-[16px] border border-slate-100 bg-[#fafbff] p-5 text-sm">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Disponibilidad</p>
-              <p className="text-lg font-black text-[#d4af37]">22 plazas</p>
-              <p className="text-xs text-slate-400">Actualizado diariamente</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl space-y-6 px-4 pb-16">
-        <div className="grid gap-6 lg:grid-cols-4">
-          {features.map((feature) => (
-            <article
-              key={feature.title}
-              className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.1)]"
-            >
-              <div className="text-[#00e5ff]">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-slate-900">{feature.title}</h3>
-              <p className="text-sm text-slate-600">{feature.copy}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl space-y-6 px-4 pb-16">
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_20px_45px_rgba(15,23,42,0.08)]">
-            <h3 className="text-2xl font-black text-slate-900">Itinerario Express</h3>
-            <ul className="mt-4 space-y-3 text-sm text-slate-600">
-              {itinerary.map((line) => (
-                <li key={line} className="rounded-[12px] border border-slate-100 bg-[#f8f9fb] p-4">
-                  {line}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_20px_45px_rgba(15,23,42,0.08)]">
-            <h3 className="text-2xl font-black text-slate-900">FAQs</h3>
-            <div className="mt-4 space-y-4 text-sm text-slate-600">
-              {faqs.map((faq) => (
-                <article key={faq} className="rounded-[12px] border border-slate-100 bg-[#f8f9fb] p-4">
-                  <p className="font-semibold text-slate-900">{faq.split("?")[0]}?</p>
-                  <p className="text-sm text-slate-600">{faq}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+        </aside>
+      </main>
     </div>
   );
-
 }
 
 export { metadata };

@@ -4,3 +4,4 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /_next/
 Sitemap: https://proactivitis.com/sitemap.xml
+Sitemap: https://proactivitis.com/sitemap-i18n.xml

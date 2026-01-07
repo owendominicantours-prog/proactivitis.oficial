@@ -143,6 +143,7 @@ export default function TransferQuoteCards({
   const [returnTime, setReturnTime] = useState("");
   const [vehicles, setVehicles] = useState<QuoteVehicle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showLoading, setShowLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const departureDatetime = useMemo(
@@ -179,6 +180,15 @@ export default function TransferQuoteCards({
       canceled = true;
     };
   }, [originId, destinationId, passengers, t]);
+
+  useEffect(() => {
+    if (!loading) {
+      setShowLoading(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowLoading(true), 400);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   const roundTripMultiplier = useMemo(
     () => 2 * (1 - ROUND_TRIP_DISCOUNT_PERCENT / 100),
@@ -259,7 +269,7 @@ export default function TransferQuoteCards({
         <p className="text-sm text-slate-500">
           {t("transferQuote.priceFrom", { price: priceFrom.toFixed(2) })}
         </p>
-        {loading && <p className="text-sm text-slate-500">{t("transferQuote.updating")}</p>}
+        {showLoading && <p className="text-sm text-slate-500">{t("transferQuote.updating")}</p>}
         {error && <p className="text-sm text-rose-600">{error}</p>}
         <div className="grid gap-6 md:grid-cols-2">
           {vehicles.map((vehicle) => {
