@@ -4,13 +4,20 @@ import { prisma } from "@/lib/prisma";
 import { PARTY_BOAT_BASE_TOUR, PARTY_BOAT_VARIANTS } from "@/data/party-boat-variants";
 import { SANTO_DOMINGO_BASE_TOUR, SANTO_DOMINGO_VARIANTS } from "@/data/santo-domingo-variants";
 import { BUGGY_ATV_BASE_TOUR, BUGGY_ATV_VARIANTS } from "@/data/buggy-atv-variants";
+import { PARASAILING_BASE_TOUR, PARASAILING_VARIANTS } from "@/data/parasailing-variants";
 import PartyBoatVariantLanding from "@/components/public/PartyBoatVariantLanding";
 import SantoDomingoVariantLanding from "@/components/public/SantoDomingoVariantLanding";
 import BuggyAtvVariantLanding from "@/components/public/BuggyAtvVariantLanding";
+import ParasailingVariantLanding from "@/components/public/ParasailingVariantLanding";
 import { fr } from "@/lib/translations";
 
 export async function generateStaticParams() {
-  return [...PARTY_BOAT_VARIANTS, ...SANTO_DOMINGO_VARIANTS, ...BUGGY_ATV_VARIANTS].map((variant) => ({
+  return [
+    ...PARTY_BOAT_VARIANTS,
+    ...SANTO_DOMINGO_VARIANTS,
+    ...BUGGY_ATV_VARIANTS,
+    ...PARASAILING_VARIANTS
+  ].map((variant) => ({
     variantSlug: variant.slug
   }));
 }
@@ -20,7 +27,8 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
   const partyVariant = PARTY_BOAT_VARIANTS.find((item) => item.slug === resolved.variantSlug);
   const santoVariant = SANTO_DOMINGO_VARIANTS.find((item) => item.slug === resolved.variantSlug);
   const buggyVariant = BUGGY_ATV_VARIANTS.find((item) => item.slug === resolved.variantSlug);
-  const variant = partyVariant ?? santoVariant ?? buggyVariant;
+  const parasailingVariant = PARASAILING_VARIANTS.find((item) => item.slug === resolved.variantSlug);
+  const variant = partyVariant ?? santoVariant ?? buggyVariant ?? parasailingVariant;
   if (!variant) {
     return { title: "Landing introuvable" };
   }
@@ -49,7 +57,8 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
   const partyVariant = PARTY_BOAT_VARIANTS.find((item) => item.slug === resolved.variantSlug);
   const santoVariant = SANTO_DOMINGO_VARIANTS.find((item) => item.slug === resolved.variantSlug);
   const buggyVariant = BUGGY_ATV_VARIANTS.find((item) => item.slug === resolved.variantSlug);
-  if (!partyVariant && !santoVariant && !buggyVariant) {
+  const parasailingVariant = PARASAILING_VARIANTS.find((item) => item.slug === resolved.variantSlug);
+  if (!partyVariant && !santoVariant && !buggyVariant && !parasailingVariant) {
     return notFound();
   }
 
@@ -59,7 +68,9 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
         ? PARTY_BOAT_BASE_TOUR.slug
         : santoVariant
           ? SANTO_DOMINGO_BASE_TOUR.slug
-          : BUGGY_ATV_BASE_TOUR.slug
+          : buggyVariant
+            ? BUGGY_ATV_BASE_TOUR.slug
+            : PARASAILING_BASE_TOUR.slug
     },
     select: {
       id: true,
@@ -107,10 +118,21 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
     );
   }
 
+  if (buggyVariant) {
+    return (
+      <BuggyAtvVariantLanding
+        locale={fr}
+        variant={buggyVariant}
+        tour={tour}
+        transferHotels={transferHotels}
+      />
+    );
+  }
+
   return (
-    <BuggyAtvVariantLanding
+    <ParasailingVariantLanding
       locale={fr}
-      variant={buggyVariant!}
+      variant={parasailingVariant!}
       tour={tour}
       transferHotels={transferHotels}
     />
