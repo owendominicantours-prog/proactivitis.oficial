@@ -10,3 +10,4 @@ Sitemap: https://proactivitis.com/sitemap-things-to-do.xml
 Sitemap: https://proactivitis.com/sitemap-safety-guides.xml
 Sitemap: https://proactivitis.com/sitemap-party-boat.xml
 Sitemap: https://proactivitis.com/sitemap-santo-domingo.xml
+Sitemap: https://proactivitis.com/sitemap-buggy-atv.xml

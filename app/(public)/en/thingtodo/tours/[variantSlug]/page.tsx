@@ -3,12 +3,14 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PARTY_BOAT_BASE_TOUR, PARTY_BOAT_VARIANTS } from "@/data/party-boat-variants";
 import { SANTO_DOMINGO_BASE_TOUR, SANTO_DOMINGO_VARIANTS } from "@/data/santo-domingo-variants";
+import { BUGGY_ATV_BASE_TOUR, BUGGY_ATV_VARIANTS } from "@/data/buggy-atv-variants";
 import PartyBoatVariantLanding from "@/components/public/PartyBoatVariantLanding";
 import SantoDomingoVariantLanding from "@/components/public/SantoDomingoVariantLanding";
+import BuggyAtvVariantLanding from "@/components/public/BuggyAtvVariantLanding";
 import { en } from "@/lib/translations";
 
 export async function generateStaticParams() {
-  return [...PARTY_BOAT_VARIANTS, ...SANTO_DOMINGO_VARIANTS].map((variant) => ({
+  return [...PARTY_BOAT_VARIANTS, ...SANTO_DOMINGO_VARIANTS, ...BUGGY_ATV_VARIANTS].map((variant) => ({
     variantSlug: variant.slug
   }));
 }
@@ -17,7 +19,8 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
   const resolved = await params;
   const partyVariant = PARTY_BOAT_VARIANTS.find((item) => item.slug === resolved.variantSlug);
   const santoVariant = SANTO_DOMINGO_VARIANTS.find((item) => item.slug === resolved.variantSlug);
-  const variant = partyVariant ?? santoVariant;
+  const buggyVariant = BUGGY_ATV_VARIANTS.find((item) => item.slug === resolved.variantSlug);
+  const variant = partyVariant ?? santoVariant ?? buggyVariant;
   if (!variant) {
     return { title: "Landing not found" };
   }
@@ -45,12 +48,19 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
   const resolved = await params;
   const partyVariant = PARTY_BOAT_VARIANTS.find((item) => item.slug === resolved.variantSlug);
   const santoVariant = SANTO_DOMINGO_VARIANTS.find((item) => item.slug === resolved.variantSlug);
-  if (!partyVariant && !santoVariant) {
+  const buggyVariant = BUGGY_ATV_VARIANTS.find((item) => item.slug === resolved.variantSlug);
+  if (!partyVariant && !santoVariant && !buggyVariant) {
     return notFound();
   }
 
   const tour = await prisma.tour.findUnique({
-    where: { slug: partyVariant ? PARTY_BOAT_BASE_TOUR.slug : SANTO_DOMINGO_BASE_TOUR.slug },
+    where: {
+      slug: partyVariant
+        ? PARTY_BOAT_BASE_TOUR.slug
+        : santoVariant
+          ? SANTO_DOMINGO_BASE_TOUR.slug
+          : BUGGY_ATV_BASE_TOUR.slug
+    },
     select: {
       id: true,
       slug: true,
@@ -86,10 +96,21 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
     );
   }
 
+  if (santoVariant) {
+    return (
+      <SantoDomingoVariantLanding
+        locale={en}
+        variant={santoVariant}
+        tour={tour}
+        transferHotels={transferHotels}
+      />
+    );
+  }
+
   return (
-    <SantoDomingoVariantLanding
+    <BuggyAtvVariantLanding
       locale={en}
-      variant={santoVariant!}
+      variant={buggyVariant!}
       tour={tour}
       transferHotels={transferHotels}
     />
