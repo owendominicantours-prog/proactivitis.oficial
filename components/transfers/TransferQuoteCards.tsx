@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { Locale, translate } from "@/lib/translations";
 
 type QuoteVehicle = {
   id: string;
@@ -23,6 +24,7 @@ type TransferQuoteCardsProps = {
   defaultDeparture: string;
   defaultPassengers?: number;
   priceFrom: number;
+  locale?: Locale;
 };
 
 const ROUND_TRIP_DISCOUNT_PERCENT = Number(process.env.NEXT_PUBLIC_ROUND_TRIP_DISCOUNT_PERCENT ?? 5);
@@ -128,8 +130,11 @@ export default function TransferQuoteCards({
   destinationLabel,
   defaultDeparture,
   defaultPassengers = 2,
-  priceFrom
+  priceFrom,
+  locale = "es"
 }: TransferQuoteCardsProps) {
+  const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string | number>) =>
+    translate(locale, key, replacements);
   const [passengers, setPassengers] = useState(defaultPassengers);
   const [departureDate, setDepartureDate] = useState(defaultDeparture.slice(0, 10));
   const [departureTime, setDepartureTime] = useState(defaultDeparture.slice(11, 16));
@@ -161,7 +166,7 @@ export default function TransferQuoteCards({
       })
       .catch((err) => {
         if (!canceled) {
-          setError("No fue posible calcular la tarifa. Intenta nuevamente.");
+          setError(t("transferQuote.error"));
           console.error(err);
         }
       })
@@ -173,7 +178,7 @@ export default function TransferQuoteCards({
     return () => {
       canceled = true;
     };
-  }, [originId, destinationId, passengers]);
+  }, [originId, destinationId, passengers, t]);
 
   const roundTripMultiplier = useMemo(
     () => 2 * (1 - ROUND_TRIP_DISCOUNT_PERCENT / 100),
@@ -185,7 +190,7 @@ export default function TransferQuoteCards({
       <div className="rounded-[32px] border border-slate-200 bg-white/90 p-6 shadow">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-1 text-sm text-slate-500">
-            Fecha y hora
+            {t("transferQuote.datetime")}
             <div className="flex flex-wrap gap-2">
               <input
                 type="date"
@@ -202,7 +207,7 @@ export default function TransferQuoteCards({
             </div>
           </label>
           <label className="space-y-1 text-sm text-slate-500">
-            Pasajeros
+            {t("transferQuote.passengers")}
             <input
               type="number"
               min={1}
@@ -221,7 +226,7 @@ export default function TransferQuoteCards({
               tripType === "one-way" ? "bg-emerald-600 text-white" : "border border-slate-200 text-slate-700"
             }`}
           >
-            Solo ida
+            {t("transferQuote.oneWay")}
           </button>
           <button
             type="button"
@@ -230,7 +235,7 @@ export default function TransferQuoteCards({
               tripType === "round-trip" ? "bg-emerald-600 text-white" : "border border-slate-200 text-slate-700"
             }`}
           >
-            Ida y vuelta
+            {t("transferQuote.roundTrip")}
           </button>
           {tripType === "round-trip" && (
             <div className="flex flex-wrap gap-2">
@@ -252,9 +257,9 @@ export default function TransferQuoteCards({
       </div>
       <div className="space-y-4 rounded-[32px] border border-slate-100 bg-white/90 p-6 shadow-sm">
         <p className="text-sm text-slate-500">
-          Precio desde <strong className="text-slate-900">${priceFrom.toFixed(2)}</strong> por pasajero. Datos actualizados instantáneamente.
+          {t("transferQuote.priceFrom", { price: priceFrom.toFixed(2) })}
         </p>
-        {loading && <p className="text-sm text-slate-500">Actualizando tarifas...</p>}
+        {loading && <p className="text-sm text-slate-500">{t("transferQuote.updating")}</p>}
         {error && <p className="text-sm text-rose-600">{error}</p>}
         <div className="grid gap-6 md:grid-cols-2">
           {vehicles.map((vehicle) => {
@@ -280,28 +285,30 @@ export default function TransferQuoteCards({
                     <img src={vehicle.imageUrl} alt={vehicle.name} className="h-48 w-full rounded-2xl object-cover" />
                   )}
                   <h3 className="text-xl font-semibold text-slate-900">{vehicle.name}</h3>
-                  <p className="text-sm text-slate-500">{vehicle.minPax}–{vehicle.maxPax} pasajeros</p>
+                  <p className="text-sm text-slate-500">
+                    {t("transferQuote.passengerRange", { min: vehicle.minPax, max: vehicle.maxPax })}
+                  </p>
                   <p className="text-3xl font-bold text-emerald-600">
                     ${displayPrice.toFixed(2)}
-                    {tripType === "round-trip" ? " total (ida y vuelta)" : " por trayecto"}
+                    {tripType === "round-trip" ? ` ${t("transferQuote.totalRoundTrip")}` : ` ${t("transferQuote.perTrip")}`}
                   </p>
                   <ul className="space-y-1 text-xs text-slate-500">
-                    <li>• Transfer privado y directo</li>
-                    <li>• Aire acondicionado y Wi-Fi</li>
-                    <li>• Chofer verificado y soporte 24/7</li>
+                    <li>{t("transferQuote.bullets.private")}</li>
+                    <li>{t("transferQuote.bullets.ac")}</li>
+                    <li>{t("transferQuote.bullets.support")}</li>
                   </ul>
                 </div>
                 <Link
                   href={reserveUrl}
                   className="rounded-2xl bg-slate-900 px-5 py-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
                 >
-                  Reserve Now
+                  {t("transferQuote.reserve")}
                 </Link>
               </article>
             );
           })}
           {!loading && !vehicles.length && (
-            <p className="text-sm text-slate-500">Ajusta los pasajeros o fecha para ver tarifas disponibles.</p>
+            <p className="text-sm text-slate-500">{t("transferQuote.noRates")}</p>
           )}
         </div>
       </div>
