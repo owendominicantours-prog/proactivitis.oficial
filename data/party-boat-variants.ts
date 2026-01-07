@@ -49,7 +49,7 @@ export const PARTY_BOAT_BASE_TOUR = {
 
 export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
   {
-    slug: "party-boat-logistica-001",
+    slug: "horarios-reales-de-recogida-para-el-party-boat-en-punta-cana",
     clusterId: "logistica",
     titles: {
       es: "Horarios reales de recogida para el Party Boat en Punta Cana", 
@@ -95,7 +95,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   },
   {
-    slug: "party-boat-logistica-002",
+    slug: "salidas-confirmadas-del-party-boat-con-pick-up-en-hotel",
     clusterId: "logistica",
     titles: {
       es: "Salidas confirmadas del Party Boat con pick-up en hotel", 
@@ -141,7 +141,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   },
   {
-    slug: "party-boat-logistica-003",
+    slug: "como-llegar-al-party-boat-sin-perder-tiempo-en-punta-cana",
     clusterId: "logistica",
     titles: {
       es: "Como llegar al Party Boat sin perder tiempo en Punta Cana", 
@@ -187,7 +187,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   },
   {
-    slug: "party-boat-nicho-exclusivo-004",
+    slug: "party-boat-solo-adultos-en-punta-cana-ambiente-premium",
     clusterId: "nicho_exclusivo",
     titles: {
       es: "Party Boat solo adultos en Punta Cana: ambiente premium", 
@@ -233,7 +233,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   },
   {
-    slug: "party-boat-nicho-exclusivo-005",
+    slug: "catamaran-vip-con-open-bar-en-punta-cana",
     clusterId: "nicho_exclusivo",
     titles: {
       es: "Catamaran VIP con open bar en Punta Cana", 
@@ -279,7 +279,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   },
   {
-    slug: "party-boat-seguridad-comparativa-006",
+    slug: "precio-directo-del-party-boat-en-punta-cana-sin-comisiones",
     clusterId: "seguridad_comparativa",
     titles: {
       es: "Precio directo del Party Boat en Punta Cana, sin comisiones", 
@@ -325,7 +325,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   },
   {
-    slug: "party-boat-seguridad-comparativa-007",
+    slug: "comparativa-2026-del-party-boat-que-incluye-de-verdad",
     clusterId: "seguridad_comparativa",
     titles: {
       es: "Comparativa 2026 del Party Boat: que incluye de verdad", 
@@ -371,7 +371,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   },
   {
-    slug: "party-boat-urgencia-008",
+    slug: "plan-para-hoy-party-boat-con-cupos-limitados",
     clusterId: "urgencia_last_minute",
     titles: {
       es: "Plan para hoy? Party Boat con cupos limitados", 
@@ -417,7 +417,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   },
   {
-    slug: "party-boat-urgencia-009",
+    slug: "reserva-ahora-y-navega-hoy-en-punta-cana",
     clusterId: "urgencia_last_minute",
     titles: {
       es: "Reserva ahora y navega hoy en Punta Cana", 
@@ -463,7 +463,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   },
   {
-    slug: "party-boat-general-010",
+    slug: "party-boat-con-snorkel-y-piscina-natural",
     clusterId: "logistica",
     titles: {
       es: "Party Boat con snorkel y Piscina Natural", 
@@ -509,7 +509,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   },
   {
-    slug: "party-boat-adults-only-011",
+    slug: "adults-only-party-boat-fiesta-solo-adultos-en-punta-cana",
     clusterId: "nicho_exclusivo",
     titles: {
       es: "Adults Only Party Boat: fiesta solo adultos en Punta Cana", 
@@ -555,7 +555,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   },
   {
-    slug: "party-boat-bachelorette-private-012",
+    slug: "bachelorette-privada-en-barco-punta-cana",
     clusterId: "nicho_exclusivo",
     titles: {
       es: "Bachelorette privada en barco: Punta Cana", 
@@ -601,7 +601,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   },
   {
-    slug: "party-boat-singles-013",
+    slug: "booze-cruise-para-solteros-en-punta-cana",
     clusterId: "seguridad_comparativa",
     titles: {
       es: "Booze Cruise para solteros en Punta Cana", 
@@ -647,7 +647,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   },
   {
-    slug: "party-boat-last-minute-deals-014",
+    slug: "ofertas-last-minute-para-party-boat-en-punta-cana",
     clusterId: "urgencia_last_minute",
     titles: {
       es: "Ofertas last minute para Party Boat en Punta Cana", 
@@ -693,7 +693,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     }
   },
   {
-    slug: "party-boat-estrella-015",
+    slug: "el-party-boat-1-de-punta-cana-en-2026",
     clusterId: "seguridad_comparativa",
     titles: {
       es: "El Party Boat #1 de Punta Cana en 2026", 

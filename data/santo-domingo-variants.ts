@@ -68,7 +68,7 @@ export const SANTO_DOMINGO_BASE_TOUR = {
 
 export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
   {
-    slug: "santo-domingo-historia-001",
+    slug: "santo-domingo-historico-en-un-dia-origen-de-america",
     clusterId: "historica",
     titles: {
       es: "Santo Domingo historico en un dia: origen de America", 
@@ -129,7 +129,7 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     }
   },
   {
-    slug: "santo-domingo-historia-002",
+    slug: "zona-colonial-y-faro-a-colon-historia-viva-de-la-capital",
     clusterId: "historica",
     titles: {
       es: "Zona Colonial y Faro a Colon: historia viva de la capital", 
@@ -190,7 +190,7 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     }
   },
   {
-    slug: "santo-domingo-historia-003",
+    slug: "catedral-alcazar-y-calle-las-damas-en-la-zona-colonial",
     clusterId: "historica",
     titles: {
       es: "Catedral, Alcazar y Calle Las Damas en la Zona Colonial", 
@@ -251,7 +251,7 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     }
   },
   {
-    slug: "santo-domingo-historia-004",
+    slug: "patrimonio-unesco-en-santo-domingo-desde-punta-cana",
     clusterId: "historica",
     titles: {
       es: "Patrimonio UNESCO en Santo Domingo desde Punta Cana", 
@@ -312,7 +312,7 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     }
   },
   {
-    slug: "santo-domingo-explora-005",
+    slug: "los-tres-ojos-y-naturaleza-subterranea-en-santo-domingo",
     clusterId: "exploradora",
     titles: {
       es: "Los Tres Ojos y naturaleza subterranea en Santo Domingo", 
@@ -373,7 +373,7 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     }
   },
   {
-    slug: "santo-domingo-explora-006",
+    slug: "malecon-y-vistas-urbanas-santo-domingo-completo",
     clusterId: "exploradora",
     titles: {
       es: "Malecon y vistas urbanas: Santo Domingo completo", 
@@ -434,7 +434,7 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     }
   },
   {
-    slug: "santo-domingo-explora-007",
+    slug: "naturaleza-y-monumentos-los-tres-ojos-y-faro-a-colon",
     clusterId: "exploradora",
     titles: {
       es: "Naturaleza y monumentos: Los Tres Ojos y Faro a Colon", 
@@ -495,7 +495,7 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     }
   },
   {
-    slug: "santo-domingo-explora-008",
+    slug: "ruta-panoramica-capital-mar-y-parques-naturales",
     clusterId: "exploradora",
     titles: {
       es: "Ruta panoramica: capital, mar y parques naturales", 
@@ -556,7 +556,7 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     }
   },
   {
-    slug: "santo-domingo-gastro-009",
+    slug: "cultura-y-almuerzo-tipico-en-santo-domingo",
     clusterId: "gastronomica",
     titles: {
       es: "Cultura y almuerzo tipico en Santo Domingo", 
@@ -617,7 +617,7 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     }
   },
   {
-    slug: "santo-domingo-gastro-010",
+    slug: "compras-culturales-en-la-zona-colonial-ambar-y-larimar",
     clusterId: "gastronomica",
     titles: {
       es: "Compras culturales en la Zona Colonial: ambar y larimar", 
@@ -678,7 +678,7 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     }
   },
   {
-    slug: "santo-domingo-gastro-011",
+    slug: "sabores-de-la-capital-historia-y-pausa-gastronomica",
     clusterId: "gastronomica",
     titles: {
       es: "Sabores de la capital: historia y pausa gastronomica", 
@@ -739,7 +739,7 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     }
   },
   {
-    slug: "santo-domingo-gastro-012",
+    slug: "ruta-cultural-con-compras-y-almuerzo-local",
     clusterId: "gastronomica",
     titles: {
       es: "Ruta cultural con compras y almuerzo local", 
@@ -800,7 +800,7 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     }
   },
   {
-    slug: "santo-domingo-logistica-013",
+    slug: "bus-de-lujo-y-guia-oficial-santo-domingo-sin-estres",
     clusterId: "logistica",
     titles: {
       es: "Bus de lujo y guia oficial: Santo Domingo sin estres", 
@@ -861,7 +861,7 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     }
   },
   {
-    slug: "santo-domingo-logistica-014",
+    slug: "horarios-claros-y-salida-garantizada-a-santo-domingo",
     clusterId: "logistica",
     titles: {
       es: "Horarios claros y salida garantizada a Santo Domingo", 
@@ -922,7 +922,7 @@ export const SANTO_DOMINGO_VARIANTS: SantoDomingoVariant[] = [
     }
   },
   {
-    slug: "santo-domingo-logistica-015",
+    slug: "traslado-directo-punta-cana-santo-domingo-con-guia-bilingue",
     clusterId: "logistica",
     titles: {
       es: "Traslado directo Punta Cana - Santo Domingo con guia bilingue", 
