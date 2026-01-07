@@ -508,6 +508,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
       fr: ["Reserver", "Voir disponibilite"]
     }
   }
+  },
   {
     slug: "party-boat-adults-only-011",
     clusterId: "nicho_exclusivo",
