@@ -691,8 +691,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
       en: ["Today spots", "Book now"],
       fr: ["Places aujourd'hui", "Reserver maintenant"]
     }
-  }
-
+  },
   {
     slug: "party-boat-estrella-015",
     clusterId: "seguridad_comparativa",
