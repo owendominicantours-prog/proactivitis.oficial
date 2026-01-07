@@ -4,6 +4,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import { landingPages } from "@/lib/landing";
+import { PARTY_BOAT_VARIANTS } from "@/data/party-boat-variants";
 import CollapsibleSection from "@/components/admin/CollapsibleSection";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import LandingRefreshControl from "@/components/admin/LandingRefreshControl";
@@ -89,11 +90,24 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
     zone: location.zone.name,
     active: location.active
   }));
+  const partyBoatEntries = PARTY_BOAT_VARIANTS.map((variant) => ({
+    slug: `thingtodo/tours/${variant.slug}`,
+    name: variant.titles.es,
+    zone: "Party Boat",
+    active: true
+  }));
   const tourLandingSlugs = landingPages.map((landing) => landing.slug);
   const thingsToDoSlugs = hotelThingsToDoEntries.map((entry) => entry.slug);
   const safetyGuideSlugs = safetyGuideEntries.map((entry) => entry.slug);
+  const partyBoatSlugs = partyBoatEntries.map((entry) => entry.slug);
   const landingSlugs = Array.from(
-    new Set([...transferLandingSlugs, ...tourLandingSlugs, ...thingsToDoSlugs, ...safetyGuideSlugs])
+    new Set([
+      ...transferLandingSlugs,
+      ...tourLandingSlugs,
+      ...thingsToDoSlugs,
+      ...safetyGuideSlugs,
+      ...partyBoatSlugs
+    ])
   );
   const trafficRows = await prisma.landingPageTraffic.findMany({
     where: { slug: { in: landingSlugs } },
@@ -325,6 +339,34 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
               <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
                 <p>{landing.slug}</p>
                 <p>Visitas {trafficMap.get(landing.slug)?.toLocaleString() ?? "0"}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Party Boat landings"
+        description="Variantes SEO del Party Boat con contenidos personalizados."
+        badge={`${partyBoatEntries.length} items`}
+      >
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {partyBoatEntries.map((entry) => (
+            <Link
+              key={entry.slug}
+              href={`https://proactivitis.com/${entry.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-700 transition hover:border-slate-400 hover:shadow-lg"
+            >
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.zone}</p>
+                <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">Party Boat</p>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                <p>{entry.slug}</p>
+                <p>Visitas {trafficMap.get(entry.slug)?.toLocaleString() ?? "0"}</p>
               </div>
             </Link>
           ))}

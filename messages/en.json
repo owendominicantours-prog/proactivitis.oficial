@@ -572,68 +572,68 @@
   "transferQuote.bullets.ac": "Air conditioning and Wi-Fi",
   "transferQuote.bullets.support": "Verified driver and 24/7 support",
   "transferQuote.reserve": "Reserve now",
-  "transferQuote.noRates": "Adjust passengers or date to see available fares."
-,
-  "safetyGuide.meta.title": "Safety Protocols and Transport Guide for Guests of {hotel}"
-  "safetyGuide.meta.description": "Clear information on safety, transport licensing, and best practices for travelers staying at {hotel}."
-  "safetyGuide.hero.label": "Trusted guide"
-  "safetyGuide.hero.title": "Safety Protocols and Transport Guide for Guests of {hotel}"
-  "safetyGuide.hero.body": "This guide summarizes verified practices to move safely in Punta Cana and make informed decisions during your stay at {hotel}."
-  "safetyGuide.hero.cta.tours": "View certified excursions"
-  "safetyGuide.hero.cta.checklist": "View safety checklist"
-  "safetyGuide.hero.urlLabel": "Official URL"
-  "safetyGuide.section.license.title": "Why transport licensing matters"
-  "safetyGuide.section.license.body": "In the Dominican Republic, formal tourism services operate with Ministry of Tourism authorizations and active liability insurance. This documentation protects passengers and helps verify service traceability."
-  "safetyGuide.section.license.bullets.1": "Request the operator license or registration number."
-  "safetyGuide.section.license.bullets.2": "Ask for active insurance policy details and coverage scope."
-  "safetyGuide.section.license.bullets.3": "Confirm the vehicle and driver are properly identified."
-  "safetyGuide.section.checklist.title": "Checklist to avoid common scams"
-  "safetyGuide.section.checklist.bullets.1": "Book only with formal confirmation and payment receipt."
-  "safetyGuide.section.checklist.bullets.2": "Verify the official meeting point and exact schedule."
-  "safetyGuide.section.checklist.bullets.3": "Avoid cash payments without a receipt or contract."
-  "safetyGuide.section.checklist.bullets.4": "Review ratings and available support channels."
-  "safetyGuide.section.operator.title": "How to identify a legal operator"
-  "safetyGuide.section.operator.legal.label": "Legal operator"
-  "safetyGuide.section.operator.legal.bullets.1": "Visible Ministry of Tourism license."
-  "safetyGuide.section.operator.legal.bullets.2": "Active liability insurance."
-  "safetyGuide.section.operator.legal.bullets.3": "Route and schedule confirmed in writing."
-  "safetyGuide.section.operator.legal.bullets.4": "After-sales support and 24/7 assistance."
-  "safetyGuide.section.operator.alert.label": "Warning signs"
-  "safetyGuide.section.operator.alert.bullets.1": "No receipt or contract."
-  "safetyGuide.section.operator.alert.bullets.2": "Cash payments without proof."
-  "safetyGuide.section.operator.alert.bullets.3": "No insurance or coverage details."
-  "safetyGuide.section.operator.alert.bullets.4": "No post-tour support channel."
-  "safetyGuide.section.lost.title": "Lost items: recommended protocol"
-  "safetyGuide.section.lost.steps.1": "Report the loss at hotel reception and request a case number."
-  "safetyGuide.section.lost.steps.2": "Inform the tour provider with date, time, and item description."
-  "safetyGuide.section.lost.steps.3": "Keep vouchers or receipts to speed up verification."
-  "safetyGuide.section.lost.body": "Our Party Boat applies a cabin review protocol after each tour to prevent forgotten items before returning to {hotel}."
-  "safetyGuide.section.cert.title": "Certifications and traceability"
-  "safetyGuide.section.cert.body": "Proactivitis operates with preventive GPS monitoring for passenger safety, route tracking, and schedule compliance. Traceability validates timing and supports any incident."
-  "safetyGuide.section.cert.cards.gps.label": "GPS Active"
-  "safetyGuide.section.cert.cards.gps.body": "Continuous route monitoring"
-  "safetyGuide.section.cert.cards.insurance.label": "Insurance active"
-  "safetyGuide.section.cert.cards.insurance.body": "Liability coverage"
-  "safetyGuide.section.pricing.title": "Price transparency"
-  "safetyGuide.section.pricing.body": "In Punta Cana, prices vary by distance, schedule, vehicle type, and season. To avoid overcharges, compare the following:"
-  "safetyGuide.section.pricing.legal.label": "Registered service"
-  "safetyGuide.section.pricing.legal.bullets.1": "Published rate confirmed in writing."
-  "safetyGuide.section.pricing.legal.bullets.2": "Includes insurance, taxes, and support."
-  "safetyGuide.section.pricing.legal.bullets.3": "Receipt or invoice available."
-  "safetyGuide.section.pricing.informal.label": "Informal service"
-  "safetyGuide.section.pricing.informal.bullets.1": "Variable price without breakdown."
-  "safetyGuide.section.pricing.informal.bullets.2": "No coverage confirmation."
-  "safetyGuide.section.pricing.informal.bullets.3": "No support or guarantee."
-  "safetyGuide.section.pricing.note": "Tip: Always request a detailed breakdown to compare similar services."
-  "safetyGuide.reco.label": "Verified recommendations"
-  "safetyGuide.reco.title": "Services with traceability and support"
-  "safetyGuide.reco.body": "If you prefer a proven option with backing, here are safe alternatives that follow the same monitoring and documentation protocols."
-  "safetyGuide.reco.tours.label": "Recommended excursions"
-  "safetyGuide.reco.tours.badge": "Verified tour"
-  "safetyGuide.reco.tours.priceSuffix": "USD per person"
-  "safetyGuide.reco.tours.cta": "View tour"
-  "safetyGuide.reco.transfers.label": "Recommended transfers"
-  "safetyGuide.reco.transfers.body": "Private pickup with monitoring and support."
-  "safetyGuide.reco.transfers.cta": "View transfer"
-  "safetyGuide.reco.transfers.zoneFallback": "Private transfer"
+  "transferQuote.noRates": "Adjust passengers or date to see available fares.",
+  "safetyGuide.meta.title": "Safety Protocols and Transport Guide for Guests of {hotel}",
+  "safetyGuide.meta.description": "Clear information on safety, transport licensing, and best practices for travelers staying at {hotel}.",
+  "safetyGuide.hero.label": "Trusted guide",
+  "safetyGuide.hero.title": "Safety Protocols and Transport Guide for Guests of {hotel}",
+  "safetyGuide.hero.body": "This guide summarizes verified practices to move safely in Punta Cana and make informed decisions during your stay at {hotel}.",
+  "safetyGuide.hero.cta.tours": "View certified excursions",
+  "safetyGuide.hero.cta.checklist": "View safety checklist",
+  "safetyGuide.hero.urlLabel": "Official URL",
+  "safetyGuide.section.license.title": "Why transport licensing matters",
+  "safetyGuide.section.license.body": "In the Dominican Republic, formal tourism services operate with Ministry of Tourism authorizations and active liability insurance. This documentation protects passengers and helps verify service traceability.",
+  "safetyGuide.section.license.bullets.1": "Request the operator license or registration number.",
+  "safetyGuide.section.license.bullets.2": "Ask for active insurance policy details and coverage scope.",
+  "safetyGuide.section.license.bullets.3": "Confirm the vehicle and driver are properly identified.",
+  "safetyGuide.section.checklist.title": "Checklist to avoid common scams",
+  "safetyGuide.section.checklist.bullets.1": "Book only with formal confirmation and payment receipt.",
+  "safetyGuide.section.checklist.bullets.2": "Verify the official meeting point and exact schedule.",
+  "safetyGuide.section.checklist.bullets.3": "Avoid cash payments without a receipt or contract.",
+  "safetyGuide.section.checklist.bullets.4": "Review ratings and available support channels.",
+  "safetyGuide.section.operator.title": "How to identify a legal operator",
+  "safetyGuide.section.operator.legal.label": "Legal operator",
+  "safetyGuide.section.operator.legal.bullets.1": "Visible Ministry of Tourism license.",
+  "safetyGuide.section.operator.legal.bullets.2": "Active liability insurance.",
+  "safetyGuide.section.operator.legal.bullets.3": "Route and schedule confirmed in writing.",
+  "safetyGuide.section.operator.legal.bullets.4": "After-sales support and 24/7 assistance.",
+  "safetyGuide.section.operator.alert.label": "Warning signs",
+  "safetyGuide.section.operator.alert.bullets.1": "No receipt or contract.",
+  "safetyGuide.section.operator.alert.bullets.2": "Cash payments without proof.",
+  "safetyGuide.section.operator.alert.bullets.3": "No insurance or coverage details.",
+  "safetyGuide.section.operator.alert.bullets.4": "No post-tour support channel.",
+  "safetyGuide.section.lost.title": "Lost items: recommended protocol",
+  "safetyGuide.section.lost.steps.1": "Report the loss at hotel reception and request a case number.",
+  "safetyGuide.section.lost.steps.2": "Inform the tour provider with date, time, and item description.",
+  "safetyGuide.section.lost.steps.3": "Keep vouchers or receipts to speed up verification.",
+  "safetyGuide.section.lost.body": "Our Party Boat applies a cabin review protocol after each tour to prevent forgotten items before returning to {hotel}.",
+  "safetyGuide.section.cert.title": "Certifications and traceability",
+  "safetyGuide.section.cert.body": "Proactivitis operates with preventive GPS monitoring for passenger safety, route tracking, and schedule compliance. Traceability validates timing and supports any incident.",
+  "safetyGuide.section.cert.cards.gps.label": "GPS Active",
+  "safetyGuide.section.cert.cards.gps.body": "Continuous route monitoring",
+  "safetyGuide.section.cert.cards.insurance.label": "Insurance active",
+  "safetyGuide.section.cert.cards.insurance.body": "Liability coverage",
+  "safetyGuide.section.pricing.title": "Price transparency",
+  "safetyGuide.section.pricing.body": "In Punta Cana, prices vary by distance, schedule, vehicle type, and season. To avoid overcharges, compare the following:",
+  "safetyGuide.section.pricing.legal.label": "Registered service",
+  "safetyGuide.section.pricing.legal.bullets.1": "Published rate confirmed in writing.",
+  "safetyGuide.section.pricing.legal.bullets.2": "Includes insurance, taxes, and support.",
+  "safetyGuide.section.pricing.legal.bullets.3": "Receipt or invoice available.",
+  "safetyGuide.section.pricing.informal.label": "Informal service",
+  "safetyGuide.section.pricing.informal.bullets.1": "Variable price without breakdown.",
+  "safetyGuide.section.pricing.informal.bullets.2": "No coverage confirmation.",
+  "safetyGuide.section.pricing.informal.bullets.3": "No support or guarantee.",
+  "safetyGuide.section.pricing.note": "Tip: Always request a detailed breakdown to compare similar services.",
+  "safetyGuide.reco.label": "Verified recommendations",
+  "safetyGuide.reco.title": "Services with traceability and support",
+  "safetyGuide.reco.body": "If you prefer a proven option with backing, here are safe alternatives that follow the same monitoring and documentation protocols.",
+  "safetyGuide.reco.tours.label": "Recommended excursions",
+  "safetyGuide.reco.tours.badge": "Verified tour",
+  "safetyGuide.reco.tours.priceSuffix": "USD per person",
+  "safetyGuide.reco.tours.cta": "View tour",
+  "safetyGuide.reco.transfers.label": "Recommended transfers",
+  "safetyGuide.reco.transfers.body": "Private pickup with monitoring and support.",
+  "safetyGuide.reco.transfers.cta": "View transfer",
+  "safetyGuide.reco.transfers.zoneFallback": "Private transfer",
+  "partyBoat.operatorLabel": "Operated by Proactivitis"
 }
