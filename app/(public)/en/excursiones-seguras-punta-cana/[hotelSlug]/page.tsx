@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { translate, es } from "@/lib/translations";
+import { translate, en } from "@/lib/translations";
 import HotelSafetyGuidePage from "@/components/public/HotelSafetyGuidePage";
 import {
   SAFETY_GUIDE_SLUG_SUFFIX,
@@ -32,12 +32,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   });
 
   if (!hotel) {
-    return { title: "Guia de seguridad no disponible" };
+    return { title: "Safety guide not available" };
   }
 
-  const title = translate(es, "safetyGuide.meta.title", { hotel: hotel.name });
-  const description = translate(es, "safetyGuide.meta.description", { hotel: hotel.name });
-  const canonical = buildSafetyGuideUrl(es, baseSlug);
+  const title = translate(en, "safetyGuide.meta.title", { hotel: hotel.name });
+  const description = translate(en, "safetyGuide.meta.description", { hotel: hotel.name });
+  const canonical = buildSafetyGuideUrl(en, baseSlug);
 
   return {
     title,
@@ -82,5 +82,5 @@ export default async function SafetyGuidePage({ params }: Params) {
     })
   ]);
 
-  return <HotelSafetyGuidePage locale={es} hotel={hotel} tours={tours} transferHotels={transferHotels} />;
+  return <HotelSafetyGuidePage locale={en} hotel={hotel} tours={tours} transferHotels={transferHotels} />;
 }
