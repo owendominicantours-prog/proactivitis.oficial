@@ -507,7 +507,6 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
       en: ["Book now", "Check availability"],
       fr: ["Reserver", "Voir disponibilite"]
     }
-  }
   },
   {
     slug: "party-boat-adults-only-011",
