@@ -1185,6 +1185,27 @@ export const transferLandings: TransferLandingData[] = [
     keywords: ["PUJ Bahia Principe Grand Punta Cana transfer", "Bahia Principe Grand Punta Cana transfer privado", "transfer Bahia Principe Grand Punta Cana"],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-bahia-principe-grand-punta-cana"
   }
+  ,
+  {
+    landingSlug: "punta-cana-international-airport-to-dreams-flora",
+    reverseSlug: "dreams-flora-to-punta-cana-international-airport",
+    hotelSlug: "dreams-flora",
+    hotelName: "Dreams Flora",
+    heroTitle: "Punta Cana International Airport (PUJ) → Dreams Flora",
+    heroSubtitle: "Traslado privado con chofer bilingüe, Wi-Fi y asistencia personalizada hasta Dreams Flora.",
+    heroTagline: "Servicio premium sin esperas ni filas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Transporte premium hacia Dreams Flora",
+    priceFrom: 45,
+    priceDetails: ["Confirmación instantánea con chofer asignado", "60 minutos de espera gratuita en PUJ", "Wi-Fi y agua embotellada durante el trayecto"],
+    longCopy: buildLongCopy("Dreams Flora"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingüe | Wi-Fi a bordo", "Cancelación flexible 24h"],
+    faq: buildFaq("Dreams Flora"),
+    seoTitle: "Transfer privado PUJ a Dreams Flora | Proactivitis",
+    metaDescription: "Traslado sin esperas desde Punta Cana International Airport (PUJ) hasta Dreams Flora con confirmación inmediata, Wi-Fi y chofer bilingüe.",
+    keywords: ["PUJ Dreams Flora transfer", "Dreams Flora transfer privado", "transfer Dreams Flora"],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-dreams-flora"
+  }
 ];
 
 export const findLandingBySlug = (slug: string) => transferLandings.find((landing) => landing.landingSlug === slug);
