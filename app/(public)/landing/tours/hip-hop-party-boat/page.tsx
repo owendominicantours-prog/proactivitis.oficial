@@ -7,6 +7,7 @@ import StructuredData from "@/components/schema/StructuredData";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL, SAME_AS_URLS, getPriceValidUntil } from "@/lib/seo";
 import CountdownUrgency from "@/components/landing/CountdownUrgency";
+import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 
 const TOUR_SLUG = "sunset-catamaran-snorkel";
 const LANDING_SLUG = "hip-hop-party-boat";
@@ -171,6 +172,7 @@ export default async function HipHopLandingPage() {
 
   return (
     <div className="min-h-screen bg-[#f5f6fb] text-slate-900">
+      <LandingViewTracker landingSlug={LANDING_SLUG} />
       <StructuredData data={schema} />
       <section className="relative overflow-hidden bg-[#f5f6fb]">
         <div className="absolute inset-0">

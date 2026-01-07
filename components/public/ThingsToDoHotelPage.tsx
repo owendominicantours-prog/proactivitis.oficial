@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import FeaturedToursSection from "@/components/public/FeaturedToursSection";
 import StructuredData from "@/components/schema/StructuredData";
+import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 import { Locale, translate } from "@/lib/translations";
 
 const BASE_URL = "https://proactivitis.com";
@@ -90,6 +91,7 @@ export async function ThingsToDoHotelPage({
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-12 px-4 py-12">
+      <LandingViewTracker landingSlug={`things-to-do/${hotel.slug}`} />
       <StructuredData data={schema} />
       <section className="rounded-3xl border border-slate-200 bg-white p-10 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">{t("thingsToDo.eyebrow")}</p>

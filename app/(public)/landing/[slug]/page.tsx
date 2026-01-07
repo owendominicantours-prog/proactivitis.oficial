@@ -1,4 +1,5 @@
 import { landingPages } from "@/lib/landing";
+import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 
 type Params = {
   params: Promise<{ slug: string }>;
@@ -22,6 +23,7 @@ export default async function LandingPage({ params }: Params) {
 
   return (
     <div className="bg-slate-50 py-12">
+      <LandingViewTracker landingSlug={landing.slug} />
       <div className="mx-auto max-w-6xl space-y-6 rounded-[36px] bg-white p-8 shadow-card">
         <p className="text-xs uppercase tracking-[0.4em] text-slate-400">White Label</p>
         <h1 className="text-4xl font-bold text-slate-900">{landing.title}</h1>
