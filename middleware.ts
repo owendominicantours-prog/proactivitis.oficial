@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "next-auth/middleware";
 
 const roleRoutes = [
@@ -23,7 +23,19 @@ function matchAllowed(pathname: string, role?: string) {
 }
 
 export default withAuth(
-  () => {},
+  (req) => {
+    const { pathname } = req.nextUrl;
+    const transferPrefix = "/transfer/punta-cana-international-airport-to-";
+    if (pathname.startsWith(transferPrefix)) {
+      const targetPath = pathname.replace(
+        transferPrefix,
+        "/transfer/punta-cana-international-airport-puj-to-"
+      );
+      const url = req.nextUrl.clone();
+      url.pathname = targetPath;
+      return NextResponse.redirect(url, 301);
+    }
+  },
   {
     callbacks: {
       authorized({ token, req }) {
@@ -35,6 +47,7 @@ export default withAuth(
 
 export const config = {
   matcher: [
+    "/transfer/:path*",
     "/admin/:path*",
     "/supplier/:path*",
     "/agency/:path*",
