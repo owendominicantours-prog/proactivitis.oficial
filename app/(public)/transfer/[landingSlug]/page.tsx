@@ -82,15 +82,35 @@ const buildFallbackLanding = ({
 const resolveLanding = async (landingSlug: string): Promise<TransferLandingData | null> => {
   const manual = allLandings().find((landing) => landing.landingSlug === landingSlug);
   if (manual) return manual;
+
   const dynamic = await findDynamicLandingBySlug(landingSlug);
-  if (!dynamic) {
+  if (dynamic) {
+    return buildFallbackLanding({
+      originName: dynamic.origin.name,
+      originSlug: dynamic.origin.slug,
+      destinationName: dynamic.destination.name,
+      destinationSlug: dynamic.destination.slug
+    });
+  }
+
+  if (!landingSlug.includes("-to-")) {
     return null;
   }
+
+  const [originSlug, destinationSlug] = landingSlug.split("-to-");
+  const [origin, destination] = await Promise.all([
+    prisma.transferLocation.findUnique({ where: { slug: originSlug } }),
+    prisma.transferLocation.findUnique({ where: { slug: destinationSlug } })
+  ]);
+  if (!origin || !destination) {
+    return null;
+  }
+
   return buildFallbackLanding({
-    originName: dynamic.origin.name,
-    originSlug: dynamic.origin.slug,
-    destinationName: dynamic.destination.name,
-    destinationSlug: dynamic.destination.slug
+    originName: origin.name,
+    originSlug: origin.slug,
+    destinationName: destination.name,
+    destinationSlug: destination.slug
   });
 };
  
