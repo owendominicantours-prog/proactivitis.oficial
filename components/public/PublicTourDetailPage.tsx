@@ -443,7 +443,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       "@type": "ListItem",
       position: index + 1,
       item: {
-        "@type": "ListItem",
+        "@type": "TouristAttraction",
         name: stop.title,
         description: stop.description ?? stop.title
       }
@@ -470,10 +470,14 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     url: tourUrl,
     provider: PROACTIVITIS_LOCALBUSINESS,
     touristType: touristTypeFallback ?? "Adventure",
-    itinerary: {
-      "@type": "ItemList",
-      itemListElement: itineraryList
-    },
+    ...(itineraryList.length
+      ? {
+          itinerary: {
+            "@type": "ItemList",
+            itemListElement: itineraryList
+          }
+        }
+      : {}),
     offers: {
       "@type": "Offer",
       url: tourUrl,
