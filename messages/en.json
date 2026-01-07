@@ -515,4 +515,17 @@
   "transfer.search.vehicle.bus.feature.wifi": "Onboard Wi-Fi",
   "transfer.search.vehicle.bus.feature.soundSystem": "Sound system",
   "transfer.search.vehicle.bus.feature.recliningSeats": "Reclining seats"
+,
+  "notFound.eyebrow": "Oops",
+  "notFound.title": "We could not find that page",
+  "notFound.body": "But here are tours and transfers ready to book.",
+  "notFound.search.label": "Search tours",
+  "notFound.search.placeholder": "Ex. Punta Cana, Saona, adventure",
+  "notFound.search.cta": "Search",
+  "notFound.tours.eyebrow": "Tours",
+  "notFound.tours.title": "Recommended experiences",
+  "notFound.transfers.eyebrow": "Transfers",
+  "notFound.transfers.title": "Featured private transfers",
+  "notFound.transfers.cardTag": "Private transfer",
+  "notFound.transfers.cardCta": "View transfer"
 }

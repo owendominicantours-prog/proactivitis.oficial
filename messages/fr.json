@@ -1028,7 +1028,17 @@
 
   "transfer.button.primary": "Réserver un transfert"
 
+,
+  "notFound.eyebrow": "Oups",
+  "notFound.title": "Page introuvable",
+  "notFound.body": "Mais voici des tours et transferts disponibles.",
+  "notFound.search.label": "Rechercher des tours",
+  "notFound.search.placeholder": "Ex. Punta Cana, Saona, aventure",
+  "notFound.search.cta": "Rechercher",
+  "notFound.tours.eyebrow": "Tours",
+  "notFound.tours.title": "Experiences recommandees",
+  "notFound.transfers.eyebrow": "Transferts",
+  "notFound.transfers.title": "Transferts prives recommandes",
+  "notFound.transfers.cardTag": "Transfert prive",
+  "notFound.transfers.cardCta": "Voir le transfert"
 }
-
-
-

@@ -519,4 +519,17 @@
   "contact.form.status.success": "Gracias, recibimos tu mensaje y te respondemos en breve.",
   "contact.form.status.error.generic": "No se pudo enviar la solicitud, inténtalo nuevamente.",
   "contact.form.submit": "Enviar consulta"
+,
+  "notFound.eyebrow": "Ups",
+  "notFound.title": "No encontramos tu pagina",
+  "notFound.body": "Pero te ofrecemos experiencias y traslados listos para reservar.",
+  "notFound.search.label": "Buscar tours",
+  "notFound.search.placeholder": "Ej. Punta Cana, Saona, aventura",
+  "notFound.search.cta": "Buscar",
+  "notFound.tours.eyebrow": "Tours",
+  "notFound.tours.title": "Experiencias recomendadas",
+  "notFound.transfers.eyebrow": "Transfers",
+  "notFound.transfers.title": "Traslados privados destacados",
+  "notFound.transfers.cardTag": "Traslado privado",
+  "notFound.transfers.cardCta": "Ver traslado"
 }
