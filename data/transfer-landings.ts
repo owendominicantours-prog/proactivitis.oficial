@@ -1206,6 +1206,27 @@ export const transferLandings: TransferLandingData[] = [
     keywords: ["PUJ Dreams Flora transfer", "Dreams Flora transfer privado", "transfer Dreams Flora"],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-dreams-flora"
   }
+  ,
+  {
+    landingSlug: "punta-cana-international-airport-puj-to-bahia-principe-luxury-esmeralda",
+    reverseSlug: "bahia-principe-luxury-esmeralda-to-punta-cana-international-airport-puj",
+    hotelSlug: "bahia-principe-luxury-esmeralda",
+    hotelName: "Bahia Principe Luxury Esmeralda",
+    heroTitle: "Punta Cana International Airport (PUJ) → Bahia Principe Luxury Esmeralda",
+    heroSubtitle: "Traslado privado con chofer bilingüe, Wi-Fi y asistencia personalizada hasta Bahia Principe Luxury Esmeralda.",
+    heroTagline: "Servicio premium sin esperas ni filas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Transporte premium hacia Bahia Principe Luxury Esmeralda",
+    priceFrom: 45,
+    priceDetails: ["Confirmación instantánea con chofer asignado", "60 minutos de espera gratuita en PUJ", "Wi-Fi y agua embotellada durante el trayecto"],
+    longCopy: buildLongCopy("Bahia Principe Luxury Esmeralda"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingüe | Wi-Fi a bordo", "Cancelación flexible 24h"],
+    faq: buildFaq("Bahia Principe Luxury Esmeralda"),
+    seoTitle: "Transfer privado PUJ a Bahia Principe Luxury Esmeralda | Proactivitis",
+    metaDescription: "Traslado sin esperas desde Punta Cana International Airport (PUJ) hasta Bahia Principe Luxury Esmeralda con confirmación inmediata, Wi-Fi y chofer bilingüe.",
+    keywords: ["PUJ Bahia Principe Luxury Esmeralda transfer", "Bahia Principe Luxury Esmeralda transfer privado", "transfer Bahia Principe Luxury Esmeralda"],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-puj-to-bahia-principe-luxury-esmeralda"
+  }
 ];
 
 export const findLandingBySlug = (slug: string) => transferLandings.find((landing) => landing.landingSlug === slug);
