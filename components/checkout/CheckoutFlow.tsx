@@ -202,19 +202,12 @@ const formatCountdown = (ms: number) => {
 
 
 const phoneCountries = [
-
-  { code: "DO", label: "República Dominicana", dial: "+1", flag: "????" },
-
-  { code: "US", label: "Estados Unidos", dial: "+1", flag: "????" },
-
-  { code: "MX", label: "México", dial: "+52", flag: "????" },
-
-  { code: "CO", label: "Colombia", dial: "+57", flag: "????" },
-
-  { code: "ES", label: "España", dial: "+34", flag: "????" },
-
-  { code: "AR", label: "Argentina", dial: "+54", flag: "????" }
-
+  { code: "DO", label: "Republica Dominicana", dial: "+1" },
+  { code: "US", label: "Estados Unidos", dial: "+1" },
+  { code: "MX", label: "Mexico", dial: "+52" },
+  { code: "CO", label: "Colombia", dial: "+57" },
+  { code: "ES", label: "Espana", dial: "+34" },
+  { code: "AR", label: "Argentina", dial: "+54" }
 ];
 
 
@@ -1216,7 +1209,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                           <option key={country.code} value={country.code}>
 
-                            {country.flag} {country.code} {country.dial}
+                            {country.code} {country.dial}
 
                           </option>
 
