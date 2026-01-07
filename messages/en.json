@@ -528,4 +528,18 @@
   "notFound.transfers.title": "Featured private transfers",
   "notFound.transfers.cardTag": "Private transfer",
   "notFound.transfers.cardCta": "View transfer"
+,
+  "thingsToDo.eyebrow": "Things to do in",
+  "thingsToDo.title": "{hotel}",
+  "thingsToDo.subtitle": "Proactivitis recommends {hotel} and nearby experiences. Book tours and transfers with instant confirmation.",
+  "thingsToDo.cta.tours": "View tours",
+  "thingsToDo.cta.transfers": "View transfers",
+  "thingsToDo.tours.eyebrow": "Tours",
+  "thingsToDo.tours.title": "Recommended excursions",
+  "thingsToDo.transfers.eyebrow": "Transfers",
+  "thingsToDo.transfers.title": "Recommended private transfers",
+  "thingsToDo.transfers.cardTag": "Private transfer",
+  "thingsToDo.transfers.cardCta": "View transfer",
+  "thingsToDo.transfers.fallback": "Private transfer available from the airport.",
+  "thingsToDo.schema.description": "Things to do in {hotel}: tours and transfers recommended by Proactivitis."
 }

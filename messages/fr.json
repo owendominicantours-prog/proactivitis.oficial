@@ -1041,4 +1041,18 @@
   "notFound.transfers.title": "Transferts prives recommandes",
   "notFound.transfers.cardTag": "Transfert prive",
   "notFound.transfers.cardCta": "Voir le transfert"
+,
+  "thingsToDo.eyebrow": "Things to do in",
+  "thingsToDo.title": "{hotel}",
+  "thingsToDo.subtitle": "Proactivitis recommande {hotel} et des experiences a proximite. Reservez des tours et transferts avec confirmation immediate.",
+  "thingsToDo.cta.tours": "Voir les tours",
+  "thingsToDo.cta.transfers": "Voir les transferts",
+  "thingsToDo.tours.eyebrow": "Tours",
+  "thingsToDo.tours.title": "Excursions recommandees",
+  "thingsToDo.transfers.eyebrow": "Transferts",
+  "thingsToDo.transfers.title": "Transferts prives recommandes",
+  "thingsToDo.transfers.cardTag": "Transfert prive",
+  "thingsToDo.transfers.cardCta": "Voir le transfert",
+  "thingsToDo.transfers.fallback": "Transfert prive disponible depuis l aeroport.",
+  "thingsToDo.schema.description": "Things to do in {hotel}: tours et transferts recommandes par Proactivitis."
 }
