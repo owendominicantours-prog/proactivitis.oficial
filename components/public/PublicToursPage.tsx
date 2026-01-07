@@ -23,19 +23,101 @@ const parseDurationMeta = (value?: string | null) => {
   return null;
 };
 
-const formatDurationLabel = (value?: string | null) => {
-  const meta = parseDurationMeta(value);
-  if (meta) return `${meta.value} ${meta.unit}`;
-  if (value && value.trim()) return value.trim();
-  return "Duración por confirmar";
+type CanonicalDurationUnit = "minute" | "hour" | "day" | "week" | "month";
+
+const DURATION_UNIT_SYNONYMS = new Map<string, CanonicalDurationUnit>([
+  ["min", "minute"],
+  ["mins", "minute"],
+  ["minute", "minute"],
+  ["minutes", "minute"],
+  ["minuto", "minute"],
+  ["minutos", "minute"],
+  ["heure", "hour"],
+  ["heures", "hour"],
+  ["hour", "hour"],
+  ["hours", "hour"],
+  ["hora", "hour"],
+  ["horas", "hour"],
+  ["jour", "day"],
+  ["jours", "day"],
+  ["day", "day"],
+  ["days", "day"],
+  ["dia", "day"],
+  ["d\u00eda", "day"],
+  ["dias", "day"],
+  ["d\u00edas", "day"],
+  ["week", "week"],
+  ["weeks", "week"],
+  ["semana", "week"],
+  ["semanas", "week"],
+  ["month", "month"],
+  ["months", "month"],
+  ["mes", "month"],
+  ["meses", "month"]
+]);
+
+const DURATION_UNIT_LABELS: Record<Locale, Record<CanonicalDurationUnit, string>> = {
+  es: {
+    minute: "minutos",
+    hour: "horas",
+    day: "d\u00edas",
+    week: "semanas",
+    month: "meses"
+  },
+  en: {
+    minute: "minutes",
+    hour: "hours",
+    day: "days",
+    week: "weeks",
+    month: "months"
+  },
+  fr: {
+    minute: "minutes",
+    hour: "heures",
+    day: "jours",
+    week: "semaines",
+    month: "mois"
+  }
 };
 
-const buildDurationOptions = (values: (string | null)[]): DurationOption[] => {
+const normalizeDurationUnit = (unit: string, locale: Locale) => {
+  const key = DURATION_UNIT_SYNONYMS.get(unit.trim().toLowerCase());
+  if (!key) return unit.trim();
+  return DURATION_UNIT_LABELS[locale][key] ?? unit.trim();
+};
+
+const formatDurationLabel = (
+  value: string | null | undefined,
+  locale: Locale,
+  t: (key: TranslationKey) => string
+) => {
+  const meta = parseDurationMeta(value);
+  if (meta) {
+    const unit = normalizeDurationUnit(meta.unit, locale);
+    return `${meta.value} ${unit}`;
+  }
+  if (value && value.trim()) {
+    const trimmed = value.trim();
+    const match = trimmed.match(/^(\d+(?:[.,]\d+)?)\s*(\D+)$/);
+    if (match) {
+      const unit = normalizeDurationUnit(match[2], locale);
+      return `${match[1]} ${unit}`;
+    }
+    return normalizeDurationUnit(trimmed, locale);
+  }
+  return t("tour.card.duration.placeholder");
+};
+
+const buildDurationOptions = (
+  values: (string | null)[],
+  locale: Locale,
+  t: (key: TranslationKey) => string
+): DurationOption[] => {
   const map = new Map<string, string>();
   for (const value of values) {
     if (!value) continue;
     if (!map.has(value)) {
-      map.set(value, formatDurationLabel(value));
+      map.set(value, formatDurationLabel(value, locale, t));
     }
   }
   return Array.from(map.entries()).map(([value, label]) => ({ value, label }));
@@ -132,10 +214,10 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   }
 
   const uniqueLanguages = Array.from(new Set(languagesRaw.map((entry) => entry.language).filter(Boolean)));
-  const durationOptions = buildDurationOptions(durationsRaw.map((entry) => entry.duration));
-  const durationLabelLookup = new Map(durationOptions.map((option) => [option.value, option.label]));
   const t = (key: TranslationKey, replacements?: Parameters<typeof translate>[2]) =>
     translate(locale, key, replacements);
+  const durationOptions = buildDurationOptions(durationsRaw.map((entry) => entry.duration), locale, t);
+  const durationLabelLookup = new Map(durationOptions.map((option) => [option.value, option.label]));
 
   const where = {
     ...buildTourFilter(params),
@@ -295,7 +377,9 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                             ${tour.price.toFixed(0)}
                           </span>
                         </span>
-                        <span className="text-xs text-slate-500">{formatDurationLabel(tour.duration)}</span>
+                        <span className="text-xs text-slate-500">
+                          {formatDurationLabel(tour.duration, locale, t)}
+                        </span>
                       </div>
                       <p className="text-xs text-slate-500">
                         {languagesLabel}: {languageValue}
