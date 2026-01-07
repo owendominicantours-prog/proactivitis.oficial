@@ -1055,4 +1055,7 @@
   "thingsToDo.transfers.cardCta": "Voir le transfert",
   "thingsToDo.transfers.fallback": "Transfert prive disponible depuis l aeroport.",
   "thingsToDo.schema.description": "Things to do in {hotel}: tours et transferts recommandes par Proactivitis."
+,
+  "thingsToDo.meta.title": "Things to do in {hotel} | Tours et transferts Proactivitis",
+  "thingsToDo.meta.description": "Proactivitis recommande {hotel} et des experiences a proximite. Reservez des tours et transferts avec confirmation immediate."
 }

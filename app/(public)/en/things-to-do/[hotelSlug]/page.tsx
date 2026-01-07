@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { es } from "@/lib/translations";
+import { en } from "@/lib/translations";
 import { buildThingsToDoMetadata, ThingsToDoHotelPage } from "@/components/public/ThingsToDoHotelPage";
 
 type Props = {
@@ -8,13 +8,13 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { hotelSlug } = await params;
-  return buildThingsToDoMetadata(hotelSlug, es);
+  return buildThingsToDoMetadata(hotelSlug, en);
 }
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function SpanishThingsToDoHotelPage({ params }: Props) {
+export default async function EnglishThingsToDoHotelPage({ params }: Props) {
   const { hotelSlug } = await params;
-  return ThingsToDoHotelPage({ hotelSlug, locale: es });
+  return ThingsToDoHotelPage({ hotelSlug, locale: en });
 }
