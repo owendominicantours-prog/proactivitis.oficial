@@ -4,6 +4,7 @@
  import Image from "next/image";
  import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { TransferLocationType } from "@prisma/client";
 import { allLandings } from "@/data/transfer-landings";
 import type { TransferLandingData } from "@/data/transfer-landings";
 import TransferQuoteCards from "@/components/transfers/TransferQuoteCards";
@@ -102,13 +103,25 @@ const resolveLanding = async (landingSlug: string): Promise<TransferLandingData 
     prisma.transferLocation.findUnique({ where: { slug: originSlug } }),
     prisma.transferLocation.findUnique({ where: { slug: destinationSlug } })
   ]);
-  if (!origin || !destination) {
+  const resolvedOrigin =
+    origin ??
+    (await prisma.transferLocation.findFirst({
+      where: {
+        type: TransferLocationType.AIRPORT,
+        OR: [
+          { slug: { contains: originSlug } },
+          { slug: { contains: "punta-cana-international-airport" } },
+          { slug: { contains: "punta-cana" } }
+        ]
+      }
+    }));
+  if (!resolvedOrigin || !destination) {
     return null;
   }
 
   return buildFallbackLanding({
-    originName: origin.name,
-    originSlug: origin.slug,
+    originName: resolvedOrigin.name,
+    originSlug: resolvedOrigin.slug,
     destinationName: destination.name,
     destinationSlug: destination.slug
   });
