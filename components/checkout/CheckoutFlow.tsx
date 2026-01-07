@@ -82,7 +82,6 @@ type ContactState = {
   firstName: string;
   lastName: string;
   email: string;
-  confirmEmail: string;
   phone: string;
 };
 
@@ -468,12 +467,6 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
         key: "email",
         type: "email",
         placeholder: t("checkout.contact.fields.email.placeholder")
-      },
-      {
-        label: t("checkout.contact.fields.confirmEmail.label"),
-        key: "confirmEmail",
-        type: "email",
-        placeholder: t("checkout.contact.fields.confirmEmail.placeholder")
       }
     ];
   }, [t]);
@@ -498,8 +491,6 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
     lastName: "",
 
     email: "",
-
-    confirmEmail: "",
 
     phone: ""
 
@@ -982,14 +973,6 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
       if (!contact.lastName.trim()) nextErrors.lastName = t("checkout.validation.lastNameRequired");
 
       if (!contact.email.trim()) nextErrors.email = t("checkout.validation.emailRequired");
-
-      if (!contact.confirmEmail.trim()) nextErrors.confirmEmail = t("checkout.validation.confirmEmailRequired");
-
-      if (contact.email && contact.confirmEmail && contact.email !== contact.confirmEmail) {
-
-        nextErrors.confirmEmail = t("checkout.validation.emailsMustMatch");
-
-      }
 
       if (!contact.phone.trim()) nextErrors.phone = t("checkout.validation.phoneRequired");
 
