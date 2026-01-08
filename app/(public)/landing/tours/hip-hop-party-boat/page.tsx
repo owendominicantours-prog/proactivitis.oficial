@@ -297,7 +297,7 @@ export default async function HipHopLandingPage() {
         <div className="space-y-10">
           <section id="overview" className="space-y-4">
             <div className="space-y-4 rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Overview</p>
+              <h2 className="text-xs uppercase tracking-[0.4em] text-slate-500">Overview</h2>
               <p className="text-lg text-slate-800">
                 Hip Hop Party Boat es la mejor forma de vivir Punta Cana: musica en vivo, barra libre premium, snorkel y
                 sunset party con fotos epicas.
@@ -319,7 +319,7 @@ export default async function HipHopLandingPage() {
 
           <section id="itinerary" className="space-y-4">
             <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Itinerario express</p>
+              <h2 className="text-xs uppercase tracking-[0.4em] text-slate-500">Itinerario express</h2>
               <ul className="mt-4 space-y-3 text-sm text-slate-600">
                 {itinerary.map((line) => (
                   <li key={line} className="rounded-[12px] border border-slate-100 bg-[#f8f9fb] p-4">
@@ -332,7 +332,7 @@ export default async function HipHopLandingPage() {
 
           <section id="faq" className="space-y-4">
             <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">FAQs</p>
+              <h2 className="text-xs uppercase tracking-[0.4em] text-slate-500">FAQs</h2>
               <div className="mt-4 space-y-4 text-sm text-slate-600">
                 {faqs.map((faq) => (
                   <article key={faq} className="rounded-[12px] border border-slate-100 bg-[#f8f9fb] p-4">

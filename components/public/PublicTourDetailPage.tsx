@@ -770,6 +770,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                 </p>
                 <h2 className="text-[20px] font-semibold text-slate-900">
                   {translate(locale, "tour.section.coverage.heading")}
+                  <span className="sr-only"> {localizedTitle}</span>
                 </h2>
               </div>
               <p className="text-xs text-slate-500">{translate(locale, "tour.section.coverage.note")}</p>
@@ -816,6 +817,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                 </p>
                 <h2 className="text-[20px] font-semibold text-slate-900">
                   {translate(locale, "tour.section.itinerary.heading")}
+                  <span className="sr-only"> {localizedTitle}</span>
                 </h2>
               </div>
             </div>
@@ -850,6 +852,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                 </p>
                 <h2 className="text-[20px] font-semibold text-slate-900">
                   {translate(locale, "tour.section.reviews.heading")}
+                  <span className="sr-only"> {localizedTitle}</span>
                 </h2>
               </div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{reviewSummary}</p>
@@ -907,6 +910,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
               </p>
               <h2 className="text-[20px] font-semibold text-slate-900">
                 {translate(locale, "tour.section.faq.heading")}
+                <span className="sr-only"> {localizedTitle}</span>
               </h2>
             </div>
             <div className="space-y-4 text-sm text-slate-700">
