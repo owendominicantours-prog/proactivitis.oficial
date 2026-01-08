@@ -7,7 +7,11 @@ type HomeHeroCarouselProps = {
   intervalMs?: number;
 };
 
-const HERO_IMAGES = ["/CARRU1.jpg", "/CARRU2.jpg", "/CARR3.png"];
+const HERO_IMAGES = [
+  "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/Carrusel/CARRU1.jpg",
+  "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/Carrusel/CARRU2.jpg",
+  "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/Carrusel/CARR3.png"
+];
 
 export function HomeHeroCarousel({ children, intervalMs = 4500 }: HomeHeroCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
