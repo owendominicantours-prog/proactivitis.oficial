@@ -3,6 +3,7 @@ import FeaturedToursSection from "@/components/public/FeaturedToursSection";
 import { HomeAboutContent } from "@/components/public/HomeAboutContent";
 import { HomeBenefitsContent } from "@/components/public/HomeBenefitsContent";
 import { HomeHeroContent } from "@/components/public/HomeHeroContent";
+import { HomeHeroCarousel } from "@/components/public/HomeHeroCarousel";
 import { HomeRecommendedHeader } from "@/components/public/HomeRecommendedHeader";
 import { Locale, translate } from "@/lib/translations";
 
@@ -80,22 +81,9 @@ export default function PublicHomePage({ locale }: PublicHomePageProps) {
 
   return (
     <div className="space-y-16 bg-[#F8FAFC] text-slate-900 overflow-x-hidden">
-      <section
-        className="relative overflow-hidden"
-        style={{
-          backgroundImage:
-            "linear-gradient(90deg, rgba(4, 21, 45, 0.85), rgba(4, 21, 45, 0.35)), url('/mejorbanner.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center"
-        }}
-      >
-        <div className="h-[420px] w-full" />
-        <div className="absolute inset-0 flex items-center justify-center px-6 md:px-0">
-          <div className="max-w-4xl">
-            <HomeHeroContent locale={locale} />
-          </div>
-        </div>
-      </section>
+      <HomeHeroCarousel>
+        <HomeHeroContent locale={locale} />
+      </HomeHeroCarousel>
 
       <section className="mx-auto max-w-6xl space-y-6 px-4 sm:px-6">
         <HomeBenefitsContent locale={locale} />
