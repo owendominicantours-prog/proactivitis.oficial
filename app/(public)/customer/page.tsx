@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { updateCustomerPaymentAction } from "@/app/customer/profile/actions";
+import CustomerPaymentMethod from "@/components/customer/CustomerPaymentMethod";
 
 export default async function CustomerPortal() {
   const session = await getServerSession(authOptions);
@@ -137,35 +137,7 @@ export default async function CustomerPortal() {
 
           <div className="space-y-6">
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Metodo de pago</p>
-              {payment ? (
-                <p className="mt-2 text-sm text-slate-700">
-                  Metodo guardado: {payment.brand ?? "Desconocido"} ? **** {payment.last4 ?? "0000"}
-                </p>
-              ) : (
-                <p className="mt-2 text-sm text-slate-600">Aun no has guardado un metodo de pago.</p>
-              )}
-              <form action={updateCustomerPaymentAction} method="post" className="mt-4 space-y-3 text-sm text-slate-600">
-                <input
-                  name="method"
-                  placeholder="Tarjeta"
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
-                />
-                <input
-                  name="brand"
-                  placeholder="Visa"
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
-                />
-                <input
-                  name="last4"
-                  placeholder="1234"
-                  maxLength={4}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
-                />
-                <button type="submit" className="w-full rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white">
-                  Guardar metodo
-                </button>
-              </form>
+              <CustomerPaymentMethod initialPayment={payment} />
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

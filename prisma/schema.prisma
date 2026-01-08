@@ -638,13 +638,16 @@ model User {
 }
 
 model CustomerPayment {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  method    String?
-  brand     String?
-  last4     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  method                String?
+  brand                 String?
+  last4                 String?
+  stripeCustomerId       String?  @map("stripe_customer_id")
+  stripePaymentMethodId  String?  @map("stripe_payment_method_id")
+  stripeSetupIntentId    String?  @map("stripe_setup_intent_id")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   User User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

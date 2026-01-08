@@ -264,6 +264,9 @@ export async function POST(request: NextRequest) {
   });
 
   const stripeClient = getStripe();
+  const customerPayment = await prisma.customerPayment.findUnique({
+    where: { userId }
+  });
   const currency = (process.env.STRIPE_CURRENCY ?? "usd").toLowerCase();
   const platformSharePercent = Math.min(Math.max(tour.platformSharePercent ?? 20, 20), 50);
   const centsAmount = Math.round(totalAmount * 100);
@@ -275,6 +278,8 @@ export async function POST(request: NextRequest) {
     amount: centsAmount,
     currency,
     description: summary,
+    customer: customerPayment?.stripeCustomerId ?? undefined,
+    setup_future_usage: customerPayment?.stripeCustomerId ? "off_session" : undefined,
     metadata: {
       phoneCountry: payload.phoneCountry ?? "unknown",
       bookingId: booking.id,

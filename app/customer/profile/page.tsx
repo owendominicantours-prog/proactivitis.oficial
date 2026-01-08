@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { updateCustomerPaymentAction } from "./actions";
+import CustomerPaymentMethod from "@/components/customer/CustomerPaymentMethod";
 
 export default async function CustomerProfilePage() {
   const session = await getServerSession(authOptions);
@@ -87,45 +87,7 @@ export default async function CustomerProfilePage() {
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-slate-900">Método de pago seguro</h2>
-          </div>
-          {payment ? (
-            <div className="space-y-2 text-sm text-slate-600">
-              <p>
-                <span className="font-semibold text-slate-900">Último método:</span> {payment.brand ?? "Desconocido"} •
-                **** {payment.last4 ?? "0000"}
-              </p>
-              <p className="text-xs text-slate-500">
-                Guardamos solo los últimos 4 dígitos para confirmar devoluciones manuales. Nunca almacenamos el número completo.
-              </p>
-            </div>
-          ) : (
-            <p className="text-sm text-slate-600">Aún no has guardado un método de pago.</p>
-          )}
-          <form action={updateCustomerPaymentAction} method="post" className="space-y-3 text-sm text-slate-600">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Método</label>
-              <input name="method" placeholder="Tarjeta" className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Banco / marca</label>
-              <input name="brand" placeholder="Visa" className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Últimos 4 dígitos</label>
-              <input
-                name="last4"
-                placeholder="1234"
-                maxLength={4}
-                className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
-              />
-            </div>
-            <p className="text-xs text-slate-400">Solo guardamos los últimos 4 dígitos, no te pedirá el número nuevamente.</p>
-            <button type="submit" className="w-full rounded-full bg-sky-600 px-6 py-3 text-sm font-semibold text-white">
-              Guardar método
-            </button>
-          </form>
+          <CustomerPaymentMethod initialPayment={payment} title="Metodo de pago seguro" />
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
