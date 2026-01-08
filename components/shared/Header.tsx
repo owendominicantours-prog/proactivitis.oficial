@@ -32,7 +32,7 @@ export const Header = ({ navItems, navDisplay = "inline", rightSlot, logoScale =
               alt="Proactivitis"
               width={200}
               height={60}
-              className="h-12 max-w-[150px] w-auto object-contain origin-left scale-100 transition-transform md:max-w-none md:scale-[var(--logo-scale)]"
+              className="h-14 max-w-[190px] w-auto object-contain origin-left scale-100 transition-transform md:h-12 md:max-w-none md:scale-[var(--logo-scale)]"
               style={{ "--logo-scale": logoScale } as CSSProperties}
             />
           </Link>
