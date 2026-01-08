@@ -7,7 +7,7 @@ type HomeHeroCarouselProps = {
   intervalMs?: number;
 };
 
-const HERO_IMAGES = ["/CARRU1.jpg", "/CARRU2.jpg", "/CARRU3.jpg"];
+const HERO_IMAGES = ["/CARRU1.jpg", "/CARRU2.jpg", "/CARR3.png"];
 
 export function HomeHeroCarousel({ children, intervalMs = 4500 }: HomeHeroCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
