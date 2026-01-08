@@ -29,9 +29,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://proactivitis.com"),
-  title: "Proactivitis | Global Travel Experience Platform: Tours & Transfers",
+  title: "Proactivitis | Tours, Traslados y Actividades para Reservar",
   description:
-    "Reserve tours auténticos, traslados privados premium y experiencias exclusivas con confirmación inmediata. Seguridad de pago global y soporte 24/7 en los mejores destinos del mundo.",
+    "Reserva tours, traslados privados y actividades con Proactivitis. Confirmacion inmediata, precios claros y soporte 24/7.",
   icons: [
     { rel: "icon", url: "/favicon.ico" },
     { rel: "shortcut icon", url: "/favicon.ico" },
@@ -39,9 +39,9 @@ export const metadata: Metadata = {
     { rel: "apple-touch-icon", url: "/apple-icon.png", sizes: "180x180" }
   ],
   openGraph: {
-    title: "Proactivitis | Global Travel Experience Platform: Tours & Transfers",
+    title: "Proactivitis | Tours, Traslados y Actividades para Reservar",
     description:
-      "Reserva tours auténticos, traslados privados premium y experiencias exclusivas con confirmación inmediata. Seguridad de pago global y soporte 24/7 en los mejores destinos del mundo.",
+      "Reserva tours, traslados privados y actividades con Proactivitis. Confirmacion inmediata, precios claros y soporte 24/7.",
     url: "https://proactivitis.com",
     siteName: "Proactivitis",
     type: "website",
@@ -55,9 +55,9 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     site: "@proactivitis",
-    title: "Proactivitis | Global Travel Experience Platform",
+    title: "Proactivitis | Tours, Traslados y Actividades",
     description:
-      "Reserva tours auténticos, traslados privados premium y experiencias exclusivas con confirmación inmediata. Seguridad de pago global y soporte 24/7 en los mejores destinos del mundo.",
+      "Reserva tours, traslados privados y actividades con Proactivitis. Confirmacion inmediata, precios claros y soporte 24/7.",
     images: ["https://www.proactivitis.com/logo.png"]
   }
 };
