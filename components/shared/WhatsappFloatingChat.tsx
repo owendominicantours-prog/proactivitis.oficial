@@ -39,25 +39,25 @@ export default function WhatsappFloatingChat() {
       href={link}
       target="_blank"
       rel="noreferrer"
-      className="fixed bottom-6 right-6 z-40 flex items-center gap-3 rounded-2xl bg-[#25D366] px-4 py-3 text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+      className="fixed bottom-4 right-4 z-40 flex items-center gap-3 rounded-2xl bg-[#25D366] px-3 py-2 text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl sm:bottom-6 sm:right-6 sm:px-4 sm:py-3"
       aria-label="Chat on WhatsApp"
     >
-      <span className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/80 bg-white/10">
+      <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/80 bg-white/10 sm:h-12 sm:w-12">
         <Image
           src="/fotoperfilwhatsapp.png"
           alt="Proactivitis"
           width={48}
           height={48}
-          className="h-12 w-12 object-cover"
+          className="h-10 w-10 object-cover sm:h-12 sm:w-12"
         />
         <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-400" />
       </span>
-      <span className="flex flex-col text-left">
+      <span className="hidden flex-col text-left sm:flex">
         <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70">Proactivitis</span>
         <span className="text-sm font-semibold">{title}</span>
         <span className="text-xs text-white/80">{cta}</span>
       </span>
-      <span className="ml-1 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
+      <span className="ml-0 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 sm:ml-1">
         <svg
           aria-hidden="true"
           viewBox="0 0 32 32"
