@@ -77,7 +77,7 @@
   "tours.longform2.title": "Choisir un tour ou une activite sans perdre du temps",
   "tours.longform2.body1": "Avant de reserver, decidez si vous voulez une activite courte ou un tour d une demi journee. Verifiez le point de rendez vous, le type de transport et les arrets prevus. Cela aide a coordonner avec votre hotel et eviter l attente.",
   "tours.longform2.body2": "Pour les groupes ou familles, confirmez la langue du guide, la capacite et le rythme. Pour les activites d eau ou d aventure, assurez vous que l equipement est inclus et que les consignes de securite sont claires.",
-  "tours.longform2.body3": "Si votre temps est limite, privilegiez les tours avec confirmation immediate et itineraire defini. Pour un sejour plus long, alternez plage, culture et gastronomie. Tout cela est reservable sur Proactivitis avec prix visibles et support reel."
+  "tours.longform2.body3": "Si votre temps est limite, privilegiez les tours avec confirmation immediate et itineraire defini. Pour un sejour plus long, alternez plage, culture et gastronomie. Tout cela est reservable sur Proactivitis avec prix visibles et support reel.",
 
   "tours.filter.intro": "Filtres intelligents (compatible mobile)",
 
@@ -137,12 +137,12 @@
   "transfer.longform2.title": "Choisir des transferts sans mauvaises surprises",
   "transfer.longform2.body1": "Confirmez le type de vehicule selon votre groupe et vos bagages. Pour les vols internationaux, choisissez un transfert avec suivi du vol et temps d attente inclus.",
   "transfer.longform2.body2": "Verifiez si le service inclut assistance a l aeroport, pancarte avec votre nom et contact WhatsApp. Ces details reduisent le stress et accelerent la sortie.",
-  "transfer.longform2.body3": "Si vous combinez aeroport, hotel et excursions, reservez a l avance et gardez votre confirmation. Avec Proactivitis, vous pouvez ajuster les horaires et conserver le meme chauffeur."
+  "transfer.longform2.body3": "Si vous combinez aeroport, hotel et excursions, reservez a l avance et gardez votre confirmation. Avec Proactivitis, vous pouvez ajuster les horaires et conserver le meme chauffeur.",
   "transfer.longform3.eyebrow": "Trajets et prises en charge",
   "transfer.longform3.title": "Transferts prives depuis aeroport, hotels et villes",
   "transfer.longform3.body1": "Les transferts prives Proactivitis sont concus pour une arrivee simple de l aeroport a l hotel. Apres reservation, vous recevez le point de rendez vous, le temps d attente inclus et le contact du chauffeur. Cela evite les doutes et accelere la sortie.",
   "transfer.longform3.body2": "Si votre voyage inclut plusieurs hotels ou des changements de ville, vous pouvez reserver des trajets multiples avec le meme fournisseur. Le service reste coherent et les horaires s alignent avec vos tours et activites. Pour les familles, choisissez plus d espace; pour les voyages d affaires, priorisez confort et ponctualite.",
-  "transfer.longform3.body3": "Au dela de l aeroport et de l hotel, vous pouvez reserver des transferts vers ports, marinas et points d excursion. L essentiel est de confirmer l heure exacte et la duree estimee pour ne pas perturber vos tours. Avec Proactivitis, prix visibles, confirmation immediate et support humain."
+  "transfer.longform3.body3": "Au dela de l aeroport et de l hotel, vous pouvez reserver des transferts vers ports, marinas et points d excursion. L essentiel est de confirmer l heure exacte et la duree estimee pour ne pas perturber vos tours. Avec Proactivitis, prix visibles, confirmation immediate et support humain.",
 
   "transfer.link.home": "Aller à Proactivitis",
 
@@ -1200,7 +1200,7 @@
   "thingtodo.longform.title": "Preparez votre experience : {title}",
   "thingtodo.longform.body1": "Ce guide resume ce qu'il faut savoir avant {title} : horaires reels, points de rendez-vous et conseils pour profiter de chaque arret.",
   "thingtodo.longform.body2": "Vous y trouverez des recommandations pratiques sur la tenue, l'hydratation, la securite et le meilleur moment selon l'itineraire.",
-  "thingtodo.longform.body3": "Pour comparer facilement, la valeur est claire : transport confirme, equipement inclus et support local pendant toute l'activite."
+  "thingtodo.longform.body3": "Pour comparer facilement, la valeur est claire : transport confirme, equipement inclus et support local pendant toute l'activite.",
   "thingtodo.longform2.eyebrow": "Plan du tour",
   "thingtodo.longform2.title": "Details essentiels pour {title}",
   "thingtodo.longform2.body1": "Pour profiter de {title} sans souci, arrivez au point de rendez vous au moins 10 minutes avant. Verifiez si le transport est inclus, si le tour part de l hotel ou d une marina, et gardez votre voucher pour un check in rapide.",
