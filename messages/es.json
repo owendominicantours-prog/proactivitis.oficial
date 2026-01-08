@@ -1,4 +1,4 @@
-﻿{
+{
   "home.hero.brand": "Proactivitis",
   "home.hero.title": "Tours, traslados y actividades reales guiadas por locales que se preocupan",
   "home.hero.description": "Reserva experiencias y traslados con soporte humano, precios claros y confirmacion inmediata en destinos verificados.",
@@ -48,7 +48,7 @@
   "tours.longform2.title": "Como elegir tours y actividades sin perder tiempo",
   "tours.longform2.body1": "Antes de reservar, define si buscas una actividad corta o un tour completo de medio dia. Revisa el punto de encuentro, el tipo de transporte y si hay paradas programadas. Esta informacion te ayuda a coordinar con tu hotel y a evitar esperas innecesarias.",
   "tours.longform2.body2": "Para grupos o familias, confirma el idioma del guia, la capacidad y el ritmo del recorrido. En actividades de agua o aventura, verifica que el equipo este incluido y que el operador ofrezca indicaciones de seguridad claras. Estos detalles marcan la diferencia entre una salida promedio y una experiencia memorable.",
-  "tours.longform2.body3": "Si viajas con poco tiempo, prioriza tours con confirmacion inmediata y rutas bien definidas. Cuando planeas varios dias, combina actividades de playa con cultura y gastronomia para equilibrar el viaje. Todo esto lo puedes reservar desde Proactivitis con precios visibles y soporte real."
+  "tours.longform2.body3": "Si viajas con poco tiempo, prioriza tours con confirmacion inmediata y rutas bien definidas. Cuando planeas varios dias, combina actividades de playa con cultura y gastronomia para equilibrar el viaje. Todo esto lo puedes reservar desde Proactivitis con precios visibles y soporte real.",
   "tours.filter.intro": "Filtro inteligente (móvil friendly)",
   "tours.filter.item.category": "Categoría: selección rápida con iconos minimalistas.",
   "tours.filter.item.destination": "Destino: desplazamientos fluidos sin mencionar países.",
@@ -84,12 +84,12 @@
   "transfer.longform2.title": "Consejos para elegir traslados y evitar sorpresas",
   "transfer.longform2.body1": "Confirma el tipo de vehiculo segun tu grupo y tu equipaje. Para vuelos internacionales, elige traslados con monitoreo de vuelo y tiempo de espera incluido para evitar cargos extra.",
   "transfer.longform2.body2": "Revisa si el servicio incluye asistencia en el aeropuerto, cartel con tu nombre y contacto directo por WhatsApp. Estos detalles reducen el estres y te permiten salir rapido al llegar.",
-  "transfer.longform2.body3": "Si necesitas combinar aeropuerto, hotel y excursiones, reserva con antelacion y guarda el comprobante. Con Proactivitis puedes modificar horarios y mantener el mismo conductor en rutas planificadas."
+  "transfer.longform2.body3": "Si necesitas combinar aeropuerto, hotel y excursiones, reserva con antelacion y guarda el comprobante. Con Proactivitis puedes modificar horarios y mantener el mismo conductor en rutas planificadas.",
   "transfer.longform3.eyebrow": "Transferencias y rutas",
   "transfer.longform3.title": "Traslados privados desde el aeropuerto, hoteles y ciudades",
   "transfer.longform3.body1": "Los traslados privados de Proactivitis estan pensados para llegar directo del aeropuerto al hotel sin filas ni incertidumbre. Al reservar recibes detalles del punto de encuentro, tiempo de espera incluido y contacto directo con el conductor. Esto evita cargos sorpresa y te permite salir rapido incluso en horas pico.",
   "transfer.longform3.body2": "Si tu viaje incluye varios hoteles o cambios de ciudad, puedes reservar rutas multiples con el mismo proveedor. Esto ayuda a mantener el mismo estandar de servicio en todo el trayecto y a coordinar horarios con tus actividades. Para familias, elige vehiculos con mayor espacio; para viajes ejecutivos, prioriza comodidad y puntualidad.",
-  "transfer.longform3.body3": "Adem?s de aeropuerto y hotel, tambien puedes reservar traslados a puertos, marinas y puntos de excursion. La clave es confirmar la hora exacta y el tiempo estimado para evitar retrasos en tours y actividades. Con Proactivitis tienes precios visibles, confirmacion inmediata y soporte humano durante todo el recorrido."
+  "transfer.longform3.body3": "Además de aeropuerto y hotel, tambien puedes reservar traslados a puertos, marinas y puntos de excursion. La clave es confirmar la hora exacta y el tiempo estimado para evitar retrasos en tours y actividades. Con Proactivitis tienes precios visibles, confirmacion inmediata y soporte humano durante todo el recorrido.",
   "transfer.link.home": "Ir a Proactivitis",
   "transfer.link.tours": "Ver tours y experiencias",
   "transfer.hero.stat.transfers": "Transferencias confirmadas",
@@ -691,7 +691,7 @@
   "thingtodo.longform.title": "Planifica tu experiencia: {title}",
   "thingtodo.longform.body1": "Esta guia resume lo que necesitas saber antes de salir a {title}: horarios reales, puntos de encuentro y como aprovechar cada parada sin perder tiempo.",
   "thingtodo.longform.body2": "Incluye recomendaciones practicas sobre vestimenta, hidratacion, seguridad y el mejor momento del dia segun el clima y la ruta.",
-  "thingtodo.longform.body3": "Si buscas comparar opciones, aqui encuentras el valor real: transporte confirmado, equipo incluido y soporte local durante toda la actividad."
+  "thingtodo.longform.body3": "Si buscas comparar opciones, aqui encuentras el valor real: transporte confirmado, equipo incluido y soporte local durante toda la actividad.",
   "thingtodo.longform2.eyebrow": "Plan del tour",
   "thingtodo.longform2.title": "Detalles clave de {title}",
   "thingtodo.longform2.body1": "Para vivir {title} sin contratiempos, llega al punto de encuentro con al menos 10 minutos de anticipacion. Revisa si incluye transporte, si el tour inicia desde el hotel o desde una marina, y prepara tu documento o voucher para un check-in rapido.",
@@ -701,5 +701,5 @@
   "thingtodo.longform3.title": "Como reservar actividades seguras y bien valoradas",
   "thingtodo.longform3.body1": "En Proactivitis priorizamos proveedores locales con experiencia y referencias verificadas. Esto significa que {title} se opera con guias entrenados, rutas definidas y politicas claras de cancelacion y reprogramacion.",
   "thingtodo.longform3.body2": "Para comparar opciones, revisa la duracion, el nivel fisico y el tipo de actividad. Si prefieres algo mas tranquilo, busca experiencias de media jornada; si quieres aventura, confirma el nivel de intensidad y las medidas de seguridad.",
-  "thingtodo.longform3.body3": "Reserva con antelacion en temporada alta para asegurar cupo y el mejor horario. Una vez confirmada la reserva, guarda el contacto de soporte para ajustes de ultima hora y cambios log?sticos."
+  "thingtodo.longform3.body3": "Reserva con antelacion en temporada alta para asegurar cupo y el mejor horario. Una vez confirmada la reserva, guarda el contacto de soporte para ajustes de ultima hora y cambios logísticos."
 }
