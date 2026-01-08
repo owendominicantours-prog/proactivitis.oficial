@@ -30,7 +30,7 @@ export function HomeHeroCarousel({ children, intervalMs = 4500 }: HomeHeroCarous
       className="relative flex min-h-[420px] items-center justify-center overflow-hidden bg-center bg-cover"
       style={{ backgroundImage: `url('${HERO_IMAGES[activeIndex]}')` }}
     >
-      <div className="absolute inset-0 bg-slate-900/35" aria-hidden />
+      <div className="absolute inset-0 bg-slate-900/35 md:bg-slate-900/45" aria-hidden />
       <div className="relative px-6 md:px-0">
         <div className="max-w-4xl">{children}</div>
       </div>
