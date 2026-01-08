@@ -41,7 +41,7 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: "/(.*)",
+        source: "/:path*",
         has: [{ type: "host", value: "www.proactivitis.com" }],
         destination: "https://proactivitis.com/:path*",
         permanent: true
