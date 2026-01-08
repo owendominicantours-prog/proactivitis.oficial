@@ -12,7 +12,7 @@ const HERO_IMAGES = [
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/Carrusel/CARRU2.jpg",
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/Carrusel/CARR3.png"
 ];
-const HERO_POSITIONS = ["center", "center", "center 30%"];
+const HERO_POSITIONS = ["center", "center", "center 15%"];
 
 export function HomeHeroCarousel({ children, intervalMs = 4500 }: HomeHeroCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
