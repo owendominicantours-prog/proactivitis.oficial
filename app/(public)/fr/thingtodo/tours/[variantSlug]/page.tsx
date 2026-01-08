@@ -36,9 +36,21 @@ const toAbsoluteUrl = (value?: string | null) => {
 };
 
 const buildKeywords = (title: string, description: string) => {
-  const base = ["Punta Cana", "Republique Dominicaine", "Proactivitis"];
+  const base = [
+    "Punta Cana",
+    "Republique Dominicaine",
+    "excursions Punta Cana",
+    "tours Punta Cana",
+    "Proactivitis"
+  ];
   return Array.from(new Set([title, description, ...base]));
 };
+
+const OG_LOCALE = {
+  es: "es_DO",
+  en: "en_US",
+  fr: "fr_FR"
+} as const;
 
 export async function generateStaticParams() {
   return [
@@ -62,7 +74,9 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
     return { title: "Landing introuvable" };
   }
   const title = variant.titles.fr;
-  const description = variant.metaDescriptions.fr;
+  const description = variant.metaDescriptions.fr.trim();
+  const seoTitle = `${title} | Proactivitis`;
+  const seoDescription = description.endsWith(".") ? description : `${description}.`;
   const canonical = `https://proactivitis.com/fr/thingtodo/tours/${variant.slug}`;
   const tourSlug = partyVariant
     ? PARTY_BOAT_BASE_TOUR.slug
@@ -82,20 +96,23 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
     fr: canonical
   };
   return {
-    title,
-    description,
-    keywords: buildKeywords(title, description),
+    title: seoTitle,
+    description: seoDescription,
+    keywords: buildKeywords(title, seoDescription),
     alternates: { canonical, languages },
     openGraph: {
-      title,
-      description,
+      title: seoTitle,
+      description: seoDescription,
       url: canonical,
+      siteName: "Proactivitis",
+      type: "website",
+      locale: OG_LOCALE.fr,
       images: imageUrl ? [{ url: imageUrl }] : undefined
     },
     twitter: {
       card: imageUrl ? "summary_large_image" : "summary",
-      title,
-      description,
+      title: seoTitle,
+      description: seoDescription,
       images: imageUrl ? [imageUrl] : undefined
     }
   };

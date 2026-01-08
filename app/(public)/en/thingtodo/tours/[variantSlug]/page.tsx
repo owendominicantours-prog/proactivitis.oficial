@@ -36,9 +36,21 @@ const toAbsoluteUrl = (value?: string | null) => {
 };
 
 const buildKeywords = (title: string, description: string) => {
-  const base = ["Punta Cana", "Dominican Republic", "Proactivitis"];
+  const base = [
+    "Punta Cana",
+    "Dominican Republic",
+    "Punta Cana tours",
+    "Punta Cana excursions",
+    "Proactivitis"
+  ];
   return Array.from(new Set([title, description, ...base]));
 };
+
+const OG_LOCALE = {
+  es: "es_DO",
+  en: "en_US",
+  fr: "fr_FR"
+} as const;
 
 export async function generateStaticParams() {
   return [
@@ -62,7 +74,9 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
     return { title: "Landing not found" };
   }
   const title = variant.titles.en;
-  const description = variant.metaDescriptions.en;
+  const description = variant.metaDescriptions.en.trim();
+  const seoTitle = `${title} | Proactivitis`;
+  const seoDescription = description.endsWith(".") ? description : `${description}.`;
   const canonical = `https://proactivitis.com/en/thingtodo/tours/${variant.slug}`;
   const tourSlug = partyVariant
     ? PARTY_BOAT_BASE_TOUR.slug
@@ -82,20 +96,23 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
     fr: `https://proactivitis.com/fr/thingtodo/tours/${variant.slug}`
   };
   return {
-    title,
-    description,
-    keywords: buildKeywords(title, description),
+    title: seoTitle,
+    description: seoDescription,
+    keywords: buildKeywords(title, seoDescription),
     alternates: { canonical, languages },
     openGraph: {
-      title,
-      description,
+      title: seoTitle,
+      description: seoDescription,
       url: canonical,
+      siteName: "Proactivitis",
+      type: "website",
+      locale: OG_LOCALE.en,
       images: imageUrl ? [{ url: imageUrl }] : undefined
     },
     twitter: {
       card: imageUrl ? "summary_large_image" : "summary",
-      title,
-      description,
+      title: seoTitle,
+      description: seoDescription,
       images: imageUrl ? [imageUrl] : undefined
     }
   };
