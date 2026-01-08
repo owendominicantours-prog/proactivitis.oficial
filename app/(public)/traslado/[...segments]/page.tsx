@@ -151,6 +151,13 @@ const LOCALE: Locale = es;
 const META_DESCRIPTION_MIN = 120;
 const META_DESCRIPTION_MAX = 160;
 
+const ensureContains = (value: string, term: string) => {
+  const normalizedValue = value.toLowerCase();
+  const normalizedTerm = term.toLowerCase();
+  if (normalizedValue.includes(normalizedTerm)) return value;
+  return `${value} ${term}`.trim();
+};
+
 const trimMetaDescription = (value: string) => {
   const trimmed = value.trim();
   if (trimmed.length <= META_DESCRIPTION_MAX) return trimmed;
@@ -191,6 +198,8 @@ export async function generateMetadata({
     description =
       destination.shortDescription ??
       translate(LOCALE, "transfer.metadata.description.destination", { destination: destinationName });
+    description = ensureContains(description, destinationName);
+    description = ensureContains(description, countryName);
     keywords.push(`transporte ${destinationName}`, `proactivitis ${countryName}`);
   } else if (level === "microzone" && microZone) {
     title = translate(LOCALE, "transfer.metadata.title.microzone", { hotel: hotelName });
@@ -198,6 +207,8 @@ export async function generateMetadata({
       hotel: hotelName,
       country: countryName
     });
+    description = ensureContains(description, hotelName);
+    description = ensureContains(description, countryName);
     keywords.push(`traslado ${hotelName}`, `transporte ${destinationName ?? countryName}`, `proactivitis ${countryName}`);
   }
 
