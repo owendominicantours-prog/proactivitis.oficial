@@ -5,9 +5,9 @@ import PublicHomePage from "@/components/public/PublicHomePage";
 const canonicalUrl = "https://proactivitis.com/fr";
 
 export const metadata: Metadata = {
-  title: "Proactivitis | Transferts privés et tours de qualité",
+  title: "Proactivitis | Tours, transferts et activites a reserver",
   description:
-    "Réservez des transferts privés et des tours authentiques avec Proactivitis. Partenaires vérifiés, tarifs transparents et confirmation instantanée dans le monde entier.",
+    "Reservez des tours, transferts et activites avec Proactivitis. Prix clairs, prestataires verifies et confirmation immediate.",
   alternates: {
     canonical: canonicalUrl,
     languages: {
