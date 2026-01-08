@@ -11,6 +11,35 @@ import BuggyAtvVariantLanding from "@/components/public/BuggyAtvVariantLanding";
 import ParasailingVariantLanding from "@/components/public/ParasailingVariantLanding";
 import { es } from "@/lib/translations";
 
+const BASE_URL = "https://proactivitis.com";
+
+const parseGallery = (gallery?: string | null) => {
+  if (!gallery) return [];
+  try {
+    return (JSON.parse(gallery) as string[]) ?? [];
+  } catch {
+    return [];
+  }
+};
+
+const resolveTourImage = (heroImage?: string | null, gallery?: string | null) => {
+  if (heroImage) return heroImage;
+  const parsed = parseGallery(gallery);
+  return parsed[0] ?? null;
+};
+
+const toAbsoluteUrl = (value?: string | null) => {
+  if (!value) return null;
+  if (value.startsWith("http")) return value;
+  const normalized = value.startsWith("/") ? value : `/${value}`;
+  return `${BASE_URL}${normalized}`;
+};
+
+const buildKeywords = (title: string, description: string) => {
+  const base = ["Punta Cana", "Republica Dominicana", "Proactivitis"];
+  return Array.from(new Set([title, description, ...base]));
+};
+
 export async function generateStaticParams() {
   return [
     ...PARTY_BOAT_VARIANTS,
@@ -35,6 +64,18 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
   const title = variant.titles.es;
   const description = variant.metaDescriptions.es;
   const canonical = `https://proactivitis.com/thingtodo/tours/${variant.slug}`;
+  const tourSlug = partyVariant
+    ? PARTY_BOAT_BASE_TOUR.slug
+    : santoVariant
+      ? SANTO_DOMINGO_BASE_TOUR.slug
+      : buggyVariant
+        ? BUGGY_ATV_BASE_TOUR.slug
+        : PARASAILING_BASE_TOUR.slug;
+  const tour = await prisma.tour.findUnique({
+    where: { slug: tourSlug },
+    select: { heroImage: true, gallery: true }
+  });
+  const imageUrl = toAbsoluteUrl(resolveTourImage(tour?.heroImage ?? null, tour?.gallery ?? null));
   const languages = {
     es: canonical,
     en: `https://proactivitis.com/en/thingtodo/tours/${variant.slug}`,
@@ -43,11 +84,19 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
   return {
     title,
     description,
+    keywords: buildKeywords(title, description),
     alternates: { canonical, languages },
     openGraph: {
       title,
       description,
-      url: canonical
+      url: canonical,
+      images: imageUrl ? [{ url: imageUrl }] : undefined
+    },
+    twitter: {
+      card: imageUrl ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: imageUrl ? [imageUrl] : undefined
     }
   };
 }
