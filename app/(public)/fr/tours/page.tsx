@@ -6,9 +6,9 @@ import PublicToursPage from "@/components/public/PublicToursPage";
 const canonicalUrl = "https://proactivitis.com/fr/tours";
 
 export const metadata: Metadata = {
-  title: "Tours et Expériences Exclusives | Réservez en toute Confiance avec Proactivitis",
+  title: "Tours et activites | Reservez avec Proactivitis",
   description:
-    "Découvrez notre sélection de tours et d’expériences premium. Confirmation instantanée, paiements sécurisés et support mondial 24/7 pour vos voyages d’exception.",
+    "Reservez des tours et activites avec prix clairs, prestataires verifies et confirmation immediate.",
   alternates: {
     canonical: canonicalUrl,
     languages: {

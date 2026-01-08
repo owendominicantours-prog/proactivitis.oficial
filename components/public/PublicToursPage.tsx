@@ -412,6 +412,20 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
         </div>
       </section>
 
+      <section className="mx-auto max-w-6xl px-4 pb-10">
+        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+            {t("tours.longform2.eyebrow")}
+          </p>
+          <h2 className="mt-3 text-2xl font-semibold text-slate-900">{t("tours.longform2.title")}</h2>
+          <div className="mt-4 space-y-4 text-sm text-slate-600">
+            <p>{t("tours.longform2.body1")}</p>
+            <p>{t("tours.longform2.body2")}</p>
+            <p>{t("tours.longform2.body3")}</p>
+          </div>
+        </div>
+      </section>
+
       <section className="bg-white">
         <div className="mx-auto max-w-6xl px-4 py-14">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">

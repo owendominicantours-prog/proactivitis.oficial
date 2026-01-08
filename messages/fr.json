@@ -63,16 +63,21 @@
 
   "home.section.about.cta.secondary": "Contactez-nous",
 
-  "tours.header.tagline": "Tours & Experiences",
+  "tours.header.tagline": "Tours & activites",
 
-  "tours.header.title": "Expériences soignées : découvrez le monde par le regard des locaux",
+  "tours.header.title": "Tours et activites a reserver en toute confiance",
 
-  "tours.header.description": "Tours authentiques, guides vérifiés et moments inoubliables. Pas d'automatisation, que de la qualité assurée.",
-  "tours.longform.eyebrow": "? quoi s'attendre",
-  "tours.longform.title": "Des tours pens?s pour de vrais voyageurs",
-  "tours.longform.body1": "D?couvrez des exp?riences v?rifi?es avec horaires clairs, points de rendez-vous et support r?el. Chaque tour inclut des d?tails pratiques pour savoir ce qui est inclus, la dur?e et l'acc?s.",
-  "tours.longform.body2": "Nous privil?gions des op?rateurs locaux reconnus et suivons la qualit? de service pour garantir une exp?rience constante.",
-  "tours.longform.body3": "Comparez par cat?gorie, dur?e et destination. Si besoin, notre ?quipe peut recommander le tour adapt? ? votre plan et budget.",
+  "tours.header.description": "Decouvrez des tours et activites verifies avec horaires clairs, guides locaux et support humain. Reservation rapide avec prix transparents et confirmation immediate.",
+  "tours.longform.eyebrow": "Planifier votre experience",
+  "tours.longform.title": "Tours verifies, activites reelles et reservation claire",
+  "tours.longform.body1": "Chez Proactivitis, vous trouvez des tours et activites pens?s pour reserver sans doute. Chaque fiche indique l essentiel : ce qui est inclus, la duree, le point de depart et comment s y rendre. Cela permet de comparer des options reelles et de reserver avec confiance selon votre style.",
+  "tours.longform.body2": "Notre catalogue combine tours prives, activites de groupe et experiences locales avec operateurs verifies. Nous analysons les retours et gardons un support actif avant et apres la reservation. Vous savez qui vous recoit, quel transport est utilise et quelle politique s applique.",
+  "tours.longform.body3": "Si vous voulez reserver vite, utilisez les filtres par destination, categorie, langue et duree. Pour les voyages plus longs, consultez les horaires suggeres et conseils logistiques. Notre equipe peut recommander le meilleur tour selon votre budget.",
+  "tours.longform2.eyebrow": "Guide de reservation",
+  "tours.longform2.title": "Choisir un tour ou une activite sans perdre du temps",
+  "tours.longform2.body1": "Avant de reserver, decidez si vous voulez une activite courte ou un tour d une demi journee. Verifiez le point de rendez vous, le type de transport et les arrets prevus. Cela aide a coordonner avec votre hotel et eviter l attente.",
+  "tours.longform2.body2": "Pour les groupes ou familles, confirmez la langue du guide, la capacite et le rythme. Pour les activites d eau ou d aventure, assurez vous que l equipement est inclus et que les consignes de securite sont claires.",
+  "tours.longform2.body3": "Si votre temps est limite, privilegiez les tours avec confirmation immediate et itineraire defini. Pour un sejour plus long, alternez plage, culture et gastronomie. Tout cela est reservable sur Proactivitis avec prix visibles et support reel."
 
   "tours.filter.intro": "Filtres intelligents (compatible mobile)",
 

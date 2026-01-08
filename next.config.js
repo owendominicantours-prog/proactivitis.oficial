@@ -8,6 +8,7 @@ const securityHeaders = [
 const nextConfig = {
   output: "standalone",
   outputFileTracingRoot: __dirname,
+  poweredByHeader: false,
   eslint: {
     ignoreDuringBuilds: true
   },
