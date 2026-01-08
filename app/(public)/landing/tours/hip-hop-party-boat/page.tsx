@@ -23,19 +23,17 @@ const TAXONOMY = {
   locations: ["Playa Bavaro", "Cap Cana", "Piscina Natural", "Bibijagua"]
 };
 
-const metadata: Metadata = {
-  title: SEO_TITLE,
-  description: SEO_DESCRIPTION,
-  keywords: [...TAXONOMY.amenities, ...TAXONOMY.niches, ...TAXONOMY.locations],
-  openGraph: {
-    title: SEO_TITLE,
-    description: SEO_DESCRIPTION,
-    url: `https://proactivitis.com/thingtodo/tours/${LANDING_SLUG}`
-  },
-  alternates: {
-    canonical: `https://proactivitis.com/thingtodo/tours/${LANDING_SLUG}`
-  }
-};
+const BASE_URL = "https://proactivitis.com";
+
+const buildKeywords = () => [
+  SEO_TITLE,
+  "tours en Punta Cana",
+  "excursiones Punta Cana",
+  ...TAXONOMY.amenities,
+  ...TAXONOMY.niches,
+  ...TAXONOMY.locations,
+  "Proactivitis"
+];
 
 const parseGallery = (gallery?: string | null) => {
   if (!gallery) return [];
@@ -45,6 +43,52 @@ const parseGallery = (gallery?: string | null) => {
     return [];
   }
 };
+
+const resolveTourImage = (heroImage?: string | null, gallery?: string | null) => {
+  if (heroImage) return heroImage;
+  const parsed = parseGallery(gallery);
+  return parsed[0] ?? null;
+};
+
+const toAbsoluteUrl = (value?: string | null) => {
+  if (!value) return null;
+  if (value.startsWith("http")) return value;
+  const normalized = value.startsWith("/") ? value : `/${value}`;
+  return `${BASE_URL}${normalized}`;
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const canonical = `${BASE_URL}/thingtodo/tours/${LANDING_SLUG}`;
+  const tour = await prisma.tour.findUnique({
+    where: { slug: TOUR_SLUG },
+    select: { heroImage: true, gallery: true }
+  });
+  const imageUrl = toAbsoluteUrl(resolveTourImage(tour?.heroImage ?? null, tour?.gallery ?? null));
+  const seoTitle = `${SEO_TITLE} | Proactivitis`;
+  const seoDescription = SEO_DESCRIPTION.endsWith(".") ? SEO_DESCRIPTION : `${SEO_DESCRIPTION}.`;
+
+  return {
+    title: seoTitle,
+    description: seoDescription,
+    keywords: buildKeywords(),
+    alternates: { canonical },
+    openGraph: {
+      title: seoTitle,
+      description: seoDescription,
+      url: canonical,
+      siteName: "Proactivitis",
+      type: "website",
+      locale: "es_DO",
+      images: imageUrl ? [{ url: imageUrl }] : undefined
+    },
+    twitter: {
+      card: imageUrl ? "summary_large_image" : "summary",
+      title: seoTitle,
+      description: seoDescription,
+      images: imageUrl ? [imageUrl] : undefined
+    }
+  };
+}
 
 const features = [
   {
@@ -320,5 +364,3 @@ export default async function HipHopLandingPage() {
     </div>
   );
 }
-
-export { metadata };

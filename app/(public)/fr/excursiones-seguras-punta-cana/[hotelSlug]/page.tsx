@@ -9,6 +9,25 @@ import {
   buildSafetyGuideUrl
 } from "@/lib/safety-guide";
 
+const BASE_URL = "https://proactivitis.com";
+const FALLBACK_IMAGE = "/transfer/sedan.png";
+
+const toAbsoluteUrl = (value?: string | null) => {
+  if (!value) return `${BASE_URL}${FALLBACK_IMAGE}`;
+  if (value.startsWith("http")) return value;
+  const normalized = value.startsWith("/") ? value : `/${value}`;
+  return `${BASE_URL}${normalized}`;
+};
+
+const buildKeywords = (hotel: string) => [
+  `Guide de securite pour ${hotel}`,
+  `Transport securise depuis ${hotel}`,
+  "securite hotel Punta Cana",
+  "transferts Punta Cana",
+  "tours certifies Punta Cana",
+  "Proactivitis"
+];
+
 type Params = {
   params: Promise<{ hotelSlug: string }>;
 };
@@ -28,7 +47,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const baseSlug = normalizeSafetyGuideSlug(resolved.hotelSlug);
   const hotel = await prisma.transferLocation.findUnique({
     where: { slug: baseSlug },
-    select: { name: true }
+    select: { name: true, heroImage: true }
   });
 
   if (!hotel) {
@@ -36,17 +55,31 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   }
 
   const title = translate(fr, "safetyGuide.meta.title", { hotel: hotel.name });
-  const description = translate(fr, "safetyGuide.meta.description", { hotel: hotel.name });
+  const description = translate(fr, "safetyGuide.meta.description", { hotel: hotel.name }).trim();
+  const seoTitle = `${title} | Proactivitis`;
+  const seoDescription = description.endsWith(".") ? description : `${description}.`;
   const canonical = buildSafetyGuideUrl(fr, baseSlug);
+  const imageUrl = toAbsoluteUrl(hotel.heroImage);
 
   return {
-    title,
-    description,
+    title: seoTitle,
+    description: seoDescription,
+    keywords: buildKeywords(hotel.name),
     alternates: { canonical },
     openGraph: {
-      title,
-      description,
-      url: canonical
+      title: seoTitle,
+      description: seoDescription,
+      url: canonical,
+      siteName: "Proactivitis",
+      type: "website",
+      locale: "fr_FR",
+      images: [{ url: imageUrl }]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seoTitle,
+      description: seoDescription,
+      images: [imageUrl]
     }
   };
 }

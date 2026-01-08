@@ -173,9 +173,13 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
   if (!landing) return {};
   const localized = await localizeLanding(landing, locale);
   const canonical = buildCanonical(landing.landingSlug, locale);
+  const seoTitle = `${localized.seoTitle} | Proactivitis`;
+  const rawDescription = localized.metaDescription.trim();
+  const seoDescription = rawDescription.endsWith(".") ? rawDescription : `${rawDescription}.`;
+  const imageUrl = encodeURI(`${BASE_URL}${localized.heroImage}`);
   return {
-    title: localized.seoTitle,
-    description: localized.metaDescription,
+    title: seoTitle,
+    description: seoDescription,
     alternates: {
       canonical,
       languages: {
@@ -185,17 +189,26 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
       }
     },
     openGraph: {
-      title: localized.seoTitle,
-      description: localized.metaDescription,
+      title: seoTitle,
+      description: seoDescription,
       url: canonical,
+      siteName: "Proactivitis",
+      type: "website",
+      locale: locale === "es" ? "es_DO" : locale === "fr" ? "fr_FR" : "en_US",
       images: [
         {
-          url: `${BASE_URL}${localized.heroImage}`,
+          url: imageUrl,
           alt: localized.heroImageAlt
         }
       ]
     },
-    keywords: localized.keywords.join(", ")
+    twitter: {
+      card: "summary_large_image",
+      title: seoTitle,
+      description: seoDescription,
+      images: [imageUrl]
+    },
+    keywords: localized.keywords
   };
 }
 
