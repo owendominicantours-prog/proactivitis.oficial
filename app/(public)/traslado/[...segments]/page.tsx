@@ -148,6 +148,20 @@ const DEFAULT_DESCRIPTION = "Descubre la red global de traslados premium de Proa
 const DEFAULT_METADATA_IMAGE = "https://www.proactivitis.com/transfer/sedan.png";
 const TRANSFER_BASE_URL = "https://proactivitis.com/traslado";
 const LOCALE: Locale = es;
+const META_DESCRIPTION_MIN = 120;
+const META_DESCRIPTION_MAX = 160;
+
+const trimMetaDescription = (value: string) => {
+  const trimmed = value.trim();
+  if (trimmed.length <= META_DESCRIPTION_MAX) return trimmed;
+  return `${trimmed.slice(0, META_DESCRIPTION_MAX - 3).trimEnd()}...`;
+};
+
+const extendMetaDescription = (value: string, extra: string) => {
+  const trimmed = value.trim();
+  if (trimmed.length >= META_DESCRIPTION_MIN) return trimmed;
+  return `${trimmed} ${extra}`.trim();
+};
 
 export async function generateMetadata({
   params
@@ -190,6 +204,24 @@ export async function generateMetadata({
   if (!keywords.length) {
     keywords.push(`proactivitis ${countryName}`);
   }
+
+  if (level === "destination") {
+    description = extendMetaDescription(
+      description,
+      `Reserva traslados privados en ${destinationName} con tarifa fija, vehiculos verificados y soporte 24/7.`
+    );
+  } else if (level === "country") {
+    description = extendMetaDescription(
+      description,
+      `Reserva traslados privados en ${countryName} con tarifa fija, conductores verificados y soporte 24/7.`
+    );
+  } else if (level === "microzone") {
+    description = extendMetaDescription(
+      description,
+      `Traslados privados con confirmacion inmediata y soporte 24/7.`
+    );
+  }
+  description = trimMetaDescription(description);
 
   const heroImage = resolveHeroImageForContext(context) ?? DEFAULT_METADATA_IMAGE;
   const pageUrl =

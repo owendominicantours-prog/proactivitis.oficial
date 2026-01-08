@@ -311,7 +311,7 @@ export const infoPages: InfoPage[] = [
     path: "/about",
     title: "Sobre Proactivitis",
     seoTitle: "Proactivitis: Excelencia en Movilidad Global",
-    seoDescription: "Proactivitis es una plataforma tecnológica líder para traslados premium y experiencias curadas, conectando proveedores locales con viajeros globales. | Proactivitis is a leading technology platform for premium transfers and curated experiences, connecting local partners with global travelers.",
+    seoDescription: "Proactivitis conecta traslados premium y experiencias curadas con proveedores verificados y soporte global. Reserva con seguridad y claridad.",
     hero: {
       eyebrow: "Empresa",
       title: "Proactivitis: Excelencia en Movilidad y Experiencias Globales",
@@ -344,7 +344,7 @@ export const infoPages: InfoPage[] = [
     path: "/our-mission",
     title: "Nuestra misión",
     seoTitle: "Nuestra Misión y Visión | El Compromiso de Proactivitis",
-    seoDescription: "Descubra los valores que impulsan a Proactivitis: excelencia en traslados privados, tours curados y una infraestructura tecnológica global para el turismo moderno.",
+    seoDescription: "Conoce la mision y vision de Proactivitis: excelencia en traslados privados, tours curados y tecnologia global para el viajero moderno.",
     hero: {
       eyebrow: "Empresa",
       title: "Elevando los estándares del viaje global",

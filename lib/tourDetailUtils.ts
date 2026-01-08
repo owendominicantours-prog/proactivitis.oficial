@@ -24,6 +24,7 @@ const resolveTourHeroImage = (tour: TourImageSource) => {
 };
 
 const MAX_TITLE_LENGTH = 55;
+const MAX_DESCRIPTION_LENGTH = 160;
 const BRAND_SUFFIX = " | Proactivitis";
 
 const buildSeoTitle = (baseTitle: string) => {
@@ -40,6 +41,12 @@ const buildSeoTitle = (baseTitle: string) => {
     return `${trimmed.slice(0, MAX_TITLE_LENGTH - 3).trimEnd()}...`;
   }
   return `${trimmed.slice(0, available).trimEnd()}...${BRAND_SUFFIX}`;
+};
+
+const trimDescription = (value: string) => {
+  const trimmed = value.trim();
+  if (trimmed.length <= MAX_DESCRIPTION_LENGTH) return trimmed;
+  return `${trimmed.slice(0, MAX_DESCRIPTION_LENGTH - 3).trimEnd()}...`;
 };
 
 const toAbsoluteUrl = (value: string) => {
@@ -96,8 +103,9 @@ export async function generateTourMetadata(
   }
 
   const title = buildSeoTitle(tour.title);
-  const description =
-    tour.shortDescription ?? translate(locale, "tour.metadata.descriptionFallback");
+  const description = trimDescription(
+    tour.shortDescription ?? translate(locale, "tour.metadata.descriptionFallback")
+  );
   const heroImage = toAbsoluteUrl(resolveTourHeroImage(tour));
   const canonicalSlug = buildLanguageAlternates(slug)[locale];
   const canonicalUrl = `${PROACTIVITIS_URL}${canonicalSlug}`;

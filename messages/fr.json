@@ -1054,15 +1054,15 @@
 
   "transfer.metadata.title.country": "Transferts en {country} | Proactivitis",
 
-  "transfer.metadata.description.country": "Couverture en {country} avec des transferts sécurisés et des prestataires régionaux.",
+  "transfer.metadata.description.country": "Transferts prives en {country} avec tarifs fixes, chauffeurs verifies et support 24/7. Reservation rapide pour aeroports, hotels et destinations cles.",
 
   "transfer.metadata.title.destination": "Transferts en {destination} | Proactivitis",
 
-  "transfer.metadata.description.destination": "Réservations avec tarifs verrouillés et opérateurs certifiés.",
+  "transfer.metadata.description.destination": "Transferts a {destination} avec prix bloque, confirmation instantanee et vehicules verifies. Reservation en ligne pour hotels et points d'interet.",
 
   "transfer.metadata.title.microzone": "Transfert privé vers {hotel} | Proactivitis",
 
-  "transfer.metadata.description.microzone": "Réservez votre transfert privé vers {hotel} en {country}. Service premium, prix fixe et support 24/7.",
+  "transfer.metadata.description.microzone": "Transfert prive vers {hotel} en {country} avec tarif fixe, support 24/7 et operateurs certifies. Confirmez le pick-up et voyagez serein.",
 
   "transfer.detail.duration": "Le temps estimé de l'aéroport à {hotel} est d'environ {minutes} minutes.",
 
