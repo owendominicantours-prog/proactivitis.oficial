@@ -121,6 +121,20 @@ export default async function PublicTransferPage({ locale }: Props) {
           </Suspense>
         </section>
 
+        <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+            {translate(locale, "transfer.longform.eyebrow")}
+          </p>
+          <h2 className="mt-3 text-2xl font-bold text-slate-900">
+            {translate(locale, "transfer.longform.title")}
+          </h2>
+          <div className="mt-4 space-y-4 text-sm text-slate-600">
+            <p>{translate(locale, "transfer.longform.body1")}</p>
+            <p>{translate(locale, "transfer.longform.body2")}</p>
+            <p>{translate(locale, "transfer.longform.body3")}</p>
+          </div>
+        </section>
+
         <section className="space-y-6 rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
           <div className="flex flex-col gap-3">
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{translate(locale, "transfer.faq.label")}</p>
