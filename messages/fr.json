@@ -1179,5 +1179,10 @@
   "safetyGuide.reco.transfers.body": "Prise en charge privee avec suivi et support.",
   "safetyGuide.reco.transfers.cta": "Voir le transfert",
   "safetyGuide.reco.transfers.zoneFallback": "Transfert prive",
-  "partyBoat.operatorLabel": "Opere par Proactivitis"
+  "partyBoat.operatorLabel": "Opere par Proactivitis",
+  "thingtodo.longform.eyebrow": "Guide essentiel",
+  "thingtodo.longform.title": "Preparez votre experience : {title}",
+  "thingtodo.longform.body1": "Ce guide resume ce qu'il faut savoir avant {title} : horaires reels, points de rendez-vous et conseils pour profiter de chaque arret.",
+  "thingtodo.longform.body2": "Vous y trouverez des recommandations pratiques sur la tenue, l'hydratation, la securite et le meilleur moment selon l'itineraire.",
+  "thingtodo.longform.body3": "Pour comparer facilement, la valeur est claire : transport confirme, equipement inclus et support local pendant toute l'activite."
 }

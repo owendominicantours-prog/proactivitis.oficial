@@ -670,5 +670,10 @@
   "safetyGuide.reco.transfers.body": "Recogida privada con monitoreo y soporte.",
   "safetyGuide.reco.transfers.cta": "Ver traslado",
   "safetyGuide.reco.transfers.zoneFallback": "Traslado privado",
-  "partyBoat.operatorLabel": "Operado por Proactivitis"
+  "partyBoat.operatorLabel": "Operado por Proactivitis",
+  "thingtodo.longform.eyebrow": "Guia esencial",
+  "thingtodo.longform.title": "Planifica tu experiencia: {title}",
+  "thingtodo.longform.body1": "Esta guia resume lo que necesitas saber antes de salir a {title}: horarios reales, puntos de encuentro y como aprovechar cada parada sin perder tiempo.",
+  "thingtodo.longform.body2": "Incluye recomendaciones practicas sobre vestimenta, hidratacion, seguridad y el mejor momento del dia segun el clima y la ruta.",
+  "thingtodo.longform.body3": "Si buscas comparar opciones, aqui encuentras el valor real: transporte confirmado, equipo incluido y soporte local durante toda la actividad."
 }

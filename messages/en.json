@@ -666,5 +666,10 @@
   "safetyGuide.reco.transfers.body": "Private pickup with monitoring and support.",
   "safetyGuide.reco.transfers.cta": "View transfer",
   "safetyGuide.reco.transfers.zoneFallback": "Private transfer",
-  "partyBoat.operatorLabel": "Operated by Proactivitis"
+  "partyBoat.operatorLabel": "Operated by Proactivitis",
+  "thingtodo.longform.eyebrow": "Essential guide",
+  "thingtodo.longform.title": "Plan your experience: {title}",
+  "thingtodo.longform.body1": "This guide covers what to know before joining {title}: real pick-up windows, meeting points, and how to make the most of each stop.",
+  "thingtodo.longform.body2": "You will find practical tips on attire, hydration, safety, and the best time of day based on the route.",
+  "thingtodo.longform.body3": "For easy comparison, the value is clear: confirmed transport, included gear, and local support throughout the activity."
 }
