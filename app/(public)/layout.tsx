@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import Script from "next/script";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -72,7 +72,9 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
 }`
         }}
       />
-      <PublicHeader />
+      <Suspense fallback={null}>
+        <PublicHeader />
+      </Suspense>
 
       <main className="flex-1">{children}</main>
 
