@@ -7,6 +7,14 @@ import { findInfoPage, parseInfoSlug } from "@/lib/infoRoutes";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+const MAX_TITLE_LENGTH = 58;
+
+const trimSeoTitle = (value: string) => {
+  const trimmed = value.trim();
+  if (trimmed.length <= MAX_TITLE_LENGTH) return trimmed;
+  return `${trimmed.slice(0, MAX_TITLE_LENGTH - 3).trimEnd()}...`;
+};
+
 type Props = {
   params: Promise<{ slug?: string[] }>;
 };
@@ -18,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const page = findInfoPage(normalizedSegments);
   if (!page) return {};
   return {
-    title: page.seoTitle ?? page.title,
+    title: trimSeoTitle(page.seoTitle ?? page.title),
     description: page.seoDescription
   };
 }
