@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ZoneSelector } from "@/components/public/ZoneSelector";
@@ -10,6 +11,32 @@ export const revalidate = 0;
 type Props = {
   params: Promise<{ countrySlug?: string }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const resolved = await params;
+  const slug = resolved?.countrySlug ?? "";
+  if (!slug) return {};
+
+  const country = await prisma.country.findUnique({
+    where: { slug },
+    select: { name: true, slug: true, shortDescription: true }
+  });
+  if (!country) return {};
+
+  const title = `Destinos en ${country.name} | Proactivitis`;
+  const baseDescription =
+    country.shortDescription ??
+    `Explora zonas y experiencias recomendadas en ${country.name} con operadores verificados.`;
+  const description = `${baseDescription} Reserva tours y traslados con confirmacion inmediata.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/destinations/${country.slug}`
+    }
+  };
+}
 
 export default async function CountryPage({ params }: Props) {
   const resolved = await params;

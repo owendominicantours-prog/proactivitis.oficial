@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
@@ -9,6 +10,37 @@ import { getZoneInfo } from "@/lib/destinationInfo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ countrySlug: string; destinationSlug: string }>;
+}): Promise<Metadata> {
+  const resolvedParams = await params;
+  const destination = await prisma.destination.findFirst({
+    where: {
+      slug: resolvedParams.destinationSlug,
+      country: { slug: resolvedParams.countrySlug }
+    },
+    include: { country: true }
+  });
+
+  if (!destination) return {};
+
+  const title = `${destination.name} | Destinos Proactivitis`;
+  const baseDescription =
+    destination.shortDescription ??
+    `Descubre tours y traslados desde ${destination.name}, ${destination.country.name}.`;
+  const description = `${baseDescription} Reserva con precios claros y soporte 24/7.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/destinations/${destination.country.slug}/${destination.slug}`
+    }
+  };
+}
 
 export default async function DestinationPage({
   params,

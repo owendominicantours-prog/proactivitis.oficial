@@ -2,7 +2,9 @@ import { CreditCard, Globe, ShieldCheck, Sparkles } from "lucide-react";
 import PartnerRequestForm from "@/components/public/PartnerRequestForm";
 
 export const metadata = {
-  title: "Conviértete en supplier · Proactivitis"
+  title: "Conviertete en supplier | Proactivitis",
+  description:
+    "Publica tus tours, gestiona reservas y cobra con herramientas pensadas para operadores locales. Solicita tu alta en Proactivitis."
 };
 
 const heroContent = {
