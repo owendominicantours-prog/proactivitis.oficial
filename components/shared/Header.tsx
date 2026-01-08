@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ReactNode, useEffect, useState } from "react";
+import { CSSProperties, ReactNode, useEffect, useState } from "react";
 
 type HeaderProps = {
   navItems: { label: string; href: string }[];
@@ -24,16 +24,16 @@ export const Header = ({ navItems, navDisplay = "inline", rightSlot, logoScale =
 
   return (
     <header className="border-b bg-white shadow-sm">
-      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-6">
-        <div className="flex items-center overflow-visible">
+      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="flex min-w-0 items-center overflow-visible">
           <Link href="/" className="flex items-center">
             <Image
               src="/logo.png"
               alt="Proactivitis"
               width={200}
               height={60}
-              className="h-12 w-auto object-contain origin-left"
-              style={{ transform: `scale(${logoScale})`, transformOrigin: "left" }}
+              className="h-12 max-w-[150px] w-auto object-contain origin-left scale-100 transition-transform md:max-w-none md:scale-[var(--logo-scale)]"
+              style={{ "--logo-scale": logoScale } as CSSProperties}
             />
           </Link>
         </div>
