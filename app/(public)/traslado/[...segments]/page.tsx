@@ -192,6 +192,8 @@ export async function generateMetadata({
   if (level === "country") {
     title = translate(LOCALE, "transfer.metadata.title.country", { country: countryName });
     description = translate(LOCALE, "transfer.metadata.description.country", { country: countryName });
+    description = ensureContains(description, countryName);
+    description = ensureContains(description, country.slug.replace(/-/g, " "));
     keywords.push(`proactivitis ${countryName}`);
   } else if (level === "destination" && destination) {
     title = translate(LOCALE, "transfer.metadata.title.destination", { destination: destinationName });
