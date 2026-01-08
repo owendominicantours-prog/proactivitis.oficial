@@ -57,6 +57,20 @@ export default function PublicContactPage({ locale }: PublicContactPageProps) {
 
           <ContactForm />
         </section>
+
+        <section className="rounded-3xl bg-white p-8 shadow-xl">
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+            {translate(locale, "contact.longform.eyebrow")}
+          </p>
+          <h2 className="mt-3 text-2xl font-semibold text-slate-900">
+            {translate(locale, "contact.longform.title")}
+          </h2>
+          <div className="mt-4 space-y-4 text-sm text-slate-600">
+            <p>{translate(locale, "contact.longform.body1")}</p>
+            <p>{translate(locale, "contact.longform.body2")}</p>
+            <p>{translate(locale, "contact.longform.body3")}</p>
+          </div>
+        </section>
       </div>
     </div>
   );
