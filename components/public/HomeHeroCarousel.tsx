@@ -15,7 +15,7 @@ export function HomeHeroCarousel({ children, intervalMs = 4500 }: HomeHeroCarous
   const backgroundStyles = useMemo(
     () =>
       HERO_IMAGES.map((image) => ({
-        backgroundImage: `linear-gradient(90deg, rgba(4, 21, 45, 0.5), rgba(4, 21, 45, 0.2)), url('${image}')`
+        backgroundImage: `url('${image}')`
       })),
     []
   );
