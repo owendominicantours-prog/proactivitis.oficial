@@ -34,10 +34,10 @@ export const metadata: Metadata = {
   description:
     "Reserva tours, traslados privados y actividades con Proactivitis. Confirmacion inmediata, precios claros y soporte 24/7.",
   icons: [
-    { rel: "icon", url: "/favicon.ico" },
-    { rel: "shortcut icon", url: "/favicon.ico" },
-    { rel: "icon", url: "/icon.png", sizes: "96x96" },
-    { rel: "apple-touch-icon", url: "/apple-icon.png", sizes: "180x180" }
+    { rel: "icon", url: "/logo.png" },
+    { rel: "shortcut icon", url: "/logo.png" },
+    { rel: "icon", url: "/logo.png", sizes: "96x96" },
+    { rel: "apple-touch-icon", url: "/logo.png", sizes: "180x180" }
   ],
   openGraph: {
     title: "Proactivitis | Tours, Traslados y Actividades para Reservar",
