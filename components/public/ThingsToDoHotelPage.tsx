@@ -24,6 +24,27 @@ const getHotel = (hotelSlug: string) =>
 const buildCanonical = (hotelSlug: string, locale: Locale) =>
   locale === "es" ? `${BASE_URL}/things-to-do/${hotelSlug}` : `${BASE_URL}/${locale}/things-to-do/${hotelSlug}`;
 
+const parseGallery = (gallery?: string | null) => {
+  if (!gallery) return [];
+  try {
+    return (JSON.parse(gallery) as string[]) ?? [];
+  } catch {
+    return [];
+  }
+};
+
+const resolveTourImage = (heroImage?: string | null, gallery?: string | null) => {
+  if (heroImage) return heroImage;
+  const parsed = parseGallery(gallery);
+  return parsed[0] ?? null;
+};
+
+const pickByHash = <T,>(items: T[], seed: string) => {
+  if (items.length === 0) return null;
+  const hash = seed.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return items[Math.abs(hash) % items.length] ?? null;
+};
+
 const toAbsoluteUrl = (value?: string | null) => {
   if (!value) return `${BASE_URL}${FALLBACK_IMAGE}`;
   if (value.startsWith("http")) return value;
@@ -57,8 +78,17 @@ export async function buildThingsToDoMetadata(hotelSlug: string, locale: Locale)
   const seoDescription = description.endsWith(".") ? description : `${description}.`;
   const canonical = buildCanonical(hotel.slug, locale);
   const ogLocale = locale === "es" ? "es_DO" : locale === "fr" ? "fr_FR" : "en_US";
-  const primaryLanding = allLandings().find((landing) => landing.hotelSlug === hotel.slug);
-  const imageUrl = toAbsoluteUrl(primaryLanding?.heroImage ?? null);
+  const tourImages = await prisma.tour.findMany({
+    where: { status: "published" },
+    select: { heroImage: true, gallery: true, slug: true },
+    orderBy: { createdAt: "desc" },
+    take: 12
+  });
+  const pickedTour = pickByHash(tourImages, hotel.slug);
+  const tourImage = pickedTour
+    ? resolveTourImage(pickedTour.heroImage, pickedTour.gallery)
+    : null;
+  const imageUrl = toAbsoluteUrl(tourImage);
   return {
     title: seoTitle,
     description: seoDescription,
