@@ -1036,7 +1036,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
   return (
 
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-10">
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-10 overflow-x-hidden">
 
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[2.2fr_1fr]">
 
@@ -1187,7 +1187,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                     </label>
 
-                    <div className="flex gap-3">
+                    <div className="flex flex-col gap-3 sm:flex-row">
 
                       <select
 
@@ -1201,7 +1201,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                         }}
 
-                        className="w-36 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm"
+                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm sm:w-36"
 
                       >
 
@@ -1229,7 +1229,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                         placeholder="809 000 0000"
 
-                        className={`flex-1 rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
+                        className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
 
                           errors.phone ? "border-rose-500 ring-2 ring-rose-100" : "border-slate-200"
 
@@ -2151,7 +2151,7 @@ const PaymentForm = memo(function PaymentForm({
 
           disabled={paymentLoading}
 
-          className="w-[65%] rounded-2xl bg-[#008768] px-5 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
+          className="w-full rounded-2xl bg-[#008768] px-5 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400 sm:w-[65%]"
 
         >
 
