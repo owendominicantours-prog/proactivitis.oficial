@@ -370,6 +370,21 @@ export async function TransferLandingPage({
           </p>
         ))}
       </section>
+      <section className="mx-auto max-w-6xl px-4 py-8">
+        <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+            {t("transferLanding.longform.eyebrow")}
+          </p>
+          <h2 className="mt-2 text-2xl font-bold text-slate-900">
+            {t("transferLanding.longform.title", { hotel: localizedLanding.hotelName })}
+          </h2>
+          <div className="mt-4 space-y-3 text-sm text-slate-600">
+            <p>{t("transferLanding.longform.body1", { hotel: localizedLanding.hotelName })}</p>
+            <p>{t("transferLanding.longform.body2", { hotel: localizedLanding.hotelName })}</p>
+            <p>{t("transferLanding.longform.body3")}</p>
+          </div>
+        </div>
+      </section>
       <section className="mx-auto max-w-6xl space-y-6 px-4 py-12">
         <header className="space-y-2">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{t("transferLanding.faq.eyebrow")}</p>
