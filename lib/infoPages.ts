@@ -233,7 +233,7 @@ export const infoPages: InfoPage[] = [
     category: "support",
     path: "/how-it-works",
     title: "Cómo funciona",
-    seoTitle: "Cómo funciona Proactivitis | Proactivitis",
+    seoTitle: "Cómo funciona | Proactivitis",
     seoDescription: "Procesos simples, pagos blindados y ejecución premium para cada viajero. | Simple processes, secure payments, and premium execution for every traveler.",
     hero: {
       eyebrow: "Proceso",
