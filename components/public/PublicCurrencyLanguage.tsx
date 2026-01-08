@@ -45,7 +45,7 @@ export function PublicCurrencyLanguage() {
 
   return (
     <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-600">
-      <div className="relative">
+      <div className="relative hidden sm:block">
         <button
           type="button"
           onClick={() => {
@@ -91,12 +91,25 @@ export function PublicCurrencyLanguage() {
             setLanguageOpen((prev) => !prev);
             setCurrencyOpen(false);
           }}
-          className="flex h-10 items-center justify-center gap-1 rounded-full border border-slate-200 px-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-600"
+          className="flex h-10 items-center justify-center gap-2 rounded-full border border-slate-200 px-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-600"
         >
-          <span>{t("header.language.label")}</span>
-          {locale.toUpperCase()}
           <svg
-            className="h-3 w-3"
+            className="h-4 w-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+          >
+            <path
+              d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 0c2.5 2.4 4 5.7 4 9s-1.5 6.6-4 9c-2.5-2.4-4-5.7-4-9s1.5-6.6 4-9Zm-8.2 7h16.4m-16.4 4h16.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span className="hidden sm:inline">{t("header.language.label")}</span>
+          <span className="hidden sm:inline">{locale.toUpperCase()}</span>
+          <svg
+            className="hidden h-3 w-3 sm:inline"
             viewBox="0 0 8 6"
             fill="none"
             stroke="currentColor"
