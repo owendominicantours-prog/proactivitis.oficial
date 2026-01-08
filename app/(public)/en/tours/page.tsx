@@ -6,7 +6,7 @@ import PublicToursPage from "@/components/public/PublicToursPage";
 const canonicalUrl = "https://proactivitis.com/en/tours";
 
 export const metadata: Metadata = {
-  title: "Tours & Activities | Book with Proactivitis",
+  title: "Tours & activities | Proactivitis",
   description:
     "Book tours and activities with clear pricing, verified operators, and instant confirmation.",
   alternates: {

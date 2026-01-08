@@ -23,7 +23,7 @@ const resolveTourHeroImage = (tour: TourImageSource) => {
   return tour.heroImage ?? gallery[0] ?? DEFAULT_TOUR_IMAGE;
 };
 
-const MAX_TITLE_LENGTH = 58;
+const MAX_TITLE_LENGTH = 55;
 const BRAND_SUFFIX = " | Proactivitis";
 
 const buildSeoTitle = (baseTitle: string) => {
