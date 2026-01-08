@@ -10,6 +10,7 @@ import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 import { Locale, translate } from "@/lib/translations";
 
 const BASE_URL = "https://proactivitis.com";
+const FALLBACK_IMAGE = "/transfer/mini van.png";
 
 const buildTransferSlug = (hotelSlug: string) =>
   `punta-cana-international-airport-puj-to-${hotelSlug}`;
@@ -23,15 +24,45 @@ const getHotel = (hotelSlug: string) =>
 const buildCanonical = (hotelSlug: string, locale: Locale) =>
   locale === "es" ? `${BASE_URL}/things-to-do/${hotelSlug}` : `${BASE_URL}/${locale}/things-to-do/${hotelSlug}`;
 
+const toAbsoluteUrl = (value?: string | null) => {
+  if (!value) return `${BASE_URL}${FALLBACK_IMAGE}`;
+  if (value.startsWith("http")) return value;
+  const normalized = value.startsWith("/") ? value : `/${value}`;
+  return `${BASE_URL}${normalized}`;
+};
+
+const buildKeywords = (hotelName: string, locale: Locale) => {
+  const base =
+    locale === "es"
+      ? ["tours en Punta Cana", "excursiones Punta Cana", "traslados Punta Cana"]
+      : locale === "fr"
+        ? ["excursions Punta Cana", "tours Punta Cana", "transferts Punta Cana"]
+        : ["Punta Cana tours", "Punta Cana excursions", "Punta Cana transfers"];
+  return Array.from(
+    new Set([
+      hotelName,
+      `${hotelName} things to do`,
+      ...base,
+      "Proactivitis"
+    ])
+  );
+};
+
 export async function buildThingsToDoMetadata(hotelSlug: string, locale: Locale): Promise<Metadata> {
   const hotel = await getHotel(hotelSlug);
   if (!hotel) return {};
   const title = translate(locale, "thingsToDo.meta.title", { hotel: hotel.name });
-  const description = translate(locale, "thingsToDo.meta.description", { hotel: hotel.name });
+  const description = translate(locale, "thingsToDo.meta.description", { hotel: hotel.name }).trim();
+  const seoTitle = `${title} | Proactivitis`;
+  const seoDescription = description.endsWith(".") ? description : `${description}.`;
   const canonical = buildCanonical(hotel.slug, locale);
+  const ogLocale = locale === "es" ? "es_DO" : locale === "fr" ? "fr_FR" : "en_US";
+  const primaryLanding = allLandings().find((landing) => landing.hotelSlug === hotel.slug);
+  const imageUrl = toAbsoluteUrl(primaryLanding?.heroImage ?? null);
   return {
-    title,
-    description,
+    title: seoTitle,
+    description: seoDescription,
+    keywords: buildKeywords(hotel.name, locale),
     alternates: {
       canonical,
       languages: {
@@ -41,9 +72,19 @@ export async function buildThingsToDoMetadata(hotelSlug: string, locale: Locale)
       }
     },
     openGraph: {
-      title,
-      description,
-      url: canonical
+      title: seoTitle,
+      description: seoDescription,
+      url: canonical,
+      siteName: "Proactivitis",
+      type: "website",
+      locale: ogLocale,
+      images: [{ url: imageUrl }]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seoTitle,
+      description: seoDescription,
+      images: [imageUrl]
     }
   };
 }
