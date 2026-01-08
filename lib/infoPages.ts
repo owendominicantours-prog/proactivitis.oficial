@@ -457,7 +457,7 @@ export const infoPages: InfoPage[] = [
         title: "El diferencial Proactivitis para socios",
         columns: [
           { title: "Infraestructura global", items: ["Acceso a una red curada en destinos estratégicos."] },
-          { title: "Integración flexible", items: ["Desde widgets hasta integraciones via API adaptadas a su stack." ] },
+          { title: "Integración flexible", items: ["Desde widgets hasta integraciones v?a API adaptadas a su stack." ] },
           { title: "Seguridad financiera", items: ["Procesamiento robusto y liquidaciones transparentes."] },
           { title: "Brand protection", items: ["Su marca se asocia con un estándar auditado y soporte 24/7."] }
         ]
