@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 type HomeHeroCarouselProps = {
   children: ReactNode;
@@ -12,13 +12,6 @@ const HERO_IMAGES = ["/CARRU1.jpg", "/CARRU2.jpg", "/CARR3.png"];
 export function HomeHeroCarousel({ children, intervalMs = 4500 }: HomeHeroCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const maxIndex = HERO_IMAGES.length;
-  const backgroundStyles = useMemo(
-    () =>
-      HERO_IMAGES.map((image) => ({
-        backgroundImage: `url('${image}')`
-      })),
-    []
-  );
 
   useEffect(() => {
     if (maxIndex <= 1) return undefined;
@@ -29,20 +22,12 @@ export function HomeHeroCarousel({ children, intervalMs = 4500 }: HomeHeroCarous
   }, [intervalMs, maxIndex]);
 
   return (
-    <section className="relative overflow-hidden">
-      <div className="h-[420px] w-full">
-        {backgroundStyles.map((style, index) => (
-          <div
-            key={style.backgroundImage}
-            aria-hidden
-            className={`absolute inset-0 bg-center bg-cover transition-opacity duration-700 ${
-              index === activeIndex ? "opacity-100" : "opacity-0"
-            }`}
-            style={style}
-          />
-        ))}
-      </div>
-      <div className="absolute inset-0 flex items-center justify-center px-6 md:px-0">
+    <section
+      className="relative flex min-h-[420px] items-center justify-center overflow-hidden bg-center bg-cover"
+      style={{ backgroundImage: `url('${HERO_IMAGES[activeIndex]}')` }}
+    >
+      <div className="absolute inset-0 bg-slate-900/35" aria-hidden />
+      <div className="relative px-6 md:px-0">
         <div className="max-w-4xl">{children}</div>
       </div>
     </section>
