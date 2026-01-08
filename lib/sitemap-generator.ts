@@ -18,6 +18,14 @@ if (process.env.NODE_ENV !== "production") {
 
 const normalize = (value?: string | null) => value?.trim().toLowerCase() ?? "";
 const BASE_URL = "https://proactivitis.com";
+const TRANSLATED_PREFIXES = [
+  "/tours",
+  "/thingtodo/tours",
+  "/things-to-do",
+  "/excursiones-seguras-punta-cana"
+];
+const TRANSLATED_ROOTS = ["/", "/tours", "/traslado"];
+const TRANSLATION_LOCALES = ["en", "fr"];
 const MAX_TOP_HOTELS = 80;
 const MAX_TOURS_PER_HOTEL = 35;
 const MAX_TOTAL_COMBOS = 4000;
@@ -58,6 +66,22 @@ const uniqueByUrl = (entries: RouteEntry[]) => {
     seen.add(entry.url);
     return true;
   });
+};
+
+const buildLocalizedEntries = (entries: RouteEntry[]) => {
+  const localized: RouteEntry[] = [];
+  for (const entry of entries) {
+    if (!entry.url.startsWith(BASE_URL)) continue;
+    const path = entry.url.replace(BASE_URL, "");
+    const shouldTranslate =
+      TRANSLATED_ROOTS.includes(path) || TRANSLATED_PREFIXES.some((prefix) => path.startsWith(prefix));
+    if (!shouldTranslate) continue;
+    for (const locale of TRANSLATION_LOCALES) {
+      const localizedPath = path === "/" ? `/${locale}` : `/${locale}${path}`;
+      localized.push({ url: `${BASE_URL}${localizedPath}`, priority: entry.priority });
+    }
+  }
+  return localized;
 };
 
 export async function buildSitemapEntries(): Promise<SitemapEntries> {
@@ -157,7 +181,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
       priority: 0.65
     }));
 
-  const tourEntries: RouteEntry[] = uniqueByUrl([
+  const baseEntries: RouteEntry[] = [
     { url: `${BASE_URL}/`, priority: 1.0 },
     { url: `${BASE_URL}/tours`, priority: 0.9 },
     { url: `${BASE_URL}/traslado`, priority: 0.9 },
@@ -183,7 +207,10 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
       url: `${BASE_URL}/thingtodo/tours/${landing.slug}`,
       priority: 0.7
     }))
-  ]);
+  ];
+
+  const localizedEntries = buildLocalizedEntries(baseEntries);
+  const tourEntries: RouteEntry[] = uniqueByUrl([...baseEntries, ...localizedEntries]);
 
   const hotelEntries: RouteEntry[] = uniqueByUrl([
     ...locations.map((location) => ({
