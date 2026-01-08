@@ -125,14 +125,24 @@
 
   "transfer.hero.label": "Proactivitis Transfert",
 
-  "transfer.hero.title": "Transferts privés vers toutes destinations",
+  "transfer.hero.title": "Transferts prives a reserver en minutes",
 
-  "transfer.hero.description": "Tout compris, chauffeurs bilingues et confirmation instantanée. De l'atterrissage au lobby de l'hôtel, votre voyage commence en toute confiance.",
+  "transfer.hero.description": "Reservez des transferts prives avec chauffeurs verifies, prix clairs et confirmation immediate. Aeroport, hotel et ville connectes avec support 24/7.",
   "transfer.longform.eyebrow": "Comment ?a marche",
   "transfer.longform.title": "Transferts clairs, s?rs et avec support r?el",
-  "transfer.longform.body1": "Choisissez l'origine et la destination pour voir les tarifs r?els, les dur?es estim?es et les options de v?hicule. Chaque transfert inclut confirmation imm?diate et suivi du service.",
-  "transfer.longform.body2": "Nos chauffeurs sont v?rifi?s et connaissent les itin?raires les plus efficaces pour ?viter les retards. Nous suivons aussi les vols pour ajuster la prise en charge sans frais cach?s.",
-  "transfer.longform.body3": "Vous voyagez en groupe, en famille ou avec beaucoup de bagages ? Choisissez le bon v?hicule et r?servez en quelques minutes.",
+  "transfer.longform.body1": "Choisissez l origine et la destination pour voir les tarifs reels, les temps estimes et les options de vehicule. Chaque transfert inclut confirmation immediate, suivi du service et assistance si le vol change.",
+  "transfer.longform.body2": "Nos chauffeurs sont verifies et connaissent les routes les plus efficaces. Nous surveillons les vols et confirmons le point de rendez vous pour un transfert ponctuel, sur et sans frais caches.",
+  "transfer.longform.body3": "Si vous voyagez en famille, en groupe ou avec des bagages speciaux, vous pouvez choisir la bonne categorie et reserver rapidement. Des arrets planifies peuvent etre demandes a l avance.",
+  "transfer.longform2.eyebrow": "Avant de reserver",
+  "transfer.longform2.title": "Choisir des transferts sans mauvaises surprises",
+  "transfer.longform2.body1": "Confirmez le type de vehicule selon votre groupe et vos bagages. Pour les vols internationaux, choisissez un transfert avec suivi du vol et temps d attente inclus.",
+  "transfer.longform2.body2": "Verifiez si le service inclut assistance a l aeroport, pancarte avec votre nom et contact WhatsApp. Ces details reduisent le stress et accelerent la sortie.",
+  "transfer.longform2.body3": "Si vous combinez aeroport, hotel et excursions, reservez a l avance et gardez votre confirmation. Avec Proactivitis, vous pouvez ajuster les horaires et conserver le meme chauffeur."
+  "transfer.longform3.eyebrow": "Trajets et prises en charge",
+  "transfer.longform3.title": "Transferts prives depuis aeroport, hotels et villes",
+  "transfer.longform3.body1": "Les transferts prives Proactivitis sont concus pour une arrivee simple de l aeroport a l hotel. Apres reservation, vous recevez le point de rendez vous, le temps d attente inclus et le contact du chauffeur. Cela evite les doutes et accelere la sortie.",
+  "transfer.longform3.body2": "Si votre voyage inclut plusieurs hotels ou des changements de ville, vous pouvez reserver des trajets multiples avec le meme fournisseur. Le service reste coherent et les horaires s alignent avec vos tours et activites. Pour les familles, choisissez plus d espace; pour les voyages d affaires, priorisez confort et ponctualite.",
+  "transfer.longform3.body3": "Au dela de l aeroport et de l hotel, vous pouvez reserver des transferts vers ports, marinas et points d excursion. L essentiel est de confirmer l heure exacte et la duree estimee pour ne pas perturber vos tours. Avec Proactivitis, prix visibles, confirmation immediate et support humain."
 
   "transfer.link.home": "Aller à Proactivitis",
 
@@ -143,6 +153,7 @@
   "transfer.hero.stat.drivers": "Chauffeurs certifiés",
 
   "transfer.hero.stat.support": "Support 24/7 : espagnol et anglais",
+  "transfer.hero.stat.supportValue": "Support 24/7 en anglais et espagnol",
 
   "transfer.faq.label": "Questions fréquentes",
 

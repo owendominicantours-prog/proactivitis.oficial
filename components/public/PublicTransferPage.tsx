@@ -10,7 +10,7 @@ import { Locale, translate } from "@/lib/translations";
 const heroStats = [
   { labelKey: "transfer.hero.stat.transfers", value: "5.000+" },
   { labelKey: "transfer.hero.stat.drivers", value: "120" },
-  { labelKey: "transfer.hero.stat.support", value: "en español e inglés" }
+  { labelKey: "transfer.hero.stat.support", valueKey: "transfer.hero.stat.supportValue" }
 ] as const;
 
 const faqItems = [
@@ -104,7 +104,9 @@ export default async function PublicTransferPage({ locale }: Props) {
                   <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
                   {translate(locale, stat.labelKey)}
                   </p>
-                  <p className="text-lg font-bold text-slate-900">{stat.value}</p>
+                  <p className="text-lg font-bold text-slate-900">
+                    {"valueKey" in stat ? translate(locale, stat.valueKey) : stat.value}
+                  </p>
                 </div>
               ))}
             </div>
@@ -132,6 +134,34 @@ export default async function PublicTransferPage({ locale }: Props) {
             <p>{translate(locale, "transfer.longform.body1")}</p>
             <p>{translate(locale, "transfer.longform.body2")}</p>
             <p>{translate(locale, "transfer.longform.body3")}</p>
+          </div>
+        </section>
+
+        <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+            {translate(locale, "transfer.longform2.eyebrow")}
+          </p>
+          <h2 className="mt-3 text-2xl font-bold text-slate-900">
+            {translate(locale, "transfer.longform2.title")}
+          </h2>
+          <div className="mt-4 space-y-4 text-sm text-slate-600">
+            <p>{translate(locale, "transfer.longform2.body1")}</p>
+            <p>{translate(locale, "transfer.longform2.body2")}</p>
+            <p>{translate(locale, "transfer.longform2.body3")}</p>
+          </div>
+        </section>
+
+        <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+            {translate(locale, "transfer.longform3.eyebrow")}
+          </p>
+          <h2 className="mt-3 text-2xl font-bold text-slate-900">
+            {translate(locale, "transfer.longform3.title")}
+          </h2>
+          <div className="mt-4 space-y-4 text-sm text-slate-600">
+            <p>{translate(locale, "transfer.longform3.body1")}</p>
+            <p>{translate(locale, "transfer.longform3.body2")}</p>
+            <p>{translate(locale, "transfer.longform3.body3")}</p>
           </div>
         </section>
 

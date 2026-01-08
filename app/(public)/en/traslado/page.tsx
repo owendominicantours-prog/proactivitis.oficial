@@ -5,9 +5,9 @@ import PublicTransferPage from "@/components/public/PublicTransferPage";
 const canonicalUrl = "https://proactivitis.com/en/traslado";
 
 export const metadata: Metadata = {
-  title: "Private Transfers by Proactivitis",
+  title: "Private Transfers | Book with Proactivitis",
   description:
-    "Book your private transfer with bilingual chauffeurs, fixed prices, and total flexibility. Proactivitis connects flights, hotels, and trusted partners across the region.",
+    "Book private transfers with verified drivers, clear prices, and instant confirmation. Airport, hotel, and city connections with 24/7 support.",
   alternates: {
     canonical: canonicalUrl,
     languages: {

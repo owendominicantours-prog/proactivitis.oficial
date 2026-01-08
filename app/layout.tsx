@@ -1,6 +1,7 @@
 import "@/styles/globals.css";
 import type { Metadata } from "next";
 import { ReactNode } from "react";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/react";
@@ -63,8 +64,11 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  const requestHeaders = headers();
+  const localeHeader = requestHeaders.get("x-proactivitis-locale");
+  const lang = localeHeader === "en" || localeHeader === "fr" ? localeHeader : "es";
   return (
-    <html lang="es" className={`${inter.variable} ${geist.variable} ${geistMono.variable}`}>
+    <html lang={lang} className={`${inter.variable} ${geist.variable} ${geistMono.variable}`}>
       <body className="min-h-full bg-[#F8FAFC] text-slate-900 antialiased">
         <Providers>{children}</Providers>
         <Analytics />

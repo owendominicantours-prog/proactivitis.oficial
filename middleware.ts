@@ -25,6 +25,9 @@ function matchAllowed(pathname: string, role?: string) {
 export default withAuth(
   (req) => {
     const { pathname } = req.nextUrl;
+    const locale = pathname.startsWith("/en") ? "en" : pathname.startsWith("/fr") ? "fr" : "es";
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set("x-proactivitis-locale", locale);
     const transferPrefix = "/transfer/punta-cana-international-airport-to-";
     if (pathname.startsWith(transferPrefix)) {
       const targetPath = pathname.replace(
@@ -33,8 +36,13 @@ export default withAuth(
       );
       const url = req.nextUrl.clone();
       url.pathname = targetPath;
-      return NextResponse.redirect(url, 301);
+      const response = NextResponse.redirect(url, 301);
+      response.cookies.set("proactivitis-language", locale, { path: "/", sameSite: "lax" });
+      return response;
     }
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    response.cookies.set("proactivitis-language", locale, { path: "/", sameSite: "lax" });
+    return response;
   },
   {
     callbacks: {
@@ -47,13 +55,6 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/transfer/:path*",
-    "/admin/:path*",
-    "/supplier/:path*",
-    "/agency/:path*",
-    "/customer/:path*",
-    "/me/:path*",
-    "/chat",
-    "/portal/(admin|supplier|agency|customer)"
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)"
   ]
 };
