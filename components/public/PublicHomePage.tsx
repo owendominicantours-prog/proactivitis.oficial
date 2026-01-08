@@ -122,13 +122,28 @@ export default function PublicHomePage({ locale }: PublicHomePageProps) {
             <p>{t("home.longform.body3")}</p>
           </div>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {[1, 2, 3].map((index) => (
-              <div key={index} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+            {(
+              [
+                {
+                  titleKey: "home.longform.points.1.title",
+                  bodyKey: "home.longform.points.1.body"
+                },
+                {
+                  titleKey: "home.longform.points.2.title",
+                  bodyKey: "home.longform.points.2.body"
+                },
+                {
+                  titleKey: "home.longform.points.3.title",
+                  bodyKey: "home.longform.points.3.body"
+                }
+              ] as const
+            ).map((item) => (
+              <div key={item.titleKey} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                  {t(`home.longform.points.${index}.title`)}
+                  {t(item.titleKey)}
                 </p>
                 <p className="mt-2 text-sm text-slate-600">
-                  {t(`home.longform.points.${index}.body`)}
+                  {t(item.bodyKey)}
                 </p>
               </div>
             ))}
