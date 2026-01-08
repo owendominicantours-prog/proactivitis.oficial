@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ReactNode, useState } from "react";
+import { usePathname } from "next/navigation";
+import { ReactNode, useEffect, useState } from "react";
 
 type HeaderProps = {
   navItems: { label: string; href: string }[];
@@ -14,6 +15,12 @@ type HeaderProps = {
 export const Header = ({ navItems, navDisplay = "inline", rightSlot, logoScale = 3 }: HeaderProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setMobileOpen(false);
+    setDropdownOpen(false);
+  }, [pathname]);
 
   return (
     <header className="border-b bg-white shadow-sm">
@@ -99,6 +106,7 @@ export const Header = ({ navItems, navDisplay = "inline", rightSlot, logoScale =
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => setMobileOpen(false)}
               className="rounded-md px-3 py-2 transition hover:bg-slate-50 hover:text-slate-900"
             >
               {item.label}
