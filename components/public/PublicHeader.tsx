@@ -43,9 +43,9 @@ export function PublicHeader() {
         <PublicCurrencyLanguage />
       </Suspense>
       {userName && (
-        <div className="hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 md:flex">
+        <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700 sm:px-3 sm:text-xs">
           <span className="h-2 w-2 rounded-full bg-emerald-500" />
-          <span className="max-w-[140px] truncate">{userName}</span>
+          <span className="hidden max-w-[140px] truncate sm:inline">{userName}</span>
         </div>
       )}
       <PublicWishlistButton />
