@@ -33,10 +33,10 @@ export const metadata: Metadata = {
   description:
     "Reserve tours auténticos, traslados privados premium y experiencias exclusivas con confirmación inmediata. Seguridad de pago global y soporte 24/7 en los mejores destinos del mundo.",
   icons: [
-    { rel: "icon", url: "/ico.ico" },
-    { rel: "shortcut icon", url: "/ico.ico" },
+    { rel: "icon", url: "/favicon.ico" },
+    { rel: "shortcut icon", url: "/favicon.ico" },
     { rel: "icon", url: "/icon.png", sizes: "96x96" },
-    { rel: "apple-touch-icon", url: "/apple-icon.png", sizes: "96x96" }
+    { rel: "apple-touch-icon", url: "/apple-icon.png", sizes: "180x180" }
   ],
   openGraph: {
     title: "Proactivitis | Global Travel Experience Platform: Tours & Transfers",
