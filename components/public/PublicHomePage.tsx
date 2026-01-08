@@ -11,6 +11,8 @@ type PublicHomePageProps = {
 };
 
 export default function PublicHomePage({ locale }: PublicHomePageProps) {
+  const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
+    translate(locale, key, replacements);
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -103,6 +105,34 @@ export default function PublicHomePage({ locale }: PublicHomePageProps) {
         <HomeRecommendedHeader locale={locale} />
         <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-sm">
           <FeaturedToursSection locale={locale} />
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl space-y-5 px-4 sm:px-6">
+        <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+            {t("home.longform.eyebrow")}
+          </p>
+          <h2 className="mt-3 text-2xl font-semibold text-slate-900 md:text-3xl">
+            {t("home.longform.title")}
+          </h2>
+          <div className="mt-4 space-y-4 text-sm text-slate-600">
+            <p>{t("home.longform.body1")}</p>
+            <p>{t("home.longform.body2")}</p>
+            <p>{t("home.longform.body3")}</p>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {[1, 2, 3].map((index) => (
+              <div key={index} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                  {t(`home.longform.points.${index}.title`)}
+                </p>
+                <p className="mt-2 text-sm text-slate-600">
+                  {t(`home.longform.points.${index}.body`)}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
