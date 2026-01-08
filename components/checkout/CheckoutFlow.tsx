@@ -92,6 +92,13 @@ type ContactField = {
   placeholder: string;
 };
 
+type SavedPayment = {
+  method?: string | null;
+  brand?: string | null;
+  last4?: string | null;
+  updatedAt?: string | null;
+};
+
 
 
 type PaymentMethodId = "card" | "paypal" | "google_pay" | "klarna";
@@ -524,6 +531,8 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
   const [activePaymentMethod, setActivePaymentMethod] = useState<PaymentMethodId>("card");
 
+  const [savedPayment, setSavedPayment] = useState<SavedPayment | null>(null);
+
   const [completedSteps, setCompletedSteps] = useState([false, false, false]);
 
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -553,6 +562,25 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sessionExpiredRef = useRef(false);
+
+  useEffect(() => {
+    let isActive = true;
+    fetch("/api/customer/payment")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!isActive) return;
+        if (data?.payment) {
+          setSavedPayment(data.payment as SavedPayment);
+        }
+      })
+      .catch(() => {
+        if (!isActive) return;
+        setSavedPayment(null);
+      });
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   const handleSessionExpire = useCallback(
 
@@ -1602,6 +1630,19 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                     </p>
 
                   </div>
+                  {savedPayment && (
+                    <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm text-slate-700">
+                      <p className="text-xs uppercase tracking-[0.3em] text-emerald-600">
+                        Metodo guardado
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-slate-900">
+                        {savedPayment.brand ?? "Metodo"} • **** {savedPayment.last4 ?? "0000"}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        Tu metodo esta listo para usar en esta reserva.
+                      </p>
+                    </div>
+                  )}
 
                   <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
 

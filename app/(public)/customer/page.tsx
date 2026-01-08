@@ -1,97 +1,190 @@
-import { StatCard } from "@/components/admin/StatCard";
-import { CustomerSidebar } from "@/components/customer/Sidebar";
-import { CustomerTopbar } from "@/components/customer/Topbar";
+import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { updateCustomerPaymentAction } from "@/app/customer/profile/actions";
 
-const upcomingReservations = [
-  {
-    date: "08 Dic",
-    tour: "Saona Island Escape",
-    time: "08:00 AM",
-    state: "Confirmada",
-    guests: "2 pax",
-    pickup: "Hotel Owen Beach"
-  },
-  {
-    date: "12 Dic",
-    tour: "Buggy + Horse",
-    time: "09:30 AM",
-    state: "Pendiente",
-    guests: "4 pax",
-    pickup: "Lobby Hilton Punta Cana"
+export default async function CustomerPortal() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
+        <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center">
+          <p className="text-lg font-semibold text-slate-900">Debes iniciar sesion</p>
+          <p className="mt-2 text-sm text-slate-600">Accede para ver tu panel de cliente.</p>
+          <Link
+            href="/auth/login"
+            className="mt-6 inline-flex items-center justify-center rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white"
+          >
+            Ir al login
+          </Link>
+        </div>
+      </div>
+    );
   }
-];
 
-const notifications = [
-  { text: "Tu tour Saona Island fue confirmado", type: "confirmacion" },
-  { text: "Nuevo mensaje de soporte: revisión de voucher", type: "mensaje" },
-  { text: "Cambio de punto de encuentro para Buggy", type: "alerta" }
-];
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true, name: true, email: true }
+  });
 
-const chatThreads = [
-  { title: "Soporte Proactivitis", last: "Te confirmamos tu tour Saona Island" },
-  { title: "Supplier — Dominican Safari", last: "Te enviamos voucher actualizado" },
-  { title: "Soporte de facturación", last: "Tu factura ya está lista" }
-];
+  const bookings = await prisma.booking.findMany({
+    where: {
+      OR: [{ customerEmail: session.user.email }, { userId: session.user.id ?? undefined }]
+    },
+    include: { Tour: true },
+    orderBy: { travelDate: "desc" },
+    take: 6
+  });
 
-export default function CustomerPortal() {
+  const payment = user
+    ? await prisma.customerPayment.findUnique({
+        where: { userId: user.id }
+      })
+    : null;
+
+  const recommended = await prisma.tour.findMany({
+    where: { status: "published" },
+    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+    take: 4,
+    select: { id: true, slug: true, title: true, heroImage: true, price: true }
+  });
+
+  const customerName = user?.name ?? session.user.name ?? "Viajero";
+
+  const messages = [
+    bookings[0]
+      ? `Tu reserva para ${bookings[0].Tour?.title ?? "tu tour"} esta en seguimiento.`
+      : "Explora tours recomendados y activa alertas de nuevos destinos.",
+    "Puedes guardar tu metodo de pago una sola vez y usarlo en cada reserva.",
+    "Si necesitas ayuda, nuestro soporte 24/7 esta disponible por WhatsApp."
+  ];
+
   return (
-    <div className="bg-slate-100">
-      <CustomerSidebar />
-      <div className="ml-0 lg:ml-56">
-        <CustomerTopbar />
-        <main className="space-y-6 p-6">
-          <section className="space-y-4">
-            <h2 className="text-sm uppercase tracking-[0.4em] text-slate-500">Resumen rápido</h2>
-            <div className="grid gap-4 md:grid-cols-3">
-              <StatCard label="Reservas próximas" value={upcomingReservations.length.toString()} />
-              <StatCard label="Notificaciones" value={notifications.length.toString()} />
-              <StatCard label="Chats activos" value={chatThreads.length.toString()} />
+    <div className="min-h-screen bg-slate-50 px-4 py-10">
+      <div className="mx-auto max-w-6xl space-y-8">
+        <header className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-3">
+              <span className="h-3 w-3 rounded-full bg-emerald-500" />
+              <h1 className="text-2xl font-semibold text-slate-900">Hola, {customerName}</h1>
             </div>
-          </section>
+            <p className="text-sm text-slate-600">
+              Bienvenido a tu panel. Aqui puedes ver reservas, metodo de pago y tus e-tickets.
+            </p>
+          </div>
+        </header>
 
-          <section className="grid gap-6 lg:grid-cols-2">
+        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="space-y-6">
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900">Próximas reservas</h3>
-              <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                {upcomingReservations.map((reservation) => (
-                  <li key={`${reservation.tour}-${reservation.date}`} className="rounded-2xl border border-slate-100 p-4">
-                    <p className="font-semibold text-slate-900">
-                      {reservation.date} · {reservation.tour}
-                    </p>
-                    <p>
-                      {reservation.time} · {reservation.state} · {reservation.guests}
-                    </p>
-                    <p className="text-xs text-slate-500">Pickup: {reservation.pickup}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900">Chat / Soporte</h3>
-              <p className="mt-2 text-sm text-slate-600">Conversaciones en curso con proveedores y soporte.</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Mensajes</p>
               <div className="mt-4 space-y-3 text-sm text-slate-600">
-                {chatThreads.map((chat) => (
-                  <div key={chat.title} className="rounded-2xl border border-slate-100 p-3">
-                    <p className="font-semibold text-slate-900">{chat.title}</p>
-                    <p className="text-xs text-slate-400">Último mensaje · {chat.last}</p>
+                {messages.map((message) => (
+                  <div key={message} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                    {message}
                   </div>
                 ))}
               </div>
             </div>
-          </section>
 
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-slate-900">Notificaciones recientes</h3>
-            <ul className="mt-4 space-y-3 text-sm text-slate-600">
-              {notifications.map((notification) => (
-                <li key={notification.text} className="rounded-2xl border border-slate-100 p-3">
-                  <p className="font-semibold text-slate-900">{notification.text}</p>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{notification.type}</p>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </main>
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">E-tickets</p>
+                  <h2 className="mt-2 text-lg font-semibold text-slate-900">Tus reservas recientes</h2>
+                </div>
+                <Link
+                  href="/customer/reservations"
+                  className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-600 hover:underline"
+                >
+                  Ver todas
+                </Link>
+              </div>
+              <div className="mt-4 space-y-3">
+                {bookings.length === 0 && (
+                  <p className="text-sm text-slate-500">Aun no tienes reservas activas.</p>
+                )}
+                {bookings.map((booking) => (
+                  <div key={booking.id} className="rounded-2xl border border-slate-100 p-4">
+                    <p className="text-sm font-semibold text-slate-900">
+                      {booking.Tour?.title ?? "Tour"}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {booking.travelDate.toLocaleDateString("es-DO")} ? {booking.travelDate.toLocaleTimeString("es-DO", { hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em]">
+                      <Link
+                        href={`/customer/reservations/${booking.id}`}
+                        className="rounded-full border border-emerald-200 px-3 py-1 text-emerald-700"
+                      >
+                        Ver e-ticket
+                      </Link>
+                      {booking.Tour?.slug && (
+                        <Link
+                          href={`/tours/${booking.Tour.slug}#reviews`}
+                          className="rounded-full border border-slate-200 px-3 py-1 text-slate-600"
+                        >
+                          Dejar rese?a
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Metodo de pago</p>
+              {payment ? (
+                <p className="mt-2 text-sm text-slate-700">
+                  Metodo guardado: {payment.brand ?? "Desconocido"} ? **** {payment.last4 ?? "0000"}
+                </p>
+              ) : (
+                <p className="mt-2 text-sm text-slate-600">Aun no has guardado un metodo de pago.</p>
+              )}
+              <form action={updateCustomerPaymentAction} method="post" className="mt-4 space-y-3 text-sm text-slate-600">
+                <input
+                  name="method"
+                  placeholder="Tarjeta"
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
+                />
+                <input
+                  name="brand"
+                  placeholder="Visa"
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
+                />
+                <input
+                  name="last4"
+                  placeholder="1234"
+                  maxLength={4}
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
+                />
+                <button type="submit" className="w-full rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white">
+                  Guardar metodo
+                </button>
+              </form>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Recomendaciones</p>
+              <div className="mt-4 space-y-3">
+                {recommended.map((tour) => (
+                  <Link
+                    key={tour.id}
+                    href={`/tours/${tour.slug}`}
+                    className="block rounded-2xl border border-slate-100 p-4 text-sm text-slate-700 hover:border-emerald-200"
+                  >
+                    <p className="font-semibold text-slate-900">{tour.title}</p>
+                    <p className="text-xs text-slate-500">Desde ${tour.price.toFixed(0)} USD</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
