@@ -91,7 +91,15 @@ export async function generateTourMetadata(
       slug: true,
       shortDescription: true,
       heroImage: true,
-      gallery: true
+      gallery: true,
+      translations: {
+        where: { locale },
+        select: {
+          title: true,
+          shortDescription: true,
+          description: true
+        }
+      }
     }
   });
 
@@ -102,10 +110,15 @@ export async function generateTourMetadata(
     };
   }
 
-  const title = buildSeoTitle(tour.title);
-  const description = trimDescription(
-    tour.shortDescription ?? translate(locale, "tour.metadata.descriptionFallback")
-  );
+  const translation = tour.translations?.[0];
+  const resolvedTitle = translation?.title ?? tour.title;
+  const resolvedDescription =
+    translation?.shortDescription ??
+    translation?.description ??
+    tour.shortDescription ??
+    translate(locale, "tour.metadata.descriptionFallback");
+  const title = buildSeoTitle(resolvedTitle);
+  const description = trimDescription(resolvedDescription);
   const heroImage = toAbsoluteUrl(resolveTourHeroImage(tour));
   const canonicalSlug = buildLanguageAlternates(slug)[locale];
   const canonicalUrl = `${PROACTIVITIS_URL}${canonicalSlug}`;
