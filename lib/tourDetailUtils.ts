@@ -23,6 +23,25 @@ const resolveTourHeroImage = (tour: TourImageSource) => {
   return tour.heroImage ?? gallery[0] ?? DEFAULT_TOUR_IMAGE;
 };
 
+const MAX_TITLE_LENGTH = 58;
+const BRAND_SUFFIX = " | Proactivitis";
+
+const buildSeoTitle = (baseTitle: string) => {
+  const trimmed = baseTitle.trim();
+  if (!trimmed) return `Proactivitis`;
+  if (trimmed.length + BRAND_SUFFIX.length <= MAX_TITLE_LENGTH) {
+    return `${trimmed}${BRAND_SUFFIX}`;
+  }
+  if (trimmed.length > MAX_TITLE_LENGTH) {
+    return `${trimmed.slice(0, MAX_TITLE_LENGTH - 3).trimEnd()}...`;
+  }
+  const available = MAX_TITLE_LENGTH - BRAND_SUFFIX.length - 3;
+  if (available <= 0) {
+    return `${trimmed.slice(0, MAX_TITLE_LENGTH - 3).trimEnd()}...`;
+  }
+  return `${trimmed.slice(0, available).trimEnd()}...${BRAND_SUFFIX}`;
+};
+
 const toAbsoluteUrl = (value: string) => {
   if (!value) return `${PROACTIVITIS_URL}${DEFAULT_TOUR_IMAGE}`;
   if (value.startsWith("http")) return value;
@@ -76,7 +95,7 @@ export async function generateTourMetadata(
     };
   }
 
-  const title = `${tour.title} | Proactivitis`;
+  const title = buildSeoTitle(tour.title);
   const description =
     tour.shortDescription ?? translate(locale, "tour.metadata.descriptionFallback");
   const heroImage = toAbsoluteUrl(resolveTourHeroImage(tour));

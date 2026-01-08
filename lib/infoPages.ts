@@ -233,7 +233,7 @@ export const infoPages: InfoPage[] = [
     category: "support",
     path: "/how-it-works",
     title: "Cómo funciona",
-    seoTitle: "Cómo funciona Proactivitis | How Proactivitis works",
+    seoTitle: "Cómo funciona Proactivitis | Proactivitis",
     seoDescription: "Procesos simples, pagos blindados y ejecución premium para cada viajero. | Simple processes, secure payments, and premium execution for every traveler.",
     hero: {
       eyebrow: "Proceso",
@@ -310,7 +310,7 @@ export const infoPages: InfoPage[] = [
     category: "company",
     path: "/about",
     title: "Sobre Proactivitis",
-    seoTitle: "Proactivitis: Excelencia en Movilidad y Experiencias Globales | Proactivitis: Excellence in Mobility and Global Experiences",
+    seoTitle: "Proactivitis: Excelencia en Movilidad Global",
     seoDescription: "Proactivitis es una plataforma tecnológica líder para traslados premium y experiencias curadas, conectando proveedores locales con viajeros globales. | Proactivitis is a leading technology platform for premium transfers and curated experiences, connecting local partners with global travelers.",
     hero: {
       eyebrow: "Empresa",
@@ -433,7 +433,7 @@ export const infoPages: InfoPage[] = [
     category: "company",
     path: "/partners",
     title: "Aliados",
-    seoTitle: "Alianzas Corporativas y Estratégicas | Proactivitis Global Partners",
+    seoTitle: "Alianzas estratégicas | Proactivitis",
     seoDescription: "Explore oportunidades de colaboración con Proactivitis. Ofrecemos soluciones de movilidad y tours para hoteles, aerolíneas y empresas del sector lujo.",
     hero: {
       eyebrow: "Empresa",
@@ -587,7 +587,7 @@ export const infoPages: InfoPage[] = [
     category: "work-with-us",
     path: "/affiliates",
     title: "Afiliados",
-    seoTitle: "Programa de Afiliados de Viajes | Gane Comisiones con Proactivitis",
+    seoTitle: "Programa de afiliados | Proactivitis",
     seoDescription: "Únase al programa de afiliados de Proactivitis. Gane dinero recomendando los mejores tours y traslados privados a nivel global.",
     hero: {
       eyebrow: "Afiliados",
