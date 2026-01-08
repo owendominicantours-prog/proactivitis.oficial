@@ -78,7 +78,9 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
-      <WhatsappFloatingChat />
+      <Suspense fallback={null}>
+        <WhatsappFloatingChat />
+      </Suspense>
       <PublicFooter />
     </div>
     </>
