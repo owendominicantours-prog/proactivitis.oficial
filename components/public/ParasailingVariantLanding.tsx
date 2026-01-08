@@ -181,6 +181,32 @@ export default function ParasailingVariantLanding({
               </div>
             </div>
             <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                {t("thingtodo.longform2.eyebrow")}
+              </p>
+              <h2 className="mt-2 text-[20px] font-semibold text-slate-900">
+                {t("thingtodo.longform2.title", { title: variant.titles[locale] })}
+              </h2>
+              <div className="mt-3 space-y-3 text-sm text-slate-700">
+                <p>{t("thingtodo.longform2.body1", { title: variant.titles[locale] })}</p>
+                <p>{t("thingtodo.longform2.body2")}</p>
+                <p>{t("thingtodo.longform2.body3")}</p>
+              </div>
+            </div>
+            <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                {t("thingtodo.longform3.eyebrow")}
+              </p>
+              <h2 className="mt-2 text-[20px] font-semibold text-slate-900">
+                {t("thingtodo.longform3.title", { title: variant.titles[locale] })}
+              </h2>
+              <div className="mt-3 space-y-3 text-sm text-slate-700">
+                <p>{t("thingtodo.longform3.body1", { title: variant.titles[locale] })}</p>
+                <p>{t("thingtodo.longform3.body2")}</p>
+                <p>{t("thingtodo.longform3.body3")}</p>
+              </div>
+            </div>
+            <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
               <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{highlightsLabel}</p>
               <ul className="mt-4 space-y-2 text-sm font-semibold text-slate-700">
                 {highlights.map((item) => (

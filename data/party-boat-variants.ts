@@ -23,7 +23,7 @@ export const PARTY_BOAT_BASE_TOUR = {
     es: [
       "Recogida y regreso al hotel (confirmado tras reservar)",
       "Open bar (bebidas locales)",
-      "Musica y ambiente de fiesta",
+      "Música y ambiente de fiesta",
       "Parada de snorkel (zona de arrecife)",
       "Parada en Piscina Natural",
       "Asistencia de tripulacion y briefing de seguridad"
@@ -115,7 +115,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     bodyBlocks: {
       es: [
         "Damos instrucciones claras del punto de pick-up y la hora exacta confirmada.",
-        "La experiencia combina musica, bebidas, snorkeling y parada en aguas poco profundas para fotos.",
+        "La experiencia combina música, bebidas, snorkeling y parada en aguas poco profundas para fotos.",
         "Ideal si quieres una excursion sin drama: bajas al lobby y listo."
       ],
       en: [
@@ -161,7 +161,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     bodyBlocks: {
       es: [
         "Te recogemos en el hotel y vas directo al check-in del catamaran.",
-        "Incluye snorkeling, Natural Pool y open bar con musica y animacion.",
+        "Incluye snorkeling, Natural Pool y open bar con música y animacion.",
         "Consejo pro: llega 10 minutos antes al punto de recogida."
       ],
       en: [
@@ -195,7 +195,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
       fr: "Party Boat adults only a Punta Cana avec ambiance premium", 
     },
     heroSubtitles: {
-      es: "Musica, open bar y ambiente adulto, sin enfoque familiar.", 
+      es: "Música, open bar y ambiente adulto, sin enfoque familiar.", 
       en: "Music, open bar, adult vibe, no family focus.", 
       fr: "Musique, open bar, ambiance adulte, sans focus familial.", 
     },
@@ -207,7 +207,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     bodyBlocks: {
       es: [
         "Salida pensada para adultos que buscan un ambiente mas fino.",
-        "Musica, cocteles, snorkel y Natural Pool en un mismo plan.",
+        "Música, cocteles, snorkel y Natural Pool en un mismo plan.",
         "Ideal para grupos 25-40, parejas o celebraciones privadas."
       ],
       en: [
@@ -241,7 +241,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
       fr: "Catamaran VIP avec open bar a Punta Cana", 
     },
     heroSubtitles: {
-      es: "Servicio premium, musica y paradas en el mar.", 
+      es: "Servicio premium, música y paradas en el mar.", 
       en: "Premium service, music, and sea stops.", 
       fr: "Service premium, musique et arrets en mer.", 
     },
@@ -253,7 +253,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     bodyBlocks: {
       es: [
         "Experiencia pensada para quienes buscan un nivel superior.",
-        "Cocteles, musica, snorkel y paradas fotograficas.",
+        "Cocteles, música, snorkel y paradas fotograficas.",
         "Servicio organizado y soporte antes y despues del tour."
       ],
       en: [
@@ -390,7 +390,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     },
     bodyBlocks: {
       es: [
-        "Plan perfecto si te despertaste con ganas de mar y musica.",
+        "Plan perfecto si te despertaste con ganas de mar y música.",
         "Reservas rapido, confirmamos pick-up y te llevamos directo al catamaran.",
         "Ideal para grupos, parejas y amigos sin complicarte."
       ],
@@ -438,7 +438,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
       es: [
         "Si estas listo hoy, te confirmamos en minutos.",
         "Pick-up coordinado y salida directa al catamaran.",
-        "Open bar, musica y Natural Pool incluidos."
+        "Open bar, música y Natural Pool incluidos."
       ],
       en: [
         "If you are ready today, we confirm in minutes.",
@@ -471,7 +471,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
       fr: "Party Boat avec snorkel et Natural Pool", 
     },
     heroSubtitles: {
-      es: "Musica, open bar y paradas en el mar Caribe.", 
+      es: "Música, open bar y paradas en el mar Caribe.", 
       en: "Music, open bar, and stops in the Caribbean.", 
       fr: "Musique, open bar et arrets dans les Caraibes.", 
     },
@@ -482,7 +482,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
     },
     bodyBlocks: {
       es: [
-        "Disfruta el Caribe con musica, bebidas y snorkel guiado.",
+        "Disfruta el Caribe con música, bebidas y snorkel guiado.",
         "Parada en aguas poco profundas para fotos y relax.",
         "Transporte incluido con confirmacion clara."
       ],
@@ -522,7 +522,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
       fr: "Open bar, DJ et ambiance 18+ sans foule familiale.", 
     },
     metaDescriptions: {
-      es: "Salida solo adultos con musica, open bar y snorkel lejos de multitudes.", 
+      es: "Salida solo adultos con música, open bar y snorkel lejos de multitudes.", 
       en: "Adults-only departure with music, open bar, and snorkel away from crowds.", 
       fr: "Sortie adults only avec musique, open bar et snorkel loin des foules.", 
     },
@@ -568,14 +568,14 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
       fr: "Charter prive et celebration sur mesure.", 
     },
     metaDescriptions: {
-      es: "Charter privado con musica, cocteles y parada en Natural Pool.", 
+      es: "Charter privado con música, cocteles y parada en Natural Pool.", 
       en: "Private charter with music, cocktails, and a Natural Pool stop.", 
       fr: "Charter prive avec musique, cocktails et arret Natural Pool.", 
     },
     bodyBlocks: {
       es: [
         "Planificacion facil para la dama de honor: charter privado y opciones personalizadas.",
-        "Cocteles, fotos, musica del grupo y paradas perfectas para celebrar.",
+        "Cocteles, fotos, música del grupo y paradas perfectas para celebrar.",
         "Traslado privado ida y vuelta desde Bavaro incluido."
       ],
       en: [
@@ -614,14 +614,14 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
       fr: "Ambiance sociale et sure pour rencontrer du monde.", 
     },
     metaDescriptions: {
-      es: "Salida para viajeros solteros con juegos, musica y equipo bilingue.", 
+      es: "Salida para viajeros solteros con juegos, música y equipo bilingue.", 
       en: "Singles-friendly departure with games, music, and bilingual crew.", 
       fr: "Sortie pour voyageurs solos avec jeux, musique et equipe bilingue.", 
     },
     bodyBlocks: {
       es: [
         "Viajas solo? Esta salida esta pensada para socializar sin presion.",
-        "Juegos, musica y equipo bilingue para romper el hielo.",
+        "Juegos, música y equipo bilingue para romper el hielo.",
         "Regresas con nuevos amigos y recuerdos reales."
       ],
       en: [
@@ -714,7 +714,7 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
       es: [
         "Mas de 5,000 resenas de 5 estrellas. Elegido por viajeros como la mejor experiencia de fiesta en el dia.",
         "Mientras otros ofrecen un paseo simple, aqui tienes una produccion completa con sonido pro y animacion total.",
-        "Logistica impecable para que tu unica preocupacion sea disfrutar el sol y la musica."
+        "Logistica impecable para que tu unica preocupacion sea disfrutar el sol y la música."
       ],
       en: [
         "Over 5,000 five-star reviews. Chosen by travelers as the best daytime party experience.",
