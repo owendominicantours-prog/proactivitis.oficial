@@ -63,8 +63,8 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
-  const requestHeaders = headers();
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const requestHeaders = await headers();
   const localeHeader = requestHeaders.get("x-proactivitis-locale");
   const lang = localeHeader === "en" || localeHeader === "fr" ? localeHeader : "es";
   return (
