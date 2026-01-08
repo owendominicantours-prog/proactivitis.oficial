@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 
 import { prisma } from "@/lib/prisma";
 import { getTransferPrice, resolveZoneId } from "@/data/traslado-pricing";
@@ -16,7 +17,7 @@ import {
   PROACTIVITIS_URL,
   SAME_AS_URLS
 } from "@/lib/seo";
-import { Locale, translate, es } from "@/lib/translations";
+import { Locale, translate } from "@/lib/translations";
 
 type LandingLevel = "country" | "destination" | "microzone";
 
@@ -147,7 +148,15 @@ const DEFAULT_TITLE = "Traslados Proactivitis";
 const DEFAULT_DESCRIPTION = "Descubre la red global de traslados premium de Proactivitis.";
 const DEFAULT_METADATA_IMAGE = "https://www.proactivitis.com/transfer/sedan.png";
 const TRANSFER_BASE_URL = "https://proactivitis.com/traslado";
-const LOCALE: Locale = es;
+
+const resolveLocale = async (): Promise<Locale> => {
+  const requestHeaders = await headers();
+  const localeHeader = requestHeaders.get("x-proactivitis-locale");
+  if (localeHeader === "en" || localeHeader === "fr") return localeHeader;
+  return "es";
+};
+
+const buildTransferBasePath = (locale: Locale) => (locale === "es" ? "/traslado" : `/${locale}/traslado`);
 const META_DESCRIPTION_MIN = 120;
 const META_DESCRIPTION_MAX = 160;
 
@@ -175,6 +184,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ segments?: string[] }>;
 }): Promise<Metadata> {
+  const LOCALE = await resolveLocale();
   const resolvedParams = await params;
   const segments = resolvedParams.segments ?? [];
   if (!segments.length) return { title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION };
@@ -237,10 +247,11 @@ export async function generateMetadata({
   description = trimMetaDescription(description);
 
   const heroImage = resolveHeroImageForContext(context) ?? DEFAULT_METADATA_IMAGE;
+  const basePath = buildTransferBasePath(LOCALE);
   const pageUrl =
     segments.length === 0
-      ? `${TRANSFER_BASE_URL}`
-      : `${TRANSFER_BASE_URL}/${segments.map((segment) => encodeURIComponent(segment)).join("/")}`;
+      ? `${PROACTIVITIS_URL}${basePath}`
+      : `${PROACTIVITIS_URL}${basePath}/${segments.map((segment) => encodeURIComponent(segment)).join("/")}`;
 
   return {
     title,
@@ -266,7 +277,12 @@ export async function generateMetadata({
     },
     keywords: keywords.filter(Boolean),
     alternates: {
-      canonical: pageUrl
+      canonical: pageUrl,
+      languages: {
+        es: `/traslado/${segments.join("/")}`.replace(/\/$/, ""),
+        en: `/en/traslado/${segments.join("/")}`.replace(/\/$/, ""),
+        fr: `/fr/traslado/${segments.join("/")}`.replace(/\/$/, "")
+      }
     }
   };
 }
@@ -276,6 +292,7 @@ type TrasladoLandingProps = {
 };
 
 export default async function TrasladoHierarchicalLanding({ params }: TrasladoLandingProps) {
+  const LOCALE = await resolveLocale();
   const resolvedParams = await params;
   const segments = resolvedParams.segments ?? [];
   const context = await buildSegmentsContext(segments);
@@ -302,15 +319,18 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       ? translate(LOCALE, "transfer.hero.subtitle.destination", { destination: destinationName })
       : translate(LOCALE, "transfer.hero.subtitle.microzone", { hotel: microzoneName });
 
-  const callToAction = `/traslado`;
+  const basePath = buildTransferBasePath(LOCALE);
+  const callToAction = basePath;
+  const toursPath = LOCALE === "es" ? "/tours" : `/${LOCALE}/tours`;
+  const homeHref = LOCALE === "es" ? PROACTIVITIS_URL : `${PROACTIVITIS_URL}/${LOCALE}`;
   const breadcrumbItems = [
-    { name: "Inicio", href: PROACTIVITIS_URL },
-    { name: country.name, href: `${TRANSFER_BASE_URL}/${country.slug}` },
+    { name: "Inicio", href: homeHref },
+    { name: country.name, href: `${basePath}/${country.slug}` },
     ...(destination
       ? [
           {
             name: destination.name,
-            href: `/traslado/${country.slug}/${destination.slug}`
+            href: `${basePath}/${country.slug}/${destination.slug}`
           }
         ]
       : []),
@@ -318,7 +338,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       ? [
           {
             name: microZone.name,
-            href: `/traslado/${country.slug}/${destination?.slug ?? country.slug}/${microZone.slug}`
+            href: `${basePath}/${country.slug}/${destination?.slug ?? country.slug}/${microZone.slug}`
           }
         ]
       : [])
@@ -361,8 +381,8 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
   const heroImage = resolveHeroImageForContext(context) ?? DEFAULT_METADATA_IMAGE;
   const pageUrl =
     segments.length === 0
-      ? `${TRANSFER_BASE_URL}`
-      : `${TRANSFER_BASE_URL}/${segments.map((segment) => encodeURIComponent(segment)).join("/")}`;
+      ? `${PROACTIVITIS_URL}${basePath}`
+      : `${PROACTIVITIS_URL}${basePath}/${segments.map((segment) => encodeURIComponent(segment)).join("/")}`;
   const priceValidUntil = getPriceValidUntil();
   const locationMapUrl = buildGoogleMapsUrl(schemaDestinationLabel);
   const sanitizedSegments = segments.filter(Boolean).map((segment) =>
@@ -504,7 +524,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
                 {translate(LOCALE, "transfer.button.primary")}
               </Link>
             <Link
-              href="/tours"
+              href={toursPath}
               className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-slate-700 transition hover:border-slate-400"
             >
               Ver tours y experiencias
