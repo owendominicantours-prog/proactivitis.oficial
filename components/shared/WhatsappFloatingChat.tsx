@@ -36,7 +36,13 @@ export default function WhatsappFloatingChat() {
       aria-label="Chat on WhatsApp"
     >
       <span className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-50">
-        <Image src="/logo.png" alt="Proactivitis" width={48} height={48} className="h-12 w-12 object-cover" />
+        <Image
+          src="/fotoperfilwhatsapp.png"
+          alt="Proactivitis"
+          width={48}
+          height={48}
+          className="h-12 w-12 object-cover"
+        />
         <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
       </span>
       <span className="flex flex-col text-left">
