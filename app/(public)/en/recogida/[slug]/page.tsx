@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { RecogidaPage, buildRecogidaMetadata } from "@/app/(public)/recogida/[slug]/page";
+import { RecogidaPage, buildRecogidaMetadata } from "@/components/public/RecogidaPage";
 
 type Props = {
   params: Promise<{ slug: string }>;
