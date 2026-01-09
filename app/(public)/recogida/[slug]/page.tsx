@@ -27,7 +27,7 @@ type TourWithDeparture = Prisma.TourGetPayload<{
 const buildCanonical = (slug: string, locale: Locale) =>
   locale === "es" ? `${BASE_URL}/recogida/${slug}` : `${BASE_URL}/${locale}/recogida/${slug}`;
 
-export async function buildRecogidaMetadata(slug: string, locale: Locale): Promise<Metadata> {
+async function buildRecogidaMetadata(slug: string, locale: Locale): Promise<Metadata> {
   const location = await prisma.location.findUnique({ where: { slug } });
   if (!location) {
     return {
@@ -65,7 +65,7 @@ const buildTourUrl = (tour: { slug: string }, locationSlug: string, bookingCode?
   return `/tours/${tour.slug}/recogida/${locationSlug}?${params.toString()}`;
 };
 
-export async function RecogidaPage({
+export default async function RecogidaPage({
   params,
   searchParams,
   locale
@@ -240,6 +240,6 @@ export async function RecogidaPage({
   );
 }
 
-export default async function RecogidaPageRoute(props: RecogidaPageProps) {
+export async function RecogidaPageRoute(props: RecogidaPageProps) {
   return RecogidaPage({ ...props, locale: "es" });
 }
