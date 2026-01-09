@@ -1,13 +1,16 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import TourGalleryViewer from "@/components/shared/TourGalleryViewer";
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 import { prisma } from "@/lib/prisma";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
 import { formatReviewCountValue, getTourReviewCount } from "@/lib/reviewCounts";
+import { Locale, translate } from "@/lib/translations";
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
+const BASE_URL = "https://proactivitis.com";
 
 const parseJsonArray = <T,>(value?: string | null): T[] => {
   if (!value) return [];
@@ -27,89 +30,186 @@ const parseDuration = (value?: string | null) => {
   }
 };
 
+const formatDurationLabel = (duration: { value: string; unit: string }, locale: Locale) => {
+  const normalized = duration.unit.trim().toLowerCase();
+  if (normalized.includes("hora") || normalized.includes("hour")) {
+    return `${duration.value} ${translate(locale, "tourPickup.duration.unit.hours")}`;
+  }
+  if (normalized.includes("dia") || normalized.includes("day") || normalized.includes("jour")) {
+    return `${duration.value} ${translate(locale, "tourPickup.duration.unit.days")}`;
+  }
+  return `${duration.value} ${duration.unit}`;
+};
+
 const formatTimeSlot = (slot: PersistedTimeSlot) => {
   const minute = slot.minute.padStart(2, "0");
   return `${slot.hour.toString().padStart(2, "0")}:${minute} ${slot.period}`;
 };
 
-const itineraryMock: ItineraryStop[] = [
+const tKey = (key: string) => key as Parameters<typeof translate>[1];
+
+const buildItineraryMock = (t: (key: Parameters<typeof translate>[1]) => string): ItineraryStop[] => [
   {
-    time: "09:00",
-    title: "Pick-up",
-    description: "Recogida en el lobby de tu hotel para arrancar con energía."
+    time: t(tKey("tourPickup.itinerary.mock.1.time")),
+    title: t(tKey("tourPickup.itinerary.mock.1.title")),
+    description: t(tKey("tourPickup.itinerary.mock.1.body"))
   },
   {
-    time: "Ruta Safari",
-    title: "Ruta Safari",
-    description: "Recorrido por senderos de selva con paradas para fotos."
+    time: t(tKey("tourPickup.itinerary.mock.2.time")),
+    title: t(tKey("tourPickup.itinerary.mock.2.title")),
+    description: t(tKey("tourPickup.itinerary.mock.2.body"))
   },
   {
-    time: "Cultura Local",
-    title: "Cultura Local",
-    description: "Degustación de café, cacao y tabaco en casa típica."
+    time: t(tKey("tourPickup.itinerary.mock.3.time")),
+    title: t(tKey("tourPickup.itinerary.mock.3.title")),
+    description: t(tKey("tourPickup.itinerary.mock.3.body"))
   },
   {
-    time: "Cenote / Playa",
-    title: "Cenote / Playa",
-    description: "Parada para nadar y refrescarse en un entorno natural."
+    time: t(tKey("tourPickup.itinerary.mock.4.time")),
+    title: t(tKey("tourPickup.itinerary.mock.4.title")),
+    description: t(tKey("tourPickup.itinerary.mock.4.body"))
   },
   {
-    time: "Regreso",
-    title: "Regreso",
-    description: "Traslado de vuelta al punto de origen."
+    time: t(tKey("tourPickup.itinerary.mock.5.time")),
+    title: t(tKey("tourPickup.itinerary.mock.5.title")),
+    description: t(tKey("tourPickup.itinerary.mock.5.body"))
   }
 ];
 
-const additionalInfo = [
-  "Confirmamos el punto exacto de encuentro con 24h de antelación.",
-  "No apto para personas con movilidad reducida.",
-  "No recomendado para embarazadas.",
-  "Sillas infantiles disponibles bajo solicitud.",
-  "Reserva confirmada desde 2 huéspedes."
+const buildAdditionalInfo = (t: (key: Parameters<typeof translate>[1]) => string) => [
+  t(tKey("tourPickup.additionalInfo.1")),
+  t(tKey("tourPickup.additionalInfo.2")),
+  t(tKey("tourPickup.additionalInfo.3")),
+  t(tKey("tourPickup.additionalInfo.4")),
+  t(tKey("tourPickup.additionalInfo.5"))
 ];
 
-const packingList = [
-  { icon: "👟", label: "Calzado cerrado", detail: "Protección en terrenos irregulares." },
-  { icon: "😎", label: "Gafas de sol", detail: "Ideal para brillo y brisa marina." },
-  { icon: "☀️", label: "Protector solar", detail: "Elige una opción biodegradable." },
-  { icon: "👕", label: "Ropa que se pueda ensuciar", detail: "Capas ligeras y cómodas." }
+const buildPackingList = (t: (key: Parameters<typeof translate>[1]) => string) => [
+  {
+    icon: "OK",
+    label: t(tKey("tourPickup.packing.1.label")),
+    detail: t(tKey("tourPickup.packing.1.detail"))
+  },
+  {
+    icon: "OK",
+    label: t(tKey("tourPickup.packing.2.label")),
+    detail: t(tKey("tourPickup.packing.2.detail"))
+  },
+  {
+    icon: "OK",
+    label: t(tKey("tourPickup.packing.3.label")),
+    detail: t(tKey("tourPickup.packing.3.detail"))
+  },
+  {
+    icon: "OK",
+    label: t(tKey("tourPickup.packing.4.label")),
+    detail: t(tKey("tourPickup.packing.4.detail"))
+  }
 ];
 
-const reviewBreakdown = [
-  { label: "5 estrellas", percent: 90 },
-  { label: "4 estrellas", percent: 8 },
-  { label: "3 estrellas", percent: 1 },
-  { label: "2 estrellas", percent: 1 },
-  { label: "1 estrella", percent: 0 }
+const buildReviewBreakdown = (t: (key: Parameters<typeof translate>[1]) => string) => [
+  { label: t(tKey("tourPickup.reviews.breakdown.5")), percent: 90 },
+  { label: t(tKey("tourPickup.reviews.breakdown.4")), percent: 8 },
+  { label: t(tKey("tourPickup.reviews.breakdown.3")), percent: 1 },
+  { label: t(tKey("tourPickup.reviews.breakdown.2")), percent: 1 },
+  { label: t(tKey("tourPickup.reviews.breakdown.1")), percent: 0 }
 ];
 
-const reviewHighlights = [
+const buildReviewHighlights = (t: (key: Parameters<typeof translate>[1]) => string) => [
   {
     name: "Gabriela R.",
-    date: "Mayo 2025 · Verified traveler",
-    quote: "Guía excepcional, recorridos emocionantes y traslado muy cómodo.",
+    date: t(tKey("tourPickup.reviews.highlights.1.date")),
+    quote: t(tKey("tourPickup.reviews.highlights.1.quote")),
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
   },
   {
     name: "James T.",
-    date: "Abril 2025 · Verified traveler",
-    quote: "Muy bien organizado, adrenalina sin perder la seguridad y tiempo para fotos.",
+    date: t(tKey("tourPickup.reviews.highlights.2.date")),
+    quote: t(tKey("tourPickup.reviews.highlights.2.quote")),
     avatar: "https://images.unsplash.com/photo-1504593811423-6dd665756598"
   },
   {
     name: "Anna L.",
-    date: "Marzo 2025 · Verified traveler",
-    quote: "El viaje al cenote fue mágico y el equipo muy puntual.",
+    date: t(tKey("tourPickup.reviews.highlights.3.date")),
+    quote: t(tKey("tourPickup.reviews.highlights.3.quote")),
     avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39"
   }
 ];
 
-const reviewTags = ["Excelente guía", "Mucha adrenalina", "Puntualidad"];
+const buildReviewTags = (t: (key: Parameters<typeof translate>[1]) => string) => [
+  t(tKey("tourPickup.reviews.tags.1")),
+  t(tKey("tourPickup.reviews.tags.2")),
+  t(tKey("tourPickup.reviews.tags.3"))
+];
 
 type TourHotelLandingParams = {
   params: Promise<{ slug: string; locationSlug: string }>;
   searchParams?: Promise<{ bookingCode?: string }>;
 };
+
+const buildTourPickupUrl = (slug: string, locationSlug: string, locale: Locale) =>
+  locale === "es"
+    ? `${BASE_URL}/tours/${slug}/recogida/${locationSlug}`
+    : `${BASE_URL}/${locale}/tours/${slug}/recogida/${locationSlug}`;
+
+export async function buildTourPickupMetadata(
+  slug: string,
+  locationSlug: string,
+  locale: Locale
+): Promise<Metadata> {
+  const [tour, location] = await Promise.all([
+    prisma.tour.findUnique({
+      where: { slug },
+      select: {
+        title: true,
+        shortDescription: true,
+        translations: {
+          where: { locale },
+          select: { title: true, shortDescription: true, description: true }
+        }
+      }
+    }),
+    prisma.location.findUnique({
+      where: { slug: locationSlug },
+      select: { name: true, slug: true }
+    })
+  ]);
+
+  if (!tour || !location) {
+    return {
+      title: translate(locale, "tourPickup.meta.fallbackTitle"),
+      description: translate(locale, "tourPickup.meta.fallbackDescription")
+    };
+  }
+
+  const translation = tour.translations?.[0];
+  const resolvedTitle = translation?.title ?? tour.title;
+  const resolvedDescription =
+    translation?.shortDescription ?? translation?.description ?? tour.shortDescription;
+  const title = translate(locale, "tourPickup.meta.title", {
+    tour: resolvedTitle,
+    hotel: location.name
+  });
+  const description =
+    resolvedDescription ??
+    translate(locale, "tourPickup.meta.description", {
+      tour: resolvedTitle,
+      hotel: location.name
+    });
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: buildTourPickupUrl(slug, location.slug, locale),
+      languages: {
+        es: `/tours/${slug}/recogida/${location.slug}`,
+        en: `/en/tours/${slug}/recogida/${location.slug}`,
+        fr: `/fr/tours/${slug}/recogida/${location.slug}`
+      }
+    }
+  };
+}
 
 export async function generateMetadata({
   params
@@ -117,31 +217,18 @@ export async function generateMetadata({
   params: Promise<{ slug: string; locationSlug: string }>;
 }) {
   const { slug, locationSlug } = await params;
-  const tour = await prisma.tour.findUnique({
-    where: { slug },
-    select: { title: true, shortDescription: true }
-  });
-  const location = await prisma.location.findUnique({
-    where: { slug: locationSlug },
-    select: { name: true }
-  });
-
-  if (!tour || !location) {
-    return {
-      title: "Tour no encontrado | Proactivitis",
-      description: "No pudimos encontrar la experiencia seleccionada."
-    };
-  }
-
-  return {
-    title: `${tour.title} con recogida en ${location.name} | Proactivitis`,
-    description: tour.shortDescription ?? `Reserva ${tour.title} con recogida personalizada desde ${location.name}.`
-  };
+  return buildTourPickupMetadata(slug, locationSlug, "es");
 }
 
-export default async function TourHotelLanding({ params, searchParams }: TourHotelLandingParams) {
+export async function TourHotelLanding({
+  params,
+  searchParams,
+  locale
+}: TourHotelLandingParams & { locale: Locale }) {
   const { slug, locationSlug } = await params;
   const resolvedSearch = searchParams ? await searchParams : {};
+  const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
+    translate(locale, key, replacements);
 
   let tour = null;
   let location = null;
@@ -155,7 +242,19 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
           },
           country: true,
           destination: true,
-          microZone: true
+          microZone: true,
+          translations: {
+            where: { locale },
+            select: {
+              title: true,
+              shortDescription: true,
+              description: true,
+              includesList: true,
+              notIncludedList: true,
+              itineraryStops: true,
+              highlights: true
+            }
+          }
         }
       }),
       prisma.location.findUnique({
@@ -182,37 +281,73 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
     notFound();
   }
 
+  const translation = tour.translations?.[0];
+  const localizedTitle = translation?.title ?? tour.title;
+  const localizedShortDescription = translation?.shortDescription ?? tour.shortDescription ?? "";
+  const localizedDescription = translation?.description ?? tour.description ?? "";
+  const normalizeArray = (value?: unknown) =>
+    Array.isArray(value) ? value.map((entry) => String(entry).trim()).filter(Boolean) : [];
+  const translatedIncludes = normalizeArray(translation?.includesList);
+  const translatedNotIncluded = normalizeArray(translation?.notIncludedList);
+  const translatedHighlights = normalizeArray(translation?.highlights);
+  const translatedItinerary = Array.isArray(translation?.itineraryStops)
+    ? (translation?.itineraryStops as ItineraryStop[])
+    : [];
+
   const gallery = (tour.gallery ? JSON.parse(tour.gallery as string) : [tour.heroImage ?? "/fototours/fotosimple.jpg"]) as string[];
-  const includesList = tour.includes
-    ? tour.includes.split(";").map((item) => item.trim()).filter(Boolean)
-    : ["Traslado", "Guía", "Almuerzo"];
-  const excludesList = ["Propinas", "Bebidas", "Fotos"];
+  const includesList =
+    locale !== "es" && translatedIncludes.length
+      ? translatedIncludes
+      : tour.includes
+        ? tour.includes.split(";").map((item) => item.trim()).filter(Boolean)
+        : [
+            t("tourPickup.includes.defaults.1"),
+            t("tourPickup.includes.defaults.2"),
+            t("tourPickup.includes.defaults.3")
+          ];
+  const excludesList =
+    locale !== "es" && translatedNotIncluded.length
+      ? translatedNotIncluded
+      : [
+          t("tourPickup.excludes.defaults.1"),
+          t("tourPickup.excludes.defaults.2"),
+          t("tourPickup.excludes.defaults.3")
+        ];
   const categories = (tour.category ?? "").split(",").map((part) => part.trim()).filter(Boolean);
   const languages = (tour.language ?? "").split(",").map((part) => part.trim()).filter(Boolean);
   const timeSlotsRaw = parseJsonArray<PersistedTimeSlot>(tour.timeOptions);
   const defaultSlot: PersistedTimeSlot = { hour: 9, minute: "00", period: "AM" };
   const timeSlots: PersistedTimeSlot[] = timeSlotsRaw.length ? timeSlotsRaw : [defaultSlot];
   const durationValue = parseDuration(tour.duration);
-  const durationLabel = `${durationValue.value} ${durationValue.unit}`;
+  const durationLabel = formatDurationLabel(durationValue, locale);
   const displayTime = timeSlots.length ? formatTimeSlot(timeSlots[0]) : "09:00 AM";
   const priceLabel = `$${tour.price.toFixed(0)} USD`;
   const parsedAdminItinerary = parseAdminItinerary(tour.adminNote ?? "");
   const itinerarySource = parsedAdminItinerary.length ? parsedAdminItinerary : parseItinerary(tour.adminNote ?? "");
-  const visualTimeline = itinerarySource.length ? itinerarySource : itineraryMock;
+  const visualTimeline =
+    locale !== "es" && translatedItinerary.length
+      ? translatedItinerary
+      : itinerarySource.length
+        ? itinerarySource
+        : buildItineraryMock(t);
   const heroImage = tour.heroImage ?? gallery[0];
   const shortTeaser =
-    tour.shortDescription && tour.shortDescription.length > 220
-      ? `${tour.shortDescription.slice(0, 220).trim()}…`
-      : tour.shortDescription || "Explora esta aventura guiada por expertos locales.";
+    localizedShortDescription && localizedShortDescription.length > 220
+      ? `${localizedShortDescription.slice(0, 220).trim()}…`
+      : localizedShortDescription || t("tourPickup.hero.fallback");
+  const reviewBreakdown = buildReviewBreakdown(t);
+  const reviewHighlights = buildReviewHighlights(t);
+  const reviewTags = buildReviewTags(t);
+  const packingList = buildPackingList(t);
 
   const detailReviewCount = getTourReviewCount(tour.slug, "detail");
-  const detailReviewLabel = formatReviewCountValue(detailReviewCount);
+              <div className="text-xs uppercase tracking-[0.3em] text-slate-400">{t("tourPickup.reviews.summary", { count: detailReviewLabel })}</div>
 
   const quickInfo = [
     {
-      label: "Duración",
+      label: t("tourPickup.quickInfo.duration.label"),
       value: durationLabel,
-      detail: "Experiencia guiada",
+      detail: t("tourPickup.quickInfo.duration.detail"),
       icon: (
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
           <circle cx="12" cy="12" r="9" />
@@ -221,9 +356,9 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
       )
     },
     {
-      label: "Salida",
+      label: t("tourPickup.quickInfo.departure.label"),
       value: displayTime,
-      detail: `Encuentro en el lobby de ${location.name}`,
+      detail: t("tourPickup.quickInfo.departure.detail", { hotel: location.name }),
       icon: (
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
           <path d="M12 4a8 8 0 100 16 8 8 0 000-16Zm0 9V7" />
@@ -232,9 +367,11 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
       )
     },
     {
-      label: "Idiomas",
-      value: languages.length ? languages.join(", ") : "Por confirmar",
-      detail: languages.length ? `${languages.length} idiomas disponibles` : "Por confirmar",
+      label: t("tourPickup.quickInfo.languages.label"),
+      value: languages.length ? languages.join(", ") : t("tourPickup.quickInfo.languages.fallback"),
+      detail: languages.length
+        ? t("tourPickup.quickInfo.languages.detail", { count: String(languages.length) })
+        : t("tourPickup.quickInfo.languages.fallback"),
       icon: (
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
           <path d="M4 6h16M4 12h16M4 18h16" />
@@ -243,9 +380,9 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
       )
     },
     {
-      label: "Capacidad",
-      value: `${tour.capacity ?? 15} pers.`,
-      detail: "Grupos reducidos",
+      label: t("tourPickup.quickInfo.capacity.label"),
+      value: t("tourPickup.quickInfo.capacity.value", { count: String(tour.capacity ?? 15) }),
+      detail: t("tourPickup.quickInfo.capacity.detail"),
       icon: (
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
           <circle cx="8" cy="8" r="3" />
@@ -264,21 +401,21 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
         <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">
           <div className="flex flex-col justify-center gap-6 p-6 sm:p-8 lg:p-16 text-center lg:text-left">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
-              Recogida garantizada en {location.name}
+              {t("tourPickup.hero.badge", { hotel: location.name })}
             </div>
             <h1 className="mb-6 text-3xl font-black leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
-              {tour.title}
+              {localizedTitle}
             </h1>
             <p className="text-lg text-slate-500 leading-relaxed">{shortTeaser}</p>
             <div className="flex items-center gap-8 border-t border-slate-100 pt-8">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Desde</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{t("tourPickup.hero.fromLabel")}</p>
                 <p className="text-4xl font-black text-indigo-600">{priceLabel}</p>
               </div>
               <div className="h-10 w-px bg-slate-200" />
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Rating</p>
-                <p className="text-xl font-black">★ 4.9</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{t("tourPickup.hero.ratingLabel")}</p>
+                <p className="text-xl font-black">4.9</p>
               </div>
             </div>
             <div className="mt-10 flex flex-wrap gap-4">
@@ -286,13 +423,13 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
                 href="#booking"
                 className="rounded-2xl bg-indigo-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-indigo-100 transition-transform hover:scale-105 active:scale-95"
               >
-                Reservar experiencia
+                {t("tourPickup.hero.cta.primary")}
               </a>
               <a
                 href="#gallery"
                 className="rounded-2xl border border-slate-200 bg-white px-8 py-4 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50"
               >
-                Ver galería
+                {t("tourPickup.hero.cta.secondary")}
               </a>
             </div>
           </div>
@@ -322,13 +459,13 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
         <div className="rounded-[28px] border border-slate-100 bg-white/90 p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-2 text-slate-600">
             <span className="flex items-center gap-2">
-              <span className="text-emerald-500">✓</span> Confirmación inmediata desde tu hotel.
+              <span className="text-emerald-500">OK</span> {t("tourPickup.ribbon.immediate")}
             </span>
             <span className="flex items-center gap-2">
-              <span className="text-emerald-500">✓</span> Cancelación flexible.
+              <span className="text-emerald-500">OK</span> {t("tourPickup.ribbon.flexible")}
             </span>
             <span className="flex items-center gap-2">
-              <span className="text-emerald-500">✓</span> Soporte 24/7.
+              <span className="text-emerald-500">OK</span> {t("tourPickup.ribbon.support")}
             </span>
           </div>
         </div>
@@ -340,7 +477,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
             <TourGalleryViewer
               images={gallery.map((img, index) => ({
                 url: img,
-                label: `${tour.title} ${index + 1}`
+                label: `${localizedTitle} ${index + 1}`
               }))}
             />
           </section>
@@ -348,28 +485,34 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resumen general</p>
-                <h2 className="text-[20px] font-semibold text-slate-900">Visión amplificada</h2>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.summary.eyebrow")}</p>
+                <h2 className="text-[20px] font-semibold text-slate-900">{t("tourPickup.summary.title")}</h2>
               </div>
-              <span className="text-xs uppercase tracking-[0.3em] text-slate-400">Recogida en {location.name}</span>
+              <span className="text-xs uppercase tracking-[0.3em] text-slate-400">{t("tourPickup.summary.badge", { hotel: location.name })}</span>
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">{tour.description ?? shortTeaser}</p>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">{localizedDescription || shortTeaser}</p>
           </section>
 
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">Detalles</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">Información clave</h3>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{t("tourPickup.details.eyebrow")}</p>
+                <h3 className="text-[16px] font-semibold text-slate-900">{t("tourPickup.details.title")}</h3>
               </div>
-              <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">Categorías</span>
+              <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">{t("tourPickup.details.badge")}</span>
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {[
-                { title: "Categorías", value: categories.join(", ") || "Premium" },
-                { title: "Idiomas", value: languages.join(", ") || "Español / Inglés" },
-                { title: "Capacidad", value: `${tour.capacity ?? 15} personas` },
-                { title: "Nivel físico", value: tour.physicalLevel ?? "Moderado" }
+                { title: t("tourPickup.details.labels.categories"), value: categories.join(", ") || t("tourPickup.details.defaults.categories") },
+                { title: t("tourPickup.details.labels.languages"), value: languages.join(", ") || t("tourPickup.details.defaults.languages") },
+                {
+                  title: t("tourPickup.details.labels.capacity"),
+                  value: t("tourPickup.details.defaults.capacity", { count: String(tour.capacity ?? 15) })
+                },
+                {
+                  title: t("tourPickup.details.labels.physical"),
+                  value: tour.physicalLevel ?? t("tourPickup.details.defaults.physical")
+                }
               ].map((item) => (
                 <div
                   key={item.title}
@@ -387,7 +530,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Incluye</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.includes.title")}</p>
                 <ul className="mt-3 space-y-2 text-sm text-slate-600">
                   {includesList.map((entry) => (
                     <li key={entry} className="flex items-center gap-2">
@@ -398,7 +541,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
                 </ul>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">No incluye</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.excludes.title")}</p>
                 <ul className="mt-3 space-y-2 text-sm text-slate-600">
                   {excludesList.map((entry) => (
                     <li key={entry} className="flex items-center gap-2">
@@ -414,10 +557,10 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Itinerario</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">Paso a paso</h3>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.itinerary.eyebrow")}</p>
+                <h3 className="text-[16px] font-semibold text-slate-900">{t("tourPickup.itinerary.title")}</h3>
               </div>
-              <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">Recogida & tour</span>
+              <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">{t("tourPickup.itinerary.badge")}</span>
             </div>
             <div className="relative mt-4 pl-0 lg:pl-10">
               <div className="absolute left-4 top-0 bottom-0 w-px border-l-2 border-dashed border-slate-200" />
@@ -431,7 +574,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
                     <div className="flex-1 rounded-[16px] border border-[#F1F5F9] bg-white/70 px-4 py-3">
                       <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{stop.time}</p>
                       <p className="mt-1 text-[16px] font-semibold text-slate-900">{stop.title}</p>
-                      <p className="mt-1 text-sm text-slate-600">{stop.description ?? "Detalle próximamente."}</p>
+                      <p className="mt-1 text-sm text-slate-600">{stop.description ?? t("tourPickup.itinerary.fallback")}</p>
                     </div>
                   </div>
                 ))}
@@ -442,16 +585,16 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reviews</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">Opiniones</h3>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.reviews.eyebrow")}</p>
+                <h3 className="text-[16px] font-semibold text-slate-900">{t("tourPickup.reviews.title")}</h3>
               </div>
-              <div className="text-xs uppercase tracking-[0.3em] text-slate-400">★ 4.9 · {detailReviewLabel} reseñas</div>
+              <div className="text-xs uppercase tracking-[0.3em] text-slate-400">{t("tourPickup.reviews.summary", { count: detailReviewLabel })}</div>
             </div>
             <div className="mt-4 grid gap-6 lg:grid-cols-[1.2fr,1fr]">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <p className="text-4xl font-semibold text-slate-900">4.9</p>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">de 5</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.reviews.outOf")}</p>
                 </div>
                 <div className="space-y-3 text-sm text-slate-600">
                   {reviewBreakdown.map((item) => (
@@ -502,9 +645,9 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Qué llevar</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">Prepárate</h3>
+                <h3 className="text-[16px] font-semibold text-slate-900">{t("tourPickup.packing.title")}</h3>
               </div>
-              <span className="text-xs uppercase tracking-[0.35em] text-slate-400">Consejos</span>
+              <span className="text-xs uppercase tracking-[0.35em] text-slate-400">{t("tourPickup.packing.badge")}</span>
             </div>
             <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
               {packingList.map((item) => (
@@ -523,10 +666,10 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
 
         <aside className="space-y-6 lg:w-[400px] w-full lg:sticky lg:top-16">
           <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl" id="booking">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva</p>
-            <h3 className="mt-2 text-2xl font-bold text-slate-900">Confirma tu cupo</h3>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.booking.eyebrow")}</p>
+            <h3 className="mt-2 text-2xl font-bold text-slate-900">{t("tourPickup.booking.title")}</h3>
             <p className="text-sm text-slate-600">
-              Te recogemos en {location.name} y te acompañamos durante toda la actividad.
+              {t("tourPickup.booking.body", { hotel: location.name })}
             </p>
             <TourBookingWidget
               tourId={tour.id}
@@ -534,7 +677,7 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
               timeSlots={timeSlots}
               supplierHasStripeAccount={Boolean(tour.SupplierProfile?.stripeAccountId)}
               platformSharePercent={tour.platformSharePercent ?? 20}
-              tourTitle={tour.title}
+              tourTitle={localizedTitle}
               tourImage={heroImage}
               hotelSlug={location.slug}
               bookingCode={bookingCode ?? undefined}
@@ -542,15 +685,15 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
             />
             <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-600 text-center">
               <p className="font-semibold text-slate-900">
-                {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Proveedor local"}
+                {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? t("tourPickup.booking.supplierFallback")}
               </p>
-              <p>Operado por expertos en la región.</p>
+              <p>{t("tourPickup.booking.supplierNote")}</p>
             </div>
           </div>
           <div className="rounded-[28px] border border-slate-100 bg-emerald-50/80 p-5 text-sm text-emerald-900 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.3em] text-emerald-700">Urgencia</p>
-            <p className="text-xl font-semibold">Te guardamos la plaza 29:00 minutos</p>
-            <p className="text-xs text-emerald-700">Reserva ahora y asegura la recogida en {location.name}.</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-emerald-700">{t("tourPickup.urgency.eyebrow")}</p>
+            <p className="text-xl font-semibold">{t("tourPickup.urgency.title")}</p>
+            <p className="text-xs text-emerald-700">{t("tourPickup.urgency.body", { hotel: location.name })}</p>
           </div>
         </aside>
       </main>
@@ -558,4 +701,8 @@ export default async function TourHotelLanding({ params, searchParams }: TourHot
       <ReserveFloatingButton targetId="booking" priceLabel={priceLabel} />
     </div>
   );
+}
+
+export default async function TourHotelLandingRoute(props: TourHotelLandingParams) {
+  return TourHotelLanding({ ...props, locale: "es" });
 }
