@@ -20,9 +20,11 @@ const faqItems = [
 ] as const;
 type Props = {
   locale: Locale;
+  heroTitleOverride?: string;
+  heroDescriptionOverride?: string;
 };
 
-export default async function PublicTransferPage({ locale }: Props) {
+export default async function PublicTransferPage({ locale, heroTitleOverride, heroDescriptionOverride }: Props) {
   const transfersV2Enabled = process.env.TRANSFERS_V2_ENABLED === "true";
   let options: LocationOption[] = [];
   let originPoints: TransferPointOption[] = [];
@@ -83,9 +85,11 @@ export default async function PublicTransferPage({ locale }: Props) {
           <div className="relative z-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="space-y-2">
               <h1 className="text-4xl font-black leading-tight text-slate-900 md:text-5xl">
-                {translate(locale, "transfer.hero.title")}
+                {heroTitleOverride ?? translate(locale, "transfer.hero.title")}
               </h1>
-              <p className="text-base text-slate-600">{translate(locale, "transfer.hero.description")}</p>
+              <p className="text-base text-slate-600">
+                {heroDescriptionOverride ?? translate(locale, "transfer.hero.description")}
+              </p>
               <div className="flex flex-wrap gap-3 text-xs font-semibold uppercase tracking-[0.4em]">
                 <Link
                   href="/"

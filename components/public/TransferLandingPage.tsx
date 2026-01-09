@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import type { TransferLandingData } from "@/data/transfer-landings";
+import { findGenericTransferLandingBySlug, genericTransferLandings } from "@/data/transfer-generic-landings";
 import TransferQuoteCards from "@/components/transfers/TransferQuoteCards";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 import StructuredData from "@/components/schema/StructuredData";
@@ -12,6 +13,7 @@ import { translateEntries, translateText } from "@/lib/translationService";
 import { Locale, translate } from "@/lib/translations";
 import { TransferLocationType } from "@prisma/client";
 import { findDynamicLandingBySlug, getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
+import PublicTransferPage from "@/components/public/PublicTransferPage";
 
 const DEFAULT_AIRPORT_SLUG = "puj-airport";
 const DEFAULT_AIRPORT_NAME = "Punta Cana International Airport (PUJ)";
@@ -169,6 +171,47 @@ const buildCanonical = (slug: string, locale: Locale) =>
   locale === "es" ? `${BASE_URL}/transfer/${slug}` : `${BASE_URL}/${locale}/transfer/${slug}`;
 
 export async function buildTransferMetadata(landingSlug: string, locale: Locale): Promise<Metadata> {
+  const generic = findGenericTransferLandingBySlug(landingSlug);
+  if (generic) {
+    const canonical = buildCanonical(generic.landingSlug, locale);
+    const seoTitle = generic.seoTitle[locale];
+    const seoDescription = generic.metaDescription[locale];
+    const imageUrl = encodeURI(`${BASE_URL}/transfer/sedan.png`);
+    return {
+      title: seoTitle,
+      description: seoDescription,
+      alternates: {
+        canonical,
+        languages: {
+          es: `/transfer/${generic.landingSlug}`,
+          en: `/en/transfer/${generic.landingSlug}`,
+          fr: `/fr/transfer/${generic.landingSlug}`
+        }
+      },
+      openGraph: {
+        title: seoTitle,
+        description: seoDescription,
+        url: canonical,
+        siteName: "Proactivitis",
+        type: "website",
+        locale: locale === "es" ? "es_DO" : locale === "fr" ? "fr_FR" : "en_US",
+        images: [
+          {
+            url: imageUrl,
+            alt: "Transfer Punta Cana"
+          }
+        ]
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: seoTitle,
+        description: seoDescription,
+        images: [imageUrl]
+      },
+      keywords: generic.keywords
+    };
+  }
+
   const landing = await resolveLanding(landingSlug);
   if (!landing) return {};
   const localized = await localizeLanding(landing, locale);
@@ -226,6 +269,17 @@ export async function TransferLandingPage({
 }) {
   const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
     translate(locale, key, replacements);
+
+  const generic = findGenericTransferLandingBySlug(landingSlug);
+  if (generic) {
+    return (
+      <PublicTransferPage
+        locale={locale}
+        heroTitleOverride={generic.titles[locale]}
+        heroDescriptionOverride={generic.descriptions[locale]}
+      />
+    );
+  }
 
   const landing = await resolveLanding(landingSlug);
   if (!landing) return notFound();
@@ -452,5 +506,8 @@ export async function generateTransferStaticParams() {
   const manualParams = allLandings()
     .filter((landing) => !slugs.has(landing.landingSlug))
     .map((landing) => ({ landingSlug: landing.landingSlug }));
-  return [...dynamicParams, ...manualParams];
+  const genericParams = genericTransferLandings
+    .filter((landing) => !slugs.has(landing.landingSlug))
+    .map((landing) => ({ landingSlug: landing.landingSlug }));
+  return [...dynamicParams, ...manualParams, ...genericParams];
 }

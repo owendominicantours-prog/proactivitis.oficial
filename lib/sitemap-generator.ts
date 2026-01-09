@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { landingPages } from "@/lib/landing";
+import { excursionKeywordLandings } from "@/data/excursion-keyword-landings";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -22,7 +23,8 @@ const TRANSLATED_PREFIXES = [
   "/tours",
   "/thingtodo/tours",
   "/things-to-do",
-  "/excursiones-seguras-punta-cana"
+  "/excursiones-seguras-punta-cana",
+  "/excursiones"
 ];
 const TRANSLATED_ROOTS = ["/", "/tours", "/traslado"];
 const TRANSLATION_LOCALES = ["en", "fr"];
@@ -205,6 +207,10 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
     ...combos.map(({ url, priority }) => ({ url, priority })),
     ...landingPages.map((landing) => ({
       url: `${BASE_URL}/thingtodo/tours/${landing.slug}`,
+      priority: 0.7
+    })),
+    ...excursionKeywordLandings.map((landing) => ({
+      url: `${BASE_URL}/excursiones/${landing.landingSlug}`,
       priority: 0.7
     }))
   ];

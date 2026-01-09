@@ -79,7 +79,23 @@ export const transferLandings: TransferLandingData[] = [
     seoTitle: "Transfer privado PUJ a Hard Rock Hotel Punta Cana | Proactivitis",
     metaDescription:
       "Reserva tu traslado privado desde Punta Cana International Airport (PUJ) hasta Hard Rock Hotel & Casino Punta Cana con chofer bilingüe, confirmación inmediata y vehículos premium.",
-    keywords: ["PUJ Hard Rock transfer", "transfer privado Punta Cana Hard Rock", "hard rock hotel transfer punta cana"],
+    keywords: [
+      "PUJ Hard Rock transfer",
+      "transfer privado Punta Cana Hard Rock",
+      "hard rock hotel transfer punta cana",
+      "hard rock punta cana shuttle",
+      "hard rock hotel casino punta cana",
+      "hard rock punta cana airport transfer",
+      "hard rock punta cana to airport",
+      "punta cana airport to hard rock",
+      "punta cana airport to hard rock hotel",
+      "transfer from punta cana airport to hard rock hotel",
+      "transfers from punta cana airport to hard rock hotel",
+      "transportation from punta cana airport to hard rock hotel",
+      "puj to hard rock punta cana",
+      "puj to hard rock punta cana private transfer",
+      "hard rock punta cana excursions"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-hard-rock-hotel-punta-cana"
   },
   {
@@ -118,7 +134,13 @@ export const transferLandings: TransferLandingData[] = [
     seoTitle: "Transfer privado PUJ a Barceló Bávaro Palace | Proactivitis",
     metaDescription:
       "Traslado premium desde Punta Cana International Airport (PUJ) hasta Barceló Bávaro Palace, con chofer bilingüe, confirmación instantánea y vans familiares.",
-    keywords: ["transfer PUJ Bávaro Palace", "Punta Cana airport to Barceló transfer", "transfer privado Barceló Bávaro"],
+    keywords: [
+      "transfer PUJ Bavaro Palace",
+      "Punta Cana airport to Barcelo transfer",
+      "transfer privado Barcelo Bavaro",
+      "punta cana airport to barcelo bavaro palace",
+      "transportation from punta cana airport to barcelo bavaro palace"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-barcelo-bavaro-palace"
   },
   {
@@ -157,7 +179,13 @@ export const transferLandings: TransferLandingData[] = [
     seoTitle: "Transfer privado PUJ a Riu República | Proactivitis",
     metaDescription:
       "Traslado privado desde Punta Cana International Airport (PUJ) hasta Riu República con minibuses, soporte en vivo y confirmación inmediata.",
-    keywords: ["PUJ Riu República transfer", "transfer privado Riu República", "Punta Cana airport transport Riu"],
+    keywords: [
+      "PUJ Riu Republica transfer",
+      "transfer privado Riu Republica",
+      "Punta Cana airport transport Riu",
+      "punta cana airport to riu republica",
+      "transportation from punta cana airport to riu republica"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-riu-republica"
   }
   ,
@@ -183,7 +211,17 @@ export const transferLandings: TransferLandingData[] = [
     seoTitle: "Transfer privado PUJ a Lopesan Costa Bávaro Resort | Proactivitis",
     metaDescription:
       "Reserva tu traslado privado desde Punta Cana International Airport (PUJ) hasta Lopesan Costa Bávaro Resort con chofer bilingüe, atención para bodas y confirmación instantánea.",
-    keywords: ["PUJ lopesan costa bavaro transfer", "transfer privado Lopesan Costa Bávaro", "Lopesan Costa Bávaro PUJ"],
+    keywords: [
+      "PUJ lopesan costa bavaro transfer",
+      "transfer privado Lopesan Costa Bavaro",
+      "Lopesan Costa Bavaro PUJ",
+      "lopesan costa bavaro airport shuttle",
+      "lopesan costa bavaro shuttle",
+      "puj to lopesan costa bavaro",
+      "punta cana airport to lopesan costa bavaro",
+      "taxi to lopesan costa bavaro",
+      "transportation from punta cana airport to lopesan costa bavaro"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-lopesan-costa-bavaro"
   },
   {
@@ -208,7 +246,13 @@ export const transferLandings: TransferLandingData[] = [
     seoTitle: "Transfer privado PUJ a Hyatt Ziva Cap Cana | Proactivitis",
     metaDescription:
       "Traslado premium desde Punta Cana International Airport (PUJ) hasta Hyatt Ziva Cap Cana con conductor bilingüe, asistencia 24/7 y vehículos equipados.",
-    keywords: ["PUJ Hyatt Ziva transfer", "Hyatt Ziva Cap Cana private transfer", "transfer privado Cap Cana"],
+    keywords: [
+      "PUJ Hyatt Ziva transfer",
+      "Hyatt Ziva Cap Cana private transfer",
+      "transfer privado Cap Cana",
+      "hyatt ziva cap cana airport transfer",
+      "puj to hyatt ziva cap cana"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-hyatt-ziva-cap-cana"
   },
   {
@@ -233,7 +277,14 @@ export const transferLandings: TransferLandingData[] = [
     seoTitle: "Transfer privado PUJ a Hyatt Zilara Cap Cana | Proactivitis",
     metaDescription:
       "Reserva tu traslado privado desde Punta Cana International Airport (PUJ) hasta Hyatt Zilara Cap Cana con vehículo premium, chofer bilingüe y confirmación en minutos.",
-    keywords: ["PUJ Hyatt Zilara transfer", "Hyatt Zilara private transfer", "Cap Cana transfer PUJ"],
+    keywords: [
+      "PUJ Hyatt Zilara transfer",
+      "Hyatt Zilara private transfer",
+      "Cap Cana transfer PUJ",
+      "hyatt zilara cap cana airport transfer",
+      "hyatt zilara cap cana transportation",
+      "punta cana airport to hyatt zilara"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-hyatt-zilara-cap-cana"
   },
   {
@@ -258,7 +309,15 @@ export const transferLandings: TransferLandingData[] = [
     seoTitle: "Transfer privado PUJ a Majestic Elegance Punta Cana | Proactivitis",
     metaDescription:
       "Reserva tu traslado privado desde Punta Cana International Airport (PUJ) hasta Majestic Elegance Punta Cana con conductor bilingüe, Wi-Fi y confirmación inmediata.",
-    keywords: ["PUJ Majestic Elegance transfer", "Majestic Elegance transfer Punta Cana", "transfer Majestic Elegance"],
+    keywords: [
+      "PUJ Majestic Elegance transfer",
+      "Majestic Elegance transfer Punta Cana",
+      "transfer Majestic Elegance",
+      "majestic elegance punta cana airport shuttle",
+      "punta cana airport to majestic elegance",
+      "transportation from punta cana airport to majestic elegance",
+      "transportation from puj to majestic elegance"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-majestic-elegance"
   },
   {
@@ -283,7 +342,15 @@ export const transferLandings: TransferLandingData[] = [
     seoTitle: "Transfer privado PUJ a Majestic Mirage Punta Cana | Proactivitis",
     metaDescription:
       "Traslado privado desde Punta Cana International Airport (PUJ) hasta Majestic Mirage Punta Cana con chofer bilingüe, minibuses y confirmación inmediata.",
-    keywords: ["Majestic Mirage transfer", "PUJ Majestic Mirage transfer", "transfer Majestic Mirage"],
+    keywords: [
+      "Majestic Mirage transfer",
+      "PUJ Majestic Mirage transfer",
+      "transfer Majestic Mirage",
+      "majestic mirage airport transfer",
+      "majestic mirage punta cana airport shuttle",
+      "punta cana airport to majestic mirage",
+      "transportation from punta cana airport to majestic mirage"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-majestic-mirage"
   },
   {
@@ -308,7 +375,14 @@ export const transferLandings: TransferLandingData[] = [
     seoTitle: "Transfer privado PUJ a Iberostar Grand Bávaro | Proactivitis",
     metaDescription:
       "Reserva tu traslado privado desde Punta Cana International Airport (PUJ) hasta Iberostar Grand Bávaro con vehículo premium, asistencia 24/7 y confirmación rápida.",
-    keywords: ["Iberostar Grand Bávaro transfer", "PUJ Iberostar transfer", "transfer privado Iberostar Grand"],
+    keywords: [
+      "Iberostar Grand Bavaro transfer",
+      "PUJ Iberostar transfer",
+      "transfer privado Iberostar Grand",
+      "punta cana airport to iberostar grand bavaro",
+      "transportation from punta cana airport to iberostar grand bavaro",
+      "punta cana airport to iberostar bavaro"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-iberostar-grand-bavaro"
   },
   {
@@ -333,7 +407,13 @@ export const transferLandings: TransferLandingData[] = [
     seoTitle: "Transfer privado PUJ a Bahia Principe Grand Punta Cana | Proactivitis",
     metaDescription:
       "Traslado privado desde Punta Cana International Airport (PUJ) hasta Bahia Principe Grand Punta Cana con minibuses y confirmación inmediata para grupos grandes.",
-    keywords: ["PUJ Bahia Principe Grand transfer", "transfer privado Bahia Principe Grand", "Bahia Principe Grand Punta Cana transfer"],
+    keywords: [
+      "PUJ Bahia Principe Grand transfer",
+      "transfer privado Bahia Principe Grand",
+      "Bahia Principe Grand Punta Cana transfer",
+      "bahia principe transfer",
+      "transfer aeropuerto punta cana a hotel bahia principe"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-bahia-principe-grand-punta-cana"
   },
   {
@@ -430,7 +510,18 @@ export const transferLandings: TransferLandingData[] = [
     seoTitle: "Transfer privado PUJ a Melia Caribe Beach Resort | Proactivitis",
     metaDescription:
       "Traslado privado desde Punta Cana International Airport (PUJ) hasta Melia Caribe Beach Resort con vehículos familiares y atención personalizada.",
-    keywords: ["PUJ Melia Caribe transfer", "transfer privado Melia Caribe", "Melia Caribe Beach transfer Punta Cana"],
+    keywords: [
+      "PUJ Melia Caribe transfer",
+      "transfer privado Melia Caribe",
+      "Melia Caribe Beach transfer Punta Cana",
+      "melia caribe beach resort airport shuttle",
+      "melia caribe tropical airport shuttle",
+      "melia caribe tropical airport transfer",
+      "punta cana airport to melia beach resort",
+      "punta cana airport to melia caribe tropical",
+      "taxi from punta cana airport to melia caribe",
+      "transportation from punta cana airport to melia caribe tropical"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-melia-caribe-beach"
   },
   {
@@ -451,7 +542,14 @@ export const transferLandings: TransferLandingData[] = [
     seoTitle: "Transfer privado PUJ a Paradisus Palma Real | Proactivitis",
     metaDescription:
       "Reserva tu traslado privado desde Punta Cana International Airport (PUJ) hasta Paradisus Palma Real Golf & Spa Resort con chofer y vehículo premium.",
-    keywords: ["PUJ Paradisus Palma Real transfer", "transfer privado Paradisus Palma Real", "Paradisus Palma Real transfer"],
+    keywords: [
+      "PUJ Paradisus Palma Real transfer",
+      "transfer privado Paradisus Palma Real",
+      "Paradisus Palma Real transfer",
+      "distance from punta cana airport to paradisus palma real",
+      "paradisus palma real airport transfer",
+      "transportation from punta cana airport to paradisus palma real"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-paradisus-palma-real"
   },
   {
@@ -472,7 +570,12 @@ export const transferLandings: TransferLandingData[] = [
     seoTitle: "Transfer privado PUJ a Paradisus Grand Cana | Proactivitis",
     metaDescription:
       "Traslado personalizado desde Punta Cana International Airport (PUJ) hasta Paradisus Grand Cana con chofer bilingüe y soporte para bodas.",
-    keywords: ["PUJ Paradisus Grand Cana transfer", "transfer privado Paradisus Grand Cana", "Paradisus Grand Cana transfer Punta Cana"],
+    keywords: [
+      "PUJ Paradisus Grand Cana transfer",
+      "transfer privado Paradisus Grand Cana",
+      "Paradisus Grand Cana transfer Punta Cana",
+      "paradisus grand cana airport transfer"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-paradisus-grand-cana"
   },
   {
@@ -540,7 +643,13 @@ export const transferLandings: TransferLandingData[] = [
     seoTitle: "Transfer privado PUJ a Dreams Macao Beach Punta Cana | Proactivitis",
     metaDescription:
       "Reserva tu traslado privado desde Punta Cana International Airport (PUJ) al Dreams Macao Beach Punta Cana con chofer bilingüe, confirmación inmediata y atención 24/7.",
-    keywords: ["PUJ Dreams Macao transfer", "transfer privado Dreams Macao", "Dreams Macao Beach Punta Cana transfer"],
+    keywords: [
+      "PUJ Dreams Macao transfer",
+      "transfer privado Dreams Macao",
+      "Dreams Macao Beach Punta Cana transfer",
+      "airport to dreams macao",
+      "punta cana airport to dreams macao beach"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-dreams-macao-beach"
   }
 ,
@@ -621,7 +730,13 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Melia Punta Cana Beach"),
     seoTitle: "Transfer privado PUJ a Melia Punta Cana Beach | Proactivitis",
     metaDescription: "Traslado sin esperas desde Punta Cana International Airport (PUJ) hasta Melia Punta Cana Beach con confirmación inmediata, Wi-Fi y chofer bilingüe.",
-    keywords: ["PUJ Melia Punta Cana Beach transfer", "Melia Punta Cana Beach transfer privado", "transfer Melia Punta Cana Beach"],
+    keywords: [
+      "PUJ Melia Punta Cana Beach transfer",
+      "Melia Punta Cana Beach transfer privado",
+      "transfer Melia Punta Cana Beach",
+      "melia punta cana airport transfer",
+      "private transfer melia punta cana from airport"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-melia-punta-cana-beach"
   },
   {
@@ -681,7 +796,13 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Occidental Punta Cana"),
     seoTitle: "Transfer privado PUJ a Occidental Punta Cana | Proactivitis",
     metaDescription: "Traslado sin esperas desde Punta Cana International Airport (PUJ) hasta Occidental Punta Cana con confirmación inmediata, Wi-Fi y chofer bilingüe.",
-    keywords: ["PUJ Occidental Punta Cana transfer", "Occidental Punta Cana transfer privado", "transfer Occidental Punta Cana"],
+    keywords: [
+      "PUJ Occidental Punta Cana transfer",
+      "Occidental Punta Cana transfer privado",
+      "transfer Occidental Punta Cana",
+      "occidental punta cana airport shuttle",
+      "puj airport to occidental punta cana"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-occidental-punta-cana"
   },
   {
@@ -701,7 +822,13 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Ocean Blue And Sand"),
     seoTitle: "Transfer privado PUJ a Ocean Blue And Sand | Proactivitis",
     metaDescription: "Traslado sin esperas desde Punta Cana International Airport (PUJ) hasta Ocean Blue And Sand con confirmación inmediata, Wi-Fi y chofer bilingüe.",
-    keywords: ["PUJ Ocean Blue And Sand transfer", "Ocean Blue And Sand transfer privado", "transfer Ocean Blue And Sand"],
+    keywords: [
+      "PUJ Ocean Blue And Sand transfer",
+      "Ocean Blue And Sand transfer privado",
+      "transfer Ocean Blue And Sand",
+      "ocean blue and sand airport transportation",
+      "punta cana airport to ocean blue and sand"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-ocean-blue-and-sand"
   },
   {
@@ -721,7 +848,13 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Punta Cana Princess"),
     seoTitle: "Transfer privado PUJ a Punta Cana Princess | Proactivitis",
     metaDescription: "Traslado sin esperas desde Punta Cana International Airport (PUJ) hasta Punta Cana Princess con confirmación inmediata, Wi-Fi y chofer bilingüe.",
-    keywords: ["PUJ Punta Cana Princess transfer", "Punta Cana Princess transfer privado", "transfer Punta Cana Princess"],
+    keywords: [
+      "PUJ Punta Cana Princess transfer",
+      "Punta Cana Princess transfer privado",
+      "transfer Punta Cana Princess",
+      "puj to punta cana princess",
+      "punta cana princess round trip transfer"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-punta-cana-princess"
   },
   {
@@ -761,7 +894,12 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Riu Bambu"),
     seoTitle: "Transfer privado PUJ a Riu Bambu | Proactivitis",
     metaDescription: "Traslado sin esperas desde Punta Cana International Airport (PUJ) hasta Riu Bambu con confirmación inmediata, Wi-Fi y chofer bilingüe.",
-    keywords: ["PUJ Riu Bambu transfer", "Riu Bambu transfer privado", "transfer Riu Bambu"],
+    keywords: [
+      "PUJ Riu Bambu transfer",
+      "Riu Bambu transfer privado",
+      "transfer Riu Bambu",
+      "punta cana airport to riu bambu"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-riu-bambu"
   },
   {
@@ -861,7 +999,14 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Royalton Bavaro"),
     seoTitle: "Transfer privado PUJ a Royalton Bavaro | Proactivitis",
     metaDescription: "Traslado sin esperas desde Punta Cana International Airport (PUJ) hasta Royalton Bavaro con confirmación inmediata, Wi-Fi y chofer bilingüe.",
-    keywords: ["PUJ Royalton Bavaro transfer", "Royalton Bavaro transfer privado", "transfer Royalton Bavaro"],
+    keywords: [
+      "PUJ Royalton Bavaro transfer",
+      "Royalton Bavaro transfer privado",
+      "transfer Royalton Bavaro",
+      "puj to royalton bavaro",
+      "punta cana airport to royalton bavaro",
+      "private transfer punta cana to royalton bavaro"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-royalton-bavaro"
   },
   {
@@ -921,7 +1066,12 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Secrets Cap Cana"),
     seoTitle: "Transfer privado PUJ a Secrets Cap Cana | Proactivitis",
     metaDescription: "Traslado sin esperas desde Punta Cana International Airport (PUJ) hasta Secrets Cap Cana con confirmación inmediata, Wi-Fi y chofer bilingüe.",
-    keywords: ["PUJ Secrets Cap Cana transfer", "Secrets Cap Cana transfer privado", "transfer Secrets Cap Cana"],
+    keywords: [
+      "PUJ Secrets Cap Cana transfer",
+      "Secrets Cap Cana transfer privado",
+      "transfer Secrets Cap Cana",
+      "punta cana airport to secrets cap cana"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-secrets-cap-cana"
   },
   {
@@ -941,7 +1091,12 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Secrets Royal Beach"),
     seoTitle: "Transfer privado PUJ a Secrets Royal Beach | Proactivitis",
     metaDescription: "Traslado sin esperas desde Punta Cana International Airport (PUJ) hasta Secrets Royal Beach con confirmación inmediata, Wi-Fi y chofer bilingüe.",
-    keywords: ["PUJ Secrets Royal Beach transfer", "Secrets Royal Beach transfer privado", "transfer Secrets Royal Beach"],
+    keywords: [
+      "PUJ Secrets Royal Beach transfer",
+      "Secrets Royal Beach transfer privado",
+      "transfer Secrets Royal Beach",
+      "punta cana airport to secrets royal beach"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-secrets-royal-beach"
   },
   {
@@ -981,7 +1136,12 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Secrets Tides Punta Cana"),
     seoTitle: "Transfer privado PUJ a Secrets Tides Punta Cana | Proactivitis",
     metaDescription: "Traslado sin esperas desde Punta Cana International Airport (PUJ) hasta Secrets Tides Punta Cana con confirmación inmediata, Wi-Fi y chofer bilingüe.",
-    keywords: ["PUJ Secrets Tides Punta Cana transfer", "Secrets Tides Punta Cana transfer privado", "transfer Secrets Tides Punta Cana"],
+    keywords: [
+      "PUJ Secrets Tides Punta Cana transfer",
+      "Secrets Tides Punta Cana transfer privado",
+      "transfer Secrets Tides Punta Cana",
+      "puj to secrets tides"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-secrets-tides-punta-cana"
   },
   {
@@ -1203,7 +1363,21 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Dreams Flora"),
     seoTitle: "Transfer privado PUJ a Dreams Flora | Proactivitis",
     metaDescription: "Traslado sin esperas desde Punta Cana International Airport (PUJ) hasta Dreams Flora con confirmación inmediata, Wi-Fi y chofer bilingüe.",
-    keywords: ["PUJ Dreams Flora transfer", "Dreams Flora transfer privado", "transfer Dreams Flora"],
+    keywords: [
+      "PUJ Dreams Flora transfer",
+      "Dreams Flora transfer privado",
+      "transfer Dreams Flora",
+      "dreams flora airport shuttle",
+      "dreams flora airport transfer",
+      "dreams flora airport transportation",
+      "airport transfer to dreams flora",
+      "puj to dreams flora",
+      "punta cana airport to dreams flora",
+      "private transfer dreams flora",
+      "private transfer from puj to dreams flora",
+      "transfer from punta cana airport to dreams flora",
+      "transportation from punta cana airport to dreams flora"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-dreams-flora"
   }
   ,
@@ -1226,6 +1400,304 @@ export const transferLandings: TransferLandingData[] = [
     metaDescription: "Traslado sin esperas desde Punta Cana International Airport (PUJ) hasta Bahia Principe Luxury Esmeralda con confirmación inmediata, Wi-Fi y chofer bilingüe.",
     keywords: ["PUJ Bahia Principe Luxury Esmeralda transfer", "Bahia Principe Luxury Esmeralda transfer privado", "transfer Bahia Principe Luxury Esmeralda"],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-puj-to-bahia-principe-luxury-esmeralda"
+  }
+  ,
+  {
+    landingSlug: "punta-cana-international-airport-to-breathless-punta-cana",
+    reverseSlug: "breathless-punta-cana-to-punta-cana-international-airport",
+    hotelSlug: "breathless-punta-cana",
+    hotelName: "Breathless Punta Cana Resort & Spa",
+    heroTitle: "Punta Cana International Airport (PUJ) -> Breathless Punta Cana Resort & Spa",
+    heroSubtitle: "Traslado privado con chofer bilingue, Wi-Fi y asistencia personalizada hasta Breathless Punta Cana.",
+    heroTagline: "Servicio premium sin esperas ni filas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Transporte premium hacia Breathless Punta Cana",
+    priceFrom: 45,
+    priceDetails: ["Confirmacion inmediata con chofer asignado", "60 minutos de espera gratuita en PUJ", "Wi-Fi y agua embotellada durante el trayecto"],
+    longCopy: buildLongCopy("Breathless Punta Cana Resort & Spa"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
+    faq: buildFaq("Breathless Punta Cana Resort & Spa"),
+    seoTitle: "Transfer privado PUJ a Breathless Punta Cana | Proactivitis",
+    metaDescription:
+      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Breathless Punta Cana Resort & Spa con confirmacion inmediata, Wi-Fi y chofer bilingue.",
+    keywords: [
+      "breathless punta cana shuttle",
+      "breathless punta cana airport transfer",
+      "PUJ Breathless transfer",
+      "transfer from punta cana airport to breathless resort",
+      "transportation from punta cana airport to breathless resort"
+    ],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-breathless-punta-cana"
+  },
+  {
+    landingSlug: "punta-cana-international-airport-to-catalonia-bavaro",
+    reverseSlug: "catalonia-bavaro-to-punta-cana-international-airport",
+    hotelSlug: "catalonia-bavaro",
+    hotelName: "Catalonia Bavaro Beach Golf & Casino Resort",
+    heroTitle: "Punta Cana International Airport (PUJ) -> Catalonia Bavaro Beach Golf & Casino Resort",
+    heroSubtitle: "Traslado privado con chofer bilingue, Wi-Fi y asistencia personalizada hasta Catalonia Bavaro.",
+    heroTagline: "Servicio premium sin esperas ni filas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Transporte premium hacia Catalonia Bavaro",
+    priceFrom: 45,
+    priceDetails: ["Confirmacion inmediata con chofer asignado", "60 minutos de espera gratuita en PUJ", "Wi-Fi y agua embotellada durante el trayecto"],
+    longCopy: buildLongCopy("Catalonia Bavaro Beach Golf & Casino Resort"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
+    faq: buildFaq("Catalonia Bavaro Beach Golf & Casino Resort"),
+    seoTitle: "Transfer privado PUJ a Catalonia Bavaro | Proactivitis",
+    metaDescription:
+      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Catalonia Bavaro Beach Golf & Casino Resort con confirmacion inmediata, Wi-Fi y chofer bilingue.",
+    keywords: ["catalonia punta cana airport transfer", "PUJ Catalonia Bavaro transfer", "Catalonia Bavaro shuttle"],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-catalonia-bavaro"
+  },
+  {
+    landingSlug: "punta-cana-international-airport-to-dreams-onyx",
+    reverseSlug: "dreams-onyx-to-punta-cana-international-airport",
+    hotelSlug: "dreams-onyx",
+    hotelName: "Dreams Onyx Resort & Spa",
+    heroTitle: "Punta Cana International Airport (PUJ) -> Dreams Onyx Resort & Spa",
+    heroSubtitle: "Traslado privado con chofer bilingue, Wi-Fi y asistencia personalizada hasta Dreams Onyx.",
+    heroTagline: "Servicio premium sin esperas ni filas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Transporte premium hacia Dreams Onyx",
+    priceFrom: 45,
+    priceDetails: ["Confirmacion inmediata con chofer asignado", "60 minutos de espera gratuita en PUJ", "Wi-Fi y agua embotellada durante el trayecto"],
+    longCopy: buildLongCopy("Dreams Onyx Resort & Spa"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
+    faq: buildFaq("Dreams Onyx Resort & Spa"),
+    seoTitle: "Transfer privado PUJ a Dreams Onyx | Proactivitis",
+    metaDescription:
+      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Dreams Onyx Resort & Spa con confirmacion inmediata, Wi-Fi y chofer bilingue.",
+    keywords: [
+      "dreams onyx airport shuttle",
+      "dreams onyx to airport",
+      "dreams onyx airport transfer",
+      "puj to dreams onyx",
+      "punta cana airport to dreams onyx",
+      "private shuttle to dreams onyx",
+      "how far is dreams onyx from airport",
+      "how far is dreams onyx from punta cana airport",
+      "how far is dreams onyx punta cana from airport",
+      "transportation from punta cana airport to dreams onyx"
+    ],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-dreams-onyx"
+  },
+  {
+    landingSlug: "punta-cana-international-airport-to-dreams-royal-beach",
+    reverseSlug: "dreams-royal-beach-to-punta-cana-international-airport",
+    hotelSlug: "dreams-royal-beach",
+    hotelName: "Dreams Royal Beach Punta Cana",
+    heroTitle: "Punta Cana International Airport (PUJ) -> Dreams Royal Beach Punta Cana",
+    heroSubtitle: "Traslado privado con chofer bilingue, Wi-Fi y asistencia personalizada hasta Dreams Royal Beach.",
+    heroTagline: "Servicio premium sin esperas ni filas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Transporte premium hacia Dreams Royal Beach",
+    priceFrom: 45,
+    priceDetails: ["Confirmacion inmediata con chofer asignado", "60 minutos de espera gratuita en PUJ", "Wi-Fi y agua embotellada durante el trayecto"],
+    longCopy: buildLongCopy("Dreams Royal Beach Punta Cana"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
+    faq: buildFaq("Dreams Royal Beach Punta Cana"),
+    seoTitle: "Transfer privado PUJ a Dreams Royal Beach | Proactivitis",
+    metaDescription:
+      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Dreams Royal Beach Punta Cana con confirmacion inmediata, Wi-Fi y chofer bilingue.",
+    keywords: [
+      "dreams royal beach punta cana airport transfer",
+      "PUJ Dreams Royal Beach transfer",
+      "Dreams Royal Beach shuttle",
+      "punta cana airport to dreams royal beach"
+    ],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-dreams-royal-beach"
+  },
+  {
+    landingSlug: "punta-cana-international-airport-to-excellence-punta-cana",
+    reverseSlug: "excellence-punta-cana-to-punta-cana-international-airport",
+    hotelSlug: "excellence-punta-cana",
+    hotelName: "Excellence Punta Cana",
+    heroTitle: "Punta Cana International Airport (PUJ) -> Excellence Punta Cana",
+    heroSubtitle: "Traslado privado con chofer bilingue, Wi-Fi y asistencia personalizada hasta Excellence Punta Cana.",
+    heroTagline: "Servicio premium sin esperas ni filas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Transporte premium hacia Excellence Punta Cana",
+    priceFrom: 45,
+    priceDetails: ["Confirmacion inmediata con chofer asignado", "60 minutos de espera gratuita en PUJ", "Wi-Fi y agua embotellada durante el trayecto"],
+    longCopy: buildLongCopy("Excellence Punta Cana"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
+    faq: buildFaq("Excellence Punta Cana"),
+    seoTitle: "Transfer privado PUJ a Excellence Punta Cana | Proactivitis",
+    metaDescription:
+      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Excellence Punta Cana con confirmacion inmediata, Wi-Fi y chofer bilingue.",
+    keywords: [
+      "excellence punta cana airport transfer",
+      "PUJ Excellence Punta Cana transfer",
+      "Excellence Punta Cana shuttle",
+      "puj to excellence punta cana",
+      "punta cana airport to excellence punta cana",
+      "punta cana airport to excellence resort"
+    ],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-excellence-punta-cana"
+  },
+  {
+    landingSlug: "punta-cana-international-airport-to-finest-punta-cana",
+    reverseSlug: "finest-punta-cana-to-punta-cana-international-airport",
+    hotelSlug: "finest-punta-cana",
+    hotelName: "Finest Punta Cana",
+    heroTitle: "Punta Cana International Airport (PUJ) -> Finest Punta Cana",
+    heroSubtitle: "Traslado privado con chofer bilingue, Wi-Fi y asistencia personalizada hasta Finest Punta Cana.",
+    heroTagline: "Servicio premium sin esperas ni filas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Transporte premium hacia Finest Punta Cana",
+    priceFrom: 45,
+    priceDetails: ["Confirmacion inmediata con chofer asignado", "60 minutos de espera gratuita en PUJ", "Wi-Fi y agua embotellada durante el trayecto"],
+    longCopy: buildLongCopy("Finest Punta Cana"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
+    faq: buildFaq("Finest Punta Cana"),
+    seoTitle: "Transfer privado PUJ a Finest Punta Cana | Proactivitis",
+    metaDescription:
+      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Finest Punta Cana con confirmacion inmediata, Wi-Fi y chofer bilingue.",
+    keywords: [
+      "finest punta cana airport transfer",
+      "PUJ Finest Punta Cana transfer",
+      "Finest Punta Cana shuttle",
+      "private transfer from puj to finest punta cana resort",
+      "private transfer to finest punta cana from puj airport",
+      "punta cana airport to finest punta cana"
+    ],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-finest-punta-cana"
+  },
+  {
+    landingSlug: "punta-cana-international-airport-to-grand-bavaro-princess",
+    reverseSlug: "grand-bavaro-princess-to-punta-cana-international-airport",
+    hotelSlug: "grand-bavaro-princess",
+    hotelName: "Grand Bavaro Princess",
+    heroTitle: "Punta Cana International Airport (PUJ) -> Grand Bavaro Princess",
+    heroSubtitle: "Traslado privado con chofer bilingue, Wi-Fi y asistencia personalizada hasta Grand Bavaro Princess.",
+    heroTagline: "Servicio premium sin esperas ni filas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Transporte premium hacia Grand Bavaro Princess",
+    priceFrom: 45,
+    priceDetails: ["Confirmacion inmediata con chofer asignado", "60 minutos de espera gratuita en PUJ", "Wi-Fi y agua embotellada durante el trayecto"],
+    longCopy: buildLongCopy("Grand Bavaro Princess"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
+    faq: buildFaq("Grand Bavaro Princess"),
+    seoTitle: "Transfer privado PUJ a Grand Bavaro Princess | Proactivitis",
+    metaDescription:
+      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Grand Bavaro Princess con confirmacion inmediata, Wi-Fi y chofer bilingue.",
+    keywords: [
+      "grand bavaro princess airport shuttle",
+      "PUJ Grand Bavaro Princess transfer",
+      "Grand Bavaro Princess shuttle",
+      "punta cana airport to grand bavaro princess"
+    ],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-grand-bavaro-princess"
+  },
+  {
+    landingSlug: "punta-cana-international-airport-to-grand-sirenis-punta-cana",
+    reverseSlug: "grand-sirenis-punta-cana-to-punta-cana-international-airport",
+    hotelSlug: "grand-sirenis-punta-cana",
+    hotelName: "Grand Sirenis Punta Cana Resort",
+    heroTitle: "Punta Cana International Airport (PUJ) -> Grand Sirenis Punta Cana Resort",
+    heroSubtitle: "Traslado privado con chofer bilingue, Wi-Fi y asistencia personalizada hasta Grand Sirenis Punta Cana.",
+    heroTagline: "Servicio premium sin esperas ni filas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Transporte premium hacia Grand Sirenis Punta Cana",
+    priceFrom: 45,
+    priceDetails: ["Confirmacion inmediata con chofer asignado", "60 minutos de espera gratuita en PUJ", "Wi-Fi y agua embotellada durante el trayecto"],
+    longCopy: buildLongCopy("Grand Sirenis Punta Cana Resort"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
+    faq: buildFaq("Grand Sirenis Punta Cana Resort"),
+    seoTitle: "Transfer privado PUJ a Grand Sirenis Punta Cana | Proactivitis",
+    metaDescription:
+      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Grand Sirenis Punta Cana Resort con confirmacion inmediata, Wi-Fi y chofer bilingue.",
+    keywords: [
+      "grand sirenis punta cana airport shuttle",
+      "PUJ Grand Sirenis transfer",
+      "Grand Sirenis Punta Cana shuttle",
+      "grand sirenis punta cana airport transfer",
+      "grand sirenis punta cana shuttle",
+      "grand sirenis punta cana to airport",
+      "grand sirenis punta cana transportation",
+      "transfer from punta cana airport to grand sirenis",
+      "how far is grand sirenis from punta cana airport",
+      "how far is grand sirenis punta cana from airport",
+      "punta cana airport to grand sirenis punta cana",
+      "shuttle punta cana airport grand sirenis"
+    ],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-grand-sirenis-punta-cana"
+  }
+  ,
+  {
+    landingSlug: "punta-cana-international-airport-to-majestic-colonial",
+    reverseSlug: "majestic-colonial-to-punta-cana-international-airport",
+    hotelSlug: "majestic-colonial",
+    hotelName: "Majestic Colonial Punta Cana",
+    heroTitle: "Punta Cana International Airport (PUJ) -> Majestic Colonial Punta Cana",
+    heroSubtitle: "Traslado privado con chofer bilingue, Wi-Fi y asistencia personalizada hasta Majestic Colonial.",
+    heroTagline: "Servicio premium sin esperas ni filas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Transporte premium hacia Majestic Colonial Punta Cana",
+    priceFrom: 45,
+    priceDetails: ["Confirmacion inmediata con chofer asignado", "60 minutos de espera gratuita en PUJ", "Wi-Fi y agua embotellada durante el trayecto"],
+    longCopy: buildLongCopy("Majestic Colonial Punta Cana"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
+    faq: buildFaq("Majestic Colonial Punta Cana"),
+    seoTitle: "Transfer privado PUJ a Majestic Colonial Punta Cana | Proactivitis",
+    metaDescription:
+      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Majestic Colonial Punta Cana con confirmacion inmediata, Wi-Fi y chofer bilingue.",
+    keywords: [
+      "majestic colonial punta cana airport shuttle",
+      "majestic colonial punta cana airport transfer",
+      "punta cana airport to majestic colonial",
+      "transportation from punta cana airport to majestic colonial",
+      "transfer from punta cana airport to majestic colonial",
+      "puj to majestic colonial"
+    ],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-majestic-colonial"
+  },
+  {
+    landingSlug: "punta-cana-international-airport-to-grand-palladium-punta-cana",
+    reverseSlug: "grand-palladium-punta-cana-to-punta-cana-international-airport",
+    hotelSlug: "grand-palladium-punta-cana",
+    hotelName: "Grand Palladium Punta Cana Resort & Spa",
+    heroTitle: "Punta Cana International Airport (PUJ) -> Grand Palladium Punta Cana Resort & Spa",
+    heroSubtitle: "Traslado privado con chofer bilingue, Wi-Fi y asistencia personalizada hasta Grand Palladium Punta Cana.",
+    heroTagline: "Servicio premium sin esperas ni filas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Transporte premium hacia Grand Palladium Punta Cana",
+    priceFrom: 45,
+    priceDetails: ["Confirmacion inmediata con chofer asignado", "60 minutos de espera gratuita en PUJ", "Wi-Fi y agua embotellada durante el trayecto"],
+    longCopy: buildLongCopy("Grand Palladium Punta Cana Resort & Spa"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
+    faq: buildFaq("Grand Palladium Punta Cana Resort & Spa"),
+    seoTitle: "Transfer privado PUJ a Grand Palladium Punta Cana | Proactivitis",
+    metaDescription:
+      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Grand Palladium Punta Cana Resort & Spa con confirmacion inmediata, Wi-Fi y chofer bilingue.",
+    keywords: [
+      "grand palladium punta cana airport transfer",
+      "how far is grand palladium punta cana from airport",
+      "punta cana airport to grand palladium punta cana"
+    ],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-grand-palladium-punta-cana"
+  },
+  {
+    landingSlug: "punta-cana-international-airport-to-iberostar-bavaro-suites",
+    reverseSlug: "iberostar-bavaro-suites-to-punta-cana-international-airport",
+    hotelSlug: "iberostar-bavaro-suites",
+    hotelName: "Iberostar Selection Bavaro Suites",
+    heroTitle: "Punta Cana International Airport (PUJ) -> Iberostar Selection Bavaro Suites",
+    heroSubtitle: "Traslado privado con chofer bilingue, Wi-Fi y asistencia personalizada hasta Iberostar Bavaro Suites.",
+    heroTagline: "Servicio premium sin esperas ni filas",
+    heroImage: "/transfer/mini van.png",
+    heroImageAlt: "Transporte premium hacia Iberostar Bavaro Suites",
+    priceFrom: 45,
+    priceDetails: ["Confirmacion inmediata con chofer asignado", "60 minutos de espera gratuita en PUJ", "Wi-Fi y agua embotellada durante el trayecto"],
+    longCopy: buildLongCopy("Iberostar Selection Bavaro Suites"),
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
+    faq: buildFaq("Iberostar Selection Bavaro Suites"),
+    seoTitle: "Transfer privado PUJ a Iberostar Bavaro Suites | Proactivitis",
+    metaDescription:
+      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Iberostar Selection Bavaro Suites con confirmacion inmediata, Wi-Fi y chofer bilingue.",
+    keywords: ["punta cana airport to iberostar bavaro", "PUJ Iberostar Bavaro transfer", "Iberostar Bavaro shuttle"],
+    canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-iberostar-bavaro-suites"
   }
 ];
 

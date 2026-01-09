@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
+import { excursionKeywordLandings } from "@/data/excursion-keyword-landings";
+import { genericTransferLandings } from "@/data/transfer-generic-landings";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 
 const BASE_URL = "https://proactivitis.com";
@@ -36,15 +38,24 @@ export async function GET() {
     slug: landing.landingSlug,
     lastMod: new Date().toISOString()
   }));
+  const genericLandings = genericTransferLandings.map((landing) => ({
+    slug: landing.landingSlug,
+    lastMod: new Date().toISOString()
+  }));
   const landingMap = new Map<string, { slug: string; lastMod: string }>();
   [
     ...manualLandings,
+    ...genericLandings,
     ...transferCombos.map((combo) => ({ slug: combo.landingSlug, lastMod: combo.lastMod.toISOString() }))
   ].forEach((entry) => {
     landingMap.set(entry.slug, entry);
   });
 
   const entries: SitemapEntry[] = [];
+  const excursionEntries = excursionKeywordLandings.map((landing) => ({
+    slug: landing.landingSlug,
+    lastMod: new Date().toISOString()
+  }));
 
   LOCALES.forEach((locale) => {
     entries.push(
@@ -64,6 +75,10 @@ export async function GET() {
 
     hotels.forEach(({ slug, updatedAt }) => {
       entries.push(buildEntry(`${BASE_URL}/${locale}/things-to-do/${slug}`, 0.7, updatedAt.toISOString()));
+    });
+
+    excursionEntries.forEach(({ slug, lastMod }) => {
+      entries.push(buildEntry(`${BASE_URL}/${locale}/excursiones/${slug}`, 0.7, lastMod));
     });
   });
 

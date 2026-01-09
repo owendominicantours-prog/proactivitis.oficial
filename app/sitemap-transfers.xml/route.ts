@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { allLandings } from "@/data/transfer-landings";
+import { genericTransferLandings } from "@/data/transfer-generic-landings";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 
 const BASE_URL = "https://proactivitis.com";
@@ -12,12 +13,18 @@ export async function GET() {
     slug: landing.landingSlug,
     lastMod: new Date().toISOString()
   }));
+  const genericLandings = genericTransferLandings.map((landing) => ({
+    slug: landing.landingSlug,
+    lastMod: new Date().toISOString()
+  }));
   const landingMap = new Map<string, { slug: string; lastMod: string }>();
-  [...manualLandings, ...combos.map((combo) => ({ slug: combo.landingSlug, lastMod: combo.lastMod.toISOString() }))].forEach(
-    (entry) => {
-      landingMap.set(entry.slug, entry);
-    }
-  );
+  [
+    ...manualLandings,
+    ...genericLandings,
+    ...combos.map((combo) => ({ slug: combo.landingSlug, lastMod: combo.lastMod.toISOString() }))
+  ].forEach((entry) => {
+    landingMap.set(entry.slug, entry);
+  });
 
   const urls = Array.from(landingMap.values())
     .map(({ slug, lastMod }) => {
