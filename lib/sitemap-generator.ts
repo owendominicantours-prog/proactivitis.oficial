@@ -23,6 +23,7 @@ const TRANSLATED_PREFIXES = [
   "/tours",
   "/thingtodo/tours",
   "/things-to-do",
+  "/recogida",
   "/excursiones-seguras-punta-cana",
   "/excursiones"
 ];
@@ -218,11 +219,14 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
   const localizedEntries = buildLocalizedEntries(baseEntries);
   const tourEntries: RouteEntry[] = uniqueByUrl([...baseEntries, ...localizedEntries]);
 
+  const recogidaEntries: RouteEntry[] = locations.map((location) => ({
+    url: `${BASE_URL}/recogida/${location.slug}`,
+    priority: 0.7
+  }));
+  const localizedRecogidaEntries = buildLocalizedEntries(recogidaEntries);
   const hotelEntries: RouteEntry[] = uniqueByUrl([
-    ...locations.map((location) => ({
-      url: `${BASE_URL}/recogida/${location.slug}`,
-      priority: 0.7
-    })),
+    ...recogidaEntries,
+    ...localizedRecogidaEntries,
     ...trasladoHotelEntries
   ]);
 

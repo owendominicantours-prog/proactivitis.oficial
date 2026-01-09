@@ -3,8 +3,11 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
+import type { Metadata } from "next";
+import { Locale, translate } from "@/lib/translations";
 
 const RECENT_TOURS_LIMIT = 6;
+const BASE_URL = "https://proactivitis.com";
 
 type SearchParams = {
   bookingCode?: string;
@@ -21,20 +24,35 @@ type TourWithDeparture = Prisma.TourGetPayload<{
   };
 }>;
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+const buildCanonical = (slug: string, locale: Locale) =>
+  locale === "es" ? `${BASE_URL}/recogida/${slug}` : `${BASE_URL}/${locale}/recogida/${slug}`;
+
+export async function buildRecogidaMetadata(slug: string, locale: Locale): Promise<Metadata> {
   const location = await prisma.location.findUnique({ where: { slug } });
   if (!location) {
     return {
-      title: "Recogidas en Proactivitis",
-      description: "Encuentra tours y traslados con la confianza de Proactivitis."
+      title: translate(locale, "recogida.meta.fallbackTitle"),
+      description: translate(locale, "recogida.meta.fallbackDescription")
     };
   }
 
   return {
-    title: `Tours y Traslados desde ${location.name} | Proactivitis`,
-    description: `Explora tours premium y traslados seguros que salen desde ${location.name}.`
+    title: translate(locale, "recogida.meta.title", { hotel: location.name }),
+    description: translate(locale, "recogida.meta.description", { hotel: location.name }),
+    alternates: {
+      canonical: buildCanonical(location.slug, locale),
+      languages: {
+        es: `/recogida/${location.slug}`,
+        en: `/en/recogida/${location.slug}`,
+        fr: `/fr/recogida/${location.slug}`
+      }
+    }
   };
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  return buildRecogidaMetadata(slug, "es");
 }
 
 const buildTourUrl = (tour: { slug: string }, locationSlug: string, bookingCode?: string) => {
@@ -47,10 +65,16 @@ const buildTourUrl = (tour: { slug: string }, locationSlug: string, bookingCode?
   return `/tours/${tour.slug}/recogida/${locationSlug}?${params.toString()}`;
 };
 
-export default async function RecogidaPage({ params, searchParams }: RecogidaPageProps) {
+export async function RecogidaPage({
+  params,
+  searchParams,
+  locale
+}: RecogidaPageProps & { locale: Locale }) {
   const resolvedParams = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const bookingCode = resolvedSearchParams?.bookingCode;
+  const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
+    translate(locale, key, replacements);
 
   let location = null;
   try {
@@ -141,27 +165,30 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
       <section className="bg-gradient-to-br from-white via-slate-50 to-slate-100 border-b border-slate-200">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-12">
           <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Recogidas VIP</p>
-            <h1 className="text-4xl font-bold text-slate-900">Tours y traslados desde {location.name}</h1>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{t("recogida.hero.eyebrow")}</p>
+            <h1 className="text-4xl font-bold text-slate-900">
+              {t("recogida.hero.title", { hotel: location.name })}
+            </h1>
             <p className="flex items-center gap-2 text-sm text-slate-500">
               <span className="text-lg text-green-500">✅</span>
-              Recogida confirmada en el lobby principal de {location.name}
+              {t("recogida.hero.confirmed", { hotel: location.name })}
             </p>
-            <p className="max-w-3xl text-sm text-slate-600">
-              Te mostramos las experiencias mejor valoradas y traslados confiables que parten desde este hotel. Reservamos tu cupo con prioridad y mantenemos la plaza segura mientras preparas los detalles.
-            </p>
+            <p className="max-w-3xl text-sm text-slate-600">{t("recogida.hero.body")}</p>
           </div>
           <div className="grid gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-[1fr,1fr]">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Hotel</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("recogida.hotel.label")}</p>
               <p className="text-2xl font-semibold text-slate-900">{location.name}</p>
             </div>
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("recogida.booking.label")}</p>
               <p className="text-sm text-slate-600">
-                ID humano: <span className="font-semibold text-slate-900">{bookingCode ?? "Generaremos uno al reservar"}</span>
+                {t("recogida.booking.codeLabel")}{" "}
+                <span className="font-semibold text-slate-900">
+                  {bookingCode ?? t("recogida.booking.fallback")}
+                </span>
               </p>
-              <p className="text-sm text-slate-500">Al iniciar la compra desde esta página transferimos el código para que lo veas en tu e-ticket.</p>
+              <p className="text-sm text-slate-500">{t("recogida.booking.note")}</p>
             </div>
           </div>
         </div>
@@ -169,11 +196,9 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
 
       <main className="mx-auto max-w-6xl px-4 py-10 space-y-8">
         <div className="flex flex-col gap-2">
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Mejores tours</p>
-          <h2 className="text-3xl font-semibold text-slate-900">Planifica tu experiencia ahora</h2>
-          <p className="text-sm text-slate-600">
-            Seleccionamos las experiencias premium que conectan con este punto de encuentro. Ajusta la fecha y confirma tu lugar con un solo click.
-          </p>
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-500">{t("recogida.tours.eyebrow")}</p>
+          <h2 className="text-3xl font-semibold text-slate-900">{t("recogida.tours.title")}</h2>
+          <p className="text-sm text-slate-600">{t("recogida.tours.body")}</p>
         </div>
         <div className="grid gap-6 md:grid-cols-2">
           {displayTours.map((tour) => (
@@ -194,14 +219,16 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
                     {tour.departureDestination?.name ?? tour.location}
                   </p>
                 </div>
-                <p className="text-sm text-slate-600 line-clamp-3">{tour.shortDescription ?? "Experiencia inmersiva, guías expertos y atención 24/7."}</p>
+                <p className="text-sm text-slate-600 line-clamp-3">
+                  {tour.shortDescription ?? t("recogida.tours.cardFallback")}
+                </p>
                 <div className="mt-auto flex items-center justify-between text-sm text-slate-700">
                   <span className="text-slate-900 font-semibold">${tour.price.toFixed(0)} USD</span>
                 <Link
                   href={buildTourUrl(tour, location.slug, bookingCode)}
                   className="rounded-2xl bg-orange-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-lg transition hover:bg-orange-600"
                 >
-                  {`Reservar ${tour.title} desde ${location.name}`}
+                  {t("recogida.tours.cardCta", { tour: tour.title, hotel: location.name })}
                 </Link>
                 </div>
               </div>
@@ -211,4 +238,8 @@ export default async function RecogidaPage({ params, searchParams }: RecogidaPag
       </main>
     </div>
   );
+}
+
+export default async function RecogidaPageRoute(props: RecogidaPageProps) {
+  return RecogidaPage({ ...props, locale: "es" });
 }
