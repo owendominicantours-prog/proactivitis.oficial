@@ -581,6 +581,7 @@
   "thingsToDo.transfers.eyebrow": "Transfers",
   "thingsToDo.transfers.title": "Recommended private transfers",
   "thingsToDo.transfers.cardTag": "Private transfer",
+  "thingsToDo.transfers.cardSubtitle": "Private transfer to {hotel} with pickup from PUJ.",
   "thingsToDo.transfers.cardCta": "View transfer",
   "thingsToDo.transfers.fallback": "Private transfer available from the airport.",
   "thingsToDo.schema.description": "Things to do in {hotel}: tours and transfers recommended by Proactivitis."

@@ -146,8 +146,6 @@ export async function ThingsToDoHotelPage({
     .filter((landing) => landing.hotelSlug !== hotel.slug)
     .slice(0, 2);
   const transferCards = [primaryTransfer, ...secondaryTransfers];
-  const transferCardDescription =
-    locale === "es" ? null : t("thingsToDo.transfers.fallback");
 
   const schema = {
     "@context": "https://schema.org",
@@ -225,7 +223,9 @@ export async function ThingsToDoHotelPage({
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("thingsToDo.transfers.cardTag")}</p>
                 <h3 className="text-base font-semibold text-slate-900">{landing.hotelName}</h3>
                 <p className="text-sm text-slate-600">
-                  {transferCardDescription ?? landing.heroSubtitle}
+                  {locale === "es"
+                    ? landing.heroSubtitle
+                    : t("thingsToDo.transfers.cardSubtitle", { hotel: landing.hotelName })}
                 </p>
                 <span className="mt-auto text-xs font-semibold uppercase tracking-[0.3em] text-slate-700">
                   {t("thingsToDo.transfers.cardCta")}
