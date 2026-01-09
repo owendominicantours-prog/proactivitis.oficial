@@ -37,6 +37,15 @@ export default async function CustomerPortal() {
     orderBy: { travelDate: "desc" },
     take: 6
   });
+  const upcomingBookings = await prisma.booking.findMany({
+    where: {
+      OR: [{ customerEmail: session.user.email }, { userId: session.user.id ?? undefined }],
+      travelDate: { gte: new Date() }
+    },
+    include: { Tour: true },
+    orderBy: { travelDate: "asc" },
+    take: 3
+  });
 
   const payment = user
     ? await prisma.customerPayment.findUnique({
@@ -70,6 +79,28 @@ export default async function CustomerPortal() {
     "Puedes guardar tu metodo de pago una sola vez y usarlo en cada reserva.",
     "Si necesitas ayuda, nuestro soporte 24/7 esta disponible por WhatsApp."
   ];
+  const statusLabels: Record<string, string> = {
+    CONFIRMED: "Confirmada",
+    PAYMENT_PENDING: "Pendiente de pago",
+    CANCELLATION_REQUESTED: "Cancelacion en revision",
+    CANCELLED: "Cancelada",
+    COMPLETED: "Completada"
+  };
+  const notifications = bookings.slice(0, 4).map((booking) => ({
+    id: booking.id,
+    label: statusLabels[booking.status] ?? booking.status,
+    text: booking.Tour?.title ?? "Tour",
+    date: booking.travelDate
+  }));
+  const whatsappBase = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/18093949877?text=Hola%20Proactivitis";
+  const buildWhatsappLink = (message: string) => {
+    const hasQuery = whatsappBase.includes("?");
+    const hasText = whatsappBase.includes("text=");
+    if (hasText) {
+      return `${whatsappBase}%0A${encodeURIComponent(message)}`;
+    }
+    return `${whatsappBase}${hasQuery ? "&" : "?"}text=${encodeURIComponent(message)}`;
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-10">
@@ -94,6 +125,23 @@ export default async function CustomerPortal() {
                 {messages.map((message) => (
                   <div key={message} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
                     {message}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Notificaciones</p>
+              <div className="mt-4 space-y-3 text-sm text-slate-600">
+                {notifications.length === 0 && (
+                  <p className="text-sm text-slate-500">No tienes notificaciones nuevas.</p>
+                )}
+                {notifications.map((item) => (
+                  <div key={item.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{item.label}</p>
+                    <p className="font-semibold text-slate-800">{item.text}</p>
+                    <p className="text-xs text-slate-500">
+                      {item.date.toLocaleDateString("es-DO")}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -148,7 +196,55 @@ export default async function CustomerPortal() {
 
           <div className="space-y-6">
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Mi perfil</p>
+              <p className="mt-2 text-lg font-semibold text-slate-900">{customerName}</p>
+              <p className="text-sm text-slate-500">{user?.email}</p>
+              <Link
+                href="/customer/profile"
+                className="mt-4 inline-flex items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600"
+              >
+                Editar perfil
+              </Link>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
               <CustomerPaymentMethod initialPayment={paymentSummary} />
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Proximos viajes</p>
+              <div className="mt-4 space-y-3 text-sm text-slate-600">
+                {upcomingBookings.length === 0 && (
+                  <p className="text-sm text-slate-500">No tienes viajes programados.</p>
+                )}
+                {upcomingBookings.map((booking) => {
+                  const message = `Quiero editar el pickup de la reserva ${booking.bookingCode ?? booking.id}. Tour: ${booking.Tour?.title ?? "Tour"}. Fecha: ${booking.travelDate.toLocaleDateString("es-DO")}.`;
+                  return (
+                    <div key={booking.id} className="rounded-2xl border border-slate-100 p-4">
+                      <p className="font-semibold text-slate-900">{booking.Tour?.title ?? "Tour"}</p>
+                      <p className="text-xs text-slate-500">
+                        {booking.travelDate.toLocaleDateString("es-DO")} • {booking.travelDate.toLocaleTimeString("es-DO", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                      <div className="mt-3 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em]">
+                        <Link
+                          href={`/customer/reservations/${booking.id}`}
+                          className="rounded-full border border-slate-200 px-3 py-1 text-slate-600"
+                        >
+                          Ver reserva
+                        </Link>
+                        <a
+                          href={buildWhatsappLink(message)}
+                          className="rounded-full border border-emerald-200 px-3 py-1 text-emerald-700"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Editar pickup
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
