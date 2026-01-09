@@ -188,6 +188,32 @@ export async function ThingsToDoHotelPage({
         </div>
       </section>
 
+      <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
+        <div className="space-y-4">
+          <h2 className="text-2xl font-semibold text-slate-900">{t("thingsToDo.overview.title")}</h2>
+          <p className="text-sm text-slate-600">{t("thingsToDo.overview.body1", { hotel: hotel.name })}</p>
+          <p className="text-sm text-slate-600">{t("thingsToDo.overview.body2")}</p>
+          <ul className="grid gap-2 text-sm text-slate-600 md:grid-cols-2">
+            <li className="flex items-start gap-2">
+              <span className="mt-1 h-2 w-2 rounded-full bg-emerald-500" />
+              {t("thingsToDo.overview.bullets.1")}
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-1 h-2 w-2 rounded-full bg-emerald-500" />
+              {t("thingsToDo.overview.bullets.2")}
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-1 h-2 w-2 rounded-full bg-emerald-500" />
+              {t("thingsToDo.overview.bullets.3")}
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-1 h-2 w-2 rounded-full bg-emerald-500" />
+              {t("thingsToDo.overview.bullets.4")}
+            </li>
+          </ul>
+        </div>
+      </section>
+
       <section className="space-y-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">{t("thingsToDo.tours.eyebrow")}</p>
