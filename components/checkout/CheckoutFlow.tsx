@@ -1921,6 +1921,11 @@ type PaymentFormProps = {
 
   onSuccess: () => void;
 
+
+  savedPaymentMethodId?: string | null;
+
+  clientSecret?: string | null;
+
 };
 
 
