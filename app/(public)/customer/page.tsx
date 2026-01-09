@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -157,10 +158,27 @@ export default async function CustomerPortal() {
                   <Link
                     key={tour.id}
                     href={`/tours/${tour.slug}`}
-                    className="block rounded-2xl border border-slate-100 p-4 text-sm text-slate-700 hover:border-emerald-200"
+                    className="flex items-center gap-3 rounded-2xl border border-slate-100 p-4 text-sm text-slate-700 hover:border-emerald-200"
                   >
-                    <p className="font-semibold text-slate-900">{tour.title}</p>
-                    <p className="text-xs text-slate-500">Desde ${tour.price.toFixed(0)} USD</p>
+                    <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                      {tour.heroImage ? (
+                        <Image
+                          src={tour.heroImage}
+                          alt={tour.title}
+                          width={56}
+                          height={56}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[10px] font-semibold uppercase text-slate-400">
+                          Tour
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-slate-900">{tour.title}</p>
+                      <p className="text-xs text-slate-500">Desde ${tour.price.toFixed(0)} USD</p>
+                    </div>
                   </Link>
                 ))}
               </div>
