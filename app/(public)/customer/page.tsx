@@ -39,8 +39,18 @@ export default async function CustomerPortal() {
 
   const payment = user
     ? await prisma.customerPayment.findUnique({
-        where: { userId: user.id }
+        where: { userId: user.id },
+        select: { method: true, brand: true, last4: true, updatedAt: true, stripePaymentMethodId: true }
       })
+    : null;
+  const paymentSummary = payment
+    ? {
+        method: payment.method,
+        brand: payment.brand,
+        last4: payment.last4,
+        updatedAt: payment.updatedAt?.toISOString(),
+        isStripe: Boolean(payment.stripePaymentMethodId)
+      }
     : null;
 
   const recommended = await prisma.tour.findMany({
@@ -137,7 +147,7 @@ export default async function CustomerPortal() {
 
           <div className="space-y-6">
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <CustomerPaymentMethod initialPayment={payment} />
+              <CustomerPaymentMethod initialPayment={paymentSummary} />
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

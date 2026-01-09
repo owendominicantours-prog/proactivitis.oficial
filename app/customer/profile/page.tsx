@@ -31,8 +31,18 @@ export default async function CustomerProfilePage() {
   });
   const payment = user
     ? await prisma.customerPayment.findUnique({
-        where: { userId: user.id }
+        where: { userId: user.id },
+        select: { method: true, brand: true, last4: true, updatedAt: true, stripePaymentMethodId: true }
       })
+    : null;
+  const paymentSummary = payment
+    ? {
+        method: payment.method,
+        brand: payment.brand,
+        last4: payment.last4,
+        updatedAt: payment.updatedAt?.toISOString(),
+        isStripe: Boolean(payment.stripePaymentMethodId)
+      }
     : null;
 
   if (!user) {
@@ -87,7 +97,7 @@ export default async function CustomerProfilePage() {
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-          <CustomerPaymentMethod initialPayment={payment} title="Metodo de pago seguro" />
+          <CustomerPaymentMethod initialPayment={paymentSummary} title="Metodo de pago seguro" />
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
