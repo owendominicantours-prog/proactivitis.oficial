@@ -64,7 +64,10 @@ export default async function CustomerPortal() {
     : null;
 
   const recommended = await prisma.tour.findMany({
-    where: { status: "published" },
+    where: {
+      status: "published",
+      slug: { not: "transfer-privado-proactivitis" }
+    },
     orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
     take: 4,
     select: { id: true, slug: true, title: true, heroImage: true, price: true }
