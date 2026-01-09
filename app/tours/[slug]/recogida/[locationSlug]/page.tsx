@@ -341,6 +341,7 @@ export async function TourHotelLanding({
   const packingList = buildPackingList(t);
 
   const detailReviewCount = getTourReviewCount(tour.slug, "detail");
+  const detailReviewLabel = formatReviewCountValue(detailReviewCount);
               <div className="text-xs uppercase tracking-[0.3em] text-slate-400">{t("tourPickup.reviews.summary", { count: detailReviewLabel })}</div>
 
   const quickInfo = [
