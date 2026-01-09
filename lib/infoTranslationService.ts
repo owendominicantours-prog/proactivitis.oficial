@@ -7,6 +7,8 @@ import { TranslationStatus } from "@prisma/client";
 import { InfoLocale } from "@/lib/infoRoutes";
 
 type InfoPageTranslationPayload = {
+  seoTitle?: string | null;
+  seoDescription?: string | null;
   hero: InfoPage["hero"];
   sections: InfoPage["sections"];
 };
@@ -16,6 +18,8 @@ function hashInfoPage(page: InfoPage) {
   const add = (value?: string) => {
     if (value) segments.push(value);
   };
+  add(page.seoTitle);
+  add(page.seoDescription);
   add(page.hero.eyebrow);
   add(page.hero.title);
   add(page.hero.subtitle);
@@ -177,6 +181,8 @@ async function translateSection(section: InfoSection, locale: InfoLocale): Promi
 }
 
 async function translateInfoPageContent(page: InfoPage, locale: InfoLocale): Promise<InfoPageTranslationPayload> {
+  const seoTitle = page.seoTitle ? await translateText(page.seoTitle, locale) : null;
+  const seoDescription = page.seoDescription ? await translateText(page.seoDescription, locale) : null;
   const hero = {
     ...page.hero,
     eyebrow: await translateText(page.hero.eyebrow, locale),
@@ -184,7 +190,7 @@ async function translateInfoPageContent(page: InfoPage, locale: InfoLocale): Pro
     subtitle: await translateText(page.hero.subtitle, locale)
   };
   const sections = await Promise.all(page.sections.map((section) => translateSection(section, locale)));
-  return { hero, sections };
+  return { seoTitle, seoDescription, hero, sections };
 }
 
 export async function translateInfoPage(pageKey: string, locale: InfoLocale) {
@@ -214,12 +220,16 @@ export async function translateInfoPage(pageKey: string, locale: InfoLocale) {
     create: {
       pageKey,
       locale,
+      seoTitle: payload.seoTitle ?? null,
+      seoDescription: payload.seoDescription ?? null,
       hero: payload.hero,
       sections: payload.sections,
       status: TranslationStatus.TRANSLATED,
       sourceHash: hash
     },
     update: {
+      seoTitle: payload.seoTitle ?? null,
+      seoDescription: payload.seoDescription ?? null,
       hero: payload.hero,
       sections: payload.sections,
       status: TranslationStatus.TRANSLATED,
@@ -239,6 +249,8 @@ export async function getTranslatedInfoPage(pageKey: string, locale: InfoLocale)
   });
   if (!translation) return null;
   return {
+    seoTitle: translation.seoTitle as string | null,
+    seoDescription: translation.seoDescription as string | null,
     hero: translation.hero as InfoPage["hero"],
     sections: translation.sections as InfoPage["sections"]
   };
@@ -252,6 +264,8 @@ export async function resolveInfoPageContent(pageKey: string, locale: InfoLocale
   if (!translated) return page;
   return {
     ...page,
+    seoTitle: translated.seoTitle ?? page.seoTitle,
+    seoDescription: translated.seoDescription ?? page.seoDescription,
     hero: translated.hero,
     sections: translated.sections
   };

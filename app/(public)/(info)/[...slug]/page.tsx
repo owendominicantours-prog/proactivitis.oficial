@@ -25,9 +25,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, normalizedSegments } = parseInfoSlug(slugSegments);
   const page = findInfoPage(normalizedSegments);
   if (!page) return {};
+  const resolvedPage = (await resolveInfoPageContent(page.key, locale)) ?? page;
   return {
-    title: trimSeoTitle(page.seoTitle ?? page.title),
-    description: page.seoDescription
+    title: trimSeoTitle(resolvedPage.seoTitle ?? resolvedPage.title),
+    description: resolvedPage.seoDescription
   };
 }
 

@@ -602,6 +602,8 @@ model InfoPageTranslation {
   id        String           @id @default(cuid())
   pageKey   String
   locale    String
+  seoTitle  String?
+  seoDescription String?
   hero      Json
   sections  Json
   status    TranslationStatus @default(PENDING)
