@@ -97,6 +97,7 @@ type SavedPayment = {
   brand?: string | null;
   last4?: string | null;
   updatedAt?: string | null;
+  stripePaymentMethodId?: string | null;
 };
 
 
@@ -1936,6 +1937,8 @@ const PaymentForm = memo(function PaymentForm({
   paymentCountry,
   setPaymentCountry,
   paymentMethods,
+  savedPaymentMethodId,
+  clientSecret,
   returnUrl,
   onBack,
   onSuccess
@@ -1945,6 +1948,12 @@ const PaymentForm = memo(function PaymentForm({
   const stripe = useStripe();
 
   const elements = useElements();
+
+  const [useSavedMethod, setUseSavedMethod] = useState(Boolean(savedPaymentMethodId));
+
+  useEffect(() => {
+    setUseSavedMethod(Boolean(savedPaymentMethodId));
+  }, [savedPaymentMethodId]);
 
 
 
@@ -1968,19 +1977,41 @@ const PaymentForm = memo(function PaymentForm({
 
 
 
-    const result = await stripe.confirmPayment({
+    let result;
 
-      elements,
+    if (useSavedMethod && savedPaymentMethodId) {
 
-      confirmParams: {
+      if (!clientSecret) {
+        setPaymentFeedback(t("checkout.paymentForm.errorProcessing"));
+        setPaymentLoading(false);
+        return;
+      }
+
+      result = await stripe.confirmCardPayment(clientSecret, {
+
+        payment_method: savedPaymentMethodId,
 
         return_url: returnUrl
 
-      },
+      });
 
-      redirect: "if_required"
+    } else {
 
-    });
+      result = await stripe.confirmPayment({
+
+        elements,
+
+        confirmParams: {
+
+          return_url: returnUrl
+
+        },
+
+        redirect: "if_required"
+
+      });
+
+    }
 
 
 
@@ -2047,6 +2078,28 @@ const PaymentForm = memo(function PaymentForm({
 
 
       <div className="space-y-4">
+
+        {savedPaymentMethodId && (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Metodo de pago</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setUseSavedMethod(true)}
+                className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] ${useSavedMethod ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-500"}`}
+              >
+                Usar metodo guardado
+              </button>
+              <button
+                type="button"
+                onClick={() => setUseSavedMethod(false)}
+                className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] ${!useSavedMethod ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-500"}`}
+              >
+                Nuevo metodo
+              </button>
+            </div>
+          </div>
+        )}
 
         {paymentMethods.map((method) => {
 

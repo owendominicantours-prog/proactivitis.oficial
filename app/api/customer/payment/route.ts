@@ -11,7 +11,13 @@ export async function GET() {
 
   const payment = await prisma.customerPayment.findUnique({
     where: { userId: session.user.id },
-    select: { method: true, brand: true, last4: true, updatedAt: true, stripePaymentMethodId: true }
+    select: {
+      method: true,
+      brand: true,
+      last4: true,
+      updatedAt: true,
+      stripePaymentMethodId: true
+    }
   });
 
   return NextResponse.json(
@@ -22,7 +28,8 @@ export async function GET() {
             brand: payment.brand,
             last4: payment.last4,
             updatedAt: payment.updatedAt,
-            isStripe: Boolean(payment.stripePaymentMethodId)
+            isStripe: Boolean(payment.stripePaymentMethodId),
+            stripePaymentMethodId: payment.stripePaymentMethodId
           }
         : null
     },
