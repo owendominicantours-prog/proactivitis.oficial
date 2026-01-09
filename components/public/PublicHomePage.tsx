@@ -80,7 +80,7 @@ export default function PublicHomePage({ locale }: PublicHomePageProps) {
   };
 
   return (
-    <div className="space-y-16 bg-[#F8FAFC] text-slate-900 overflow-x-hidden">
+    <div className="space-y-16 bg-gradient-to-b from-[#F8FAFC] via-[#F8FAFC] to-emerald-50/40 text-slate-900 overflow-x-hidden">
       <HomeHeroCarousel>
         <HomeHeroContent locale={locale} />
       </HomeHeroCarousel>
