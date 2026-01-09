@@ -723,7 +723,7 @@
   "recogida.tours.title": "Plan your experience now",
   "recogida.tours.body": "We select premium experiences connected to this pickup point. Set your date and confirm your spot in one click.",
   "recogida.tours.cardFallback": "Immersive experience, expert guides, and 24/7 support.",
-  "recogida.tours.cardCta": "Book {tour} from {hotel}"
+  "recogida.tours.cardCta": "Book {tour} from {hotel}",
 
   "tourPickup.meta.fallbackTitle": "Pickup tours | Proactivitis",
   "tourPickup.meta.fallbackDescription": "Book tours with hotel pickup and trusted local support.",

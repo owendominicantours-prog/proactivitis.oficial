@@ -727,7 +727,7 @@
   "recogida.tours.title": "Planifica tu experiencia ahora",
   "recogida.tours.body": "Seleccionamos las experiencias premium que conectan con este punto de encuentro. Ajusta la fecha y confirma tu lugar con un solo click.",
   "recogida.tours.cardFallback": "Experiencia inmersiva, guias expertos y atencion 24/7.",
-  "recogida.tours.cardCta": "Reservar {tour} desde {hotel}"
+  "recogida.tours.cardCta": "Reservar {tour} desde {hotel}",
 
   "tourPickup.meta.fallbackTitle": "Tour con recogida | Proactivitis",
   "tourPickup.meta.fallbackDescription": "Reserva tours con recogida personalizada en hoteles seleccionados.",
