@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import { landingPages } from "@/lib/landing";
-import { excursionKeywordLandings } from "@/data/excursion-keyword-landings";
+import { landingPages } from "./landing";
+import { excursionKeywordLandings } from "../data/excursion-keyword-landings";
 
 declare global {
   // eslint-disable-next-line no-var
