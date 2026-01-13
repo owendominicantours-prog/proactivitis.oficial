@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import BlogShareButtons from "@/components/blog/BlogShareButtons";
 import BlogCommentForm from "@/components/blog/BlogCommentForm";
 import { TourCard } from "@/components/public/TourCard";
+import BlogReadingProgress from "@/components/blog/BlogReadingProgress";
 
 const BASE_URL = "https://proactivitis.com";
 
@@ -226,6 +227,7 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <BlogReadingProgress locale={locale} />
       <article className="mx-auto max-w-4xl px-4 py-12 space-y-8">
         <header className="space-y-4">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
@@ -246,7 +248,7 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
           />
         </div>
 
-        <section className="prose max-w-none prose-slate">
+        <section className="blog-content">
           <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
         </section>
 
