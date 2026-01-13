@@ -64,6 +64,17 @@ export default async function AdminBlogEditPage({ params }: { params: Promise<{ 
         }}
       />
 
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div>
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Vista previa</p>
+          <h2 className="text-2xl font-semibold text-slate-900">{post.title}</h2>
+          <p className="text-sm text-slate-500">{post.excerpt ?? ""}</p>
+        </div>
+        <div className="prose max-w-none prose-slate">
+          <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
+        </div>
+      </section>
+
       <section className="space-y-4">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Comentarios pendientes</p>

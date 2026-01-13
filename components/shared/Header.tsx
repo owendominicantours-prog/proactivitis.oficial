@@ -69,7 +69,7 @@ export const Header = ({
                     <span className="text-base leading-4">▾</span>
                   </button>
                   <div
-                    className={`pointer-events-auto absolute left-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white shadow-lg transition duration-150 ${
+                    className={`pointer-events-auto absolute left-0 z-50 mt-2 w-48 rounded-lg border border-slate-200 bg-white shadow-lg transition duration-150 ${
                       dropdownOpen ? "visible opacity-100" : "invisible opacity-0"
                     }`}
                   >

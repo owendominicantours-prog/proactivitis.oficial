@@ -32,7 +32,7 @@ export default function BlogEditorForm({ action, tours, initial }: BlogEditorFor
   return (
     <form action={action} className="space-y-6">
       {initial?.id ? <input type="hidden" name="id" value={initial.id} /> : null}
-      <input type="hidden" name="contentHtml" value={contentHtml} />
+      <textarea name="contentHtml" value={contentHtml} readOnly hidden />
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-600">
