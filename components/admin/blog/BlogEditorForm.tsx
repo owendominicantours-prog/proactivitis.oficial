@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import RichTextEditor from "./RichTextEditor";
+import BlogCoverPicker from "./BlogCoverPicker";
 
 type TourOption = {
   id: string;
@@ -27,12 +28,14 @@ type BlogEditorFormProps = {
 export default function BlogEditorForm({ action, tours, initial }: BlogEditorFormProps) {
   const [contentHtml, setContentHtml] = useState(initial?.contentHtml ?? "");
   const [status, setStatus] = useState(initial?.status ?? "DRAFT");
+  const [coverImage, setCoverImage] = useState(initial?.coverImage ?? "");
   const selectedTourIds = useMemo(() => new Set(initial?.tourIds ?? []), [initial?.tourIds]);
 
   return (
     <form action={action} className="space-y-6">
       {initial?.id ? <input type="hidden" name="id" value={initial.id} /> : null}
       <textarea name="contentHtml" value={contentHtml} readOnly hidden />
+      <input type="hidden" name="coverImage" value={coverImage} />
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-600">
@@ -66,15 +69,10 @@ export default function BlogEditorForm({ action, tours, initial }: BlogEditorFor
       </label>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="space-y-2 text-sm text-slate-600">
+        <div className="space-y-2 text-sm text-slate-600">
           <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Imagen principal</span>
-          <input
-            name="coverImage"
-            defaultValue={initial?.coverImage ?? ""}
-            placeholder="https://..."
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
-          />
-        </label>
+          <BlogCoverPicker value={coverImage} onChange={setCoverImage} />
+        </div>
         <label className="space-y-2 text-sm text-slate-600">
           <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Estado</span>
           <select
