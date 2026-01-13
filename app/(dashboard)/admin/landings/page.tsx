@@ -100,7 +100,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
     active: location.active
   }));
   const pickupHotelEntries = locations
-    .filter((location) => location.destination?.slug === "punta-cana")
+    .filter((location) => location.zone.slug === "punta-cana")
     .map((location) => ({
       slug: `excursiones-con-recogida/${location.slug}`,
       name: location.name,
