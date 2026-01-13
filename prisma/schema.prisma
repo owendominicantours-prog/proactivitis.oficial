@@ -574,6 +574,7 @@ model Tour {
   microZoneId            String?
   translationHash        String?
   translations           TourTranslation[]
+  blogPosts              BlogPostTour[]
 }
 
 model TourTranslation {
@@ -637,6 +638,45 @@ model User {
   PartnerApplication      PartnerApplication[]
   CustomerPayment         CustomerPayment?
   AgencyProLinks          AgencyProLink[]
+  BlogPosts               BlogPost[]
+}
+
+model BlogPost {
+  id          String          @id @default(cuid())
+  title       String
+  slug        String          @unique
+  excerpt     String?
+  coverImage  String?
+  contentHtml String          @db.Text
+  status      String          @default("DRAFT")
+  publishedAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  authorId    String?
+  author      User?           @relation(fields: [authorId], references: [id])
+  tours       BlogPostTour[]
+  comments    BlogComment[]
+}
+
+model BlogPostTour {
+  blogPostId String
+  tourId     String
+  blogPost   BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  tour       Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@id([blogPostId, tourId])
+}
+
+model BlogComment {
+  id         String   @id @default(cuid())
+  blogPostId String
+  name       String
+  email      String
+  body       String   @db.Text
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+  approvedAt DateTime?
+  blogPost   BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
 }
 
 model CustomerPayment {
