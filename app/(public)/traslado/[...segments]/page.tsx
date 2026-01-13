@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
@@ -147,6 +148,8 @@ const buildSegmentsContext = async (segments: string[]): Promise<LandingContext 
 const DEFAULT_TITLE = "Traslados Proactivitis";
 const DEFAULT_DESCRIPTION = "Descubre la red global de traslados premium de Proactivitis.";
 const DEFAULT_METADATA_IMAGE = "https://www.proactivitis.com/transfer/sedan.png";
+const TRANSFER_BANNER_IMAGE =
+  "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
 const TRANSFER_BASE_URL = "https://proactivitis.com/traslado";
 
 const resolveLocale = async (): Promise<Locale> => {
@@ -502,8 +505,20 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
     <div className="min-h-screen bg-slate-50">
       <StructuredData data={landingSchema} />
       <StructuredData data={breadcrumbSchema} />
-      <section className="border-b border-slate-200 bg-gradient-to-br from-white via-emerald-50 to-slate-100">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-12">
+      <section className="relative overflow-hidden border-b border-slate-200">
+        <div className="absolute inset-0">
+          <Image
+            src={TRANSFER_BANNER_IMAGE}
+            alt="Traslados Proactivitis"
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/80" />
+        </div>
+        <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-4 py-12">
           <nav className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-600">
             {breadcrumbItems.map((item, index) => (
               <span key={item.href} className="inline-flex items-center gap-1">
