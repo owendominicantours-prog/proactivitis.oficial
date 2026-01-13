@@ -505,7 +505,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
     <div className="min-h-screen bg-slate-50">
       <StructuredData data={landingSchema} />
       <StructuredData data={breadcrumbSchema} />
-      <section className="relative overflow-hidden border-b border-slate-200">
+      <section className="relative flex min-h-[360px] items-center overflow-hidden border-b border-slate-200">
         <div className="absolute inset-0">
           <Image
             src={TRANSFER_BANNER_IMAGE}
@@ -515,22 +515,21 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/80" />
+          <div className="absolute inset-0 bg-slate-900/55 md:bg-slate-900/65" />
         </div>
         <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-4 py-12">
-          <nav className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-600">
+          <nav className="text-xs font-semibold uppercase tracking-[0.4em] text-white/70">
             {breadcrumbItems.map((item, index) => (
               <span key={item.href} className="inline-flex items-center gap-1">
-                {index > 0 && <span aria-hidden>›</span>}
-                <Link href={item.href}>{item.name}</Link>
+                {index > 0 && <span aria-hidden>&gt;</span>}
+                <Link href={item.href} className="hover:text-white">{item.name}</Link>
               </span>
             ))}
           </nav>
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-600">{levelCopy.badge}</p>
-          <h1 className="text-4xl font-bold text-slate-900">{heroTitle}</h1>
-          <p className="max-w-3xl text-lg text-slate-600">{heroSubtitle}</p>
-          <p className="text-sm text-slate-500">{levelCopy.summary}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/70">{levelCopy.badge}</p>
+          <h1 className="text-4xl font-bold text-white">{heroTitle}</h1>
+          <p className="max-w-3xl text-lg text-white/90">{heroSubtitle}</p>
+          <p className="text-sm text-white/70">{levelCopy.summary}</p>
           <div className="flex flex-wrap gap-3">
               <Link
                 href={callToAction}
@@ -540,7 +539,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
               </Link>
             <Link
               href={toursPath}
-              className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-slate-700 transition hover:border-slate-400"
+              className="rounded-full border border-white/70 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:border-white"
             >
               Ver tours y experiencias
             </Link>
