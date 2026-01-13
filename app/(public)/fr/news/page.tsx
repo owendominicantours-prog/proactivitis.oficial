@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { buildBlogMetadata, renderBlogList } from "@/components/blog/BlogShared";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildBlogMetadata("es");
+  return buildBlogMetadata("fr");
 }
 
-export default async function NewsPage() {
-  return renderBlogList("es");
+export default async function NewsPageFr() {
+  return renderBlogList("fr");
 }

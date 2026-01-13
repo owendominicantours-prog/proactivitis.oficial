@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { translateTourById } from "@/lib/translationWorker";
 import { infoPages } from "@/lib/infoPages";
 import { translateInfoPage } from "@/lib/infoTranslationService";
+import { translateBlogPostAllLocales } from "@/lib/blogTranslationService";
 
 const EXPECTED_TOKEN = process.env.TRANSLATION_CRON_TOKEN;
 
@@ -46,6 +47,22 @@ export async function POST(request: NextRequest) {
       await revalidatePath(`/fr${page.path}`);
     } catch (error) {
       console.error("auto translate failed for info page", page.key, error);
+    }
+  }
+
+  const blogPosts = await prisma.blogPost.findMany({
+    where: { status: "PUBLISHED" },
+    select: { id: true, slug: true }
+  });
+  for (const post of blogPosts) {
+    try {
+      await translateBlogPostAllLocales(post.id);
+      if (post.slug) {
+        await revalidatePath(`/en/news/${post.slug}`);
+        await revalidatePath(`/fr/news/${post.slug}`);
+      }
+    } catch (error) {
+      console.error("auto translate failed for blog", post.id, error);
     }
   }
 

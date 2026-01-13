@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { slugifyBlog } from "@/lib/blog";
+import { translateBlogPostAllLocales } from "@/lib/blogTranslationService";
 
 const requireAdmin = async () => {
   const session = await getServerSession(authOptions);
@@ -59,6 +60,7 @@ export async function createBlogPostAction(formData: FormData) {
     }
   });
 
+  await translateBlogPostAllLocales(created.id);
   redirect(`/admin/blog/${created.id}`);
 }
 
@@ -96,6 +98,7 @@ export async function updateBlogPostAction(formData: FormData) {
     }
   });
 
+  await translateBlogPostAllLocales(id);
   redirect(`/admin/blog/${id}`);
 }
 

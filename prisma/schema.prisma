@@ -656,6 +656,7 @@ model BlogPost {
   author      User?           @relation(fields: [authorId], references: [id])
   tours       BlogPostTour[]
   comments    BlogComment[]
+  translations BlogPostTranslation[]
 }
 
 model BlogPostTour {
@@ -677,6 +678,22 @@ model BlogComment {
   createdAt  DateTime @default(now())
   approvedAt DateTime?
   blogPost   BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+}
+
+model BlogPostTranslation {
+  id          String   @id @default(cuid())
+  blogPostId  String
+  locale      String
+  title       String?
+  excerpt     String?
+  contentHtml String?  @db.Text
+  status      String   @default("PENDING")
+  sourceHash  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  blogPost    BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@unique([blogPostId, locale])
 }
 
 model CustomerPayment {

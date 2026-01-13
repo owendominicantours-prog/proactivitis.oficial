@@ -8,12 +8,12 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  return buildBlogPostMetadata(slug, "es");
+  return buildBlogPostMetadata(slug, "en");
 }
 
-export default async function BlogDetailPage({ params }: PageProps) {
+export default async function BlogDetailPageEn({ params }: PageProps) {
   const { slug } = await params;
-  const page = await renderBlogDetail(slug, "es");
+  const page = await renderBlogDetail(slug, "en");
   if (!page) notFound();
   return page;
 }
