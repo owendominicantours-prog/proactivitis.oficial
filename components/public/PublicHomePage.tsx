@@ -1,10 +1,13 @@
 import Image from "next/image";
+import Link from "next/link";
 import FeaturedToursSection from "@/components/public/FeaturedToursSection";
 import { HomeAboutContent } from "@/components/public/HomeAboutContent";
 import { HomeBenefitsContent } from "@/components/public/HomeBenefitsContent";
 import { HomeHeroContent } from "@/components/public/HomeHeroContent";
 import { HomeHeroCarousel } from "@/components/public/HomeHeroCarousel";
 import { HomeRecommendedHeader } from "@/components/public/HomeRecommendedHeader";
+import HomeTourSearchSection from "@/components/public/HomeTourSearchSection";
+import HomeTransferTicker from "@/components/public/HomeTransferTicker";
 import { Locale, translate } from "@/lib/translations";
 
 type PublicHomePageProps = {
@@ -14,6 +17,7 @@ type PublicHomePageProps = {
 export default function PublicHomePage({ locale }: PublicHomePageProps) {
   const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
     translate(locale, key, replacements);
+  const transferHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -91,6 +95,7 @@ export default function PublicHomePage({ locale }: PublicHomePageProps) {
 
       <section className="mx-auto max-w-6xl space-y-4 px-4 sm:px-6">
         <HomeRecommendedHeader locale={locale} />
+        <HomeTourSearchSection locale={locale} />
         <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-sm">
           <FeaturedToursSection locale={locale} />
         </div>
@@ -135,6 +140,37 @@ export default function PublicHomePage({ locale }: PublicHomePageProps) {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+        <div
+          className="relative flex min-h-[280px] items-center overflow-hidden rounded-3xl border border-slate-100 shadow-sm"
+          style={{
+            backgroundImage:
+              "url('https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center"
+          }}
+        >
+          <div className="absolute inset-0 bg-slate-900/55 md:bg-slate-900/65" />
+          <div className="relative z-10 w-full space-y-6 px-6 py-10 text-center text-white md:text-left">
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/70">
+            {t("home.transferBanner.label")}
+          </p>
+          <h2 className="text-3xl font-semibold leading-tight md:text-4xl">
+            {t("home.transferBanner.title")}
+          </h2>
+          <p className="text-sm text-white/90 md:text-base">
+            {t("home.transferBanner.description")}
+          </p>
+          <HomeTransferTicker locale={locale} />
+          <div className="botones-banner justify-center md:justify-start">
+            <Link href={transferHref} className="boton-verde">
+              {t("home.transferBanner.cta")}
+            </Link>
+          </div>
           </div>
         </div>
       </section>

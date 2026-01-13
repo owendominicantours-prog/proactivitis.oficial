@@ -1,46 +1,30 @@
 {
-
   "home.hero.brand": "Proactivitis",
-
   "home.hero.title": "Tours, transferts et activites guides par des locaux attentionnes",
-
   "home.hero.description": "Reservez des tours et transferts prives avec prix clairs, prestataires verifies et confirmation immediate.",
-
   "home.hero.cta.primary": "Voir les circuits phares",
-
   "home.hero.cta.secondary": "Chercher par destination",
-
   "header.currency.label": "Monnaie",
-
   "header.language.label": "Langue",
-
   "language.spanish": "Espagnol",
-
   "language.english": "Anglais",
-
   "language.french": "Français",
-
   "home.section.whatWeDo.label": "Ce que nous faisons",
-
   "home.section.whatWeDo.title": "Nous facilitons les voyages",
-
   "home.section.whatWeDo.description": "Nous sélectionnons des tours authentiques, validons les prestataires et offrons un support humain avant, pendant et après chaque voyage.",
-
   "home.benefits.support.title": "Support local immédiat",
-
   "home.benefits.support.description": "Des équipes et opérateurs sur place règlent les imprévus sans délai.",
-
   "home.benefits.allies.title": "Partenaires vérifiés",
-
   "home.benefits.allies.description": "Des partenaires audités par Proactivitis pour garder votre voyage entre de bonnes mains.",
-
   "home.benefits.flexible.title": "Expériences flexibles",
-
   "home.benefits.flexible.description": "Modifications ou annulations sur les tours sélectionnés sans paperasse inutile.",
-
   "home.section.recommended.label": "Recommandé",
-
   "home.section.recommended.title": "Tours les plus populaires",
+  "home.tourSearch.label": "Recherche de tours",
+  "home.tourSearch.helper": "Saisis un nom de tour ou une destination. On suggere meme avec des fautes.",
+  "home.tourSearch.placeholder": "Chercher des tours (ex. saona, buggy, snorkel)",
+  "home.tourSearch.resultsLabel": "Resultats",
+  "home.tourSearch.noResults": "Aucun tour trouve. Essaie un autre mot.",
   "home.longform.eyebrow": "Guide rapide",
   "home.longform.title": "Planifiez tours et transferts avec des infos claires",
   "home.longform.body1": "Proactivitis regroupe des tours v?rifi?s et des transferts priv?s pour comparer des options r?elles, v?rifier la disponibilit? et r?server en toute confiance. Chaque exp?rience inclut horaires, lieux et politiques pour ?viter les surprises.",
@@ -52,21 +36,24 @@
   "home.longform.points.2.body": "Assistance dans votre langue pour les changements, questions et confirmations.",
   "home.longform.points.3.title": "R?servation s?curis?e",
   "home.longform.points.3.body": "Paiements prot?g?s et confirmation claire pour chaque exp?rience.",
-
+  "home.transferBanner.label": "Transferts prives",
+  "home.transferBanner.title": "Reservez votre transfert avec chauffeurs verifies",
+  "home.transferBanner.description": "Transferts aeroport-hotel avec prix clairs, confirmation immediate et support 24/7.",
+  "home.transferBanner.cta": "Reserver un transfert",
+  "home.transferBanner.click": "Cliquer",
+  "home.transferBanner.originLabel": "Origine",
+  "home.transferBanner.originValue": "PUJ",
+  "home.transferBanner.destinationLabel": "Destination",
+  "home.transferBanner.destinationValue": "Bavaro",
+  "home.transferBanner.vehicleLabel": "Vehicules",
+  "home.transferBanner.vehicleOptions": "SUV / Van / Luxury",
   "home.section.about.label": "Pourquoi Proactivitis",
-
   "home.section.about.title": "Un tourisme pensé par de vraies personnes",
-
   "home.section.about.description": "Nous combinons équipes terrain, technologie et processus fiables pour que chaque voyage reste clair, humain et mémorable.",
-
   "home.section.about.cta.primary": "Explorer les tours",
-
   "home.section.about.cta.secondary": "Contactez-nous",
-
   "tours.header.tagline": "Tours & activites",
-
   "tours.header.title": "Tours et activites a reserver en toute confiance",
-
   "tours.header.description": "Decouvrez des tours et activites verifies avec horaires clairs, guides locaux et support humain. Reservation rapide avec prix transparents et confirmation immediate.",
   "tours.longform.eyebrow": "Planifier votre experience",
   "tours.longform.title": "Tours verifies, activites reelles et reservation claire",
@@ -78,56 +65,33 @@
   "tours.longform2.body1": "Avant de reserver, decidez si vous voulez une activite courte ou un tour d une demi journee. Verifiez le point de rendez vous, le type de transport et les arrets prevus. Cela aide a coordonner avec votre hotel et eviter l attente.",
   "tours.longform2.body2": "Pour les groupes ou familles, confirmez la langue du guide, la capacite et le rythme. Pour les activites d eau ou d aventure, assurez vous que l equipement est inclus et que les consignes de securite sont claires.",
   "tours.longform2.body3": "Si votre temps est limite, privilegiez les tours avec confirmation immediate et itineraire defini. Pour un sejour plus long, alternez plage, culture et gastronomie. Tout cela est reservable sur Proactivitis avec prix visibles et support reel.",
-
   "tours.filter.intro": "Filtres intelligents (compatible mobile)",
-
   "tours.filter.item.category": "Catégorie : sélection rapide avec icônes minimalistes.",
-
   "tours.filter.item.destination": "Destination : transitions fluides sans citer de pays.",
-
   "tours.filter.item.duration": "Durée : demi-journée / journée complète / multi-jours.",
-
   "tours.filter.item.group": "Type de groupe : privé ou partagé.",
-
   "tours.features.instant": "Confirmation instantanée : recevez votre voucher immédiatement.",
-
   "tours.features.flexible": "Annulation flexible : remboursements clairs.",
-
   "tours.features.support": "Support 24/7 : assistance humaine réelle pendant votre activité.",
-
   "tours.results.count": "Affichage de {count} expérience{plural} selon les filtres.",
-
   "tours.no-results": "Aucun tour ne correspond à ces filtres. Changez les paramètres et réessayez.",
-
   "tours.destinations.label": "Destinations à l'affiche",
-
   "tours.destinations.heading": "Trouvez votre zone idéale",
-
   "tours.destinations.cta": "Voir toutes les destinations",
-
   "tours.destinations.description": "Découvrez les tours et expériences liés à cette zone.",
-
   "tours.destinations.link": "Voir les tours · Découvrir",
-
   "tours.destinations.footer": "Proactivitis sélectionne rigoureusement chaque opérateur touristique pour garantir que votre expérience respecte les normes internationales de sécurité et de service. Des transferts privés aux excursions exclusives, notre plateforme est votre assurance d'un voyage sans accroc.",
-
   "tours.filter.active.country": "Pays : {value}",
-
   "tours.filter.active.destination": "Zone : {value}",
-
   "tours.filter.active.language": "Langue : {value}",
-
   "tours.filter.active.duration": "Durée : {value}",
-
   "tours.filter.active.minPrice": "Min : ${value}",
-
   "tours.filter.active.maxPrice": "Max : ${value}",
-
   "transfer.hero.label": "Proactivitis Transfert",
-
   "transfer.hero.title": "Transferts prives a reserver en minutes",
-
   "transfer.hero.description": "Reservez des transferts prives avec chauffeurs verifies, prix clairs et confirmation immediate. Aeroport, hotel et ville connectes avec support 24/7.",
+  "transfer.hero.notice.one": "Reservation recente: Aeroport PUJ -> Bavaro",
+  "transfer.hero.notice.two": "Derniere reservation: Cap Cana -> Aeroport PUJ",
   "transfer.longform.eyebrow": "Comment ?a marche",
   "transfer.longform.title": "Transferts clairs, s?rs et avec support r?el",
   "transfer.longform.body1": "Choisissez l origine et la destination pour voir les tarifs reels, les temps estimes et les options de vehicule. Chaque transfert inclut confirmation immediate, suivi du service et assistance si le vol change.",
@@ -143,74 +107,39 @@
   "transfer.longform3.body1": "Les transferts prives Proactivitis sont concus pour une arrivee simple de l aeroport a l hotel. Apres reservation, vous recevez le point de rendez vous, le temps d attente inclus et le contact du chauffeur. Cela evite les doutes et accelere la sortie.",
   "transfer.longform3.body2": "Si votre voyage inclut plusieurs hotels ou des changements de ville, vous pouvez reserver des trajets multiples avec le meme fournisseur. Le service reste coherent et les horaires s alignent avec vos tours et activites. Pour les familles, choisissez plus d espace; pour les voyages d affaires, priorisez confort et ponctualite.",
   "transfer.longform3.body3": "Au dela de l aeroport et de l hotel, vous pouvez reserver des transferts vers ports, marinas et points d excursion. L essentiel est de confirmer l heure exacte et la duree estimee pour ne pas perturber vos tours. Avec Proactivitis, prix visibles, confirmation immediate et support humain.",
-
   "transfer.link.home": "Aller à Proactivitis",
-
   "transfer.link.tours": "Voir les tours et expériences",
-
   "transfer.hero.stat.transfers": "Transferts confirmés",
-
   "transfer.hero.stat.drivers": "Chauffeurs certifiés",
-
   "transfer.hero.stat.support": "Support 24/7 : espagnol et anglais",
   "transfer.hero.stat.supportValue": "Support 24/7 en anglais et espagnol",
-
   "transfer.faq.label": "Questions fréquentes",
-
   "transfer.faq.heading": "Tout ce qu'il faut savoir avant de voyager",
-
   "transfer.faq.where.q": "Où le chauffeur m'attend-il ?",
-
   "transfer.faq.where.a": "À l'aéroport, nous vous accompagnons jusqu'à la sortie des arrivées avec une pancarte Proactivitis et votre nom. Dans les hôtels, le point de rencontre est le lobby principal.",
-
   "transfer.faq.delay.q": "Que se passe-t-il si mon vol est retardé ?",
-
   "transfer.faq.delay.a": "Nous suivons votre numéro de vol en temps réel et ajustons l'arrivée sans frais supplémentaires. Vous bénéficiez de 60 min d'attente offerte.",
-
   "transfer.faq.cancel.q": "Puis-je annuler ?",
-
   "transfer.faq.cancel.a": "Annulation gratuite jusqu'à 24 heures avant le service. Besoin de modifier l'horaire ? Nous nous en chargeons.",
-
   "transfer.note": "Proactivitis opère selon un modèle d'expansion sélective. Nous n'ouvrons pas de destinations en masse ; nous validons manuellement chaque transporteur et guide local pour garantir que la norme Proactivitis reste intacte sur les cinq continents.",
-
   "transfer.contact": "Vous voyagez ici ? Prévenez-nous",
-
-
-
   "transfer.search.hero.label": "Transfert privé",
-
   "transfer.search.hero.title": "Transferts privés depuis l'aéroport",
-
   "transfer.search.hero.description": "Confirmez votre transfert premium avec un chauffeur bilingue et une annulation flexible.",
-
   "transfer.search.hero.zone": "Zone estimée : {zone}",
-
   "transfer.search.status.ready": "Transfert prêt",
-
   "transfer.search.status.summary": "Transfert de {origin} vers {hotel}",
-
   "transfer.search.status.pendingDate": "Date en attente",
-
   "transfer.search.status.passengers": "{count} passagers",
-
   "transfer.search.status.flight": "Vol",
-
   "transfer.search.placeholder.hotel": "votre hôtel",
-
   "transfer.search.placeholder.origin": "Choisissez l'origine (aéroport ou hôtel)",
-
   "transfer.search.placeholder.destination": "Saisissez votre hôtel",
-
   "transfer.search.placeholder.originExample": "Ex. aéroport PUJ ou votre hôtel",
-
   "transfer.search.placeholder.destinationExample": "Ex. JW Marriott ou aéroport SDQ",
-
   "transfer.search.field.origin": "Origine",
-
   "transfer.search.field.destination": "Destination",
-
   "transfer.search.field.passengers": "Passagers",
-
   "transfer.search.field.arrivalDateTime": "Date et heure d'arrivée",
   "transfer.search.field.flightNumber": "Numéro de vol",
   "transfer.search.field.pickupDate": "Date de prise en charge",
@@ -218,31 +147,18 @@
   "transfer.search.field.returnDate": "Date de retour",
   "transfer.search.field.returnTime": "Heure de retour",
   "transfer.search.form.readOnlyMessage": "En reconstruction : le système de transferts est en cours de révision.",
-
   "transfer.search.action.search": "Rechercher un transfert",
-
   "transfer.search.action.loading": "Recherche des tarifs...",
-
   "transfer.search.action.modify": "Modifier",
-
   "transfer.search.action.viewPrices": "Voir les prix",
-
   "transfer.search.action.reserve": "Réserver maintenant",
-
   "transfer.search.action.selectAndPay": "Sélectionner et payer",
-
   "transfer.search.section.available.label": "Options disponibles",
-
   "transfer.search.section.available.title": "Transférez votre groupe de {passengers} voyageurs vers {hotel}",
-
   "transfer.search.section.available.subtitle": "Tarifs privés affichés pour {hotel}",
-
   "transfer.search.section.available.zoneLabel": "Zone de l'hôtel : {zone}",
-
   "transfer.search.section.payment.label": "Paiement sécurisé",
-
   "transfer.search.section.payment.title": "Choisissez votre méthode préférée",
-
   "transfer.search.section.payment.note": "Vous serez redirigé vers le checkout avec la note « Réservation de transfert » et notre tarif chiffré.",
   "transfer.search.pickup.flight.title": "Prise en charge liée au vol",
   "transfer.search.pickup.flight.description": "Le chauffeur suit votre vol et vous attend au hall des arrivées.",
@@ -252,825 +168,413 @@
   "transfer.search.pickup.hotel.note": "Nous confirmons la fenêtre de prise en charge une fois la réservation effectuée.",
   "transfer.search.suggestion.airport": "Aéroport",
   "transfer.search.suggestion.hotel": "Hôtel",
-
   "transfer.search.stepLabel": "Étape {step}",
-
   "transfer.search.step.vehicle": "Sélection du véhicule",
-
   "transfer.search.step.flight": "Informations sur le vol",
-
   "transfer.search.step.confirmation": "Confirmation immédiate",
-
   "transfer.search.vehicle.capacityRange": "{min}-{max} passagers",
-
   "transfer.search.vehicle.capacityDetail": "{pax} pax · {luggage} bagages",
-
   "transfer.search.vehicle.priceUnavailable": "Contactez-nous",
-
   "transfer.search.vehicle.badge.mostPopular": "Le plus populaire",
-
   "transfer.search.vehicle.priceLabel.roundTrip": "Aller-retour",
-
   "transfer.search.vehicle.priceLabel.oneWay": "Tarif aller simple",
-
   "transfer.search.vehicle.roundTripSavings": "Inclut {discount}% de réduction sur le tarif double",
-
   "transfer.search.trust.finalPrice": "Prix final, sans surprise",
-
   "transfer.search.trust.professionalDrivers": "Chauffeurs professionnels",
-
   "transfer.search.trust.insuranceIncluded": "Assurance voyage incluse",
-
   "transfer.search.trust.freeCancellation": "Annulation gratuite (24h)",
-
   "transfer.search.tripType.oneWay": "Aller simple",
-
   "transfer.search.tripType.roundTrip": "Aller-retour",
-
   "transfer.search.tripType.roundTripDiscount": "Aller-retour = tarif double avec {discount}% de remise",
-
   "transfer.search.error.originDestination": "Sélectionnez une origine et une destination valides.",
-
   "transfer.search.error.roundTripDate": "Ajoutez la date et l'heure de retour pour obtenir les tarifs aller-retour.",
-
   "transfer.search.error.quoteFailed": "Impossible de calculer le tarif.",
-
   "transfer.search.error.unknown": "Erreur inconnue.",
-
   "transfer.search.noVehicles.adjustRoute": "Ajustez l'origine ou la destination pour trouver une route disponible.",
-
   "transfer.search.noVehicles.selectDetails": "Sélectionnez l'origine, la destination et les passagers pour voir les véhicules disponibles.",
-
   "transfer.search.vehicle.sedan.title": "Berline privée",
-
   "transfer.search.vehicle.sedan.description": "Parfaite pour les couples ou les voyages d'affaires légers.",
-
   "transfer.search.vehicle.sedan.feature.airConditioning": "Climatisation puissante",
-
   "transfer.search.vehicle.sedan.feature.storage": "Espace pour deux grandes valises",
-
   "transfer.search.vehicle.sedan.feature.flightTracking": "Suivi du vol inclus",
-
   "transfer.search.vehicle.van.title": "Van privé",
-
   "transfer.search.vehicle.van.description": "Idéal pour les familles ou les groupes avec bagages.",
-
   "transfer.search.vehicle.van.feature.storage": "Coffre spacieux",
-
   "transfer.search.vehicle.van.feature.slidingDoor": "Porte coulissante",
-
   "transfer.search.vehicle.van.feature.babySeat": "Siège bébé sur demande",
-
   "transfer.search.vehicle.suv.title": "SUV premium",
-
   "transfer.search.vehicle.suv.description": "Voyagez avec style et discrétion avec chauffeur bilingue.",
-
   "transfer.search.vehicle.suv.feature.leatherSeats": "Sièges en cuir",
-
   "transfer.search.vehicle.suv.feature.beverage": "Boissons fraîches incluses",
-
   "transfer.search.vehicle.suv.feature.bilingualDriver": "Chauffeur bilingue professionnel",
-
   "transfer.search.vehicle.vip.title": "Limousine VIP",
-
   "transfer.search.vehicle.vip.description": "Confidentialité totale, boissons premium et service dédié.",
-
   "transfer.search.vehicle.vip.feature.champagneService": "Service champagne",
-
   "transfer.search.vehicle.vip.feature.formalDriver": "Chauffeur en costume",
-
   "transfer.search.vehicle.vip.feature.wifi": "Wi-Fi et chargeurs",
-
   "transfer.search.vehicle.bus.title": "Autobus exécutif",
-
   "transfer.search.vehicle.bus.description": "Parfait pour les groupes corporatifs ou les mariages avec bagages.",
-
   "transfer.search.vehicle.bus.feature.wifi": "Wi-Fi à bord",
-
   "transfer.search.vehicle.bus.feature.soundSystem": "Système audio",
-
   "transfer.search.vehicle.bus.feature.recliningSeats": "Sièges inclinables",
-
   "destinations.label": "Destinations",
-
   "destinations.heading": "Explorez nos destinations : un réseau mondial de confiance",
-
   "destinations.description": "Nous auditons chaque destination pour garantir que votre expérience soit parfaite, du Caraïbe à l'Europe.",
-
   "destinations.placeholder": "Bientôt disponible",
-
   "destinations.action.view": "Voir les tours",
-
   "destinations.action.explore": "Explorer",
-
   "destinations.action.notify": "Vous voyagez ici ? Dites-le-nous",
-
   "destinations.footer": "Proactivitis opère selon un modèle d'expansion sélective. Nous n'ouvrons pas de destinations en masse ; nous validons manuellement chaque transporteur et guide local pour garantir que la norme Proactivitis reste intacte sur les cinq continents.",
-
-
-
   "destinations.region.caribbean": "Caraïbes",
-
   "destinations.region.northAmerica": "Amérique du Nord",
-
   "destinations.region.europe": "Europe",
-
   "destinations.region.middleEast": "Moyen-Orient",
-
   "destinations.destination.dominicanRepublic": "République dominicaine",
-
   "destinations.destination.bahamas": "Bahamas / Aruba",
-
   "destinations.destination.usa": "États-Unis (Miami / NYC)",
-
   "destinations.destination.mexico": "Mexique (Cancún / Riviera Maya)",
-
   "destinations.destination.europe": "Espagne / France / Italie",
-
   "destinations.destination.mideast": "Dubaï / Abou Dabi",
-
   "destinations.status.active": "Actif",
-
   "destinations.status.comingSoon": "Bientôt disponible",
-
   "destinations.status.underReview": "En cours d'audit",
-
   "destinations.status.expansion": "Expansion 2025",
-
   "destinations.status.onDemand": "Service sur demande",
-
   "destinations.tag.audit": "Audit en cours",
-
   "destinations.tag.underReview": "Prestations en revue",
-
   "destinations.tag.manual": "Sélection manuelle",
-
   "destinations.tag.byInvite": "Sur invitation uniquement",
-
   "destinations.description.dominicanRepublic": "Plages de sable blanc, aventures nautiques et joyaux coloniaux triés sur le volet.",
-
   "destinations.description.bahamas": "Îles exclusives en attente de certification Proactivitis.",
-
   "destinations.description.usa": "Itinéraires premium à Miami et New York avec des partenaires locaux vérifiés.",
-
   "destinations.description.mexico": "Expériences de la Riviera Maya alliant luxe et culture locale certifiée.",
-
   "destinations.description.europe": "Parcours européens sélectionnés avec des guides experts et une logistique fiable.",
-
   "destinations.description.mideast": "Transferts et tours sur demande, disponibles uniquement sur invitation dans la péninsule arabique.",
-
   "destinations.note.verifying": "Nous vérifions encore les prestataires de cette région.",
-
   "tour.metadata.titleFallback": "Circuit Proactivitis",
-
   "tour.metadata.descriptionFallback": "Découvrez des tours sélectionnés par des experts locaux, sûrs et bien guidés.",
-
   "tour.metadata.unavailableTitle": "Circuit indisponible | Proactivitis",
-
   "tour.hero.priceLabel": "Prix par personne",
-
   "tour.hero.ratingLabel": "Note",
-
   "tour.hero.reviewsCount": "{count} avis",
-
   "tour.hero.cta.reserve": "Réservez maintenant",
-
   "tour.hero.cta.gallery": "Voir la galerie",
-
   "tour.nav.overview": "Présentation",
-
   "tour.nav.includes": "Inclus / Non inclus",
-
   "tour.nav.itinerary": "Itinéraire",
-
   "tour.nav.reviews": "Avis",
-
   "tour.nav.faq": "FAQ",
-
   "tour.badges.languagesFallback": "Langues en attente",
-
   "tour.badges.categoryFallback": "Catégorie générale",
-
   "tour.badges.guides": "Guides {languages}",
-
   "tour.badges.category": "Catégorie : {category}",
-
   "tour.badges.support": "Support 24/7",
-
   "tour.quickInfo.languages.pending": "Confirmation des langues disponibles",
-
   "tour.quickInfo.languages.detailAvailable": "{count} langues disponibles",
-
   "tour.quickInfo.languages.detailPending": "Demandez des langues supplémentaires",
-
   "tour.quickInfo.duration.label": "Durée",
-
   "tour.quickInfo.duration.detail": "Durée estimée du tour",
-
   "tour.quickInfo.departure.label": "Départ",
-
   "tour.quickInfo.departure.detail": "Heure approximative de départ",
-
   "tour.quickInfo.languages.label": "Langues",
-
   "tour.quickInfo.capacity.label": "Capacité",
-
   "tour.quickInfo.capacity.detail": "Participants par groupe",
-
   "tour.section.overview.label": "Ce à quoi s'attendre",
-
   "tour.section.description.label": "Description",
-
   "tour.section.coverage.label": "Couverture",
-
   "tour.section.coverage.heading": "Ce qui est inclus et ce qui ne l'est pas",
-
   "tour.section.coverage.note": "Demandez à votre guide tout détail spécifique.",
-
   "tour.section.coverage.includes": "Inclus",
-
   "tour.section.coverage.excludes": "Non inclus",
-
   "tour.section.itinerary.label": "Parcours",
-
   "tour.section.itinerary.heading": "Itinéraire suggéré",
-
   "tour.section.itinerary.detailPending": "Itinéraire en cours d'élaboration",
-
   "tour.section.reviews.label": "Témoignages",
-
   "tour.section.reviews.heading": "Avis des voyageurs",
-
   "tour.section.reviews.ratingOutOf": "sur 5",
-
   "tour.section.reviews.summary": "{rating} étoiles sur {count} avis",
-
   "tour.section.faq.label": "FAQ",
-
   "tour.section.faq.heading": "Questions fréquentes",
-
   "tour.faq.question.reserve": "Comment réserver {tourTitle} ?",
-
   "tour.faq.answer.reserve": "Finalisez votre réservation et payez {priceLabel} pour garantir votre place.",
-
   "tour.faq.question.includes": "Qu'est-ce qui est inclus ?",
-
   "tour.faq.answer.includes": "{priceLabel} couvre {duration} d'expérience et les éléments listés dans cette section.",
-
   "tour.faq.question.flight": "Et si mon vol change ?",
-
   "tour.faq.answer.flight": "Nous ajustons votre créneau {displayTime} et confirmons le nouvel horaire sans frais supplémentaires.",
-
   "tour.booking.panel.label": "Réservation",
-
   "tour.booking.panel.title": "Réserver ce circuit",
-
   "tour.booking.panel.providerFallback": "Prestataire certifié",
-
   "tour.booking.panel.supplier": "Opérateur local vérifié",
-
   "tour.booking.mobile.title": "Réservation express",
-
   "tour.booking.mobile.description": "Confirmez votre place et recevez les détails en quelques minutes.",
-
   "tour.booking.floating.label": "Réservez ce circuit",
-
   "tour.booking.floating.button": "Réserver maintenant",
-
   "tour.card.fromLabel": "Depuis",
-
   "tour.card.verifiedLabel": "Vérifié",
-
   "tour.card.description.fallback": "Expérience exclusive à {zone} avec un guide local certifié.",
-
   "tour.card.duration.placeholder": "Durée à confirmer",
-
   "tour.card.maxPax": "Max. {count} pers.",
-
   "tour.card.pickupIncluded": "Prise en charge à l'hôtel incluse",
-
   "tour.card.details": "Voir les détails",
-
   "tour.card.badge.reviews": "avis",
-
   "tour.card.tags.default": "Expérience premium",
-
   "tour.card.language.label": "Langue",
-
   "tour.card.language.fallback": "Espagnol / Anglais",
-
   "tour.reviews.breakdown.5": "5 étoiles",
-
   "tour.reviews.breakdown.4": "4 étoiles",
-
   "tour.reviews.breakdown.3": "3 étoiles",
-
   "tour.reviews.breakdown.2": "2 étoiles",
-
   "tour.reviews.breakdown.1": "1 étoile",
-
   "home.schema.description": "Plateforme touristique mondiale : transferts et circuits conçus pour Clients, Agences de Voyages et Fournisseurs.",
-
   "home.schema.faq.question.booking": "Comment réserver des circuits et transferts chez Proactivitis ?",
-
   "home.schema.faq.answer.booking": "Réservez depuis nos sections /tours ou /traslado et recevez une confirmation en quelques minutes.",
-
   "home.schema.faq.question.agencies": "Proposez-vous des services pour les agences de voyages ?",
-
   "home.schema.faq.answer.agencies": "Oui, Proactivitis offre un écosystème mondial pour que les agences et fournisseurs gèrent leurs services professionnellement.",
-
   "checkout.buttons.back": "Retour",
-
   "checkout.buttons.next": "Suivant",
-
   "checkout.validation.firstNameRequired": "Indiquez votre prénom",
-
   "checkout.validation.lastNameRequired": "Indiquez votre nom",
-
   "checkout.validation.emailRequired": "Indiquez votre courriel",
-
   "checkout.validation.confirmEmailRequired": "Confirmez votre courriel",
-
   "checkout.validation.emailsMustMatch": "Les courriels doivent correspondre",
-
   "checkout.validation.phoneRequired": "Indiquez votre numéro de téléphone",
-
   "checkout.validation.travelerNameRequired": "Indiquez le voyageur principal",
-
   "checkout.validation.pickupLocationRequired": "Ajoutez un point de prise en charge",
-
   "checkout.contact.fields.confirmEmail.label": "Confirmer le courriel",
-
   "checkout.contact.fields.confirmEmail.placeholder": "Répétez votre courriel",
-
   "checkout.contact.fields.email.label": "Courriel",
-
   "checkout.contact.fields.email.placeholder": "vous@exemple.com",
-
   "checkout.contact.fields.firstName.label": "Prénom",
-
   "checkout.contact.fields.firstName.placeholder": "Votre prénom",
-
   "checkout.contact.fields.lastName.label": "Nom de famille",
-
   "checkout.contact.fields.lastName.placeholder": "Votre nom",
-
   "checkout.contact.phone.label": "Téléphone mobile",
-
   "checkout.contact.summary.flightPending": "Numéro de vol en attente",
-
   "checkout.contact.summary.flightPrefix": "Vol {flightNumber}",
-
   "checkout.contact.summary.noEmail": "Courriel non fourni",
-
   "checkout.contact.summary.noPhone": "Téléphone non fourni",
-
   "checkout.contact.summary.travelerPlaceholder": "Nom du voyageur principal",
-
   "checkout.details.activityHeading": "Détails de l'expérience",
-
   "checkout.details.language.label": "Langue préférée",
-
   "checkout.details.mainTraveler": "Voyageur principal",
-
   "checkout.details.pickup.defaultPoint": "Point de rencontre confirmé",
-
   "checkout.details.pickup.pendingPoint": "Point de rencontre en attente",
-
   "checkout.details.pickupLocation.label": "Emplacement exact",
-
   "checkout.details.pickupLocation.placeholder": "ex. hall de l'hôtel",
-
   "checkout.details.pickupOption.later": "Définir plus tard",
-
   "checkout.details.pickupOption.pickup": "Prise en charge à l'hôtel",
-
   "checkout.details.pickupPoint": "Point de prise en charge",
-
   "checkout.details.specialRequirements.label": "Exigences particulières",
-
   "checkout.details.specialRequirements.placeholder": "Indiquez allergies, mobilité, etc.",
-
   "checkout.details.transferHeading": "Détails du transfert",
-
   "checkout.details.travelerPlaceholder": "Nom complet",
-
   "checkout.details.travelerSummary.empty": "Ajoutez au moins un voyageur",
-
   "checkout.flightNumber.help": "Incluez la compagnie et le numéro (ex. AF1234)",
-
   "checkout.flightNumber.label": "Numéro de vol",
-
   "checkout.hero.description": "Complétez les étapes avec un support 24/7 et des paiements protégés.",
-
   "checkout.hero.tagline": "Paiement sécurisé",
-
   "checkout.hero.title": "Confirmez votre réservation en quelques minutes",
-
   "checkout.missingTour.cta": "Parcourir d'autres tours",
-
   "checkout.missingTour.message": "Nous n'avons pas retrouvé le tour demandé.",
-
   "checkout.payment.methods.cardDescription": "Nous acceptons Visa, Mastercard et American Express.",
-
   "checkout.payment.methods.cardLabel": "Carte de crédit/débit",
-
   "checkout.payment.preparing": "Préparation du paiement.",
-
   "checkout.payment.provisionalPending": "en attente de confirmation",
-
   "checkout.payment.provisionalPrefix": "Réservation provisoire #",
-
   "checkout.payment.requirements": "Activez JavaScript et indiquez une carte valide pour continuer.",
-
   "checkout.payment.stripeMissing": "Nous reconnectons Stripe. Réessayez dans quelques instants.",
-
   "checkout.payment.summaryHeading": "Résumé du paiement",
-
   "checkout.paymentForm.active": "Actif",
-
   "checkout.paymentForm.back": "Retour au paiement",
-
   "checkout.paymentForm.confirmAndPay": "Confirmer et payer",
-
   "checkout.paymentForm.countryLabel": "Pays de la carte",
-
   "checkout.paymentForm.countryPlaceholder": "Sélectionnez le pays",
-
   "checkout.paymentForm.emailLabel": "Courriel de reçu",
-
   "checkout.paymentForm.emailPlaceholder": "courriel@exemple.com",
-
   "checkout.paymentForm.errorProcessing": "Nous n'avons pas pu traiter votre paiement. Réessayez plus tard.",
-
   "checkout.paymentForm.methodFallback": "Méthode : {methodDescription}",
-
   "checkout.paymentForm.paymentInitiated": "Paiement lancé. En attente de confirmation.",
-
   "checkout.paymentForm.processing": "Traitement du paiement...",
-
   "checkout.paymentForm.select": "Sélectionner",
-
   "checkout.paymentForm.stripeNotReady": "La plateforme de paiement n'est pas encore prête.",
-
   "checkout.section.contact.heading": "Vos coordonnées",
-
   "checkout.section.payment.heading": "Méthode de paiement",
-
   "checkout.sessionExpired.afterRedirect": "Si la session expire à nouveau, relancez la réservation.",
-
   "checkout.sessionExpired.beforeTour": "Votre session expire bientôt.",
-
   "checkout.sessionExpired.middle": "Actualisez la page pour poursuivre votre réservation.",
-
   "checkout.status.active": "Actif",
-
   "checkout.status.completed": "Terminé",
-
   "checkout.status.pending": "En attente",
-
   "checkout.step.contact": "Contact",
-
   "checkout.step.details": "Détails",
-
   "checkout.step.payment": "Paiement",
-
   "checkout.summary.confidence": "Couverture 24/7",
-
   "checkout.summary.date": "Date",
-
   "checkout.summary.defaultHotel": "Hôtel principal",
-
   "checkout.summary.destination": "Destination",
-
   "checkout.summary.flexibility": "Modifications gratuites",
-
   "checkout.summary.globalInfrastructure": "Réseau mondial de partenaires",
-
   "checkout.summary.hold": "Nous gardons votre place pendant 15 minutes.",
-
   "checkout.summary.tripMeta": "{travelers} voyageurs · {date} · {time}",
-
   "checkout.summary.travelersBreakdown": "{adults} adultes et {children} enfants",
-
   "checkout.summary.origin": "Origine",
-
   "checkout.summary.originFallback": "Origine à définir",
-
   "checkout.summary.paymentSecurity": "Paiement sécurisé avec Stripe",
-
   "checkout.summary.perTraveler": "Prix par voyageur ${amount}",
-
   "checkout.summary.persons": "Personnes",
-
   "checkout.summary.priceLabel": "Prix confirmé",
-
   "checkout.summary.priceOnRequest": "Prix disponible sur demande",
-
   "checkout.summary.pricePerTravelerFallback": "Prix par voyageur en cours de calcul",
-
   "checkout.summary.support": "Support humain en espagnol et anglais",
-
   "checkout.summary.time": "Heure",
-
   "checkout.summary.type.tour": "Service réservé : tour",
-
   "checkout.summary.type.transfer": "Service réservé : transfert",
-
   "checkout.transfer.date": "Date du transfert",
-
   "checkout.transfer.time": "Heure du transfert",
-
   "checkout.transfer.tourName": "Transfert privé",
-
   "booking.confirmation.statusLabel": "Réservation confirmée",
-
   "booking.confirmation.hero.headline": "Réservation confirmée",
-
   "booking.confirmation.hero.body.transfer": "Votre transfert privé est confirmé.",
-
   "booking.confirmation.hero.body.tour": "Votre aventure commence bientôt.",
-
   "booking.confirmation.hero.note.transfer": "Notre chauffeur vous attend et un e-mail avec les détails a été envoyé à {email}.",
-
   "booking.confirmation.hero.note.tour": "Merci pour votre réservation. Une copie du voucher a été envoyée à {email}.",
-
   "booking.confirmation.instructions.transfer.driverMeet": "Le chauffeur vous attendra dans le hall ou au point d'arrivées.",
-
   "booking.confirmation.instructions.transfer.matchFlight": "Vérifiez votre numéro de vol avec le chauffeur et mettez-le à jour en cas de changement.",
-
   "booking.confirmation.instructions.transfer.showVoucher": "Présentez votre e-ticket et votre pièce d'identité à l'arrivée.",
-
   "booking.confirmation.instructions.tour.arriveEarly": "Arrivez 15 minutes avant le point de rendez-vous.",
-
   "booking.confirmation.instructions.tour.packEssentials": "Emportez maillot, crème solaire et eau.",
-
   "booking.confirmation.instructions.tour.showVoucher": "Montrez votre e-ticket sur votre téléphone ou imprimé.",
-
   "booking.confirmation.instructions.tour.askQuestions": "Des questions ? Utilisez le bouton de contact rapide.",
-
   "booking.confirmation.labels.service": "Service réservé",
-
   "booking.confirmation.labels.duration": "Durée",
-
   "booking.confirmation.labels.meetingPoint": "Point de rendez-vous",
-
   "booking.confirmation.labels.totalPaid": "Total payé",
-
   "booking.confirmation.labels.orderCode": "Code de commande",
-
   "booking.confirmation.labels.bookedTour": "Circuit réservé",
-
   "booking.confirmation.labels.passengers": "Passagers",
-
   "booking.confirmation.labels.provider": "Fournisseur",
-
   "booking.confirmation.labels.zone": "Zone",
-
   "booking.confirmation.section.instructions": "Instructions importantes",
-
   "booking.confirmation.section.yourTour": "Votre circuit",
-
   "booking.confirmation.section.recommended": "D'autres clients ont également réservé",
-
   "booking.confirmation.section.eticket": "Votre e-ticket numérique",
-
   "booking.confirmation.buttons.downloadEticket": "Télécharger mon e-ticket",
-
   "booking.confirmation.buttons.whatsapp": "Des questions sur le rendez-vous ? Discutez sur WhatsApp",
-
   "booking.confirmation.buttons.viewBookings": "Voir mes réservations",
-
   "booking.confirmation.values.transferService": "Transfert privé",
-
   "booking.confirmation.values.durationPending": "Durée à confirmer",
-
   "booking.confirmation.values.defaultPickup": "Hall principal",
-
   "booking.confirmation.values.noMeetingPoint": "Point à définir",
-
   "booking.confirmation.values.totalPaid": "${amount} USD",
-
   "booking.confirmation.values.providerFallback": "Proactivitis",
-
   "booking.confirmation.values.destinationFallback": "Destination",
-
   "booking.confirmation.values.countryFallback": "Destination internationale",
-
   "booking.confirmation.itinerary.start": "Rendez-vous à {meetingPoint}.",
-
   "booking.confirmation.eticket.copy": "Enregistrez ce voucher sur votre téléphone ou téléchargez-le pour le présenter à l'arrivée.",
-
   "partner.form.title.supplier": "Demande Supplier",
-
   "partner.form.title.agency": "Demande pour agences",
-
   "partner.form.field.companyName": "Nom de l'entreprise",
-
   "partner.form.field.contactName": "Nom du contact",
-
   "partner.form.field.contactRole": "Poste du contact",
-
   "partner.form.field.email": "Courriel",
-
   "partner.form.field.phone": "Téléphone",
-
   "partner.form.field.country": "Pays d'opération",
-
   "partner.form.field.password": "Mot de passe",
-
   "partner.form.field.confirmPassword": "Confirmer le mot de passe",
-
   "partner.form.website.label": "Site web",
-
   "partner.form.website.placeholder": "https://",
-
   "partner.form.toggle.hide": "Masquer",
-
   "partner.form.toggle.show": "Afficher",
-
   "partner.form.errors.selectService": "Sélectionnez au moins un type de service.",
-
   "partner.form.errors.passwordLength": "Le mot de passe doit contenir au moins 8 caractères.",
-
   "partner.form.errors.passwordMismatch": "Les mots de passe doivent correspondre.",
-
   "partner.form.toast.success": "Demande reçue. Un gestionnaire de comptes vous contactera sous peu.",
-
   "partner.form.services.label": "Type de service",
-
   "partner.form.services.hint": "Sélectionnez les services que vous proposez.",
-
   "partner.form.service.tours": "Circuits",
-
   "partner.form.service.hospitality": "Hébergement",
-
   "partner.form.service.transfer": "Transferts",
-
   "partner.form.service.outdoor": "Expériences extérieures",
-
   "partner.form.service.groupPlanning": "Planification de groupes",
-
   "partner.form.service.flights": "Vols",
-
   "partner.form.service.privateEvents": "Événements privés",
-
   "partner.form.description.label": "Description brève du service",
-
   "partner.form.file.label": "Documentation jointe (optionnel)",
-
   "partner.form.file.hint": "Téléversez des PDF, JPG, PNG ou ZIP pour appuyer votre activité.",
-
   "partner.form.file.ready": "Fichier prêt : {fileName}",
-
   "partner.form.submit": "Envoyer la demande",
-
-  "partner.form.processing": "Traitement\u2026",
-
+  "partner.form.processing": "Traitement…",
   "partner.form.country.dominicanRepublic": "République dominicaine",
-
   "partner.form.country.mexico": "Mexique",
-
   "partner.form.country.colombia": "Colombie",
-
   "partner.form.country.unitedStates": "États-Unis",
-
   "partner.form.country.spain": "Espagne",
-
   "partner.form.country.brazil": "Brésil",
-
   "partner.form.country.peru": "Pérou",
-
   "partner.form.country.argentina": "Argentine",
-
   "partner.form.country.panama": "Panama",
-
-
-
   "contact.hero.tagline": "Assistance mondiale",
-
   "contact.hero.title": "Support professionnel direct",
-
-  "contact.hero.description":
-
-    "Notre équipe répond rapidement par email, WhatsApp Business et téléphone 24h/24. Nous sommes disponibles en continu, où que vous soyez.",
-
+  "contact.hero.description": "Notre équipe répond rapidement par email, WhatsApp Business et téléphone 24h/24. Nous sommes disponibles en continu, où que vous soyez.",
   "contact.section.phone.label": "Ligne d'assistance directe",
-
   "contact.section.phone.details": "Format international +1",
-
   "contact.whatsapp.label": "WhatsApp Business",
-
   "contact.whatsapp.cta": "Discutez avec nous 24h/24",
-
   "contact.email.sectionTitle": "Contacts par e-mail",
-
   "contact.email.general": "Courriel général",
-
   "contact.email.reservations": "Département des réservations",
-
   "contact.email.suppliers": "Assistance fournisseurs",
   "contact.longform.eyebrow": "Nous sommes l? pour vous aider",
   "contact.longform.title": "Support humain pour tours, transferts et r?servations",
   "contact.longform.body1": "Notre ?quipe r?pond aux questions sur les tours, les transferts, les changements d'horaire et le suivi apr?s r?servation. Nous vous orientons vers la meilleure option selon votre destination et votre style de voyage.",
   "contact.longform.body2": "Si vous ?tes agence ou fournisseur, nous accompagnons aussi l'int?gration, les paiements et les validations op?rationnelles pour que tout soit clair d?s le d?part.",
   "contact.longform.body3": "?crivez-nous avec votre nom et les d?tails de la demande. Nous r?pondons vite et assurons un suivi r?el jusqu'? r?solution.",
-
   "contact.form.heading": "Formulaire intelligent",
-
   "contact.form.field.name.label": "Nom",
-
   "contact.form.field.email.label": "Email",
-
   "contact.form.field.topic.label": "Objet",
-
   "contact.form.field.message.label": "Message",
-
   "contact.form.field.name.placeholder": "Ex. Ana Pérez",
-
   "contact.form.field.email.placeholder": "vous@email.com",
-
   "contact.form.field.topic.placeholder": "Sélectionnez un motif",
-
   "contact.form.field.message.placeholder": "Dites-nous en détail comment nous pouvons vous aider.",
-
   "contact.form.subject.reservation": "Réservation",
-
   "contact.form.subject.supplier": "Fournisseur",
-
   "contact.form.subject.general": "Général",
-
   "contact.form.status.sending": "Envoi...",
-
   "contact.form.status.success": "Merci, nous avons reçu votre message et vous répondons rapidement.",
-
   "contact.form.status.error.generic": "Impossible d'envoyer la demande, réessayez.",
-
   "contact.form.submit": "Envoyer la demande",
-
   "featured.tours.empty.title": "Bientôt, vous découvrirez le meilleur du catalogue ici.",
-
   "featured.tours.empty.body": "Nous publierons des circuits réels dès qu'ils seront approuvés par l'équipe.",
-
   "tour.fallback.include.transfer": "Transfert",
-
   "tour.fallback.include.guide": "Guide",
-
   "tour.fallback.include.lunch": "Déjeuner",
-
   "tour.fallback.exclude.tips": "Pourboires",
-
   "tour.fallback.exclude.drinks": "Boissons",
-
   "tour.fallback.exclude.photos": "Photos",
-
-  "tour.card.tag.topExperience": "Expérience haut de gamme"
-
-  ,
-
+  "tour.card.tag.topExperience": "Expérience haut de gamme",
   "transfer.level.country.badge": "Couverture nationale",
-
   "transfer.level.country.summary": "Couverture dans tout le pays avec des transferts standardisés et unifiés.",
-
   "transfer.level.destination.badge": "Focus destination",
-
   "transfer.level.destination.summary": "Nous planifions les zones avec des tarifs transparents et des prestataires certifiés.",
-
   "transfer.level.microzone.badge": "Microzone hôtelière",
-
   "transfer.level.microzone.summary": "Hôtels et points de prise en charge définis pour clarté et confiance.",
-
   "transfer.hero.title.country": "Transferts en {name}",
-
   "transfer.hero.title.destination": "Transferts en {name}",
-
   "transfer.hero.title.microzone": "{name} · Prise en charge premium",
-
   "transfer.hero.subtitle.country": "Découvrez le réseau de destinations, microzones et hôtels opérés par nos transferts.",
-
   "transfer.hero.subtitle.destination": "Choisissez la microzone qui relie votre hôtel à l'aéroport et obtenez le tarif clair.",
-
   "transfer.hero.subtitle.microzone": "Choisissez votre hôtel et confirmez le point exact de prise en charge pour une tranquillité totale.",
-
   "transfer.metadata.title.country": "Transferts en {country} | Proactivitis",
-
   "transfer.metadata.description.country": "Transferts prives en {country} avec tarifs fixes, chauffeurs verifies et support 24/7. Reservation rapide pour aeroports, hotels et destinations cles.",
-
   "transfer.metadata.title.destination": "Transferts en {destination} | Proactivitis",
-
   "transfer.metadata.description.destination": "Transferts a {destination} avec prix bloque, confirmation instantanee et vehicules verifies. Reservation en ligne pour hotels et points d'interet.",
-
   "transfer.metadata.title.microzone": "Transfert privé vers {hotel} | Proactivitis",
-
   "transfer.metadata.description.microzone": "Transfert prive vers {hotel} en {country} avec tarif fixe, support 24/7 et operateurs certifies. Confirmez le pick-up et voyagez serein.",
-
   "transfer.detail.duration": "Le temps estimé de l'aéroport à {hotel} est d'environ {minutes} minutes.",
-
   "transfer.detail.meeting": "À l'aéroport de {destination}, notre équipe vous attendra à la sortie des arrivées avec une pancarte Proactivitis.",
-
-  "transfer.button.primary": "Réserver un transfert"
-
-,
+  "transfer.button.primary": "Réserver un transfert",
   "notFound.eyebrow": "Oups",
   "notFound.title": "Page introuvable",
   "notFound.body": "Mais voici des tours et transferts disponibles.",
@@ -1082,8 +586,7 @@
   "notFound.transfers.eyebrow": "Transferts",
   "notFound.transfers.title": "Transferts prives recommandes",
   "notFound.transfers.cardTag": "Transfert prive",
-  "notFound.transfers.cardCta": "Voir le transfert"
-,
+  "notFound.transfers.cardCta": "Voir le transfert",
   "thingsToDo.eyebrow": "Things to do in",
   "thingsToDo.title": "{hotel}",
   "thingsToDo.subtitle": "Proactivitis recommande {hotel} et des experiences a proximite. Reservez des tours et transferts avec confirmation immediate.",
@@ -1104,11 +607,9 @@
   "thingsToDo.transfers.cardSubtitle": "Transfert prive vers {hotel} avec pickup depuis PUJ.",
   "thingsToDo.transfers.cardCta": "Voir le transfert",
   "thingsToDo.transfers.fallback": "Transfert prive disponible depuis l aeroport.",
-  "thingsToDo.schema.description": "Things to do in {hotel}: tours et transferts recommandes par Proactivitis."
-,
+  "thingsToDo.schema.description": "Things to do in {hotel}: tours et transferts recommandes par Proactivitis.",
   "thingsToDo.meta.title": "Things to do in {hotel} | Tours et transferts Proactivitis",
-  "thingsToDo.meta.description": "Proactivitis recommande {hotel} et des experiences a proximite. Reservez des tours et transferts avec confirmation immediate."
-,
+  "thingsToDo.meta.description": "Proactivitis recommande {hotel} et des experiences a proximite. Reservez des tours et transferts avec confirmation immediate.",
   "transferLanding.hero.label": "Transfert depuis PUJ",
   "transferLanding.route.label": "Route fixe:",
   "transferLanding.faq.eyebrow": "FAQ",
@@ -1237,7 +738,6 @@
   "recogida.tours.body": "Nous selectionnons les experiences premium reliees a ce point de pickup. Choisissez la date et confirmez en un clic.",
   "recogida.tours.cardFallback": "Experience immersive, guides experts et support 24/7.",
   "recogida.tours.cardCta": "Reserver {tour} depuis {hotel}",
-
   "tourPickup.meta.fallbackTitle": "Tours avec pickup | Proactivitis",
   "tourPickup.meta.fallbackDescription": "Reservez des tours avec pickup hotel et support local.",
   "tourPickup.meta.title": "{tour} avec pickup depuis {hotel} | Proactivitis",
@@ -1345,5 +845,6 @@
   "tourPickup.booking.supplierNote": "Opere par des experts regionaux.",
   "tourPickup.urgency.eyebrow": "Urgence",
   "tourPickup.urgency.title": "Nous gardons votre place 29:00 minutes",
-  "tourPickup.urgency.body": "Reservez maintenant et assurez le pickup a {hotel}."
+  "tourPickup.urgency.body": "Reservez maintenant et assurez le pickup a {hotel}.",
+  "transfer.hero.notice.three": "Reservation recente: PUJ -> Uvero Alto"
 }

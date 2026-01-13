@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import TrasladoSearch, { LocationOption } from "@/components/traslado/TrasladoSearch";
 import TrasladoSearchV2 from "@/components/traslado/TrasladoSearchV2";
+import TransferHeroNotices from "@/components/public/TransferHeroNotices";
 import { prisma } from "@/lib/prisma";
 import { getTransferPointsForCountry, TransferPointOption } from "@/lib/transfers";
 import { Locale, translate } from "@/lib/translations";
@@ -68,54 +68,61 @@ export default async function PublicTransferPage({ locale, heroTitleOverride, he
 
   return (
     <div className="bg-gradient-to-b from-[#E2FFF8] via-white to-[#F8FAFC]">
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-10 px-4 py-10">
-        <section className="relative overflow-hidden space-y-6 rounded-[36px] border border-white/60 bg-white/80 p-8 shadow-xl backdrop-blur">
-          <Image
-            src="/transfer/sedan.png"
-            alt="Traslado premium Proactivitis"
-            fill
-            sizes="100vw"
-            priority
-            className="absolute inset-0 -z-10 h-full w-full object-cover opacity-90"
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/70 to-white/90" />
-          <p className="text-xs uppercase tracking-[0.5em] text-emerald-600">
+      <section
+        className="relative flex min-h-[380px] w-full items-center overflow-hidden md:min-h-[520px]"
+        style={{
+          backgroundImage:
+            "url('https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center"
+        }}
+      >
+        <div className="absolute inset-0 bg-slate-900/55 md:bg-slate-900/65" />
+        <div className="relative z-10 mx-auto w-full max-w-6xl space-y-6 px-4 py-14">
+          <p className="text-xs uppercase tracking-[0.5em] text-white/70">
             {translate(locale, "transfer.hero.label")}
           </p>
-          <div className="relative z-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="space-y-2">
-              <h1 className="text-4xl font-black leading-tight text-slate-900 md:text-5xl">
+              <h1 className="text-4xl font-black leading-tight text-white md:text-5xl">
                 {heroTitleOverride ?? translate(locale, "transfer.hero.title")}
               </h1>
-              <p className="text-base text-slate-600">
+              <p className="text-base text-white/90">
                 {heroDescriptionOverride ?? translate(locale, "transfer.hero.description")}
               </p>
-              <div className="flex flex-wrap gap-3 text-xs font-semibold uppercase tracking-[0.4em]">
+              <div className="flex flex-wrap gap-3 text-sm font-semibold uppercase tracking-[0.2em] text-white">
                 <Link
                   href="/"
-                  className="text-emerald-600 underline decoration-emerald-300 decoration-2 underline-offset-4 transition hover:text-emerald-500"
+                  className="inline-flex items-center justify-center rounded-full border border-white/70 bg-white/90 px-4 py-2 text-slate-900 shadow-sm transition hover:bg-white"
                 >
                   {translate(locale, "transfer.link.home")}
                 </Link>
-                <Link href="/tours" className="text-slate-500 transition hover:text-slate-900">
+                <Link
+                  href="/tours"
+                  className="inline-flex items-center justify-center rounded-full border border-white/80 bg-transparent px-4 py-2 text-white transition hover:bg-white/10"
+                >
                   {translate(locale, "transfer.link.tours")}
                 </Link>
               </div>
+              <TransferHeroNotices locale={locale} />
             </div>
-            <div className="grid w-full max-w-xs grid-cols-1 gap-3 rounded-[28px] border border-slate-200 bg-slate-50 p-4 text-center text-slate-700 shadow-sm md:max-w-[320px]">
+            <div className="grid w-full max-w-xs grid-cols-1 gap-3 rounded-[28px] border border-white/20 bg-white/10 p-4 text-center text-white shadow-sm backdrop-blur md:max-w-[320px]">
               {heroStats.map((stat) => (
                 <div key={stat.labelKey} className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
-                  {translate(locale, stat.labelKey)}
+                  <p className="text-xs uppercase tracking-[0.4em] text-white/70">
+                    {translate(locale, stat.labelKey)}
                   </p>
-                  <p className="text-lg font-bold text-slate-900">
+                  <p className="text-lg font-bold text-white">
                     {"valueKey" in stat ? translate(locale, stat.valueKey) : stat.value}
                   </p>
                 </div>
               ))}
             </div>
           </div>
-        </section>
+        </div>
+      </section>
+
+      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-10 px-4 py-10">
 
         <section className="rounded-[36px] border border-slate-100 bg-white/90 p-6 shadow-2xl">
           <Suspense fallback={<div />}>

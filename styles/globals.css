@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes transferRoutePulse {
+  0% {
+    transform: translateX(0);
+    opacity: 0.6;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(64px);
+    opacity: 0.9;
+  }
+}
+
+.transfer-route-dot {
+  animation: transferRoutePulse 3.2s infinite ease-in-out;
+}
+
 :root {
   font-family: var(--font-inter, "Inter", system-ui, -apple-system, sans-serif);
   font-optical-sizing: auto;
