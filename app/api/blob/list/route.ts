@@ -1,5 +1,3 @@
-"use server";
-
 import { NextResponse } from "next/server";
 import { list } from "@vercel/blob";
 import { getSessionUser, requireRole, type Role } from "@/lib/session";
