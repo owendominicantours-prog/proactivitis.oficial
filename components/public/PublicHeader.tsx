@@ -10,8 +10,7 @@ import { useSession } from "next-auth/react";
 const publicNavLinks = [
   { label: "Inicio", href: "/" },
   { label: "Tours", href: "/tours" },
-  { label: "Traslado", href: "/traslado" },
-  { label: "Contacto", href: "/contact" }
+  { label: "Traslado", href: "/traslado" }
 ];
 
 const getLocalizedPath = (href: string, locale: Locale) => {
@@ -31,6 +30,13 @@ export function PublicHeader() {
     label: navItem.label,
     href: getLocalizedPath(navItem.href, locale)
   }));
+  const dropdownNav = {
+    label: "Contacto",
+    items: [
+      { label: "Contacto", href: getLocalizedPath("/contact", locale) },
+      { label: "Blog", href: getLocalizedPath("/news", locale) }
+    ]
+  };
 
   const userName = session?.user?.name ?? session?.user?.email ?? null;
 
@@ -48,5 +54,5 @@ export function PublicHeader() {
     </div>
   );
 
-  return <Header navItems={navItems} rightSlot={rightSlot} />;
+  return <Header navItems={navItems} rightSlot={rightSlot} dropdownNav={dropdownNav} />;
 }

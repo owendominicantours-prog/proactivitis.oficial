@@ -10,9 +10,16 @@ type HeaderProps = {
   navDisplay?: "inline" | "dropdown";
   rightSlot?: ReactNode;
   logoScale?: number;
+  dropdownNav?: { label: string; items: { label: string; href: string }[] };
 };
 
-export const Header = ({ navItems, navDisplay = "inline", rightSlot, logoScale = 3 }: HeaderProps) => {
+export const Header = ({
+  navItems,
+  navDisplay = "inline",
+  rightSlot,
+  logoScale = 3,
+  dropdownNav
+}: HeaderProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
@@ -50,6 +57,37 @@ export const Header = ({ navItems, navDisplay = "inline", rightSlot, logoScale =
                   {item.label}
                 </Link>
               ))}
+              {dropdownNav ? (
+                <div className="relative">
+                  <button
+                    type="button"
+                    aria-expanded={dropdownOpen}
+                    onClick={() => setDropdownOpen((prev) => !prev)}
+                    className="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-700 transition hover:bg-slate-50"
+                  >
+                    {dropdownNav.label}
+                    <span className="text-base leading-4">▾</span>
+                  </button>
+                  <div
+                    className={`pointer-events-auto absolute left-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white shadow-lg transition duration-150 ${
+                      dropdownOpen ? "visible opacity-100" : "invisible opacity-0"
+                    }`}
+                  >
+                    <div className="flex flex-col">
+                      {dropdownNav.items.map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          onClick={() => setDropdownOpen(false)}
+                          className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
           ) : (
             <div className="relative">
@@ -112,6 +150,21 @@ export const Header = ({ navItems, navDisplay = "inline", rightSlot, logoScale =
               {item.label}
             </Link>
           ))}
+          {dropdownNav ? (
+            <div className="mt-2 space-y-2">
+              <p className="px-3 text-[10px] tracking-[0.3em] text-slate-400">{dropdownNav.label}</p>
+              {dropdownNav.items.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-md px-3 py-2 transition hover:bg-slate-50 hover:text-slate-900"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
     </header>
