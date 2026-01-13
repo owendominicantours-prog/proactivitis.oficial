@@ -27,6 +27,15 @@ type TourWithDeparture = Prisma.TourGetPayload<{
 const buildCanonical = (slug: string, locale: Locale) =>
   locale === "es" ? `${BASE_URL}/recogida/${slug}` : `${BASE_URL}/${locale}/recogida/${slug}`;
 
+const pickupBasePathByLocale: Record<Locale, string> = {
+  es: "/excursiones-con-recogida",
+  en: "/excursions-with-hotel-pickup",
+  fr: "/excursions-avec-pickup-hotel"
+};
+
+const buildPickupCanonical = (slug: string, locale: Locale) =>
+  `${BASE_URL}${pickupBasePathByLocale[locale]}/${slug}`;
+
 export async function buildRecogidaMetadata(slug: string, locale: Locale): Promise<Metadata> {
   const location = await prisma.location.findUnique({ where: { slug } });
   if (!location) {
@@ -45,6 +54,29 @@ export async function buildRecogidaMetadata(slug: string, locale: Locale): Promi
         es: `/recogida/${location.slug}`,
         en: `/en/recogida/${location.slug}`,
         fr: `/fr/recogida/${location.slug}`
+      }
+    }
+  };
+}
+
+export async function buildRecogidaPickupMetadata(slug: string, locale: Locale): Promise<Metadata> {
+  const location = await prisma.location.findUnique({ where: { slug } });
+  if (!location) {
+    return {
+      title: translate(locale, "recogida.pickup.meta.fallbackTitle"),
+      description: translate(locale, "recogida.pickup.meta.fallbackDescription")
+    };
+  }
+
+  return {
+    title: translate(locale, "recogida.pickup.meta.title", { hotel: location.name }),
+    description: translate(locale, "recogida.pickup.meta.description", { hotel: location.name }),
+    alternates: {
+      canonical: buildPickupCanonical(location.slug, locale),
+      languages: {
+        es: `${pickupBasePathByLocale.es}/${location.slug}`,
+        en: `${pickupBasePathByLocale.en}/${location.slug}`,
+        fr: `${pickupBasePathByLocale.fr}/${location.slug}`
       }
     }
   };

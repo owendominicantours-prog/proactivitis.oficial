@@ -29,6 +29,11 @@ const TRANSLATED_PREFIXES = [
 ];
 const TRANSLATED_ROOTS = ["/", "/tours", "/traslado"];
 const TRANSLATION_LOCALES = ["en", "fr"];
+const PICKUP_BASE_PATHS = {
+  es: "/excursiones-con-recogida",
+  en: "/excursions-with-hotel-pickup",
+  fr: "/excursions-avec-pickup-hotel"
+} as const;
 const MAX_TOP_HOTELS = 80;
 const MAX_TOURS_PER_HOTEL = 35;
 const MAX_TOTAL_COMBOS = 4000;
@@ -224,9 +229,27 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
     priority: 0.7
   }));
   const localizedRecogidaEntries = buildLocalizedEntries(recogidaEntries);
+
+  const pickupHotelEntries: RouteEntry[] = locations
+    .filter((location) => location.destination?.slug === "punta-cana")
+    .map((location) => ({
+      url: `${BASE_URL}${PICKUP_BASE_PATHS.es}/${location.slug}`,
+      priority: 0.7
+    }));
+  const pickupHotelLocalizedEntries: RouteEntry[] = pickupHotelEntries.flatMap((entry) => {
+    const path = entry.url.replace(BASE_URL, "");
+    const slug = path.replace(PICKUP_BASE_PATHS.es, "");
+    return [
+      { url: `${BASE_URL}${PICKUP_BASE_PATHS.en}${slug}`, priority: entry.priority },
+      { url: `${BASE_URL}${PICKUP_BASE_PATHS.fr}${slug}`, priority: entry.priority }
+    ];
+  });
+
   const hotelEntries: RouteEntry[] = uniqueByUrl([
     ...recogidaEntries,
     ...localizedRecogidaEntries,
+    ...pickupHotelEntries,
+    ...pickupHotelLocalizedEntries,
     ...trasladoHotelEntries
   ]);
 
