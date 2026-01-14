@@ -576,6 +576,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
         returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
         merchantReturnDays: 1,
         returnFees: "https://schema.org/FreeReturn",
+        returnMethod: "https://schema.org/ReturnByMail",
         applicableCountry: "DO"
       }
     },
