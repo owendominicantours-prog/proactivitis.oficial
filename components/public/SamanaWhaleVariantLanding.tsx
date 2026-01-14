@@ -56,8 +56,8 @@ export default function SamanaWhaleVariantLanding({
   tour,
   transferHotels
 }: SamanaWhaleVariantLandingProps) {
-  const t = (key: TranslationKey, replacements?: Record<string, string | number>) =>
-    translate(locale, key, replacements);
+  const t = (key: string, replacements?: Record<string, string | number>) =>
+    translate(locale, key as TranslationKey, replacements);
   const localePrefix = locale === "es" ? "" : `/${locale}`;
   const heroImage = resolveTourImage(tour.heroImage, tour.gallery);
   const timeSlots = JSON.parse(tour.timeOptions ?? "[]") as PersistedTimeSlot[];
