@@ -47,6 +47,15 @@ const parseJsonArray = <T,>(value?: string | null | Prisma.JsonValue): T[] => {
   return [];
 };
 
+const parseGallery = (gallery?: string | null) => {
+  if (!gallery) return [];
+  try {
+    return (JSON.parse(gallery) as unknown as string[]) ?? [];
+  } catch {
+    return [];
+  }
+};
+
 type CanonicalDurationUnit = "minute" | "hour" | "day" | "week" | "month";
 
 const DURATION_UNIT_SYNONYMS = new Map<string, CanonicalDurationUnit>([
