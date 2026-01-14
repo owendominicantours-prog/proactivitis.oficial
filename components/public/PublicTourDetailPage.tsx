@@ -374,7 +374,6 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const heroReviewsLabel = translate(locale, "tour.hero.reviewsCount", { count: detailReviewCount });
   const heroReserveCta = translate(locale, "tour.hero.cta.reserve");
   const heroGalleryCta = translate(locale, "tour.hero.cta.gallery");
- = translate(locale, "tour.hero.cta.gallery");
 
   const heroNavTabs: { labelKey: TranslationKey; href: string }[] = [
     { labelKey: "tour.nav.overview", href: "#overview" },
