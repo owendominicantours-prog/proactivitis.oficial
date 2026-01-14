@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notificationService";
 import { NotificationType } from "@/lib/types/notificationTypes";
 import { TOUR_DELETE_REASONS } from "@/lib/constants/tourDeletion";
-import { notifyAdminTourModeration } from "@/lib/mailers/adminNotifications";
+import { notifyAdminTourModeration, notifySupplierTourModeration } from "@/lib/mailers/adminNotifications";
 
 const notifySupplier = async (
   tourId: string,
@@ -71,6 +71,15 @@ export async function approveTour(formData: FormData) {
       supplierName: tour.SupplierProfile?.company ?? undefined,
       note: typeof note === "string" ? note : undefined
     });
+    if (tour.SupplierProfile?.User?.email) {
+      await notifySupplierTourModeration({
+        to: tour.SupplierProfile.User.email,
+        action: "approved",
+        tourTitle: tour.title,
+        tourSlug: tour.slug,
+        note: typeof note === "string" ? note : undefined
+      });
+    }
   }
 }
 
@@ -94,6 +103,15 @@ export async function requestChanges(formData: FormData) {
       supplierName: tour.SupplierProfile?.company ?? undefined,
       note: typeof note === "string" ? note : undefined
     });
+    if (tour.SupplierProfile?.User?.email) {
+      await notifySupplierTourModeration({
+        to: tour.SupplierProfile.User.email,
+        action: "changes_requested",
+        tourTitle: tour.title,
+        tourSlug: tour.slug,
+        note: typeof note === "string" ? note : undefined
+      });
+    }
   }
 }
 
@@ -115,6 +133,14 @@ export async function sendToReview(formData: FormData) {
       tourSlug: tour.slug,
       supplierName: tour.SupplierProfile?.company ?? undefined
     });
+    if (tour.SupplierProfile?.User?.email) {
+      await notifySupplierTourModeration({
+        to: tour.SupplierProfile.User.email,
+        action: "sent_to_review",
+        tourTitle: tour.title,
+        tourSlug: tour.slug
+      });
+    }
   }
 }
 
@@ -149,6 +175,15 @@ export async function deleteTourAction(formData: FormData) {
       supplierName: tour.SupplierProfile?.company ?? undefined,
       reason: note
     });
+    if (tour.SupplierProfile?.User?.email) {
+      await notifySupplierTourModeration({
+        to: tour.SupplierProfile.User.email,
+        action: "deleted",
+        tourTitle: tour.title,
+        tourSlug: tour.slug,
+        reason: note
+      });
+    }
   }
   await prisma.tour.delete({ where: { id: tourId } });
   revalidatePath("/admin/tours");

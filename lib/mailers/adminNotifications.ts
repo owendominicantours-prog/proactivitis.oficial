@@ -224,3 +224,67 @@ export async function notifyAdminTourModeration(payload: NotifyTourModerationPay
     `Ver en moderación: ${APP_BASE_URL}/admin/tours`
   );
 }
+
+type NotifySupplierTourPayload = {
+  to: string;
+  action: TourModerationAction;
+  tourTitle: string;
+  tourSlug: string;
+  note?: string | null;
+  reason?: string | null;
+};
+
+const supplierActionCopy: Record<
+  TourModerationAction,
+  { subject: string; summary: string }
+> = {
+  approved: {
+    subject: "Tu tour fue aprobado",
+    summary: "Ya está publicado y visible para los clientes."
+  },
+  changes_requested: {
+    subject: "Cambios solicitados en tu tour",
+    summary: "Revisa las observaciones y vuelve a enviar tu tour."
+  },
+  sent_to_review: {
+    subject: "Tu tour está en revisión",
+    summary: "Nuestro equipo revisará tu tour pronto."
+  },
+  deleted: {
+    subject: "Tu tour fue eliminado",
+    summary: "El equipo eliminó el tour tras la revisión."
+  }
+};
+
+export async function notifySupplierTourModeration({
+  to,
+  action,
+  tourTitle,
+  tourSlug,
+  note,
+  reason
+}: NotifySupplierTourPayload) {
+  if (!to) return;
+  const actionInfo = supplierActionCopy[action];
+  const html = buildAdminHtml(
+    actionInfo.subject,
+    actionInfo.summary,
+    [
+      { label: "Tour", value: tourTitle },
+      { label: "Slug", value: tourSlug },
+      ...(note ? [{ label: "Nota", value: note }] : []),
+      ...(reason ? [{ label: "Motivo", value: reason }] : [])
+    ],
+    `Ver tour: ${APP_BASE_URL}/tours/${tourSlug}`
+  );
+  try {
+    await sendEmail({
+      to,
+      from: FROM_EMAIL,
+      subject: actionInfo.subject,
+      html
+    });
+  } catch (error) {
+    console.error("Error enviando correo al proveedor:", error);
+  }
+}
