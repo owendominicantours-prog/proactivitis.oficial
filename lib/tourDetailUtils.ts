@@ -128,6 +128,7 @@ export async function generateTourMetadata(
   const title = buildSeoTitle(resolvedTitle);
   const description = trimDescription(resolvedDescription);
   const heroImage = toAbsoluteUrl(resolveTourHeroImage(tour));
+  const heroImageType = heroImage.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg";
   const canonicalSlug = buildLanguageAlternates(slug)[locale];
   const canonicalUrl = `${PROACTIVITIS_URL}${canonicalSlug}`;
 
@@ -149,6 +150,9 @@ export async function generateTourMetadata(
       images: [
         {
           url: heroImage,
+          width: 1200,
+          height: 630,
+          type: heroImageType,
           alt: title
         }
       ],
