@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { formatReviewCountShort, getTourRating, getTourReviewCount } from "@/lib/reviewCounts";
+import { formatReviewCountShort } from "@/lib/reviewCounts";
 
 type TourCardProps = {
   slug: string;
@@ -9,6 +9,7 @@ type TourCardProps = {
   location: string;
   price: number;
   rating?: number;
+  reviewCount?: number;
   image: string;
   tags?: string[];
   description?: string;
@@ -54,11 +55,11 @@ export function TourCard({
   duration,
   pickupIncluded
 }: TourCardProps) {
-  const derivedRating = getTourRating(slug);
-  const displayRating = typeof rating === "number" ? rating.toFixed(1) : derivedRating.toFixed(1);
-  const reviewCount = getTourReviewCount(slug, "card");
-  const reviewLabel = formatReviewCountShort(reviewCount);
-  const badgeText = `⭐ ${displayRating} • ${reviewLabel} reseñas`;
+  const normalizedRating = typeof rating === "number" ? rating : 0;
+  const normalizedCount = reviewCount ?? 0;
+  const reviewLabel = formatReviewCountShort(normalizedCount);
+  const badgeText = `⭐ ${normalizedRating.toFixed(1)} • ${reviewLabel} reseñas`;
+  const showBadge = normalizedRating > 0 && normalizedCount > 0;
   const tagList = tags && tags.length ? tags : ["Experiencia Top"];
   const locationText = zone || location?.split(",")[0] || "Punta Cana";
 
@@ -72,9 +73,11 @@ export function TourCard({
             role="img"
             aria-label={title}
           />
-          <div className="absolute right-4 top-4 rounded-xl bg-white/90 px-3 py-1 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur">
-            {badgeText}
-          </div>
+          {showBadge && (
+            <div className="absolute right-4 top-4 rounded-xl bg-white/90 px-3 py-1 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur">
+              {badgeText}
+            </div>
+          )}
           <div className="absolute left-4 bottom-4 flex flex-wrap gap-2">
             {tagList.map((tag) => (
               <span

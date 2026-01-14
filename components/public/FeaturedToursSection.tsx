@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { TourCard } from "@/components/public/TourCard";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 import { Locale, translate } from "@/lib/translations";
+import { getTourReviewSummaryForTours } from "@/lib/tourReviews";
 
 let tourTranslationTableExists: boolean | null = null;
 
@@ -90,6 +91,7 @@ type Props = {
 export default async function FeaturedToursSection({ locale }: Props) {
   const tours = await fetchFeaturedTours(locale);
   const displayedTours = selectRotatingTours(tours);
+  const reviewSummary = await getTourReviewSummaryForTours(tours.map((tour) => tour.id));
 
   if (!tours.length) {
     return (
@@ -121,7 +123,8 @@ export default async function FeaturedToursSection({ locale }: Props) {
             undefined
           }
           tags={[translate(locale, "tour.card.tag.topExperience")]}
-          rating={4.9}
+          rating={reviewSummary[tour.id]?.average ?? 0}
+          reviewCount={reviewSummary[tour.id]?.count ?? 0}
           maxPax={tour.capacity ?? 15}
           duration={formatDurationValue(tour.duration)}
           pickupIncluded={true}

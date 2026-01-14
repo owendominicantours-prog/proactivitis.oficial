@@ -92,6 +92,7 @@ model Booking {
   paymentBrand          String?        @map("payment_brand")
   paymentLast4          String?        @map("payment_last4")
   paymentMethod         String?        @map("payment_method")
+  TourReview            TourReview?
 }
 
 model Conversation {
@@ -575,6 +576,29 @@ model Tour {
   translationHash        String?
   translations           TourTranslation[]
   blogPosts              BlogPostTour[]
+  reviews                TourReview[]
+}
+
+model TourReview {
+  id            String   @id @default(cuid())
+  tourId        String
+  bookingId     String   @unique
+  userId        String?
+  customerName  String
+  customerEmail String
+  rating        Int
+  title         String?
+  body          String   @db.Text
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now())
+  approvedAt    DateTime?
+
+  Tour     Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  Booking  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  User     User?    @relation(fields: [userId], references: [id])
+
+  @@index([tourId])
+  @@index([status])
 }
 
 model TourTranslation {
@@ -639,6 +663,7 @@ model User {
   CustomerPayment         CustomerPayment?
   AgencyProLinks          AgencyProLink[]
   BlogPosts               BlogPost[]
+  TourReviews             TourReview[]
 }
 
 model BlogPost {

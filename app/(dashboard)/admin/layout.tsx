@@ -8,6 +8,7 @@ const adminNav = [
   { label: "Dashboard", href: "/admin" },
   { label: "Landings", href: "/admin/landings" },
   { label: "Blog", href: "/admin/blog" },
+  { label: "Reseñas", href: "/admin/reviews" },
   { label: "Tours", href: "/admin/tours" },
   { label: "Transfer", href: "/admin/transfers" },
   { label: "Suplidores", href: "/admin/suppliers" },

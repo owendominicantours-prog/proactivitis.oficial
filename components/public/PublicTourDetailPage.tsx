@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import { prisma } from "@/lib/prisma";
-import { formatReviewCountValue, getTourRating, getTourReviewCount } from "@/lib/reviewCounts";
+import { formatReviewCountValue } from "@/lib/reviewCounts";
+import { buildReviewBreakdown, getApprovedTourReviews, getTourReviewSummary } from "@/lib/tourReviews";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 import StructuredData from "@/components/schema/StructuredData";
@@ -12,6 +13,7 @@ import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 import { Prisma } from "@prisma/client";
 import GalleryLightbox from "@/components/shared/GalleryLightbox";
 import TourGalleryCollage from "@/components/tours/TourGalleryCollage";
+import TourReviewForm from "@/components/public/TourReviewForm";
 import { Locale, translate, type TranslationKey } from "@/lib/translations";
 
 export type TourDetailSearchParams = {
@@ -174,73 +176,6 @@ const itineraryMock: ItineraryStop[] = [
     description: "Traslado de vuelta al punto de origen."
   }
 ];
-
-const reviewBreakdown: { labelKey: TranslationKey; percent: number }[] = [
-  { labelKey: "tour.reviews.breakdown.5", percent: 90 },
-  { labelKey: "tour.reviews.breakdown.4", percent: 8 },
-  { labelKey: "tour.reviews.breakdown.3", percent: 1 },
-  { labelKey: "tour.reviews.breakdown.2", percent: 1 },
-  { labelKey: "tour.reviews.breakdown.1", percent: 0 }
-];
-
-const reviewerProfiles = [
-  { name: "Gabriela R.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330" },
-  { name: "James T.", avatar: "https://images.unsplash.com/photo-1504593811423-6dd665756598" },
-  { name: "Anna L.", avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39" },
-  { name: "Miguel P.", avatar: "https://images.unsplash.com/photo-1544723795-432537d2c8a3" },
-  { name: "Sofía M.", avatar: "https://images.unsplash.com/photo-1544723795-3f7118e5f72d" }
-] as const;
-
-const reviewTemplates = [
-  "Sentí el {keyword} justo al principio y el resto del tour fluyó sin parar.",
-  "El {keyword} estuvo presente en cada parada y el equipo lo mantuvo con energía.",
-  "Ese {keyword} inesperado me hizo creer que estaba viviendo una experiencia premium.",
-  "Cuando el {keyword} apareció, supe que este era el tour que decía ofrecer aventuras reales.",
-  "Basta con mencionar {keyword} para describir lo que viví; todo fue muy auténtico."
-] as const;
-
-const buildReviewHighlights = (
-  locale: Locale,
-  keywords: string[],
-  title: string,
-  locationLabel: string
-) =>
-  reviewerProfiles.map((profile, index) => {
-    const phraseTemplate = reviewTemplates[index % reviewTemplates.length];
-    const keyword = keywords[index % keywords.length] ?? "momentos inolvidables";
-    const localeChunk = locale === "es" ? "Verified traveler" : "Verified traveler";
-    const quote = phraseTemplate
-      .replace("{keyword}", keyword)
-      .replace("{title}", title || "este tour");
-    const suffix = locationLabel ? `El punto de partida en ${locationLabel} te hará repetir.` : "";
-    return {
-      name: profile.name,
-      date: `${["Mayo 2025", "Abril 2025", "Marzo 2025", "Febrero 2025", "Enero 2025"][index]} · ${localeChunk}`,
-      quote: `${quote} ${suffix}`.trim(),
-      avatar: profile.avatar
-    };
-  });
-
-const reviewTags = ["Excelente guía", "Mucha adrenalina", "Puntualidad"];
-const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
-const parseGallery = (gallery?: string | null) => {
-  if (!gallery) return [];
-  try {
-    return (JSON.parse(gallery) as unknown as string[]) ?? [];
-  } catch {
-    return [];
-  }
-};
-const resolveTourHeroImage = (tour: { heroImage?: string | null; gallery?: string | null }) => {
-  const gallery = parseGallery(tour.gallery);
-  return tour.heroImage ?? gallery[0] ?? DEFAULT_TOUR_IMAGE;
-};
-const toAbsoluteUrl = (value: string) => {
-  if (!value) return `${PROACTIVITIS_URL}${DEFAULT_TOUR_IMAGE}`;
-  if (value.startsWith("http")) return value;
-  const normalized = value.startsWith("/") ? value : `/${value}`;
-  return `${PROACTIVITIS_URL}${normalized}`;
-};
 
 const buildTourTrustBadges = (locale: Locale, languages: string[], categories: string[]) => {
   const languageLabel = languages.length
@@ -423,18 +358,23 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const trustBadges = buildTourTrustBadges(locale, languages, categories);
   const faqList = buildTourFaq(locale, localizedTitle, durationLabel, displayTime, priceLabel);
 
-  const detailReviewCount = getTourReviewCount(tour.slug, "detail");
+  const approvedReviews = await getApprovedTourReviews(tour.id);
+  const reviewSummaryData = await getTourReviewSummary(tour.id);
+  const detailReviewCount = reviewSummaryData.count;
+  const ratingValue = reviewSummaryData.count > 0 ? reviewSummaryData.average : 0;
   const detailReviewLabel = formatReviewCountValue(detailReviewCount);
-  const ratingValue = getTourRating(tour.slug);
-  const reviewSummary = translate(locale, "tour.section.reviews.summary", {
-    rating: ratingValue.toFixed(1),
-    count: detailReviewCount
-  });
+  const reviewSummary = detailReviewCount
+    ? translate(locale, "tour.section.reviews.summary", {
+        rating: ratingValue.toFixed(1),
+        count: detailReviewCount
+      })
+    : translate(locale, "tour.section.reviews.empty");
   const heroPriceLabel = translate(locale, "tour.hero.priceLabel");
   const heroRatingLabel = translate(locale, "tour.hero.ratingLabel");
   const heroReviewsLabel = translate(locale, "tour.hero.reviewsCount", { count: detailReviewCount });
   const heroReserveCta = translate(locale, "tour.hero.cta.reserve");
   const heroGalleryCta = translate(locale, "tour.hero.cta.gallery");
+ = translate(locale, "tour.hero.cta.gallery");
 
   const heroNavTabs: { labelKey: TranslationKey; href: string }[] = [
     { labelKey: "tour.nav.overview", href: "#overview" },
@@ -448,14 +388,18 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const languagesDetail = languages.length
     ? translate(locale, "tour.quickInfo.languages.detailAvailable", { count: languages.length })
     : translate(locale, "tour.quickInfo.languages.detailPending");
+  const reviewBreakdown = buildReviewBreakdown(approvedReviews).map((item) => ({
+    labelKey: `tour.reviews.breakdown.${item.rating}` as TranslationKey,
+    percent: item.percent
+  }));
+  const reviewHighlights = approvedReviews.map((review) => ({
+    id: review.id,
+    name: review.customerName,
+    date: new Date(review.createdAt).toLocaleDateString("es-ES"),
+    quote: review.body,
+    rating: review.rating
+  }));
 
-  const keywordPool = Array.from(new Set([...highlights, ...includes, ...excludes, ...categories])).filter(Boolean);
-  const reviewHighlights = buildReviewHighlights(
-    locale,
-    keywordPool,
-    localizedTitle,
-    tour.location ?? languagesValue
-  );
 
   const quickInfo = [
     {
@@ -519,7 +463,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     detailReviewCount > 0
       ? {
           "@type": "AggregateRating",
-          ratingValue: 4.9,
+          ratingValue: Number(ratingValue.toFixed(1)),
           reviewCount: detailReviewCount,
           bestRating: "5"
         }
@@ -667,7 +611,9 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{heroRatingLabel}</p>
                   <div className="flex items-center gap-2">
                     <span aria-hidden className="text-2xl text-indigo-600">★</span>
-                    <p className="text-xl font-black">{detailReviewLabel}</p>
+                  <p className="text-xl font-black">
+                    {detailReviewCount ? ratingValue.toFixed(1) : "—"}
+                  </p>
                   </div>
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{heroReviewsLabel}</p>
                 </div>
@@ -881,46 +827,60 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
             <div className="grid gap-6 lg:grid-cols-[1.2fr,1fr]">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <p className="text-4xl font-semibold text-slate-900">4.9</p>
+                  <p className="text-4xl font-semibold text-slate-900">
+                    {detailReviewCount ? ratingValue.toFixed(1) : "—"}
+                  </p>
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
                     {translate(locale, "tour.section.reviews.ratingOutOf")}
                   </p>
                 </div>
-                <div className="space-y-3 text-sm text-slate-700">
-                {reviewBreakdown.map((item) => (
-                    <div key={item.labelKey} className="flex items-center gap-3">
-                      <span className="w-24 text-xs text-slate-500">{translate(locale, item.labelKey)}</span>
-                      <div className="relative flex-1 overflow-hidden rounded-full bg-slate-100">
-                        <span
-                          className="block h-2 rounded-full bg-emerald-500"
-                          style={{ width: `${item.percent}%` }}
-                        />
+                {detailReviewCount ? (
+                  <div className="space-y-3 text-sm text-slate-700">
+                    {reviewBreakdown.map((item) => (
+                      <div key={item.labelKey} className="flex items-center gap-3">
+                        <span className="w-24 text-xs text-slate-500">{translate(locale, item.labelKey)}</span>
+                        <div className="relative flex-1 overflow-hidden rounded-full bg-slate-100">
+                          <span
+                            className="block h-2 rounded-full bg-emerald-500"
+                            style={{ width: `${item.percent}%` }}
+                          />
+                        </div>
+                        <span className="ml-2 text-xs font-semibold text-slate-500">{item.percent}%</span>
                       </div>
-                      <span className="ml-2 text-xs font-semibold text-slate-500">{item.percent}%</span>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">{translate(locale, "tour.section.reviews.empty")}</p>
+                )}
               </div>
               <div className="space-y-4">
-                {reviewHighlights.map((review) => (
-                  <div key={review.name} className="rounded-[16px] border border-[#F1F5F9] bg-white p-4 shadow">
-                    <div className="flex items-center gap-3">
-                      <Image
-                        src={review.avatar}
-                        alt={review.name}
-                        width={48}
-                        height={48}
-                        className="h-12 w-12 rounded-full object-cover"
-                      />
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">{review.name}</p>
-                        <p className="text-xs text-slate-500">{review.date}</p>
+                {reviewHighlights.length ? (
+                  reviewHighlights.map((review) => (
+                    <div key={review.id} className="rounded-[16px] border border-[#F1F5F9] bg-white p-4 shadow">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-sm font-bold text-indigo-600">
+                          {review.name
+                            .split(" ")
+                            .map((chunk) => chunk[0])
+                            .slice(0, 2)
+                            .join("")
+                            .toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">{review.name}</p>
+                          <p className="text-xs text-slate-500">{review.date}</p>
+                        </div>
                       </div>
+                      <p className="mt-2 text-sm text-slate-700">{review.quote}</p>
                     </div>
-                    <p className="mt-2 text-sm text-slate-700">{review.quote}</p>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-500">{translate(locale, "tour.section.reviews.empty")}</p>
+                )}
               </div>
+            </div>
+            <div className="mt-6">
+              <TourReviewForm tourId={tour.id} locale={locale} />
             </div>
           </section>
 
