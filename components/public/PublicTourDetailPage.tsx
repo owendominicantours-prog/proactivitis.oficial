@@ -56,6 +56,11 @@ const parseGallery = (gallery?: string | null) => {
   }
 };
 
+const resolveTourHeroImage = (tour: { heroImage?: string | null; gallery?: string | null }) => {
+  const gallery = parseGallery(tour.gallery);
+  return tour.heroImage ?? gallery[0] ?? DEFAULT_TOUR_IMAGE;
+};
+
 type CanonicalDurationUnit = "minute" | "hour" | "day" | "week" | "month";
 
 const DURATION_UNIT_SYNONYMS = new Map<string, CanonicalDurationUnit>([
