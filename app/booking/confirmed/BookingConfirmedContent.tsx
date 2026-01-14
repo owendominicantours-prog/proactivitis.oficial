@@ -110,6 +110,12 @@ export function BookingConfirmedContent({
               >
                 {t("booking.confirmation.buttons.whatsapp")}
               </a>
+              <Link
+                href={`/tours/${tour.slug}#reviews`}
+                className="inline-flex items-center justify-center rounded-full border border-indigo-200 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-indigo-600 transition hover:bg-indigo-50"
+              >
+                {t("booking.confirmation.buttons.leaveReview")}
+              </Link>
             </div>
             <p className="mt-4 text-sm text-slate-600">
               {heroNote}
