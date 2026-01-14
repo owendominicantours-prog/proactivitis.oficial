@@ -1,4 +1,4 @@
-﻿CREATE TABLE "TourReview" (
+CREATE TABLE "TourReview" (
     "id" TEXT NOT NULL,
     "tourId" TEXT NOT NULL,
     "bookingId" TEXT NOT NULL,
