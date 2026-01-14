@@ -33,14 +33,16 @@ export async function POST(
   }
 
   const sessionUser = session.user as { id?: string; name?: string; email?: string } | null;
+  const orFilters = [
+    sessionUser?.id ? { userId: sessionUser.id } : null,
+    sessionUser?.email ? { customerEmail: sessionUser.email } : null
+  ].filter(Boolean) as { userId?: string; customerEmail?: string }[];
+
   const booking = await prisma.booking.findFirst({
     where: {
       tourId,
       status: "CONFIRMED",
-      OR: [
-        sessionUser?.id ? { userId: sessionUser.id } : undefined,
-        sessionUser?.email ? { customerEmail: sessionUser.email } : undefined
-      ].filter(Boolean) as Record<string, string>[]
+      OR: orFilters
     },
     orderBy: { createdAt: "desc" }
   });
