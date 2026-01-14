@@ -143,6 +143,14 @@ export default async function CustomerPublicReservationsPage() {
                 >
                   Ver tour
                 </Link>
+                {booking.Tour?.slug && (
+                  <Link
+                    href={`/tours/${booking.Tour.slug}#reviews`}
+                    className="rounded-full border border-indigo-200 px-3 py-2 text-indigo-600"
+                  >
+                    Dejar reseña
+                  </Link>
+                )}
               </div>
 
               <div className="mt-6">
