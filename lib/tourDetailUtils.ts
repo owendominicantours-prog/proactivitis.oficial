@@ -26,6 +26,13 @@ const resolveTourHeroImage = (tour: TourImageSource) => {
 const MAX_TITLE_LENGTH = 55;
 const MAX_DESCRIPTION_LENGTH = 160;
 const BRAND_SUFFIX = " | Proactivitis";
+const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
+  "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana": {
+    es: "Vive el avistamiento de ballenas jorobadas en Samaná. Incluye excursión a la Cascada El Limón, almuerzo típico y relax en Cayo Levantado desde Punta Cana. ¡Reserva tu aventura 3-en-1 aquí!",
+    en: "Experience humpback whale watching in Samana. Includes the El Limon Waterfall excursion, a typical lunch, and relax in Cayo Levantado from Punta Cana. Book your 3-in-1 adventure here!",
+    fr: "Vivez l'observation des baleines à bosse à Samaná. Inclut l'excursion à la cascade El Limón, un déjeuner typique et détente à Cayo Levantado depuis Punta Cana. Réservez votre aventure 3-en-1 ici !"
+  }
+};
 
 const buildSeoTitle = (baseTitle: string) => {
   const trimmed = baseTitle.trim();
@@ -113,6 +120,7 @@ export async function generateTourMetadata(
   const translation = tour.translations?.[0];
   const resolvedTitle = translation?.title ?? tour.title;
   const resolvedDescription =
+    META_DESCRIPTION_OVERRIDES[slug]?.[locale] ??
     translation?.shortDescription ??
     translation?.description ??
     tour.shortDescription ??

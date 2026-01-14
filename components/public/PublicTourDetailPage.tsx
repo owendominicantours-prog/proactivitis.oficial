@@ -543,7 +543,41 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       priceCurrency: "USD",
       priceValidUntil,
       availability: "https://schema.org/InStock",
-      seller: PROACTIVITIS_LOCALBUSINESS
+      seller: PROACTIVITIS_LOCALBUSINESS,
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: "0",
+          currency: "USD"
+        },
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "DO"
+        },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 0,
+            unitCode: "DAY"
+          },
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 0,
+            unitCode: "DAY"
+          }
+        }
+      },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 1,
+        returnFees: "https://schema.org/FreeReturn",
+        applicableCountry: "DO"
+      }
     },
     sameAs: SAME_AS_URLS,
     ...(aggregateRating ? { aggregateRating } : {})
