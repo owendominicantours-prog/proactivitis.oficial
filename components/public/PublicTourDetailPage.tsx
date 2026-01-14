@@ -512,17 +512,6 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     : `${PROACTIVITIS_URL}/fototours/fotosimple.jpg`;
   const tourUrl = `${PROACTIVITIS_URL}/tours/${tour.slug}`;
   const priceValidUntil = getPriceValidUntil();
-  const itineraryList = hasVisualTimeline
-    ? visualTimeline.map((stop, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      item: {
-        "@type": "TouristAttraction",
-        name: stop.title,
-        description: stop.description ?? stop.title
-      }
-    }))
-    : [];
   const touristTypeFallback = categories.find((category) =>
     ["Family", "Adventure", "Couples"].includes(category)
   );
@@ -537,28 +526,24 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       : undefined;
   const tourSchema = {
     "@context": "https://schema.org",
-    "@type": "TouristTrip",
+    "@type": "Product",
     name: localizedTitle,
     description: localizedDescription ?? shortTeaser,
     image: [heroImageAbsolute],
     url: tourUrl,
-    provider: PROACTIVITIS_LOCALBUSINESS,
-    touristType: touristTypeFallback ?? "Adventure",
-    ...(itineraryList.length
-      ? {
-          itinerary: {
-            "@type": "ItemList",
-            itemListElement: itineraryList
-          }
-        }
-      : {}),
+    brand: {
+      "@type": "Brand",
+      name: "Proactivitis"
+    },
+    category: touristTypeFallback ?? "Tour",
     offers: {
       "@type": "Offer",
       url: tourUrl,
       price: tour.price,
       priceCurrency: "USD",
       priceValidUntil,
-      availability: "https://schema.org/InStock"
+      availability: "https://schema.org/InStock",
+      seller: PROACTIVITIS_LOCALBUSINESS
     },
     sameAs: SAME_AS_URLS,
     ...(aggregateRating ? { aggregateRating } : {})
