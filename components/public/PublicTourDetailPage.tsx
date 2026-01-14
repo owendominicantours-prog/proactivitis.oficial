@@ -16,6 +16,8 @@ import TourGalleryCollage from "@/components/tours/TourGalleryCollage";
 import TourReviewForm from "@/components/public/TourReviewForm";
 import { Locale, translate, type TranslationKey } from "@/lib/translations";
 
+const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
+
 export type TourDetailSearchParams = {
   hotelSlug?: string;
   bookingCode?: string;
