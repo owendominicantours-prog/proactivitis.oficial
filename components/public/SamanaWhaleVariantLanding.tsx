@@ -226,7 +226,7 @@ export default function SamanaWhaleVariantLanding({
         </div>
 
         <aside className="space-y-6">
-          <CountdownUrgency locale={locale} />
+          <CountdownUrgency spots={18} />
           <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
               {t("tour.landing.booking")}
