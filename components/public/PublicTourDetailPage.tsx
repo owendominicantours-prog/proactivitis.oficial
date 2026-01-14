@@ -339,7 +339,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const translations = await fetchTourTranslations(tour.id);
 
   // --- Lógica de datos ---
-  const gallery = (tour.gallery ? JSON.parse(tour.gallery as string) : [tour.heroImage ?? "/fototours/fotosimple.jpg"]) as string[];
+  const rawGallery = parseGallery(tour.gallery);
   const rawHighlights = parseJsonArray<string>(tour.highlights);
   const includesFromString = tour.includes ? tour.includes.split(";").map((i) => i.trim()).filter(Boolean) : [];
   const includesList = parseJsonArray<string>(tour.includesList);
@@ -361,7 +361,8 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const displayTime = timeSlots.length ? formatTimeSlot(timeSlots[0]) : "09:00 AM";
   const parsedAdminItinerary = parseAdminItinerary(tour.adminNote ?? "");
   const itinerarySource = parsedAdminItinerary.length ? parsedAdminItinerary : parseItinerary(tour.adminNote ?? "");
-  const heroImage = tour.heroImage ?? gallery[0];
+  const heroImage = resolveTourHeroImage(tour);
+  const gallery = [heroImage, ...rawGallery.filter((img) => img && img !== heroImage)];
   const translation = translations.find((entry) => entry.locale === locale);
   const translationIncludes = (translation?.includesList as string[] | undefined) ?? [];
   const translationNotIncluded = (translation?.notIncludedList as string[] | undefined) ?? [];

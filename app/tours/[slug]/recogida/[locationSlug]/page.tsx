@@ -294,7 +294,7 @@ export async function TourHotelLanding({
     ? (translation?.itineraryStops as ItineraryStop[])
     : [];
 
-  const gallery = (tour.gallery ? JSON.parse(tour.gallery as string) : [tour.heroImage ?? "/fototours/fotosimple.jpg"]) as string[];
+  const rawGallery = parseJsonArray<string>(tour.gallery);
   const includesList =
     locale !== "es" && translatedIncludes.length
       ? translatedIncludes
@@ -330,7 +330,8 @@ export async function TourHotelLanding({
       : itinerarySource.length
         ? itinerarySource
         : buildItineraryMock(t);
-  const heroImage = tour.heroImage ?? gallery[0];
+  const heroImage = tour.heroImage ?? rawGallery[0] ?? "/fototours/fotosimple.jpg";
+  const gallery = [heroImage, ...rawGallery.filter((img) => img && img !== heroImage)];
   const shortTeaser =
     localizedShortDescription && localizedShortDescription.length > 220
       ? `${localizedShortDescription.slice(0, 220).trim()}…`
