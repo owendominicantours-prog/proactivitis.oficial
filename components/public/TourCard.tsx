@@ -47,6 +47,7 @@ export function TourCard({
   location,
   price,
   rating,
+  reviewCount,
   image,
   tags,
   description,
