@@ -60,6 +60,7 @@ export const buildCustomerEticketEmail = ({
   const isTransfer = booking.flowType === "transfer";
   const flightInfo = booking.flightNumber ? `Vuelo ${booking.flightNumber}` : "Vuelo pendiente";
   const airportLabel = booking.originAirport ? booking.originAirport : "Aeropuerto por confirmar";
+  const reviewUrl = `${baseUrl}/tours/${tour.slug}#reviews`;
   return `
     <div style="font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#ecf2ff;padding:32px;">
       <div style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:30px;overflow:hidden;box-shadow:0 30px 90px rgba(2,6,23,0.15);">
@@ -122,6 +123,9 @@ export const buildCustomerEticketEmail = ({
             <p style="margin:0;font-size:12px;color:#64748b;">Tu guía verificará el código QR cuando llegues.</p>
             <a href="${ticketUrl}" style="display:inline-flex;margin-top:12px;padding:12px 24px;border-radius:12px;background:#0f172a;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:0.3em;text-decoration:none;">
               Ver mi e-ticket
+            </a>
+            <a href="${reviewUrl}" style="display:inline-flex;margin-top:12px;margin-left:8px;padding:12px 24px;border-radius:12px;background:#4f46e5;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:0.3em;text-decoration:none;">
+              Dejar rese?a
             </a>
           </div>
     <p style="margin-top:24px;font-size:14px;color:#475569;">
