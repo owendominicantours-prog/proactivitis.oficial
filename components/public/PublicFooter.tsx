@@ -5,6 +5,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 
 import { Locale } from "@/lib/translations";
+import { TrustBadges } from "@/components/shared/TrustBadges";
 
 type FooterSectionKey = "support" | "company" | "collaborate" | "legal";
 
@@ -148,6 +149,7 @@ export function PublicFooter() {
             )}
           </div>
         ))}
+        <TrustBadges locale={locale} compact className="rounded-2xl border border-white/10 bg-slate-900/80 p-4" />
         <div className="space-y-2 border-t border-white/10 pt-4 text-[0.65rem] uppercase tracking-[0.3em] text-gray-500">
           <p className="text-center font-semibold text-slate-100">{copy.tagline}</p>
           <p className="text-center">&copy; {new Date().getFullYear()} Proactivitis</p>
@@ -168,6 +170,7 @@ export function PublicFooter() {
               </div>
             ))}
           </div>
+          <TrustBadges locale={locale} compact className="mt-8" />
         </div>
 
         <div className="mx-auto max-w-6xl mt-6 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-gray-400 md:flex-row md:items-center md:justify-between">

@@ -46,6 +46,7 @@ import { recommendedReservation } from "@/lib/checkout";
 
 import Link from "next/link";
 import { useTranslation } from "../../context/LanguageProvider";
+import { TrustBadges } from "@/components/shared/TrustBadges";
 
 
 
@@ -435,7 +436,7 @@ const buildSummary = (params: CheckoutPageParams, transferDefaults: TransferDefa
 
 
 export default function CheckoutFlow({ initialParams }: { initialParams: CheckoutPageParams }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const transferDefaults = useMemo(
     () => ({
@@ -1078,6 +1079,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
             <h1 className="text-3xl font-semibold text-slate-900">{t("checkout.hero.title")}</h1>
 
             <p className="text-sm text-slate-600">{t("checkout.hero.description")}</p>
+            <TrustBadges locale={locale} compact className="pt-4" />
 
           </header>
 

@@ -3,6 +3,7 @@ import { logPrismaError, prisma } from "@/lib/prisma";
 import { buildTourFilter, TourSearchParams } from "@/lib/filterBuilder";
 import { TourFilters } from "@/components/public/TourFilters";
 import { DynamicImage } from "@/components/shared/DynamicImage";
+import { TrustBadges } from "@/components/shared/TrustBadges";
 import type { DurationOption } from "@/components/public/TourFilters";
 import type { Prisma } from "@prisma/client";
 import { Locale, translate, type TranslationKey } from "@/lib/translations";
@@ -286,6 +287,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
               {t("tours.header.title")}
             </h1>
             <p className="text-base text-slate-600">{t("tours.header.description")}</p>
+            <TrustBadges locale={locale} compact className="pt-2" />
           </div>
         </div>
       </section>
