@@ -625,10 +625,17 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{heroRatingLabel}</p>
                   <div className="flex items-center gap-2">
-                    <span aria-hidden className="text-2xl text-indigo-600">★</span>
-                  <p className="text-xl font-black">
-                    {detailReviewCount ? ratingValue.toFixed(1) : "—"}
-                  </p>
+                    <svg
+                      aria-hidden
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5 text-amber-500"
+                      fill="currentColor"
+                    >
+                      <path d="M12 3.5l2.7 5.48 6.05.88-4.38 4.27 1.03 6.03L12 17.9l-5.4 2.84 1.03-6.03-4.38-4.27 6.05-.88L12 3.5z" />
+                    </svg>
+                    <p className="text-xl font-black">
+                      {detailReviewCount ? ratingValue.toFixed(1) : "—"}
+                    </p>
                   </div>
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{heroReviewsLabel}</p>
                 </div>

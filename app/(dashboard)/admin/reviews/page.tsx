@@ -38,7 +38,9 @@ export default async function AdminReviewsPage() {
                   <Link href={`/tours/${review.Tour.slug}`} className="text-lg font-semibold text-slate-900">
                     {review.Tour.title}
                   </Link>
-                  <p className="mt-1 text-xs text-slate-500">Reserva: {review.bookingId}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Reserva: {review.bookingId ?? "Sin reserva"}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Calificación</p>

@@ -582,7 +582,7 @@ model Tour {
 model TourReview {
   id            String   @id @default(cuid())
   tourId        String
-  bookingId     String   @unique
+  bookingId     String?
   userId        String?
   customerName  String
   customerEmail String
@@ -594,7 +594,7 @@ model TourReview {
   approvedAt    DateTime?
 
   Tour     Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
-  Booking  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  Booking  Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
   User     User?    @relation(fields: [userId], references: [id])
 
   @@index([tourId])

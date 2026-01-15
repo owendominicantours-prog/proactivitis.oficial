@@ -72,11 +72,21 @@ export default function TourReviewForm({ tourId, locale }: Props) {
               type="button"
               key={value}
               onClick={() => setRating(value)}
-              className={`h-10 w-10 rounded-full border text-sm font-semibold ${
-                rating >= value ? "border-amber-400 bg-amber-50 text-amber-700" : "border-slate-200 text-slate-400"
+              className={`grid h-10 w-10 place-items-center rounded-full border ${
+                rating >= value ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-white"
               }`}
+              aria-label={`Rating ${value}`}
             >
-              ★
+              <svg
+                aria-hidden
+                viewBox="0 0 24 24"
+                className={`h-5 w-5 ${rating >= value ? "text-amber-500" : "text-slate-300"}`}
+                fill={rating >= value ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path d="M12 3.5l2.7 5.48 6.05.88-4.38 4.27 1.03 6.03L12 17.9l-5.4 2.84 1.03-6.03-4.38-4.27 6.05-.88L12 3.5z" />
+              </svg>
             </button>
           ))}
         </div>

@@ -38,21 +38,11 @@ export async function POST(
     sessionUser?.email ? { customerEmail: sessionUser.email } : null
   ].filter(Boolean) as { userId?: string; customerEmail?: string }[];
 
-  const booking = await prisma.booking.findFirst({
+  const existing = await prisma.tourReview.findFirst({
     where: {
       tourId,
-      status: "CONFIRMED",
       OR: orFilters
-    },
-    orderBy: { createdAt: "desc" }
-  });
-
-  if (!booking) {
-    return NextResponse.json({ message: "Booking required" }, { status: 403 });
-  }
-
-  const existing = await prisma.tourReview.findUnique({
-    where: { bookingId: booking.id }
+    }
   });
   if (existing) {
     return NextResponse.json({ message: "Review already submitted" }, { status: 409 });
@@ -61,10 +51,9 @@ export async function POST(
   await prisma.tourReview.create({
     data: {
       tourId,
-      bookingId: booking.id,
       userId: sessionUser?.id ?? null,
-      customerName: sessionUser?.name ?? booking.customerName,
-      customerEmail: sessionUser?.email ?? booking.customerEmail,
+      customerName: sessionUser?.name ?? sessionUser?.email?.split("@")[0] ?? "Cliente Proactivitis",
+      customerEmail: sessionUser?.email ?? "",
       rating,
       title,
       body: reviewBody,
