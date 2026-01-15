@@ -92,7 +92,7 @@ model Booking {
   paymentBrand          String?        @map("payment_brand")
   paymentLast4          String?        @map("payment_last4")
   paymentMethod         String?        @map("payment_method")
-  TourReview            TourReview?
+  TourReviews           TourReview[]
 }
 
 model Conversation {
@@ -598,6 +598,7 @@ model TourReview {
   User     User?    @relation(fields: [userId], references: [id])
 
   @@index([tourId])
+  @@index([bookingId])
   @@index([status])
 }
 
