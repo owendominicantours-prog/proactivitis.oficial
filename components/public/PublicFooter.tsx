@@ -127,7 +127,7 @@ export function PublicFooter() {
   }));
 
   return (
-    <footer className="border-t border-slate-900 bg-slate-950 px-6 py-10 text-sm text-gray-200 font-[var(--font-open-sans)]">
+    <footer className="relative overflow-hidden border-t border-slate-900 bg-slate-950 px-6 py-10 text-sm text-gray-200 font-[var(--font-open-sans)]">
       <div className="mx-auto max-w-6xl space-y-6 px-0 text-gray-400 md:hidden">
         {groups.map((group) => (
           <div key={group.title} className="rounded-2xl border border-white/10 bg-slate-900/80">
