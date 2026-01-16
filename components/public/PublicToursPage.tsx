@@ -362,6 +362,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                 const languageFallback = t("tour.card.language.fallback");
                 const languageValue = tour.language?.trim() ? tour.language : languageFallback;
                 const reviewCount = reviewSummary[tour.id]?.count ?? 0;
+                const reviewAverage = reviewSummary[tour.id]?.average ?? 0;
                 const reviewsLabel = t("tour.hero.reviewsCount", { count: reviewCount });
 
                 return (
@@ -398,7 +399,15 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                         <span>
                           {languagesLabel}: {languageValue}
                         </span>
-                        <span>{reviewsLabel}</span>
+                        {reviewCount > 0 ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700">
+                            <span aria-hidden>★</span>
+                            {reviewAverage.toFixed(1)}
+                            <span className="text-slate-400">{reviewsLabel}</span>
+                          </span>
+                        ) : (
+                          <span>{reviewsLabel}</span>
+                        )}
                       </div>
                     </div>
                   </Link>
