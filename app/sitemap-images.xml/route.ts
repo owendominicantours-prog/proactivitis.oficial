@@ -27,13 +27,13 @@ export async function GET() {
   });
 
   const urls = tours
-    .map((tour) => {
+    .flatMap((tour) => {
       const hero = toAbsoluteUrl(tour.heroImage);
       const gallery = parseGallery(tour.gallery)
         .map((item) => toAbsoluteUrl(item))
         .filter(Boolean);
       const images = [hero, ...gallery].filter(Boolean).slice(0, 5);
-      if (!images.length) return "";
+      if (!images.length) return [];
       const imageTags = images
         .map(
           (imageUrl) => `
@@ -42,12 +42,18 @@ export async function GET() {
       </image:image>`
         )
         .join("");
-      return `
-    <url>
-      <loc>${PROACTIVITIS_URL}/tours/${tour.slug}</loc>${imageTags}
-    </url>`;
+      const basePath = `/tours/${tour.slug}`;
+      return ["", "/en", "/fr"].map((prefix) => ({
+        loc: `${PROACTIVITIS_URL}${prefix}${basePath}`,
+        imageTags
+      }));
     })
-    .filter(Boolean)
+    .map(
+      (entry) => `
+    <url>
+      <loc>${entry.loc}</loc>${entry.imageTags}
+    </url>`
+    )
     .join("");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
