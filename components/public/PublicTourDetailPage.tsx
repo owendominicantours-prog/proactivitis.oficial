@@ -486,6 +486,10 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       ? heroImage
       : `${PROACTIVITIS_URL}${heroImage}`
     : `${PROACTIVITIS_URL}/fototours/fotosimple.jpg`;
+  const galleryImagesAbsolute = gallery
+    .map((image) => (image.startsWith("http") ? image : `${PROACTIVITIS_URL}${image}`))
+    .filter((image) => image && image !== heroImageAbsolute);
+  const schemaImages = [heroImageAbsolute, ...galleryImagesAbsolute].slice(0, 5);
   const tourUrl = `${PROACTIVITIS_URL}/tours/${tour.slug}`;
   const priceValidUntil = getPriceValidUntil();
   const touristTypeFallback = categories.find((category) =>
@@ -505,7 +509,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     "@type": "Product",
     name: localizedTitle,
     description: localizedDescription ?? shortTeaser,
-    image: [heroImageAbsolute],
+    image: schemaImages,
     url: tourUrl,
     brand: {
       "@type": "Brand",

@@ -195,6 +195,10 @@ export async function generateTourMetadata(
   const title = buildSeoTitle(resolvedTitle);
   const description = trimDescription(resolvedDescription);
   const heroImage = toAbsoluteUrl(resolveTourHeroImage(tour));
+  const galleryImages = parseGallery(tour.gallery)
+    .map((image) => toAbsoluteUrl(image))
+    .filter((image) => image && image !== heroImage);
+  const ogImages = [heroImage, ...galleryImages].slice(0, 5);
   const heroImageType = heroImage.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg";
   const canonicalSlug = buildLanguageAlternates(slug)[locale];
   const canonicalUrl = `${PROACTIVITIS_URL}${canonicalSlug}`;
@@ -214,15 +218,13 @@ export async function generateTourMetadata(
       title,
       description,
       url: canonicalUrl,
-      images: [
-        {
-          url: heroImage,
-          width: 1200,
-          height: 630,
-          type: heroImageType,
-          alt: title
-        }
-      ],
+      images: ogImages.map((url, index) => ({
+        url,
+        width: 1200,
+        height: 630,
+        type: index === 0 ? heroImageType : undefined,
+        alt: title
+      })),
       siteName: "Proactivitis",
       type: "website"
     },
