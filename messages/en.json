@@ -525,6 +525,8 @@
   "tour.reviews.form.body": "Your review",
   "tour.reviews.form.error": "We couldn't submit your review.",
   "tour.reviews.form.headline": "Title (optional)",
+  "tour.reviews.form.guestEmail": "Email address",
+  "tour.reviews.form.guestName": "Name",
   "tour.reviews.form.linkError": "Links are not allowed in reviews.",
   "tour.reviews.form.login": "Log in to leave a review",
   "tour.reviews.form.rating": "Rating",

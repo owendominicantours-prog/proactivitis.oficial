@@ -1,19 +1,13 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const LINK_PATTERN = /(https?:\/\/|www\.)/i;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ tourId?: string }> }
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
   const { tourId } = await params;
   if (!tourId) {
     return NextResponse.json({ message: "Missing tour id" }, { status: 400 });
@@ -23,26 +17,27 @@ export async function POST(
   const rating = Number(body.rating ?? 0);
   const title = String(body.title ?? "").trim() || null;
   const reviewBody = String(body.body ?? "").trim();
+  const name = String(body.name ?? "").trim();
+  const email = String(body.email ?? "").trim().toLowerCase();
 
   if (!reviewBody || Number.isNaN(rating) || rating < 1 || rating > 5) {
     return NextResponse.json({ message: "Invalid review data" }, { status: 400 });
+  }
+
+  if (!email || !EMAIL_PATTERN.test(email)) {
+    return NextResponse.json({ message: "Email required" }, { status: 400 });
+  }
+
+  if (!name) {
+    return NextResponse.json({ message: "Name required" }, { status: 400 });
   }
 
   if (LINK_PATTERN.test(reviewBody) || (title && LINK_PATTERN.test(title))) {
     return NextResponse.json({ message: "Links are not allowed" }, { status: 400 });
   }
 
-  const sessionUser = session.user as { id?: string; name?: string; email?: string } | null;
-  const orFilters = [
-    sessionUser?.id ? { userId: sessionUser.id } : null,
-    sessionUser?.email ? { customerEmail: sessionUser.email } : null
-  ].filter(Boolean) as { userId?: string; customerEmail?: string }[];
-
   const existing = await prisma.tourReview.findFirst({
-    where: {
-      tourId,
-      OR: orFilters
-    }
+    where: { tourId, customerEmail: email }
   });
   if (existing) {
     return NextResponse.json({ message: "Review already submitted" }, { status: 409 });
@@ -51,9 +46,9 @@ export async function POST(
   await prisma.tourReview.create({
     data: {
       tourId,
-      userId: sessionUser?.id ?? null,
-      customerName: sessionUser?.name ?? sessionUser?.email?.split("@")[0] ?? "Cliente Proactivitis",
-      customerEmail: sessionUser?.email ?? "",
+      userId: null,
+      customerName: name,
+      customerEmail: email,
       rating,
       title,
       body: reviewBody,

@@ -525,6 +525,8 @@
   "tour.reviews.form.body": "Tu reseña",
   "tour.reviews.form.error": "No pudimos enviar la reseña.",
   "tour.reviews.form.headline": "Título (opcional)",
+  "tour.reviews.form.guestEmail": "Correo electrónico",
+  "tour.reviews.form.guestName": "Nombre",
   "tour.reviews.form.linkError": "No se permiten enlaces en la reseña.",
   "tour.reviews.form.login": "Inicia sesión para dejar una reseña",
   "tour.reviews.form.rating": "Calificación",
