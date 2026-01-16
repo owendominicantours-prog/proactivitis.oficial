@@ -11,6 +11,7 @@ export type ApprovedTourReview = {
   rating: number;
   title: string | null;
   body: string;
+  locale: string;
   createdAt: Date;
 };
 
@@ -25,6 +26,7 @@ export const getApprovedTourReviews = async (tourId: string, limit = 6) => {
       rating: true,
       title: true,
       body: true,
+      locale: true,
       createdAt: true
     }
   });

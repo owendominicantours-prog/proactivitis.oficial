@@ -19,6 +19,8 @@ export async function POST(
   const reviewBody = String(body.body ?? "").trim();
   const name = String(body.name ?? "").trim();
   const email = String(body.email ?? "").trim().toLowerCase();
+  const rawLocale = String(body.locale ?? "").trim().toLowerCase();
+  const locale = rawLocale === "en" || rawLocale === "fr" ? rawLocale : "es";
 
   if (!reviewBody || Number.isNaN(rating) || rating < 1 || rating > 5) {
     return NextResponse.json({ message: "Invalid review data" }, { status: 400 });
@@ -49,6 +51,7 @@ export async function POST(
       userId: null,
       customerName: name,
       customerEmail: email,
+      locale,
       rating,
       title,
       body: reviewBody,

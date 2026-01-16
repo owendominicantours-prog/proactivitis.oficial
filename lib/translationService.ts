@@ -1,14 +1,14 @@
 const TRANSLATION_URL = process.env.TRANSLATION_API_URL;
 
-async function translateViaApi(text: string, target: string) {
-  if (!text) return text;
+async function translateViaApi(text: string, target: string, source: string) {
+  if (!text || (target === source && source !== "auto")) return text;
   if (TRANSLATION_URL) {
     const response = await fetch(TRANSLATION_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         q: text,
-        source: "es",
+        source,
         target
       })
     });
@@ -21,7 +21,7 @@ async function translateViaApi(text: string, target: string) {
 
   const params = new URLSearchParams({
     client: "gtx",
-    sl: "es",
+    sl: source,
     tl: target,
     dt: "t",
     q: text
@@ -36,11 +36,11 @@ async function translateViaApi(text: string, target: string) {
   return segments.map((segment: unknown[]) => segment[0]).join("");
 }
 
-export async function translateText(text: string, target: string) {
+export async function translateText(text: string, target: string, source = "es") {
   if (!text) return text;
-  return translateViaApi(text, target);
+  return translateViaApi(text, target, source);
 }
 
-export async function translateEntries(items: string[], target: string) {
-  return Promise.all(items.map((item) => translateText(item, target)));
+export async function translateEntries(items: string[], target: string, source = "es") {
+  return Promise.all(items.map((item) => translateText(item, target, source)));
 }

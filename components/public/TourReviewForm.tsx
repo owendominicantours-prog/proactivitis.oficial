@@ -43,7 +43,8 @@ export default function TourReviewForm({ tourId, locale }: Props) {
           title,
           body,
           name: guestName,
-          email: guestEmail
+          email: guestEmail,
+          locale
         })
       });
       if (!response.ok) {

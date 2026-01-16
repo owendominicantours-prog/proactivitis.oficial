@@ -15,6 +15,7 @@ import GalleryLightbox from "@/components/shared/GalleryLightbox";
 import TourGalleryCollage from "@/components/tours/TourGalleryCollage";
 import TourReviewForm from "@/components/public/TourReviewForm";
 import { Locale, translate, type TranslationKey } from "@/lib/translations";
+import { translateText } from "@/lib/translationService";
 
 const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
 
@@ -375,6 +376,22 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const faqList = buildTourFaq(locale, localizedTitle, durationLabel, displayTime, priceLabel);
 
   const approvedReviews = await getApprovedTourReviews(tour.id);
+  const reviewLocale =
+    locale === "en" ? "en-US" : locale === "fr" ? "fr-FR" : "es-ES";
+  const translatedReviews = await Promise.all(
+    approvedReviews.map(async (review) => {
+      if (locale === review.locale) {
+        return review;
+      }
+      const sourceLocale =
+        review.locale === "en" || review.locale === "fr" ? review.locale : "auto";
+      const translatedTitle = review.title
+        ? await translateText(review.title, locale, sourceLocale)
+        : review.title;
+      const translatedBody = await translateText(review.body, locale, sourceLocale);
+      return { ...review, title: translatedTitle, body: translatedBody };
+    })
+  );
   const reviewSummaryData = await getTourReviewSummary(tour.id);
   const detailReviewCount = reviewSummaryData.count;
   const ratingValue = reviewSummaryData.count > 0 ? reviewSummaryData.average : 0;
@@ -407,10 +424,10 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     labelKey: `tour.reviews.breakdown.${item.rating}` as TranslationKey,
     percent: item.percent
   }));
-  const reviewHighlights = approvedReviews.map((review) => ({
+  const reviewHighlights = translatedReviews.map((review) => ({
     id: review.id,
     name: review.customerName,
-    date: new Date(review.createdAt).toLocaleDateString("es-ES"),
+    date: new Date(review.createdAt).toLocaleDateString(reviewLocale),
     quote: review.body,
     rating: review.rating
   }));

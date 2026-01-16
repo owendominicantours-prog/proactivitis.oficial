@@ -586,6 +586,7 @@ model TourReview {
   userId        String?
   customerName  String
   customerEmail String
+  locale        String   @default("es")
   rating        Int
   title         String?
   body          String   @db.Text
