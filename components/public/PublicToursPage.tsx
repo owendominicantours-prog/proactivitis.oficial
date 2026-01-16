@@ -4,6 +4,7 @@ import { buildTourFilter, TourSearchParams } from "@/lib/filterBuilder";
 import { TourFilters } from "@/components/public/TourFilters";
 import { DynamicImage } from "@/components/shared/DynamicImage";
 import { TrustBadges } from "@/components/shared/TrustBadges";
+import { getTourReviewSummaryForTours } from "@/lib/tourReviews";
 import type { DurationOption } from "@/components/public/TourFilters";
 import type { Prisma } from "@prisma/client";
 import { Locale, translate, type TranslationKey } from "@/lib/translations";
@@ -274,6 +275,16 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
 
   const pluralSuffix = tours.length === 1 ? "" : "s";
   const resultsLabel = t("tours.results.count", { count: tours.length, plural: pluralSuffix });
+  const reviewSummary = await getTourReviewSummaryForTours(tours.map((tour) => tour.id));
+  const toursSorted = tours
+    .map((tour, index) => ({ tour, index }))
+    .sort((a, b) => {
+      const countA = reviewSummary[a.tour.id]?.count ?? 0;
+      const countB = reviewSummary[b.tour.id]?.count ?? 0;
+      if (countA !== countB) return countB - countA;
+      return a.index - b.index;
+    })
+    .map(({ tour }) => tour);
 
   return (
     <div className="bg-slate-50 pb-16">
@@ -341,7 +352,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
 
             <p className="text-xs text-slate-500">{resultsLabel}</p>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {tours.map((tour) => {
+              {toursSorted.map((tour) => {
                 const translation = tour.translations?.[0];
                 const localizedTitle = translation?.title ?? tour.title;
                 const tourPath = locale === "es" ? `/tours/${tour.slug}` : `/${locale}/tours/${tour.slug}`;
@@ -350,6 +361,8 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                 const languagesLabel = t("tour.card.language.label");
                 const languageFallback = t("tour.card.language.fallback");
                 const languageValue = tour.language?.trim() ? tour.language : languageFallback;
+                const reviewCount = reviewSummary[tour.id]?.count ?? 0;
+                const reviewsLabel = t("tour.hero.reviewsCount", { count: reviewCount });
 
                 return (
                   <Link
@@ -379,13 +392,14 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                             ${tour.price.toFixed(0)}
                           </span>
                         </span>
-                        <span className="text-xs text-slate-500">
-                          {formatDurationLabel(tour.duration, locale, t)}
-                        </span>
+                        <span className="text-xs text-slate-500">{formatDurationLabel(tour.duration, locale, t)}</span>
                       </div>
-                      <p className="text-xs text-slate-500">
-                        {languagesLabel}: {languageValue}
-                      </p>
+                      <div className="flex items-center justify-between text-xs text-slate-500">
+                        <span>
+                          {languagesLabel}: {languageValue}
+                        </span>
+                        <span>{reviewsLabel}</span>
+                      </div>
                     </div>
                   </Link>
                 );
