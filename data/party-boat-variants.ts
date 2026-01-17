@@ -737,6 +737,328 @@ export const PARTY_BOAT_VARIANTS: PartyBoatVariant[] = [
       en: ["Book the #1 Tour Now", "Limited spots"],
       fr: ["Reserver le tour #1", "Places limitees"]
     }
+  },
+  {
+    slug: "party-boat-punta-cana-guia-completa",
+    clusterId: "pilar",
+    titles: {
+      es: "Party Boat Punta Cana: guia completa para reservar hoy",
+      en: "Punta Cana party boat: complete booking guide",
+      fr: "Party Boat a Punta Cana : guide complet pour reserver"
+    },
+    heroSubtitles: {
+      es: "Todo lo que necesitas: horarios, pickup, open bar y snorkel en un solo plan.",
+      en: "Everything you need: schedule, pickup, open bar, and snorkel in one plan.",
+      fr: "Tout ce qu'il faut: horaires, pickup, open bar et snorkel en un seul plan."
+    },
+    metaDescriptions: {
+      es: "Guia completa del Party Boat en Punta Cana: que incluye, tiempos, pickup en hotel y como reservar directo.",
+      en: "Complete guide to the Punta Cana party boat: inclusions, timing, hotel pickup, and how to book direct.",
+      fr: "Guide complet du Party Boat a Punta Cana: inclusions, horaires, pickup hotel et reservation directe."
+    },
+    bodyBlocks: {
+      es: [
+        "Este party boat combina open bar, musica en vivo, snorkel y parada en la Natural Pool.",
+        "Incluye recogida en hotel confirmada tras reservar y regreso sin complicaciones.",
+        "Reserva directa con precio fijo, confirmacion rapida y soporte humano 24/7."
+      ],
+      en: [
+        "This party boat combines open bar, live music, snorkel, and a Natural Pool stop.",
+        "Hotel pickup is confirmed after booking with an easy return.",
+        "Book direct with fixed pricing, fast confirmation, and 24/7 human support."
+      ],
+      fr: [
+        "Ce party boat combine open bar, musique live, snorkel et arret a la Natural Pool.",
+        "Le pickup hotel est confirme apres reservation avec un retour simple.",
+        "Reservation directe avec prix fixe, confirmation rapide et support 24/7."
+      ]
+    },
+    faqs: {
+      es: [{ q: "Que incluye el Party Boat?", a: "Open bar, snorkel, Natural Pool y transporte desde el hotel." }],
+      en: [{ q: "What is included in the Party Boat?", a: "Open bar, snorkel, Natural Pool, and hotel transport." }],
+      fr: [{ q: "Que comprend le Party Boat?", a: "Open bar, snorkel, Natural Pool et transport hotel." }]
+    },
+    ctas: {
+      es: ["Reservar ahora", "Ver disponibilidad"],
+      en: ["Book now", "Check availability"],
+      fr: ["Reserver", "Voir disponibilite"]
+    }
+  },
+  {
+    slug: "party-boat-con-pickup-en-hotel-punta-cana",
+    clusterId: "logistica",
+    titles: {
+      es: "Party Boat con pick-up en hotel en Punta Cana",
+      en: "Party boat with hotel pickup in Punta Cana",
+      fr: "Party boat avec pickup hotel a Punta Cana"
+    },
+    heroSubtitles: {
+      es: "Pick-up confirmado en Bavaro, Cap Cana y Uvero Alto.",
+      en: "Confirmed pickup in Bavaro, Cap Cana, and Uvero Alto.",
+      fr: "Pickup confirme a Bavaro, Cap Cana et Uvero Alto."
+    },
+    metaDescriptions: {
+      es: "Pick-up en hotel confirmado para el Party Boat en Punta Cana. Transporte ida y vuelta, open bar y snorkel.",
+      en: "Hotel pickup confirmed for the Punta Cana party boat. Round-trip transport, open bar, and snorkel.",
+      fr: "Pickup hotel confirme pour le party boat a Punta Cana. Transport aller-retour, open bar et snorkel."
+    },
+    bodyBlocks: {
+      es: [
+        "Te buscamos en el lobby y te llevamos directo al check-in del catamaran.",
+        "Incluye transporte ida y vuelta, briefing y open bar durante la navegacion.",
+        "Recibes hora exacta y punto de encuentro por WhatsApp."
+      ],
+      en: [
+        "We pick you up at the lobby and take you straight to catamaran check-in.",
+        "Includes round-trip transport, briefing, and open bar during the cruise.",
+        "You receive the exact time and meeting point via WhatsApp."
+      ],
+      fr: [
+        "On te prend au lobby et on va direct au check-in du catamaran.",
+        "Transport aller-retour, briefing et open bar pendant la navigation.",
+        "Horaire exact et point de rendez-vous par WhatsApp."
+      ]
+    },
+    faqs: {
+      es: [{ q: "En que zonas hacen pick-up?", a: "Bavaro, Cap Cana, Uvero Alto y hoteles principales." }],
+      en: [{ q: "Which zones have pickup?", a: "Bavaro, Cap Cana, Uvero Alto, and main hotels." }],
+      fr: [{ q: "Quelles zones ont le pickup?", a: "Bavaro, Cap Cana, Uvero Alto et hotels principaux." }]
+    },
+    ctas: {
+      es: ["Confirmar pick-up", "Reservar"],
+      en: ["Confirm pickup", "Book"],
+      fr: ["Confirmer pickup", "Reserver"]
+    }
+  },
+  {
+    slug: "party-boat-adultos-only-vibe-sin-ninos-punta-cana",
+    clusterId: "nicho_exclusivo",
+    titles: {
+      es: "Party Boat adultos only en Punta Cana (sin ninos)",
+      en: "Adults-only party boat in Punta Cana (no kids)",
+      fr: "Party boat adults only a Punta Cana (sans enfants)"
+    },
+    heroSubtitles: {
+      es: "Ambiente adulto, musica fuerte y open bar real.",
+      en: "Adult vibe, loud music, and real open bar.",
+      fr: "Ambiance adulte, musique forte et open bar reel."
+    },
+    metaDescriptions: {
+      es: "Salida adults only: open bar, snorkel y fiesta sin ambiente familiar. Ideal para parejas y grupos.",
+      en: "Adults-only departure: open bar, snorkel, and party without family vibe. Ideal for couples and groups.",
+      fr: "Sortie adults only: open bar, snorkel et fete sans ambiance familiale. Ideal couples et groupes."
+    },
+    bodyBlocks: {
+      es: [
+        "Si buscas fiesta real sin ninos, esta es la salida indicada.",
+        "Barra libre, DJ y parada en la Natural Pool con fotos.",
+        "Publico 18+ con energia social y ambiente premium."
+      ],
+      en: [
+        "If you want real party without kids, this is the right departure.",
+        "Open bar, DJ, and Natural Pool stop for photos.",
+        "18+ crowd with social energy and a premium vibe."
+      ],
+      fr: [
+        "Si tu veux faire la fete sans enfants, c est la sortie ideale.",
+        "Open bar, DJ et arret Natural Pool pour photos.",
+        "Public 18+ avec energie sociale et ambiance premium."
+      ]
+    },
+    faqs: {
+      es: [{ q: "Es solo para adultos?", a: "Si, el ambiente esta pensado para mayores de edad." }],
+      en: [{ q: "Is it adults only?", a: "Yes, the vibe is designed for adults only." }],
+      fr: [{ q: "C est adults only?", a: "Oui, ambiance reservee aux adultes." }]
+    },
+    ctas: {
+      es: ["Reservar adultos only", "Ver cupos"],
+      en: ["Book adults only", "See spots"],
+      fr: ["Reserver adults only", "Voir places"]
+    }
+  },
+  {
+    slug: "party-boat-reserva-hoy-punta-cana",
+    clusterId: "urgencia_last_minute",
+    titles: {
+      es: "Party Boat en Punta Cana para hoy: reserva rapida",
+      en: "Punta Cana party boat for today: fast booking",
+      fr: "Party boat a Punta Cana pour aujourd'hui : reservation rapide"
+    },
+    heroSubtitles: {
+      es: "Cupos limitados y confirmacion en minutos.",
+      en: "Limited spots and confirmation in minutes.",
+      fr: "Places limitees et confirmation en minutes."
+    },
+    metaDescriptions: {
+      es: "Reserva el party boat hoy mismo con confirmacion rapida. Open bar, snorkel y pickup en hotel.",
+      en: "Book the party boat today with fast confirmation. Open bar, snorkel, and hotel pickup.",
+      fr: "Reserve le party boat aujourd'hui avec confirmation rapide. Open bar, snorkel et pickup hotel."
+    },
+    bodyBlocks: {
+      es: [
+        "Si quieres fiesta hoy, tenemos cupos last minute.",
+        "Confirmamos disponibilidad por WhatsApp en minutos.",
+        "Salida el mismo dia con pickup incluido."
+      ],
+      en: [
+        "If you want to party today, we have last-minute spots.",
+        "We confirm availability by WhatsApp in minutes.",
+        "Same-day departure with pickup included."
+      ],
+      fr: [
+        "Si tu veux faire la fete aujourd'hui, il y a des places last minute.",
+        "Disponibilite confirmee par WhatsApp en minutes.",
+        "Depart le jour meme avec pickup inclus."
+      ]
+    },
+    faqs: {
+      es: [{ q: "Hay disponibilidad hoy?", a: "Depende del cupo; confirmamos en tiempo real." }],
+      en: [{ q: "Is there availability today?", a: "Depends on spots; we confirm in real time." }],
+      fr: [{ q: "Disponibilite aujourd'hui?", a: "Selon les places, confirmation en temps reel." }]
+    },
+    ctas: {
+      es: ["Reservar hoy", "Cupo inmediato"],
+      en: ["Book today", "Instant spot"],
+      fr: ["Reserver aujourd'hui", "Place immediate"]
+    }
+  },
+  {
+    slug: "party-boat-despedida-soltera-punta-cana",
+    clusterId: "nicho_exclusivo",
+    titles: {
+      es: "Party Boat para despedida de soltera en Punta Cana",
+      en: "Punta Cana bachelorette party boat",
+      fr: "Party boat pour enterrement de vie de jeune fille a Punta Cana"
+    },
+    heroSubtitles: {
+      es: "Plan personalizado para grupos con musica y open bar.",
+      en: "Custom plan for groups with music and open bar.",
+      fr: "Plan personnalise pour groupes avec musique et open bar."
+    },
+    metaDescriptions: {
+      es: "Despedida de soltera en catamaran con open bar, snorkel y pickup. Reserva para grupos y celebra en el mar.",
+      en: "Bachelorette catamaran with open bar, snorkel, and pickup. Book for groups and celebrate at sea.",
+      fr: "EVJF en catamaran avec open bar, snorkel et pickup. Reservation pour groupes et fete en mer."
+    },
+    bodyBlocks: {
+      es: [
+        "Plan ideal para damas de honor y grupos grandes.",
+        "Opciones de decoracion y coordinacion previa con el equipo.",
+        "Pickup privado y regreso seguro al hotel."
+      ],
+      en: [
+        "Ideal plan for bridesmaids and large groups.",
+        "Decoration options and pre-coordination with the team.",
+        "Private pickup and safe return to the hotel."
+      ],
+      fr: [
+        "Plan ideal pour temoins et groupes.",
+        "Options de decoration et coordination avec l equipe.",
+        "Pickup prive et retour securise a l hotel."
+      ]
+    },
+    faqs: {
+      es: [{ q: "Se puede personalizar la salida?", a: "Si, coordinamos detalles especiales para el grupo." }],
+      en: [{ q: "Can the tour be customized?", a: "Yes, we coordinate special details for the group." }],
+      fr: [{ q: "Peut-on personnaliser la sortie?", a: "Oui, on coordonne des details speciaux pour le groupe." }]
+    },
+    ctas: {
+      es: ["Cotizar grupo", "Reservar ahora"],
+      en: ["Get group quote", "Book now"],
+      fr: ["Devis groupe", "Reserver"]
+    }
+  },
+  {
+    slug: "party-boat-vip-privado-punta-cana",
+    clusterId: "nicho_exclusivo",
+    titles: {
+      es: "Party Boat VIP privado en Punta Cana",
+      en: "Private VIP party boat in Punta Cana",
+      fr: "Party boat VIP prive a Punta Cana"
+    },
+    heroSubtitles: {
+      es: "Mas espacio, mejor servicio y grupo privado.",
+      en: "More space, better service, and a private group.",
+      fr: "Plus d'espace, meilleur service et groupe prive."
+    },
+    metaDescriptions: {
+      es: "Party Boat VIP privado con open bar premium, snorkel y pickup. Ideal para grupos que quieren exclusividad.",
+      en: "Private VIP party boat with premium open bar, snorkel, and pickup. Ideal for exclusive groups.",
+      fr: "Party boat VIP prive avec open bar premium, snorkel et pickup. Ideal pour groupes exclusifs."
+    },
+    bodyBlocks: {
+      es: [
+        "Experiencia premium con grupo privado y atencion personalizada.",
+        "Open bar con marcas seleccionadas y snack incluidos.",
+        "Coordinacion directa de horarios y punto de salida."
+      ],
+      en: [
+        "Premium experience with a private group and personalized attention.",
+        "Open bar with selected brands and snacks included.",
+        "Direct coordination of schedules and departure point."
+      ],
+      fr: [
+        "Experience premium avec groupe prive et attention personnalisee.",
+        "Open bar avec marques selectionnees et snacks inclus.",
+        "Coordination directe des horaires et point de depart."
+      ]
+    },
+    faqs: {
+      es: [{ q: "Que cambia en la version VIP?", a: "Mas espacio, atencion dedicada y opciones premium." }],
+      en: [{ q: "What changes in the VIP version?", a: "More space, dedicated attention, and premium options." }],
+      fr: [{ q: "Qu est-ce qui change en VIP?", a: "Plus d'espace, attention dediee et options premium." }]
+    },
+    ctas: {
+      es: ["Cotizar VIP", "Ver opciones"],
+      en: ["Get VIP quote", "See options"],
+      fr: ["Devis VIP", "Voir options"]
+    }
+  },
+  {
+    slug: "party-boat-open-bar-real-punta-cana",
+    clusterId: "seguridad_comparativa",
+    titles: {
+      es: "Party Boat con open bar real en Punta Cana",
+      en: "Punta Cana party boat with real open bar",
+      fr: "Party boat a Punta Cana avec open bar reel"
+    },
+    heroSubtitles: {
+      es: "Bebidas reales, sin sorpresas y con servicio continuo.",
+      en: "Real drinks, no surprises, continuous service.",
+      fr: "Boissons reelles, sans surprises, service continu."
+    },
+    metaDescriptions: {
+      es: "Open bar real con bebidas locales, cocteles y servicio continuo. Party boat con snorkel y Natural Pool.",
+      en: "Real open bar with local drinks, cocktails, and continuous service. Party boat with snorkel and Natural Pool.",
+      fr: "Open bar reel avec boissons locales, cocktails et service continu. Party boat avec snorkel et Natural Pool."
+    },
+    bodyBlocks: {
+      es: [
+        "Aqui el open bar es real: bebidas disponibles durante toda la salida.",
+        "Incluye snorkel y parada en la Natural Pool con tiempo para fotos.",
+        "Servicio claro, sin letras pequenas ni costos ocultos."
+      ],
+      en: [
+        "Here the open bar is real: drinks available throughout the trip.",
+        "Includes snorkel and a Natural Pool stop with time for photos.",
+        "Clear service, no fine print or hidden costs."
+      ],
+      fr: [
+        "Ici l open bar est reel: boissons disponibles toute la sortie.",
+        "Inclut snorkel et arret Natural Pool avec temps pour photos.",
+        "Service clair, pas de petites lignes ni frais caches."
+      ]
+    },
+    faqs: {
+      es: [{ q: "Que incluye el open bar?", a: "Ron local, cerveza, refrescos y cocteles basicos." }],
+      en: [{ q: "What is included in the open bar?", a: "Local rum, beer, soft drinks, and basic cocktails." }],
+      fr: [{ q: "Que comprend l open bar?", a: "Rhum local, biere, softs et cocktails basiques." }]
+    },
+    ctas: {
+      es: ["Ver open bar", "Reservar ahora"],
+      en: ["See open bar", "Book now"],
+      fr: ["Voir open bar", "Reserver"]
+    }
   }
 
 ];
