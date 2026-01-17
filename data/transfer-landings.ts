@@ -360,7 +360,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Bahia Principe Grand Punta Cana"),
     seoTitle: "Transfer privado PUJ a Bahia Principe Grand Punta Cana | Proactivitis",
     metaDescription: "Reserva traslado privado desde el aeropuerto de Punta Cana (PUJ) hasta Bahia Principe Grand Punta Cana con precio fijo, seguimiento de vuelo y asistencia con equipaje. Servicio puerta a puerta con soporte 24/7 y confirmacion inmediata.",
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Bahia Principe Grand Punta Cana con minibuses y confirmacion inmediata para grupos grandes.",
     keywords: [
       "PUJ Bahia Principe Grand transfer",
       "transfer privado Bahia Principe Grand",
@@ -391,7 +390,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Bahia Principe Luxury Ambar"),
     seoTitle: "Transfer privado PUJ a Bahia Principe Luxury Ambar | Proactivitis",
     metaDescription: "Reserva traslado privado desde el aeropuerto de Punta Cana (PUJ) hasta Bahia Principe Luxury Ambar con precio fijo, seguimiento de vuelo y asistencia con equipaje. Servicio puerta a puerta con soporte 24/7 y confirmacion inmediata.",
-      "Reserva tu traslado premium desde Punta Cana International Airport (PUJ) hasta Bahia Principe Luxury Ambar con vehiculo equipado y chofer bilingue.",
     keywords: ["Bahia Principe Luxury Ambar transfer", "PUJ Bahia Principe Luxury Ambar", "transfer premium Bahia Principe"],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-bahia-principe-luxury-ambar"
   },
@@ -416,7 +414,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Bahia Principe Luxury Esmeralda"),
     seoTitle: "Transfer privado PUJ a Bahia Principe Luxury Esmeralda | Proactivitis",
     metaDescription: "Reserva traslado privado desde el aeropuerto de Punta Cana (PUJ) hasta Bahia Principe Luxury Esmeralda con precio fijo, seguimiento de vuelo y asistencia con equipaje. Servicio puerta a puerta con soporte 24/7 y confirmacion inmediata.",
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Bahia Principe Luxury Esmeralda con chofer bilingue y atencion premium.",
     keywords: ["Bahia Principe Luxury Esmeralda transfer", "transfer PUJ Bahia Principe Luxury Esmeralda", "PUJ Bahia Principe Luxury transfer"],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-bahia-principe-luxury-esmeralda"
   }
@@ -462,7 +459,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Melia Caribe Beach Resort"),
     seoTitle: "Transfer privado PUJ a Melia Caribe Beach Resort | Proactivitis",
     metaDescription: "Reserva traslado privado desde el aeropuerto de Punta Cana (PUJ) hasta Melia Caribe Beach Resort con precio fijo, seguimiento de vuelo y asistencia con equipaje. Servicio puerta a puerta con soporte 24/7 y confirmacion inmediata.",
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Melia Caribe Beach Resort con vehiculos familiares y atencion personalizada.",
     keywords: [
       "PUJ Melia Caribe transfer",
       "transfer privado Melia Caribe",
@@ -494,7 +490,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Paradisus Palma Real Golf & Spa Resort"),
     seoTitle: "Transfer privado PUJ a Paradisus Palma Real | Proactivitis",
     metaDescription: "Reserva traslado privado desde el aeropuerto de Punta Cana (PUJ) hasta Paradisus Palma Real Golf & Spa Resort con precio fijo, seguimiento de vuelo y asistencia con equipaje. Servicio puerta a puerta con soporte 24/7 y confirmacion inmediata.",
-      "Reserva tu traslado privado desde Punta Cana International Airport (PUJ) hasta Paradisus Palma Real Golf & Spa Resort con chofer y vehiculo premium.",
     keywords: [
       "PUJ Paradisus Palma Real transfer",
       "transfer privado Paradisus Palma Real",
@@ -522,7 +517,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Paradisus Grand Cana"),
     seoTitle: "Transfer privado PUJ a Paradisus Grand Cana | Proactivitis",
     metaDescription: "Reserva traslado privado desde el aeropuerto de Punta Cana (PUJ) hasta Paradisus Grand Cana con precio fijo, seguimiento de vuelo y asistencia con equipaje. Servicio puerta a puerta con soporte 24/7 y confirmacion inmediata.",
-      "Traslado personalizado desde Punta Cana International Airport (PUJ) hasta Paradisus Grand Cana con chofer bilingue y soporte para bodas.",
     keywords: [
       "PUJ Paradisus Grand Cana transfer",
       "transfer privado Paradisus Grand Cana",
@@ -548,7 +542,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Bahia Principe Luxury Ambar"),
     seoTitle: "Transfer privado PUJ a Bahia Principe Luxury Ambar | Proactivitis",
     metaDescription: "Reserva traslado privado desde el aeropuerto de Punta Cana (PUJ) hasta Bahia Principe Luxury Ambar con precio fijo, seguimiento de vuelo y asistencia con equipaje. Servicio puerta a puerta con soporte 24/7 y confirmacion inmediata.",
-      "Reserva tu traslado premium desde Punta Cana International Airport (PUJ) hasta Bahia Principe Luxury Ambar con conductor bilingue y confirmacion inmediata.",
     keywords: ["Bahia Principe Luxury Ambar transfer", "PUJ Bahia Principe Luxury Ambar", "transfer premium Bahia Principe"],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-bahia-principe-ambar"
   },
@@ -569,7 +562,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Bahia Principe Grand Bavaro"),
     seoTitle: "Transfer privado PUJ a Bahia Principe Grand Bavaro | Proactivitis",
     metaDescription: "Reserva traslado privado desde el aeropuerto de Punta Cana (PUJ) hasta Bahia Principe Grand Bavaro con precio fijo, seguimiento de vuelo y asistencia con equipaje. Servicio puerta a puerta con soporte 24/7 y confirmacion inmediata.",
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Bahia Principe Grand Bavaro con minibuses y confirmacion inmediata para grupos grandes.",
     keywords: ["PUJ Bahia Principe Grand Bavaro transfer", "transfer privado Bahia Principe Grand", "Bahia Principe Grand Bavaro transfer"],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-bahia-principe-grand-bavaro"
   }
@@ -595,7 +587,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Dreams Macao Beach Punta Cana"),
     seoTitle: "Transfer privado PUJ a Dreams Macao Beach Punta Cana | Proactivitis",
     metaDescription: "Reserva traslado privado desde el aeropuerto de Punta Cana (PUJ) hasta Dreams Macao Beach Punta Cana con precio fijo, seguimiento de vuelo y asistencia con equipaje. Servicio puerta a puerta con soporte 24/7 y confirmacion inmediata.",
-      "Reserva tu traslado privado desde Punta Cana International Airport (PUJ) al Dreams Macao Beach Punta Cana con chofer bilingue, confirmacion inmediata y atencion 24/7.",
     keywords: [
       "PUJ Dreams Macao transfer",
       "transfer privado Dreams Macao",
@@ -1372,7 +1363,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Breathless Punta Cana Resort & Spa"),
     seoTitle: "Transfer privado PUJ a Breathless Punta Cana | Proactivitis",
     metaDescription: "Reserva traslado PUJ - Breathless Punta Cana Resort & Spa con vehiculo privado, asistencia con maletas y monitoreo de vuelo. Servicio confiable, puerta a puerta, soporte 24/7.",
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Breathless Punta Cana Resort & Spa con confirmacion inmediata, Wi-Fi y chofer bilingue.",
     keywords: [
       "breathless punta cana shuttle",
       "breathless punta cana airport transfer",
@@ -1399,7 +1389,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Catalonia Bavaro Beach Golf & Casino Resort"),
     seoTitle: "Transfer privado PUJ a Catalonia Bavaro | Proactivitis",
     metaDescription: "Reserva traslado PUJ - Catalonia Bavaro Beach Golf & Casino Resort con vehiculo privado, asistencia con maletas y monitoreo de vuelo. Servicio confiable, puerta a puerta, soporte 24/7.",
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Catalonia Bavaro Beach Golf & Casino Resort con confirmacion inmediata, Wi-Fi y chofer bilingue.",
     keywords: ["catalonia punta cana airport transfer", "PUJ Catalonia Bavaro transfer", "Catalonia Bavaro shuttle"],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-catalonia-bavaro"
   },
@@ -1420,7 +1409,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Dreams Onyx Resort & Spa"),
     seoTitle: "Transfer privado PUJ a Dreams Onyx | Proactivitis",
     metaDescription: "Reserva traslado PUJ - Dreams Onyx Resort & Spa con vehiculo privado, asistencia con maletas y monitoreo de vuelo. Servicio confiable, puerta a puerta, soporte 24/7.",
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Dreams Onyx Resort & Spa con confirmacion inmediata, Wi-Fi y chofer bilingue.",
     keywords: [
       "dreams onyx airport shuttle",
       "dreams onyx to airport",
@@ -1452,7 +1440,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Dreams Royal Beach Punta Cana"),
     seoTitle: "Transfer privado PUJ a Dreams Royal Beach | Proactivitis",
     metaDescription: "Reserva traslado PUJ - Dreams Royal Beach Punta Cana con vehiculo privado, asistencia con maletas y monitoreo de vuelo. Servicio confiable, puerta a puerta, soporte 24/7.",
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Dreams Royal Beach Punta Cana con confirmacion inmediata, Wi-Fi y chofer bilingue.",
     keywords: [
       "dreams royal beach punta cana airport transfer",
       "PUJ Dreams Royal Beach transfer",
@@ -1478,7 +1465,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Excellence Punta Cana"),
     seoTitle: "Transfer privado PUJ a Excellence Punta Cana | Proactivitis",
     metaDescription: "Reserva traslado PUJ - Excellence Punta Cana con vehiculo privado, asistencia con maletas y monitoreo de vuelo. Servicio confiable, puerta a puerta, soporte 24/7.",
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Excellence Punta Cana con confirmacion inmediata, Wi-Fi y chofer bilingue.",
     keywords: [
       "excellence punta cana airport transfer",
       "PUJ Excellence Punta Cana transfer",
@@ -1506,7 +1492,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Finest Punta Cana"),
     seoTitle: "Transfer privado PUJ a Finest Punta Cana | Proactivitis",
     metaDescription: "Reserva traslado PUJ - Finest Punta Cana con vehiculo privado, asistencia con maletas y monitoreo de vuelo. Servicio confiable, puerta a puerta, soporte 24/7.",
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Finest Punta Cana con confirmacion inmediata, Wi-Fi y chofer bilingue.",
     keywords: [
       "finest punta cana airport transfer",
       "PUJ Finest Punta Cana transfer",
@@ -1534,7 +1519,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Grand Bavaro Princess"),
     seoTitle: "Transfer privado PUJ a Grand Bavaro Princess | Proactivitis",
     metaDescription: "Traslado privado desde Punta Cana (PUJ) hasta Grand Bavaro Princess con chofer certificado, espera incluida y tarifa fija. Reserva rapida, sin intermediarios y con soporte 24/7.",
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Grand Bavaro Princess con confirmacion inmediata, Wi-Fi y chofer bilingue.",
     keywords: [
       "grand bavaro princess airport shuttle",
       "PUJ Grand Bavaro Princess transfer",
@@ -1560,7 +1544,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Grand Sirenis Punta Cana Resort"),
     seoTitle: "Transfer privado PUJ a Grand Sirenis Punta Cana | Proactivitis",
     metaDescription: "Traslado privado desde Punta Cana (PUJ) hasta Grand Sirenis Punta Cana Resort con chofer certificado, espera incluida y tarifa fija. Reserva rapida, sin intermediarios y con soporte 24/7.",
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Grand Sirenis Punta Cana Resort con confirmacion inmediata, Wi-Fi y chofer bilingue.",
     keywords: [
       "grand sirenis punta cana airport shuttle",
       "PUJ Grand Sirenis transfer",
@@ -1622,7 +1605,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Grand Palladium Punta Cana Resort & Spa"),
     seoTitle: "Transfer privado PUJ a Grand Palladium Punta Cana | Proactivitis",
     metaDescription: "Traslado privado desde Punta Cana (PUJ) hasta Grand Palladium Punta Cana Resort & Spa con chofer certificado, espera incluida y tarifa fija. Reserva rapida, sin intermediarios y con soporte 24/7.",
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Grand Palladium Punta Cana Resort & Spa con confirmacion inmediata, Wi-Fi y chofer bilingue.",
     keywords: [
       "grand palladium punta cana airport transfer",
       "how far is grand palladium punta cana from airport",
@@ -1647,7 +1629,6 @@ export const transferLandings: TransferLandingData[] = [
     faq: buildFaq("Iberostar Selection Bavaro Suites"),
     seoTitle: "Transfer privado PUJ a Iberostar Bavaro Suites | Proactivitis",
     metaDescription: "Traslado privado desde Punta Cana (PUJ) hasta Iberostar Selection Bavaro Suites con chofer certificado, espera incluida y tarifa fija. Reserva rapida, sin intermediarios y con soporte 24/7.",
-      "Traslado privado desde Punta Cana International Airport (PUJ) hasta Iberostar Selection Bavaro Suites con confirmacion inmediata, Wi-Fi y chofer bilingue.",
     keywords: ["punta cana airport to iberostar bavaro", "PUJ Iberostar Bavaro transfer", "Iberostar Bavaro shuttle"],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-iberostar-bavaro-suites"
   }

@@ -357,7 +357,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
     }))
   };
   const highlightHotelName = microZone?.name ?? destination?.name ?? country.name;
-  const durationMinutes = estimateDurationMinutes(microZone?.slug, destination?.slug);
+  const durationMinutes = estimateDurationMinutes(microZone?.slug ?? null, destination?.slug ?? null);
   const meetingDestinationName = destination?.name ?? country.name;
   const durationCopy = translate(LOCALE, "transfer.detail.duration", {
     hotel: highlightHotelName,
