@@ -1089,7 +1089,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     .map((image) => (image.startsWith("http") ? image : `${PROACTIVITIS_URL}${image}`))
     .filter((image) => image && image !== heroImageAbsolute);
   const schemaImages = [heroImageAbsolute, ...galleryImagesAbsolute].slice(0, 5);
-  const tourUrl = `${PROACTIVITIS_URL}/tours/${tour.slug}`;
+  const tourUrl = `${PROACTIVITIS_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`;
   const priceValidUntil = getPriceValidUntil();
   const touristTypeFallback = categories.find((category) =>
     ["Family", "Adventure", "Couples"].includes(category)
@@ -1127,10 +1127,12 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const tourSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
+    "@id": `${tourUrl}#product`,
     name: heroTitle,
     description: localizedDescription ?? shortTeaser,
     image: schemaImages,
     url: tourUrl,
+    mainEntityOfPage: tourUrl,
     brand: {
       "@type": "Brand",
       name: "Proactivitis"
