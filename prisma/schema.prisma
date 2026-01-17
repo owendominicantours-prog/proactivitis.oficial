@@ -603,6 +603,25 @@ model TourReview {
   @@index([status])
 }
 
+model TourVariant {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  type             String
+  tourSlug         String
+  titles           Json
+  heroSubtitles    Json
+  metaDescriptions Json
+  bodyBlocks       Json
+  faqs             Json
+  ctas             Json
+  status           String   @default("DRAFT")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([type])
+  @@index([status])
+}
+
 model TourTranslation {
   id             String                @id @default(cuid())
   tourId         String
