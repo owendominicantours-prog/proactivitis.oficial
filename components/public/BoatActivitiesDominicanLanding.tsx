@@ -286,7 +286,7 @@ export default async function BoatActivitiesDominicanLanding({ locale }: { local
                   {tour.duration && (
                     <p>
                       <span className="font-semibold text-slate-700">{copy.durationLabel}:</span>{" "}
-                      {locale === "es" ? tour.duration : cleanDurationLabel(tour.duration)}
+                      {resolveDurationLabel(tour.duration, locale)}
                     </p>
                   )}
                   {tour.pickupIncluded && (
