@@ -429,10 +429,12 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {landingPages.map((landing) => (
+          {landingPages.map((landing) => {
+            const landingPath = landing.path ?? `/landing/${landing.slug}`;
+            return (
             <Link
               key={landing.slug}
-              href={`https://proactivitis.com/landing/${landing.slug}`}
+              href={`https://proactivitis.com${landingPath}`}
               target="_blank"
               rel="noreferrer"
               className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-700 transition hover:border-slate-400 hover:shadow-lg"
@@ -443,11 +445,12 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
                 <p className="text-[0.75rem] text-slate-500">{landing.tagline}</p>
               </div>
               <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
-                <p>{landing.slug}</p>
+                <p>{landingPath.replace(/^\//, "")}</p>
                 <p>Visitas {trafficMap.get(landing.slug)?.toLocaleString() ?? "0"}</p>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </CollapsibleSection>
 

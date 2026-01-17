@@ -17,12 +17,24 @@ export const landingPages = [
   },
   {
     slug: "hip-hop-party-boat",
+    path: "/thingtodo/tours/hip-hop-party-boat",
     title: "Hip Hop Party Boat with Snorkeling",
     tagline: "Una fiesta en catamarán con DJ, snorkel y sunset premium en Punta Cana.",
     sections: [
       "Barra abierta premium con snacks tropicales.",
       "Snorkel guiado en arrecifes de Bávaro y Cap Cana.",
       "Transporte privado desde hoteles clave y foam party."
+    ]
+  },
+  {
+    slug: "things-to-do/boat-activities-dominican-republic",
+    path: "/things-to-do/boat-activities-dominican-republic",
+    title: "Top actividades en barco en Republica Dominicana",
+    tagline: "Saona, ballenas y party boats en una sola seleccion.",
+    sections: [
+      "Experiencias verificadas con horarios claros.",
+      "Opciones para grupos, parejas y celebraciones.",
+      "Reserva directa con soporte en espanol."
     ]
   }
 ];
