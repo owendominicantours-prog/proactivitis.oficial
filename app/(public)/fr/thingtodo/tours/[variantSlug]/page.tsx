@@ -39,6 +39,12 @@ const toAbsoluteUrl = (value?: string | null) => {
   return `${BASE_URL}${normalized}`;
 };
 
+const normalizePickupTimes = (value: unknown): string[] | null => {
+  if (!Array.isArray(value)) return null;
+  const times = value.filter((item): item is string => typeof item === "string");
+  return times.length ? times : null;
+};
+
 const buildKeywords = (title: string, description: string) => {
   const base = ["Punta Cana", "Republique dominicaine", "excursions Punta Cana", "tours a Punta Cana", "activites Punta Cana", "prise en charge hotel", "Proactivitis"];
   return Array.from(new Set([title, description, ...base]));
@@ -159,6 +165,14 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
     return notFound();
   }
 
+  const normalizedTour = {
+    ...tour,
+    options: tour.options?.map((option) => ({
+      ...option,
+      pickupTimes: normalizePickupTimes(option.pickupTimes)
+    }))
+  };
+
   const transferHotels = await prisma.transferLocation.findMany({
     where: { type: "HOTEL", active: true },
     select: { slug: true, name: true, heroImage: true, zone: { select: { name: true } } },
@@ -171,7 +185,7 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
       <PartyBoatVariantLanding
         locale={fr}
         variant={variant}
-        tour={tour}
+        tour={normalizedTour}
         transferHotels={transferHotels}
       />
     );
@@ -182,7 +196,7 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
       <SantoDomingoVariantLanding
         locale={fr}
         variant={variant}
-        tour={tour}
+        tour={normalizedTour}
         transferHotels={transferHotels}
       />
     );
@@ -193,7 +207,7 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
       <BuggyAtvVariantLanding
         locale={fr}
         variant={variant}
-        tour={tour}
+        tour={normalizedTour}
         transferHotels={transferHotels}
       />
     );
@@ -204,7 +218,7 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
       <ParasailingVariantLanding
         locale={fr}
         variant={variant}
-        tour={tour}
+        tour={normalizedTour}
         transferHotels={transferHotels}
       />
     );
@@ -214,7 +228,7 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
     <SamanaWhaleVariantLanding
       locale={fr}
       variant={variant}
-      tour={tour}
+      tour={normalizedTour}
       transferHotels={transferHotels}
     />
   );

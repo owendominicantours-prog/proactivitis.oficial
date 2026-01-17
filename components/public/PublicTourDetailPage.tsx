@@ -754,6 +754,12 @@ const formatTimeSlot = (slot: PersistedTimeSlot) => {
   return `${slot.hour.toString().padStart(2, "0")}:${minute} ${slot.period}`;
 };
 
+const normalizePickupTimes = (value: unknown): string[] | null => {
+  if (!Array.isArray(value)) return null;
+  const times = value.filter((item): item is string => typeof item === "string");
+  return times.length ? times : null;
+};
+
 const itineraryMock: ItineraryStop[] = [
   {
     time: "09:00",
@@ -1222,7 +1228,10 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     tourId: tour.id,
     basePrice: tour.price,
     timeSlots,
-    options: tour.options ?? [],
+    options: tour.options?.map((option) => ({
+      ...option,
+      pickupTimes: normalizePickupTimes(option.pickupTimes)
+    })) ?? [],
     supplierHasStripeAccount: Boolean(tour.SupplierProfile?.stripeAccountId),
     platformSharePercent: tour.platformSharePercent ?? 20,
     tourTitle: localizedTitle,

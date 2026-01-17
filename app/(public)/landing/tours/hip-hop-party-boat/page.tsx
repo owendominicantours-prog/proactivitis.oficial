@@ -57,6 +57,12 @@ const toAbsoluteUrl = (value?: string | null) => {
   return `${BASE_URL}${normalized}`;
 };
 
+const normalizePickupTimes = (value: unknown): string[] | null => {
+  if (!Array.isArray(value)) return null;
+  const times = value.filter((item): item is string => typeof item === "string");
+  return times.length ? times : null;
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   const canonical = `${BASE_URL}/thingtodo/tours/${LANDING_SLUG}`;
   const tour = await prisma.tour.findUnique({
@@ -196,11 +202,15 @@ export default async function HipHopLandingPage() {
   const heroImage = tour.heroImage ?? gallery[0] ?? "/fototours/fotosimple.jpg";
   const timeSlots = JSON.parse(tour.timeOptions ?? "[]") as { hour: number; minute: string; period: "AM" | "PM" }[];
   const priceLabel = `$${tour.price.toFixed(0)} USD`;
+  const normalizedOptions = tour.options?.map((option) => ({
+    ...option,
+    pickupTimes: normalizePickupTimes(option.pickupTimes)
+  }));
   const bookingWidgetProps = {
     tourId: tour.id,
     basePrice: tour.price,
     timeSlots,
-    options: tour.options ?? [],
+    options: normalizedOptions ?? [],
     supplierHasStripeAccount: Boolean(tour.SupplierProfile?.stripeAccountId),
     platformSharePercent: tour.platformSharePercent ?? 20,
     tourTitle: tour.title ?? SEO_TITLE,

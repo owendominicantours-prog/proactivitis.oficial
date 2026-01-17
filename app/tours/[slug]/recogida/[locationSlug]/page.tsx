@@ -46,6 +46,12 @@ const formatTimeSlot = (slot: PersistedTimeSlot) => {
   return `${slot.hour.toString().padStart(2, "0")}:${minute} ${slot.period}`;
 };
 
+const normalizePickupTimes = (value: unknown): string[] | null => {
+  if (!Array.isArray(value)) return null;
+  const times = value.filter((item): item is string => typeof item === "string");
+  return times.length ? times : null;
+};
+
 const tKey = (key: string) => key as Parameters<typeof translate>[1];
 
 const buildItineraryMock = (t: (key: Parameters<typeof translate>[1]) => string): ItineraryStop[] => [
@@ -336,6 +342,10 @@ export async function TourHotelLanding({
         : buildItineraryMock(t);
   const heroImage = tour.heroImage ?? rawGallery[0] ?? "/fototours/fotosimple.jpg";
   const gallery = [heroImage, ...rawGallery.filter((img) => img && img !== heroImage)];
+  const normalizedOptions = tour.options?.map((option) => ({
+    ...option,
+    pickupTimes: normalizePickupTimes(option.pickupTimes)
+  }));
   const shortTeaser =
     localizedShortDescription && localizedShortDescription.length > 220
       ? `${localizedShortDescription.slice(0, 220).trim()}…`
@@ -681,7 +691,7 @@ export async function TourHotelLanding({
               tourId={tour.id}
               basePrice={tour.price}
               timeSlots={timeSlots}
-              options={tour.options ?? []}
+              options={normalizedOptions ?? []}
               supplierHasStripeAccount={Boolean(tour.SupplierProfile?.stripeAccountId)}
               platformSharePercent={tour.platformSharePercent ?? 20}
               tourTitle={localizedTitle}
