@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import TourVariantForm from "@/components/admin/TourVariantForm";
 
 type Props = {
@@ -8,7 +9,18 @@ type Props = {
 
 export default async function EditTourVariantPage({ params }: Props) {
   const { id } = await params;
-  const variant = await prisma.tourVariant.findUnique({ where: { id } });
+  let variant = null;
+  try {
+    variant = await prisma.tourVariant.findUnique({ where: { id } });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      (error.code === "P2021" || error.code === "P2022")
+    ) {
+      return notFound();
+    }
+    throw error;
+  }
   if (!variant) return notFound();
 
   return (

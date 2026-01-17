@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { findStaticVariant } from "@/lib/tourVariantCatalog";
+import { Prisma } from "@prisma/client";
 
 const splitLines = (value: FormDataEntryValue | null) =>
   String(value ?? "")
@@ -84,8 +85,18 @@ export async function saveTourVariant(formData: FormData) {
 export async function importStaticVariant(slug: string) {
   const entry = findStaticVariant(slug);
   if (!entry) return;
-  const existing = await prisma.tourVariant.findUnique({ where: { slug } });
-  if (existing) return;
+  try {
+    const existing = await prisma.tourVariant.findUnique({ where: { slug } });
+    if (existing) return;
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      (error.code === "P2021" || error.code === "P2022")
+    ) {
+      return;
+    }
+    throw error;
+  }
 
   await prisma.tourVariant.create({
     data: {
