@@ -5,7 +5,8 @@ import TourGalleryCollage from "@/components/tours/TourGalleryCollage";
 import GalleryLightbox from "@/components/shared/GalleryLightbox";
 import CountdownUrgency from "@/components/landing/CountdownUrgency";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
-import { SANTO_DOMINGO_BASE_TOUR, type SantoDomingoVariant } from "@/data/santo-domingo-variants";
+import { SANTO_DOMINGO_BASE_TOUR } from "@/data/santo-domingo-variants";
+import type { RenderableVariant } from "@/lib/tourVariantCatalog";
 
 const FALLBACK_TOUR_IMAGE = "/fototours/fotosimple.jpg";
 const FALLBACK_TRANSFER_IMAGE = "/transfer/sedan.png";
@@ -15,7 +16,7 @@ type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
 
 type SantoDomingoVariantLandingProps = {
   locale: Locale;
-  variant: SantoDomingoVariant;
+  variant: RenderableVariant;
   tour: {
     id: string;
     slug: string;

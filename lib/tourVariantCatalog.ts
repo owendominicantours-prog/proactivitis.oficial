@@ -26,6 +26,16 @@ export type TourVariantContent = {
   ctas: Record<Locale, string[]>;
 };
 
+export type RenderableVariant = {
+  slug: string;
+  titles: Record<Locale, string>;
+  heroSubtitles: Record<Locale, string>;
+  metaDescriptions: Record<Locale, string>;
+  bodyBlocks: Record<Locale, string[]>;
+  faqs: Record<Locale, VariantFaq[]>;
+  ctas: Record<Locale, string[]>;
+};
+
 export const STATIC_VARIANTS: TourVariantContent[] = [
   ...PARTY_BOAT_VARIANTS.map((variant) => ({
     ...variant,
