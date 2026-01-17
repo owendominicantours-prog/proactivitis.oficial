@@ -9,7 +9,7 @@ export const metadata = {
 };
 
 export default async function TourVariantsPage() {
-  let variants: typeof STATIC_VARIANTS = [];
+  let variants: Awaited<ReturnType<typeof prisma.tourVariant.findMany>> = [];
   try {
     variants = await prisma.tourVariant.findMany({
       orderBy: { updatedAt: "desc" }
