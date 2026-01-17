@@ -1541,7 +1541,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                   <p className="text-sm text-slate-500">{translate(locale, "tour.section.reviews.empty")}</p>
                 )}
               </div>
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[520px] overflow-y-auto pr-2">
                 {reviewHighlights.length ? (
                   reviewHighlights.map((review) => (
                     <div key={review.id} className="rounded-[16px] border border-[#F1F5F9] bg-white p-4 shadow">
