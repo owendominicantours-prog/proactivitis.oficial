@@ -240,6 +240,10 @@ export async function TourHotelLanding({
           SupplierProfile: {
             include: { User: { select: { name: true } } }
           },
+          options: {
+            where: { active: true },
+            orderBy: { sortOrder: "asc" }
+          },
           country: true,
           destination: true,
           microZone: true,
@@ -677,6 +681,7 @@ export async function TourHotelLanding({
               tourId={tour.id}
               basePrice={tour.price}
               timeSlots={timeSlots}
+              options={tour.options ?? []}
               supplierHasStripeAccount={Boolean(tour.SupplierProfile?.stripeAccountId)}
               platformSharePercent={tour.platformSharePercent ?? 20}
               tourTitle={localizedTitle}

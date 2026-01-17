@@ -51,6 +51,10 @@ model AgencyProfile {
 model Booking {
   id                    String         @id @default(cuid())
   tourId                String
+  tourOptionId          String?
+  tourOptionName        String?
+  tourOptionType        String?
+  tourOptionPrice       Float?
   userId                String
   status                String         @default("CONFIRMED")
   source                String         @default("WEB")
@@ -84,6 +88,7 @@ model Booking {
   updatedAt             DateTime?      @updatedAt
   User                  User           @relation(fields: [userId], references: [id])
   Tour                  Tour           @relation(fields: [tourId], references: [id])
+  TourOption            TourOption?    @relation(fields: [tourOptionId], references: [id], onDelete: SetNull)
   AgencyProLink         AgencyProLink? @relation("AgencyProBookings", fields: [agencyProLinkId], references: [id])
   agencyProLinkId       String?
   agencyMarkupAmount    Float?
@@ -575,8 +580,32 @@ model Tour {
   microZoneId            String?
   translationHash        String?
   translations           TourTranslation[]
+  options                TourOption[]
   blogPosts              BlogPostTour[]
   reviews                TourReview[]
+}
+
+model TourOption {
+  id                   String   @id @default(cuid())
+  tourId               String
+  name                 String
+  type                 String?
+  description          String?
+  pricePerPerson       Float?
+  basePrice            Float?
+  baseCapacity         Int?
+  extraPricePerPerson  Float?
+  pickupTimes          Json?
+  isDefault            Boolean  @default(false)
+  active               Boolean  @default(true)
+  sortOrder            Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  Tour                 Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  Bookings             Booking[]
+
+  @@index([tourId])
 }
 
 model TourReview {

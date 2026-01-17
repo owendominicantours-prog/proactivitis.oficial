@@ -866,6 +866,23 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       price: true,
       capacity: true,
       platformSharePercent: true,
+      options: {
+        where: { active: true },
+        orderBy: { sortOrder: "asc" },
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          description: true,
+          pricePerPerson: true,
+          basePrice: true,
+          baseCapacity: true,
+          extraPricePerPerson: true,
+          pickupTimes: true,
+          isDefault: true,
+          active: true
+        }
+      },
       SupplierProfile: {
         select: {
           company: true,
@@ -1205,6 +1222,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     tourId: tour.id,
     basePrice: tour.price,
     timeSlots,
+    options: tour.options ?? [],
     supplierHasStripeAccount: Boolean(tour.SupplierProfile?.stripeAccountId),
     platformSharePercent: tour.platformSharePercent ?? 20,
     tourTitle: localizedTitle,

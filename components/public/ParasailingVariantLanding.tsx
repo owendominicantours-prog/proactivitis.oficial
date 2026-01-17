@@ -25,6 +25,19 @@ type ParasailingVariantLandingProps = {
     heroImage: string | null;
     gallery: string | null;
     timeOptions: string | null;
+    options?: {
+      id: string;
+      name: string;
+      type: string | null;
+      description: string | null;
+      pricePerPerson: number | null;
+      basePrice: number | null;
+      baseCapacity: number | null;
+      extraPricePerPerson: number | null;
+      pickupTimes: string[] | null;
+      isDefault: boolean | null;
+      active: boolean | null;
+    }[];
     platformSharePercent: number | null;
     SupplierProfile?: { stripeAccountId?: string | null; company?: string | null } | null;
   };
@@ -83,6 +96,7 @@ export default function ParasailingVariantLanding({
     tourId: tour.id,
     basePrice: tour.price,
     timeSlots,
+    options: tour.options ?? [],
     supplierHasStripeAccount: Boolean(tour.SupplierProfile?.stripeAccountId),
     platformSharePercent: tour.platformSharePercent ?? 20,
     tourTitle: tour.title ?? variant.titles[locale],

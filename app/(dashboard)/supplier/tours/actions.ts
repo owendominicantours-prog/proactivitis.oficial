@@ -11,6 +11,19 @@ import { ensureCountryByCode, resolveDestination, sanitized, slugify } from "@/l
 import { translateTourById } from "@/lib/translationWorker";
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
+type TourOptionInput = {
+  name: string;
+  type?: string;
+  description?: string;
+  pricePerPerson?: number;
+  basePrice?: number;
+  baseCapacity?: number;
+  extraPricePerPerson?: number;
+  pickupTimes?: string[];
+  isDefault?: boolean;
+  active?: boolean;
+  sortOrder?: number;
+};
 
 function parseTimeSlots(formData: FormData): PersistedTimeSlot[] {
   const rawValue = formData.get("timeSlots");
@@ -32,6 +45,34 @@ function parseStringArrayField(formData: FormData, fieldName: string) {
       .map((item) => (typeof item === "string" ? sanitized(item, "includes") : ""))
       .map((item) => item.trim())
       .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function parseTourOptions(formData: FormData): TourOptionInput[] {
+  const rawValue = formData.get("tourOptions");
+  if (!rawValue || typeof rawValue !== "string") return [];
+  try {
+    const parsed = JSON.parse(rawValue);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((option) => ({
+        name: typeof option?.name === "string" ? sanitized(option.name, "title") : "",
+        type: typeof option?.type === "string" ? option.type.trim() : undefined,
+        description: typeof option?.description === "string" ? sanitized(option.description, "description") : undefined,
+        pricePerPerson: typeof option?.pricePerPerson === "number" ? option.pricePerPerson : undefined,
+        basePrice: typeof option?.basePrice === "number" ? option.basePrice : undefined,
+        baseCapacity: typeof option?.baseCapacity === "number" ? option.baseCapacity : undefined,
+        extraPricePerPerson: typeof option?.extraPricePerPerson === "number" ? option.extraPricePerPerson : undefined,
+        pickupTimes: Array.isArray(option?.pickupTimes)
+          ? option.pickupTimes.filter((item: unknown) => typeof item === "string" && item.trim())
+          : undefined,
+        isDefault: Boolean(option?.isDefault),
+        active: option?.active !== false,
+        sortOrder: typeof option?.sortOrder === "number" ? option.sortOrder : undefined
+      }))
+      .filter((option) => option.name);
   } catch {
     return [];
   }
@@ -101,6 +142,7 @@ export async function createTourAction(formData: FormData) {
   }
   const includesArray = parseStringArrayField(formData, "includesList");
   const notIncludedArray = parseStringArrayField(formData, "notIncludedList");
+  const tourOptions = parseTourOptions(formData);
 
   const tourId = randomUUID();
   await prisma.tour.create({
@@ -144,6 +186,26 @@ export async function createTourAction(formData: FormData) {
     }
   });
 
+  if (tourOptions.length) {
+    const hasDefault = tourOptions.some((option) => option.isDefault);
+    await prisma.tourOption.createMany({
+      data: tourOptions.map((option, index) => ({
+        tourId,
+        name: option.name,
+        type: option.type,
+        description: option.description,
+        pricePerPerson: option.pricePerPerson,
+        basePrice: option.basePrice,
+        baseCapacity: option.baseCapacity,
+        extraPricePerPerson: option.extraPricePerPerson,
+        pickupTimes: option.pickupTimes?.length ? option.pickupTimes : undefined,
+        isDefault: option.isDefault || (!hasDefault && index === 0),
+        active: option.active !== false,
+        sortOrder: option.sortOrder ?? index
+      }))
+    });
+  }
+
   void translateTourById(tourId).catch((error) => {
     console.error("translation job failed", error);
   });
@@ -176,6 +238,7 @@ export async function duplicateTourAction(formData: FormData) {
   const duplicateHighlights = normalizeJsonInput(tour.highlights);
   const duplicateIncludesList = normalizeJsonInput(tour.includesList);
   const duplicateNotIncludedList = normalizeJsonInput(tour.notIncludedList);
+  const duplicateOptions = await prisma.tourOption.findMany({ where: { tourId: tour.id } });
 
   const newTour = await prisma.tour.create({
     data: {
@@ -219,6 +282,25 @@ export async function duplicateTourAction(formData: FormData) {
       productId: randomUUID()
     }
   });
+
+  if (duplicateOptions.length) {
+    await prisma.tourOption.createMany({
+      data: duplicateOptions.map((option) => ({
+        tourId: newTour.id,
+        name: option.name,
+        type: option.type ?? undefined,
+        description: option.description ?? undefined,
+        pricePerPerson: option.pricePerPerson ?? undefined,
+        basePrice: option.basePrice ?? undefined,
+        baseCapacity: option.baseCapacity ?? undefined,
+        extraPricePerPerson: option.extraPricePerPerson ?? undefined,
+        pickupTimes: option.pickupTimes ?? undefined,
+        isDefault: option.isDefault,
+        active: option.active,
+        sortOrder: option.sortOrder
+      }))
+    });
+  }
 
   redirect(`/supplier/tours/${newTour.id}/edit`);
 }
@@ -281,6 +363,7 @@ export async function updateTourAction(formData: FormData) {
   const highlightsList = parseStringArrayField(formData, "highlights");
   const includesArray = parseStringArrayField(formData, "includesList");
   const notIncludedArray = parseStringArrayField(formData, "notIncludedList");
+  const tourOptions = parseTourOptions(formData);
   const highlightsToStore =
     highlightsList.length || !Array.isArray(tour.highlights)
       ? highlightsList
@@ -326,6 +409,27 @@ export async function updateTourAction(formData: FormData) {
       countryId: countryCode
     }
   });
+
+  await prisma.tourOption.deleteMany({ where: { tourId } });
+  if (tourOptions.length) {
+    const hasDefault = tourOptions.some((option) => option.isDefault);
+    await prisma.tourOption.createMany({
+      data: tourOptions.map((option, index) => ({
+        tourId,
+        name: option.name,
+        type: option.type,
+        description: option.description,
+        pricePerPerson: option.pricePerPerson,
+        basePrice: option.basePrice,
+        baseCapacity: option.baseCapacity,
+        extraPricePerPerson: option.extraPricePerPerson,
+        pickupTimes: option.pickupTimes?.length ? option.pickupTimes : undefined,
+        isDefault: option.isDefault || (!hasDefault && index === 0),
+        active: option.active !== false,
+        sortOrder: option.sortOrder ?? index
+      }))
+    });
+  }
 
   void translateTourById(tourId).catch((error) => {
     console.error("translation job failed on update", error);

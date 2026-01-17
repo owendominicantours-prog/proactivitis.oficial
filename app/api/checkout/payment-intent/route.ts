@@ -16,6 +16,13 @@ type PaymentIntentPayload = {
   tourTitle?: string;
   tourImage?: string;
   tourPrice?: number | string;
+  tourOptionId?: string;
+  tourOptionName?: string;
+  tourOptionType?: string;
+  tourOptionPrice?: number | string;
+  tourOptionBasePrice?: number | string;
+  tourOptionBaseCapacity?: number | string;
+  tourOptionExtraPricePerPerson?: number | string;
   date?: string;
   time?: string;
   adults?: number;
@@ -37,6 +44,7 @@ type PaymentIntentPayload = {
   bookingCode?: string;
   originHotelName?: string;
   origin?: string;
+  totalPrice?: number | string;
 };
 
 const parsePositive = (value: number | string | undefined, fallback: number) => {
@@ -74,9 +82,58 @@ const formatDateLabel = (value: Date) =>
     dateStyle: "long"
   }).format(value);
 
-const buildBookingSummary = (title: string, travelDate: Date, pax: number, startTime?: string | null) => {
-  const base = `${title} — ${pax} pax — ${formatDateLabel(travelDate)}`;
-  return startTime ? `${base} — ${startTime}` : base;
+const buildBookingSummary = (
+  title: string,
+  travelDate: Date,
+  pax: number,
+  startTime?: string | null,
+  optionName?: string | null
+) => {
+  const optionSuffix = optionName ? ` (${optionName})` : "";
+  const base = `${title}${optionSuffix} - ${pax} pax - ${formatDateLabel(travelDate)}`;
+  return startTime ? `${base} - ${startTime}` : base;
+};
+
+const resolveOptionPricing = (
+  option: {
+    pricePerPerson?: number | null;
+    basePrice?: number | null;
+    baseCapacity?: number | null;
+    extraPricePerPerson?: number | null;
+  } | null,
+  passengers: number,
+  fallbackPerPerson: number,
+  totalOverride?: number
+) => {
+  if (totalOverride && totalOverride > 0) {
+    return {
+      pricePerPerson: totalOverride / Math.max(1, passengers),
+      totalPrice: totalOverride
+    };
+  }
+
+  if (!option) {
+    const total = fallbackPerPerson * passengers;
+    return { pricePerPerson: fallbackPerPerson, totalPrice: total };
+  }
+
+  const basePrice = option.basePrice ?? null;
+  const baseCapacity = option.baseCapacity ?? null;
+  const extraPrice = option.extraPricePerPerson ?? option.pricePerPerson ?? fallbackPerPerson;
+  let total = 0;
+  if (basePrice && baseCapacity) {
+    const extras = Math.max(0, passengers - baseCapacity);
+    total = basePrice + extras * extraPrice;
+  } else if (basePrice && !baseCapacity) {
+    total = basePrice;
+  } else if (option.pricePerPerson) {
+    total = option.pricePerPerson * passengers;
+  } else {
+    total = fallbackPerPerson * passengers;
+  }
+
+  const perPerson = option.pricePerPerson ?? total / Math.max(1, passengers);
+  return { pricePerPerson: perPerson, totalPrice: total };
 };
 
 const formatBookingCode = (suffix: string) => `PRO-${suffix}`;
@@ -193,8 +250,23 @@ export async function POST(request: NextRequest) {
   const youth = parsePositive(payload.youth, 0);
   const child = parsePositive(payload.child, 0);
   const passengerCount = Math.max(1, adults + youth + child);
-  const pricePerPerson = parsePriceValue(payload.tourPrice, tour.price);
-  const totalAmount = Math.round(pricePerPerson * passengerCount * 100) / 100;
+  const basePricePerPerson = parsePriceValue(payload.tourPrice, tour.price);
+  const totalOverride = parsePriceValue(payload.totalPrice, 0);
+  const optionFromDb = payload.tourOptionId
+    ? await prisma.tourOption.findUnique({ where: { id: payload.tourOptionId } }).catch(() => null)
+    : null;
+  const resolvedOption =
+    optionFromDb && optionFromDb.tourId === tour.id ? optionFromDb : null;
+  const optionPricing = resolveOptionPricing(
+    resolvedOption,
+    passengerCount,
+    basePricePerPerson,
+    totalOverride
+  );
+  const pricePerPerson = optionPricing.pricePerPerson;
+  const totalAmount = Math.round(optionPricing.totalPrice * 100) / 100;
+  const optionName = resolvedOption?.name ?? payload.tourOptionName?.trim() ?? null;
+  const optionType = resolvedOption?.type ?? payload.tourOptionType?.trim() ?? null;
 
   const customerName = `${payload.firstName.trim()} ${payload.lastName.trim()}`.trim();
   const customerEmail = payload.email.trim().toLowerCase();
@@ -211,7 +283,8 @@ export async function POST(request: NextRequest) {
     payload.tourTitle ?? tour.title,
     travelDate,
     passengerCount,
-    startTime
+    startTime,
+    optionName
   );
 
   const requestedBookingCode = payload.bookingCode?.trim();
@@ -253,6 +326,10 @@ export async function POST(request: NextRequest) {
       pickupNotes: pickupNotes || undefined,
       startTime,
       totalAmount,
+      tourOptionId: resolvedOption?.id ?? payload.tourOptionId ?? undefined,
+      tourOptionName: optionName ?? undefined,
+      tourOptionType: optionType ?? undefined,
+      tourOptionPrice: Number.isFinite(pricePerPerson) ? pricePerPerson : undefined,
       bookingCode,
       userId,
       flightNumber: normalizeString(payload.flightNumber),
@@ -293,6 +370,8 @@ export async function POST(request: NextRequest) {
       hotelSlug: payload.hotelSlug ?? "unknown",
       bookingCode,
       originHotelName: payload.originHotelName ?? "",
+      tourOptionId: resolvedOption?.id ?? payload.tourOptionId ?? "",
+      tourOptionName: optionName ?? "",
       holdForProvider: "true"
     },
     automatic_payment_methods: {

@@ -23,6 +23,9 @@ export default async function SupplierTourEditPage({ params }: Props) {
     include: {
       departureDestination: {
         include: { country: true }
+      },
+      options: {
+        orderBy: { sortOrder: "asc" }
       }
     }
   });
@@ -146,7 +149,20 @@ export default async function SupplierTourEditPage({ params }: Props) {
     itineraryStops: [],
     highlights: parsedHighlights,
     includesList: fallbackIncludesList,
-    notIncludedList: parsedNotIncludedList
+    notIncludedList: parsedNotIncludedList,
+    tourOptions: tour.options.map((option) => ({
+      name: option.name,
+      type: option.type ?? undefined,
+      description: option.description ?? undefined,
+      pricePerPerson: option.pricePerPerson ?? undefined,
+      basePrice: option.basePrice ?? undefined,
+      baseCapacity: option.baseCapacity ?? undefined,
+      extraPricePerPerson: option.extraPricePerPerson ?? undefined,
+      pickupTimes: Array.isArray(option.pickupTimes) ? (option.pickupTimes as string[]) : undefined,
+      isDefault: option.isDefault,
+      active: option.active,
+      sortOrder: option.sortOrder
+    }))
   };
 
   return (

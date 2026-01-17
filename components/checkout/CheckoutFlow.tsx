@@ -55,6 +55,13 @@ export type CheckoutPageParams = {
   tourTitle?: string;
   tourImage?: string;
   tourPrice?: string;
+  tourOptionId?: string;
+  tourOptionName?: string;
+  tourOptionType?: string;
+  tourOptionPrice?: string;
+  tourOptionBasePrice?: string;
+  tourOptionBaseCapacity?: string;
+  tourOptionExtraPricePerPerson?: string;
   date?: string;
   time?: string;
   adults?: string;
@@ -404,6 +411,13 @@ const buildSummary = (params: CheckoutPageParams, transferDefaults: TransferDefa
       params.tourImage || (isTransferFlow ? transferDefaults.imageUrl : recommendedReservation.imageUrl),
 
     tourPrice: pricePerPerson,
+    tourOptionId: params.tourOptionId,
+    tourOptionName: params.tourOptionName,
+    tourOptionType: params.tourOptionType,
+    tourOptionPrice: params.tourOptionPrice,
+    tourOptionBasePrice: params.tourOptionBasePrice,
+    tourOptionBaseCapacity: params.tourOptionBaseCapacity,
+    tourOptionExtraPricePerPerson: params.tourOptionExtraPricePerPerson,
 
     date: params.date || (isTransferFlow ? transferDefaults.date : recommendedReservation.date),
 
@@ -882,6 +896,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
         bookingCode: summary.bookingCode,
 
         originHotelName: summary.originHotelName,
+        tourOptionId: summary.tourOptionId,
+        tourOptionName: summary.tourOptionName,
+        tourOptionType: summary.tourOptionType,
+        tourOptionPrice: summary.tourOptionPrice,
+        tourOptionBasePrice: summary.tourOptionBasePrice,
+        tourOptionBaseCapacity: summary.tourOptionBaseCapacity,
+        tourOptionExtraPricePerPerson: summary.tourOptionExtraPricePerPerson,
 
         firstName: contact.firstName.trim(),
 
@@ -1753,6 +1774,9 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                   </p>
 
                   <p className="text-lg font-semibold text-slate-900">{summary.tourTitle}</p>
+                  {summary.tourOptionName && (
+                    <p className="text-xs text-slate-500">Opcion: {summary.tourOptionName}</p>
+                  )}
 
                   {isTransferFlow && (
 

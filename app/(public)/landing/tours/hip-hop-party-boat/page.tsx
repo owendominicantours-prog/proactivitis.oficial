@@ -160,6 +160,23 @@ export default async function HipHopLandingPage() {
       heroImage: true,
       gallery: true,
       timeOptions: true,
+      options: {
+        where: { active: true },
+        orderBy: { sortOrder: "asc" },
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          description: true,
+          pricePerPerson: true,
+          basePrice: true,
+          baseCapacity: true,
+          extraPricePerPerson: true,
+          pickupTimes: true,
+          isDefault: true,
+          active: true
+        }
+      },
       SupplierProfile: {
         select: {
           stripeAccountId: true,
@@ -183,6 +200,7 @@ export default async function HipHopLandingPage() {
     tourId: tour.id,
     basePrice: tour.price,
     timeSlots,
+    options: tour.options ?? [],
     supplierHasStripeAccount: Boolean(tour.SupplierProfile?.stripeAccountId),
     platformSharePercent: tour.platformSharePercent ?? 20,
     tourTitle: tour.title ?? SEO_TITLE,

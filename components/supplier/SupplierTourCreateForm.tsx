@@ -11,6 +11,7 @@ import { createTourAction } from "@/app/(dashboard)/supplier/tours/actions";
 import type { UploadedImage } from "@/components/supplier/MediaUploader";
 import { ItineraryTimeline } from "@/components/itinerary/ItineraryTimeline";
 import { TranslationPreview } from "@/components/supplier/TranslationPreview";
+import { TourOptionsEditor, type TourOptionPayload } from "@/components/supplier/TourOptionsEditor";
 
 
 
@@ -359,6 +360,7 @@ export type SavedDraft = {
   highlights?: string[];
   includesList?: string[];
   notIncludedList?: string[];
+  tourOptions?: TourOptionPayload[];
 };
 
 
@@ -432,6 +434,7 @@ export function SupplierTourCreateForm({
   const [includeInput, setIncludeInput] = useState("");
   const [notIncludedList, setNotIncludedList] = useState<string[]>(initialDraft?.notIncludedList ?? []);
   const [notIncludedInput, setNotIncludedInput] = useState("");
+  const [tourOptions, setTourOptions] = useState<TourOptionPayload[]>(initialDraft?.tourOptions ?? []);
 
   const addHighlight = () => {
     const trimmed = highlightInput.trim();
@@ -555,6 +558,7 @@ export function SupplierTourCreateForm({
         highlights,
         includesList,
         notIncludedList,
+        tourOptions,
         duration: { value: durationValue, unit: durationUnit }
       } as SavedDraft),
     [
@@ -574,6 +578,7 @@ export function SupplierTourCreateForm({
       highlights,
       includesList,
       notIncludedList,
+      tourOptions,
       durationValue,
       durationUnit
     ]
@@ -1697,6 +1702,16 @@ export function SupplierTourCreateForm({
 
             </SectionCard>
 
+            <SectionCard title="Opciones del tour">
+              <p className="text-sm text-slate-600">
+                Si tienes versiones Shared, Private o VIP, agregalas aqui para mostrar precios
+                y horarios distintos en el checkout.
+              </p>
+              <div className="mt-4">
+                <TourOptionsEditor initialOptions={tourOptions} onChange={setTourOptions} />
+              </div>
+            </SectionCard>
+
 
 
             <SectionCard title="Disponibilidad">
@@ -2666,6 +2681,7 @@ export function SupplierTourCreateForm({
       <input type="hidden" name="highlights" value={JSON.stringify(highlights)} />
       <input type="hidden" name="includesList" value={JSON.stringify(includesList)} />
       <input type="hidden" name="notIncludedList" value={JSON.stringify(notIncludedList)} />
+      <input type="hidden" name="tourOptions" value={JSON.stringify(tourOptions)} />
 
       {heroImage && <input type="hidden" name="heroImageUrl" value={heroImage.url} />}
 

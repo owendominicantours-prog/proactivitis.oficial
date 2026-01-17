@@ -133,6 +133,23 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
       heroImage: true,
       gallery: true,
       timeOptions: true,
+      options: {
+        where: { active: true },
+        orderBy: { sortOrder: "asc" },
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          description: true,
+          pricePerPerson: true,
+          basePrice: true,
+          baseCapacity: true,
+          extraPricePerPerson: true,
+          pickupTimes: true,
+          isDefault: true,
+          active: true
+        }
+      },
       platformSharePercent: true,
       SupplierProfile: { select: { stripeAccountId: true, company: true } }
     }
