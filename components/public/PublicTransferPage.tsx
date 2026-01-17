@@ -18,6 +18,19 @@ const faqItems = [
   { qKey: "transfer.faq.delay.q", aKey: "transfer.faq.delay.a" },
   { qKey: "transfer.faq.cancel.q", aKey: "transfer.faq.cancel.a" }
 ] as const;
+
+const PUNTA_CANA_TRANSFER_LINKS = [
+  { slug: "punta-cana-international-airport-to-hard-rock-hotel-punta-cana", labelKey: "transfer.links.item.1" },
+  { slug: "punta-cana-international-airport-to-barcelo-bavaro-palace", labelKey: "transfer.links.item.2" },
+  { slug: "punta-cana-international-airport-to-riu-republica", labelKey: "transfer.links.item.3" },
+  { slug: "punta-cana-international-airport-to-majestic-mirage", labelKey: "transfer.links.item.4" },
+  { slug: "punta-cana-international-airport-to-melia-caribe-beach", labelKey: "transfer.links.item.5" },
+  { slug: "punta-cana-international-airport-to-royalton-bavaro", labelKey: "transfer.links.item.6" },
+  { slug: "punta-cana-international-airport-to-secrets-cap-cana", labelKey: "transfer.links.item.7" },
+  { slug: "punta-cana-international-airport-to-dreams-flora", labelKey: "transfer.links.item.8" },
+  { slug: "punta-cana-international-airport-to-dreams-onyx", labelKey: "transfer.links.item.9" },
+  { slug: "punta-cana-international-airport-to-breathless-punta-cana", labelKey: "transfer.links.item.10" }
+] as const;
 type Props = {
   locale: Locale;
   heroTitleOverride?: string;
@@ -27,6 +40,7 @@ type Props = {
 export default async function PublicTransferPage({ locale, heroTitleOverride, heroDescriptionOverride }: Props) {
   const transfersV2Enabled = process.env.TRANSFERS_V2_ENABLED === "true";
   const puntaCanaHubHref = locale === "es" ? "/punta-cana/traslado" : `/${locale}/punta-cana/traslado`;
+  const transferHref = (slug: string) => (locale === "es" ? `/transfer/${slug}` : `/${locale}/transfer/${slug}`);
   let options: LocationOption[] = [];
   let originPoints: TransferPointOption[] = [];
 
@@ -139,6 +153,26 @@ export default async function PublicTransferPage({ locale, heroTitleOverride, he
               <TrasladoSearch hotels={options} originPoints={originPoints} />
             )}
           </Suspense>
+        </section>
+
+        <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+            {translate(locale, "transfer.links.subtitle")}
+          </p>
+          <h2 className="mt-3 text-2xl font-bold text-slate-900">
+            {translate(locale, "transfer.links.title")}
+          </h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {PUNTA_CANA_TRANSFER_LINKS.map((item) => (
+              <Link
+                key={item.slug}
+                href={transferHref(item.slug)}
+                className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
+              >
+                {translate(locale, item.labelKey)}
+              </Link>
+            ))}
+          </div>
         </section>
 
         <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
