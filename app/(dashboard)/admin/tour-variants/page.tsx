@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { STATIC_VARIANTS } from "@/lib/tourVariantCatalog";
 import { importStaticVariant, deleteTourVariant } from "./actions";
 
@@ -8,9 +9,21 @@ export const metadata = {
 };
 
 export default async function TourVariantsPage() {
-  const variants = await prisma.tourVariant.findMany({
-    orderBy: { updatedAt: "desc" }
-  });
+  let variants: typeof STATIC_VARIANTS = [];
+  try {
+    variants = await prisma.tourVariant.findMany({
+      orderBy: { updatedAt: "desc" }
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      (error.code === "P2021" || error.code === "P2022")
+    ) {
+      variants = [];
+    } else {
+      throw error;
+    }
+  }
   const variantMap = new Map(variants.map((variant) => [variant.slug, variant]));
 
   return (
