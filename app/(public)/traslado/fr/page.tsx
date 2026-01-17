@@ -5,9 +5,10 @@ import PublicTransferPage from "../../../../components/public/PublicTransferPage
 const canonicalUrl = "https://proactivitis.com/fr/traslado";
 
 export const metadata: Metadata = {
-  title: "Transferts privés Proactivitis",
+  title: "Transferts prives Proactivitis",
   description:
-    "Réservez votre transfert privé avec chauffeurs bilingues, tarifs fermes et flexibilité totale. Proactivitis relie vols, hôtels et partenaires vérifiés dans toute la région.",
+    "Reservez votre transfert prive avec chauffeurs bilingues, prix fixes et support 24/7. Service porte a porte, confirmation rapide et vehicules verifies.",
+  keywords: ["transferts prives", "transfert aeroport", "Punta Cana", "chauffeurs bilingues", "Proactivitis"],
   alternates: {
     canonical: canonicalUrl,
     languages: {

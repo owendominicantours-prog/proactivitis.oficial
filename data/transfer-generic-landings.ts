@@ -190,7 +190,7 @@ export const genericTransferLandings: GenericTransferLanding[] = rawKeywords.map
       en: buildMetaDescription(keyword, "en"),
       fr: buildMetaDescription(keyword, "fr")
     },
-    keywords: [keyword]
+    keywords: [keyword, "punta cana airport transfer", "punta cana airport shuttle", "punta cana private transfer", "puj airport transfer", "punta cana transportation", "punta cana transfer service"]
   };
 });
 

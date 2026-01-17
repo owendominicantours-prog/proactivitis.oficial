@@ -26,6 +26,7 @@ type Props = {
 
 export default async function PublicTransferPage({ locale, heroTitleOverride, heroDescriptionOverride }: Props) {
   const transfersV2Enabled = process.env.TRANSFERS_V2_ENABLED === "true";
+  const puntaCanaHubHref = locale === "es" ? "/punta-cana/traslado" : `/${locale}/punta-cana/traslado`;
   let options: LocationOption[] = [];
   let originPoints: TransferPointOption[] = [];
 
@@ -103,6 +104,12 @@ export default async function PublicTransferPage({ locale, heroTitleOverride, he
                 >
                   {translate(locale, "transfer.link.tours")}
                 </Link>
+                <Link
+                  href={puntaCanaHubHref}
+                  className="inline-flex items-center justify-center rounded-full border border-white/80 bg-white/10 px-4 py-2 text-white transition hover:bg-white/20"
+                >
+                  {translate(locale, "transfer.link.puntaCana")}
+                </Link>
               </div>
               <TransferHeroNotices locale={locale} />
             </div>
@@ -173,6 +180,39 @@ export default async function PublicTransferPage({ locale, heroTitleOverride, he
             <p>{translate(locale, "transfer.longform3.body1")}</p>
             <p>{translate(locale, "transfer.longform3.body2")}</p>
             <p>{translate(locale, "transfer.longform3.body3")}</p>
+          </div>
+        </section>
+
+        <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+            {translate(locale, "transfer.seo.eyebrow")}
+          </p>
+          <h2 className="mt-3 text-2xl font-bold text-slate-900">
+            {translate(locale, "transfer.seo.title")}
+          </h2>
+          <div className="mt-4 space-y-4 text-sm text-slate-600">
+            <p>{translate(locale, "transfer.seo.body1")}</p>
+            <p>{translate(locale, "transfer.seo.body2")}</p>
+            <p>{translate(locale, "transfer.seo.body3")}</p>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-600">
+              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
+                {translate(locale, "transfer.seo.list.label")}
+              </p>
+              <ul className="mt-2 list-disc space-y-1 pl-4">
+                <li>{translate(locale, "transfer.seo.list.item1")}</li>
+                <li>{translate(locale, "transfer.seo.list.item2")}</li>
+                <li>{translate(locale, "transfer.seo.list.item3")}</li>
+                <li>{translate(locale, "transfer.seo.list.item4")}</li>
+              </ul>
+            </div>
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-600">
+              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
+                {translate(locale, "transfer.seo.tip.label")}
+              </p>
+              <p className="mt-2">{translate(locale, "transfer.seo.tip.body")}</p>
+            </div>
           </div>
         </section>
 

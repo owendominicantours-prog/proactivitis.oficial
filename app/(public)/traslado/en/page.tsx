@@ -7,7 +7,8 @@ const canonicalUrl = "https://proactivitis.com/en/traslado";
 export const metadata: Metadata = {
   title: "Proactivitis Private Transfers",
   description:
-    "Book your private transfer with bilingual drivers, locked-in pricing, and total flexibility. Proactivitis connects flights, hotels, and vetted suppliers across the region.",
+    "Book your private transfer with bilingual drivers, fixed pricing, and 24/7 support. Door-to-door service, instant confirmation, and verified vehicles across the region.",
+  keywords: ["private transfers", "airport transfer", "Punta Cana", "bilingual drivers", "Proactivitis"],
   alternates: {
     canonical: canonicalUrl,
     languages: {

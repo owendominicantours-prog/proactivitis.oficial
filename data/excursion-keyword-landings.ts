@@ -229,7 +229,7 @@ export const excursionKeywordLandings: ExcursionKeywordLanding[] = rawKeywords.m
       en: buildMetaDescription(keyword, "en"),
       fr: buildMetaDescription(keyword, "fr")
     },
-    keywords: [keyword]
+    keywords: [keyword, "punta cana tours", "punta cana excursions", "things to do punta cana", "excursiones punta cana", "tours con recogida en hotel"]
   };
 });
 

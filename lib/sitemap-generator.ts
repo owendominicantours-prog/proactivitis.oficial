@@ -25,7 +25,8 @@ const TRANSLATED_PREFIXES = [
   "/things-to-do",
   "/recogida",
   "/excursiones-seguras-punta-cana",
-  "/excursiones"
+  "/excursiones",
+  "/punta-cana"
 ];
 const TRANSLATED_ROOTS = ["/", "/tours", "/traslado"];
 const TRANSLATION_LOCALES = ["en", "fr"];
@@ -193,6 +194,8 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
     { url: `${BASE_URL}/`, priority: 1.0 },
     { url: `${BASE_URL}/tours`, priority: 0.9 },
     { url: `${BASE_URL}/traslado`, priority: 0.9 },
+    { url: `${BASE_URL}/punta-cana/tours`, priority: 0.85 },
+    { url: `${BASE_URL}/punta-cana/traslado`, priority: 0.85 },
     ...tours.map((tour) => ({
       url: `${BASE_URL}/tours/${tour.slug}`,
       priority: 0.8

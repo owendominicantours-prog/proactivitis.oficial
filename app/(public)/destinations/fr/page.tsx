@@ -5,9 +5,10 @@ import PublicDestinationsPage from "@/components/public/PublicDestinationsPage";
 const canonicalUrl = "https://proactivitis.com/fr/destinos";
 
 export const metadata: Metadata = {
-  title: "Destinations Curées | Proactivitis Global Destinations",
+  title: "Destinations verifiees | Tours et transferts avec Proactivitis",
   description:
-    "Découvrez notre liste VIP de destinations mondiales. Uniquement des régions auditées et des équipes locales contrôlées pour des expériences premium.",
+    "Decouvrez des destinations avec tours, excursions et transferts prives. Comparez les zones, prix clairs, support 24/7.",
+  keywords: ["destinations", "tours", "excursions", "transferts", "activites", "Proactivitis"],
   alternates: {
     canonical: canonicalUrl,
     languages: {

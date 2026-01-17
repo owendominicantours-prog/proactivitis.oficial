@@ -10,7 +10,6 @@ type DestinationTile = {
   descriptionKey?: TranslationKey;
   noteKey?: TranslationKey;
   image: string;
-  icons?: string[];
   isLead?: boolean;
 };
 
@@ -22,7 +21,6 @@ const destinationTiles: DestinationTile[] = [
     action: "/tours?country=dominican-republic",
     descriptionKey: "destinations.description.dominicanRepublic",
     image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=900&q=80",
-    icons: ["ƒoæ", "ƒo^‹÷Z"]
   },
   {
     regionKey: "destinations.region.caribbean",
@@ -32,7 +30,6 @@ const destinationTiles: DestinationTile[] = [
     descriptionKey: "destinations.description.bahamas",
     noteKey: "destinations.note.verifying",
     image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80",
-    icons: ["ƒoæ", "ƒo?‹÷Z"],
     isLead: true
   },
   {
@@ -43,7 +40,6 @@ const destinationTiles: DestinationTile[] = [
     descriptionKey: "destinations.description.usa",
     noteKey: "destinations.note.verifying",
     image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=900&q=80",
-    icons: ["ƒo?‹÷Z", "ƒoæ"],
     isLead: true
   },
   {
@@ -54,7 +50,6 @@ const destinationTiles: DestinationTile[] = [
     descriptionKey: "destinations.description.mexico",
     noteKey: "destinations.note.verifying",
     image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80",
-    icons: ["ƒoæ", "ƒo?‹÷Z"],
     isLead: true
   },
   {
@@ -65,7 +60,6 @@ const destinationTiles: DestinationTile[] = [
     descriptionKey: "destinations.description.europe",
     noteKey: "destinations.note.verifying",
     image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",
-    icons: ["ƒo?‹÷Z", "ƒoæ"],
     isLead: true
   },
   {
@@ -76,7 +70,6 @@ const destinationTiles: DestinationTile[] = [
     descriptionKey: "destinations.description.mideast",
     noteKey: "destinations.note.verifying",
     image: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?auto=format&fit=crop&w=900&q=80",
-    icons: ["ƒo?‹÷Z", "ƒoæ"],
     isLead: true
   }
 ];
@@ -112,13 +105,6 @@ export default function PublicDestinationsPage({ locale }: Props) {
                   </p>
                 </div>
                 <div className="space-y-3 px-6 py-6">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-500">
-                    {tile.icons?.map((icon) => (
-                      <span key={icon} aria-label="icon">
-                        {icon}
-                      </span>
-                    ))}
-                  </div>
                   <div>
                     <h2 className="text-2xl font-semibold text-slate-900">{translate(locale, tile.destinationKey)}</h2>
                     <p className="text-sm text-slate-600">
@@ -151,6 +137,29 @@ export default function PublicDestinationsPage({ locale }: Props) {
               </article>
             ))}
           </div>
+        </section>
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-500">
+            {translate(locale, "destinations.longform.label")}
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+            {translate(locale, "destinations.longform.title")}
+          </h2>
+          <div className="mt-3 space-y-3 text-sm text-slate-600">
+            <p>{translate(locale, "destinations.longform.p1")}</p>
+            <p>{translate(locale, "destinations.longform.p2")}</p>
+            <p>{translate(locale, "destinations.longform.p3")}</p>
+          </div>
+          <ul className="mt-4 grid gap-2 text-sm text-slate-600 md:grid-cols-2">
+            <li>{translate(locale, "destinations.longform.bullets.0")}</li>
+            <li>{translate(locale, "destinations.longform.bullets.1")}</li>
+            <li>{translate(locale, "destinations.longform.bullets.2")}</li>
+            <li>{translate(locale, "destinations.longform.bullets.3")}</li>
+          </ul>
+          <p className="mt-4 text-sm text-slate-500">
+            {translate(locale, "destinations.longform.note")}
+          </p>
         </section>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">

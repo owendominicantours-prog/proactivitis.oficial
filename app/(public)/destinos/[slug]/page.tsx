@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getDestinationBySlug, getAllDestinationSlugs, getToursByDestinationSlug } from "@/lib/destinations";
 
 type Params = {
@@ -11,6 +12,35 @@ export async function generateStaticParams() {
   return destinations.map((destination) => ({ slug: destination.slug }));
 }
 
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const resolvedParams = await params;
+  const destination = await getDestinationBySlug(resolvedParams.slug);
+  if (!destination) return {};
+
+  const title = `Tours y traslados en ${destination.name} | Proactivitis`;
+  const baseDescription =
+    destination.shortDescription ??
+    `Explora ${destination.name} con tours, excursiones y traslados privados verificados.`;
+  const description = `${baseDescription} Reserva con precios claros, horarios definidos y soporte 24/7.`;
+
+  return {
+    title,
+    description,
+    keywords: [
+      destination.name,
+      destination.country.name,
+      "tours",
+      "excursiones",
+      "traslados",
+      "actividades",
+      "Proactivitis"
+    ],
+    alternates: {
+      canonical: `/destinos/${destination.slug}`
+    }
+  };
+}
+
 export default async function DestinationPage({ params }: Params) {
   const resolvedParams = await params;
   const destination = await getDestinationBySlug(resolvedParams.slug);
@@ -18,7 +48,7 @@ export default async function DestinationPage({ params }: Params) {
     return (
       <div className="mx-auto max-w-4xl py-20 px-6 text-center">
         <p className="text-xl font-semibold text-slate-900">Destino no encontrado</p>
-        <p className="mt-2 text-slate-500">Regresa a la página principal para explorar más tours.</p>
+        <p className="mt-2 text-slate-500">Regresa a la pagina principal para explorar mas tours.</p>
       </div>
     );
   }
@@ -58,12 +88,29 @@ export default async function DestinationPage({ params }: Params) {
               Tours en {destination.name}
             </p>
             <h2 className="text-3xl font-bold text-slate-900">
-              Experiencias auténticas y transparentes
+              Experiencias autenticas y transparentes
             </h2>
           </div>
           <Link href="/tours" className="text-sm font-semibold text-brand underline">
-            Ver todo el catálogo
+            Ver todo el catalogo
           </Link>
+        </div>
+        <div className="rounded-[28px] border border-slate-100 bg-slate-50 px-6 py-5 text-sm text-slate-600">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Guia rapida</p>
+          <p className="mt-2">
+            Compara tours por horario, nivel de aventura y punto de encuentro. Cada experiencia incluye
+            detalles claros para reservar con confianza.
+          </p>
+          <p className="mt-3">
+            Si necesitas transporte, puedes coordinar traslados privados entre aeropuerto, hotel y los
+            principales puntos de interes de la zona.
+          </p>
+          <ul className="mt-3 grid gap-2 md:grid-cols-2">
+            <li>Operadores locales verificados.</li>
+            <li>Opciones privadas o en grupo.</li>
+            <li>Precios transparentes sin cargos ocultos.</li>
+            <li>Soporte humano antes y durante el viaje.</li>
+          </ul>
         </div>
         <div className="grid gap-6 md:grid-cols-2">
           {relatedTours.length > 0 ? (
@@ -108,7 +155,7 @@ export default async function DestinationPage({ params }: Params) {
               </article>
             ))
           ) : (
-            <p className="text-sm text-slate-500">No hay tours disponibles aún para este destino.</p>
+            <p className="text-sm text-slate-500">No hay tours disponibles aun para este destino.</p>
           )}
         </div>
       </section>

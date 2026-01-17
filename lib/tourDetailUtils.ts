@@ -26,78 +26,166 @@ const resolveTourHeroImage = (tour: TourImageSource) => {
 const MAX_TITLE_LENGTH = 55;
 const MAX_DESCRIPTION_LENGTH = 160;
 const BRAND_SUFFIX = " | Proactivitis";
+const PUNTA_CANA_MARKERS = [
+  "punta cana",
+  "punta-cana",
+  "bavaro",
+  "cap cana",
+  "cap-cana",
+  "uvero alto",
+  "uvero-alto",
+  "macao",
+  "cabeza de toro",
+  "cabeza-de-toro"
+];
+const PUNTA_CANA_KEYWORDS: Record<Locale, string[]> = {
+  es: [
+    "tours punta cana",
+    "excursiones punta cana",
+    "actividades punta cana",
+    "tours con recogida en hotel",
+    "excursiones con traslado",
+    "tours privados punta cana"
+  ],
+  en: [
+    "punta cana tours",
+    "punta cana excursions",
+    "things to do punta cana",
+    "tours with hotel pickup",
+    "private tours punta cana",
+    "punta cana activities"
+  ],
+  fr: [
+    "excursions punta cana",
+    "activites punta cana",
+    "tours a punta cana",
+    "prise en charge hotel punta cana",
+    "excursions privees punta cana",
+    "choses a faire punta cana"
+  ]
+};
 const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
+  "transfer-privado-proactivitis": {
+    es: "Traslado privado en Punta Cana con chofer verificado",
+    en: "Private transfer in Punta Cana with verified driver",
+    fr: "Transfert prive a Punta Cana avec chauffeur verifie"
+  },
   "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana": {
-    es: "Avistamiento de ballenas en Samaná + Cayo Levantado",
-    en: "Samaná whale watching + Cayo Levantado day trip",
-    fr: "Observation des baleines à Samaná + Cayo Levantado"
+    es: "Avistamiento de ballenas en Samana + Cayo Levantado",
+    en: "Samana whale watching + Cayo Levantado day trip",
+    fr: "Observation des baleines a Samana + Cayo Levantado"
   },
   "tour-y-entrada-para-de-isla-saona-desde-punta-cana": {
-    es: "Isla Saona desde Punta Cana: tour y entrada",
-    en: "Saona Island from Punta Cana tour & ticket",
-    fr: "Île Saona depuis Punta Cana: tour + billet"
+    es: "Isla Saona desde Punta Cana: tour + entrada",
+    en: "Saona Island from Punta Cana: tour + ticket",
+    fr: "Ile Saona depuis Punta Cana : tour + billet"
   },
   "half-day-atv-o-buggy-4x4-from-bayahibe-la-romana": {
-    es: "Medio día ATV o buggy 4x4 desde Bayahibe",
+    es: "Medio dia en ATV o buggy 4x4 desde Bayahibe",
     en: "Half-day ATV or buggy 4x4 from Bayahibe",
-    fr: "Demi-journée ATV ou buggy 4x4 depuis Bayahibe"
+    fr: "Demi-journee en ATV ou buggy 4x4 depuis Bayahibe"
   },
   "tour-en-buggy-en-punta-cana": {
     es: "Tour en buggy en Punta Cana: aventura off-road",
     en: "Punta Cana buggy tour: off-road adventure",
-    fr: "Tour en buggy à Punta Cana: aventure off-road"
+    fr: "Tour en buggy a Punta Cana : aventure off-road"
   },
   "tour-de-safari-cultural-por-el-pais-de-republica-dominicana-desde-punta-cana": {
-    es: "Safari cultural por República Dominicana desde Punta Cana",
+    es: "Safari cultural en Republica Dominicana desde Punta Cana",
     en: "Dominican cultural safari from Punta Cana",
-    fr: "Safari culturel en République dominicaine depuis Punta Cana"
+    fr: "Safari culturel en Republique dominicaine depuis Punta Cana"
   },
   "excursion-en-buggy-y-atv-en-punta-cana": {
-    es: "Excursión en buggy y ATV en Punta Cana",
+    es: "Excursion en buggy y ATV en Punta Cana",
     en: "Punta Cana buggy & ATV excursion",
-    fr: "Excursion buggy et ATV à Punta Cana"
+    fr: "Excursion buggy et ATV a Punta Cana"
   },
   "tour-isla-saona-desde-bayhibe-la-romana": {
-    es: "Isla Saona desde Bayahibe: tour de día",
+    es: "Isla Saona desde Bayahibe: tour de dia",
     en: "Saona Island day tour from Bayahibe",
-    fr: "Île Saona: excursion d'une journée depuis Bayahibe"
+    fr: "Ile Saona : excursion d'une journee depuis Bayahibe"
+  },
+  "sunset-catamaran-snorkel": {
+    es: "Party boat en Punta Cana: catamaran con snorkel",
+    en: "Punta Cana party boat: catamaran + snorkel",
+    fr: "Party boat a Punta Cana : catamaran + snorkel"
+  },
+  "parasailing-punta-cana": {
+    es: "Parasailing en Punta Cana: vistas aereas del Caribe",
+    en: "Punta Cana parasailing: Caribbean aerial views",
+    fr: "Parasailing a Punta Cana : vues aeriennes"
+  },
+  "excursion-de-un-dia-a-santo-domingo-desde-punta-cana": {
+    es: "Santo Domingo desde Punta Cana: tour de un dia",
+    en: "Santo Domingo day trip from Punta Cana",
+    fr: "Excursion a Saint-Domingue depuis Punta Cana"
+  },
+  "cayo-levantado-luxury-beach-day": {
+    es: "Samana + Cayo Levantado desde Punta Cana",
+    en: "Samana + Cayo Levantado from Punta Cana",
+    fr: "Samana + Cayo Levantado depuis Punta Cana"
   }
 };
 const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
+  "transfer-privado-proactivitis": {
+    es: "Traslado privado en Punta Cana con choferes verificados, precios claros y confirmacion rapida. Reserva ida o ida y vuelta.",
+    en: "Private Punta Cana transfer with verified drivers, clear pricing and fast confirmation. Book one-way or round trip.",
+    fr: "Transfert prive a Punta Cana avec chauffeurs verifies, prix clairs et confirmation rapide. Aller simple ou aller-retour."
+  },
   "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana": {
-    es: "Vive el avistamiento de ballenas jorobadas en Samaná. Incluye excursión a la Cascada El Limón, almuerzo típico y relax en Cayo Levantado desde Punta Cana. ¡Reserva tu aventura 3-en-1 aquí!",
-    en: "Experience humpback whale watching in Samana. Includes the El Limon Waterfall excursion, a typical lunch, and relax in Cayo Levantado from Punta Cana. Book your 3-in-1 adventure here!",
-    fr: "Vivez l'observation des baleines à bosse à Samaná. Inclut l'excursion à la cascade El Limón, un déjeuner typique et détente à Cayo Levantado depuis Punta Cana. Réservez votre aventure 3-en-1 ici !"
+    es: "Ballenas jorobadas en Samana, Cascada El Limon y Cayo Levantado en un solo dia. Incluye almuerzo y traslados desde Punta Cana.",
+    en: "Humpback whales in Samana, El Limon Waterfall and Cayo Levantado in one day. Includes lunch and transfers from Punta Cana.",
+    fr: "Baleines a bosse a Samana, cascade El Limon et Cayo Levantado en une journee. Dejeuner et transferts inclus."
   },
   "tour-y-entrada-para-de-isla-saona-desde-punta-cana": {
-    es: "Excursión a Isla Saona desde Punta Cana con transporte, entradas y tiempo de playa. Reserva fácil y confirmación rápida.",
-    en: "Saona Island day tour from Punta Cana with transport, tickets and beach time. Easy booking and fast confirmation.",
-    fr: "Excursion à l’île Saona depuis Punta Cana avec transport, billets et temps plage. Réservation facile, confirmation rapide."
+    es: "Isla Saona desde Punta Cana con entradas, transporte y playa. Reserva rapida con confirmacion inmediata.",
+    en: "Saona Island from Punta Cana with tickets, transport and beach time. Fast booking and instant confirmation.",
+    fr: "Ile Saona depuis Punta Cana avec billets, transport et plage. Reservation rapide et confirmation immediate."
   },
   "half-day-atv-o-buggy-4x4-from-bayahibe-la-romana": {
-    es: "Aventura 4x4 en ATV o buggy desde Bayahibe/La Romana con rutas off-road y paradas locales. Reserva rápida.",
-    en: "4x4 ATV or buggy adventure from Bayahibe/La Romana with off-road routes and local stops. Book fast.",
-    fr: "Aventure en ATV/buggy 4x4 depuis Bayahibe/La Romana avec pistes off-road et arrêts locaux. Réservez vite."
+    es: "Aventura 4x4 en ATV o buggy desde Bayahibe/La Romana con rutas off-road y paradas locales. Reserva en minutos.",
+    en: "4x4 ATV or buggy adventure from Bayahibe/La Romana with off-road routes and local stops. Book in minutes.",
+    fr: "Aventure en ATV/buggy 4x4 depuis Bayahibe/La Romana avec pistes off-road et arrets locaux. Reservez en minutes."
   },
   "tour-en-buggy-en-punta-cana": {
-    es: "Ruta en buggy por caminos de tierra, paradas locales y adrenalina en Punta Cana. Reserva rápida y segura.",
-    en: "Buggy ride through off-road trails, local stops and adrenaline in Punta Cana. Fast, secure booking.",
-    fr: "Balade en buggy sur pistes off-road, arrêts locaux et adrénaline à Punta Cana. Réservation rapide."
+    es: "Tour en buggy por caminos de tierra, paradas locales y adrenalina en Punta Cana. Reserva segura y rapida.",
+    en: "Buggy tour on dirt trails, local stops and adrenaline in Punta Cana. Secure, fast booking.",
+    fr: "Tour en buggy sur pistes, arrets locaux et adrenaline a Punta Cana. Reservation rapide et sure."
   },
   "tour-de-safari-cultural-por-el-pais-de-republica-dominicana-desde-punta-cana": {
-    es: "Tour terrestre con cultura local, paisajes rurales y paradas típicas desde Punta Cana. Incluye transporte y guía.",
-    en: "Land tour with local culture, rural landscapes and classic stops from Punta Cana. Transport and guide included.",
-    fr: "Circuit terrestre avec culture locale, paysages ruraux et arrêts typiques depuis Punta Cana. Transport et guide inclus."
+    es: "Safari cultural desde Punta Cana con paisajes rurales, paradas tipicas y guia local. Incluye transporte.",
+    en: "Cultural safari from Punta Cana with rural landscapes, classic stops and a local guide. Transport included.",
+    fr: "Safari culturel depuis Punta Cana avec paysages ruraux, arrets typiques et guide local. Transport inclus."
   },
   "excursion-en-buggy-y-atv-en-punta-cana": {
-    es: "Excursión en buggy y ATV por rutas de tierra y paradas locales en Punta Cana. Reserva rápida y confirmación clara.",
-    en: "Buggy & ATV excursion on dirt routes and local stops in Punta Cana. Fast booking and clear confirmation.",
-    fr: "Excursion buggy & ATV sur pistes et arrêts locaux à Punta Cana. Réservation rapide et claire."
+    es: "Excursion en buggy y ATV por rutas de tierra en Punta Cana con paradas locales. Reserva facil y confirmacion clara.",
+    en: "Buggy & ATV excursion on dirt routes in Punta Cana with local stops. Easy booking and clear confirmation.",
+    fr: "Excursion buggy & ATV sur pistes a Punta Cana avec arrets locaux. Reservation facile et confirmation claire."
   },
   "tour-isla-saona-desde-bayhibe-la-romana": {
-    es: "Salida desde Bayahibe/La Romana a Isla Saona con playa, navegación y almuerzo. Reserva fácil y confirmación rápida.",
-    en: "Depart from Bayahibe/La Romana to Saona Island with beach time, cruise and lunch. Easy booking, fast confirmation.",
-    fr: "Départ de Bayahibe/La Romana vers l’île Saona avec plage, navigation et déjeuner. Réservation facile, confirmation rapide."
+    es: "Salida desde Bayahibe/La Romana a Isla Saona con playa, navegacion y almuerzo. Reserva facil y rapida.",
+    en: "Depart from Bayahibe/La Romana to Saona Island with beach time, cruise and lunch. Easy, fast booking.",
+    fr: "Depart de Bayahibe/La Romana vers l'Ile Saona avec plage, navigation et dejeuner. Reservation facile."
+  },
+  "sunset-catamaran-snorkel": {
+    es: "Party boat en Punta Cana con catamaran, snorkel y musica. Incluye open bar y paradas en el mar.",
+    en: "Punta Cana party boat with catamaran, snorkel and music. Open bar and ocean stops included.",
+    fr: "Party boat a Punta Cana avec catamaran, snorkel et musique. Open bar et arrets en mer inclus."
+  },
+  "parasailing-punta-cana": {
+    es: "Vuela en parasailing sobre Punta Cana con vistas del Caribe. Experiencia segura y memorable en la costa.",
+    en: "Parasail over Punta Cana with Caribbean views. A safe, memorable coastal experience.",
+    fr: "Parasailing au-dessus de Punta Cana avec vues sur les Caraibes. Experience sure et memorable."
+  },
+  "excursion-de-un-dia-a-santo-domingo-desde-punta-cana": {
+    es: "Santo Domingo en un dia desde Punta Cana con historia colonial, paradas clave y guia local.",
+    en: "Santo Domingo day trip from Punta Cana with colonial history, key stops and a local guide.",
+    fr: "Excursion d'une journee a Saint-Domingue depuis Punta Cana avec histoire coloniale et guide local."
+  },
+  "cayo-levantado-luxury-beach-day": {
+    es: "Dia de playa en Samana y Cayo Levantado desde Punta Cana con traslados y tiempo libre.",
+    en: "Samana and Cayo Levantado beach day from Punta Cana with transfers and free time.",
+    fr: "Journee plage a Samana et Cayo Levantado depuis Punta Cana avec transferts et temps libre."
   }
 };
 
@@ -166,6 +254,9 @@ export async function generateTourMetadata(
       shortDescription: true,
       heroImage: true,
       gallery: true,
+      country: { select: { name: true, slug: true } },
+      destination: { select: { name: true, slug: true } },
+      departureDestination: { select: { name: true, slug: true } },
       translations: {
         where: { locale },
         select: {
@@ -192,6 +283,18 @@ export async function generateTourMetadata(
     translation?.description ??
     tour.shortDescription ??
     translate(locale, "tour.metadata.descriptionFallback");
+  const haystack = [
+    tour.title,
+    translation?.title,
+    tour.destination?.name,
+    tour.destination?.slug,
+    tour.departureDestination?.name,
+    tour.departureDestination?.slug
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  const isPuntaCanaTour = PUNTA_CANA_MARKERS.some((marker) => haystack.includes(marker));
   const title = buildSeoTitle(resolvedTitle);
   const description = trimDescription(resolvedDescription);
   const heroImage = toAbsoluteUrl(resolveTourHeroImage(tour));
@@ -206,6 +309,7 @@ export async function generateTourMetadata(
   return {
     title,
     description,
+    keywords: isPuntaCanaTour ? PUNTA_CANA_KEYWORDS[locale] : undefined,
     alternates: {
       canonical: canonicalUrl,
       languages: {

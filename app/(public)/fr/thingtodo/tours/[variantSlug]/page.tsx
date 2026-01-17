@@ -40,13 +40,7 @@ const toAbsoluteUrl = (value?: string | null) => {
 };
 
 const buildKeywords = (title: string, description: string) => {
-  const base = [
-    "Punta Cana",
-    "Republique Dominicaine",
-    "excursions Punta Cana",
-    "tours Punta Cana",
-    "Proactivitis"
-  ];
+  const base = ["Punta Cana", "Republique dominicaine", "excursions Punta Cana", "tours a Punta Cana", "activites Punta Cana", "prise en charge hotel", "Proactivitis"];
   return Array.from(new Set([title, description, ...base]));
 };
 

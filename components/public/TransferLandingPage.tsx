@@ -43,35 +43,35 @@ const buildFallbackLanding = ({
     reverseSlug: `${destinationSlug}-to-${originSlug}`,
     hotelSlug: destinationSlug,
     hotelName: destinationName,
-    heroTitle: `${originName} → ${destinationName}`,
-    heroSubtitle: `Traslado privado con chofer bilingüe y Wi-Fi directo a ${destinationName}.`,
+    heroTitle: `Transfer privado ${originName} a ${destinationName}`,
+    heroSubtitle: `Traslado privado con chofer bilingue y Wi-Fi directo a ${destinationName}.`,
     heroTagline: `Servicio flexible y seguro desde ${originName}`,
     heroImage: pickHeroImage(destinationSlug),
     heroImageAlt: `Transfer desde ${originName} a ${destinationName}`,
     priceFrom: FALLBACK_PRICE,
-    priceDetails: ["Confirmación instantánea", "Espera gratuita de 60 minutos", "Wi-Fi incluido"],
+    priceDetails: ["Confirmacion instantanea", "Espera gratuita de 60 minutos", "Wi-Fi incluido"],
     longCopy: [
       `${originName} conecta con ${destinationName} sin esperas ni sorpresas.`,
-      `El chofer bilingüe te espera con cartel, maneja la ruta más rápida y cuida tu equipaje.`,
-      `El precio incluye 60 minutos de cortesía, asistencia 24/7 y soporte local durante el traslado.`
+      `El chofer bilingue te espera con cartel, maneja la ruta mas rapida y cuida tu equipaje.`,
+      `El precio incluye 60 minutos de cortesia, asistencia 24/7 y soporte local durante el traslado.`
     ],
-    trustBadges: ["Servicio privado garantizado", "Chofer bilingüe | Wi-Fi a bordo", "Cancelación flexible 24h"],
+    trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
     faq: [
       {
-        question: "¿Qué pasa si mi vuelo se retrasa?",
+        question: "Que pasa si mi vuelo se retrasa?",
         answer: "Monitoreamos tu vuelo y esperamos hasta 60 minutos sin costo adicional."
       },
       {
-        question: "¿Puedo pedir un vehículo más grande?",
-        answer: "Sí; puedes solicitar una van o minibús y ajustamos la tarifa."
+        question: "Puedo pedir un vehiculo mas grande?",
+        answer: "Si, puedes solicitar una van o minibus y ajustamos la tarifa."
       },
       {
-        question: "¿Hay algo extra que necesite saber?",
-        answer: "Mantenemos comunicación continua por WhatsApp y confirmamos el pickup antes de tu llegada."
+        question: "Hay algo extra que necesite saber?",
+        answer: "Mantenemos comunicacion continua por WhatsApp y confirmamos el pickup antes de tu llegada."
       }
     ],
     seoTitle: `Transfer privado ${originName} a ${destinationName} | Proactivitis`,
-    metaDescription: `Servicio premium desde ${originName} hasta ${destinationName} con chofer bilingüe y confirmación inmediata.`,
+    metaDescription: `Servicio premium desde ${originName} hasta ${destinationName} con chofer bilingue y confirmacion inmediata.`,
     keywords: [
       `${originName} ${destinationName} transfer`,
       `${destinationName} transfer privado`,
@@ -403,7 +403,7 @@ export async function TransferLandingPage({
       </section>
       <section className="mx-auto max-w-6xl px-4 py-12">
         <p className="text-sm text-slate-500">
-          {t("transferLanding.route.label")} {originLocation.name ?? DEFAULT_AIRPORT_NAME} → {localizedLanding.hotelName}
+          {t("transferLanding.route.label")} {originLocation.name ?? DEFAULT_AIRPORT_NAME}  {localizedLanding.hotelName}
         </p>
         <TransferQuoteCards
           originId={originLocation.id}

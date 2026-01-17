@@ -55,7 +55,7 @@ const DURATION_ESTIMATES: Record<string, number> = {
   "cuenca": 180
 };
 
-const estimateDurationMinutes = (microZoneSlug?: string | null, destinationSlug?: string | null) => {
+const estimateDurationMinutes = (microZoneSlug: string | null, destinationSlug: string | null) => {
   const key = (microZoneSlug ?? destinationSlug ?? "").toLowerCase().replace(/_/g, "-");
   if (!key) return 45;
   return DURATION_ESTIMATES[key] ?? 45;
@@ -586,7 +586,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
           <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Padre · Destino</p>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Padre - Destino</p>
                 <h2 className="text-2xl font-bold text-slate-900">{destination.name}</h2>
                 <p className="text-sm text-slate-600">
                   {destination.shortDescription ?? "Selecciona la microzona que mejor conecta tu hotel con el aeropuerto."}
@@ -611,7 +611,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
             )}
             {level === "microzone" && (
               <div className="space-y-3">
-                <p className="text-sm font-semibold uppercase tracking-[0.4em] text-slate-500">Nieto · Hoteles</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.4em] text-slate-500">Nieto - Hoteles</p>
                 <div className="grid gap-4 md:grid-cols-2">
                   {availableHotels.map((hotel) => (
                     <div
@@ -624,7 +624,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
                         href={`/recogida/${hotel.slug}`}
                         className="mt-3 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700"
                       >
-                        Ver tours y traslados desde aquí
+                        Ver tours y traslados desde aqui
                       </Link>
                     </div>
                   ))}
@@ -636,7 +636,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
 
         {level !== "microzone" && availableHotels.length > 0 && (
           <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Nietos · Hoteles</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Nietos - Hoteles</p>
             <div className="grid gap-4 md:grid-cols-3">
               {availableHotels.slice(0, 6).map((hotel) => (
                 <Link
@@ -653,8 +653,8 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
         )}
         {showTransferCopy && (
           <section className="space-y-3 rounded-3xl border border-emerald-100 bg-emerald-50/60 p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Detalle rápido</p>
-            <h2 className="text-2xl font-bold text-slate-900">Información del servicio</h2>
+            <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Detalle rapido</p>
+            <h2 className="text-2xl font-bold text-slate-900">Informacion del servicio</h2>
             <p className="text-sm text-slate-600">{durationCopy}</p>
             <p className="text-sm text-slate-600">{meetingCopy}</p>
           </section>

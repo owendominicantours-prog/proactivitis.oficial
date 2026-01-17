@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { translate, fr } from "@/lib/translations";
+import { translate, fr, es, en } from "@/lib/translations";
 import HotelSafetyGuidePage from "@/components/public/HotelSafetyGuidePage";
 import {
   SAFETY_GUIDE_SLUG_SUFFIX,
@@ -25,6 +25,9 @@ const buildKeywords = (hotel: string) => [
   "securite hotel Punta Cana",
   "transferts Punta Cana",
   "tours certifies Punta Cana",
+  "excursions securisees Punta Cana",
+  "tours Punta Cana",
+  "prise en charge hotel Punta Cana",
   "Proactivitis"
 ];
 
@@ -59,13 +62,18 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const seoTitle = `${title} | Proactivitis`;
   const seoDescription = description.endsWith(".") ? description : `${description}.`;
   const canonical = buildSafetyGuideUrl(fr, baseSlug);
+  const languages = {
+    es: buildSafetyGuideUrl(es, baseSlug),
+    en: buildSafetyGuideUrl(en, baseSlug),
+    fr: buildSafetyGuideUrl(fr, baseSlug)
+  };
   const imageUrl = toAbsoluteUrl(hotel.heroImage);
 
   return {
     title: seoTitle,
     description: seoDescription,
     keywords: buildKeywords(hotel.name),
-    alternates: { canonical },
+    alternates: { canonical, languages },
     openGraph: {
       title: seoTitle,
       description: seoDescription,

@@ -172,6 +172,7 @@ type TourWithDeparture = Prisma.TourGetPayload<{
 export default async function PublicToursPage({ searchParams, locale }: Props) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const params = resolvedSearchParams ?? {};
+  const puntaCanaHubHref = locale === "es" ? "/punta-cana/tours" : `/${locale}/punta-cana/tours`;
 
   let countries: CountryOption[] = [];
   try {
@@ -298,6 +299,14 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
               {t("tours.header.title")}
             </h1>
             <p className="text-base text-slate-600">{t("tours.header.description")}</p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href={puntaCanaHubHref}
+                className="rounded-full bg-brand px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-sm shadow-brand/30"
+              >
+                {t("tours.puntaCanaHub.cta")}
+              </Link>
+            </div>
             <TrustBadges locale={locale} compact className="pt-2" />
           </div>
         </div>
@@ -328,7 +337,32 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
               </ul>
             </div>
           </aside>
-          <section className="space-y-4">
+                    <section className="space-y-4">
+            <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 text-sm text-slate-600 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
+                {t("tours.seo.label")}
+              </p>
+              <h2 className="mt-2 text-2xl font-bold text-slate-900">{t("tours.seo.title")}</h2>
+              <div className="mt-3 space-y-3">
+                <p>{t("tours.seo.body1")}</p>
+                <p>{t("tours.seo.body2")}</p>
+                <p>{t("tours.seo.body3")}</p>
+                <p>{t("tours.seo.body4")}</p>
+                <p>{t("tours.seo.body5")}</p>
+              </div>
+              <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/80 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
+                  {t("tours.seo.list.label")}
+                </p>
+                <ul className="mt-2 list-disc space-y-1 pl-4">
+                  <li>{t("tours.seo.list.item1")}</li>
+                  <li>{t("tours.seo.list.item2")}</li>
+                  <li>{t("tours.seo.list.item3")}</li>
+                  <li>{t("tours.seo.list.item4")}</li>
+                </ul>
+              </div>
+            </div>
+
             <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 text-sm font-medium text-slate-700 shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-2 text-slate-600">
                 {featureKeys.map((key) => (

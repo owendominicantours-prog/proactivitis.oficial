@@ -34,7 +34,7 @@ const getDefaultDateTime = () => {
   return date.toISOString().slice(0, 16);
 };
 
-const findHotelBySlug = async (slug?: string | null) => {
+const findHotelBySlug = async (slug: string | null) => {
   const cleaned = slug?.trim().toLowerCase();
   if (!cleaned) return null;
 
@@ -69,7 +69,8 @@ export async function generateMetadata({
   if (!resolvedParams.hotelSlug) {
     return {
       title: "Traslado Punta Cana | Proactivitis",
-      description: "Programmatic SEO para traslados premium desde Punta Cana"
+      description:
+        "Traslados privados desde Punta Cana con precios claros, choferes verificados y soporte 24/7."
     };
   }
 
@@ -77,13 +78,15 @@ export async function generateMetadata({
   if (!hotel) {
     return {
       title: "Traslado Punta Cana | Proactivitis",
-      description: "Programmatic SEO para traslados premium desde Punta Cana"
+      description:
+        "Traslados privados desde Punta Cana con precios claros, choferes verificados y soporte 24/7."
     };
   }
   const canonical = new URL(`/traslado/punta-cana/to-${hotel.slug}`, "https://proactivitis.com").toString();
   return {
     title: `Traslado directo a ${hotel.name} | Proactivitis`,
-    description: `Reserva tu traslado Premium desde PUJ hacia ${hotel.name} con tarifas claras en vehiculos privados.`,
+    description: `Reserva tu traslado privado desde PUJ hacia ${hotel.name} con tarifas claras, chofer bilingue y confirmacion inmediata. Servicio puerta a puerta con soporte 24/7.`,
+    keywords: ["traslado PUJ", hotel.name, "Punta Cana transfer", "traslado privado", "Proactivitis"],
     alternates: { canonical }
   };
 }
@@ -155,7 +158,7 @@ export default async function HotelTrasladoPage({ params }: TrasladoPageProps) {
     <div className="bg-slate-50">
       <section className="bg-gradient-to-br from-white via-slate-50 to-slate-100 border-b border-slate-200">
         <div className="mx-auto max-w-6xl px-4 py-12">
-          <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Programmatic SEO · Traslado</p>
+          <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Programmatic SEO - Traslado</p>
           <h1 className="text-4xl font-bold text-slate-900">Traslado directo a {hotel.name}</h1>
           <p className="max-w-3xl text-sm text-slate-600">
             Nuestro motor carga el destino ya seleccionado, elige el vehiculo y presenta precios claros para Sedan, Van y SUV sin necesidad de buscar de nuevo.

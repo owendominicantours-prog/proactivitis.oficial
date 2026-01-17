@@ -6,9 +6,8 @@ import PublicToursPage from "@/components/public/PublicToursPage";
 const canonicalUrl = "https://proactivitis.com/tours";
 
 export const metadata: Metadata = {
-  title: "Tours y actividades | Proactivitis",
-  description:
-    "Reserva tours y actividades verificadas con precios claros y confirmacion inmediata. Soporte humano 24/7 para tus viajes.",
+  title: "Tours y excursiones en Punta Cana | Proactivitis",
+  description: "Reserva tours, excursiones y actividades en Punta Cana con precios claros, recogida en hotel y confirmacion inmediata.",
   alternates: {
     canonical: canonicalUrl,
     languages: {

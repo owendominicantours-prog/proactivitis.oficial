@@ -25,17 +25,18 @@ export type ZoneInfo = {
 
 export const zoneData: ZoneInfo[] = [
   {
-    country: "República Dominicana",
+    country: "Republica Dominicana",
     countrySlug: "dominican-republic",
     zone: "Punta Cana",
     zoneSlug: "punta-cana",
     hero: {
       title: "Sol, palmeras y cultura",
-      subtitle: "Descubre el paraíso caribeño: playas de arena blanca, resorts de lujo y actividades para toda la familia.",
+      subtitle:
+        "Descubre el paraiso caribeno: playas de arena blanca, resorts y actividades para toda la familia.",
       image: "/fototours/puntacana-hero.jpg"
     },
     summary:
-      "Punta Cana es el destino soñado del Caribe. Famosa por sus interminables playas de arena blanca bordeadas de cocoteros y un vibrante ambiente de resort, ofrece la mezcla perfecta de relajación y aventura. Desde emocionantes deportes acuáticos hasta una animada vida nocturna y excursiones culturales, este paraíso lo tiene todo para unas vacaciones inolvidables.",
+      "Punta Cana es un destino iconico del Caribe. Sus playas de arena blanca, aguas turquesa y ambiente de resort la convierten en la base ideal para descansar y explorar. Entre deportes acuaticos, vida nocturna y excursiones culturales, ofrece opciones para viajeros de todos los estilos.",
     highlights: [
       "Playas de arena blanca y agua color turquesa.",
       "Vida nocturna activa y centros comerciales frente al mar.",
@@ -43,77 +44,80 @@ export const zoneData: ZoneInfo[] = [
     ],
     practical: {
       bestSeason: "Noviembre a abril (temporada seca).",
-      transport: "Aeropuerto de Punta Cana (PUJ) con conexión a hoteles y resorts.",
-      localTip: "Pide guías locales para conocer plantaciones de cacao y café."
+      transport: "Aeropuerto de Punta Cana (PUJ) con conexion a hoteles y resorts.",
+      localTip: "Pide guias locales para conocer plantaciones de cacao y cafe."
     }
   },
   {
-    country: "República Dominicana",
+    country: "Republica Dominicana",
     countrySlug: "dominican-republic",
-    zone: "Bayahíbe",
+    zone: "Bayahibe",
     zoneSlug: "bayahibe",
     hero: {
-      title: "Costa auténtica y acceso a Saona",
-      subtitle: "Un puerto tranquilo y pintoresco, puerta de entrada a la paradisíaca Isla Saona y arrecifes de coral espectaculares.",
+      title: "Costa autentica y acceso a Saona",
+      subtitle:
+        "Un puerto tranquilo y pintoresco, puerta de entrada a la Isla Saona y arrecifes de coral espectaculares.",
       image: "/fototours/bayahibe-hero.jpg"
     },
     summary:
-      "Bayahíbe ofrece una experiencia dominicana más relajada y auténtica. Este antiguo pueblo de pescadores es famoso por su puerto vibrante, desde donde parten catamaranes y lanchas hacia la icónica Isla Saona y la Isla Catalina. Es un punto clave para buceadores y amantes del snorkel, gracias a sus aguas tranquilas y arrecifes llenos de vida marina. Un destino esencial para los amantes de la playa virgen y la cultura local.",
+      "Bayahibe ofrece una experiencia dominicana mas relajada y autentica. Este antiguo pueblo de pescadores es el punto de salida hacia Isla Saona e Isla Catalina, y es ideal para snorkel y buceo gracias a sus aguas tranquilas. Es perfecto para quienes buscan playas virgenes y cultura local.",
     highlights: [
       "Catamaranes diarios a la isla Saona.",
       "Buceo y snorkel en arrecifes cercanos.",
       "Ambiente relajado frente al mar."
     ],
     practical: {
-      bestSeason: "Todo el año; ideal de diciembre a marzo.",
+      bestSeason: "Todo el ano; ideal de diciembre a marzo.",
       transport: "Transfer desde Punta Cana o La Romana; taxis y motoconchos locales.",
       localTip: "Visita el pueblo antes del tour para probar pescado fresco."
     }
   },
   {
-    country: "República Dominicana",
+    country: "Republica Dominicana",
     countrySlug: "dominican-republic",
-    zone: "Samaná",
+    zone: "Samana",
     zoneSlug: "samana",
     hero: {
-      title: "Bahía de ballenas y naturaleza exuberante",
-      subtitle: "El santuario natural de la RD: observación de majestuosas ballenas jorobadas, cascadas escondidas y playas vírgenes.",
+      title: "Bahia de ballenas y naturaleza exuberante",
+      subtitle:
+        "Santuario natural de la RD: ballenas jorobadas, cascadas escondidas y playas virgenes.",
       image: "/fototours/samana-hero.jpg"
     },
     summary:
-      "La Península de Samaná es el escape perfecto para los amantes de la naturaleza. Famosa mundialmente por ser el santuario de las ballenas jorobadas cada invierno, la zona ofrece una belleza salvaje inigualable. Explora la imponente Cascada El Limón, relájate en el idílico Cayo Levantado y sumérgete en una cultura local rica y vibrante, lejos del bullicio de los grandes resorts.",
+      "La Peninsula de Samana es ideal para amantes de la naturaleza. Es famosa por la temporada de ballenas jorobadas y por paisajes que combinan montana, rios y playas. Explora la Cascada El Limon y relaja en Cayo Levantado con un ambiente mas tranquilo que los grandes resorts.",
     highlights: [
-      "Avistamiento de ballenas (enero–marzo).",
-      "Excursiones a El Limón y Cayo Levantado.",
+      "Avistamiento de ballenas (enero a marzo).",
+      "Excursiones a El Limon y Cayo Levantado.",
       "Cultura local en comunidades costeras."
     ],
     practical: {
-      bestSeason: "Enero a marzo para ballenas; abril–julio para clima cálido.",
-      transport: "Vuelos o transfer desde Santo Domingo; carretera costera panorámica.",
-      localTip: "Contrata guías certificados para tours de ballenas y cascadas."
+      bestSeason: "Enero a marzo para ballenas; abril a julio para clima calido.",
+      transport: "Vuelos o transfer desde Santo Domingo; carretera costera panoramica.",
+      localTip: "Contrata guias certificados para tours de ballenas y cascadas."
     }
   },
   {
-    country: "República Dominicana",
+    country: "Republica Dominicana",
     countrySlug: "dominican-republic",
     zone: "Macao",
     zoneSlug: "macao",
     hero: {
-      title: "Playas de arena dorada y aventuras en buggy",
-      subtitle: "La costa salvaje de Punta Cana. Adrenalina pura en tours de buggy y un paraíso del surf con playas vírgenes y doradas.",
+      title: "Playas doradas y aventuras en buggy",
+      subtitle:
+        "La costa salvaje de Punta Cana con tours de buggy y una de las playas publicas mas famosas.",
       image: "/fototours/macao-hero.jpg"
     },
     summary:
-      "Macao es el contrapunto aventurero a las tranquilas playas de resort. Esta costa virgen al este de Punta Cana es famosa por sus playas salvajes y su ambiente local relajado, siendo el lugar predilecto para los entusiastas del surf y las aventuras todoterreno. Súbete a un buggy o ATV para explorar cuevas y caminos rurales, y termina tu día disfrutando de un atardecer auténtico en la única playa pública certificada de la zona.",
+      "Macao es el lado aventurero de Punta Cana. Sus playas abiertas y caminos rurales son el escenario favorito para tours en buggy y ATV. Es una zona autentica, ideal para viajeros que quieren combinar mar, adrenalina y paisajes naturales.",
     highlights: [
-      "Tours de buggy y atv por dunas y caminos rurales.",
-      "Playa pública con olas suaves para surf.",
-      "Ambiente más íntimo que Punta Cana."
+      "Tours de buggy y ATV por caminos rurales.",
+      "Playa publica con olas suaves para surf.",
+      "Ambiente local y menos masivo."
     ],
     practical: {
       bestSeason: "Diciembre a abril para clima seco.",
-      transport: "Pickup desde Punta Cana, Bávaro y otros hoteles cercanos.",
-      localTip: "Haz el tour de buggy al amanecer para evitar el calor."
+      transport: "Pickup desde Punta Cana, Bavaro y hoteles cercanos.",
+      localTip: "Haz el tour de buggy temprano para evitar el calor."
     }
   }
 ];

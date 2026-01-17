@@ -5,9 +5,10 @@ import PublicTransferPage from "@/components/public/PublicTransferPage";
 const canonicalUrl = "https://proactivitis.com/traslado";
 
 export const metadata: Metadata = {
-  title: "Traslados Privados | Reserva en Proactivitis",
+  title: "Traslados privados en Punta Cana | Proactivitis",
   description:
-    "Reserva traslados privados con choferes verificados, precios claros y confirmacion inmediata. Conecta aeropuerto, hotel y ciudad con soporte 24/7.",
+    "Reserva traslados privados desde el aeropuerto, hotel o ciudad con choferes verificados, precios fijos y soporte 24/7. Servicio puerta a puerta, confirmacion inmediata y vehiculos climatizados.",
+  keywords: ["traslados privados", "transfer aeropuerto", "Punta Cana", "choferes verificados", "Proactivitis"],
   alternates: {
     canonical: canonicalUrl,
     languages: {

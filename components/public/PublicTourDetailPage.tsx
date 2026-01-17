@@ -19,6 +19,594 @@ import { translateText } from "@/lib/translationService";
 
 const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
 
+type TourFaqItem = { question: string; answer: string };
+
+const PUNTA_CANA_TOP_TOURS = new Set([
+  "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana",
+  "cayo-levantado-luxury-beach-day",
+  "excursion-de-un-dia-a-santo-domingo-desde-punta-cana",
+  "excursion-en-buggy-y-atv-en-punta-cana",
+  "parasailing-punta-cana",
+  "sunset-catamaran-snorkel",
+  "tour-de-safari-cultural-por-el-pais-de-republica-dominicana-desde-punta-cana",
+  "tour-en-buggy-en-punta-cana",
+  "tour-isla-saona-desde-bayhibe-la-romana",
+  "tour-y-entrada-para-de-isla-saona-desde-punta-cana",
+  "transfer-privado-proactivitis"
+]);
+
+const TOUR_H1_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
+  "tour-en-buggy-en-punta-cana": {
+    es: "Tour en buggy en Punta Cana: barro, cueva y aventura",
+    en: "Punta Cana buggy tour: mud, cave and adventure",
+    fr: "Tour en buggy a Punta Cana : boue, grotte et aventure"
+  },
+  "excursion-en-buggy-y-atv-en-punta-cana": {
+    es: "Buggy y ATV en Punta Cana: off-road y cenote",
+    en: "Buggy and ATV in Punta Cana: off-road and cenote",
+    fr: "Buggy et ATV a Punta Cana : off-road et cenote"
+  },
+  "transfer-privado-proactivitis": {
+    es: "Traslado privado en Punta Cana con chofer verificado",
+    en: "Private transfer in Punta Cana with verified driver",
+    fr: "Transfert prive a Punta Cana avec chauffeur verifie"
+  },
+  "tour-isla-saona-desde-bayhibe-la-romana": {
+    es: "Isla Saona desde Bayahibe: playa y catamaran",
+    en: "Saona Island from Bayahibe: beach and catamaran",
+    fr: "Ile Saona depuis Bayahibe : plage et catamaran"
+  },
+  "cayo-levantado-luxury-beach-day": {
+    es: "Samana y Cayo Levantado desde Punta Cana",
+    en: "Samana and Cayo Levantado from Punta Cana",
+    fr: "Samana et Cayo Levantado depuis Punta Cana"
+  },
+  "sunset-catamaran-snorkel": {
+    es: "Party boat en Punta Cana con snorkel y open bar",
+    en: "Punta Cana party boat with snorkel and open bar",
+    fr: "Party boat a Punta Cana avec snorkel et open bar"
+  },
+  "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana": {
+    es: "Ballenas en Samana + Cayo Levantado desde Punta Cana",
+    en: "Whale watching in Samana + Cayo Levantado",
+    fr: "Observation des baleines a Samana + Cayo Levantado"
+  },
+  "parasailing-punta-cana": {
+    es: "Parasailing en Punta Cana: vistas del Caribe",
+    en: "Punta Cana parasailing: Caribbean views",
+    fr: "Parasailing a Punta Cana : vues caraibes"
+  },
+  "tour-y-entrada-para-de-isla-saona-desde-punta-cana": {
+    es: "Isla Saona desde Punta Cana con entradas incluidas",
+    en: "Saona Island from Punta Cana with tickets",
+    fr: "Ile Saona depuis Punta Cana avec billets"
+  },
+  "tour-de-safari-cultural-por-el-pais-de-republica-dominicana-desde-punta-cana": {
+    es: "Safari cultural desde Punta Cana: campo y degustaciones",
+    en: "Cultural safari from Punta Cana: countryside and tastings",
+    fr: "Safari culturel depuis Punta Cana : campagne et degustations"
+  },
+  "excursion-de-un-dia-a-santo-domingo-desde-punta-cana": {
+    es: "Santo Domingo desde Punta Cana: excursion de un dia",
+    en: "Santo Domingo day trip from Punta Cana",
+    fr: "Excursion a Saint-Domingue depuis Punta Cana"
+  }
+};
+
+const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>> = {
+  "tour-en-buggy-en-punta-cana": {
+    es: [
+      {
+        question: "Que incluye el tour en buggy en Punta Cana?",
+        answer: "Incluye buggy, guia, rutas off-road y paradas para fotos. El precio final se muestra antes de reservar."
+      },
+      {
+        question: "Hay parada en cueva o cenote?",
+        answer: "La ruta suele incluir una parada en cueva o cenote y una casa tipica con cafe y cacao."
+      },
+      {
+        question: "Necesito licencia para conducir?",
+        answer: "Se requiere licencia vigente y ser mayor de edad. El briefing de seguridad es obligatorio."
+      }
+    ],
+    en: [
+      {
+        question: "What is included in the Punta Cana buggy tour?",
+        answer: "Buggy, guide, off-road routes and photo stops. The final price is shown before booking."
+      },
+      {
+        question: "Is there a cave or cenote stop?",
+        answer: "Most routes include a cave or cenote stop plus a local house visit with coffee and cacao."
+      },
+      {
+        question: "Do I need a drivers license?",
+        answer: "A valid license and adult age are required. The safety briefing is mandatory."
+      }
+    ],
+    fr: [
+      {
+        question: "Que comprend le tour en buggy a Punta Cana?",
+        answer: "Buggy, guide, pistes off-road et arrets photo. Le prix final est affiche avant la reservation."
+      },
+      {
+        question: "Y a-t-il un arret grotte ou cenote?",
+        answer: "La plupart des parcours incluent une grotte ou un cenote et une maison locale avec cafe et cacao."
+      },
+      {
+        question: "Faut-il un permis de conduire?",
+        answer: "Un permis valide et etre adulte sont requis. Le briefing de securite est obligatoire."
+      }
+    ]
+  },
+  "excursion-en-buggy-y-atv-en-punta-cana": {
+    es: [
+      {
+        question: "Puedo elegir buggy o ATV?",
+        answer: "Si, eliges el tipo de vehiculo al reservar y confirmamos disponibilidad."
+      },
+      {
+        question: "Cuanto dura la excursion?",
+        answer: "La actividad dura aproximadamente {durationLabel}, incluyendo las paradas."
+      },
+      {
+        question: "Hay recogida en hotel?",
+        answer: "La mayoria de salidas incluye pickup en Punta Cana/Bavaro con punto confirmado."
+      }
+    ],
+    en: [
+      {
+        question: "Can I choose buggy or ATV?",
+        answer: "Yes, you select the vehicle type when booking and we confirm availability."
+      },
+      {
+        question: "How long is the excursion?",
+        answer: "The activity lasts about {durationLabel}, including stops."
+      },
+      {
+        question: "Is hotel pickup included?",
+        answer: "Most departures include pickup in Punta Cana/Bavaro with a confirmed meeting point."
+      }
+    ],
+    fr: [
+      {
+        question: "Puis-je choisir buggy ou ATV?",
+        answer: "Oui, vous choisissez le type de vehicule a la reservation et nous confirmons."
+      },
+      {
+        question: "Quelle est la duree de l excursion?",
+        answer: "L activite dure environ {durationLabel}, pauses incluses."
+      },
+      {
+        question: "La prise en charge hotel est incluse?",
+        answer: "La plupart des departs incluent la prise en charge a Punta Cana/Bavaro."
+      }
+    ]
+  },
+  "transfer-privado-proactivitis": {
+    es: [
+      {
+        question: "Es traslado privado o compartido?",
+        answer: "Es privado para tu grupo, con chofer verificado y vehiculo exclusivo."
+      },
+      {
+        question: "Incluye seguimiento de vuelo?",
+        answer: "Si, monitoreamos la hora de llegada y ajustamos la espera cuando es necesario."
+      },
+      {
+        question: "Puedo reservar ida y vuelta?",
+        answer: "Si, elige la opcion round trip en el checkout para asegurar ambos trayectos."
+      }
+    ],
+    en: [
+      {
+        question: "Is it private or shared?",
+        answer: "It is private for your group with a verified driver and dedicated vehicle."
+      },
+      {
+        question: "Do you track flights?",
+        answer: "Yes, we monitor arrival time and adjust the wait when needed."
+      },
+      {
+        question: "Can I book round trip?",
+        answer: "Yes, select round trip at checkout to secure both rides."
+      }
+    ],
+    fr: [
+      {
+        question: "C est un transfert prive ou partage?",
+        answer: "C est un transfert prive pour votre groupe avec chauffeur verifie."
+      },
+      {
+        question: "Suivez-vous les vols?",
+        answer: "Oui, nous suivons l heure d arrivee et ajustons l attente si besoin."
+      },
+      {
+        question: "Puis-je reserver aller-retour?",
+        answer: "Oui, choisissez aller-retour au checkout pour les deux trajets."
+      }
+    ]
+  },
+  "tour-isla-saona-desde-bayhibe-la-romana": {
+    es: [
+      {
+        question: "Desde donde sale el tour a Isla Saona?",
+        answer: "Sale desde Bayahibe/La Romana con lancha o catamaran segun el horario."
+      },
+      {
+        question: "Incluye almuerzo y bebidas?",
+        answer: "Si, incluye almuerzo tipico y bebidas segun el operador."
+      },
+      {
+        question: "Hay tiempo libre en la playa?",
+        answer: "Si, hay tiempo de playa para banarse y descansar."
+      }
+    ],
+    en: [
+      {
+        question: "Where does the Saona tour depart from?",
+        answer: "It departs from Bayahibe/La Romana by speedboat or catamaran depending on schedule."
+      },
+      {
+        question: "Is lunch and drinks included?",
+        answer: "Yes, lunch and drinks are included depending on the operator."
+      },
+      {
+        question: "Is there free beach time?",
+        answer: "Yes, you have beach time to swim and relax."
+      }
+    ],
+    fr: [
+      {
+        question: "D ou part le tour Ile Saona?",
+        answer: "Depart de Bayahibe/La Romana en bateau rapide ou catamaran selon l horaire."
+      },
+      {
+        question: "Dejeuner et boissons inclus?",
+        answer: "Oui, dejeuner et boissons inclus selon l operateur."
+      },
+      {
+        question: "Y a-t-il du temps libre a la plage?",
+        answer: "Oui, temps libre pour nager et se detendre."
+      }
+    ]
+  },
+  "cayo-levantado-luxury-beach-day": {
+    es: [
+      {
+        question: "Que incluye el dia en Samana y Cayo Levantado?",
+        answer: "Incluye traslados, playa, almuerzo y paradas clave del itinerario."
+      },
+      {
+        question: "Cuanto dura el viaje desde Punta Cana?",
+        answer: "Es un tour de dia completo con salida temprano y regreso en la tarde."
+      },
+      {
+        question: "Es apto para familias?",
+        answer: "Si, es una excursion tranquila con ritmo moderado."
+      }
+    ],
+    en: [
+      {
+        question: "What is included in the Samana and Cayo Levantado day?",
+        answer: "Transfers, beach time, lunch and key stops are included."
+      },
+      {
+        question: "How long is the trip from Punta Cana?",
+        answer: "It is a full-day tour with early departure and afternoon return."
+      },
+      {
+        question: "Is it family friendly?",
+        answer: "Yes, it is a relaxed excursion with a moderate pace."
+      }
+    ],
+    fr: [
+      {
+        question: "Que comprend la journee Samana et Cayo Levantado?",
+        answer: "Transferts, plage, dejeuner et arrets principaux sont inclus."
+      },
+      {
+        question: "Combien de temps dure le trajet depuis Punta Cana?",
+        answer: "C est une excursion a la journee avec depart tot et retour l apres-midi."
+      },
+      {
+        question: "C est adapte aux familles?",
+        answer: "Oui, excursion tranquille avec rythme modere."
+      }
+    ]
+  },
+  "sunset-catamaran-snorkel": {
+    es: [
+      {
+        question: "Es party boat con snorkel?",
+        answer: "Si, catamaran con musica, open bar y parada de snorkel."
+      },
+      {
+        question: "Hay recogida en hotel?",
+        answer: "Confirmamos pickup en Punta Cana/Bavaro despues de reservar."
+      },
+      {
+        question: "Que llevar?",
+        answer: "Traje de bano, toalla, protector solar y efectivo opcional."
+      }
+    ],
+    en: [
+      {
+        question: "Is it a party boat with snorkel?",
+        answer: "Yes, catamaran with music, open bar and a snorkel stop."
+      },
+      {
+        question: "Is hotel pickup included?",
+        answer: "Pickup in Punta Cana/Bavaro is confirmed after booking."
+      },
+      {
+        question: "What should I bring?",
+        answer: "Swimsuit, towel, sunscreen and optional cash."
+      }
+    ],
+    fr: [
+      {
+        question: "C est un party boat avec snorkel?",
+        answer: "Oui, catamaran avec musique, open bar et arret snorkel."
+      },
+      {
+        question: "La prise en charge hotel est incluse?",
+        answer: "La prise en charge a Punta Cana/Bavaro est confirmee apres reservation."
+      },
+      {
+        question: "Que faut-il apporter?",
+        answer: "Maillot, serviette, creme solaire et cash optionnel."
+      }
+    ]
+  },
+  "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana": {
+    es: [
+      {
+        question: "En que temporada se ven las ballenas?",
+        answer: "La temporada mas fuerte suele ser de enero a marzo."
+      },
+      {
+        question: "Incluye Cascada El Limon?",
+        answer: "Si, incluye visita a la cascada y Cayo Levantado."
+      },
+      {
+        question: "Es un tour largo?",
+        answer: "Si, es un dia completo con transporte desde Punta Cana."
+      }
+    ],
+    en: [
+      {
+        question: "What is the whale season in Samana?",
+        answer: "Peak season is usually from January to March."
+      },
+      {
+        question: "Is El Limon Waterfall included?",
+        answer: "Yes, it includes the waterfall and Cayo Levantado."
+      },
+      {
+        question: "Is it a long tour?",
+        answer: "Yes, it is a full-day tour with transport from Punta Cana."
+      }
+    ],
+    fr: [
+      {
+        question: "Quelle est la saison des baleines a Samana?",
+        answer: "La haute saison est generalement de janvier a mars."
+      },
+      {
+        question: "La cascade El Limon est-elle incluse?",
+        answer: "Oui, la cascade et Cayo Levantado sont inclus."
+      },
+      {
+        question: "C est une longue excursion?",
+        answer: "Oui, journee complete avec transport depuis Punta Cana."
+      }
+    ]
+  },
+  "parasailing-punta-cana": {
+    es: [
+      {
+        question: "Cuanto dura el vuelo?",
+        answer: "El vuelo dura entre 10 y 12 minutos en el aire."
+      },
+      {
+        question: "Es seguro?",
+        answer: "Equipo certificado, briefing y despegue desde lancha."
+      },
+      {
+        question: "Pueden volar dos personas?",
+        answer: "Si, vuelos dobles o triples segun peso."
+      }
+    ],
+    en: [
+      {
+        question: "How long is the flight?",
+        answer: "The flight lasts about 10-12 minutes in the air."
+      },
+      {
+        question: "Is it safe?",
+        answer: "Certified gear, safety briefing and boat takeoff."
+      },
+      {
+        question: "Can two people fly?",
+        answer: "Yes, double or triple flights depending on weight."
+      }
+    ],
+    fr: [
+      {
+        question: "Combien de temps dure le vol?",
+        answer: "Le vol dure environ 10-12 minutes."
+      },
+      {
+        question: "Est-ce securise?",
+        answer: "Equipement certifie, briefing et decollage depuis le bateau."
+      },
+      {
+        question: "Peut-on voler a deux?",
+        answer: "Oui, vols doubles ou triples selon le poids."
+      }
+    ]
+  },
+  "tour-y-entrada-para-de-isla-saona-desde-punta-cana": {
+    es: [
+      {
+        question: "Incluye entrada y transporte?",
+        answer: "Si, incluye ticket, transporte y tiempo de playa."
+      },
+      {
+        question: "Que tipo de barco se usa?",
+        answer: "Lancha rapida y catamaran segun el itinerario."
+      },
+      {
+        question: "Hay pickup en hoteles?",
+        answer: "Si, pickup en Punta Cana/Bavaro confirmado despues de reservar."
+      }
+    ],
+    en: [
+      {
+        question: "Does it include ticket and transport?",
+        answer: "Yes, ticket, transport and beach time are included."
+      },
+      {
+        question: "What kind of boat is used?",
+        answer: "Speedboat and catamaran depending on the itinerary."
+      },
+      {
+        question: "Is hotel pickup included?",
+        answer: "Yes, pickup in Punta Cana/Bavaro is confirmed after booking."
+      }
+    ],
+    fr: [
+      {
+        question: "Billet et transport inclus?",
+        answer: "Oui, billet, transport et temps de plage inclus."
+      },
+      {
+        question: "Quel type de bateau est utilise?",
+        answer: "Bateau rapide et catamaran selon l itineraire."
+      },
+      {
+        question: "La prise en charge hotel est incluse?",
+        answer: "Oui, prise en charge a Punta Cana/Bavaro apres reservation."
+      }
+    ]
+  },
+  "tour-de-safari-cultural-por-el-pais-de-republica-dominicana-desde-punta-cana": {
+    es: [
+      {
+        question: "Que lugares se visitan en el safari cultural?",
+        answer: "Campos, pueblos, casa tipica y degustaciones locales."
+      },
+      {
+        question: "Incluye guia local?",
+        answer: "Si, guia y transporte incluidos."
+      },
+      {
+        question: "Es recomendable para familias?",
+        answer: "Si, es un tour cultural y tranquilo."
+      }
+    ],
+    en: [
+      {
+        question: "What places are visited on the cultural safari?",
+        answer: "Countryside, villages, a local house and tastings."
+      },
+      {
+        question: "Is a local guide included?",
+        answer: "Yes, guide and transport are included."
+      },
+      {
+        question: "Is it family friendly?",
+        answer: "Yes, it is a relaxed cultural tour."
+      }
+    ],
+    fr: [
+      {
+        question: "Quels lieux sont visites pendant le safari culturel?",
+        answer: "Campagne, villages, maison locale et degustations."
+      },
+      {
+        question: "Un guide local est-il inclus?",
+        answer: "Oui, guide et transport inclus."
+      },
+      {
+        question: "C est adapte aux familles?",
+        answer: "Oui, c est un tour culturel tranquille."
+      }
+    ]
+  },
+  "excursion-de-un-dia-a-santo-domingo-desde-punta-cana": {
+    es: [
+      {
+        question: "Que incluye la visita a Santo Domingo?",
+        answer: "Zona Colonial, paradas historicas y guia local."
+      },
+      {
+        question: "Incluye almuerzo?",
+        answer: "Si, almuerzo tipico incluido."
+      },
+      {
+        question: "Cuanto dura el viaje?",
+        answer: "Es un tour de dia completo con salida temprano."
+      }
+    ],
+    en: [
+      {
+        question: "What is included in the Santo Domingo visit?",
+        answer: "Colonial Zone, key stops and a local guide."
+      },
+      {
+        question: "Is lunch included?",
+        answer: "Yes, a local lunch is included."
+      },
+      {
+        question: "How long is the trip?",
+        answer: "It is a full-day tour with early departure."
+      }
+    ],
+    fr: [
+      {
+        question: "Que comprend la visite de Saint-Domingue?",
+        answer: "Zone Coloniale, arrets principaux et guide local."
+      },
+      {
+        question: "Le dejeuner est-il inclus?",
+        answer: "Oui, dejeuner local inclus."
+      },
+      {
+        question: "Quelle est la duree du voyage?",
+        answer: "Excursion a la journee avec depart tot."
+      }
+    ]
+  }
+};
+
+const resolveTourH1 = (slug: string, locale: Locale, fallback: string) =>
+  TOUR_H1_OVERRIDES[slug]?.[locale] ?? fallback;
+
+const TOUR_SCHEMA_KEYWORDS: Record<Locale, string[]> = {
+  es: [
+    "tours punta cana",
+    "excursiones punta cana",
+    "actividades punta cana",
+    "tours con recogida en hotel",
+    "traslados punta cana"
+  ],
+  en: [
+    "punta cana tours",
+    "punta cana excursions",
+    "things to do punta cana",
+    "tours with hotel pickup",
+    "punta cana transfers"
+  ],
+  fr: [
+    "excursions punta cana",
+    "activites punta cana",
+    "choses a faire punta cana",
+    "prise en charge hotel punta cana",
+    "transferts punta cana"
+  ]
+};
+
 export type TourDetailSearchParams = {
   hotelSlug?: string;
   bookingCode?: string;
@@ -170,7 +758,7 @@ const itineraryMock: ItineraryStop[] = [
   {
     time: "09:00",
     title: "Pick-up",
-    description: "Recogida en el lobby de tu hotel para arrancar con energía."
+    description: "Recogida en el lobby de tu hotel para arrancar con energia."
   },
   {
     time: "Ruta Safari",
@@ -180,7 +768,7 @@ const itineraryMock: ItineraryStop[] = [
   {
     time: "Cultura Local",
     title: "Cultura Local",
-    description: "Degustación de café, cacao y tabaco en casa típica."
+    description: "Degustacion de cafe, cacao y tabaco en casa tipica."
   },
   {
     time: "Cenote / Playa",
@@ -196,7 +784,7 @@ const itineraryMock: ItineraryStop[] = [
 
 const buildTourTrustBadges = (locale: Locale, languages: string[], categories: string[]) => {
   const languageLabel = languages.length
-    ? languages.join(" · ")
+    ? languages.join(" / ")
     : translate(locale, "tour.badges.languagesFallback");
   const categoryLabel = categories.length
     ? categories[0]
@@ -210,24 +798,34 @@ const buildTourTrustBadges = (locale: Locale, languages: string[], categories: s
 
 const buildTourFaq = (
   locale: Locale,
+  slug: string,
   tourTitle: string,
   durationLabel: string,
   displayTime: string,
   priceLabel: string
-) => [
-  {
-    question: translate(locale, "tour.faq.question.reserve", { tourTitle }),
-    answer: translate(locale, "tour.faq.answer.reserve", { priceLabel })
-  },
-  {
-    question: translate(locale, "tour.faq.question.includes"),
-    answer: translate(locale, "tour.faq.answer.includes", { priceLabel, duration: durationLabel })
-  },
-  {
-    question: translate(locale, "tour.faq.question.flight"),
-    answer: translate(locale, "tour.faq.answer.flight", { displayTime })
+) => {
+  const overrides = TOUR_FAQ_OVERRIDES[slug]?.[locale];
+  if (overrides?.length) {
+    return overrides.map((item) => ({
+      question: item.question.replace("{durationLabel}", durationLabel),
+      answer: item.answer.replace("{durationLabel}", durationLabel)
+    }));
   }
-];
+  return [
+    {
+      question: translate(locale, "tour.faq.question.reserve", { tourTitle }),
+      answer: translate(locale, "tour.faq.answer.reserve", { priceLabel })
+    },
+    {
+      question: translate(locale, "tour.faq.question.includes"),
+      answer: translate(locale, "tour.faq.answer.includes", { priceLabel, duration: durationLabel })
+    },
+    {
+      question: translate(locale, "tour.faq.question.flight"),
+      answer: translate(locale, "tour.faq.answer.flight", { displayTime })
+    }
+  ];
+};
 
 export default async function TourDetailPage({ params, searchParams, locale }: TourDetailProps) {
   const { slug } = await params;
@@ -290,7 +888,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
 
   const translations = await fetchTourTranslations(tour.id);
 
-  // --- Lógica de datos ---
+  // --- Logica de datos ---
   const rawGallery = parseGallery(tour.gallery);
   const rawHighlights = parseJsonArray<string>(tour.highlights);
   const includesFromString = tour.includes ? tour.includes.split(";").map((i) => i.trim()).filter(Boolean) : [];
@@ -353,6 +951,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
           : [];
   const hasVisualTimeline = visualTimeline.length > 0;
   const localizedTitle = translation?.title ?? tour.title;
+  const heroTitle = resolveTourH1(tour.slug, locale, localizedTitle);
   const localizedSubtitle = translation?.subtitle ?? tour.subtitle ?? "";
   const localizedShortDescription = translation?.shortDescription ?? tour.shortDescription;
   const localizedDescription = translation?.description ?? tour.description;
@@ -364,7 +963,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const needsReadMore = Boolean(shortDescriptionText && shortDescriptionText.length > 220);
   const shortTeaser =
     shortDescriptionText && shortDescriptionText.length > 220
-      ? `${shortDescriptionText.slice(0, 220).trim()}…`
+      ? `${shortDescriptionText.slice(0, 220).trim()}...`
       : shortDescriptionText ?? "Explora esta aventura guiada por expertos locales.";
   const longDescriptionParagraphs = localizedDescription
     ? localizedDescription
@@ -373,7 +972,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
         .filter(Boolean)
     : [];
   const trustBadges = buildTourTrustBadges(locale, languages, categories);
-  const faqList = buildTourFaq(locale, localizedTitle, durationLabel, displayTime, priceLabel);
+  const faqList = buildTourFaq(locale, tour.slug, heroTitle, durationLabel, displayTime, priceLabel);
 
   const approvedReviews = await getApprovedTourReviews(tour.id);
   const reviewLocale =
@@ -495,6 +1094,9 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const touristTypeFallback = categories.find((category) =>
     ["Family", "Adventure", "Couples"].includes(category)
   );
+  const schemaKeywords = PUNTA_CANA_TOP_TOURS.has(tour.slug)
+    ? TOUR_SCHEMA_KEYWORDS[locale]
+    : undefined;
   const aggregateRating =
     detailReviewCount > 0
       ? {
@@ -504,10 +1106,28 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
           bestRating: "5"
         }
       : undefined;
+  const reviewSchema =
+    detailReviewCount > 0
+      ? translatedReviews.slice(0, 5).map((review) => ({
+          "@type": "Review",
+          author: {
+            "@type": "Person",
+            name: review.customerName
+          },
+          reviewRating: {
+            "@type": "Rating",
+            ratingValue: review.rating,
+            bestRating: "5"
+          },
+          reviewBody: review.body,
+          name: review.title ?? heroTitle,
+          datePublished: new Date(review.createdAt).toISOString()
+        }))
+      : undefined;
   const tourSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: localizedTitle,
+    name: heroTitle,
     description: localizedDescription ?? shortTeaser,
     image: schemaImages,
     url: tourUrl,
@@ -561,7 +1181,9 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       }
     },
     sameAs: SAME_AS_URLS,
-    ...(aggregateRating ? { aggregateRating } : {})
+    ...(schemaKeywords ? { keywords: schemaKeywords.join(", ") } : {}),
+    ...(aggregateRating ? { aggregateRating } : {}),
+    ...(reviewSchema ? { review: reviewSchema } : {})
   };
 
   const faqSchema = {
@@ -636,7 +1258,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
               </svg>
               <span>{tour.location ?? "Punta Cana"}</span>
             </div>
-            <h1 className="text-3xl font-black text-slate-900 sm:text-4xl lg:text-5xl">{localizedTitle}</h1>
+            <h1 className="text-3xl font-black text-slate-900 sm:text-4xl lg:text-5xl">{heroTitle}</h1>
             <div className="flex flex-col gap-4">
               <div className="flex items-end gap-8">
                 <div>
@@ -655,7 +1277,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                       <path d="M12 3.5l2.7 5.48 6.05.88-4.38 4.27 1.03 6.03L12 17.9l-5.4 2.84 1.03-6.03-4.38-4.27 6.05-.88L12 3.5z" />
                     </svg>
                     <p className="text-xl font-black">
-                      {detailReviewCount ? ratingValue.toFixed(1) : "—"}
+                      {detailReviewCount ? ratingValue.toFixed(1) : "0.0"}
                     </p>
                   </div>
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{heroReviewsLabel}</p>
@@ -686,7 +1308,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
               </div>
             </div>
           </div>
-          <TourGalleryCollage images={gallery} title={localizedTitle} fallbackImage={heroImage} />
+          <TourGalleryCollage images={gallery} title={heroTitle} fallbackImage={heroImage} />
         </div>
       </section>
 
@@ -716,9 +1338,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
             <ul className="space-y-2 text-sm font-semibold text-slate-700">
               {highlights.map((item) => (
                 <li key={item} className="flex items-center gap-2">
-                  <span aria-hidden className="text-lg text-emerald-600">
-                    ✓
-                  </span>
+                  <span aria-hidden className="text-lg text-emerald-600">*</span>
                   {item}
                 </li>
               ))}
@@ -793,9 +1413,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                 <ul className="mt-3 space-y-2 text-sm font-semibold text-emerald-600">
                   {includes.map((item) => (
                     <li key={item} className="flex items-center gap-2">
-                      <span aria-hidden className="text-lg text-emerald-500">
-                        ✓
-                      </span>
+                      <span aria-hidden className="text-lg text-emerald-500">+</span>
                       {item}
                     </li>
                   ))}
@@ -808,9 +1426,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                 <ul className="mt-3 space-y-2 text-sm font-semibold text-rose-500">
                   {excludes.map((item) => (
                     <li key={item} className="flex items-center gap-2">
-                      <span aria-hidden className="text-lg text-rose-500">
-                        ✕
-                      </span>
+                      <span aria-hidden className="text-lg text-rose-500">x</span>
                       {item}
                     </li>
                   ))}
@@ -871,7 +1487,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <p className="text-4xl font-semibold text-slate-900">
-                    {detailReviewCount ? ratingValue.toFixed(1) : "—"}
+                    {detailReviewCount ? ratingValue.toFixed(1) : "0.0"}
                   </p>
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
                     {translate(locale, "tour.section.reviews.ratingOutOf")}
