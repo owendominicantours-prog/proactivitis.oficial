@@ -124,6 +124,11 @@ const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     es: "Samana + Cayo Levantado desde Punta Cana",
     en: "Samana + Cayo Levantado from Punta Cana",
     fr: "Samana + Cayo Levantado depuis Punta Cana"
+  },
+  "party-boat-sosua": {
+    es: "Sosua Party Boat: open bar y snorkel",
+    en: "Sosua party boat: open bar & snorkel",
+    fr: "Party boat a Sosua : open bar et snorkel"
   }
 };
 const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
@@ -186,6 +191,11 @@ const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>
     es: "Dia de playa en Samana y Cayo Levantado desde Punta Cana con traslados y tiempo libre.",
     en: "Samana and Cayo Levantado beach day from Punta Cana with transfers and free time.",
     fr: "Journee plage a Samana et Cayo Levantado depuis Punta Cana avec transferts et temps libre."
+  },
+  "party-boat-sosua": {
+    es: "Party boat en Sosua con open bar, snorkel y pick-up desde Puerto Plata. Elige Share, Private o VIP con brunch.",
+    en: "Sosua party boat with open bar, snorkel and pickup from Puerto Plata. Choose Share, Private or VIP with brunch.",
+    fr: "Party boat a Sosua avec open bar, snorkel et pickup depuis Puerto Plata. Choisissez Share, Private ou VIP."
   }
 };
 

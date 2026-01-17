@@ -28,6 +28,7 @@ type TourBookingWidgetProps = {
   hotelSlug?: string;
   bookingCode?: string;
   originHotelName?: string;
+  initialOptionId?: string;
 };
 
 type TourOption = {
@@ -100,7 +101,8 @@ export function TourBookingWidget({
   tourImage,
   hotelSlug,
   bookingCode,
-  originHotelName
+  originHotelName,
+  initialOptionId
 }: TourBookingWidgetProps) {
   const router = useRouter();
   const [date, setDate] = useState("");
@@ -111,7 +113,9 @@ export function TourBookingWidget({
   const resolvedOptions = (options ?? []).filter((option) => option.active !== false);
   const defaultOption =
     resolvedOptions.find((option) => option.isDefault) ?? resolvedOptions[0] ?? null;
-  const [selectedOptionId, setSelectedOptionId] = useState(defaultOption?.id ?? "");
+  const [selectedOptionId, setSelectedOptionId] = useState(
+    initialOptionId ?? defaultOption?.id ?? ""
+  );
 
   const selectedOption =
     resolvedOptions.find((option) => option.id === selectedOptionId) ?? defaultOption;
@@ -147,6 +151,12 @@ export function TourBookingWidget({
       setSelectedOptionId(defaultOption.id);
     }
   }, [defaultOption, selectedOptionId]);
+
+  useEffect(() => {
+    if (initialOptionId) {
+      setSelectedOptionId(initialOptionId);
+    }
+  }, [initialOptionId]);
 
   useEffect(() => {
     if (!timeSlotLabels.length) return;
