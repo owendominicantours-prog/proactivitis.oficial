@@ -150,6 +150,19 @@ type TourDurationRow = Prisma.TourGetPayload<{
   select: { duration: true };
 }>;
 
+const PUNTA_CANA_LINKS = [
+  { slug: "tour-en-buggy-en-punta-cana", labelKey: "puntaCana.links.item.1" },
+  { slug: "excursion-en-buggy-y-atv-en-punta-cana", labelKey: "puntaCana.links.item.2" },
+  { slug: "tour-isla-saona-desde-bayhibe-la-romana", labelKey: "puntaCana.links.item.3" },
+  { slug: "tour-y-entrada-para-de-isla-saona-desde-punta-cana", labelKey: "puntaCana.links.item.4" },
+  { slug: "sunset-catamaran-snorkel", labelKey: "puntaCana.links.item.5" },
+  { slug: "parasailing-punta-cana", labelKey: "puntaCana.links.item.6" },
+  { slug: "cayo-levantado-luxury-beach-day", labelKey: "puntaCana.links.item.7" },
+  { slug: "excursion-de-un-dia-a-santo-domingo-desde-punta-cana", labelKey: "puntaCana.links.item.8" },
+  { slug: "tour-de-safari-cultural-por-el-pais-de-republica-dominicana-desde-punta-cana", labelKey: "puntaCana.links.item.9" },
+  { slug: "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana", labelKey: "puntaCana.links.item.10" }
+] as const;
+
 type TourWithDeparture = Prisma.TourGetPayload<{
   include: {
     departureDestination: {
@@ -173,6 +186,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const params = resolvedSearchParams ?? {};
   const puntaCanaHubHref = locale === "es" ? "/punta-cana/tours" : `/${locale}/punta-cana/tours`;
+  const tourHref = (slug: string) => (locale === "es" ? `/tours/${slug}` : `/${locale}/tours/${slug}`);
 
   let countries: CountryOption[] = [];
   try {
@@ -337,7 +351,26 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
               </ul>
             </div>
           </aside>
-                    <section className="space-y-4">
+          <section className="space-y-4">
+            <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 text-sm text-slate-600 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
+                {t("puntaCana.links.subtitle")}
+              </p>
+              <h2 className="mt-2 text-2xl font-bold text-slate-900">
+                {t("puntaCana.links.title")}
+              </h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {PUNTA_CANA_LINKS.map((item) => (
+                  <Link
+                    key={item.slug}
+                    href={tourHref(item.slug)}
+                    className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
+                  >
+                    {t(item.labelKey)}
+                  </Link>
+                ))}
+              </div>
+            </div>
             <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 text-sm text-slate-600 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
                 {t("tours.seo.label")}

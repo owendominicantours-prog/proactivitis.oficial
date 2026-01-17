@@ -14,10 +14,24 @@ type PublicHomePageProps = {
   locale: Locale;
 };
 
+const PUNTA_CANA_LINKS = [
+  { slug: "tour-en-buggy-en-punta-cana", labelKey: "puntaCana.links.item.1" },
+  { slug: "excursion-en-buggy-y-atv-en-punta-cana", labelKey: "puntaCana.links.item.2" },
+  { slug: "tour-isla-saona-desde-bayhibe-la-romana", labelKey: "puntaCana.links.item.3" },
+  { slug: "tour-y-entrada-para-de-isla-saona-desde-punta-cana", labelKey: "puntaCana.links.item.4" },
+  { slug: "sunset-catamaran-snorkel", labelKey: "puntaCana.links.item.5" },
+  { slug: "parasailing-punta-cana", labelKey: "puntaCana.links.item.6" },
+  { slug: "cayo-levantado-luxury-beach-day", labelKey: "puntaCana.links.item.7" },
+  { slug: "excursion-de-un-dia-a-santo-domingo-desde-punta-cana", labelKey: "puntaCana.links.item.8" },
+  { slug: "tour-de-safari-cultural-por-el-pais-de-republica-dominicana-desde-punta-cana", labelKey: "puntaCana.links.item.9" },
+  { slug: "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana", labelKey: "puntaCana.links.item.10" }
+] as const;
+
 export default function PublicHomePage({ locale }: PublicHomePageProps) {
   const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
     translate(locale, key, replacements);
   const transferHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
+  const tourHref = (slug: string) => (locale === "es" ? `/tours/${slug}` : `/${locale}/tours/${slug}`);
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -98,6 +112,25 @@ export default function PublicHomePage({ locale }: PublicHomePageProps) {
         <HomeTourSearchSection locale={locale} />
         <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-sm">
           <FeaturedToursSection locale={locale} />
+        </div>
+        <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+            {t("puntaCana.links.subtitle")}
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+            {t("puntaCana.links.title")}
+          </h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {PUNTA_CANA_LINKS.map((item) => (
+              <Link
+                key={item.slug}
+                href={tourHref(item.slug)}
+                className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
+              >
+                {t(item.labelKey)}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
