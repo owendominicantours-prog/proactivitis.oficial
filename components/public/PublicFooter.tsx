@@ -60,7 +60,7 @@ const FOOTER_TRANSLATIONS: Record<Locale, FooterCopy> = {
       title: "Legal",
       links: ["Términos y Condiciones", "Privacidad", "Cookies", "Información Legal"]
     },
-    tagline: "Proactivitis — Turismo impulsado por personas, no por bots. Oficina central global."
+    tagline: "Proactivitis - Turismo impulsado por personas, no por bots. Oficina central global."
   },
   en: {
     support: {
@@ -79,7 +79,7 @@ const FOOTER_TRANSLATIONS: Record<Locale, FooterCopy> = {
       title: "Legal",
       links: ["Terms & Conditions", "Privacy", "Cookies", "Legal information"]
     },
-    tagline: "Proactivitis — Tourism powered by people, not bots. Global headquarters."
+    tagline: "Proactivitis - Tourism powered by people, not bots. Global headquarters."
   },
   fr: {
     support: {
@@ -98,7 +98,7 @@ const FOOTER_TRANSLATIONS: Record<Locale, FooterCopy> = {
       title: "Mentions légales",
       links: ["Conditions", "Confidentialité", "Cookies", "Informations juridiques"]
     },
-    tagline: "Proactivitis — Le tourisme porté par des personnes, pas des robots. Siège mondial."
+    tagline: "Proactivitis - Le tourisme porté par des personnes, pas des robots. Siège mondial."
   }
 };
 
@@ -127,8 +127,9 @@ export function PublicFooter() {
   }));
 
   return (
-    <footer className="relative overflow-hidden border-t border-slate-900 bg-slate-950 px-6 py-10 text-sm text-gray-200 font-[var(--font-open-sans)]">
-      <div className="mx-auto max-w-6xl space-y-6 px-0 text-gray-400 md:hidden">
+    <footer className="relative isolate overflow-hidden border-t border-slate-900 bg-slate-950 px-6 py-10 text-sm text-gray-200 font-[var(--font-open-sans)]">
+      <div className="pointer-events-none absolute inset-0 bg-slate-950" aria-hidden="true" />
+      <div className="relative z-10 mx-auto max-w-6xl space-y-6 px-0 text-gray-400 md:hidden">
         {groups.map((group) => (
           <div key={group.title} className="rounded-2xl border border-white/10 bg-slate-900/80">
             <button
@@ -156,7 +157,7 @@ export function PublicFooter() {
         </div>
       </div>
 
-      <div className="hidden md:block">
+      <div className="relative z-10 hidden md:block">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {groups.map((group) => (
