@@ -62,10 +62,22 @@ export const mapDbVariant = (row: {
 });
 
 export const getPublishedVariantBySlug = async (slug: string) => {
-  const row = await prisma.tourVariant.findFirst({
-    where: { slug, status: "PUBLISHED" }
-  });
-  return row ? mapDbVariant(row) : null;
+  try {
+    const row = await prisma.tourVariant.findFirst({
+      where: { slug, status: "PUBLISHED" }
+    });
+    return row ? mapDbVariant(row) : null;
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      (error as { code?: string }).code &&
+      ["P2021", "P2022"].includes((error as { code?: string }).code ?? "")
+    ) {
+      return null;
+    }
+    throw error;
+  }
 };
 
 export const getVariantForEdit = async (id: string) => {
