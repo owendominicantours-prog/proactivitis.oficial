@@ -8,6 +8,7 @@ import { DynamicImage } from "@/components/shared/DynamicImage";
 
 const TOUR_SLUGS = [
   "tour-y-entrada-para-de-isla-saona-desde-punta-cana",
+  "tour-isla-saona-desde-bayhibe-la-romana",
   "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana",
   "sunset-catamaran-snorkel",
   "party-boat-sosua"
@@ -96,9 +97,46 @@ const toAbsoluteUrl = (value: string) => {
   return `${PROACTIVITIS_URL}${value.startsWith("/") ? value : `/${value}`}`;
 };
 
-const cleanDurationLabel = (value?: string | null) => {
+type DurationPayload = {
+  value?: string | number;
+  unit?: string;
+};
+
+const normalizeDurationUnit = (unit: string, locale: Locale) => {
+  const lower = unit.toLowerCase();
+  if (locale === "es") {
+    if (lower.includes("hour") || lower.includes("hora")) return "horas";
+    if (lower.includes("minute") || lower.includes("minuto")) return "minutos";
+    if (lower.includes("day") || lower.includes("dia")) return "dias";
+    return unit;
+  }
+  if (locale === "fr") {
+    if (lower.includes("hour") || lower.includes("hora")) return "heures";
+    if (lower.includes("minute") || lower.includes("minuto")) return "minutes";
+    if (lower.includes("day") || lower.includes("dia")) return "jours";
+    return unit;
+  }
+  if (lower.includes("hora") || lower.includes("hour")) return "hours";
+  if (lower.includes("minuto") || lower.includes("minute")) return "minutes";
+  if (lower.includes("dia") || lower.includes("day")) return "days";
+  return unit;
+};
+
+const resolveDurationLabel = (value: string | null | undefined, locale: Locale) => {
   if (!value) return "";
-  return value.replace(/horas?/gi, "hours").replace(/horas?/gi, "hours");
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+    try {
+      const parsed = JSON.parse(trimmed) as DurationPayload;
+      if (parsed?.value && parsed?.unit) {
+        return `${parsed.value} ${normalizeDurationUnit(parsed.unit, locale)}`;
+      }
+    } catch {
+      return trimmed;
+    }
+  }
+  return normalizeDurationUnit(trimmed, locale) === trimmed ? trimmed : normalizeDurationUnit(trimmed, locale);
 };
 
 export async function buildBoatActivitiesMetadata(locale: Locale): Promise<Metadata> {
@@ -185,7 +223,7 @@ export default async function BoatActivitiesDominicanLanding({ locale }: { local
         tour.shortDescription ??
         tour.subtitle ??
         "";
-      const duration = locale === "es" ? tour.duration : await translateText(tour.duration ?? "", locale);
+      const duration = resolveDurationLabel(tour.duration, locale);
       const pickupIncluded = Boolean(tour.pickup);
       return {
         id: tour.id,
