@@ -7,7 +7,7 @@ const canonicalUrl = "https://proactivitis.com/fr/tours";
 
 export const metadata: Metadata = {
   title: "Excursions a Punta Cana | Proactivitis",
-  description: "Reservez des excursions a Punta Cana avec prise en charge hotel, prix clairs et confirmation rapide.",
+  description: "Reservez des excursions a Punta Cana avec prise en charge hotel, prix clairs et confirmation rapide. Comparez les options et reservez en minutes.",
   alternates: {
     canonical: canonicalUrl,
     languages: {
