@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import CustomerPaymentMethod from "@/components/customer/CustomerPaymentMethod";
+import { CustomerPreferencesForm } from "@/components/customer/CustomerPreferencesForm";
 
 export const metadata = {
   robots: { index: false, follow: false }
@@ -67,10 +68,22 @@ export default async function CustomerPortal() {
       }
     : null;
 
+  const preferredCountries = (preference?.preferredCountries as string[] | undefined) ?? [];
+  const preferredDestinations = (preference?.preferredDestinations as string[] | undefined) ?? [];
   const recommended = await prisma.tour.findMany({
     where: {
       status: "published",
-      slug: { not: "transfer-privado-proactivitis" }
+      slug: { not: "transfer-privado-proactivitis" },
+      ...(preferredCountries.length || preferredDestinations.length
+        ? {
+            departureDestination: {
+              is: {
+                ...(preferredCountries.length ? { country: { slug: { in: preferredCountries } } } : {}),
+                ...(preferredDestinations.length ? { slug: { in: preferredDestinations } } : {})
+              }
+            }
+          }
+        : {})
     },
     orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
     take: 4,
@@ -78,6 +91,29 @@ export default async function CustomerPortal() {
   });
 
   const customerName = user?.name ?? session.user.name ?? "Viajero";
+  const preference = user
+    ? await prisma.customerPreference.findUnique({
+        where: { userId: user.id },
+        select: {
+          preferredCountries: true,
+          preferredDestinations: true,
+          preferredProductTypes: true,
+          consentMarketing: true,
+          completedAt: true
+        }
+      })
+    : null;
+  const showPreferenceForm = !preference?.completedAt;
+  const [countries, destinations] = await Promise.all([
+    prisma.country.findMany({
+      select: { name: true, slug: true },
+      orderBy: { name: "asc" }
+    }),
+    prisma.destination.findMany({
+      select: { name: true, slug: true, country: { select: { name: true } } },
+      orderBy: { name: "asc" }
+    })
+  ]);
 
   const statusLabels: Record<string, string> = {
     CONFIRMED: "Confirmada",
@@ -178,6 +214,29 @@ export default async function CustomerPortal() {
           </aside>
 
           <main className="space-y-6">
+            {showPreferenceForm && (
+              <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <CustomerPreferencesForm
+                  countries={countries}
+                  destinations={destinations.map((destination) => ({
+                    name: destination.name,
+                    slug: destination.slug,
+                    country: destination.country.name
+                  }))}
+                  initial={
+                    preference
+                      ? {
+                          preferredCountries: preference.preferredCountries as string[] | undefined,
+                          preferredDestinations: preference.preferredDestinations as string[] | undefined,
+                          preferredProductTypes: preference.preferredProductTypes as string[] | undefined,
+                          consentMarketing: preference.consentMarketing ?? false,
+                          completedAt: preference.completedAt?.toISOString()
+                        }
+                      : null
+                  }
+                />
+              </section>
+            )}
             <section className="grid gap-4 md:grid-cols-3">
               <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Reservas totales</p>

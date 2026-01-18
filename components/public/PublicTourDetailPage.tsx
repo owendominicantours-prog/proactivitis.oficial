@@ -16,6 +16,8 @@ import TourGalleryCollage from "@/components/tours/TourGalleryCollage";
 import TourReviewForm from "@/components/public/TourReviewForm";
 import { Locale, translate, type TranslationKey } from "@/lib/translations";
 import { translateText } from "@/lib/translationService";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
 
@@ -846,6 +848,16 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       : null;
   if (!slug) notFound();
   if (slug === HIDDEN_TRANSFER_SLUG) notFound();
+  const session = await getServerSession(authOptions);
+  const sessionUserId = (session?.user as { id?: string } | null)?.id ?? null;
+  const preference = sessionUserId
+    ? await prisma.customerPreference.findUnique({
+        where: { userId: sessionUserId },
+        select: { discountEligible: true, discountRedeemedAt: true, completedAt: true }
+      })
+    : null;
+  const discountPercent =
+    preference?.completedAt && preference?.discountEligible && !preference?.discountRedeemedAt ? 10 : 0;
 
   const tour = await prisma.tour.findFirst({
     where: { slug },
@@ -1238,7 +1250,8 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     tourImage: heroImage,
     hotelSlug: hotelSlugFromQuery ?? undefined,
     bookingCode: bookingCodeFromQuery ?? undefined,
-    originHotelName: originHotel?.name ?? undefined
+    originHotelName: originHotel?.name ?? undefined,
+    discountPercent
   };
 
   const BookingPanel = ({ className = "" }: { className?: string }) => (

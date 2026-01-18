@@ -70,6 +70,8 @@ model Booking {
   hotel                 String?
   originAirport         String?
   pickupNotes           String?
+  discountPercent       Float?
+  discountAmount        Float?
   totalAmount           Float
   stripeSessionId       String?        @map("stripe_session_id")
   stripePaymentIntentId String?        @map("stripe_payment_intent_id")
@@ -711,9 +713,26 @@ model User {
   SupplierProfile         SupplierProfile?
   PartnerApplication      PartnerApplication[]
   CustomerPayment         CustomerPayment?
+  CustomerPreference     CustomerPreference?
   AgencyProLinks          AgencyProLink[]
   BlogPosts               BlogPost[]
   TourReviews             TourReview[]
+}
+
+model CustomerPreference {
+  id                     String   @id @default(cuid())
+  userId                 String   @unique
+  preferredCountries     Json?
+  preferredDestinations  Json?
+  preferredProductTypes  Json?
+  discountEligible       Boolean  @default(false)
+  discountGrantedAt      DateTime?
+  discountRedeemedAt     DateTime?
+  completedAt            DateTime?
+  consentMarketing       Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  User                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model BlogPost {

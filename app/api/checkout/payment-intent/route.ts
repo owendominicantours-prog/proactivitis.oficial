@@ -310,6 +310,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No pudimos iniciar tu sesión. Intenta nuevamente." }, { status: 500 });
   }
 
+  const preference = await prisma.customerPreference.findUnique({
+    where: { userId },
+    select: { discountEligible: true, discountRedeemedAt: true, completedAt: true }
+  });
+  const discountPercent =
+    preference?.completedAt && preference?.discountEligible && !preference?.discountRedeemedAt ? 10 : 0;
+  const discountAmount =
+    discountPercent > 0 ? Math.round(totalAmount * (discountPercent / 100) * 100) / 100 : 0;
+  const finalTotalAmount = discountPercent > 0 ? Math.max(0, totalAmount - discountAmount) : totalAmount;
+
   const booking = await prisma.booking.create({
     data: {
       tourId: resolvedTourId,
@@ -325,7 +335,9 @@ export async function POST(request: NextRequest) {
       originAirport: payload.origin ?? payload.originHotelName ?? undefined,
       pickupNotes: pickupNotes || undefined,
       startTime,
-      totalAmount,
+      totalAmount: finalTotalAmount,
+      discountPercent: discountPercent || undefined,
+      discountAmount: discountAmount || undefined,
       tourOptionId: resolvedOption?.id ?? payload.tourOptionId ?? undefined,
       tourOptionName: optionName ?? undefined,
       tourOptionType: optionType ?? undefined,
@@ -346,7 +358,7 @@ export async function POST(request: NextRequest) {
   });
   const currency = (process.env.STRIPE_CURRENCY ?? "usd").toLowerCase();
   const platformSharePercent = Math.min(Math.max(tour.platformSharePercent ?? 20, 20), 50);
-  const centsAmount = Math.round(totalAmount * 100);
+  const centsAmount = Math.round(finalTotalAmount * 100);
   const platformFeeAmount = Math.round((centsAmount * platformSharePercent) / 100);
   const supplierAmount = centsAmount - platformFeeAmount;
   const supplierAccountId = tour.SupplierProfile?.stripeAccountId;
@@ -367,6 +379,8 @@ export async function POST(request: NextRequest) {
       pickupPreference,
       supplierAccountId: supplierAccountId ?? "not-configured",
       platformSharePercent: platformSharePercent.toString(),
+      discountPercent: discountPercent ? discountPercent.toString() : "",
+      discountAmount: discountAmount ? discountAmount.toString() : "",
       hotelSlug: payload.hotelSlug ?? "unknown",
       bookingCode,
       originHotelName: payload.originHotelName ?? "",
@@ -396,7 +410,7 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     bookingId: booking.id,
-    amount: totalAmount,
+    amount: finalTotalAmount,
     clientSecret: paymentIntent.client_secret ?? null
   });
   } catch (error) {

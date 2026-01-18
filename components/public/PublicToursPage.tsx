@@ -8,6 +8,8 @@ import { getTourReviewSummaryForTours } from "@/lib/tourReviews";
 import type { DurationOption } from "@/components/public/TourFilters";
 import type { Prisma } from "@prisma/client";
 import { Locale, translate, type TranslationKey } from "@/lib/translations";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const parseDurationMeta = (value?: string | null) => {
   if (!value) return null;
@@ -125,6 +127,16 @@ const buildDurationOptions = (
   return Array.from(map.entries()).map(([value, label]) => ({ value, label }));
 };
 
+const ensureDepartureDestinationIs = (where: Prisma.TourWhereInput) => {
+  if (!where.departureDestination) {
+    where.departureDestination = {};
+  }
+  if (!("is" in where.departureDestination)) {
+    (where.departureDestination as Prisma.DestinationRelationFilter).is = {};
+  }
+  return (where.departureDestination as Prisma.DestinationRelationFilter).is as Prisma.DestinationWhereInput;
+};
+
 type Props = {
   searchParams?: Promise<TourSearchParams>;
   locale: Locale;
@@ -236,10 +248,46 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   const durationOptions = buildDurationOptions(durationsRaw.map((entry) => entry.duration), locale, t);
   const durationLabelLookup = new Map(durationOptions.map((option) => [option.value, option.label]));
 
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as { id?: string } | null)?.id ?? null;
+  const preference = userId
+    ? await prisma.customerPreference.findUnique({
+        where: { userId },
+        select: {
+          preferredCountries: true,
+          preferredDestinations: true,
+          preferredProductTypes: true,
+          completedAt: true,
+          discountEligible: true,
+          discountRedeemedAt: true
+        }
+      })
+    : null;
+  const preferredCountries = (preference?.preferredCountries as string[] | undefined) ?? [];
+  const preferredDestinations = (preference?.preferredDestinations as string[] | undefined) ?? [];
+  const preferredTypes = (preference?.preferredProductTypes as string[] | undefined) ?? [];
+  const applyPreferences =
+    preference?.completedAt &&
+    !params.country &&
+    !params.destination &&
+    (preferredTypes.length === 0 || preferredTypes.includes("tours") || preferredTypes.includes("combos"));
+  const discountPercent =
+    preference?.discountEligible && !preference?.discountRedeemedAt ? 10 : 0;
+
   const where = {
     ...buildTourFilter(params),
     slug: { not: "transfer-privado-proactivitis" }
-  };
+  } as Prisma.TourWhereInput;
+
+  if (applyPreferences && (preferredCountries.length || preferredDestinations.length)) {
+    const destinationIs = ensureDepartureDestinationIs(where);
+    if (preferredCountries.length) {
+      destinationIs.country = { slug: { in: preferredCountries } };
+    }
+    if (preferredDestinations.length) {
+      destinationIs.slug = { in: preferredDestinations };
+    }
+  }
 
   let tours: TourWithDeparture[] = [];
   try {
@@ -431,6 +479,8 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                 const reviewCount = reviewSummary[tour.id]?.count ?? 0;
                 const reviewAverage = reviewSummary[tour.id]?.average ?? 0;
                 const reviewsLabel = t("tour.hero.reviewsCount", { count: reviewCount });
+                const effectivePrice =
+                  discountPercent > 0 ? tour.price * (1 - discountPercent / 100) : tour.price;
 
                 return (
                   <Link
@@ -457,8 +507,13 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                         <span className="text-sm font-semibold text-slate-900">
                           {fromLabel}{" "}
                           <span className="text-base font-black text-indigo-600">
-                            ${tour.price.toFixed(0)}
+                            ${effectivePrice.toFixed(0)}
                           </span>
+                          {discountPercent > 0 && (
+                            <span className="ml-2 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                              -{discountPercent}%
+                            </span>
+                          )}
                         </span>
                         <span className="text-xs text-slate-500">{formatDurationLabel(tour.duration, locale, t)}</span>
                       </div>

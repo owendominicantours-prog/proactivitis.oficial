@@ -29,6 +29,7 @@ type TourBookingWidgetProps = {
   bookingCode?: string;
   originHotelName?: string;
   initialOptionId?: string;
+  discountPercent?: number;
 };
 
 type TourOption = {
@@ -102,7 +103,8 @@ export function TourBookingWidget({
   hotelSlug,
   bookingCode,
   originHotelName,
-  initialOptionId
+  initialOptionId,
+  discountPercent = 0
 }: TourBookingWidgetProps) {
   const router = useRouter();
   const [date, setDate] = useState("");
@@ -134,14 +136,17 @@ export function TourBookingWidget({
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const totalTravelers = Math.max(1, adults + youth + child);
   const pricing = resolveOptionPricing(selectedOption ?? null, totalTravelers, basePrice);
-  const estimatedTotal = pricing.totalPrice;
+  const discountMultiplier = discountPercent > 0 ? 1 - discountPercent / 100 : 1;
+  const discountedTotal = Math.round(pricing.totalPrice * discountMultiplier * 100) / 100;
+  const discountedPerPerson = Math.round(pricing.pricePerPerson * discountMultiplier * 100) / 100;
+  const estimatedTotal = discountedTotal;
   const bookingLabel = originHotelName
     ? `Reservar Buggy con recogida en ${originHotelName}`
     : "Reservar Ahora";
   const baseCapacityLabel = selectedOption?.baseCapacity
     ? `1-${selectedOption.baseCapacity} pax`
     : "grupo base";
-  const priceHeaderValue = selectedOption?.basePrice ? pricing.totalPrice : pricing.pricePerPerson;
+  const priceHeaderValue = selectedOption?.basePrice ? discountedTotal : discountedPerPerson;
   const priceHeaderNote = selectedOption?.basePrice
     ? `Total (${baseCapacityLabel})`
     : "Por persona";
@@ -199,8 +204,8 @@ export function TourBookingWidget({
         params.set("tourOptionExtraPricePerPerson", selectedOption.extraPricePerPerson.toString());
       }
     }
-    params.set("tourPrice", pricing.pricePerPerson.toString());
-    params.set("totalPrice", pricing.totalPrice.toString());
+    params.set("tourPrice", discountedPerPerson.toString());
+    params.set("totalPrice", discountedTotal.toString());
     if (hotelSlug) params.set("hotelSlug", hotelSlug);
     if (bookingCode) params.set("bookingCode", bookingCode);
     if (originHotelName) params.set("originHotelName", originHotelName);

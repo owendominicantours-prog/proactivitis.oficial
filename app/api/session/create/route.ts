@@ -198,6 +198,16 @@ export async function POST(request: NextRequest) {
 
   });
 
+  if (booking.discountPercent && booking.User?.id) {
+    await prisma.customerPreference.updateMany({
+      where: { userId: booking.User.id },
+      data: {
+        discountEligible: false,
+        discountRedeemedAt: new Date()
+      }
+    });
+  }
+
 
 
   const tour = booking.Tour;
