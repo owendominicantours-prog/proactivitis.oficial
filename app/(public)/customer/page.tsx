@@ -68,6 +68,18 @@ export default async function CustomerPortal() {
       }
     : null;
 
+  const preference = user
+    ? await prisma.customerPreference.findUnique({
+        where: { userId: user.id },
+        select: {
+          preferredCountries: true,
+          preferredDestinations: true,
+          preferredProductTypes: true,
+          consentMarketing: true,
+          completedAt: true
+        }
+      })
+    : null;
   const preferredCountries = (preference?.preferredCountries as string[] | undefined) ?? [];
   const preferredDestinations = (preference?.preferredDestinations as string[] | undefined) ?? [];
   const recommended = await prisma.tour.findMany({
@@ -91,18 +103,6 @@ export default async function CustomerPortal() {
   });
 
   const customerName = user?.name ?? session.user.name ?? "Viajero";
-  const preference = user
-    ? await prisma.customerPreference.findUnique({
-        where: { userId: user.id },
-        select: {
-          preferredCountries: true,
-          preferredDestinations: true,
-          preferredProductTypes: true,
-          consentMarketing: true,
-          completedAt: true
-        }
-      })
-    : null;
   const showPreferenceForm = !preference?.completedAt;
   const [countries, destinations] = await Promise.all([
     prisma.country.findMany({

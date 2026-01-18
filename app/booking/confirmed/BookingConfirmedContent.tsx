@@ -26,7 +26,8 @@ export function BookingConfirmedContent({
   passengerLabel,
   startTimeLabel,
   orderCode,
-  flowType
+  flowType,
+  discountPercent
 }: BookingConfirmationData) {
   const isTransfer = flowType === "transfer";
   const { t } = useTranslation();
@@ -193,6 +194,7 @@ export function BookingConfirmedContent({
                   title={item.title}
                   location={item.location ?? t("booking.confirmation.values.destinationFallback")}
                   price={item.price}
+                  discountPercent={discountPercent}
                   rating={4}
                   image={item.heroImage ?? "/fototours/fototour.jpeg"}
                 />

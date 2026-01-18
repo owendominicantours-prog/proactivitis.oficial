@@ -45,7 +45,7 @@ export default async function PublicTransferPage({ locale, heroTitleOverride, he
   const preference = userId
     ? await prisma.customerPreference.findUnique({
         where: { userId },
-        select: { discountEligible: true, discountRedeemedAt: true, completedAt: true }
+        select: { discountEligible: true, discountRedeemedAt: true, completedAt: true, preferredDestinations: true }
       })
     : null;
   const discountPercent =

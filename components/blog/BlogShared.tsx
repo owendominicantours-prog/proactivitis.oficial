@@ -6,6 +6,8 @@ import BlogShareButtons from "@/components/blog/BlogShareButtons";
 import BlogCommentForm from "@/components/blog/BlogCommentForm";
 import { TourCard } from "@/components/public/TourCard";
 import BlogReadingProgress from "@/components/blog/BlogReadingProgress";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const BASE_URL = "https://proactivitis.com";
 
@@ -202,7 +204,13 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
               title: true,
               price: true,
               heroImage: true,
-              location: true
+              location: true,
+              departureDestination: {
+                select: {
+                  slug: true,
+                  country: { select: { slug: true } }
+                }
+              }
             }
           }
         }
@@ -218,12 +226,46 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
     return null;
   }
 
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as { id?: string } | null)?.id ?? null;
+  const preference = userId
+    ? await prisma.customerPreference.findUnique({
+        where: { userId },
+        select: {
+          preferredCountries: true,
+          preferredDestinations: true,
+          completedAt: true,
+          discountEligible: true,
+          discountRedeemedAt: true
+        }
+      })
+    : null;
+  const preferredCountries = (preference?.preferredCountries as string[] | undefined) ?? [];
+  const preferredDestinations = (preference?.preferredDestinations as string[] | undefined) ?? [];
+  const applyPreferences =
+    preference?.completedAt && (preferredCountries.length || preferredDestinations.length);
+  const discountPercent =
+    preference?.discountEligible && !preference?.discountRedeemedAt ? 10 : 0;
+
   const translation = post.translations[0];
   const title = translation?.title ?? post.title;
   const excerpt = translation?.excerpt ?? post.excerpt ?? "";
   const contentHtml = translation?.contentHtml ?? post.contentHtml;
   const shareUrl = locale === "es" ? `${BASE_URL}/news/${post.slug}` : `${BASE_URL}/${locale}/news/${post.slug}`;
   const relatedTours = post.tours.map((entry) => entry.tour);
+  const filteredTours = applyPreferences
+    ? relatedTours.filter((tour) => {
+        const destination = tour.departureDestination;
+        if (!destination) return false;
+        const matchesCountry = preferredCountries.length
+          ? preferredCountries.includes(destination.country?.slug ?? "")
+          : true;
+        const matchesDestination = preferredDestinations.length
+          ? preferredDestinations.includes(destination.slug)
+          : true;
+        return matchesCountry && matchesDestination;
+      })
+    : relatedTours;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -252,17 +294,18 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
           <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
         </section>
 
-        {relatedTours.length ? (
+        {filteredTours.length ? (
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold text-slate-900">{labels.detailTours}</h2>
             <div className="grid gap-5 md:grid-cols-2">
-              {relatedTours.map((tour) => (
+              {filteredTours.map((tour) => (
                 <TourCard
                   key={tour.id}
                   slug={tour.slug}
                   title={tour.title}
                   location={tour.location}
                   price={tour.price}
+                  discountPercent={discountPercent}
                   image={tour.heroImage ?? "/fototours/fotosimple.jpg"}
                 />
               ))}

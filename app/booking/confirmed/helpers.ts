@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { parseAdminItinerary } from "@/lib/itinerary";
 import { TimelineStop } from "@/components/itinerary/ItineraryTimeline";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
+import type { Prisma } from "@prisma/client";
 
 const shuffleArray = <T,>(items: T[]) => items.slice().sort(() => Math.random() - 0.5);
 
@@ -28,6 +29,7 @@ export type BookingConfirmationData = {
   passengerLabel: string;
   startTimeLabel: string;
   flowType?: "tour" | "transfer";
+  discountPercent: number;
 };
 
 export async function getBookingConfirmationData(
@@ -72,13 +74,38 @@ export async function getBookingConfirmationData(
     booking.travelDate
   ).toLocaleDateString("es-ES", { dateStyle: "long" })}`;
 
+  const preference = await prisma.customerPreference.findUnique({
+    where: { userId: booking.userId },
+    select: {
+      preferredCountries: true,
+      preferredDestinations: true,
+      completedAt: true,
+      discountEligible: true,
+      discountRedeemedAt: true
+    }
+  });
+  const preferredCountries = (preference?.preferredCountries as string[] | undefined) ?? [];
+  const preferredDestinations = (preference?.preferredDestinations as string[] | undefined) ?? [];
+  const applyPreferences =
+    preference?.completedAt && (preferredCountries.length || preferredDestinations.length);
+  const discountPercent = preference?.discountEligible && !preference?.discountRedeemedAt ? 10 : 0;
+  const recommendedWhere: Prisma.TourWhereInput = {
+    status: "published",
+    slug: { not: HIDDEN_TRANSFER_SLUG },
+    id: { not: tour.id }
+  };
+  if (applyPreferences) {
+    recommendedWhere.departureDestination = {
+      is: {
+        ...(preferredCountries.length ? { country: { slug: { in: preferredCountries } } } : {}),
+        ...(preferredDestinations.length ? { slug: { in: preferredDestinations } } : {})
+      }
+    };
+  }
+
   const recommendedTours = shuffleArray(
     await prisma.tour.findMany({
-      where: {
-        status: "published",
-        slug: { not: HIDDEN_TRANSFER_SLUG },
-        id: { not: tour.id }
-      },
+      where: recommendedWhere,
       select: {
         id: true,
         slug: true,
@@ -129,6 +156,7 @@ export async function getBookingConfirmationData(
     travelDateLabel,
     passengerLabel,
     startTimeLabel,
-    orderCode
+    orderCode,
+    discountPercent
   };
 }

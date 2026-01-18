@@ -152,7 +152,7 @@ const itinerary = [
   "Brindis al sunset con tragos premium y musica nonstop."
 ];
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 export const revalidate = 0;
 
 export default async function HipHopLandingPage() {
