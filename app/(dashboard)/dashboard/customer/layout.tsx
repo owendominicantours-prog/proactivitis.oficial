@@ -1,8 +1,8 @@
-import { ReactNode } from "react";
+﻿import { ReactNode } from "react";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Customer · Proactivitis"
+  title: "Customer | Proactivitis"
 };
 
 export default function CustomerLayout({ children }: { children: ReactNode }) {
@@ -18,7 +18,7 @@ export default function CustomerLayout({ children }: { children: ReactNode }) {
               Mis reservas
             </Link>
             <button className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600">
-              Cerrar sesión
+              Cerrar sesion
             </button>
           </nav>
         </div>

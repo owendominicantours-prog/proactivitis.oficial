@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+﻿import { ReactNode } from "react";
 import { getServerSession } from "next-auth";
 import { PanelShell, NotificationMenuItem } from "@/components/dashboard/PanelShell";
 import { authOptions } from "@/lib/auth";
@@ -9,7 +9,7 @@ const adminNav = [
   { label: "Landings", href: "/admin/landings" },
   { label: "Variantes", href: "/admin/tour-variants" },
   { label: "Blog", href: "/admin/blog" },
-  { label: "Reseñas", href: "/admin/reviews" },
+  { label: "Resenas", href: "/admin/reviews" },
   { label: "Tours", href: "/admin/tours" },
   { label: "Transfer", href: "/admin/transfers" },
   { label: "Suplidores", href: "/admin/suppliers" },
@@ -19,7 +19,7 @@ const adminNav = [
   { label: "Reportes", href: "/admin/reports" },
   { label: "Solicitudes", href: "/admin/partner-applications" },
   { label: "CRM", href: "/admin/crm" },
-  { label: "Países", href: "/admin/countries" },
+  { label: "Paises", href: "/admin/countries" },
   { label: "Usuarios", href: "/admin/users" },
   { label: "Ajustes", href: "/admin/settings" },
   { label: "Notificaciones", href: "/admin/notifications" }
@@ -46,7 +46,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
 
   return (
     <PanelShell
-      roleLabel="Administración"
+      roleLabel="Administracion"
       title="Dashboard"
       navItems={adminNav}
       navDisplay="dropdown"

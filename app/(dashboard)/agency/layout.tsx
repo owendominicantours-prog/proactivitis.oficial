@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+﻿import { ReactNode } from "react";
 import { getServerSession } from "next-auth";
 import { PanelShell, type NotificationMenuItem } from "@/components/dashboard/PanelShell";
 import { authOptions } from "@/lib/auth";
@@ -7,7 +7,7 @@ import { SupportTicketButton } from "@/components/dashboard/SupportTicketButton"
 
 const agencyNav = [
   { label: "Dashboard", href: "/agency" },
-  { label: "Tours / Catálogo", href: "/agency/tours" },
+  { label: "Tours / Catalogo", href: "/agency/tours" },
   { label: "Reservas", href: "/agency/bookings" },
   { label: "Calendario", href: "/agency/calendar" },
   { label: "Comisiones", href: "/agency/commissions" },
@@ -15,12 +15,13 @@ const agencyNav = [
   { label: "Sub-agentes", href: "/agency/subagents" },
   { label: "Mini-sitio", href: "/agency/minisite" },
   { label: "Promocodes", href: "/agency/promocodes" },
+  { label: "Chat", href: "/agency/chat" },
   { label: "Notificaciones", href: "/agency/notifications" },
   { label: "Perfil", href: "/agency/profile" }
 ];
 
 export const metadata = {
-  title: "Agency · Proactivitis"
+  title: "Agency | Proactivitis"
 };
 
 export default async function AgencyDashboardLayout({ children }: { children: ReactNode }) {

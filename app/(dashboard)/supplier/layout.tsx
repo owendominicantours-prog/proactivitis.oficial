@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+﻿import { ReactNode } from "react";
 import { getServerSession } from "next-auth";
 import { PanelShell, type NotificationMenuItem } from "@/components/dashboard/PanelShell";
 import { authOptions } from "@/lib/auth";
@@ -15,12 +15,13 @@ const supplierNav = [
   { label: "Pagos", href: "/supplier/payouts" },
   { label: "Ofertas", href: "/supplier/offers" },
   { label: "Mini sitios", href: "/supplier/minisites" },
+  { label: "Chat", href: "/supplier/chat" },
   { label: "Notificaciones", href: "/supplier/notifications" },
   { label: "Perfil", href: "/supplier/profile" }
 ];
 
 export const metadata = {
-  title: "Supplier · Proactivitis"
+  title: "Supplier | Proactivitis"
 };
 
 export default async function SupplierDashboardLayout({ children }: { children: ReactNode }) {

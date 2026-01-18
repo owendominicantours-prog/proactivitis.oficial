@@ -1,14 +1,13 @@
-export const dynamic = "force-dynamic"; // Agency dashboard shows live metrics and must not cache.
-
-import { format } from "date-fns";
-import { getServerSession } from "next-auth";
+﻿import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getAgencyDashboardMetrics } from "@/lib/dashboardStats";
+
+export const dynamic = "force-dynamic"; // Agency dashboard shows live metrics and must not cache.
 
 const kpiCards = [
   { label: "Reservas activas", key: "activeBookings", icon: "M4 9h1.5v7H4V9zM8 5H9.5v11H8V5zM12 1h1.5v15H12V1z" },
   { label: "Cancelaciones este mes", key: "cancellationsThisMonth", icon: "M6 12h4v3H6z" },
-  { label: "Comisión estimada", key: "estimatedCommission", icon: "M6 3h6a2 2 0 0 1 2 2v5H6V3z" },
+  { label: "Comision estimada", key: "estimatedCommission", icon: "M6 3h6a2 2 0 0 1 2 2v5H6V3z" },
   { label: "Solicitudes pendientes", key: "cancellationRequests", icon: "M4 9h1.5v7H4V9z" }
 ] as const;
 
@@ -20,7 +19,7 @@ export default async function AgencyPanel() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) {
-    return <div className="py-10 text-center text-sm text-slate-600">Inicia sesión para ver tu panel.</div>;
+    return <div className="py-10 text-center text-sm text-slate-600">Inicia sesion para ver tu panel.</div>;
   }
 
   const metrics = await getAgencyDashboardMetrics(userId);
@@ -46,7 +45,7 @@ export default async function AgencyPanel() {
               Estable
             </span>
           </h2>
-          <p className="text-sm text-slate-500">Las métricas se basan en tus reservas y solicitudes reales.</p>
+          <p className="text-sm text-slate-500">Las metricas se basan en tus reservas y solicitudes reales.</p>
         </div>
       </section>
 
@@ -72,12 +71,12 @@ export default async function AgencyPanel() {
           </p>
         </article>
         <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Comisión estimada</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Comision estimada</p>
           <p className="mt-2 text-3xl font-semibold text-indigo-600">{formatCurrency(metrics.estimatedCommission)}</p>
           <p className="text-xs text-slate-500">20% de las reservas confirmadas y completadas del mes.</p>
         </article>
         <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Accesos rápidos</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Accesos rapidos</p>
           <div className="mt-3 flex flex-wrap gap-2 text-sm">
             {quickActions.map((label) => (
               <button
@@ -93,17 +92,17 @@ export default async function AgencyPanel() {
 
       <section className="rounded-lg border border-slate-200 bg-slate-50 p-6 shadow-sm">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-slate-900">Alertas críticas</h3>
+          <h3 className="text-base font-semibold text-slate-900">Alertas criticas</h3>
           <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Status</span>
         </div>
         <ul className="mt-4 space-y-3 text-sm text-slate-600">
           {metrics.cancellationRequests ? (
             <li className="rounded-md border border-slate-100 px-4 py-3 text-sm text-slate-700">
-              {metrics.cancellationRequests} solicitudes de cancelación en revisión.
+              {metrics.cancellationRequests} solicitudes de cancelacion en revision.
             </li>
           ) : (
             <li className="rounded-md border border-slate-100 px-4 py-3 text-xs text-slate-400">
-              Lista limpia. No hay solicitudes de cancelación pendientes.
+              Lista limpia. No hay solicitudes de cancelacion pendientes.
             </li>
           )}
         </ul>

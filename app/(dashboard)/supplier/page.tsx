@@ -1,21 +1,21 @@
-export const dynamic = "force-dynamic";
-
-import { format } from "date-fns";
+﻿import { format } from "date-fns";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getSupplierDashboardMetrics } from "@/lib/dashboardStats";
 
+export const dynamic = "force-dynamic";
+
 const kpiCards = [
-  { label: "Próximas salidas", key: "upcomingBookings", icon: "M6 3h6a2 2 0 0 1 2 2v5H6V3z" },
+  { label: "Proximas salidas", key: "upcomingBookings", icon: "M6 3h6a2 2 0 0 1 2 2v5H6V3z" },
   { label: "Pax hoy", key: "paxToday", icon: "M4 9h1.5v7H4V9zM8 5H9.5v11H8V5z" },
   { label: "Cancelaciones este mes", key: "cancellationsThisMonth", icon: "M12 14c-2.21 0-4 1.79-4 4h8c0-2.21-1.79-4-4-4z" },
   { label: "Solicitudes pendientes", key: "cancellationRequests", icon: "M6 12h4v3H6z" }
 ] as const;
 
 const alerts = [
-  { title: "Tours sin fotos suficientes", detail: "Sube al menos 7 imágenes para cada experiencia." },
-  { title: "Reservas pendientes", detail: "Hay 3 solicitudes que esperan confirmación." },
-  { title: "Oferta destacada", detail: "Navidad expira en 2 días. Revisa los precios." }
+  { title: "Tours sin fotos suficientes", detail: "Sube al menos 7 imagenes para cada experiencia." },
+  { title: "Reservas pendientes", detail: "Hay 3 solicitudes que esperan confirmacion." },
+  { title: "Oferta destacada", detail: "Navidad expira en 2 dias. Revisa los precios." }
 ];
 
 const formatCurrency = (value: number) =>
@@ -46,12 +46,12 @@ export default async function SupplierPanel() {
           <div className="space-y-1">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Panel proveedor</p>
             <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-3xl font-semibold text-slate-900 md:text-4xl">Operaciones al día</h2>
+              <h2 className="text-3xl font-semibold text-slate-900 md:text-4xl">Operaciones al dia</h2>
               <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
                 {metrics.upcomingBookings > 5 ? "Flujo alto" : "Controlado"}
               </span>
             </div>
-            <p className="text-base text-slate-500">Resumen rápido de reservas, ingresos y alertas.</p>
+            <p className="text-base text-slate-500">Resumen rapido de reservas, ingresos y alertas.</p>
           </div>
           <div className="rounded-full border border-slate-200 px-3 py-1 text-sm font-semibold text-slate-600">
             {format(new Date(), "PPP")}
@@ -69,7 +69,7 @@ export default async function SupplierPanel() {
               <span>{card.label}</span>
             </div>
             <p className="mt-3 text-3xl font-bold text-indigo-600 md:text-4xl">{getValue(card.key)}</p>
-            <p className="mt-2 text-xs uppercase tracking-[0.3em] text-slate-400">Última hora</p>
+            <p className="mt-2 text-xs uppercase tracking-[0.3em] text-slate-400">Ultima hora</p>
           </article>
         ))}
       </section>
@@ -77,8 +77,8 @@ export default async function SupplierPanel() {
       <section className="grid gap-6 lg:grid-cols-3">
         <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Actualizado</p>
-          <p className="mt-1 text-base text-slate-700">Última sync: {format(new Date(), "PPPp")}</p>
-          <p className="mt-2 text-sm text-slate-500">Bases de datos sincronizadas con las reservas más recientes.</p>
+          <p className="mt-1 text-base text-slate-700">Ultima sync: {format(new Date(), "PPPp")}</p>
+          <p className="mt-2 text-sm text-slate-500">Bases de datos sincronizadas con las reservas mas recientes.</p>
         </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Ingresos aproximados</p>
@@ -90,7 +90,7 @@ export default async function SupplierPanel() {
           <ul className="mt-3 space-y-2 text-sm text-slate-700">
             {alerts.map((alert) => (
               <li key={alert.title} className="flex items-start gap-3 rounded-xl border border-slate-100 px-4 py-3">
-                <span className="text-lg text-slate-400">•</span>
+                <span className="text-lg text-slate-400">!</span>
                 <div>
                   <p className="font-semibold text-slate-900">{alert.title}</p>
                   <p className="text-xs text-slate-500">{alert.detail}</p>
