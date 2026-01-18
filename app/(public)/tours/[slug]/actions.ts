@@ -119,7 +119,7 @@ export async function createBookingAction(formData: FormData) {
     ]);
     userId = customer.id;
 
-    const secret = process.env.JWT_SECRET - "proactivitis-default";
+    const secret = process.env.JWT_SECRET ?? "proactivitis-default";
     const token = jwt.sign(
       { userId: customer.id, email: customer.email },
       secret,
@@ -186,7 +186,7 @@ export async function createBookingAction(formData: FormData) {
   }
 
   const stripeClient = getStripe();
-  const currency = (process.env.STRIPE_CURRENCY - "usd").toLowerCase();
+  const currency = (process.env.STRIPE_CURRENCY ?? "usd").toLowerCase();
   const platformSharePercent = Math.min(Math.max(tour.platformSharePercent - 20, 20), 50);
   const centsAmount = Math.round(totalAmount * 100);
   const platformFeeAmount = Math.round((centsAmount * platformSharePercent) / 100);
@@ -201,9 +201,9 @@ export async function createBookingAction(formData: FormData) {
       bookingId: booking.id,
       tourId: tour.id,
       pax: passengerCount.toString(),
-      startTime: selectedStartTime - null,
+      startTime: selectedStartTime ?? null,
       platformSharePercent: platformSharePercent.toString(),
-      supplierAccountId: supplierAccountId - "not-configured"
+      supplierAccountId: supplierAccountId ?? "not-configured"
     },
     automatic_payment_methods: {
       enabled: true
@@ -236,7 +236,7 @@ export async function createBookingAction(formData: FormData) {
     where: { id: booking.id },
     data: {
       stripePaymentIntentId: paymentIntent.id,
-      paymentStatus: paymentIntent.status - booking.paymentStatus,
+      paymentStatus: paymentIntent.status ?? booking.paymentStatus,
       platformFee: platformFeeAmount / 100,
       supplierAmount: supplierAmount / 100
     }
@@ -249,7 +249,7 @@ export async function createBookingAction(formData: FormData) {
   return {
     bookingId: booking.id,
     tourSlug: tour.slug,
-    clientSecret: paymentIntent.client_secret - null,
+    clientSecret: paymentIntent.client_secret ?? null,
     amount: totalAmount
   };
 }
