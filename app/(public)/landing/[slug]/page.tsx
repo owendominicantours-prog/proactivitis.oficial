@@ -1,6 +1,10 @@
 import { landingPages } from "@/lib/landing";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 
+export const metadata = {
+  robots: { index: false, follow: false }
+};
+
 type Params = {
   params: Promise<{ slug: string }>;
 };

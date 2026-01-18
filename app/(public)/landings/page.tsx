@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { landingPages } from "@/lib/landing";
 
+export const metadata = {
+  robots: { index: false, follow: false }
+};
+
 export default function LandingIndexPage() {
   return (
     <div className="bg-slate-50 py-12">

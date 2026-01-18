@@ -659,6 +659,47 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
             <p className="text-sm text-slate-600">{meetingCopy}</p>
           </section>
         )}
+        <section className="grid gap-6 md:grid-cols-3">
+          <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
+              {translate(LOCALE, "transfer.longform.eyebrow")}
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-slate-900">
+              {translate(LOCALE, "transfer.longform.title")}
+            </h2>
+            <div className="mt-3 space-y-3 text-sm text-slate-600">
+              <p>{translate(LOCALE, "transfer.longform.body1")}</p>
+              <p>{translate(LOCALE, "transfer.longform.body2")}</p>
+              <p>{translate(LOCALE, "transfer.longform.body3")}</p>
+            </div>
+          </article>
+          <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
+              {translate(LOCALE, "transfer.longform2.eyebrow")}
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-slate-900">
+              {translate(LOCALE, "transfer.longform2.title")}
+            </h2>
+            <div className="mt-3 space-y-3 text-sm text-slate-600">
+              <p>{translate(LOCALE, "transfer.longform2.body1")}</p>
+              <p>{translate(LOCALE, "transfer.longform2.body2")}</p>
+              <p>{translate(LOCALE, "transfer.longform2.body3")}</p>
+            </div>
+          </article>
+          <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
+              {translate(LOCALE, "transfer.longform3.eyebrow")}
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-slate-900">
+              {translate(LOCALE, "transfer.longform3.title")}
+            </h2>
+            <div className="mt-3 space-y-3 text-sm text-slate-600">
+              <p>{translate(LOCALE, "transfer.longform3.body1")}</p>
+              <p>{translate(LOCALE, "transfer.longform3.body2")}</p>
+              <p>{translate(LOCALE, "transfer.longform3.body3")}</p>
+            </div>
+          </article>
+        </section>
         {nearbyItems.length > 0 && (
           <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">

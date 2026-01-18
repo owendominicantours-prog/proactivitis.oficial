@@ -1,5 +1,9 @@
 import { getAllTours } from "@/lib/destinations";
 
+export const metadata = {
+  robots: { index: false, follow: false }
+};
+
 export default async function SearchPage() {
   const tours = await getAllTours();
 

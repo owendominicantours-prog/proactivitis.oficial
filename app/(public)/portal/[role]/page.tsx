@@ -2,6 +2,10 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+export const metadata = {
+  robots: { index: false, follow: false }
+};
+
 const roleLabels: Record<string, { title: string; description: string; dashboard: string }> = {
   admin: {
     title: "Admin Control Center",
