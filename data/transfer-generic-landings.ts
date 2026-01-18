@@ -133,36 +133,93 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-const buildTitle = (keyword: string, locale: "es" | "en" | "fr") => {
+const replaceWords = (value: string, replacements: Record<string, string>) =>
+  Object.entries(replacements).reduce((acc, [from, to]) => {
+    const pattern = new RegExp(`\\b${from}\\b`, "gi");
+    return acc.replace(pattern, to);
+  }, value);
+
+const localizeKeyword = (keyword: string, locale: "es" | "en" | "fr") => {
   if (locale === "en") return keyword;
-  if (locale === "fr") return `Transferts a Punta Cana: ${keyword}`;
-  return `Traslados en Punta Cana: ${keyword}`;
+  if (locale === "fr") {
+    return replaceWords(keyword, {
+      "airport": "aeroport",
+      "transfer": "transfert",
+      "transfers": "transferts",
+      "private": "prive",
+      "shuttle": "navette",
+      "taxi": "taxi",
+      "pickup": "prise en charge",
+      "drop": "depose",
+      "driver": "chauffeur",
+      "bilingual": "bilingue",
+      "price": "prix",
+      "cost": "cout",
+      "round": "aller",
+      "trip": "retour",
+      "family": "famille",
+      "group": "groupe",
+      "hotel": "hotel"
+    });
+  }
+  return replaceWords(keyword, {
+    "airport": "aeropuerto",
+    "transfer": "traslado",
+    "transfers": "traslados",
+    "private": "privado",
+    "shuttle": "shuttle",
+    "taxi": "taxi",
+    "pickup": "recogida",
+    "drop": "llegada",
+    "driver": "chofer",
+    "bilingual": "bilingue",
+    "price": "precio",
+    "cost": "costo",
+    "round": "ida",
+    "trip": "vuelta",
+    "family": "familia",
+    "group": "grupo",
+    "hotel": "hotel"
+  });
+};
+
+const titleize = (value: string) =>
+  value.replace(/\b\w/g, (char) => char.toUpperCase());
+
+const buildTitle = (keyword: string, locale: "es" | "en" | "fr") => {
+  if (locale === "en") return titleize(keyword);
+  const localized = localizeKeyword(keyword, locale);
+  if (locale === "fr") return `Transferts a Punta Cana: ${titleize(localized)}`;
+  return `Traslados en Punta Cana: ${titleize(localized)}`;
 };
 
 const buildDescription = (keyword: string, locale: "es" | "en" | "fr") => {
+  const localized = localizeKeyword(keyword, locale);
   if (locale === "en") {
     return `Plan your ${keyword} with verified drivers, flight tracking, and 24/7 support.`;
   }
   if (locale === "fr") {
-    return `Planifiez ${keyword} avec chauffeurs verifies, suivi de vol et support 24/7.`;
+    return `Planifiez ${localized} avec chauffeurs verifies, suivi de vol et support 24/7.`;
   }
-  return `Reserva ${keyword} con chofer bilingue, seguimiento de vuelo y soporte 24/7.`;
+  return `Reserva ${localized} con chofer bilingue, seguimiento de vuelo y soporte 24/7.`;
 };
 
 const buildSeoTitle = (keyword: string, locale: "es" | "en" | "fr") => {
-  if (locale === "en") return `${keyword} | Proactivitis`;
-  if (locale === "fr") return `Transferts Punta Cana | ${keyword} | Proactivitis`;
-  return `Traslados Punta Cana | ${keyword} | Proactivitis`;
+  const localized = localizeKeyword(keyword, locale);
+  if (locale === "en") return `${titleize(keyword)} | Punta Cana transfers | Proactivitis`;
+  if (locale === "fr") return `Transferts Punta Cana | ${titleize(localized)} | Proactivitis`;
+  return `Traslados Punta Cana | ${titleize(localized)} | Proactivitis`;
 };
 
 const buildMetaDescription = (keyword: string, locale: "es" | "en" | "fr") => {
+  const localized = localizeKeyword(keyword, locale);
   if (locale === "en") {
     return `Book ${keyword} with bilingual drivers, flight tracking, and 24/7 support on Proactivitis.`;
   }
   if (locale === "fr") {
-    return `Reservez ${keyword} avec chauffeur bilingue, suivi de vol et support 24/7 chez Proactivitis.`;
+    return `Reservez ${localized} avec chauffeur bilingue, suivi de vol et support 24/7 chez Proactivitis.`;
   }
-  return `Reserva ${keyword} con chofer bilingue, seguimiento de vuelo y soporte 24/7 en Proactivitis.`;
+  return `Reserva ${localized} con chofer bilingue, seguimiento de vuelo y soporte 24/7 en Proactivitis.`;
 };
 
 export const genericTransferLandings: GenericTransferLanding[] = rawKeywords.map((keyword) => {
