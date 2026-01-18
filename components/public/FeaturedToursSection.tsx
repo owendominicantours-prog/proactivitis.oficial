@@ -4,6 +4,8 @@ import { TourCard } from "@/components/public/TourCard";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 import { Locale, translate } from "@/lib/translations";
 import { getTourReviewSummaryForTours } from "@/lib/tourReviews";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 let tourTranslationTableExists: boolean | null = null;
 
@@ -19,7 +21,10 @@ const checkTourTranslationTable = async () => {
   return tourTranslationTableExists;
 };
 
-const fetchFeaturedTours = async (locale: Locale) => {
+const fetchFeaturedTours = async (
+  locale: Locale,
+  filters?: { countries?: string[]; destinations?: string[] }
+) => {
   const hasTranslations = await checkTourTranslationTable();
   const select: Prisma.TourSelect = {
     id: true,
@@ -45,13 +50,24 @@ const fetchFeaturedTours = async (locale: Locale) => {
     };
   }
 
-  return prisma.tour.findMany({
-    where: {
-      status: {
-        not: "draft"
-      },
-      slug: { not: HIDDEN_TRANSFER_SLUG }
+  const where: Prisma.TourWhereInput = {
+    status: {
+      not: "draft"
     },
+    slug: { not: HIDDEN_TRANSFER_SLUG }
+  };
+
+  if (filters?.countries?.length || filters?.destinations?.length) {
+    where.departureDestination = {
+      is: {
+        ...(filters.countries?.length ? { country: { slug: { in: filters.countries } } } : {}),
+        ...(filters.destinations?.length ? { slug: { in: filters.destinations } } : {})
+      }
+    };
+  }
+
+  return prisma.tour.findMany({
+    where,
     orderBy: [
       { featured: "desc" },
       { createdAt: "desc" }
@@ -89,7 +105,23 @@ type Props = {
 };
 
 export default async function FeaturedToursSection({ locale }: Props) {
-  const tours = await fetchFeaturedTours(locale);
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as { id?: string } | null)?.id ?? null;
+  const preference = userId
+    ? await prisma.customerPreference.findUnique({
+        where: { userId },
+        select: { preferredCountries: true, preferredDestinations: true, completedAt: true, discountEligible: true, discountRedeemedAt: true }
+      })
+    : null;
+  const preferredCountries = (preference?.preferredCountries as string[] | undefined) ?? [];
+  const preferredDestinations = (preference?.preferredDestinations as string[] | undefined) ?? [];
+  const discountPercent =
+    preference?.completedAt && preference?.discountEligible && !preference?.discountRedeemedAt ? 10 : 0;
+
+  const tours = await fetchFeaturedTours(locale, {
+    countries: preferredCountries,
+    destinations: preferredDestinations
+  });
   const displayedTours = selectRotatingTours(tours);
   const reviewSummary = await getTourReviewSummaryForTours(tours.map((tour) => tour.id));
 
@@ -125,6 +157,7 @@ export default async function FeaturedToursSection({ locale }: Props) {
           tags={[translate(locale, "tour.card.tag.topExperience")]}
           rating={reviewSummary[tour.id]?.average ?? 0}
           reviewCount={reviewSummary[tour.id]?.count ?? 0}
+          discountPercent={discountPercent}
           maxPax={tour.capacity ?? 15}
           duration={formatDurationValue(tour.duration)}
           pickupIncluded={true}

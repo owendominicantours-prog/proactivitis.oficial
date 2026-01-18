@@ -6,6 +6,8 @@ import TransferHeroNotices from "@/components/public/TransferHeroNotices";
 import { prisma } from "@/lib/prisma";
 import { getTransferPointsForCountry, TransferPointOption } from "@/lib/transfers";
 import { Locale, translate } from "@/lib/translations";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const heroStats = [
   { labelKey: "transfer.hero.stat.transfers", value: "5.000+" },
@@ -38,6 +40,16 @@ type Props = {
 };
 
 export default async function PublicTransferPage({ locale, heroTitleOverride, heroDescriptionOverride }: Props) {
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as { id?: string } | null)?.id ?? null;
+  const preference = userId
+    ? await prisma.customerPreference.findUnique({
+        where: { userId },
+        select: { discountEligible: true, discountRedeemedAt: true, completedAt: true }
+      })
+    : null;
+  const discountPercent =
+    preference?.completedAt && preference?.discountEligible && !preference?.discountRedeemedAt ? 10 : 0;
   const transfersV2Enabled = process.env.TRANSFERS_V2_ENABLED === "true";
   const puntaCanaHubHref = locale === "es" ? "/punta-cana/traslado" : `/${locale}/punta-cana/traslado`;
   const transferHref = (slug: string) => (locale === "es" ? `/transfer/${slug}` : `/${locale}/transfer/${slug}`);
@@ -45,8 +57,16 @@ export default async function PublicTransferPage({ locale, heroTitleOverride, he
   let originPoints: TransferPointOption[] = [];
 
   if (!transfersV2Enabled) {
+    const preferredDestinations =
+      preference?.completedAt ? ((preference?.preferredDestinations as string[] | undefined) ?? []) : [];
     const hotels = await prisma.location.findMany({
-      where: { countryId: "RD", authorized: true },
+      where: {
+        countryId: "RD",
+        authorized: true,
+        ...(preferredDestinations.length
+          ? { destination: { slug: { in: preferredDestinations } } }
+          : {})
+      },
       orderBy: { name: "asc" },
       select: {
         name: true,
@@ -105,6 +125,11 @@ export default async function PublicTransferPage({ locale, heroTitleOverride, he
               <p className="text-base text-white/90">
                 {heroDescriptionOverride ?? translate(locale, "transfer.hero.description")}
               </p>
+              {discountPercent > 0 && (
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-100">
+                  -{discountPercent}% disponible al reservar hoy
+                </div>
+              )}
               <div className="flex flex-wrap gap-3 text-sm font-semibold uppercase tracking-[0.2em] text-white">
                 <Link
                   href="/"

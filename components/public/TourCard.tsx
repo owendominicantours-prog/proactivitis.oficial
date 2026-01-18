@@ -8,6 +8,7 @@ type TourCardProps = {
   title: string;
   location: string;
   price: number;
+  discountPercent?: number;
   rating?: number;
   reviewCount?: number;
   image: string;
@@ -46,6 +47,7 @@ export function TourCard({
   title,
   location,
   price,
+  discountPercent = 0,
   rating,
   reviewCount,
   image,
@@ -63,6 +65,8 @@ export function TourCard({
   const showBadge = normalizedRating > 0 && normalizedCount > 0;
   const tagList = tags && tags.length ? tags : ["Experiencia Top"];
   const locationText = zone || location?.split(",")[0] || "Punta Cana";
+  const hasDiscount = discountPercent > 0;
+  const discountedPrice = hasDiscount ? price * (1 - discountPercent / 100) : price;
 
   return (
     <Link href={`/tours/${slug}`} className="group block">
@@ -119,9 +123,14 @@ export function TourCard({
             <div>
               <p className="text-slate-400 text-[10px] uppercase tracking-[0.4em]">Desde</p>
               <div className="flex items-baseline gap-1">
-                <span className="text-brand text-3xl font-black">${price.toFixed(0)}</span>
+                <span className="text-brand text-3xl font-black">${discountedPrice.toFixed(0)}</span>
                 <span className="text-sm font-semibold text-slate-500">USD</span>
               </div>
+              {hasDiscount && (
+                <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-emerald-600">
+                  -{discountPercent}% aplicado
+                </p>
+              )}
             </div>
             <span className="rounded-2xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-lg shadow-brand/40 transition-colors group-hover:bg-brand-light">
               Ver detalles
