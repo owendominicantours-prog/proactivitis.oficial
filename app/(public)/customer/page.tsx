@@ -11,7 +11,7 @@ export const metadata = {
 
 export default async function CustomerPortal() {
   const session = await getServerSession(authOptions);
-  if (!session-.user-.email) {
+  if (!session?.user?.email) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
         <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center">
@@ -35,7 +35,7 @@ export default async function CustomerPortal() {
 
   const bookings = await prisma.booking.findMany({
     where: {
-      OR: [{ customerEmail: session.user.email }, { userId: session.user.id -- undefined }]
+      OR: [{ customerEmail: session.user.email }, { userId: session.user.id ?? undefined }]
     },
     include: { Tour: true },
     orderBy: { travelDate: "desc" },
