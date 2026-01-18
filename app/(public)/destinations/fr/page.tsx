@@ -7,7 +7,7 @@ const canonicalUrl = "https://proactivitis.com/fr/destinos";
 export const metadata: Metadata = {
   title: "Destinations verifiees | Tours et transferts avec Proactivitis",
   description:
-    "Decouvrez des destinations avec tours, excursions et transferts prives. Comparez les zones, prix clairs, support 24/7.",
+    "Decouvrez des destinations avec tours, excursions et transferts prives. Comparez zones, activites et prix clairs avec support 24/7 Proactivitis.",
   keywords: ["destinations", "tours", "excursions", "transferts", "activites", "Proactivitis"],
   alternates: {
     canonical: canonicalUrl,
