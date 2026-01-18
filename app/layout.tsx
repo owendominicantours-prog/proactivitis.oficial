@@ -33,12 +33,14 @@ export const metadata: Metadata = {
   title: "Proactivitis | Tours, Traslados y Actividades para Reservar",
   description:
     "Reserva tours, traslados privados y actividades con Proactivitis. Confirmacion inmediata, precios claros y soporte 24/7.",
-  icons: [
-    { rel: "icon", url: "/logo.png" },
-    { rel: "shortcut icon", url: "/logo.png" },
-    { rel: "icon", url: "/logo.png", sizes: "96x96" },
-    { rel: "apple-touch-icon", url: "/logo.png", sizes: "180x180" }
-  ],
+  icons: {
+    icon: [
+      { url: "/logo.png", type: "image/png" },
+      { url: "/logo.png", sizes: "96x96", type: "image/png" }
+    ],
+    shortcut: ["/logo.png"],
+    apple: [{ url: "/logo.png", sizes: "180x180", type: "image/png" }]
+  },
   openGraph: {
     title: "Proactivitis | Tours, Traslados y Actividades para Reservar",
     description:
