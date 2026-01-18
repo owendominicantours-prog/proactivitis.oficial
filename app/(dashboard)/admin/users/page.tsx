@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { deleteUserAction } from "./actions";
+import { deleteUserAction, resetUserPreferencesAction } from "./actions";
 
 export default async function AdminUsersPage() {
   const users = await prisma.user.findMany({
@@ -39,15 +39,26 @@ export default async function AdminUsersPage() {
               <td className="px-3 py-3">{user.role}</td>
               <td className="px-3 py-3">{user.createdAt.toLocaleDateString("es-DO")}</td>
               <td className="px-3 py-3">
-                <form action={deleteUserAction} method="post" className="inline">
-                  <input type="hidden" name="userId" value={user.id} />
-                  <button
-                    type="submit"
-                    className="rounded-lg border border-rose-500 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-rose-600 transition hover:bg-rose-50"
-                  >
-                    Eliminar
-                  </button>
-                </form>
+                <div className="flex flex-wrap gap-2">
+                  <form action={resetUserPreferencesAction} method="post" className="inline">
+                    <input type="hidden" name="userId" value={user.id} />
+                    <button
+                      type="submit"
+                      className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600 transition hover:bg-slate-50"
+                    >
+                      Reiniciar filtros
+                    </button>
+                  </form>
+                  <form action={deleteUserAction} method="post" className="inline">
+                    <input type="hidden" name="userId" value={user.id} />
+                    <button
+                      type="submit"
+                      className="rounded-lg border border-rose-500 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-rose-600 transition hover:bg-rose-50"
+                    >
+                      Eliminar
+                    </button>
+                  </form>
+                </div>
               </td>
             </tr>
             ))}

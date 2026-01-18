@@ -27,3 +27,16 @@ export async function deleteUserAction(formData: FormData) {
   revalidatePath("/dashboard/supplier");
   revalidatePath("/dashboard/agency");
 }
+
+export async function resetUserPreferencesAction(formData: FormData) {
+  const id = formData.get("userId");
+  if (!id || typeof id !== "string") {
+    throw new Error("Falta el identificador del usuario.");
+  }
+
+  await prisma.customerPreference.deleteMany({ where: { userId: id } });
+
+  revalidatePath("/admin/users");
+  revalidatePath("/customer");
+  revalidatePath("/customer/preferences");
+}
