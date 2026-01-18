@@ -170,12 +170,36 @@ const localizeLanding = async (landing: TransferLandingData, locale: Locale) => 
 const buildCanonical = (slug: string, locale: Locale) =>
   locale === "es" ? `${BASE_URL}/transfer/${slug}` : `${BASE_URL}/${locale}/transfer/${slug}`;
 
+const MIN_META_DESCRIPTION = 140;
+
+const buildMetaSuffix = (locale: Locale, hotelName?: string) => {
+  if (locale === "en") {
+    return hotelName
+      ? `Book your private transfer to ${hotelName} with flight tracking, bilingual driver, and 24/7 support.`
+      : "Book private transfers with flight tracking, bilingual drivers, and 24/7 support.";
+  }
+  if (locale === "fr") {
+    return hotelName
+      ? `Reservez votre transfert prive vers ${hotelName} avec suivi de vol, chauffeur bilingue et support 24/7.`
+      : "Reservez des transferts prives avec suivi de vol, chauffeurs bilingues et support 24/7.";
+  }
+  return hotelName
+    ? `Reserva tu traslado privado a ${hotelName} con seguimiento de vuelo, chofer bilingue y soporte 24/7.`
+    : "Reserva traslados privados con seguimiento de vuelo, chofer bilingue y soporte 24/7.";
+};
+
+const ensureMetaDescription = (description: string, locale: Locale, hotelName?: string) => {
+  const base = description.trim();
+  if (base.length >= MIN_META_DESCRIPTION) return base;
+  return `${base} ${buildMetaSuffix(locale, hotelName)}`.trim();
+};
+
 export async function buildTransferMetadata(landingSlug: string, locale: Locale): Promise<Metadata> {
   const generic = findGenericTransferLandingBySlug(landingSlug);
   if (generic) {
     const canonical = buildCanonical(generic.landingSlug, locale);
     const seoTitle = generic.seoTitle[locale];
-    const seoDescription = generic.metaDescription[locale];
+    const seoDescription = ensureMetaDescription(generic.metaDescription[locale], locale);
     const imageUrl = encodeURI(`${BASE_URL}/transfer/sedan.png`);
     return {
       title: seoTitle,
@@ -217,7 +241,7 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
   const localized = await localizeLanding(landing, locale);
   const canonical = buildCanonical(landing.landingSlug, locale);
   const seoTitle = `${localized.seoTitle} | Proactivitis`;
-  const rawDescription = localized.metaDescription.trim();
+  const rawDescription = ensureMetaDescription(localized.metaDescription, locale, landing.hotelName);
   const seoDescription = rawDescription.endsWith(".") ? rawDescription : `${rawDescription}.`;
   const imageUrl = encodeURI(`${BASE_URL}${localized.heroImage}`);
   return {
