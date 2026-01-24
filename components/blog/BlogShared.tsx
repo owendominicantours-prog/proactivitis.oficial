@@ -151,6 +151,448 @@ const STATIC_POSTS: StaticBlogPost[] = [
       }
     }
   }
+  ,
+  {
+    id: "top-attractions-punta-cana-2026",
+    slug: "top-attractions-punta-cana-2026",
+    coverImage: "/fototours/fotosimple.jpg",
+    publishedAt: new Date("2026-02-02T12:00:00Z"),
+    translations: {
+      es: {
+        title: "Top attractions in Punta Cana 2026: guia rapida con reservas directas",
+        excerpt:
+          "Las atracciones mas buscadas en Punta Cana 2026 y como reservar sin sobrecostos.",
+        contentHtml: `
+          <p>Esta lista resume las atracciones que mas buscan los viajeros en 2026 y lo que conviene reservar con tiempo para evitar alzas de precio.</p>
+          <h2>1. Isla Saona</h2>
+          <p>El tour mas fotografiado del Caribe. Ideal para playa, catamaran y piscina natural.</p>
+          <h2>2. Party Boat / Catamaran</h2>
+          <p>Open bar + snorkeling + musica. Perfecto para grupos y adultos.</p>
+          <h2>3. Buggy y ATV</h2>
+          <p>La aventura de barro con parada en cueva y playa Macao.</p>
+          <h2>4. Parasailing</h2>
+          <p>Vistas aereas de Bavaro con vuelos de 10-12 minutos.</p>
+          <h2>5. Santo Domingo</h2>
+          <p>Historia real y zona colonial en un dia completo.</p>
+          <p>Reserva directo para asegurar precio fijo y confirmacion inmediata: <a href="/tours">tours en Punta Cana</a> y <a href="/traslado">traslados privados</a>.</p>
+        `
+      },
+      en: {
+        title: "Top attractions in Punta Cana 2026: quick guide with direct booking",
+        excerpt:
+          "The most searched Punta Cana attractions for 2026 and how to book at a fixed price.",
+        contentHtml: `
+          <p>Here are the top attractions travelers search for in 2026, plus what to book early to avoid price spikes.</p>
+          <h2>1. Saona Island</h2>
+          <p>Classic beach day with catamaran and natural pool.</p>
+          <h2>2. Party Boat / Catamaran</h2>
+          <p>Open bar + snorkeling + music. Great for groups.</p>
+          <h2>3. Buggy & ATV</h2>
+          <p>Off-road adventure with cave and Macao Beach.</p>
+          <h2>4. Parasailing</h2>
+          <p>Best aerial views over Bavaro.</p>
+          <h2>5. Santo Domingo</h2>
+          <p>History-focused full day trip to the capital.</p>
+          <p>Book direct for fixed rates: <a href="/en/tours">Punta Cana tours</a> and <a href="/en/traslado">private transfers</a>.</p>
+        `
+      },
+      fr: {
+        title: "Top attractions a Punta Cana 2026: guide rapide et reservation directe",
+        excerpt:
+          "Les attractions les plus recherchees a Punta Cana en 2026 et comment reserver au bon prix.",
+        contentHtml: `
+          <p>Voici les attractions les plus recherchees en 2026, et celles a reserver a l'avance.</p>
+          <h2>1. Isla Saona</h2>
+          <p>Journee plage avec catamaran et piscine naturelle.</p>
+          <h2>2. Party Boat / Catamaran</h2>
+          <p>Open bar + snorkeling + musique.</p>
+          <h2>3. Buggy & ATV</h2>
+          <p>Aventure tout-terrain avec grotte et plage Macao.</p>
+          <h2>4. Parasailing</h2>
+          <p>Meilleures vues aeriennes sur Bavaro.</p>
+          <h2>5. Santo Domingo</h2>
+          <p>Excursion historique a la capitale.</p>
+          <p>Reservation directe: <a href="/fr/tours">excursions</a> et <a href="/fr/traslado">transferts prives</a>.</p>
+        `
+      }
+    }
+  },
+  {
+    id: "punta-cana-airport-transfer-guide-2026",
+    slug: "punta-cana-airport-transfer-guide-2026",
+    coverImage: "/fototours/fotosimple.jpg",
+    publishedAt: new Date("2026-02-03T12:00:00Z"),
+    translations: {
+      es: {
+        title: "Guia de traslados aeropuerto PUJ 2026: tiempos, zonas y costos",
+        excerpt:
+          "Todo lo que debes saber para moverte desde el aeropuerto PUJ a Bavaro, Cap Cana y Uvero Alto.",
+        contentHtml: `
+          <p>En 2026 la demanda sube y los traslados son la primera decision clave. Esta guia resume tiempos promedio y zonas principales.</p>
+          <h2>Zonas mas comunes</h2>
+          <ul>
+            <li>Bavaro: 20-30 minutos</li>
+            <li>Cap Cana: 20-30 minutos</li>
+            <li>Uvero Alto: 40-55 minutos</li>
+          </ul>
+          <p>Reserva privado para evitar esperas y cargos sorpresa. <a href="/traslado">Ver traslados privados</a>.</p>
+        `
+      },
+      en: {
+        title: "PUJ airport transfer guide 2026: times, zones, and costs",
+        excerpt:
+          "What to expect when transferring from PUJ to Bavaro, Cap Cana, and Uvero Alto.",
+        contentHtml: `
+          <p>Transfers are the first big decision. Here are typical times by zone.</p>
+          <h2>Main zones</h2>
+          <ul>
+            <li>Bavaro: 20-30 minutes</li>
+            <li>Cap Cana: 20-30 minutes</li>
+            <li>Uvero Alto: 40-55 minutes</li>
+          </ul>
+          <p>Book private to avoid delays: <a href="/en/traslado">private transfers</a>.</p>
+        `
+      },
+      fr: {
+        title: "Guide des transferts PUJ 2026: temps, zones et couts",
+        excerpt:
+          "Ce qu'il faut savoir pour aller de PUJ a Bavaro, Cap Cana et Uvero Alto.",
+        contentHtml: `
+          <p>Le transfert est la premiere decision cle. Voici les temps moyens.</p>
+          <h2>Zones principales</h2>
+          <ul>
+            <li>Bavaro: 20-30 minutes</li>
+            <li>Cap Cana: 20-30 minutes</li>
+            <li>Uvero Alto: 40-55 minutes</li>
+          </ul>
+          <p>Reservez prive: <a href="/fr/traslado">transferts prives</a>.</p>
+        `
+      }
+    }
+  },
+  {
+    id: "punta-cana-what-to-pack-2026",
+    slug: "punta-cana-what-to-pack-2026",
+    coverImage: "/fototours/fotosimple.jpg",
+    publishedAt: new Date("2026-02-04T12:00:00Z"),
+    translations: {
+      es: {
+        title: "Que llevar a Punta Cana en 2026: checklist rapido",
+        excerpt: "Documentos, ropa y tips para excursiones acuaticas y aventura.",
+        contentHtml: `
+          <p>Checklist rapido para viajeros que reservan tours y traslados.</p>
+          <ul>
+            <li>Protector solar y repelente.</li>
+            <li>Zapatos para agua y toalla ligera.</li>
+            <li>Documento y copia digital.</li>
+            <li>Dinero en efectivo para extras.</li>
+          </ul>
+          <p>Combina tu lista con tus reservas: <a href="/tours">ver tours</a>.</p>
+        `
+      },
+      en: {
+        title: "What to pack for Punta Cana 2026: quick checklist",
+        excerpt: "Docs, clothes, and tips for beach and adventure tours.",
+        contentHtml: `
+          <p>Quick list for travelers booking tours and transfers.</p>
+          <ul>
+            <li>Sunblock and repellent.</li>
+            <li>Water shoes and light towel.</li>
+            <li>Passport copy.</li>
+            <li>Cash for extras.</li>
+          </ul>
+          <p>Plan your activities: <a href="/en/tours">see tours</a>.</p>
+        `
+      },
+      fr: {
+        title: "Que mettre dans sa valise pour Punta Cana 2026",
+        excerpt: "Documents, vetements et astuces pour les excursions.",
+        contentHtml: `
+          <p>Checklist rapide pour voyages et excursions.</p>
+          <ul>
+            <li>Creme solaire et anti-moustiques.</li>
+            <li>Chaussures d'eau et serviette.</li>
+            <li>Copie du passeport.</li>
+            <li>Cash pour extras.</li>
+          </ul>
+          <p>Voir les activites: <a href="/fr/tours">excursions</a>.</p>
+        `
+      }
+    }
+  },
+  {
+    id: "punta-cana-best-beaches-2026",
+    slug: "punta-cana-best-beaches-2026",
+    coverImage: "/fototours/fotosimple.jpg",
+    publishedAt: new Date("2026-02-05T12:00:00Z"),
+    translations: {
+      es: {
+        title: "Las mejores playas de Punta Cana 2026 y como llegar",
+        excerpt: "Bavaro, Macao y Cap Cana con tips de acceso y tours cercanos.",
+        contentHtml: `
+          <p>Las playas mas recomendadas en 2026:</p>
+          <ul>
+            <li>Bavaro: acceso facil y muchos hoteles.</li>
+            <li>Macao: mas natural, ideal para buggy.</li>
+            <li>Cap Cana: ambiente premium y mar calmo.</li>
+          </ul>
+          <p>Reserva experiencias cerca de cada playa: <a href="/tours">tours en Punta Cana</a>.</p>
+        `
+      },
+      en: {
+        title: "Best Punta Cana beaches 2026 and how to get there",
+        excerpt: "Bavaro, Macao, and Cap Cana with access tips and nearby tours.",
+        contentHtml: `
+          <p>Top beaches for 2026:</p>
+          <ul>
+            <li>Bavaro: easy access and many resorts.</li>
+            <li>Macao: more natural, great for buggy tours.</li>
+            <li>Cap Cana: premium vibe and calm water.</li>
+          </ul>
+          <p>Find tours nearby: <a href="/en/tours">Punta Cana tours</a>.</p>
+        `
+      },
+      fr: {
+        title: "Meilleures plages de Punta Cana 2026",
+        excerpt: "Bavaro, Macao et Cap Cana avec conseils d'acces.",
+        contentHtml: `
+          <p>Plages top en 2026:</p>
+          <ul>
+            <li>Bavaro: acces facile.</li>
+            <li>Macao: nature et buggy.</li>
+            <li>Cap Cana: ambiance premium.</li>
+          </ul>
+          <p>Excursions proches: <a href="/fr/tours">voir les tours</a>.</p>
+        `
+      }
+    }
+  },
+  {
+    id: "punta-cana-family-trips-2026",
+    slug: "punta-cana-family-trips-2026",
+    coverImage: "/fototours/fotosimple.jpg",
+    publishedAt: new Date("2026-02-06T12:00:00Z"),
+    translations: {
+      es: {
+        title: "Punta Cana en familia 2026: tours seguros y traslados comodos",
+        excerpt: "Actividades para ninos, horarios suaves y traslados privados.",
+        contentHtml: `
+          <p>Si viajas en familia, prioriza tours con recogida clara y tiempos moderados.</p>
+          <ul>
+            <li>Isla Saona con catamaran y playa.</li>
+            <li>Parasailing en horarios de la manana.</li>
+            <li>City tours con paradas cortas.</li>
+          </ul>
+          <p>Traslados privados facilitan todo: <a href="/traslado">ver opciones</a>.</p>
+        `
+      },
+      en: {
+        title: "Punta Cana with family 2026: safe tours and easy transfers",
+        excerpt: "Family-friendly activities and private transfer tips.",
+        contentHtml: `
+          <p>For families, choose tours with clear pick-up and moderate timing.</p>
+          <ul>
+            <li>Saona Island beach day.</li>
+            <li>Morning parasailing.</li>
+            <li>City tour with short stops.</li>
+          </ul>
+          <p>Private transfers make it smoother: <a href="/en/traslado">see options</a>.</p>
+        `
+      },
+      fr: {
+        title: "Punta Cana en famille 2026: tours securises et transferts",
+        excerpt: "Activites famille et conseils de transport prive.",
+        contentHtml: `
+          <p>Pour les familles, choisissez des tours courts avec pick-up clair.</p>
+          <ul>
+            <li>Isla Saona.</li>
+            <li>Parasailing le matin.</li>
+            <li>City tour.</li>
+          </ul>
+          <p>Transferts prives: <a href="/fr/traslado">voir options</a>.</p>
+        `
+      }
+    }
+  },
+  {
+    id: "punta-cana-nightlife-guide-2026",
+    slug: "punta-cana-nightlife-guide-2026",
+    coverImage: "/fototours/fotosimple.jpg",
+    publishedAt: new Date("2026-02-07T12:00:00Z"),
+    translations: {
+      es: {
+        title: "Vida nocturna en Punta Cana 2026: opciones reales",
+        excerpt: "Party boat, bares y planes nocturnos con reservas seguras.",
+        contentHtml: `
+          <p>La vida nocturna en Punta Cana incluye catamaranes, bares y shows.</p>
+          <ul>
+            <li>Party boat con open bar.</li>
+            <li>Shows locales en hoteles.</li>
+            <li>Bares en Bavaro.</li>
+          </ul>
+          <p>Reserva el party boat con antelacion: <a href="/tours">ver tours</a>.</p>
+        `
+      },
+      en: {
+        title: "Punta Cana nightlife 2026: real options",
+        excerpt: "Party boat, bars, and safe bookings.",
+        contentHtml: `
+          <p>Nightlife includes catamarans, hotel shows, and Bavaro bars.</p>
+          <ul>
+            <li>Party boat with open bar.</li>
+            <li>Resort shows.</li>
+            <li>Bavaro bars.</li>
+          </ul>
+          <p>Book the party boat early: <a href="/en/tours">see tours</a>.</p>
+        `
+      },
+      fr: {
+        title: "Vie nocturne a Punta Cana 2026",
+        excerpt: "Party boat, bars et reservations securisees.",
+        contentHtml: `
+          <p>Soirees: catamaran, shows d'hotel, bars a Bavaro.</p>
+          <ul>
+            <li>Party boat avec open bar.</li>
+            <li>Shows locaux.</li>
+            <li>Bars.</li>
+          </ul>
+          <p>Reservez le party boat: <a href="/fr/tours">voir les tours</a>.</p>
+        `
+      }
+    }
+  },
+  {
+    id: "punta-cana-weather-2026",
+    slug: "punta-cana-weather-2026",
+    coverImage: "/fototours/fotosimple.jpg",
+    publishedAt: new Date("2026-02-08T12:00:00Z"),
+    translations: {
+      es: {
+        title: "Clima en Punta Cana 2026: temporadas y mejores meses",
+        excerpt: "Que meses son mas secos y como planificar tours.",
+        contentHtml: `
+          <p>La temporada mas seca va de diciembre a abril. En verano hay mas lluvia pero tambien mejores precios.</p>
+          <p>Si viajas en temporada alta, reserva tours y traslados antes de llegar.</p>
+          <p>Explora opciones: <a href="/tours">tours</a> y <a href="/traslado">traslados</a>.</p>
+        `
+      },
+      en: {
+        title: "Punta Cana weather 2026: seasons and best months",
+        excerpt: "Dry season tips and how to plan tours.",
+        contentHtml: `
+          <p>Dry season runs December to April. Summer has more rain but better prices.</p>
+          <p>Book tours and transfers early in peak season.</p>
+          <p>See options: <a href="/en/tours">tours</a> and <a href="/en/traslado">transfers</a>.</p>
+        `
+      },
+      fr: {
+        title: "Meteo Punta Cana 2026: saisons et meilleurs mois",
+        excerpt: "Conseils saison seche et organisation des tours.",
+        contentHtml: `
+          <p>La saison seche va de decembre a avril. L'ete est plus humide mais moins cher.</p>
+          <p>Reserve vos tours et transferts a l'avance.</p>
+          <p>Options: <a href="/fr/tours">tours</a> et <a href="/fr/traslado">transferts</a>.</p>
+        `
+      }
+    }
+  },
+  {
+    id: "punta-cana-couples-itinerary-2026",
+    slug: "punta-cana-couples-itinerary-2026",
+    coverImage: "/fototours/fotosimple.jpg",
+    publishedAt: new Date("2026-02-09T12:00:00Z"),
+    translations: {
+      es: {
+        title: "Itinerario romantico Punta Cana 2026: parejas",
+        excerpt: "Planes de 4-5 dias con tours y playas tranquilas.",
+        contentHtml: `
+          <p>Un plan simple para parejas: traslado privado, isla, catamaran y una tarde libre.</p>
+          <p>Recomendados: Isla Saona y catamaran sunset.</p>
+          <p>Reserva directo: <a href="/tours">tours</a>.</p>
+        `
+      },
+      en: {
+        title: "Romantic Punta Cana itinerary 2026 for couples",
+        excerpt: "4-5 day plan with beach tours and sunset catamaran.",
+        contentHtml: `
+          <p>Couples plan: private transfer, island tour, sunset catamaran, and free beach time.</p>
+          <p>Book direct: <a href="/en/tours">tours</a>.</p>
+        `
+      },
+      fr: {
+        title: "Itineraire romantique Punta Cana 2026",
+        excerpt: "Plan 4-5 jours avec plage et catamaran.",
+        contentHtml: `
+          <p>Plan couple: transfert prive, ile, catamaran sunset.</p>
+          <p>Reservation directe: <a href="/fr/tours">tours</a>.</p>
+        `
+      }
+    }
+  },
+  {
+    id: "punta-cana-adventure-tours-2026",
+    slug: "punta-cana-adventure-tours-2026",
+    coverImage: "/fototours/fotosimple.jpg",
+    publishedAt: new Date("2026-02-10T12:00:00Z"),
+    translations: {
+      es: {
+        title: "Tours de aventura en Punta Cana 2026",
+        excerpt: "Buggy, ATV, zipline y actividades intensas.",
+        contentHtml: `
+          <p>Si buscas adrenalina, prioriza buggy/ATV, zipline y rutas combinadas.</p>
+          <p>Explora tours de aventura: <a href="/tours">ver tours</a>.</p>
+        `
+      },
+      en: {
+        title: "Adventure tours in Punta Cana 2026",
+        excerpt: "Buggy, ATV, zipline and high-energy tours.",
+        contentHtml: `
+          <p>For adrenaline, choose buggy/ATV, zipline and combo routes.</p>
+          <p>See adventure tours: <a href="/en/tours">Punta Cana tours</a>.</p>
+        `
+      },
+      fr: {
+        title: "Tours aventure a Punta Cana 2026",
+        excerpt: "Buggy, ATV, zipline et activites fortes.",
+        contentHtml: `
+          <p>Pour l'adrenaline: buggy/ATV, zipline et combos.</p>
+          <p>Voir les tours: <a href="/fr/tours">excursions</a>.</p>
+        `
+      }
+    }
+  },
+  {
+    id: "punta-cana-budget-tips-2026",
+    slug: "punta-cana-budget-tips-2026",
+    coverImage: "/fototours/fotosimple.jpg",
+    publishedAt: new Date("2026-02-11T12:00:00Z"),
+    translations: {
+      es: {
+        title: "Consejos de presupuesto Punta Cana 2026",
+        excerpt: "Como ahorrar en tours y traslados sin perder calidad.",
+        contentHtml: `
+          <p>Reserva directo, compara opciones y evita intermediarios del hotel.</p>
+          <p>Mejores precios: <a href="/traslado">traslados</a> y <a href="/tours">tours</a>.</p>
+        `
+      },
+      en: {
+        title: "Punta Cana budget tips 2026",
+        excerpt: "How to save on tours and transfers without sacrificing quality.",
+        contentHtml: `
+          <p>Book direct, compare options, and avoid hotel desk commissions.</p>
+          <p>See prices: <a href="/en/traslado">transfers</a> and <a href="/en/tours">tours</a>.</p>
+        `
+      },
+      fr: {
+        title: "Conseils budget Punta Cana 2026",
+        excerpt: "Economiser sur tours et transferts.",
+        contentHtml: `
+          <p>Reserver direct et comparer les options.</p>
+          <p>Prix: <a href="/fr/traslado">transferts</a> et <a href="/fr/tours">tours</a>.</p>
+        `
+      }
+    }
+  }
 ];
 
 const getStaticPost = (slug: string) => STATIC_POSTS.find((post) => post.slug === slug);
