@@ -270,7 +270,7 @@ export const transferLandings: TransferLandingData[] = [
       "Majestic Elegance transfer Punta Cana",
       "transfer Majestic Elegance",
       "transportation from punta cana airport to majestic elegance",
-      "majestic elegance punta cana transportation from airport"
+      "majestic elegance punta cana transportation from airport",
       "majestic elegance punta cana airport shuttle",
       "punta cana airport to majestic elegance",
       "transportation from punta cana airport to majestic elegance",
@@ -465,7 +465,7 @@ export const transferLandings: TransferLandingData[] = [
       "PUJ Melia Caribe transfer",
       "transfer privado Melia Caribe",
       "Melia Caribe Beach transfer Punta Cana",
-      "punta cana airport to melia beach resort"
+      "punta cana airport to melia beach resort",
       "melia caribe beach resort airport shuttle",
       "melia caribe tropical airport shuttle",
       "melia caribe tropical airport transfer",
@@ -748,7 +748,7 @@ export const transferLandings: TransferLandingData[] = [
       "Occidental Punta Cana transfer privado",
       "transfer Occidental Punta Cana",
       "PUJ airport to Occidental Punta Cana",
-      "Occidental Punta Cana airport shuttle"
+      "Occidental Punta Cana airport shuttle",
       "occidental punta cana airport shuttle",
       "puj airport to occidental punta cana"
     ],
@@ -1020,7 +1020,7 @@ export const transferLandings: TransferLandingData[] = [
       "Secrets Cap Cana transfer privado",
       "transfer Secrets Cap Cana",
       "punta cana airport to secrets cap cana",
-      "cap cana transfer time minutes"
+      "cap cana transfer time minutes",
       "punta cana airport to secrets cap cana"
     ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-secrets-cap-cana"
@@ -1390,7 +1390,7 @@ export const transferLandings: TransferLandingData[] = [
       "breathless punta cana airport transfer",
       "PUJ Breathless transfer",
       "transportation from punta cana airport to breathless resort",
-      "breathless punta cana airport transfer"
+      "breathless punta cana airport transfer",
       "transfer from punta cana airport to breathless resort",
       "transportation from punta cana airport to breathless resort"
     ],
