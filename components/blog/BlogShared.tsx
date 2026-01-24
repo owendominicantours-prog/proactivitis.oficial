@@ -597,6 +597,41 @@ const STATIC_POSTS: StaticBlogPost[] = [
 
 const getStaticPost = (slug: string) => STATIC_POSTS.find((post) => post.slug === slug);
 
+const splitBlogSections = (html: string) => {
+  const parts = html.split(/<h2>/).filter(Boolean);
+  if (parts.length <= 1) {
+    return [{ html }];
+  }
+  return parts.map((part, index) => ({
+    html: index === 0 ? part : `<h2>${part}`
+  }));
+};
+
+const renderBlogSections = (html: string) => {
+  const sections = splitBlogSections(html);
+  return (
+    <div className="space-y-10">
+      {sections.map((section, index) => {
+        const isRight = index % 2 === 1;
+        return (
+          <div key={index} className="grid md:grid-cols-12">
+            <div
+              className={`md:col-span-7 ${isRight ? "md:col-start-6" : "md:col-start-1"}`}
+            >
+              <div
+                className={`rounded-3xl border border-slate-200 bg-white p-6 text-[15px] leading-7 text-slate-700 shadow-sm ${
+                  isRight ? "md:text-right" : "md:text-left"
+                }`}
+                dangerouslySetInnerHTML={{ __html: section.html }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 const LABELS = {
   es: {
     listTitle: "Noticias y guias",
@@ -891,9 +926,7 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
             />
           </div>
 
-          <section className="blog-content">
-            <div dangerouslySetInnerHTML={{ __html: translation.contentHtml }} />
-          </section>
+          <section className="blog-content">{renderBlogSections(translation.contentHtml)}</section>
 
           {relatedTours.length ? (
             <section className="space-y-4">
@@ -1025,9 +1058,7 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
           />
         </div>
 
-        <section className="blog-content">
-          <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
-        </section>
+        <section className="blog-content">{renderBlogSections(contentHtml)}</section>
 
         {filteredTours.length ? (
           <section className="space-y-4">
