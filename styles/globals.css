@@ -46,7 +46,7 @@
 .blog-content ul,
 .blog-content ol {
   margin: 0 0 1.25rem;
-  max-width: 42rem;
+  max-width: none;
 }
 
 .blog-content ul,
@@ -54,22 +54,7 @@
   padding-left: 1.25rem;
 }
 
-@media (min-width: 768px) {
-  .blog-content h2:nth-of-type(even) {
-    text-align: right;
-  }
 
-  .blog-content h2:nth-of-type(even) + p,
-  .blog-content h2:nth-of-type(even) + ul,
-  .blog-content h2:nth-of-type(even) + ol {
-    margin-left: auto;
-    text-align: right;
-  }
-
-.blog-content h2:nth-of-type(odd) {
-  text-align: left;
-}
-}
 
 .blog-reading-progress {
   position: sticky;
