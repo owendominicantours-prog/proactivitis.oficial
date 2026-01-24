@@ -263,12 +263,14 @@ export const transferLandings: TransferLandingData[] = [
     longCopy: buildLongCopy("Majestic Elegance Punta Cana"),
     trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
     faq: buildFaq("Majestic Elegance Punta Cana"),
-    seoTitle: "PUJ to Majestic Elegance transfer",
-    metaDescription: "Reserva traslado privado desde el aeropuerto de Punta Cana (PUJ) hasta Majestic Elegance Punta Cana con precio fijo, seguimiento de vuelo y asistencia con equipaje. Servicio puerta a puerta con soporte 24/7 y confirmacion inmediata.",
+    seoTitle: "Transportation from Punta Cana airport to Majestic Elegance | Proactivitis",
+    metaDescription: "Transportation from Punta Cana airport to Majestic Elegance with private driver, flight tracking, and fixed pricing. Door-to-lobby service with 24/7 support.",
     keywords: [
       "PUJ Majestic Elegance transfer",
       "Majestic Elegance transfer Punta Cana",
       "transfer Majestic Elegance",
+      "transportation from punta cana airport to majestic elegance",
+      "majestic elegance punta cana transportation from airport"
       "majestic elegance punta cana airport shuttle",
       "punta cana airport to majestic elegance",
       "transportation from punta cana airport to majestic elegance",
@@ -447,7 +449,7 @@ export const transferLandings: TransferLandingData[] = [
     reverseSlug: "melia-caribe-beach-to-punta-cana-international-airport",
     hotelSlug: "melia-caribe-beach",
     hotelName: "Melia Caribe Beach Resort",
-    heroTitle: "Punta Cana International Airport (PUJ)  Melia Caribe Beach Resort",
+    heroTitle: "PUJ airport to Melia Caribe Beach Resort private transfer",
     heroSubtitle: "Llegada familiar con minibuses o vans estandar para equipaje y ninos.",
     heroTagline: "Primeros pasos sobre la arena sin complicaciones",
     heroImage: "/transfer/mini van.png",
@@ -457,12 +459,13 @@ export const transferLandings: TransferLandingData[] = [
     longCopy: buildLongCopy("Melia Caribe Beach Resort"),
     trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
     faq: buildFaq("Melia Caribe Beach Resort"),
-    seoTitle: "PUJ to Melia Caribe Beach private transfer | Proactivitis",
-    metaDescription: "PUJ to Melia Caribe Beach Resort private transfer with family vans, luggage assistance, and fixed price. Door-to-door service 24/7.",
+    seoTitle: "Punta Cana airport to Melia Beach Resort transfer | Proactivitis",
+    metaDescription: "Punta Cana airport to Melia Beach Resort private transfer with fixed price, luggage assistance, and direct pickup. 24/7 support door to lobby.",
     keywords: [
       "PUJ Melia Caribe transfer",
       "transfer privado Melia Caribe",
       "Melia Caribe Beach transfer Punta Cana",
+      "punta cana airport to melia beach resort"
       "melia caribe beach resort airport shuttle",
       "melia caribe tropical airport shuttle",
       "melia caribe tropical airport transfer",
@@ -728,7 +731,7 @@ export const transferLandings: TransferLandingData[] = [
     reverseSlug: "occidental-punta-cana-to-punta-cana-international-airport",
     hotelSlug: "occidental-punta-cana",
     hotelName: "Occidental Punta Cana",
-    heroTitle: "Punta Cana International Airport (PUJ)  Occidental Punta Cana",
+    heroTitle: "PUJ airport to Occidental Punta Cana private shuttle",
     heroSubtitle: "Traslado privado con chofer bilingue, Wi-Fi y asistencia personalizada hasta Occidental Punta Cana.",
     heroTagline: "Servicio premium sin esperas ni filas",
     heroImage: "/transfer/mini van.png",
@@ -738,12 +741,14 @@ export const transferLandings: TransferLandingData[] = [
     longCopy: buildLongCopy("Occidental Punta Cana"),
     trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
     faq: buildFaq("Occidental Punta Cana"),
-    seoTitle: "Transfer privado PUJ a Occidental Punta Cana | Proactivitis",
-    metaDescription: "Transporte privado desde PUJ a Occidental Punta Cana con chofer bilingue, espera gratuita y ruta directa. Reserva en minutos con precios claros y confirmacion inmediata.",
+    seoTitle: "PUJ airport to Occidental Punta Cana shuttle | Proactivitis",
+    metaDescription: "PUJ airport to Occidental Punta Cana private shuttle with fixed price, flight tracking and bilingual driver. Door-to-lobby transportation with 24/7 support.",
     keywords: [
       "PUJ Occidental Punta Cana transfer",
       "Occidental Punta Cana transfer privado",
       "transfer Occidental Punta Cana",
+      "PUJ airport to Occidental Punta Cana",
+      "Occidental Punta Cana airport shuttle"
       "occidental punta cana airport shuttle",
       "puj airport to occidental punta cana"
     ],
@@ -1008,12 +1013,14 @@ export const transferLandings: TransferLandingData[] = [
     longCopy: buildLongCopy("Secrets Cap Cana"),
     trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
     faq: buildFaq("Secrets Cap Cana"),
-    seoTitle: "PUJ to Secrets Cap Cana luxury transfer | Proactivitis",
-    metaDescription: "Luxury transfer PUJ to Secrets Cap Cana with private vehicle, bilingual driver, and timed pickup. Fixed rate, no surprises.",
+    seoTitle: "Punta Cana airport to Secrets Cap Cana transfer | Proactivitis",
+    metaDescription: "Punta Cana airport to Secrets Cap Cana private transfer with fixed rate, bilingual driver, and flight tracking. Estimated transfer time 20-30 minutes.",
     keywords: [
       "PUJ Secrets Cap Cana transfer",
       "Secrets Cap Cana transfer privado",
       "transfer Secrets Cap Cana",
+      "punta cana airport to secrets cap cana",
+      "cap cana transfer time minutes"
       "punta cana airport to secrets cap cana"
     ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-secrets-cap-cana"
@@ -1163,9 +1170,14 @@ export const transferLandings: TransferLandingData[] = [
     longCopy: buildLongCopy("Trs Cap Cana"),
     trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
     faq: buildFaq("Trs Cap Cana"),
-    seoTitle: "Transfer privado PUJ a Trs Cap Cana | Proactivitis",
-    metaDescription: "Reserva traslado PUJ - Trs Cap Cana con vehiculo privado, asistencia con maletas y monitoreo de vuelo. Servicio confiable, puerta a puerta, soporte 24/7.",
-    keywords: ["PUJ Trs Cap Cana transfer", "Trs Cap Cana transfer privado", "transfer Trs Cap Cana"],
+    seoTitle: "Punta Cana airport to Cap Cana transfer time | Proactivitis",
+    metaDescription: "Punta Cana airport to Cap Cana transfer time is typically 20-30 minutes. Reserva tu traslado privado PUJ - TRS Cap Cana con chofer bilingue y tarifa fija.",
+    keywords: [
+      "PUJ Trs Cap Cana transfer",
+      "Trs Cap Cana transfer privado",
+      "transfer Trs Cap Cana",
+      "punta cana airport to cap cana transfer time minutes"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-trs-cap-cana"
   },
   {
@@ -1183,9 +1195,14 @@ export const transferLandings: TransferLandingData[] = [
     longCopy: buildLongCopy("Trs Turquesa"),
     trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
     faq: buildFaq("Trs Turquesa"),
-    seoTitle: "Transfer privado PUJ a Trs Turquesa | Proactivitis",
-    metaDescription: "Reserva traslado PUJ - Trs Turquesa con vehiculo privado, asistencia con maletas y monitoreo de vuelo. Servicio confiable, puerta a puerta, soporte 24/7.",
-    keywords: ["PUJ Trs Turquesa transfer", "Trs Turquesa transfer privado", "transfer Trs Turquesa"],
+    seoTitle: "TRS Turquesa airport shuttle from PUJ | Proactivitis",
+    metaDescription: "TRS Turquesa airport shuttle from PUJ with private vehicle, flight tracking, and fixed rate. Door-to-door transfer with 24/7 support.",
+    keywords: [
+      "PUJ Trs Turquesa transfer",
+      "Trs Turquesa transfer privado",
+      "transfer Trs Turquesa",
+      "trs turquesa airport shuttle"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-trs-turquesa"
   },
   {
@@ -1263,9 +1280,14 @@ export const transferLandings: TransferLandingData[] = [
     longCopy: buildLongCopy("Zoetry Agua"),
     trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
     faq: buildFaq("Zoetry Agua"),
-    seoTitle: "Transfer privado PUJ a Zoetry Agua | Proactivitis",
-    metaDescription: "Reserva traslado PUJ - Zoetry Agua con vehiculo privado, asistencia con maletas y monitoreo de vuelo. Servicio confiable, puerta a puerta, soporte 24/7.",
-    keywords: ["PUJ Zoetry Agua transfer", "Zoetry Agua transfer privado", "transfer Zoetry Agua"],
+    seoTitle: "Zoetry Agua Punta Cana ground transportation | Proactivitis",
+    metaDescription: "Zoetry Agua Punta Cana ground transportation from PUJ with private vehicle, flight tracking, and fixed price. Door-to-door service with 24/7 support.",
+    keywords: [
+      "PUJ Zoetry Agua transfer",
+      "Zoetry Agua transfer privado",
+      "transfer Zoetry Agua",
+      "zoetry agua punta cana ground transportation"
+    ],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-zoetry-agua"
   }
   ,
@@ -1361,12 +1383,14 @@ export const transferLandings: TransferLandingData[] = [
     longCopy: buildLongCopy("Breathless Punta Cana Resort & Spa"),
     trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
     faq: buildFaq("Breathless Punta Cana Resort & Spa"),
-    seoTitle: "PUJ to Breathless Punta Cana private transfer | Proactivitis",
-    metaDescription: "PUJ to Breathless Punta Cana private transfer with fast pickup, dedicated driver, and fixed price. 24/7 support.",
+    seoTitle: "Transportation from Punta Cana airport to Breathless Resort | Proactivitis",
+    metaDescription: "Transportation from Punta Cana airport to Breathless Resort with private driver, flight tracking, and fixed price. Door-to-lobby transfer 24/7.",
     keywords: [
       "breathless punta cana shuttle",
       "breathless punta cana airport transfer",
       "PUJ Breathless transfer",
+      "transportation from punta cana airport to breathless resort",
+      "breathless punta cana airport transfer"
       "transfer from punta cana airport to breathless resort",
       "transportation from punta cana airport to breathless resort"
     ],
