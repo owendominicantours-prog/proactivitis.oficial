@@ -19,6 +19,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
           gtag('js', new Date());
 
           gtag('config', 'G-R3L9DE7KXL');
+          gtag('config', 'AW-17889405007');
         `}
       </Script>
       <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900">

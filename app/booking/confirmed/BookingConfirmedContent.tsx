@@ -3,6 +3,7 @@ import Link from "next/link";
 import { TourCard } from "@/components/public/TourCard";
 import ContactoProveedor from "@/components/booking/ContactoProveedor";
 import Eticket from "@/components/booking/Eticket";
+import BookingEmailDispatcher from "@/components/booking/BookingEmailDispatcher";
 import { ItineraryTimeline } from "@/components/itinerary/ItineraryTimeline";
 import { BookingConfirmationData } from "./helpers";
 import { useTranslation } from "../../../context/LanguageProvider";
@@ -67,6 +68,7 @@ export function BookingConfirmedContent({
     : undefined;
   return (
     <div className="bg-slate-50 min-h-screen">
+      <BookingEmailDispatcher bookingId={booking.id} />
       <section className="bg-white border-b border-slate-200">
         <div className="mx-auto max-w-6xl px-6 py-8 space-y-6">
           <div className="rounded-3xl border border-emerald-100 bg-emerald-50/80 p-6 shadow-sm">
