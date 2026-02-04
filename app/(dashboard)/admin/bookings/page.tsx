@@ -196,6 +196,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   const selectedTour = getParam("tour") ?? "all";
   const searchQuery = getParam("query") ?? "";
   const pickupSearch = getParam("pickup") ?? "";
+  const orderParam = (getParam("order") as "created" | "travel") ?? "created";
 
   const uniqueTours = Array.from(
     new Set(bookings.map((booking) => booking.Tour?.title ?? "Tour sin título"))
@@ -278,6 +279,15 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     })
     .filter(tabFilter);
 
+  const sortedRows = [...filteredRows].sort((a, b) => {
+    if (orderParam === "travel") {
+      return new Date(a.travelDateValue).getTime() - new Date(b.travelDateValue).getTime();
+    }
+    return new Date(b.createdAtValue).getTime() - new Date(a.createdAtValue).getTime();
+  });
+
+  const latestBooking = rows[0] ?? null;
+
   const summary = {
     reservasHoy: rows.filter(
       (booking) =>
@@ -308,6 +318,25 @@ export default async function AdminBookingsPage({ searchParams }: any) {
 
   return (
     <div className="space-y-6">
+      {latestBooking && (
+        <section className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-700">Última reserva</p>
+              <p className="text-lg font-semibold text-slate-900">{latestBooking.tourTitle}</p>
+              <p className="text-sm text-slate-600">
+                {latestBooking.customerName} · {latestBooking.bookingCode}
+              </p>
+            </div>
+            <a
+              href={`?tab=upcoming&date=week&query=${encodeURIComponent(latestBooking.bookingCode)}&order=created`}
+              className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+            >
+              Ver en lista
+            </a>
+          </div>
+        </section>
+      )}
       <section className="grid gap-4 md:grid-cols-5">
         <DashboardMetric label="Reservas hoy" value={summary.reservasHoy} />
         <DashboardMetric label="Pendientes de pago" value={summary.pendientesPago} />
@@ -320,7 +349,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="grid gap-4 lg:grid-cols-5">
+        <div className="grid gap-4 lg:grid-cols-6">
           <div>
             <label className="text-xs uppercase text-slate-500">Fecha</label>
             <select
@@ -355,19 +384,21 @@ export default async function AdminBookingsPage({ searchParams }: any) {
           </div>
           <div>
             <label className="text-xs uppercase text-slate-500">Estado</label>
-            <select
-              name="status"
-              form="filters-form"
-              defaultValue={selectedStatus?.[0]}
-              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-            >
-              <option value="">Todos</option>
+            <div className="mt-2 flex flex-wrap gap-2">
               {statusOptions.map((value) => (
-                <option key={value} value={value}>
+                <label key={value} className="flex items-center gap-2 text-xs text-slate-600">
+                  <input
+                    type="checkbox"
+                    name="status"
+                    form="filters-form"
+                    defaultChecked={selectedStatus.includes(value)}
+                    value={value}
+                    className="h-4 w-4 rounded border-slate-300"
+                  />
                   {value}
-                </option>
+                </label>
               ))}
-            </select>
+            </div>
           </div>
           <div>
             <label className="text-xs uppercase text-slate-500">Tour</label>
@@ -405,6 +436,18 @@ export default async function AdminBookingsPage({ searchParams }: any) {
               className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
             />
           </div>
+          <div>
+            <label className="text-xs uppercase text-slate-500">Orden</label>
+            <select
+              name="order"
+              form="filters-form"
+              defaultValue={orderParam}
+              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            >
+              <option value="created">Últimas creadas</option>
+              <option value="travel">Fecha de salida</option>
+            </select>
+          </div>
         </div>
         <form id="filters-form" method="get" className="mt-4 flex flex-wrap gap-2">
           <input type="hidden" name="tab" value={tab} />
@@ -414,6 +457,12 @@ export default async function AdminBookingsPage({ searchParams }: any) {
           >
             Aplicar filtros
           </button>
+          <a
+            href={`?tab=${tab}`}
+            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600"
+          >
+            Limpiar filtros
+          </a>
         </form>
       </section>
 
@@ -421,7 +470,13 @@ export default async function AdminBookingsPage({ searchParams }: any) {
         {tabs.map((item) => (
           <a
             key={item.key}
-            href={`?tab=${item.key}`}
+            href={`?tab=${item.key}&date=${dateMode}&tour=${encodeURIComponent(
+              selectedTour
+            )}&query=${encodeURIComponent(searchQuery)}&pickup=${encodeURIComponent(
+              pickupSearch
+            )}&order=${orderParam}${selectedStatus
+              .map((status) => `&status=${encodeURIComponent(status)}`)
+              .join("")}`}
             className={`rounded-full px-4 py-2 transition ${
               tab === item.key
                 ? "border border-slate-900 bg-slate-900 text-white"
@@ -434,9 +489,9 @@ export default async function AdminBookingsPage({ searchParams }: any) {
       </section>
 
       <section className="space-y-4">
-        {filteredRows.length ? (
+        {sortedRows.length ? (
           <div className="grid gap-4">
-            {filteredRows.map((booking) => {
+            {sortedRows.map((booking) => {
               const whatsappNumber = booking.customerPhone.replace(/[^0-9+]/g, "");
               const whatsappLink =
                 whatsappNumber.length > 0
@@ -448,7 +503,9 @@ export default async function AdminBookingsPage({ searchParams }: any) {
               return (
                 <article
                   key={booking.id}
-                  className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+                  className={`overflow-hidden rounded-2xl border bg-white p-6 shadow-sm ${
+                    latestBooking?.id === booking.id ? "border-emerald-300 ring-2 ring-emerald-100" : "border-slate-200"
+                  }`}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>

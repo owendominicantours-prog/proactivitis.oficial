@@ -120,6 +120,7 @@ export function SupplierBookingList({ bookings }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [pickupFilter, setPickupFilter] = useState("");
   const [activeTab, setActiveTab] = useState<TabKey>("today");
+  const [orderBy, setOrderBy] = useState<"created" | "travel">("created");
 
   const now = new Date();
   const tomorrow = new Date(now);
@@ -221,6 +222,24 @@ export function SupplierBookingList({ bookings }: Props) {
     pickupFilter,
     activeTab
   ]);
+
+  const orderedBookings = useMemo(() => {
+    const copy = [...filteredBookings];
+    copy.sort((a, b) => {
+      if (orderBy === "travel") {
+        return new Date(a.travelDateValue).getTime() - new Date(b.travelDateValue).getTime();
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+    return copy;
+  }, [filteredBookings, orderBy]);
+
+  const latestBooking = useMemo(() => {
+    if (!enrichedBookings.length) return null;
+    return [...enrichedBookings].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )[0];
+  }, [enrichedBookings]);
 
   const summary = useMemo(() => {
     const todayStart = startOfDay(now);
@@ -413,9 +432,46 @@ export function SupplierBookingList({ bookings }: Props) {
     );
   };
 
+  const clearFilters = () => {
+    setDateFilterMode("today");
+    setCustomStart("");
+    setCustomEnd("");
+    setStatusFilters(["CONFIRMED", "PENDING", "PAYMENT_PENDING"]);
+    setSelectedTour("all");
+    setSearchQuery("");
+    setPickupFilter("");
+    setOrderBy("created");
+  };
+
   return (
     <>
       <section className="space-y-4">
+        {latestBooking && (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-700">Última reserva</p>
+                <p className="text-lg font-semibold text-slate-900">{latestBooking.tourTitle}</p>
+                <p className="text-sm text-slate-600">
+                  {latestBooking.customerName ?? "Cliente"} · {latestBooking.bookingCode}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("upcoming");
+                  setDateFilterMode("week");
+                  setSearchQuery(latestBooking.bookingCode);
+                  setOrderBy("created");
+                }}
+                className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+              >
+                Ver en lista
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="grid gap-4 md:grid-cols-5">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Reservas hoy</p>
@@ -446,7 +502,7 @@ export function SupplierBookingList({ bookings }: Props) {
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="grid gap-4 lg:grid-cols-5">
+          <div className="grid gap-4 lg:grid-cols-6">
             <div>
               <label className="text-xs uppercase text-slate-500">Fecha</label>
               <select
@@ -528,6 +584,32 @@ export function SupplierBookingList({ bookings }: Props) {
                 className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               />
             </div>
+            <div>
+              <label className="text-xs uppercase text-slate-500">Orden</label>
+              <select
+                value={orderBy}
+                onChange={(event) => setOrderBy(event.target.value as "created" | "travel")}
+                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              >
+                <option value="created">Últimas creadas</option>
+                <option value="travel">Fecha de salida</option>
+              </select>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+            >
+              Aplicar filtros
+            </button>
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600"
+            >
+              Limpiar filtros
+            </button>
           </div>
         </div>
 
@@ -549,8 +631,13 @@ export function SupplierBookingList({ bookings }: Props) {
         </div>
 
         <div className="space-y-4">
-          {filteredBookings.map((booking) => (
-            <article key={booking.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          {orderedBookings.map((booking) => (
+            <article
+              key={booking.id}
+              className={`rounded-2xl border bg-white p-5 shadow-sm ${
+                latestBooking?.id === booking.id ? "border-emerald-300 ring-2 ring-emerald-100" : "border-slate-200"
+              }`}
+            >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
@@ -662,7 +749,7 @@ export function SupplierBookingList({ bookings }: Props) {
               )}
             </article>
           ))}
-          {!filteredBookings.length && (
+          {!orderedBookings.length && (
             <p className="text-sm text-slate-500">No hay reservas que coincidan con los filtros seleccionados.</p>
           )}
         </div>
