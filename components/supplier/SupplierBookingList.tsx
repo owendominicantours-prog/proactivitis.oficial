@@ -58,6 +58,7 @@ type RequestInfoOption = {
 
 type DateFilterMode = "today" | "tomorrow" | "week" | "range";
 type TabKey = "today" | "tomorrow" | "upcoming" | "past" | "payment";
+const PAGE_SIZE = 20;
 
 const requestOptions: RequestInfoOption[] = [
   {
@@ -121,6 +122,7 @@ export function SupplierBookingList({ bookings }: Props) {
   const [pickupFilter, setPickupFilter] = useState("");
   const [activeTab, setActiveTab] = useState<TabKey>("today");
   const [orderBy, setOrderBy] = useState<"created" | "travel">("created");
+  const [page, setPage] = useState(1);
 
   const now = new Date();
   const tomorrow = new Date(now);
@@ -180,7 +182,7 @@ export function SupplierBookingList({ bookings }: Props) {
       case "tomorrow":
         return startOfDay(travel).getTime() === startOfDay(tomorrow).getTime();
       case "upcoming":
-        return travel > tomorrow && travel <= weekLater;
+        return travel > startOfDay(now);
       case "past":
         return travel < startOfDay(now);
       case "payment":
@@ -190,9 +192,11 @@ export function SupplierBookingList({ bookings }: Props) {
     }
   };
 
+  const shouldApplyDateFilter = activeTab === "today" || activeTab === "tomorrow" || dateFilterMode === "range";
+
   const filteredBookings = useMemo(() => {
     return enrichedBookings
-      .filter(matchesDateMode)
+      .filter((booking) => (shouldApplyDateFilter ? matchesDateMode(booking) : true))
       .filter((booking) => (statusFilters.length ? statusFilters.includes(booking.status) : true))
       .filter((booking) => (selectedTour === "all" ? true : booking.tourTitle === selectedTour))
       .filter((booking) => {
@@ -220,7 +224,8 @@ export function SupplierBookingList({ bookings }: Props) {
     selectedTour,
     searchQuery,
     pickupFilter,
-    activeTab
+    activeTab,
+    shouldApplyDateFilter
   ]);
 
   const orderedBookings = useMemo(() => {
@@ -233,6 +238,11 @@ export function SupplierBookingList({ bookings }: Props) {
     });
     return copy;
   }, [filteredBookings, orderBy]);
+
+  const totalPages = Math.max(1, Math.ceil(orderedBookings.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const pageBookings = orderedBookings.slice(pageStart, pageStart + PAGE_SIZE);
 
   const latestBooking = useMemo(() => {
     if (!enrichedBookings.length) return null;
@@ -430,6 +440,7 @@ export function SupplierBookingList({ bookings }: Props) {
     setStatusFilters((prev) =>
       prev.includes(status) ? prev.filter((item) => item !== status) : [...prev, status]
     );
+    setPage(1);
   };
 
   const clearFilters = () => {
@@ -441,6 +452,7 @@ export function SupplierBookingList({ bookings }: Props) {
     setSearchQuery("");
     setPickupFilter("");
     setOrderBy("created");
+    setPage(1);
   };
 
   return (
@@ -507,7 +519,10 @@ export function SupplierBookingList({ bookings }: Props) {
               <label className="text-xs uppercase text-slate-500">Fecha</label>
               <select
                 value={dateFilterMode}
-                onChange={(event) => setDateFilterMode(event.target.value as DateFilterMode)}
+                onChange={(event) => {
+                  setDateFilterMode(event.target.value as DateFilterMode);
+                  setPage(1);
+                }}
                 className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               >
                 <option value="today">Hoy</option>
@@ -520,13 +535,19 @@ export function SupplierBookingList({ bookings }: Props) {
                   <input
                     type="date"
                     value={customStart}
-                    onChange={(event) => setCustomStart(event.target.value)}
+                    onChange={(event) => {
+                      setCustomStart(event.target.value);
+                      setPage(1);
+                    }}
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
                   />
                   <input
                     type="date"
                     value={customEnd}
-                    onChange={(event) => setCustomEnd(event.target.value)}
+                    onChange={(event) => {
+                      setCustomEnd(event.target.value);
+                      setPage(1);
+                    }}
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
                   />
                 </div>
@@ -534,28 +555,35 @@ export function SupplierBookingList({ bookings }: Props) {
             </div>
             <div className="space-y-2">
               <p className="text-xs uppercase text-slate-500">Estado</p>
-              <div className="flex flex-wrap gap-2">
-                {statusOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => toggleStatusFilter(option.value)}
-                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                      statusFilters.includes(option.value)
-                        ? "border-slate-900 bg-slate-900 text-white"
-                        : "border-slate-200 bg-slate-50 text-slate-600"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+              <details className="relative">
+                <summary className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
+                  Seleccionar estados
+                </summary>
+                <div className="absolute left-0 top-full z-20 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+                  <div className="grid gap-2">
+                    {statusOptions.map((option) => (
+                      <label key={option.value} className="flex items-center gap-2 text-xs text-slate-600">
+                        <input
+                          type="checkbox"
+                          checked={statusFilters.includes(option.value)}
+                          onChange={() => toggleStatusFilter(option.value)}
+                          className="h-4 w-4 rounded border-slate-300"
+                        />
+                        {option.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </details>
             </div>
             <div>
               <label className="text-xs uppercase text-slate-500">Tour</label>
               <select
                 value={selectedTour}
-                onChange={(event) => setSelectedTour(event.target.value)}
+                onChange={(event) => {
+                  setSelectedTour(event.target.value);
+                  setPage(1);
+                }}
                 className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               >
                 <option value="all">Todos</option>
@@ -570,7 +598,10 @@ export function SupplierBookingList({ bookings }: Props) {
               <label className="text-xs uppercase text-slate-500">Buscar</label>
               <input
                 value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
+                onChange={(event) => {
+                  setSearchQuery(event.target.value);
+                  setPage(1);
+                }}
                 placeholder="Cliente o ID"
                 className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               />
@@ -579,7 +610,10 @@ export function SupplierBookingList({ bookings }: Props) {
               <label className="text-xs uppercase text-slate-500">Pickup</label>
               <input
                 value={pickupFilter}
-                onChange={(event) => setPickupFilter(event.target.value)}
+                onChange={(event) => {
+                  setPickupFilter(event.target.value);
+                  setPage(1);
+                }}
                 placeholder="Hotel o zona"
                 className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               />
@@ -588,7 +622,10 @@ export function SupplierBookingList({ bookings }: Props) {
               <label className="text-xs uppercase text-slate-500">Orden</label>
               <select
                 value={orderBy}
-                onChange={(event) => setOrderBy(event.target.value as "created" | "travel")}
+                onChange={(event) => {
+                  setOrderBy(event.target.value as "created" | "travel");
+                  setPage(1);
+                }}
                 className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               >
                 <option value="created">Últimas creadas</option>
@@ -618,7 +655,10 @@ export function SupplierBookingList({ bookings }: Props) {
             <button
               key={tab.key}
               type="button"
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => {
+                setActiveTab(tab.key);
+                setPage(1);
+              }}
               className={`rounded-full px-4 py-2 transition ${
                 activeTab === tab.key
                   ? "border border-slate-900 bg-slate-900 text-white"
@@ -631,12 +671,13 @@ export function SupplierBookingList({ bookings }: Props) {
         </div>
 
         <div className="space-y-4">
-          {orderedBookings.map((booking) => (
+          {pageBookings.map((booking) => (
             <article
               key={booking.id}
               className={`rounded-2xl border bg-white p-5 shadow-sm ${
                 latestBooking?.id === booking.id ? "border-emerald-300 ring-2 ring-emerald-100" : "border-slate-200"
               }`}
+              aria-label={`Reserva ${booking.bookingCode} para ${booking.customerName ?? "Cliente"}`}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -749,10 +790,33 @@ export function SupplierBookingList({ bookings }: Props) {
               )}
             </article>
           ))}
-          {!orderedBookings.length && (
+          {!pageBookings.length && (
             <p className="text-sm text-slate-500">No hay reservas que coincidan con los filtros seleccionados.</p>
           )}
         </div>
+        {orderedBookings.length > PAGE_SIZE && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
+            <span>
+              Página {currentPage} de {totalPages}
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPage(Math.max(1, currentPage - 1))}
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600"
+              >
+                Anterior
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
+                className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       {selectedBooking && (

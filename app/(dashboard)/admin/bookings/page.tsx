@@ -54,6 +54,7 @@ type AdminBookingView = {
 };
 
 type TabKey = "today" | "tomorrow" | "upcoming" | "past" | "payment";
+const PAGE_SIZE = 20;
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: "today", label: "Hoy" },
@@ -182,6 +183,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   };
 
   const tab = (getParam("tab") as TabKey) ?? "today";
+  const pageParam = Math.max(1, Number(getParam("page") ?? "1") || 1);
   const dateMode = (getParam("date") as "today" | "tomorrow" | "week" | "range") ?? "today";
   const customStart = getParam("startDate");
   const customEnd = getParam("endDate");
@@ -248,7 +250,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
           travel.getDate() === tomorrow.getDate()
         );
       case "upcoming":
-        return travel > tomorrow && travel <= weekLater;
+        return travel > new Date(now.getFullYear(), now.getMonth(), now.getDate());
       case "past":
         return travel < new Date(now.getFullYear(), now.getMonth(), now.getDate());
       case "payment":
@@ -258,8 +260,9 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     }
   };
 
+  const shouldApplyDateFilter = tab === "today" || tab === "tomorrow" || dateMode === "range";
   const filteredRows = rows
-    .filter(withinDateMode)
+    .filter((booking) => (shouldApplyDateFilter ? withinDateMode(booking) : true))
     .filter((booking) => (selectedStatus.length ? selectedStatus.includes(booking.status) : true))
     .filter((booking) => (selectedTour === "all" ? true : booking.tourTitle === selectedTour))
     .filter((booking) => {
@@ -285,6 +288,10 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     }
     return new Date(b.createdAtValue).getTime() - new Date(a.createdAtValue).getTime();
   });
+  const totalPages = Math.max(1, Math.ceil(sortedRows.length / PAGE_SIZE));
+  const currentPage = Math.min(pageParam, totalPages);
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const pageRows = sortedRows.slice(pageStart, pageStart + PAGE_SIZE);
 
   const latestBooking = rows[0] ?? null;
 
@@ -364,7 +371,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
               <option value="range">Rango</option>
             </select>
             {dateMode === "range" && (
-              <div className="mt-2 flex gap-2">
+              <div className="relative z-10 mt-2 flex gap-2 rounded-lg bg-white">
                 <input
                   type="date"
                   name="startDate"
@@ -384,21 +391,28 @@ export default async function AdminBookingsPage({ searchParams }: any) {
           </div>
           <div>
             <label className="text-xs uppercase text-slate-500">Estado</label>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {statusOptions.map((value) => (
-                <label key={value} className="flex items-center gap-2 text-xs text-slate-600">
-                  <input
-                    type="checkbox"
-                    name="status"
-                    form="filters-form"
-                    defaultChecked={selectedStatus.includes(value)}
-                    value={value}
-                    className="h-4 w-4 rounded border-slate-300"
-                  />
-                  {value}
-                </label>
-              ))}
-            </div>
+            <details className="relative mt-2">
+              <summary className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
+                Seleccionar estados
+              </summary>
+              <div className="absolute left-0 top-full z-20 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+                <div className="grid gap-2">
+                  {statusOptions.map((value) => (
+                    <label key={value} className="flex items-center gap-2 text-xs text-slate-600">
+                      <input
+                        type="checkbox"
+                        name="status"
+                        form="filters-form"
+                        defaultChecked={selectedStatus.includes(value)}
+                        value={value}
+                        className="h-4 w-4 rounded border-slate-300"
+                      />
+                      {value}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </details>
           </div>
           <div>
             <label className="text-xs uppercase text-slate-500">Tour</label>
@@ -466,7 +480,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
         </form>
       </section>
 
-      <section className="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.4em]">
+      <section className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.4em]">
         {tabs.map((item) => (
           <a
             key={item.key}
@@ -486,12 +500,18 @@ export default async function AdminBookingsPage({ searchParams }: any) {
             {item.label}
           </a>
         ))}
+        <a
+          href={`?tab=${tab}`}
+          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600"
+        >
+          Limpiar filtros
+        </a>
       </section>
 
       <section className="space-y-4">
-        {sortedRows.length ? (
+        {pageRows.length ? (
           <div className="grid gap-4">
-            {sortedRows.map((booking) => {
+            {pageRows.map((booking) => {
               const whatsappNumber = booking.customerPhone.replace(/[^0-9+]/g, "");
               const whatsappLink =
                 whatsappNumber.length > 0
@@ -506,6 +526,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                   className={`overflow-hidden rounded-2xl border bg-white p-6 shadow-sm ${
                     latestBooking?.id === booking.id ? "border-emerald-300 ring-2 ring-emerald-100" : "border-slate-200"
                   }`}
+                  aria-label={`Reserva ${booking.bookingCode} para ${booking.customerName}`}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
@@ -692,6 +713,39 @@ export default async function AdminBookingsPage({ searchParams }: any) {
         ) : (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
             No hay reservas para estos filtros.
+          </div>
+        )}
+        {sortedRows.length > PAGE_SIZE && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
+            <span>
+              Página {currentPage} de {totalPages}
+            </span>
+            <div className="flex gap-2">
+              <a
+                href={`?tab=${tab}&date=${dateMode}&tour=${encodeURIComponent(
+                  selectedTour
+                )}&query=${encodeURIComponent(searchQuery)}&pickup=${encodeURIComponent(
+                  pickupSearch
+                )}&order=${orderParam}${selectedStatus
+                  .map((status) => `&status=${encodeURIComponent(status)}`)
+                  .join("")}&page=${Math.max(1, currentPage - 1)}`}
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600"
+              >
+                Anterior
+              </a>
+              <a
+                href={`?tab=${tab}&date=${dateMode}&tour=${encodeURIComponent(
+                  selectedTour
+                )}&query=${encodeURIComponent(searchQuery)}&pickup=${encodeURIComponent(
+                  pickupSearch
+                )}&order=${orderParam}${selectedStatus
+                  .map((status) => `&status=${encodeURIComponent(status)}`)
+                  .join("")}&page=${Math.min(totalPages, currentPage + 1)}`}
+                className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+              >
+                Siguiente
+              </a>
+            </div>
           </div>
         )}
       </section>

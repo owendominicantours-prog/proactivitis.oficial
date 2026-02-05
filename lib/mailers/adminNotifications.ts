@@ -1,11 +1,12 @@
 import { PartnerApplication } from "@prisma/client";
 import { sendEmail } from "@/lib/email";
+import { resolveNotificationRecipients, type NotificationEmailKey } from "@/lib/notificationEmailSettings";
 
-const ADMIN_EMAIL =
+const DEFAULT_ADMIN_EMAIL =
   process.env.ADMIN_NOTIFICATION_EMAIL ??
   process.env.NOTIFY_FROM_EMAIL ??
   "info@proactivitis.com";
-const FROM_EMAIL = process.env.NOTIFY_FROM_EMAIL ?? ADMIN_EMAIL;
+const FROM_EMAIL = process.env.NOTIFY_FROM_EMAIL ?? DEFAULT_ADMIN_EMAIL;
 const APP_BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") ??
   process.env.NEXTAUTH_URL ??
@@ -58,15 +59,22 @@ const buildAdminHtml = (subject: string, summary: string, details: AdminDetail[]
   `;
 };
 
-const sendAdminEmail = async (subject: string, summary: string, details: AdminDetail[], footer?: string) => {
-  if (!ADMIN_EMAIL) {
-    console.warn("No se configuró ADMIN_NOTIFICATION_EMAIL, se ignora el correo de admin.");
+const sendAdminEmail = async (
+  key: NotificationEmailKey,
+  subject: string,
+  summary: string,
+  details: AdminDetail[],
+  footer?: string
+) => {
+  const html = buildAdminHtml(subject, summary, details, footer);
+  const recipients = await resolveNotificationRecipients(key);
+  if (!recipients) {
+    console.warn("No se configuró lista de correos para", key);
     return;
   }
-  const html = buildAdminHtml(subject, summary, details, footer);
   try {
     await sendEmail({
-      to: ADMIN_EMAIL,
+      to: recipients,
       from: FROM_EMAIL,
       subject,
       html
@@ -85,6 +93,7 @@ type NotifyNewUserPayload = {
 
 export async function notifyAdminNewUser({ userId, email, name, role }: NotifyNewUserPayload) {
   await sendAdminEmail(
+    "ADMIN_NEW_USER",
     "Nuevo cliente registrado",
     "Un nuevo viajero acaba de crear cuenta en el sitio.",
     [
@@ -103,6 +112,7 @@ type NotifyPartnerApplicationPayload = {
 
 export async function notifyAdminPartnerApplication({ application }: NotifyPartnerApplicationPayload) {
   await sendAdminEmail(
+    "ADMIN_PARTNER_APPLICATION",
     `Nueva solicitud de ${application.role?.toLowerCase() ?? "partner"}`,
     "Revisa la solicitud para aprobarla o solicitar más información.",
     [
@@ -128,6 +138,7 @@ type NotifyContactPayload = {
 
 export async function notifyAdminContactRequest({ name, email, topic, message, bookingCode }: NotifyContactPayload) {
   await sendAdminEmail(
+    "ADMIN_CONTACT_REQUEST",
     "Nueva solicitud desde el formulario de contacto",
     "Un visitante dejó un mensaje para el equipo.",
     [
@@ -156,6 +167,7 @@ type NotifyBookingPayload = {
 
 export async function notifyAdminBookingConfirmed(payload: NotifyBookingPayload) {
   await sendAdminEmail(
+    "ADMIN_BOOKING_CONFIRMED",
     `Reserva confirmada ${payload.orderCode}`,
     "La reserva ya tiene pago confirmado y se generó el voucher.",
     [
@@ -211,6 +223,7 @@ const actionLabelMap: Record<
 export async function notifyAdminTourModeration(payload: NotifyTourModerationPayload) {
   const actionInfo = actionLabelMap[payload.action];
   await sendAdminEmail(
+    "ADMIN_TOUR_MODERATION",
     actionInfo.subject,
     actionInfo.summary,
     [
@@ -288,3 +301,4 @@ export async function notifySupplierTourModeration({
     console.error("Error enviando correo al proveedor:", error);
   }
 }
+
