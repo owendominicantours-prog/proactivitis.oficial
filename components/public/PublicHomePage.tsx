@@ -9,6 +9,7 @@ import { HomeRecommendedHeader } from "@/components/public/HomeRecommendedHeader
 import HomeTourSearchSection from "@/components/public/HomeTourSearchSection";
 import HomeTransferTicker from "@/components/public/HomeTransferTicker";
 import { Locale, translate } from "@/lib/translations";
+import { getHomeContentOverrides } from "@/lib/siteContent";
 
 type PublicHomePageProps = {
   locale: Locale;
@@ -27,11 +28,15 @@ const PUNTA_CANA_LINKS = [
   { slug: "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana", labelKey: "puntaCana.links.item.10" }
 ] as const;
 
-export default function PublicHomePage({ locale }: PublicHomePageProps) {
+export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
     translate(locale, key, replacements);
   const transferHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
   const tourHref = (slug: string) => (locale === "es" ? `/tours/${slug}` : `/${locale}/tours/${slug}`);
+  const homeOverrides = await getHomeContentOverrides(locale);
+  const transferBannerImage =
+    homeOverrides.transferBanner?.backgroundImage ??
+    "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -100,25 +105,25 @@ export default function PublicHomePage({ locale }: PublicHomePageProps) {
   return (
     <div className="space-y-16 bg-gradient-to-b from-[#F8FAFC] via-[#F8FAFC] to-emerald-50/40 text-slate-900 overflow-x-hidden">
       <HomeHeroCarousel>
-        <HomeHeroContent locale={locale} />
+        <HomeHeroContent locale={locale} overrides={homeOverrides.hero} />
       </HomeHeroCarousel>
 
       <section className="mx-auto max-w-6xl space-y-6 px-4 sm:px-6">
-        <HomeBenefitsContent locale={locale} />
+        <HomeBenefitsContent locale={locale} overrides={homeOverrides.benefits} />
       </section>
 
       <section className="mx-auto max-w-6xl space-y-4 px-4 sm:px-6">
-        <HomeRecommendedHeader locale={locale} />
+        <HomeRecommendedHeader locale={locale} overrides={homeOverrides.recommended} />
         <HomeTourSearchSection locale={locale} />
         <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-sm">
           <FeaturedToursSection locale={locale} />
         </div>
         <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-            {t("puntaCana.links.subtitle")}
+            {homeOverrides.puntaCana?.subtitle ?? t("puntaCana.links.subtitle")}
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-            {t("puntaCana.links.title")}
+            {homeOverrides.puntaCana?.title ?? t("puntaCana.links.title")}
           </h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {PUNTA_CANA_LINKS.map((item) => (
@@ -137,15 +142,15 @@ export default function PublicHomePage({ locale }: PublicHomePageProps) {
       <section className="mx-auto max-w-6xl space-y-5 px-4 sm:px-6">
         <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-            {t("home.longform.eyebrow")}
+            {homeOverrides.longform?.eyebrow ?? t("home.longform.eyebrow")}
           </p>
           <h2 className="mt-3 text-2xl font-semibold text-slate-900 md:text-3xl">
-            {t("home.longform.title")}
+            {homeOverrides.longform?.title ?? t("home.longform.title")}
           </h2>
           <div className="mt-4 space-y-4 text-sm text-slate-600">
-            <p>{t("home.longform.body1")}</p>
-            <p>{t("home.longform.body2")}</p>
-            <p>{t("home.longform.body3")}</p>
+            <p>{homeOverrides.longform?.body1 ?? t("home.longform.body1")}</p>
+            <p>{homeOverrides.longform?.body2 ?? t("home.longform.body2")}</p>
+            <p>{homeOverrides.longform?.body3 ?? t("home.longform.body3")}</p>
           </div>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {(
@@ -163,13 +168,13 @@ export default function PublicHomePage({ locale }: PublicHomePageProps) {
                   bodyKey: "home.longform.points.3.body"
                 }
               ] as const
-            ).map((item) => (
+            ).map((item, index) => (
               <div key={item.titleKey} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                  {t(item.titleKey)}
+                  {homeOverrides.longform?.points?.[index]?.title ?? t(item.titleKey)}
                 </p>
                 <p className="mt-2 text-sm text-slate-600">
-                  {t(item.bodyKey)}
+                  {homeOverrides.longform?.points?.[index]?.body ?? t(item.bodyKey)}
                 </p>
               </div>
             ))}
@@ -181,8 +186,7 @@ export default function PublicHomePage({ locale }: PublicHomePageProps) {
         <div
           className="relative flex min-h-[280px] items-center overflow-hidden rounded-3xl border border-slate-100 shadow-sm"
           style={{
-            backgroundImage:
-              "url('https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg')",
+            backgroundImage: `url('${transferBannerImage}')`,
             backgroundSize: "cover",
             backgroundPosition: "center"
           }}
@@ -190,18 +194,18 @@ export default function PublicHomePage({ locale }: PublicHomePageProps) {
           <div className="absolute inset-0 bg-slate-900/55 md:bg-slate-900/65" />
           <div className="relative z-10 w-full space-y-6 px-6 py-10 text-center text-white md:text-left">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/70">
-            {t("home.transferBanner.label")}
+            {homeOverrides.transferBanner?.label ?? t("home.transferBanner.label")}
           </p>
           <h2 className="text-3xl font-semibold leading-tight md:text-4xl">
-            {t("home.transferBanner.title")}
+            {homeOverrides.transferBanner?.title ?? t("home.transferBanner.title")}
           </h2>
           <p className="text-sm text-white/90 md:text-base">
-            {t("home.transferBanner.description")}
+            {homeOverrides.transferBanner?.description ?? t("home.transferBanner.description")}
           </p>
           <HomeTransferTicker locale={locale} />
           <div className="botones-banner justify-center md:justify-start">
             <Link href={transferHref} className="boton-verde">
-              {t("home.transferBanner.cta")}
+              {homeOverrides.transferBanner?.cta ?? t("home.transferBanner.cta")}
             </Link>
           </div>
           </div>
@@ -221,7 +225,7 @@ export default function PublicHomePage({ locale }: PublicHomePageProps) {
             />
           </div>
           <div className="space-y-4">
-            <HomeAboutContent locale={locale} />
+            <HomeAboutContent locale={locale} overrides={homeOverrides.about} />
           </div>
         </div>
       </section>

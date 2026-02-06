@@ -2,6 +2,7 @@ import { Suspense, type ReactNode } from "react";
 import Script from "next/script";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
+import GlobalBanner from "@/components/public/GlobalBanner";
 import WhatsappFloatingChat from "@/components/shared/WhatsappFloatingChat";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
@@ -74,6 +75,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         }}
       />
       <Suspense fallback={null}>
+        <GlobalBanner />
         <PublicHeader />
       </Suspense>
 
