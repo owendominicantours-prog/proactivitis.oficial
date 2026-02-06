@@ -444,6 +444,6 @@ export default function HomeSettingsForm({ locales, defaultsByLocale }: HomeSett
           );
         })}
       </div>
-    </section>
+    </div>
   );
 }
