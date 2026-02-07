@@ -7,6 +7,7 @@ import { genericTransferLandings } from "@/data/transfer-generic-landings";
 import { landingPages } from "@/lib/landing";
 import { excursionKeywordLandings } from "@/data/excursion-keyword-landings";
 import { PARTY_BOAT_VARIANTS } from "@/data/party-boat-variants";
+import { SOSUA_PARTY_BOAT_VARIANTS } from "@/data/sosua-party-boat-variants";
 import { SANTO_DOMINGO_VARIANTS } from "@/data/santo-domingo-variants";
 import { BUGGY_ATV_VARIANTS } from "@/data/buggy-atv-variants";
 import { PARASAILING_VARIANTS } from "@/data/parasailing-variants";
@@ -126,6 +127,20 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
     zone: "Party Boat",
     active: true
   }));
+  const sosuaPartyBoatEntries = [
+    {
+      slug: "sosua/party-boat",
+      name: "Sosua Party Boat",
+      zone: "Sosua Party Boat",
+      active: true
+    },
+    ...SOSUA_PARTY_BOAT_VARIANTS.map((variant) => ({
+      slug: `sosua/party-boat/${variant.slug}`,
+      name: variant.titles.es,
+      zone: "Sosua Party Boat",
+      active: true
+    }))
+  ];
   const santoDomingoEntries = SANTO_DOMINGO_VARIANTS.map((variant) => ({
     slug: `thingtodo/tours/${variant.slug}`,
     name: variant.titles.es,
@@ -155,6 +170,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
   const pickupHotelSlugs = pickupHotelEntries.map((entry) => entry.slug);
   const safetyGuideSlugs = safetyGuideEntries.map((entry) => entry.slug);
   const partyBoatSlugs = partyBoatEntries.map((entry) => entry.slug);
+  const sosuaPartyBoatSlugs = sosuaPartyBoatEntries.map((entry) => entry.slug);
   const santoDomingoSlugs = santoDomingoEntries.map((entry) => entry.slug);
   const buggyAtvSlugs = buggyAtvEntries.map((entry) => entry.slug);
   const parasailingSlugs = parasailingEntries.map((entry) => entry.slug);
@@ -169,6 +185,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       ...safetyGuideSlugs,
       ...excursionKeywordSlugs,
       ...partyBoatSlugs,
+      ...sosuaPartyBoatSlugs,
       ...santoDomingoSlugs,
       ...buggyAtvSlugs,
       ...parasailingSlugs,
@@ -500,6 +517,34 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
                 <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.zone}</p>
                 <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
                 <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">Party Boat</p>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                <p>{entry.slug}</p>
+                <p>Visitas {trafficMap.get(entry.slug)?.toLocaleString() ?? "0"}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Sosua Party Boat landings"
+        description="Variantes SEO del Sosua Party Boat con contenidos personalizados."
+        badge={`${sosuaPartyBoatEntries.length} items`}
+      >
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {sosuaPartyBoatEntries.map((entry) => (
+            <Link
+              key={entry.slug}
+              href={`https://proactivitis.com/${entry.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-700 transition hover:border-slate-400 hover:shadow-lg"
+            >
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.zone}</p>
+                <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">Sosua</p>
               </div>
               <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
                 <p>{entry.slug}</p>

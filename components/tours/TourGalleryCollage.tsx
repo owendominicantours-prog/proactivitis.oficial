@@ -15,7 +15,7 @@ export default function TourGalleryCollage({ images, title, fallbackImage }: Tou
   const secondaryCollageImages = collageImages.slice(1, 4);
 
   return (
-    <div className="relative h-[420px] w-full overflow-hidden rounded-[36px] bg-slate-100 p-3 lg:h-full">
+    <div className="relative h-[380px] w-full overflow-hidden rounded-[36px] bg-slate-100 p-3 sm:h-[420px] lg:h-[520px]">
       <GalleryLightbox
         images={images}
         showDefaultTrigger={false}
