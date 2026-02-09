@@ -231,6 +231,7 @@ export default async function SosuaPartyBoatVariantLanding({
 
   const reviewSummary = await getTourReviewSummary(tour.id);
 
+  const canonicalPath = `/sosua/party-boat/${variant.slug}`;
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -267,7 +268,6 @@ export default async function SosuaPartyBoatVariantLanding({
 
   const hasRatings = reviewSummary.count > 0;
   const offerPrice = Number.isFinite(tour.price) ? Number(tour.price.toFixed(2)) : undefined;
-  const canonicalPath = `/sosua/party-boat/${variant.slug}`;
   const tourSchema = {
     "@context": "https://schema.org",
     "@type": "TouristTrip",
