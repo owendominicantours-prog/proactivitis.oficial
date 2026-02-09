@@ -26,13 +26,13 @@ export const SOSUA_PARTY_BOAT_VARIANTS: SosuaPartyBoatVariant[] = [
     },
     heroSubtitles: {
       es: "La opción #1 recomendada en Sosua. Reserva directa con open bar, snorkel y logística clara.",
-      en: "Sosua’s #1 party boat. Book direct for VIP service, open bar, snorkel, and zero stress.",
-      fr: "Le party boat #1 de Sosua. Réservez en direct pour service VIP, open bar, snorkel et zéro stress."
+      en: "Sosua’s #1 party boat. Book direct for priority service, open bar, snorkel, and zero stress.",
+      fr: "Le party boat #1 de Sosua. Réservez en direct pour service prioritaire, open bar, snorkel et zéro stress."
     },
     metaDescriptions: {
       es: "Sosua Party Boat recomendado #1. Party boat Sosua prices, best party boat in Sosua y boat party Puerto Plata con reserva directa.",
-      en: "Sosua Party Boat #1 recommended. Transparent pricing, premium crew, and direct booking for Sosua’s best boat party.",
-      fr: "Sosua Party Boat #1 recommandé. Prix transparents, équipe premium et réservation directe pour le meilleur boat party à Sosua."
+      en: "Sosua Party Boat #1 recommended. Transparent pricing, priority support, and direct booking for Sosua’s best boat party.",
+      fr: "Sosua Party Boat #1 recommandé. Prix transparents, support prioritaire et réservation directe pour le meilleur boat party à Sosua."
     },
     sections: {
       es: [
@@ -58,7 +58,7 @@ export const SOSUA_PARTY_BOAT_VARIANTS: SosuaPartyBoatVariant[] = [
         },
         {
           title: "Transparent Sosua pricing",
-          body: "Direct price, no surprises. Instant confirmation and real human support."
+          body: "Direct price, no surprises. Instant confirmation and priority human support."
         },
         {
           title: "Puerto Plata boat party quality",
@@ -73,7 +73,7 @@ export const SOSUA_PARTY_BOAT_VARIANTS: SosuaPartyBoatVariant[] = [
         },
         {
           title: "Prix transparents à Sosua",
-          body: "Prix direct, sans surprises. Confirmation immédiate et support humain."
+          body: "Prix direct, sans surprises. Confirmation immédiate et support humain prioritaire."
         },
         {
           title: "Boat party Puerto Plata de qualité",

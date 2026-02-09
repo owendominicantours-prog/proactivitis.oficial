@@ -243,6 +243,27 @@ export default async function SosuaPartyBoatVariantLanding({
       }
     }))
   };
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Sosua",
+        item: `${PROACTIVITIS_URL}/sosua/party-boat`
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: copy.title,
+        item:
+          locale === "es"
+            ? `${PROACTIVITIS_URL}${canonicalPath}`
+            : `${PROACTIVITIS_URL}/${locale}${canonicalPath}`
+      }
+    ]
+  };
 
   const hasRatings = reviewSummary.count > 0;
   const offerPrice = Number.isFinite(tour.price) ? Number(tour.price.toFixed(2)) : undefined;
@@ -252,7 +273,9 @@ export default async function SosuaPartyBoatVariantLanding({
     "@type": "TouristTrip",
     name: copy.title,
     description: copy.metaDescription,
-    image: [toAbsoluteUrl(heroImage)],
+    image: Array.from(
+      new Set([heroImage, ...galleryImages].filter(Boolean).map((item) => toAbsoluteUrl(item)))
+    ),
     provider: {
       "@type": "Organization",
       name: "Proactivitis",
@@ -268,7 +291,9 @@ export default async function SosuaPartyBoatVariantLanding({
             locale === "es"
               ? `${PROACTIVITIS_URL}${canonicalPath}`
               : `${PROACTIVITIS_URL}/${locale}${canonicalPath}`,
-          availability: "https://schema.org/InStock"
+          availability: "https://schema.org/InStock",
+          availabilityStarts: new Date().toISOString(),
+          itemCondition: "https://schema.org/NewCondition"
         }
       : undefined,
     ...(hasRatings
@@ -287,6 +312,7 @@ export default async function SosuaPartyBoatVariantLanding({
     <div className="bg-slate-50 text-slate-900">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(tourSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
         <div className="absolute inset-0 opacity-20">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -319,6 +345,34 @@ export default async function SosuaPartyBoatVariantLanding({
                 <span>Pick-up confirmado tras la reserva</span>
               )}
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-[1240px] px-4 py-10">
+        <div className="grid gap-4 lg:grid-cols-[1.1fr,0.9fr]">
+          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Oferta directa</p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+              Reserva directa con prioridad y soporte humano
+            </h2>
+            <p className="mt-3 text-sm text-slate-700">
+              Confirmación rápida, coordinación clara de pick-up y atención inmediata por WhatsApp.
+            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              {["Open bar real", "Snorkel incluido", "Pick-up confirmado"].map((item) => (
+                <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Precio base</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">
+              {Number.isFinite(tour.price) ? `$${tour.price.toFixed(0)} USD` : "Consultar"}
+            </p>
+            <p className="mt-2 text-sm text-slate-700">Precio directo. Elige tu opción y confirma en minutos.</p>
           </div>
         </div>
       </section>
