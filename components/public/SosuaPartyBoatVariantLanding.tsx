@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { Locale } from "@/lib/translations";
 import { PROACTIVITIS_URL } from "@/lib/seo";
-import { getTourReviewSummary } from "@/lib/tourReviews";
+import { getApprovedTourReviews, getTourReviewSummary } from "@/lib/tourReviews";
 import SosuaPartyBoatOptions from "@/components/public/SosuaPartyBoatOptions";
 import TourGalleryCollage from "@/components/tours/TourGalleryCollage";
 import GalleryLightbox from "@/components/shared/GalleryLightbox";
@@ -229,7 +229,10 @@ export default async function SosuaPartyBoatVariantLanding({
     tourImage: heroImage
   };
 
-  const reviewSummary = await getTourReviewSummary(tour.id);
+  const [reviewSummary, approvedReviews] = await Promise.all([
+    getTourReviewSummary(tour.id),
+    getApprovedTourReviews(tour.id, 5)
+  ]);
 
   const canonicalPath = `/sosua/party-boat/${variant.slug}`;
   const faqSchema = {
@@ -303,7 +306,19 @@ export default async function SosuaPartyBoatVariantLanding({
             ratingValue: Number(reviewSummary.average.toFixed(1)),
             reviewCount: reviewSummary.count,
             bestRating: "5"
-          }
+          },
+          review: approvedReviews.map((review) => ({
+            "@type": "Review",
+            author: { "@type": "Person", name: review.customerName },
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: review.rating,
+              bestRating: "5"
+            },
+            reviewBody: review.body,
+            name: review.title ?? copy.title,
+            datePublished: new Date(review.createdAt).toISOString()
+          }))
         }
       : {})
   };
