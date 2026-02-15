@@ -1702,6 +1702,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                           setPaymentCountry={setPaymentCountry}
 
                           paymentMethods={paymentMethods}
+                          bookingId={bookingId}
 
                           returnUrl={successRedirectBase}
 
@@ -1940,6 +1941,7 @@ type PaymentFormProps = {
   setPaymentCountry: Dispatch<SetStateAction<string>>;
 
   paymentMethods: PaymentMethodDefinition[];
+  bookingId: string | null;
 
   returnUrl: string;
 
@@ -1968,6 +1970,7 @@ const PaymentForm = memo(function PaymentForm({
   paymentCountry,
   setPaymentCountry,
   paymentMethods,
+  bookingId,
   savedPaymentMethodId,
   clientSecret,
   returnUrl,
@@ -2059,6 +2062,21 @@ const PaymentForm = memo(function PaymentForm({
 
 
     if (result.paymentIntent?.status === "succeeded") {
+      if (bookingId) {
+        try {
+          await fetch("/api/session/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              bookingId,
+              paymentIntentId: result.paymentIntent.id
+            })
+          });
+        } catch (error) {
+          // No bloquea UX: el flujo de confirmación puede reintentar en la pantalla final.
+        }
+      }
 
       onSuccess();
 
