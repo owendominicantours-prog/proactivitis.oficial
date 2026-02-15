@@ -185,15 +185,15 @@ export default async function AdminSettingsPage() {
 
       <article className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Hotel pages</p>
-        <h3 className="mt-1 text-lg font-semibold text-slate-900">Editor de landings de hotel</h3>
+        <h3 className="mt-1 text-lg font-semibold text-slate-900">Editor de resorts / hoteles</h3>
           <p className="text-sm text-slate-500">
           Edita SEO, textos y fotos de cada hotel en /hoteles y /things-to-do desde admin.
           </p>
         <Link
-          href="/admin/hotel-landings"
+          href="/admin/resorts"
           className="mt-4 inline-flex rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
         >
-          Abrir editor de hoteles
+          Abrir editor de resorts
         </Link>
       </article>
 

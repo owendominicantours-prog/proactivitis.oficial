@@ -7,10 +7,32 @@ import { PublicCurrencyLanguage } from "@/components/public/PublicCurrencyLangua
 import { Locale, useTranslation } from "@/context/LanguageProvider";
 import { useSession } from "next-auth/react";
 
-const publicNavLinks = [
-  { label: "Inicio", href: "/" },
-  { label: "Tours", href: "/tours" },
-  { label: "Traslado", href: "/traslado" }
+const publicNavLinks: Array<{
+  labels: Record<Locale, string>;
+  href: string;
+  hrefByLocale?: Partial<Record<Locale, string>>;
+}> = [
+  {
+    labels: { es: "Inicio", en: "Home", fr: "Accueil" },
+    href: "/"
+  },
+  {
+    labels: { es: "Tours", en: "Tours", fr: "Tours" },
+    href: "/tours"
+  },
+  {
+    labels: { es: "Traslado", en: "Transfer", fr: "Transfert" },
+    href: "/traslado"
+  },
+  {
+    labels: { es: "Alojamiento", en: "Accommodation", fr: "Hebergement" },
+    href: "/hoteles",
+    hrefByLocale: {
+      es: "/hoteles",
+      en: "/hotels",
+      fr: "/hotels"
+    }
+  }
 ];
 
 const getLocalizedPath = (href: string, locale: Locale) => {
@@ -27,8 +49,8 @@ export function PublicHeader() {
   const { locale } = useTranslation();
   const { data: session } = useSession();
   const navItems = publicNavLinks.map((navItem) => ({
-    label: navItem.label,
-    href: getLocalizedPath(navItem.href, locale)
+    label: navItem.labels[locale] ?? navItem.labels.es,
+    href: getLocalizedPath(navItem.hrefByLocale?.[locale] ?? navItem.href, locale)
   }));
   const dropdownNav = {
     label: "Contacto",

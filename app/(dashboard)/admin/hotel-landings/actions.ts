@@ -91,5 +91,7 @@ export async function updateHotelLandingContentAction(formData: FormData) {
   revalidatePath(`/hoteles/${hotelSlug}`);
   revalidatePath(`/en/hotels/${hotelSlug}`);
   revalidatePath(`/fr/hotels/${hotelSlug}`);
+  revalidatePath("/admin/resorts");
+  revalidatePath("/admin/hoteles");
   revalidatePath("/admin/hotel-landings");
 }
