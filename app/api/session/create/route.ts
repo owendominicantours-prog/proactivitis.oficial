@@ -11,6 +11,10 @@ import { getStripe } from "@/lib/stripe";
 import { sendEmail } from "@/lib/email";
 import { buildCustomerEticketEmail, buildSupplierBookingEmail } from "@/lib/emailTemplates";
 import { notifyAdminBookingConfirmed } from "@/lib/mailers/adminNotifications";
+import {
+  notifyDiscordTourBookingConfirmed,
+  notifyDiscordTransferBookingConfirmed
+} from "@/lib/discordNotifications";
 
 
 
@@ -350,6 +354,29 @@ export async function POST(request: NextRequest) {
     travelDate: booking.travelDate,
     startTime: booking.startTime ?? null
   });
+  const discordPayload = {
+    bookingId: booking.id,
+    orderCode,
+    tourTitle: tour.title,
+    travelDate: booking.travelDate,
+    startTime: booking.startTime ?? null,
+    customerName: booking.customerName,
+    customerEmail: booking.customerEmail,
+    totalAmount: booking.totalAmount,
+    hotel: booking.hotel,
+    originAirport: booking.originAirport,
+    paxAdults: booking.paxAdults,
+    paxChildren: booking.paxChildren
+  };
+  if ((booking.flowType ?? "tour") === "transfer") {
+    void notifyDiscordTransferBookingConfirmed(discordPayload).catch((error) => {
+      console.warn("No se pudo enviar notificacion Discord de traslado", error);
+    });
+  } else {
+    void notifyDiscordTourBookingConfirmed(discordPayload).catch((error) => {
+      console.warn("No se pudo enviar notificacion Discord de tour", error);
+    });
+  }
 
 
 
