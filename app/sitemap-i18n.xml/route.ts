@@ -22,17 +22,24 @@ const buildEntry = (loc: string, priority: number, lastmod?: string): SitemapEnt
 });
 
 export async function GET() {
-  const [tours, hotels, transferCombos] = await Promise.all([
-    prisma.tour.findMany({
-      where: { status: "published" },
-      select: { slug: true }
-    }),
-    prisma.transferLocation.findMany({
-      where: { type: "HOTEL", active: true },
-      select: { slug: true, updatedAt: true }
-    }),
-    getDynamicTransferLandingCombos()
-  ]);
+  let tours: { slug: string }[] = [];
+  let hotels: { slug: string; updatedAt: Date }[] = [];
+  let transferCombos: { landingSlug: string; lastMod: Date }[] = [];
+  try {
+    [tours, hotels, transferCombos] = await Promise.all([
+      prisma.tour.findMany({
+        where: { status: "published" },
+        select: { slug: true }
+      }),
+      prisma.transferLocation.findMany({
+        where: { type: "HOTEL", active: true },
+        select: { slug: true, updatedAt: true }
+      }),
+      getDynamicTransferLandingCombos()
+    ]);
+  } catch (error) {
+    console.warn("[sitemap-i18n] Falling back to static entries due to DB error", error);
+  }
 
   const manualLandings = allLandings().map((landing) => ({
     slug: landing.landingSlug,
@@ -75,6 +82,7 @@ export async function GET() {
 
     hotels.forEach(({ slug, updatedAt }) => {
       entries.push(buildEntry(`${BASE_URL}/${locale}/things-to-do/${slug}`, 0.7, updatedAt.toISOString()));
+      entries.push(buildEntry(`${BASE_URL}/${locale}/hotels/${slug}`, 0.75, updatedAt.toISOString()));
     });
 
     excursionEntries.forEach(({ slug, lastMod }) => {

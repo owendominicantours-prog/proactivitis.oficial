@@ -5,10 +5,15 @@ const BASE_URL = "https://proactivitis.com";
 export const revalidate = 86400;
 
 export async function GET() {
-  const hotels = await prisma.transferLocation.findMany({
-    where: { type: "HOTEL", active: true },
-    select: { slug: true, updatedAt: true }
-  });
+  let hotels: { slug: string; updatedAt: Date }[] = [];
+  try {
+    hotels = await prisma.transferLocation.findMany({
+      where: { type: "HOTEL", active: true },
+      select: { slug: true, updatedAt: true }
+    });
+  } catch (error) {
+    console.warn("[sitemap-things-to-do] Falling back to empty sitemap due to DB error", error);
+  }
 
   const urls = hotels
     .map(({ slug, updatedAt }) => {
@@ -16,7 +21,10 @@ export async function GET() {
       const entries = [
         `${BASE_URL}/things-to-do/${slug}`,
         `${BASE_URL}/en/things-to-do/${slug}`,
-        `${BASE_URL}/fr/things-to-do/${slug}`
+        `${BASE_URL}/fr/things-to-do/${slug}`,
+        `${BASE_URL}/hoteles/${slug}`,
+        `${BASE_URL}/en/hotels/${slug}`,
+        `${BASE_URL}/fr/hotels/${slug}`
       ];
       return entries
         .map(

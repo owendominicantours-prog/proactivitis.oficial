@@ -96,50 +96,51 @@ const buildLocalizedEntries = (entries: RouteEntry[]) => {
 };
 
 export async function buildSitemapEntries(): Promise<SitemapEntries> {
-  const [tours, locations, bookings, countries, destinations, microZones] = await Promise.all([
-    prisma.tour.findMany({
-      where: { status: "published" },
-      select: {
-        id: true,
-        slug: true,
-        countryId: true,
-        destinationId: true,
-        microZoneId: true,
-        category: true,
-        featured: true
-      }
-    }),
-    prisma.location.findMany({
-      include: {
-        microZone: { select: { id: true } },
-        destination: { select: { id: true, slug: true } }
-      }
-    }),
-    prisma.booking.groupBy({
-      by: ["hotel"],
-      _count: { id: true }
-    }),
-    prisma.country.findMany({
-      select: { slug: true }
-    }),
-    prisma.destination.findMany({
-      select: {
-        slug: true,
-        country: { select: { slug: true } }
-      }
-    }),
-    prisma.microZone.findMany({
-      select: {
-        slug: true,
-        destination: {
-          select: {
-            slug: true,
-            country: { select: { slug: true } }
+  try {
+    const [tours, locations, bookings, countries, destinations, microZones] = await Promise.all([
+      prisma.tour.findMany({
+        where: { status: "published" },
+        select: {
+          id: true,
+          slug: true,
+          countryId: true,
+          destinationId: true,
+          microZoneId: true,
+          category: true,
+          featured: true
+        }
+      }),
+      prisma.location.findMany({
+        include: {
+          microZone: { select: { id: true } },
+          destination: { select: { id: true, slug: true } }
+        }
+      }),
+      prisma.booking.groupBy({
+        by: ["hotel"],
+        _count: { id: true }
+      }),
+      prisma.country.findMany({
+        select: { slug: true }
+      }),
+      prisma.destination.findMany({
+        select: {
+          slug: true,
+          country: { select: { slug: true } }
+        }
+      }),
+      prisma.microZone.findMany({
+        select: {
+          slug: true,
+          destination: {
+            select: {
+              slug: true,
+              country: { select: { slug: true } }
+            }
           }
         }
-      }
-    })
-  ]);
+      })
+    ]);
 
   const trafficMap = new Map<string, number>();
   bookings.forEach((entry) => {
@@ -263,13 +264,36 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
     ...trasladoHotelEntries
   ]);
 
-  return {
-    tourEntries,
-    hotelEntries,
-    hybridLinks: combos.map(({ tourSlug, locationSlug, url }) => ({
-      tourSlug,
-      hotelSlug: locationSlug,
-      url
-    }))
-  };
+    return {
+      tourEntries,
+      hotelEntries,
+      hybridLinks: combos.map(({ tourSlug, locationSlug, url }) => ({
+        tourSlug,
+        hotelSlug: locationSlug,
+        url
+      }))
+    };
+  } catch (error) {
+    console.warn("[sitemap-generator] Falling back to minimal sitemap due to DB error", error);
+    const baseEntries: RouteEntry[] = [
+      { url: `${BASE_URL}/`, priority: 1.0 },
+      { url: `${BASE_URL}/tours`, priority: 0.9 },
+      { url: `${BASE_URL}/traslado`, priority: 0.9 },
+      { url: `${BASE_URL}/sosua/party-boat`, priority: 0.8 },
+      ...SOSUA_PARTY_BOAT_VARIANTS.map((variant) => ({
+        url: `${BASE_URL}/sosua/party-boat/${variant.slug}`,
+        priority: 0.75
+      })),
+      ...landingPages.map((landing) => ({
+        url: `${BASE_URL}${landing.path ?? `/thingtodo/tours/${landing.slug}`}`,
+        priority: 0.7
+      })),
+      ...excursionKeywordLandings.map((landing) => ({
+        url: `${BASE_URL}/excursiones/${landing.landingSlug}`,
+        priority: 0.7
+      }))
+    ];
+    const tourEntries: RouteEntry[] = uniqueByUrl([...baseEntries, ...buildLocalizedEntries(baseEntries)]);
+    return { tourEntries, hotelEntries: [], hybridLinks: [] };
+  }
 }

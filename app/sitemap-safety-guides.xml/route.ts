@@ -10,10 +10,15 @@ const LOCALES = ["es", "en", "fr"] as const;
 export const revalidate = 86400;
 
 export async function GET() {
-  const hotels = await prisma.transferLocation.findMany({
-    where: { type: "HOTEL", active: true },
-    select: { slug: true, updatedAt: true }
-  });
+  let hotels: { slug: string; updatedAt: Date }[] = [];
+  try {
+    hotels = await prisma.transferLocation.findMany({
+      where: { type: "HOTEL", active: true },
+      select: { slug: true, updatedAt: true }
+    });
+  } catch (error) {
+    console.warn("[sitemap-safety-guides] Falling back to empty sitemap due to DB error", error);
+  }
 
   const urls = hotels
     .map(({ slug, updatedAt }) => {

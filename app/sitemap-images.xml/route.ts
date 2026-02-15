@@ -21,10 +21,15 @@ const parseGallery = (gallery?: string | null) => {
 };
 
 export async function GET() {
-  const tours = await prisma.tour.findMany({
-    where: { status: "published" },
-    select: { slug: true, heroImage: true, gallery: true }
-  });
+  let tours: { slug: string; heroImage: string | null; gallery: string | null }[] = [];
+  try {
+    tours = await prisma.tour.findMany({
+      where: { status: "published" },
+      select: { slug: true, heroImage: true, gallery: true }
+    });
+  } catch (error) {
+    console.warn("[sitemap-images] Falling back to empty sitemap due to DB error", error);
+  }
 
   const urls = tours
     .flatMap((tour) => {

@@ -20,7 +20,8 @@ export async function GET() {
     ) {
       variants = [];
     } else {
-      throw error;
+      console.warn("[sitemap-tour-variants] Falling back to empty sitemap due to DB error", error);
+      variants = [];
     }
   }
 

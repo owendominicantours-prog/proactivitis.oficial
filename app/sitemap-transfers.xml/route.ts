@@ -8,7 +8,12 @@ const ZONE_SLUG = "punta-cana";
 export const revalidate = 86400;
 
 export async function GET() {
-  const combos = await getDynamicTransferLandingCombos();
+  let combos: { landingSlug: string; lastMod: Date }[] = [];
+  try {
+    combos = await getDynamicTransferLandingCombos();
+  } catch (error) {
+    console.warn("[sitemap-transfers] Falling back to static transfer landings due to DB error", error);
+  }
   const manualLandings = allLandings().map((landing) => ({
     slug: landing.landingSlug,
     lastMod: new Date().toISOString()
