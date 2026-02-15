@@ -1,5 +1,6 @@
 ﻿import { NextResponse } from "next/server";
 import { createNotification } from "@/lib/notificationService";
+import { notifyAdminHotelQuoteRequest } from "@/lib/mailers/adminNotifications";
 
 type HotelQuotePayload = {
   hotelSlug?: string;
@@ -87,6 +88,22 @@ export async function POST(request: Request) {
   } catch (error) {
     console.warn("Failed to send Discord hotel quote notification", error);
   }
+
+  void notifyAdminHotelQuoteRequest({
+    hotelName: payload.hotelName || payload.hotelSlug,
+    hotelSlug: payload.hotelSlug,
+    checkIn: payload.checkIn,
+    checkOut: payload.checkOut,
+    adults: Number(payload.adults ?? 0),
+    children: Number(payload.children ?? 0),
+    childrenAges: payload.childrenAges || null,
+    rooms: Number(payload.rooms ?? 1),
+    name: payload.name,
+    email: payload.email,
+    phone: payload.phone || null,
+    notes: payload.notes || null,
+    locale: payload.locale || "es"
+  });
 
   return NextResponse.json({ success: true });
 }

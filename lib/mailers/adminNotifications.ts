@@ -152,6 +152,46 @@ export async function notifyAdminContactRequest({ name, email, topic, message, b
   );
 }
 
+type NotifyHotelQuotePayload = {
+  hotelName: string;
+  hotelSlug: string;
+  checkIn: string;
+  checkOut: string;
+  adults: number;
+  children: number;
+  childrenAges?: string | null;
+  rooms: number;
+  name: string;
+  email: string;
+  phone?: string | null;
+  notes?: string | null;
+  locale?: string | null;
+};
+
+export async function notifyAdminHotelQuoteRequest(payload: NotifyHotelQuotePayload) {
+  await sendAdminEmail(
+    "ADMIN_HOTEL_QUOTE_REQUEST",
+    `Nueva cotizacion hotel: ${payload.hotelName}`,
+    "Un cliente envio una solicitud desde el widget de alojamiento.",
+    [
+      { label: "Hotel", value: payload.hotelName },
+      { label: "Slug", value: payload.hotelSlug },
+      { label: "Check-in", value: payload.checkIn },
+      { label: "Check-out", value: payload.checkOut },
+      { label: "Adultos", value: payload.adults },
+      { label: "Ninos", value: payload.children },
+      { label: "Edades ninos", value: payload.childrenAges ?? "-" },
+      { label: "Habitaciones", value: payload.rooms },
+      { label: "Nombre", value: payload.name },
+      { label: "Correo", value: payload.email },
+      { label: "Telefono", value: payload.phone ?? "-" },
+      { label: "Idioma", value: payload.locale ?? "es" },
+      { label: "Notas", value: payload.notes ?? "-" }
+    ],
+    `Revisa solicitudes en: ${APP_BASE_URL}/admin/bookings`
+  );
+}
+
 type NotifyBookingPayload = {
   bookingId: string;
   orderCode: string;

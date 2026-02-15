@@ -4,6 +4,7 @@ export type NotificationEmailKey =
   | "ADMIN_NEW_USER"
   | "ADMIN_PARTNER_APPLICATION"
   | "ADMIN_CONTACT_REQUEST"
+  | "ADMIN_HOTEL_QUOTE_REQUEST"
   | "ADMIN_BOOKING_CONFIRMED"
   | "ADMIN_TOUR_MODERATION";
 
@@ -34,6 +35,12 @@ export const notificationEmailDefaults: Array<{
     key: "ADMIN_CONTACT_REQUEST",
     label: "Formulario de contacto",
     description: "Se dispara cuando llega un mensaje desde contacto.",
+    defaultRecipients: DEFAULT_ADMIN_EMAIL
+  },
+  {
+    key: "ADMIN_HOTEL_QUOTE_REQUEST",
+    label: "Cotizacion de hotel",
+    description: "Se dispara cuando llega una solicitud desde el widget de alojamiento.",
     defaultRecipients: DEFAULT_ADMIN_EMAIL
   },
   {
