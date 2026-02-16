@@ -25,7 +25,7 @@ export default function NotificationDropdown({
   unreadCount,
   notificationLink
 }: NotificationDropdownProps) {
-  if (!notificationLink) return null;
+  const effectiveNotificationLink = notificationLink ?? "/dashboard/notifications";
   const [isOpen, setIsOpen] = useState(false);
   const [localUnreadCount, setLocalUnreadCount] = useState(unreadCount);
   const [hasMarked, setHasMarked] = useState(false);
@@ -82,6 +82,8 @@ export default function NotificationDropdown({
 
   const toggleOpen = () => setIsOpen((prev) => !prev);
 
+  if (!notificationLink) return null;
+
   return (
     <div ref={containerRef} className="relative focus-within:outline-none" tabIndex={0}>
       <button
@@ -96,11 +98,11 @@ export default function NotificationDropdown({
           </span>
         ) : null}
       </button>
-        <div
-          className={`absolute right-0 z-50 mt-2 w-96 min-w-[20rem] rounded-lg border border-slate-200 bg-white shadow-lg transition duration-150 ${
-            isOpen ? "visible opacity-100 pointer-events-auto" : "invisible opacity-0 pointer-events-none"
-          }`}
-        >
+      <div
+        className={`absolute right-0 z-50 mt-2 w-96 min-w-[20rem] rounded-lg border border-slate-200 bg-white shadow-lg transition duration-150 ${
+          isOpen ? "visible pointer-events-auto opacity-100" : "invisible pointer-events-none opacity-0"
+        }`}
+      >
         <div className="space-y-4 p-4">
           {(notifications ?? []).length ? (
             GROUP_ORDER.map((groupLabel) => {
@@ -114,7 +116,7 @@ export default function NotificationDropdown({
                   <div className="space-y-2">
                     {items.map((notification) => {
                       const metadata = parseNotificationMetadata(notification.metadata);
-                      const redirectUrl = metadata.referenceUrl ?? notificationLink;
+                      const redirectUrl = metadata.referenceUrl ?? effectiveNotificationLink;
                       const notificationType = notification.type as NotificationType | undefined;
                       const display = getNotificationDisplayProps(notificationType);
                       const details = buildNotificationDetails(notification, metadata?.tourName);
@@ -126,7 +128,7 @@ export default function NotificationDropdown({
                         >
                           <input type="hidden" name="notificationId" value={notification.id} />
                           <input type="hidden" name="redirectTo" value={redirectUrl} />
-                          <button type="submit" className="w-full text-left p-3" onClick={() => setIsOpen(false)}>
+                          <button type="submit" className="w-full p-3 text-left" onClick={() => setIsOpen(false)}>
                             <div className="flex items-center gap-3">
                               <div className="relative">
                                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white">
@@ -138,13 +140,17 @@ export default function NotificationDropdown({
                               </div>
                               <div className="flex-1">
                                 <div className="flex items-center justify-between gap-3">
-                                  <p className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                                  <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
                                     {notification.title ?? display.label}
-                                    <span className={`text-[0.55rem] uppercase tracking-[0.35em] ${display.textClass} opacity-80`}>
+                                    <span
+                                      className={`text-[0.55rem] uppercase tracking-[0.35em] ${display.textClass} opacity-80`}
+                                    >
                                       {display.label}
                                     </span>
                                   </p>
-                                  <span className="text-[0.6rem] text-slate-400">{formatNotificationDate(notification.createdAt)}</span>
+                                  <span className="text-[0.6rem] text-slate-400">
+                                    {formatNotificationDate(notification.createdAt)}
+                                  </span>
                                 </div>
                                 {details && <p className="text-xs text-slate-500">{details}</p>}
                               </div>
@@ -160,7 +166,7 @@ export default function NotificationDropdown({
           ) : (
             <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
               <div className="flex items-center gap-2">
-                <span className="text-lg text-slate-400">’'?ถซ</span>
+                <span className="text-lg text-slate-400">*</span>
                 <p>No tienes notificaciones nuevas.</p>
               </div>
             </div>
@@ -168,7 +174,7 @@ export default function NotificationDropdown({
         </div>
         <div className="border-t border-slate-100 px-4 py-4 text-right text-xs">
           <Link
-            href={notificationLink}
+            href={effectiveNotificationLink}
             className="rounded-full border border-slate-200 bg-slate-900 px-4 py-1 text-white transition hover:bg-slate-800"
           >
             Ver todas
@@ -178,3 +184,4 @@ export default function NotificationDropdown({
     </div>
   );
 }
+

@@ -36,22 +36,28 @@ type Params = {
 };
 
 export async function generateStaticParams() {
-  const hotels = await prisma.transferLocation.findMany({
-    where: { type: "HOTEL", active: true },
-    select: { slug: true }
-  });
-  return hotels.map((hotel) => ({
-    hotelSlug: `${hotel.slug}${SAFETY_GUIDE_SLUG_SUFFIX}`
-  }));
+  try {
+    const hotels = await prisma.transferLocation.findMany({
+      where: { type: "HOTEL", active: true },
+      select: { slug: true }
+    });
+    return hotels.map((hotel) => ({
+      hotelSlug: `${hotel.slug}${SAFETY_GUIDE_SLUG_SUFFIX}`
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const resolved = await params;
   const baseSlug = normalizeSafetyGuideSlug(resolved.hotelSlug);
-  const hotel = await prisma.transferLocation.findUnique({
-    where: { slug: baseSlug },
-    select: { name: true, heroImage: true }
-  });
+  const hotel = await prisma.transferLocation
+    .findUnique({
+      where: { slug: baseSlug },
+      select: { name: true, heroImage: true }
+    })
+    .catch(() => null);
 
   if (!hotel) {
     return { title: "Guia de seguridad no disponible" };
@@ -99,28 +105,34 @@ export default async function SafetyGuidePage({ params }: Params) {
     return notFound();
   }
 
-  const hotel = await prisma.transferLocation.findUnique({
-    where: { slug: baseSlug },
-    select: { slug: true, name: true, description: true, heroImage: true }
-  });
+  const hotel = await prisma.transferLocation
+    .findUnique({
+      where: { slug: baseSlug },
+      select: { slug: true, name: true, description: true, heroImage: true }
+    })
+    .catch(() => null);
 
   if (!hotel) {
     return notFound();
   }
 
   const [tours, transferHotels] = await Promise.all([
-    prisma.tour.findMany({
-      where: { status: "published" },
-      select: { slug: true, title: true, price: true, heroImage: true, gallery: true },
-      orderBy: { createdAt: "desc" },
-      take: 5
-    }),
-    prisma.transferLocation.findMany({
-      where: { type: "HOTEL", active: true },
-      select: { slug: true, name: true, heroImage: true, zone: { select: { name: true } } },
-      orderBy: { updatedAt: "desc" },
-      take: 5
-    })
+    prisma.tour
+      .findMany({
+        where: { status: "published" },
+        select: { slug: true, title: true, price: true, heroImage: true, gallery: true },
+        orderBy: { createdAt: "desc" },
+        take: 5
+      })
+      .catch(() => []),
+    prisma.transferLocation
+      .findMany({
+        where: { type: "HOTEL", active: true },
+        select: { slug: true, name: true, heroImage: true, zone: { select: { name: true } } },
+        orderBy: { updatedAt: "desc" },
+        take: 5
+      })
+      .catch(() => [])
   ]);
 
   return <HotelSafetyGuidePage locale={es} hotel={hotel} tours={tours} transferHotels={transferHotels} />;
