@@ -400,10 +400,7 @@ export const getHotelLandingOverrides = async (
     if (!hotelMap || typeof hotelMap !== "object") return fallback;
     const localeContent = hotelMap[locale];
     if (!localeContent || typeof localeContent !== "object") return fallback;
-    return {
-      ...fallback,
-      ...(localeContent as HotelLandingOverrides)
-    };
+    return mergeHotelOverrides(fallback, localeContent as HotelLandingOverrides);
   } catch (error) {
     console.warn("No se pudo cargar SiteContentSetting HOTEL_LANDING", error);
     return fallback;
@@ -414,4 +411,29 @@ function getHotelLandingFallbackSafe(hotelSlug: string, locale: Locale): HotelLa
   const byHotel = HOTEL_LANDING_FALLBACKS[hotelSlug];
   if (!byHotel) return {};
   return byHotel[locale] ?? {};
+}
+
+function mergeHotelOverrides(
+  fallback: HotelLandingOverrides,
+  override: HotelLandingOverrides
+): HotelLandingOverrides {
+  const merged: HotelLandingOverrides = { ...fallback };
+  const entries = Object.entries(override) as Array<[keyof HotelLandingOverrides, unknown]>;
+
+  for (const [key, value] of entries) {
+    if (typeof value === "string") {
+      if (!value.trim()) continue;
+      merged[key] = value as never;
+      continue;
+    }
+    if (Array.isArray(value)) {
+      if (value.length === 0) continue;
+      merged[key] = value as never;
+      continue;
+    }
+    if (value === null || value === undefined) continue;
+    merged[key] = value as never;
+  }
+
+  return merged;
 }
