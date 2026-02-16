@@ -1,7 +1,19 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Dumbbell, Martini, ShieldCheck, Sparkles, Users, Utensils, Waves, Wifi } from "lucide-react";
+import {
+  BadgeCheck,
+  BedDouble,
+  Dumbbell,
+  Martini,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Users,
+  Utensils,
+  Waves,
+  Wifi
+} from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import FeaturedToursSection from "@/components/public/FeaturedToursSection";
@@ -18,6 +30,114 @@ const FALLBACK_IMAGE = "/transfer/mini van.png";
 type RouteBase = "things-to-do" | "hoteles";
 
 const DEFAULT_AMENITIES = ["Wi-Fi Gratis", "Todo Incluido", "Piscina", "Club de Ninos", "Gimnasio"];
+const UI_COPY: Record<
+  Locale,
+  {
+    hotelTag: string;
+    rating: string;
+    from: string;
+    booking: string;
+    bookingValue: string;
+    map: string;
+    highlights: string;
+    whyBook: string;
+    roomTypes: string;
+    roomLabel: string;
+    roomFallback: string;
+    roomHint: string;
+    amenities: string;
+    policies: string;
+    checkIn: string;
+    checkOut: string;
+    cancellation: string;
+    groups: string;
+    card1Title: string;
+    card1Body: string;
+    card2Title: string;
+    card2Body: string;
+    card3Title: string;
+    card3Body: string;
+  }
+> = {
+  es: {
+    hotelTag: "Hotel en Punta Cana",
+    rating: "Valoracion",
+    from: "Tarifa",
+    booking: "Reservacion",
+    bookingValue: "Confirmacion rapida",
+    map: "Ver en Mapa",
+    highlights: "Lo mas destacado",
+    whyBook: "Por que reservar con Proactivitis",
+    roomTypes: "Tipos de Habitaciones",
+    roomLabel: "Habitacion",
+    roomFallback: "Junior Suite - Master Suite - Family Suite. Tarifas desde temporada disponible.",
+    roomHint: "Consulta disponibilidad exacta por fecha y ocupacion.",
+    amenities: "Servicios y Comodidades",
+    policies: "Politicas del Hotel",
+    checkIn: "Check-in",
+    checkOut: "Check-out",
+    cancellation: "Politica de Cancelacion",
+    groups: "Informacion para Grupos",
+    card1Title: "Tarifa competitiva",
+    card1Body: "Negociamos disponibilidad real y opcion de paquete con traslados.",
+    card2Title: "Asesoria humana",
+    card2Body: "Atencion directa por WhatsApp para ajustar fechas, ninos y habitaciones.",
+    card3Title: "Soporte local",
+    card3Body: "Equipo en destino para coordinar cambios y extras sin friccion."
+  },
+  en: {
+    hotelTag: "Punta Cana Hotel",
+    rating: "Rating",
+    from: "Rate",
+    booking: "Booking",
+    bookingValue: "Fast confirmation",
+    map: "View on Map",
+    highlights: "Highlights",
+    whyBook: "Why book with Proactivitis",
+    roomTypes: "Room Types",
+    roomLabel: "Room",
+    roomFallback: "Junior Suite - Master Suite - Family Suite. Seasonal rates available.",
+    roomHint: "Ask for exact availability by date and occupancy.",
+    amenities: "Amenities",
+    policies: "Hotel Policies",
+    checkIn: "Check-in",
+    checkOut: "Check-out",
+    cancellation: "Cancellation Policy",
+    groups: "Group Information",
+    card1Title: "Competitive rates",
+    card1Body: "We secure real inventory and package options with transfers.",
+    card2Title: "Human support",
+    card2Body: "Direct WhatsApp assistance for dates, kids, and room setup.",
+    card3Title: "Local team",
+    card3Body: "On-site support for changes and add-ons without friction."
+  },
+  fr: {
+    hotelTag: "Hotel a Punta Cana",
+    rating: "Evaluation",
+    from: "Tarif",
+    booking: "Reservation",
+    bookingValue: "Confirmation rapide",
+    map: "Voir sur la carte",
+    highlights: "Points forts",
+    whyBook: "Pourquoi reserver avec Proactivitis",
+    roomTypes: "Types de chambres",
+    roomLabel: "Chambre",
+    roomFallback: "Junior Suite - Master Suite - Family Suite. Tarifs saisonniers disponibles.",
+    roomHint: "Demandez la disponibilite exacte selon les dates et l'occupation.",
+    amenities: "Services et commodites",
+    policies: "Politiques de l'hotel",
+    checkIn: "Check-in",
+    checkOut: "Check-out",
+    cancellation: "Politique d'annulation",
+    groups: "Information groupes",
+    card1Title: "Tarif competitif",
+    card1Body: "Nous obtenons une disponibilite reelle et des packs avec transferts.",
+    card2Title: "Support humain",
+    card2Body: "Assistance WhatsApp directe pour dates, enfants et chambres.",
+    card3Title: "Equipe locale",
+    card3Body: "Equipe sur place pour les changements et extras sans friction."
+  }
+};
 
 const buildTransferSlug = (hotelSlug: string) => `punta-cana-international-airport-puj-to-${hotelSlug}`;
 
@@ -29,11 +149,7 @@ const getHotel = (hotelSlug: string) =>
 
 const buildLocalizedPath = (hotelSlug: string, locale: Locale, routeBase: RouteBase) => {
   const localizedRoute =
-    routeBase === "hoteles"
-      ? locale === "es"
-        ? "hoteles"
-        : "hotels"
-      : "things-to-do";
+    routeBase === "hoteles" ? (locale === "es" ? "hoteles" : "hotels") : "things-to-do";
   return locale === "es" ? `/${localizedRoute}/${hotelSlug}` : `/${locale}/${localizedRoute}/${hotelSlug}`;
 };
 
@@ -76,15 +192,13 @@ const buildKeywords = (hotelName: string, locale: Locale) => {
         ? ["hotel a Punta Cana", "tout compris", "meilleur prix"]
         : ["hotel in Punta Cana", "all inclusive", "best rate"];
 
-  return Array.from(
-    new Set([hotelName, `${hotelName} Punta Cana`, "Punta Cana", ...base, "Proactivitis"])
-  );
+  return Array.from(new Set([hotelName, `${hotelName} Punta Cana`, "Punta Cana", ...base, "Proactivitis"]));
 };
 
 const buildStars = (value?: string) => {
   const parsed = Number(value || 5);
   const clamped = Number.isFinite(parsed) ? Math.max(1, Math.min(5, Math.round(parsed))) : 5;
-  return "?".repeat(clamped);
+  return "\u2605".repeat(clamped);
 };
 
 const parseNumber = (value?: string) => {
@@ -101,6 +215,52 @@ const getAmenityIcon = (label: string) => {
   if (text.includes("gym") || text.includes("gimnasio") || text.includes("fitness")) return Dumbbell;
   if (text.includes("restaurant") || text.includes("restaurante") || text.includes("food") || text.includes("comida")) return Utensils;
   return ShieldCheck;
+};
+
+const categorizeAmenities = (items: string[]) => {
+  const buckets: Record<string, string[]> = {
+    "Resort y Confort": [],
+    "Gastronomia y Bares": [],
+    "Bienestar y Deporte": [],
+    "Familias y Ninos": [],
+    "Servicios Premium": []
+  };
+
+  for (const item of items) {
+    const text = item.toLowerCase();
+    if (text.includes("restaurant") || text.includes("bar") || text.includes("buffet") || text.includes("desayuno")) {
+      buckets["Gastronomia y Bares"].push(item);
+      continue;
+    }
+    if (
+      text.includes("gimnas") ||
+      text.includes("spa") ||
+      text.includes("masaje") ||
+      text.includes("tenis") ||
+      text.includes("golf") ||
+      text.includes("aerobic")
+    ) {
+      buckets["Bienestar y Deporte"].push(item);
+      continue;
+    }
+    if (text.includes("nino") || text.includes("kids") || text.includes("teen") || text.includes("guarderia")) {
+      buckets["Familias y Ninos"].push(item);
+      continue;
+    }
+    if (
+      text.includes("mayordomo") ||
+      text.includes("conserje") ||
+      text.includes("conferenc") ||
+      text.includes("banquete") ||
+      text.includes("negocio")
+    ) {
+      buckets["Servicios Premium"].push(item);
+      continue;
+    }
+    buckets["Resort y Confort"].push(item);
+  }
+
+  return Object.entries(buckets).filter(([, values]) => values.length > 0);
 };
 
 const ensureSpanishMeta = (value: string, hotelName: string) => {
@@ -188,6 +348,7 @@ export async function ThingsToDoHotelPage({
 
   const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
     translate(locale, key, replacements);
+  const ui = UI_COPY[locale] ?? UI_COPY.es;
 
   const transferSlug = buildTransferSlug(hotel.slug);
   const allTransferLandings = allLandings();
@@ -227,12 +388,9 @@ export async function ThingsToDoHotelPage({
 
   const highlights =
     overrides.highlights?.filter(Boolean) ??
-    [
-      overrides.bullet1?.trim(),
-      overrides.bullet2?.trim(),
-      overrides.bullet3?.trim(),
-      overrides.bullet4?.trim()
-    ].filter(Boolean);
+    [overrides.bullet1?.trim(), overrides.bullet2?.trim(), overrides.bullet3?.trim(), overrides.bullet4?.trim()].filter(
+      Boolean
+    );
 
   const effectiveHighlights =
     highlights.length > 0
@@ -244,17 +402,18 @@ export async function ThingsToDoHotelPage({
           t("thingsToDo.overview.bullets.4")
         ];
 
-  const galleryImages = [
-    overrides.heroImage?.trim() || hotel.heroImage || "",
-    ...(overrides.galleryImages ?? [])
-  ].filter(Boolean);
+  const galleryImages = [overrides.heroImage?.trim() || hotel.heroImage || "", ...(overrides.galleryImages ?? [])].filter(
+    Boolean
+  );
 
   const amenities = overrides.amenities?.filter(Boolean) ?? DEFAULT_AMENITIES;
+  const amenityGroups = categorizeAmenities(amenities);
   const roomTypes = (overrides.roomTypes ?? []).filter((item) => item?.name);
 
   const stars = buildStars(overrides.stars);
   const locationLabel = overrides.locationLabel?.trim() || hotel.address?.trim() || "Bavaro, Punta Cana";
-  const mapUrl = overrides.mapUrl?.trim() || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.name)}`;
+  const mapUrl =
+    overrides.mapUrl?.trim() || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.name)}`;
   const priceFrom = parseNumber(overrides.priceFromUSD);
   const reviewRating = parseNumber(overrides.reviewRating);
   const reviewCount = parseNumber(overrides.reviewCount);
@@ -306,29 +465,61 @@ export async function ThingsToDoHotelPage({
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-10 px-4 py-10">
+    <div className="mx-auto w-full max-w-7xl space-y-12 px-4 py-8 md:py-10">
       <LandingViewTracker landingSlug={`${routeBase}/${hotel.slug}`} />
       <StructuredData data={schema} />
 
-      <a href="#hotel-quote-widget" className="fixed inset-x-4 bottom-4 z-40 rounded-2xl bg-slate-900 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.25em] text-white md:hidden">
+      <a
+        href="#hotel-quote-widget"
+        className="fixed inset-x-4 bottom-4 z-40 rounded-2xl bg-slate-900 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.25em] text-white md:hidden"
+      >
         {overrides.quoteCta?.trim() || "Consultar Disponibilidad"}
       </a>
 
-      <section className="grid gap-6 md:grid-cols-[1.65fr,1fr]">
-        <div className="space-y-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Hotel en Punta Cana</p>
-          <h1 className="text-3xl font-semibold text-slate-900 md:text-4xl">{heroTitle}</h1>
-          <p className="text-sm text-slate-600">{heroSubtitle}</p>
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="rounded-full bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-700">{stars}</span>
-            <a href={mapUrl} target="_blank" rel="noreferrer" className="text-sm font-medium text-sky-700 underline underline-offset-4">
-              {locationLabel} · Ver en Mapa
-            </a>
+      <section className="grid gap-6 xl:grid-cols-[1.7fr,1fr]">
+        <div className="space-y-5 overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 p-6 text-white shadow-sm md:p-8">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
+              {ui.hotelTag}
+            </span>
+            <span className="rounded-full bg-amber-300/20 px-3 py-1 text-xs font-semibold text-amber-100">{stars}</span>
           </div>
-          <HotelGallerySlider images={galleryImages} hotelName={hotel.name} />
+
+          <h1 className="text-3xl font-semibold leading-tight text-white md:text-5xl">{heroTitle}</h1>
+          <p className="max-w-3xl text-sm text-slate-100 md:text-base">{heroSubtitle}</p>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-white/20 bg-white/10 p-3 backdrop-blur">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-slate-100">{ui.rating}</p>
+              <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-white">
+                <Star className="h-4 w-4 text-amber-300" />
+                {reviewRating ? `${reviewRating}/5${reviewCount ? ` (${reviewCount})` : ""}` : "Top Rated"}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/20 bg-white/10 p-3 backdrop-blur">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-slate-100">{ui.from}</p>
+              <p className="mt-1 text-sm font-semibold text-white">
+                {priceFrom ? `US$${priceFrom}` : locale === "es" ? "Mejor tarifa" : locale === "fr" ? "Meilleur tarif" : "Best rate"}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/20 bg-white/10 p-3 backdrop-blur">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-slate-100">{ui.booking}</p>
+              <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-white">
+                <BadgeCheck className="h-4 w-4 text-emerald-300" />
+                {ui.bookingValue}
+              </p>
+            </div>
+          </div>
+
+          <a href={mapUrl} target="_blank" rel="noreferrer" className="inline-flex text-sm font-medium text-cyan-100 underline underline-offset-4">
+            {locationLabel} - {ui.map}
+          </a>
+          <div className="rounded-2xl bg-white p-2 text-slate-900 md:p-3">
+            <HotelGallerySlider images={galleryImages} hotelName={hotel.name} />
+          </div>
         </div>
 
-        <aside className="md:sticky md:top-24 md:self-start">
+        <aside className="xl:sticky xl:top-24 xl:self-start">
           <HotelQuoteWidget
             hotelSlug={hotel.slug}
             hotelName={hotel.name}
@@ -346,67 +537,100 @@ export async function ThingsToDoHotelPage({
           ))}
         </div>
 
-        <h3 className="mt-8 text-lg font-semibold text-slate-900">Lo mas destacado</h3>
+        <h3 className="mt-8 text-lg font-semibold text-slate-900">{ui.highlights}</h3>
         <ul className="mt-3 grid gap-2 text-sm text-slate-700 md:grid-cols-2">
           {effectiveHighlights.map((item) => (
-            <li key={item} className="flex items-start gap-2">
-              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-              {item}
+            <li key={item} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div className="flex items-start gap-2">
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                <span>{item}</span>
+              </div>
             </li>
           ))}
         </ul>
       </section>
 
+      <section className="rounded-3xl border border-slate-200 bg-slate-900 p-8 text-white shadow-sm md:p-10">
+        <h2 className="text-2xl font-semibold">{ui.whyBook}</h2>
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          <div className="rounded-xl border border-white/20 bg-white/10 p-4">
+            <p className="text-sm font-semibold">{ui.card1Title}</p>
+            <p className="mt-1 text-xs text-slate-200">{ui.card1Body}</p>
+          </div>
+          <div className="rounded-xl border border-white/20 bg-white/10 p-4">
+            <p className="text-sm font-semibold">{ui.card2Title}</p>
+            <p className="mt-1 text-xs text-slate-200">{ui.card2Body}</p>
+          </div>
+          <div className="rounded-xl border border-white/20 bg-white/10 p-4">
+            <p className="text-sm font-semibold">{ui.card3Title}</p>
+            <p className="mt-1 text-xs text-slate-200">{ui.card3Body}</p>
+          </div>
+        </div>
+      </section>
+
       <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
-        <h2 className="text-2xl font-semibold text-slate-900">Tipos de Habitaciones</h2>
+        <h2 className="text-2xl font-semibold text-slate-900">{ui.roomTypes}</h2>
         {roomTypes.length ? (
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {roomTypes.map((room) => (
-              <article key={`${room.name}-${room.image || room.priceFrom || ""}`} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+              <article key={`${room.name}-${room.image || room.priceFrom || ""}`} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                 {room.image ? <HotelGallerySlider images={[room.image]} hotelName={room.name} /> : null}
                 <div className="p-4">
-                  <h3 className="font-semibold text-slate-900">{room.name}</h3>
-                  <p className="mt-1 text-sm text-slate-600">{room.priceFrom || "Cotizacion personalizada"}</p>
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500">{ui.roomLabel}</p>
+                  <h3 className="mt-1 flex items-center gap-2 font-semibold text-slate-900">
+                    <BedDouble className="h-4 w-4 text-slate-600" />
+                    {room.name}
+                  </h3>
+                  <p className="mt-2 text-sm font-semibold text-slate-900">{room.priceFrom || "Cotizacion personalizada"}</p>
+                  <p className="mt-1 text-xs text-slate-500">{ui.roomHint}</p>
                 </div>
               </article>
             ))}
           </div>
         ) : (
-          <p className="mt-4 text-sm text-slate-600">Junior Suite · Master Suite · Family Suite. Tarifas desde temporada disponible.</p>
+          <p className="mt-4 text-sm text-slate-600">{ui.roomFallback}</p>
         )}
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
-        <h2 className="text-2xl font-semibold text-slate-900">Servicios y Comodidades</h2>
-        <div className="mt-4 grid gap-3 text-sm text-slate-700 md:grid-cols-3">
-          {amenities.map((item) => {
-            const Icon = getAmenityIcon(item);
-            return (
-              <div key={item} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                <Icon className="h-4 w-4 shrink-0 text-slate-700" />
-                <span>{item}</span>
+        <h2 className="text-2xl font-semibold text-slate-900">{ui.amenities}</h2>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          {amenityGroups.map(([groupName, groupItems]) => (
+            <div key={groupName} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-700">{groupName}</h3>
+              <div className="mt-3 grid gap-2 text-sm text-slate-700">
+                {groupItems.map((item) => {
+                  const Icon = getAmenityIcon(item);
+                  return (
+                    <div key={item} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2">
+                      <Icon className="h-4 w-4 shrink-0 text-slate-700" />
+                      <span>{item}</span>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
-        <h2 className="text-2xl font-semibold text-slate-900">Politicas del Hotel</h2>
+        <h2 className="text-2xl font-semibold text-slate-900">{ui.policies}</h2>
         <div className="mt-4 grid gap-4 text-sm text-slate-700 md:grid-cols-2">
           <p>
-            <span className="font-semibold text-slate-900">Check-in:</span> {overrides.checkInTime?.trim() || "3:00 PM"}
+            <span className="font-semibold text-slate-900">{ui.checkIn}:</span> {overrides.checkInTime?.trim() || "3:00 PM"}
           </p>
           <p>
-            <span className="font-semibold text-slate-900">Check-out:</span> {overrides.checkOutTime?.trim() || "12:00 PM"}
+            <span className="font-semibold text-slate-900">{ui.checkOut}:</span> {overrides.checkOutTime?.trim() || "12:00 PM"}
           </p>
         </div>
         <p className="mt-3 text-sm text-slate-600">
-          <span className="font-semibold text-slate-900">Politica de Cancelacion:</span>{" "}
-          {overrides.cancellationPolicy?.trim() || "Las condiciones pueden variar por temporada. Solicita cotizacion para confirmar reglas aplicables."}
+          <span className="font-semibold text-slate-900">{ui.cancellation}:</span>{" "}
+          {overrides.cancellationPolicy?.trim() ||
+            "Las condiciones pueden variar por temporada. Solicita cotizacion para confirmar reglas aplicables."}
         </p>
         <p className="mt-3 text-sm text-slate-600">
-          <span className="font-semibold text-slate-900">Informacion para Grupos:</span>{" "}
+          <span className="font-semibold text-slate-900">{ui.groups}:</span>{" "}
           {overrides.groupPolicy?.trim() || "Precios especiales para grupos de mas de 10 personas."}
         </p>
       </section>
@@ -432,7 +656,11 @@ export async function ThingsToDoHotelPage({
               className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
             >
               <div className="relative h-40 w-full overflow-hidden bg-slate-100">
-                <img src={landing.heroImage || "/transfer/mini van.png"} alt={landing.heroImageAlt || landing.hotelName} className="h-full w-full object-cover" />
+                <img
+                  src={landing.heroImage || "/transfer/mini van.png"}
+                  alt={landing.heroImageAlt || landing.hotelName}
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div className="flex flex-1 flex-col gap-2 p-4">
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("thingsToDo.transfers.cardTag")}</p>
@@ -449,10 +677,3 @@ export async function ThingsToDoHotelPage({
     </div>
   );
 }
-
-
-
-
-
-
-
