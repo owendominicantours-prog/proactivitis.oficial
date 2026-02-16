@@ -1,4 +1,16 @@
-﻿import { prisma } from "@/lib/prisma";
+﻿import type { ReactNode } from "react";
+import {
+  BedDouble,
+  Globe,
+  LayoutPanelTop,
+  Megaphone,
+  ScrollText,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  type LucideIcon
+} from "lucide-react";
+import { prisma } from "@/lib/prisma";
 import type { HotelLandingOverrides } from "@/lib/siteContent";
 import { updateHotelLandingContentAction } from "./actions";
 
@@ -13,6 +25,33 @@ type Props = {
 
 const toRoomTypesText = (rooms?: Array<{ name: string; priceFrom?: string; image?: string }>) =>
   (rooms ?? []).map((room) => [room.name, room.priceFrom ?? "", room.image ?? ""].join("|")).join("\n");
+
+const SectionCard = ({
+  id,
+  icon: Icon,
+  title,
+  subtitle,
+  children
+}: {
+  id: string;
+  icon: LucideIcon;
+  title: string;
+  subtitle: string;
+  children: ReactNode;
+}) => (
+  <section id={id} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+    <div className="mb-6 flex items-start gap-3">
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-2 text-slate-700">
+        <Icon className="h-5 w-5" />
+      </div>
+      <div>
+        <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
+        <p className="text-sm text-slate-500">{subtitle}</p>
+      </div>
+    </div>
+    <div className="grid gap-4">{children}</div>
+  </section>
+);
 
 export default async function AdminHotelLandingsPage({ searchParams }: Props) {
   const resolved = searchParams ? await searchParams : undefined;
@@ -32,13 +71,29 @@ export default async function AdminHotelLandingsPage({ searchParams }: Props) {
   const defaults = (selectedHotel ? content[selectedHotel]?.[selectedLocale] : undefined) ?? {};
 
   return (
-    <section className="space-y-8 rounded-[32px] border border-slate-200 bg-white p-10 shadow-sm">
-      <header>
-        <h1 className="text-2xl font-semibold text-slate-900">Hotel Landings</h1>
-        <p className="text-sm text-slate-500">Editor completo de paginas de hotel: SEO, fotos, widget, descripcion, habitaciones y politicas.</p>
+    <section className="space-y-8 rounded-[32px] border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-6 shadow-sm md:p-10">
+      <header className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-white">
+            Admin
+          </span>
+          <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-slate-600">
+            Hotel CMS
+          </span>
+        </div>
+        <h1 className="mt-4 text-3xl font-semibold text-slate-900 md:text-4xl">Editor profesional de hoteles</h1>
+        <p className="mt-3 max-w-3xl text-sm text-slate-600">
+          Misma logica de calidad que los tours: contenido estructurado, SEO, visual, conversion y politicas.
+          Todo editable sin tocar codigo.
+        </p>
+        <div className="mt-5 grid gap-3 text-xs text-slate-600 md:grid-cols-3">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">SEO + metadata por idioma</div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">Hero + galeria + puntos con iconos</div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">Widget + habitaciones + amenidades + politicas</div>
+        </div>
       </header>
 
-      <form method="GET" className="grid gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-5 md:grid-cols-3">
+      <form method="GET" className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-3">
         <label className="text-sm text-slate-600">
           Hotel
           <select name="hotel" defaultValue={selectedHotel} className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2">
@@ -67,8 +122,12 @@ export default async function AdminHotelLandingsPage({ searchParams }: Props) {
           <input type="hidden" name="hotelSlug" value={selectedHotel} />
           <input type="hidden" name="locale" value={selectedLocale} />
 
-          <div className="grid gap-4 rounded-2xl border border-slate-200 p-5">
-            <h2 className="text-lg font-semibold text-slate-900">1. SEO</h2>
+          <SectionCard
+            id="seo"
+            icon={Search}
+            title="1) SEO y posicionamiento"
+            subtitle="Titulo, descripcion y metadata para resultados de Google con alta conversion."
+          >
             <div className="grid gap-4 md:grid-cols-2">
               <label className="text-sm text-slate-600">
                 SEO Title
@@ -79,10 +138,14 @@ export default async function AdminHotelLandingsPage({ searchParams }: Props) {
                 <input name="seoDescription" defaultValue={defaults.seoDescription ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
               </label>
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="grid gap-4 rounded-2xl border border-slate-200 p-5">
-            <h2 className="text-lg font-semibold text-slate-900">2. Hero y Visual</h2>
+          <SectionCard
+            id="hero"
+            icon={LayoutPanelTop}
+            title="2) Hero visual del hotel"
+            subtitle="Primera impresion: titulo, subtitulo, estrellas, mapa y galeria principal."
+          >
             <div className="grid gap-4 md:grid-cols-2">
               <label className="text-sm text-slate-600">
                 Hero Title
@@ -115,10 +178,14 @@ export default async function AdminHotelLandingsPage({ searchParams }: Props) {
               Gallery Images (URLs separadas por coma o salto de linea)
               <textarea name="galleryImages" rows={4} defaultValue={(defaults.galleryImages ?? []).join("\n")} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
             </label>
-          </div>
+          </SectionCard>
 
-          <div className="grid gap-4 rounded-2xl border border-slate-200 p-5">
-            <h2 className="text-lg font-semibold text-slate-900">3. Widget de Cotizacion</h2>
+          <SectionCard
+            id="widget"
+            icon={Megaphone}
+            title="3) Conversion (widget de cotizacion)"
+            subtitle="Configura CTA y senales de confianza que elevan conversion."
+          >
             <div className="grid gap-4 md:grid-cols-4">
               <label className="text-sm text-slate-600">
                 CTA del boton
@@ -137,10 +204,14 @@ export default async function AdminHotelLandingsPage({ searchParams }: Props) {
                 <input name="reviewCount" defaultValue={defaults.reviewCount ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
               </label>
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="grid gap-4 rounded-2xl border border-slate-200 p-5">
-            <h2 className="text-lg font-semibold text-slate-900">4. Informacion del Hotel</h2>
+          <SectionCard
+            id="overview"
+            icon={ScrollText}
+            title="4) Contenido editorial del hotel"
+            subtitle="Texto comercial largo para posicionamiento y confianza."
+          >
             <label className="text-sm text-slate-600">
               Titulo de descripcion
               <input name="overviewTitle" defaultValue={defaults.overviewTitle ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
@@ -161,22 +232,56 @@ export default async function AdminHotelLandingsPage({ searchParams }: Props) {
               Highlights (uno por linea)
               <textarea name="highlights" rows={4} defaultValue={(defaults.highlights ?? []).join("\n")} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
             </label>
-          </div>
+          </SectionCard>
 
-          <div className="grid gap-4 rounded-2xl border border-slate-200 p-5">
-            <h2 className="text-lg font-semibold text-slate-900">5. Habitaciones y Amenidades</h2>
+          <SectionCard
+            id="feature-icons"
+            icon={Sparkles}
+            title="5) Puntos clave con iconos"
+            subtitle="Estos 4 bullets salen destacados en la landing para comunicar valor rapido."
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="text-sm text-slate-600">
+                Bullet 1
+                <input name="bullet1" defaultValue={defaults.bullet1 ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="Frente a la playa" />
+              </label>
+              <label className="text-sm text-slate-600">
+                Bullet 2
+                <input name="bullet2" defaultValue={defaults.bullet2 ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="Todo incluido premium" />
+              </label>
+              <label className="text-sm text-slate-600">
+                Bullet 3
+                <input name="bullet3" defaultValue={defaults.bullet3 ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="Ideal para familias" />
+              </label>
+              <label className="text-sm text-slate-600">
+                Bullet 4
+                <input name="bullet4" defaultValue={defaults.bullet4 ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="Restaurantes y spa" />
+              </label>
+            </div>
+          </SectionCard>
+
+          <SectionCard
+            id="rooms-amenities"
+            icon={BedDouble}
+            title="6) Habitaciones y amenidades"
+            subtitle="Informacion util para que el cliente compare y decida rapido."
+          >
             <label className="text-sm text-slate-600">
               Tipos de habitaciones (formato: Nombre|Desde $XXX|URL Imagen)
               <textarea name="roomTypes" rows={5} defaultValue={toRoomTypesText(defaults.roomTypes)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
             </label>
             <label className="text-sm text-slate-600">
-              Amenidades (una por linea)
+              Amenidades (una por linea, se muestran con iconos automaticos)
               <textarea name="amenities" rows={4} defaultValue={(defaults.amenities ?? []).join("\n")} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
             </label>
-          </div>
+          </SectionCard>
 
-          <div className="grid gap-4 rounded-2xl border border-slate-200 p-5">
-            <h2 className="text-lg font-semibold text-slate-900">6. Politicas</h2>
+          <SectionCard
+            id="policies"
+            icon={ShieldCheck}
+            title="7) Politicas del hotel"
+            subtitle="Transparencia operativa: horarios, cancelacion y condiciones para grupos."
+          >
             <div className="grid gap-4 md:grid-cols-2">
               <label className="text-sm text-slate-600">
                 Check-in
@@ -195,10 +300,14 @@ export default async function AdminHotelLandingsPage({ searchParams }: Props) {
               Politica para grupos
               <textarea name="groupPolicy" rows={3} defaultValue={defaults.groupPolicy ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
             </label>
-          </div>
+          </SectionCard>
 
-          <div className="grid gap-4 rounded-2xl border border-slate-200 p-5">
-            <h2 className="text-lg font-semibold text-slate-900">7. Bloques Finales</h2>
+          <SectionCard
+            id="final"
+            icon={Globe}
+            title="8) Bloques finales de la pagina"
+            subtitle="Titulos de secciones inferiores para tours y traslados relacionados."
+          >
             <div className="grid gap-4 md:grid-cols-2">
               <label className="text-sm text-slate-600">
                 Tours Section Title
@@ -209,9 +318,9 @@ export default async function AdminHotelLandingsPage({ searchParams }: Props) {
                 <input name="transfersTitle" defaultValue={defaults.transfersTitle ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
               </label>
             </div>
-          </div>
+          </SectionCard>
 
-          <button type="submit" className="w-fit rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white">
+          <button type="submit" className="w-fit rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white">
             Guardar cambios
           </button>
         </form>
@@ -221,3 +330,4 @@ export default async function AdminHotelLandingsPage({ searchParams }: Props) {
     </section>
   );
 }
+

@@ -1,6 +1,7 @@
 ﻿import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Dumbbell, Martini, ShieldCheck, Sparkles, Users, Utensils, Waves, Wifi } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import FeaturedToursSection from "@/components/public/FeaturedToursSection";
@@ -83,12 +84,23 @@ const buildKeywords = (hotelName: string, locale: Locale) => {
 const buildStars = (value?: string) => {
   const parsed = Number(value || 5);
   const clamped = Number.isFinite(parsed) ? Math.max(1, Math.min(5, Math.round(parsed))) : 5;
-  return "★".repeat(clamped);
+  return "?".repeat(clamped);
 };
 
 const parseNumber = (value?: string) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const getAmenityIcon = (label: string) => {
+  const text = label.toLowerCase();
+  if (text.includes("wifi") || text.includes("wi-fi") || text.includes("internet")) return Wifi;
+  if (text.includes("all inclusive") || text.includes("todo incluido") || text.includes("bar")) return Martini;
+  if (text.includes("pool") || text.includes("piscina") || text.includes("beach") || text.includes("playa")) return Waves;
+  if (text.includes("kids") || text.includes("ninos") || text.includes("children") || text.includes("familia")) return Users;
+  if (text.includes("gym") || text.includes("gimnasio") || text.includes("fitness")) return Dumbbell;
+  if (text.includes("restaurant") || text.includes("restaurante") || text.includes("food") || text.includes("comida")) return Utensils;
+  return ShieldCheck;
 };
 
 const ensureSpanishMeta = (value: string, hotelName: string) => {
@@ -338,7 +350,7 @@ export async function ThingsToDoHotelPage({
         <ul className="mt-3 grid gap-2 text-sm text-slate-700 md:grid-cols-2">
           {effectiveHighlights.map((item) => (
             <li key={item} className="flex items-start gap-2">
-              <span className="mt-1 h-2 w-2 rounded-full bg-emerald-500" />
+              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
               {item}
             </li>
           ))}
@@ -367,11 +379,15 @@ export async function ThingsToDoHotelPage({
       <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
         <h2 className="text-2xl font-semibold text-slate-900">Servicios y Comodidades</h2>
         <div className="mt-4 grid gap-3 text-sm text-slate-700 md:grid-cols-3">
-          {amenities.map((item) => (
-            <div key={item} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-              {item}
-            </div>
-          ))}
+          {amenities.map((item) => {
+            const Icon = getAmenityIcon(item);
+            return (
+              <div key={item} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <Icon className="h-4 w-4 shrink-0 text-slate-700" />
+                <span>{item}</span>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -433,3 +449,10 @@ export async function ThingsToDoHotelPage({
     </div>
   );
 }
+
+
+
+
+
+
+
