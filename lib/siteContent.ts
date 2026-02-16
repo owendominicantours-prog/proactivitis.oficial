@@ -120,6 +120,223 @@ export type HotelLandingOverrides = {
   transfersTitle?: string;
 };
 
+const HOTEL_LANDING_FALLBACKS: Record<string, Partial<Record<Locale, HotelLandingOverrides>>> = {
+  "bahia-principe-grand-bavaro": {
+    es: {
+      seoTitle: "Bahia Principe Grand Bavaro - Reserva en Punta Cana al Mejor Precio",
+      seoDescription:
+        "Bahia Principe Grand Bavaro Todo Incluido en Punta Cana al Mejor Precio. Resort familiar con piscinas, 16 bares, restaurantes y areas para ninos.",
+      heroTitle: "Bahia Principe Grand Bavaro - Reserva en Punta Cana al Mejor Precio",
+      heroSubtitle:
+        "Resort todo incluido ideal para familias, con gran oferta gastronomica, ocio y actividades en Bavaro.",
+      stars: "5",
+      locationLabel: "Arena Gorda, Bavaro, Punta Cana",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=Bahia+Principe+Grand+Bavaro",
+      quoteCta: "Consultar Disponibilidad",
+      overviewTitle: "Bahia Principe Grand Bavaro: resort familiar todo incluido",
+      description1:
+        "Bahia Principe Grand Bavaro es un resort de gran formato en Arena Gorda, Punta Cana, pensado para viajeros que buscan un plan todo incluido con infraestructura completa y entretenimiento diario.",
+      description2:
+        "El hotel integra piscinas tipo lago, jacuzzi, spa, instalaciones deportivas, centro de actividades acuaticas, campo de golf cercano, espacios para eventos y una oferta gastronomica robusta.",
+      description3:
+        "Alrededor del hotel tienes 13 restaurantes en un radio cercano y 16 atracciones proximas como Arena Gorda Beach, Splash Water World y zonas de ocio nocturno, lo que amplifica la experiencia dentro y fuera del resort.",
+      highlights: [
+        "2 piscinas tipo lago, jacuzzi, solariums y servicio de tumbonas, sombrillas y toallas.",
+        "1 buffet + restaurantes de especialidades y 16 bares dentro del complejo.",
+        "Gimnasio, pista de tenis, cancha multiusos y centro de actividades acuaticas.",
+        "Punta Blanca Golf Club de 18 hoyos y area comercial/ocio Pueblo Principe.",
+        "Entorno con oferta cercana de gastronomia y atracciones para complementar la estancia."
+      ],
+      bullet1: "Resort todo incluido ideal para familias",
+      bullet2: "16 bares y restaurantes de especialidades",
+      bullet3: "Piscinas, deporte, spa y ocio",
+      bullet4: "Programa infantil y teen club",
+      roomTypes: [
+        { name: "Junior Suite Superior", priceFrom: "Cotizacion personalizada", image: "" },
+        { name: "Junior Suite Club Golden", priceFrom: "Cotizacion personalizada", image: "" },
+        { name: "Suite con vistas al mar", priceFrom: "Cotizacion personalizada", image: "" },
+        { name: "Suite familiar", priceFrom: "Cotizacion personalizada", image: "" },
+        { name: "Habitacion no fumadores", priceFrom: "Cotizacion personalizada", image: "" }
+      ],
+      amenities: [
+        "Aparcamiento gratuito",
+        "Aparcamiento",
+        "Wi-Fi",
+        "Gimnasio / sala de entrenamiento",
+        "Clases de fitness",
+        "Piscina",
+        "Piscina exterior",
+        "Jacuzzi",
+        "Toallas para piscina y playa",
+        "Bar/salon",
+        "Bar dentro de la piscina",
+        "Bar junto a la piscina",
+        "Restaurante",
+        "Desayuno disponible",
+        "Desayuno buffet",
+        "Playa",
+        "Casino y juegos de azar",
+        "Campo de golf",
+        "Mini golf",
+        "Pista de tenis",
+        "Parque acuatico",
+        "Aerobic",
+        "Personal de animacion",
+        "Animacion nocturna",
+        "Karaoke",
+        "Pub/DJ",
+        "Zona infantil de juegos cubierta",
+        "Actividades para ninos (familias)",
+        "Zona infantil",
+        "Guarderia",
+        "Transporte desde/al aeropuerto",
+        "Centro de negocios con Internet",
+        "Instalaciones para conferencias",
+        "Sala de banquetes",
+        "Salas de reuniones",
+        "Balneario",
+        "Masaje en pareja",
+        "Tratamientos faciales",
+        "Masaje de cuerpo entero",
+        "Masaje de cabeza",
+        "Masaje",
+        "Conserje",
+        "Cambio de divisas",
+        "Tienda de regalos",
+        "Tiendas",
+        "Tumbonas/sillas de playa",
+        "Sombrillas",
+        "Servicio de mayordomo",
+        "Recepcion 24 horas",
+        "Lavado en seco",
+        "Servicio de lavanderia",
+        "Aire acondicionado en habitacion",
+        "Servicio de limpieza",
+        "Balcon privado",
+        "Servicio de habitaciones",
+        "Caja fuerte",
+        "Minibar",
+        "Televisor de pantalla plana"
+      ],
+      checkInTime: "3:00 PM",
+      checkOutTime: "12:00 PM",
+      cancellationPolicy:
+        "Las politicas pueden variar por tarifa y temporada. Solicita cotizacion para validar condiciones exactas antes de confirmar.",
+      groupPolicy:
+        "Atencion especial para grupos, bodas, incentivos y aniversarios. Tarifas para grupos disponibles segun volumen y fechas.",
+      toursTitle: "Excursiones recomendadas desde Bahia Principe Grand Bavaro",
+      transfersTitle: "Traslados recomendados para Bahia Principe Grand Bavaro"
+    }
+  },
+  "bahia-principe-grand-punta-cana": {
+    es: {
+      seoTitle: "Bahia Principe Grand Bavaro - Reserva en Punta Cana al Mejor Precio",
+      seoDescription:
+        "Bahia Principe Grand Bavaro Todo Incluido en Punta Cana al Mejor Precio. Resort familiar con piscinas, 16 bares, restaurantes y areas para ninos.",
+      heroTitle: "Bahia Principe Grand Bavaro - Reserva en Punta Cana al Mejor Precio",
+      heroSubtitle:
+        "Resort todo incluido ideal para familias, con gran oferta gastronomica, ocio y actividades en Bavaro.",
+      stars: "5",
+      locationLabel: "Arena Gorda, Bavaro, Punta Cana",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=Bahia+Principe+Grand+Bavaro",
+      quoteCta: "Consultar Disponibilidad",
+      overviewTitle: "Bahia Principe Grand Bavaro: resort familiar todo incluido",
+      description1:
+        "Bahia Principe Grand Bavaro es un resort de gran formato en Arena Gorda, Punta Cana, pensado para viajeros que buscan un plan todo incluido con infraestructura completa y entretenimiento diario.",
+      description2:
+        "El hotel integra piscinas tipo lago, jacuzzi, spa, instalaciones deportivas, centro de actividades acuaticas, campo de golf cercano, espacios para eventos y una oferta gastronomica robusta.",
+      description3:
+        "Alrededor del hotel tienes 13 restaurantes en un radio cercano y 16 atracciones proximas como Arena Gorda Beach, Splash Water World y zonas de ocio nocturno, lo que amplifica la experiencia dentro y fuera del resort.",
+      highlights: [
+        "2 piscinas tipo lago, jacuzzi, solariums y servicio de tumbonas, sombrillas y toallas.",
+        "1 buffet + restaurantes de especialidades y 16 bares dentro del complejo.",
+        "Gimnasio, pista de tenis, cancha multiusos y centro de actividades acuaticas.",
+        "Punta Blanca Golf Club de 18 hoyos y area comercial/ocio Pueblo Principe.",
+        "Entorno con oferta cercana de gastronomia y atracciones para complementar la estancia."
+      ],
+      bullet1: "Resort todo incluido ideal para familias",
+      bullet2: "16 bares y restaurantes de especialidades",
+      bullet3: "Piscinas, deporte, spa y ocio",
+      bullet4: "Programa infantil y teen club",
+      roomTypes: [
+        { name: "Junior Suite Superior", priceFrom: "Cotizacion personalizada", image: "" },
+        { name: "Junior Suite Club Golden", priceFrom: "Cotizacion personalizada", image: "" },
+        { name: "Suite con vistas al mar", priceFrom: "Cotizacion personalizada", image: "" },
+        { name: "Suite familiar", priceFrom: "Cotizacion personalizada", image: "" },
+        { name: "Habitacion no fumadores", priceFrom: "Cotizacion personalizada", image: "" }
+      ],
+      amenities: [
+        "Aparcamiento gratuito",
+        "Aparcamiento",
+        "Wi-Fi",
+        "Gimnasio / sala de entrenamiento",
+        "Clases de fitness",
+        "Piscina",
+        "Piscina exterior",
+        "Jacuzzi",
+        "Toallas para piscina y playa",
+        "Bar/salon",
+        "Bar dentro de la piscina",
+        "Bar junto a la piscina",
+        "Restaurante",
+        "Desayuno disponible",
+        "Desayuno buffet",
+        "Playa",
+        "Casino y juegos de azar",
+        "Campo de golf",
+        "Mini golf",
+        "Pista de tenis",
+        "Parque acuatico",
+        "Aerobic",
+        "Personal de animacion",
+        "Animacion nocturna",
+        "Karaoke",
+        "Pub/DJ",
+        "Zona infantil de juegos cubierta",
+        "Actividades para ninos (familias)",
+        "Zona infantil",
+        "Guarderia",
+        "Transporte desde/al aeropuerto",
+        "Centro de negocios con Internet",
+        "Instalaciones para conferencias",
+        "Sala de banquetes",
+        "Salas de reuniones",
+        "Balneario",
+        "Masaje en pareja",
+        "Tratamientos faciales",
+        "Masaje de cuerpo entero",
+        "Masaje de cabeza",
+        "Masaje",
+        "Conserje",
+        "Cambio de divisas",
+        "Tienda de regalos",
+        "Tiendas",
+        "Tumbonas/sillas de playa",
+        "Sombrillas",
+        "Servicio de mayordomo",
+        "Recepcion 24 horas",
+        "Lavado en seco",
+        "Servicio de lavanderia",
+        "Aire acondicionado en habitacion",
+        "Servicio de limpieza",
+        "Balcon privado",
+        "Servicio de habitaciones",
+        "Caja fuerte",
+        "Minibar",
+        "Televisor de pantalla plana"
+      ],
+      checkInTime: "3:00 PM",
+      checkOutTime: "12:00 PM",
+      cancellationPolicy:
+        "Las politicas pueden variar por tarifa y temporada. Solicita cotizacion para validar condiciones exactas antes de confirmar.",
+      groupPolicy:
+        "Atencion especial para grupos, bodas, incentivos y aniversarios. Tarifas para grupos disponibles segun volumen y fechas.",
+      toursTitle: "Excursiones recomendadas desde Bahia Principe Grand Bavaro",
+      transfersTitle: "Traslados recomendados para Bahia Principe Grand Bavaro"
+    }
+  }
+};
+
 export const getHomeContentOverrides = async (locale: Locale): Promise<HomeContentOverrides> => {
   try {
     const record = await prisma.siteContentSetting.findUnique({
@@ -172,19 +389,29 @@ export const getHotelLandingOverrides = async (
   hotelSlug: string,
   locale: Locale
 ): Promise<HotelLandingOverrides> => {
+  const fallback = getHotelLandingFallbackSafe(hotelSlug, locale);
   try {
     const record = await prisma.siteContentSetting.findUnique({
       where: { key: "HOTEL_LANDING" }
     });
-    if (!record?.content || typeof record.content !== "object") return {};
+    if (!record?.content || typeof record.content !== "object") return fallback;
     const content = record.content as Record<string, Record<string, HotelLandingOverrides>>;
     const hotelMap = content[hotelSlug];
-    if (!hotelMap || typeof hotelMap !== "object") return {};
+    if (!hotelMap || typeof hotelMap !== "object") return fallback;
     const localeContent = hotelMap[locale];
-    if (!localeContent || typeof localeContent !== "object") return {};
-    return localeContent as HotelLandingOverrides;
+    if (!localeContent || typeof localeContent !== "object") return fallback;
+    return {
+      ...fallback,
+      ...(localeContent as HotelLandingOverrides)
+    };
   } catch (error) {
     console.warn("No se pudo cargar SiteContentSetting HOTEL_LANDING", error);
-    return {};
+    return fallback;
   }
 };
+
+function getHotelLandingFallbackSafe(hotelSlug: string, locale: Locale): HotelLandingOverrides {
+  const byHotel = HOTEL_LANDING_FALLBACKS[hotelSlug];
+  if (!byHotel) return {};
+  return byHotel[locale] ?? {};
+}
