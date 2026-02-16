@@ -13,6 +13,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import type { HotelLandingOverrides } from "@/lib/siteContent";
 import { updateHotelLandingContentAction } from "./actions";
+import HotelImageManager from "@/components/admin/hotels/HotelImageManager";
 
 type SearchParams = {
   hotel?: string;
@@ -170,14 +171,7 @@ export default async function AdminHotelLandingsPage({ searchParams }: Props) {
                 <input name="mapUrl" defaultValue={defaults.mapUrl ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
               </label>
             </div>
-            <label className="text-sm text-slate-600">
-              Hero Image URL
-              <input name="heroImage" defaultValue={defaults.heroImage ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
-            </label>
-            <label className="text-sm text-slate-600">
-              Gallery Images (URLs separadas por coma o salto de linea)
-              <textarea name="galleryImages" rows={4} defaultValue={(defaults.galleryImages ?? []).join("\n")} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
-            </label>
+            <HotelImageManager heroValue={defaults.heroImage ?? ""} galleryValues={defaults.galleryImages ?? []} />
           </SectionCard>
 
           <SectionCard
