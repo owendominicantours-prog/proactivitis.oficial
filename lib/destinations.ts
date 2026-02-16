@@ -1,11 +1,12 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { errorOnce } from "@/lib/logOnce";
 
 const safePrismaArray = async <T>(label: string, fn: () => Promise<T[]>): Promise<T[]> => {
   try {
     return await fn();
   } catch (error) {
-    console.error(`Prisma error ${label}:`, error);
+    errorOnce(`destinations-array-${label}`, `Prisma error ${label}:`, error);
     return [];
   }
 };
@@ -14,7 +15,7 @@ const safePrismaSingle = async <T>(label: string, fn: () => Promise<T | null>): 
   try {
     return await fn();
   } catch (error) {
-    console.error(`Prisma error ${label}:`, error);
+    errorOnce(`destinations-single-${label}`, `Prisma error ${label}:`, error);
     return null;
   }
 };
@@ -109,7 +110,7 @@ const buildDestinationCountMaps = async () => {
 
     return { perCountry };
   } catch (error) {
-    console.error("Prisma error building destination counts:", error);
+    errorOnce("destinations-counts-fallback", "Prisma error building destination counts:", error);
     return { perCountry: new Map<string, number>() };
   }
 };

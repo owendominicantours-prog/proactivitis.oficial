@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Locale } from "@/lib/translations";
+import { warnOnce } from "@/lib/logOnce";
 
 export type HomeContentOverrides = {
   hero?: {
@@ -348,7 +349,7 @@ export const getHomeContentOverrides = async (locale: Locale): Promise<HomeConte
     if (!localeContent || typeof localeContent !== "object") return {};
     return localeContent as HomeContentOverrides;
   } catch (error) {
-    console.warn("No se pudo cargar SiteContentSetting HOME", error);
+    warnOnce("site-content-home-fallback", "No se pudo cargar SiteContentSetting HOME", error);
     return {};
   }
 };
@@ -364,7 +365,7 @@ export const getContactContentOverrides = async (locale: Locale): Promise<Contac
     if (!localeContent || typeof localeContent !== "object") return {};
     return localeContent as ContactContentOverrides;
   } catch (error) {
-    console.warn("No se pudo cargar SiteContentSetting CONTACT", error);
+    warnOnce("site-content-contact-fallback", "No se pudo cargar SiteContentSetting CONTACT", error);
     return {};
   }
 };
@@ -380,7 +381,7 @@ export const getGlobalBannerOverrides = async (locale: Locale): Promise<GlobalBa
     if (!localeContent || typeof localeContent !== "object") return {};
     return localeContent as GlobalBannerOverrides;
   } catch (error) {
-    console.warn("No se pudo cargar SiteContentSetting GLOBAL_BANNER", error);
+    warnOnce("site-content-global-banner-fallback", "No se pudo cargar SiteContentSetting GLOBAL_BANNER", error);
     return {};
   }
 };
@@ -402,7 +403,7 @@ export const getHotelLandingOverrides = async (
     if (!localeContent || typeof localeContent !== "object") return fallback;
     return mergeHotelOverrides(fallback, localeContent as HotelLandingOverrides);
   } catch (error) {
-    console.warn("No se pudo cargar SiteContentSetting HOTEL_LANDING", error);
+    warnOnce("site-content-hotel-landing-fallback", "No se pudo cargar SiteContentSetting HOTEL_LANDING", error);
     return fallback;
   }
 };

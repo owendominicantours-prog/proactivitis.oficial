@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { allLandings } from "@/data/transfer-landings";
 import { genericTransferLandings } from "@/data/transfer-generic-landings";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
+import { warnOnce } from "@/lib/logOnce";
 
 const BASE_URL = "https://proactivitis.com";
 const ZONE_SLUG = "punta-cana";
@@ -12,7 +13,7 @@ export async function GET() {
   try {
     combos = await getDynamicTransferLandingCombos();
   } catch (error) {
-    console.warn("[sitemap-transfers] Falling back to static transfer landings due to DB error", error);
+    warnOnce("sitemap-transfers-db-fallback", "[sitemap-transfers] Falling back to static transfer landings due to DB error", error);
   }
   const manualLandings = allLandings().map((landing) => ({
     slug: landing.landingSlug,

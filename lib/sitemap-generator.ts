@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { landingPages } from "./landing";
 import { SOSUA_PARTY_BOAT_VARIANTS } from "@/data/sosua-party-boat-variants";
 import { excursionKeywordLandings } from "../data/excursion-keyword-landings";
+import { warnOnce } from "@/lib/logOnce";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -277,7 +278,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
       }))
     };
   } catch (error) {
-    console.warn("[sitemap-generator] Falling back to minimal sitemap due to DB error", error);
+    warnOnce("sitemap-generator-db-fallback", "[sitemap-generator] Falling back to minimal sitemap due to DB error", error);
     const baseEntries: RouteEntry[] = [
       { url: `${BASE_URL}/`, priority: 1.0 },
       { url: `${BASE_URL}/tours`, priority: 0.9 },

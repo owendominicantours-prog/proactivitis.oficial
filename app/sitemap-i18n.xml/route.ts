@@ -4,6 +4,7 @@ import { allLandings } from "@/data/transfer-landings";
 import { excursionKeywordLandings } from "@/data/excursion-keyword-landings";
 import { genericTransferLandings } from "@/data/transfer-generic-landings";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
+import { warnOnce } from "@/lib/logOnce";
 
 const BASE_URL = "https://proactivitis.com";
 const LOCALES = ["en", "fr"] as const;
@@ -38,7 +39,7 @@ export async function GET() {
       getDynamicTransferLandingCombos()
     ]);
   } catch (error) {
-    console.warn("[sitemap-i18n] Falling back to static entries due to DB error", error);
+    warnOnce("sitemap-i18n-db-fallback", "[sitemap-i18n] Falling back to static entries due to DB error", error);
   }
 
   const manualLandings = allLandings().map((landing) => ({

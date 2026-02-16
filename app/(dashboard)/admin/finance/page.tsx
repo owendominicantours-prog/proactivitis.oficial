@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { errorOnce } from "@/lib/logOnce";
 
 export default async function AdminFinancePage() {
   let aggregates;
@@ -12,7 +13,7 @@ export default async function AdminFinancePage() {
       }
     });
   } catch (error) {
-    console.error("Finance aggregate error:", error);
+    errorOnce("admin-finance-aggregate-error", "Finance aggregate error:", error);
     aggregates = {
       _sum: {
         totalAmount: 0,

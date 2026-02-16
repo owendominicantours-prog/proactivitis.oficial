@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_URL } from "@/lib/seo";
+import { warnOnce } from "@/lib/logOnce";
 
 export const revalidate = 86400;
 
@@ -28,7 +29,7 @@ export async function GET() {
       select: { slug: true, heroImage: true, gallery: true }
     });
   } catch (error) {
-    console.warn("[sitemap-images] Falling back to empty sitemap due to DB error", error);
+    warnOnce("sitemap-images-db-fallback", "[sitemap-images] Falling back to empty sitemap due to DB error", error);
   }
 
   const urls = tours

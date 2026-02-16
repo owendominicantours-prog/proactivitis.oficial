@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { warnOnce } from "@/lib/logOnce";
 
 export type NotificationEmailKey =
   | "ADMIN_NEW_USER"
@@ -93,7 +94,7 @@ export const resolveNotificationRecipients = async (key: NotificationEmailKey) =
     if (!record?.recipients) return fallback;
     return record.recipients;
   } catch (error) {
-    console.warn("No se pudo cargar NotificationEmailSetting", key, error);
+    warnOnce(`notification-email-setting-${key}`, "No se pudo cargar NotificationEmailSetting", key, error);
     return fallback;
   }
 };

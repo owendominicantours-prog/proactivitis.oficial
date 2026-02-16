@@ -69,9 +69,9 @@ export default async function NotificationDetailPage(props: unknown) {
           {booking ? (
             <div className="rounded-lg border border-slate-100 bg-slate-50 p-4 text-sm text-slate-700">
               <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Booking relacionado</p>
-              <p className="font-semibold text-slate-900">{booking.Tour?.title ?? "Tour sin tÃ­tulo"}</p>
+              <p className="font-semibold text-slate-900">{booking.Tour?.title ?? "Tour sin titulo"}</p>
               <p>Cliente: {booking.customerName}</p>
-              <p className="text-xs text-slate-500">CÃ³digo: {booking.bookingCode}</p>
+              <p className="text-xs text-slate-500">Codigo: {booking.bookingCode}</p>
               <p className="text-xs text-slate-500">Total: ${booking.totalAmount.toFixed(2)}</p>
               <Link
                 href={`/dashboard/bookings/${booking.id}`}
@@ -108,11 +108,11 @@ export default async function NotificationDetailPage(props: unknown) {
                 type="submit"
                 className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-slate-400"
               >
-                Marcar como leÃ­da y abrir
+                Marcar como leida y abrir
               </button>
             </form>
           ) : (
-            <span className="text-emerald-500">Ya leÃ­da</span>
+            <span className="text-emerald-500">Ya leida</span>
           )}
         </div>
       </section>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { warnOnce } from "@/lib/logOnce";
 
 const BASE_URL = "https://proactivitis.com";
 const LOCALES = ["es", "en", "fr"] as const;
@@ -20,7 +21,7 @@ export async function GET() {
     ) {
       variants = [];
     } else {
-      console.warn("[sitemap-tour-variants] Falling back to empty sitemap due to DB error", error);
+      warnOnce("sitemap-tour-variants-db-fallback", "[sitemap-tour-variants] Falling back to empty sitemap due to DB error", error);
       variants = [];
     }
   }

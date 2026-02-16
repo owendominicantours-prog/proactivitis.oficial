@@ -5,6 +5,7 @@ import {
   SAFETY_GUIDE_BASE_PATH,
   SAFETY_GUIDE_BASE_URL
 } from "@/lib/safety-guide";
+import { warnOnce } from "@/lib/logOnce";
 
 const LOCALES = ["es", "en", "fr"] as const;
 export const revalidate = 86400;
@@ -17,7 +18,7 @@ export async function GET() {
       select: { slug: true, updatedAt: true }
     });
   } catch (error) {
-    console.warn("[sitemap-safety-guides] Falling back to empty sitemap due to DB error", error);
+    warnOnce("sitemap-safety-guides-db-fallback", "[sitemap-safety-guides] Falling back to empty sitemap due to DB error", error);
   }
 
   const urls = hotels

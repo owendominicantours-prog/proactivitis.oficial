@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { warnOnce } from "@/lib/logOnce";
 
 const BASE_URL = "https://proactivitis.com";
 export const revalidate = 86400;
@@ -12,7 +13,7 @@ export async function GET() {
       select: { slug: true, updatedAt: true }
     });
   } catch (error) {
-    console.warn("[sitemap-things-to-do] Falling back to empty sitemap due to DB error", error);
+    warnOnce("sitemap-things-to-do-db-fallback", "[sitemap-things-to-do] Falling back to empty sitemap due to DB error", error);
   }
 
   const urls = hotels
