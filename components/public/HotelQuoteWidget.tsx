@@ -16,6 +16,7 @@ type QuoteState = "idle" | "sending" | "success" | "error";
 const LABELS: Record<Locale, Record<string, string>> = {
   es: {
     title: "Motor de cotizacion",
+    subtitle: "Respuesta rapida por WhatsApp o email",
     checkIn: "Check-in",
     checkOut: "Check-out",
     adults: "Adultos",
@@ -34,6 +35,7 @@ const LABELS: Record<Locale, Record<string, string>> = {
   },
   en: {
     title: "Availability widget",
+    subtitle: "Fast reply via WhatsApp or email",
     checkIn: "Check-in",
     checkOut: "Check-out",
     adults: "Adults",
@@ -52,6 +54,7 @@ const LABELS: Record<Locale, Record<string, string>> = {
   },
   fr: {
     title: "Widget de disponibilite",
+    subtitle: "Reponse rapide via WhatsApp ou email",
     checkIn: "Check-in",
     checkOut: "Check-out",
     adults: "Adultes",
@@ -112,64 +115,65 @@ export default function HotelQuoteWidget({ hotelSlug, hotelName, locale, ctaLabe
   };
 
   return (
-    <div id="hotel-quote-widget" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div id="hotel-quote-widget" className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
       <h2 className="text-lg font-semibold text-slate-900">{copy.title}</h2>
-      <form onSubmit={handleSubmit} className="mt-4 grid gap-3">
+      <p className="mt-1 text-xs text-slate-500">{copy.subtitle}</p>
+      <form onSubmit={handleSubmit} className="mt-4 grid gap-3.5">
         <div className="grid grid-cols-2 gap-3">
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             {copy.checkIn}
-            <input required type="date" name="checkIn" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+            <input required type="date" name="checkIn" className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900" />
           </label>
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             {copy.checkOut}
-            <input required type="date" name="checkOut" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+            <input required type="date" name="checkOut" className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900" />
           </label>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             {copy.adults}
-            <input required min={1} defaultValue={2} type="number" name="adults" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+            <input required min={1} defaultValue={2} type="number" name="adults" className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900" />
           </label>
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             {copy.children}
-            <input min={0} defaultValue={0} type="number" name="children" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+            <input min={0} defaultValue={0} type="number" name="children" className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900" />
           </label>
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             {copy.rooms}
-            <input required min={1} defaultValue={1} type="number" name="rooms" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+            <input required min={1} defaultValue={1} type="number" name="rooms" className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900" />
           </label>
         </div>
 
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
           {copy.childrenAges}
-          <input name="childrenAges" placeholder={copy.childrenAgesPlaceholder} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+          <input name="childrenAges" placeholder={copy.childrenAgesPlaceholder} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900" />
         </label>
 
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
           {copy.name}
-          <input required name="name" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+          <input required name="name" className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900" />
         </label>
 
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
           {copy.email}
-          <input required type="email" name="email" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+          <input required type="email" name="email" className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900" />
         </label>
 
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
           {copy.phone}
-          <input required name="phone" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+          <input required name="phone" className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900" />
         </label>
 
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
           {copy.notes}
-          <textarea name="notes" rows={3} placeholder={copy.notesPlaceholder} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+          <textarea name="notes" rows={3} placeholder={copy.notesPlaceholder} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900" />
         </label>
 
         <button
           type="submit"
           disabled={state === "sending"}
-          className="rounded-xl bg-slate-900 px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+          className="rounded-xl bg-slate-900 px-4 py-3.5 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {state === "sending" ? "..." : ctaLabel || copy.submit}
         </button>

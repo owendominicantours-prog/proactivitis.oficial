@@ -465,19 +465,19 @@ export async function ThingsToDoHotelPage({
   };
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-12 px-4 py-8 md:py-10">
+    <div className="mx-auto w-full max-w-7xl space-y-10 px-3 py-6 sm:px-4 md:space-y-12 md:py-10">
       <LandingViewTracker landingSlug={`${routeBase}/${hotel.slug}`} />
       <StructuredData data={schema} />
 
       <a
         href="#hotel-quote-widget"
-        className="fixed inset-x-4 bottom-4 z-40 rounded-2xl bg-slate-900 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.25em] text-white md:hidden"
+        className="fixed inset-x-3 bottom-3 z-40 rounded-2xl border border-white/20 bg-slate-900/95 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-xl backdrop-blur md:hidden"
       >
         {overrides.quoteCta?.trim() || "Consultar Disponibilidad"}
       </a>
 
-      <section className="grid gap-6 xl:grid-cols-[1.7fr,1fr]">
-        <div className="space-y-5 overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 p-6 text-white shadow-sm md:p-8">
+      <section className="grid gap-4 md:gap-6 xl:grid-cols-[1.7fr,1fr]">
+        <div className="space-y-4 overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 p-5 text-white shadow-sm md:space-y-5 md:p-8">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
               {ui.hotelTag}
@@ -485,7 +485,7 @@ export async function ThingsToDoHotelPage({
             <span className="rounded-full bg-amber-300/20 px-3 py-1 text-xs font-semibold text-amber-100">{stars}</span>
           </div>
 
-          <h1 className="text-3xl font-semibold leading-tight text-white md:text-5xl">{heroTitle}</h1>
+          <h1 className="text-2xl font-semibold leading-tight text-white sm:text-3xl md:text-5xl">{heroTitle}</h1>
           <p className="max-w-3xl text-sm text-slate-100 md:text-base">{heroSubtitle}</p>
 
           <div className="grid gap-3 sm:grid-cols-3">
@@ -514,7 +514,7 @@ export async function ThingsToDoHotelPage({
           <a href={mapUrl} target="_blank" rel="noreferrer" className="inline-flex text-sm font-medium text-cyan-100 underline underline-offset-4">
             {locationLabel} - {ui.map}
           </a>
-          <div className="rounded-2xl bg-white p-2 text-slate-900 md:p-3">
+          <div className="rounded-2xl bg-white p-1.5 text-slate-900 md:p-3">
             <HotelGallerySlider images={galleryImages} hotelName={hotel.name} />
           </div>
         </div>
@@ -529,7 +529,7 @@ export async function ThingsToDoHotelPage({
         </aside>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
         <h2 className="text-2xl font-semibold text-slate-900">{overviewTitle}</h2>
         <div className="mt-4 grid gap-3 text-sm text-slate-600">
           {descriptionParagraphs.map((paragraph) => (
@@ -550,7 +550,7 @@ export async function ThingsToDoHotelPage({
         </ul>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-slate-900 p-8 text-white shadow-sm md:p-10">
+      <section className="rounded-3xl border border-slate-200 bg-slate-900 p-5 text-white shadow-sm md:p-10">
         <h2 className="text-2xl font-semibold">{ui.whyBook}</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           <div className="rounded-xl border border-white/20 bg-white/10 p-4">
@@ -568,7 +568,7 @@ export async function ThingsToDoHotelPage({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
         <h2 className="text-2xl font-semibold text-slate-900">{ui.roomTypes}</h2>
         {roomTypes.length ? (
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -592,7 +592,7 @@ export async function ThingsToDoHotelPage({
         )}
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
         <h2 className="text-2xl font-semibold text-slate-900">{ui.amenities}</h2>
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           {amenityGroups.map(([groupName, groupItems]) => (
@@ -614,7 +614,7 @@ export async function ThingsToDoHotelPage({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
         <h2 className="text-2xl font-semibold text-slate-900">{ui.policies}</h2>
         <div className="mt-4 grid gap-4 text-sm text-slate-700 md:grid-cols-2">
           <p>
