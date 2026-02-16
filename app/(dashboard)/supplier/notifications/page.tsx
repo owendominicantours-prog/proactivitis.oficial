@@ -1,12 +1,14 @@
 export const dynamic = "force-dynamic"; // Mostrar alertas vivas del supplier.
 
 import Link from "next/link";
+import { getServerSession } from "next-auth";
 import { getNotificationsForRecipient, parseNotificationMetadata } from "@/lib/notificationService";
 import { markNotificationReadAction } from "@/app/(dashboard)/notifications/actions";
 import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
 import type { NotificationType } from "@/lib/types/notificationTypes";
 import { prisma } from "@/lib/prisma";
 import { buildBookingDetailRoute } from "@/lib/bookingRoutes";
+import { authOptions } from "@/lib/auth";
 
 const formatDate = (value: Date) =>
   new Intl.DateTimeFormat("es-ES", {
@@ -15,7 +17,9 @@ const formatDate = (value: Date) =>
   }).format(value);
 
 export default async function SupplierNotificationsPage() {
-  const notifications = await getNotificationsForRecipient({ role: "SUPPLIER", limit: 50 });
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const notifications = await getNotificationsForRecipient({ role: "SUPPLIER", userId, limit: 50 });
 
   const enrichedNotifications = notifications.map((notification) => {
     const metadata = parseNotificationMetadata(notification.metadata);

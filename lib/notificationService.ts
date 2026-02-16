@@ -34,14 +34,15 @@ export const parseNotificationMetadata = (
 };
 
 const buildRecipientFilters = ({ userId, role }: NotificationRecipient) => {
-  const filters = [];
-  if (userId) {
-    filters.push({ metadata: { contains: `"userId":"${userId}"` } });
+  const byUser = userId ? { metadata: { contains: `"userId":"${userId}"` } } : null;
+  const byRole = role ? { role } : null;
+
+  if (byUser && byRole) {
+    return { AND: [byUser, byRole] };
   }
-  if (role) {
-    filters.push({ role });
-  }
-  return filters.length ? { OR: filters } : undefined;
+  if (byUser) return byUser;
+  if (byRole) return byRole;
+  return undefined;
 };
 
 export async function createNotification({

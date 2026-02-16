@@ -31,9 +31,10 @@ export default async function SupplierDashboardLayout({ children }: { children: 
   let unreadCount = 0;
 
   if (isSupplier) {
+    const userId = session?.user?.id;
     const [items, count] = await Promise.all([
-      getNotificationsForRecipient({ role: "SUPPLIER", limit: 5 }),
-      getNotificationUnreadCount({ role: "SUPPLIER" })
+      getNotificationsForRecipient({ role: "SUPPLIER", userId, limit: 5 }),
+      getNotificationUnreadCount({ role: "SUPPLIER", userId })
     ]);
     notifications = items;
     unreadCount = count;

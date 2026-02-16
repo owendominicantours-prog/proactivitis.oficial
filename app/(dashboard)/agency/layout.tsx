@@ -31,9 +31,10 @@ export default async function AgencyDashboardLayout({ children }: { children: Re
   let unreadCount = 0;
 
   if (isAgency) {
+    const userId = session?.user?.id;
     const [items, count] = await Promise.all([
-      getNotificationsForRecipient({ role: "AGENCY", limit: 5 }),
-      getNotificationUnreadCount({ role: "AGENCY" })
+      getNotificationsForRecipient({ role: "AGENCY", userId, limit: 5 }),
+      getNotificationUnreadCount({ role: "AGENCY", userId })
     ]);
     notifications = items;
     unreadCount = count;
