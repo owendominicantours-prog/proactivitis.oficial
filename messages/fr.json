@@ -982,7 +982,7 @@
   "transferQuote.passengerRange": "{min}-{max} passagers",
   "transferQuote.passengers": "Passagers",
   "transferQuote.perTrip": "par trajet",
-  "transferQuote.priceFrom": "Prix a partir de ${price} par passager. Mise a jour instantanee.",
+  "transferQuote.priceFrom": "Prix a partir de ${price} par trajet. Mise a jour instantanee.",
   "transferQuote.reserve": "Reserver",
   "transferQuote.roundTrip": "Aller-retour",
   "transferQuote.totalRoundTrip": "total (aller-retour)",
