@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import type { TransferLandingData } from "@/data/transfer-landings";
-import { findGenericTransferLandingBySlug, genericTransferLandings } from "@/data/transfer-generic-landings";
+import { findGenericTransferLandingBySlug } from "@/data/transfer-generic-landings";
 import TransferQuoteCards from "@/components/transfers/TransferQuoteCards";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 import StructuredData from "@/components/schema/StructuredData";
@@ -204,6 +204,10 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
     return {
       title: seoTitle,
       description: seoDescription,
+      robots: {
+        index: false,
+        follow: true
+      },
       alternates: {
         canonical,
         languages: {
@@ -530,8 +534,5 @@ export async function generateTransferStaticParams() {
   const manualParams = allLandings()
     .filter((landing) => !slugs.has(landing.landingSlug))
     .map((landing) => ({ landingSlug: landing.landingSlug }));
-  const genericParams = genericTransferLandings
-    .filter((landing) => !slugs.has(landing.landingSlug))
-    .map((landing) => ({ landingSlug: landing.landingSlug }));
-  return [...dynamicParams, ...manualParams, ...genericParams];
+  return [...dynamicParams, ...manualParams];
 }

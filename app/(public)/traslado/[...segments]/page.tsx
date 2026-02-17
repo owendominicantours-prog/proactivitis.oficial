@@ -323,11 +323,15 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       : translate(LOCALE, "transfer.hero.subtitle.microzone", { hotel: microzoneName });
 
   const basePath = buildTransferBasePath(LOCALE);
+  const localPath = (path: string) => (LOCALE === "es" ? path : `/${LOCALE}${path}`);
+  const homeLabel = LOCALE === "en" ? "Home" : LOCALE === "fr" ? "Accueil" : "Inicio";
+  const toursCtaLabel =
+    LOCALE === "en" ? "See tours and experiences" : LOCALE === "fr" ? "Voir tours et experiences" : "Ver tours y experiencias";
   const callToAction = basePath;
   const toursPath = LOCALE === "es" ? "/tours" : `/${LOCALE}/tours`;
   const homeHref = LOCALE === "es" ? PROACTIVITIS_URL : `${PROACTIVITIS_URL}/${LOCALE}`;
   const breadcrumbItems = [
-    { name: "Inicio", href: homeHref },
+    { name: homeLabel, href: homeHref },
     { name: country.name, href: `${basePath}/${country.slug}` },
     ...(destination
       ? [
@@ -485,19 +489,19 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
   const nearbyItems = [
     {
       label: `Aeropuerto Internacional de ${country.name}`,
-      href: `/traslado/${country.slug}`
+      href: localPath(`/traslado/${country.slug}`)
     },
     ...(destination
       ? [
           {
             label: `Tours y experiencias en ${destination.name}`,
-            href: `/tours?destination=${encodeURIComponent(destination.slug)}`
+            href: localPath(`/tours?destination=${encodeURIComponent(destination.slug)}`)
           }
         ]
       : []),
     ...relatedHotels.map((hotel) => ({
       label: hotel.name,
-      href: `/recogida/${hotel.slug}`
+      href: localPath(`/recogida/${hotel.slug}`)
     }))
   ].slice(0, 5);
 
@@ -541,7 +545,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
               href={toursPath}
               className="rounded-full border border-white/70 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:border-white"
             >
-              Ver tours y experiencias
+              {toursCtaLabel}
             </Link>
           </div>
         </div>
@@ -563,7 +567,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
               {countryDestinations.map((destinationItem) => (
                 <Link
                   key={destinationItem.slug}
-                  href={`/traslado/${country.slug}/${destinationItem.slug}`}
+                  href={localPath(`/traslado/${country.slug}/${destinationItem.slug}`)}
                   className="flex flex-col justify-between rounded-2xl border border-slate-200 p-5 transition hover:border-emerald-300 hover:shadow-xl"
                 >
                   <div>
@@ -599,7 +603,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
                 {microZones.map((zone) => (
                   <Link
                     key={zone.slug}
-                    href={`/traslado/${country.slug}/${destination.slug}/${zone.slug}`}
+                    href={localPath(`/traslado/${country.slug}/${destination.slug}/${zone.slug}`)}
                     className="rounded-2xl border border-slate-200 p-4 text-sm text-slate-600 transition hover:border-emerald-300 hover:bg-emerald-50"
                   >
                     <p className="text-xs uppercase tracking-[0.3em] text-emerald-600">Microzona</p>
@@ -621,7 +625,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
                       <p className="text-lg font-semibold text-slate-900">{hotel.name}</p>
                       <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Lugar de aterrizaje</p>
                       <Link
-                        href={`/recogida/${hotel.slug}`}
+                        href={localPath(`/recogida/${hotel.slug}`)}
                         className="mt-3 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700"
                       >
                         Ver tours y traslados desde aqui
@@ -641,7 +645,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
               {availableHotels.slice(0, 6).map((hotel) => (
                 <Link
                   key={hotel.slug}
-                  href={`/recogida/${hotel.slug}`}
+                  href={localPath(`/recogida/${hotel.slug}`)}
                   className="rounded-2xl border border-slate-200 p-4 text-sm text-slate-600 transition hover:border-emerald-300"
                 >
                   <p className="text-lg font-semibold text-slate-900">{hotel.name}</p>
