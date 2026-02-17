@@ -56,6 +56,9 @@ const OG_LOCALE = {
   fr: "fr_FR"
 } as const;
 
+const ensureContains = (text: string, token: string) =>
+  text.toLowerCase().includes(token.toLowerCase()) ? text : `${text} ${token}`;
+
 export async function generateStaticParams() {
   const staticSlugs = [
     ...PARTY_BOAT_VARIANTS,
@@ -81,7 +84,8 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
   }
   const title = variant.titles.en;
   const description = variant.metaDescriptions.en.trim();
-  const seoTitle = `${title} | Proactivitis`;
+  const marketTitle = ensureContains(title, "Punta Cana");
+  const seoTitle = `${marketTitle} | Proactivitis`;
   const seoDescription = description.endsWith(".") ? description : `${description}.`;
   const canonical = `https://proactivitis.com/en/thingtodo/tours/${variant.slug}`;
   const tourSlug = dbVariant?.tourSlug ?? variant.tourSlug ?? PARTY_BOAT_BASE_TOUR.slug;
@@ -93,7 +97,8 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
   const languages = {
     es: `https://proactivitis.com/thingtodo/tours/${variant.slug}`,
     en: canonical,
-    fr: `https://proactivitis.com/fr/thingtodo/tours/${variant.slug}`
+    fr: `https://proactivitis.com/fr/thingtodo/tours/${variant.slug}`,
+    "x-default": `https://proactivitis.com/thingtodo/tours/${variant.slug}`
   };
   return {
     title: seoTitle,

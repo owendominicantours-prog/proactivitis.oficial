@@ -111,7 +111,12 @@ export async function buildSosuaPartyBoatVariantMetadata(
       : `${PROACTIVITIS_URL}/${locale}${canonicalPath}`;
 
   return {
-    title: copy.title,
+    title:
+      locale === "en"
+        ? `${copy.title} | Sosua Party Boat | Proactivitis`
+        : locale === "fr"
+          ? `${copy.title} | Party Boat Sosua | Proactivitis`
+          : `${copy.title} | Sosua Party Boat | Proactivitis`,
     description: copy.metaDescription,
     keywords: copy.keywords,
     alternates: {
@@ -119,7 +124,8 @@ export async function buildSosuaPartyBoatVariantMetadata(
       languages: {
         es: `${PROACTIVITIS_URL}${canonicalPath}`,
         en: `${PROACTIVITIS_URL}/en${canonicalPath}`,
-        fr: `${PROACTIVITIS_URL}/fr${canonicalPath}`
+        fr: `${PROACTIVITIS_URL}/fr${canonicalPath}`,
+        "x-default": `${PROACTIVITIS_URL}${canonicalPath}`
       }
     },
     openGraph: {

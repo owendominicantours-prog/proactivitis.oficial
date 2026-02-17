@@ -205,7 +205,7 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
       title: seoTitle,
       description: seoDescription,
       robots: {
-        index: false,
+        index: true,
         follow: true
       },
       alternates: {
@@ -213,7 +213,8 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
         languages: {
           es: `/transfer/${generic.landingSlug}`,
           en: `/en/transfer/${generic.landingSlug}`,
-          fr: `/fr/transfer/${generic.landingSlug}`
+          fr: `/fr/transfer/${generic.landingSlug}`,
+          "x-default": `/transfer/${generic.landingSlug}`
         }
       },
       openGraph: {
@@ -256,7 +257,8 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
       languages: {
         es: `/transfer/${landing.landingSlug}`,
         en: `/en/transfer/${landing.landingSlug}`,
-        fr: `/fr/transfer/${landing.landingSlug}`
+        fr: `/fr/transfer/${landing.landingSlug}`,
+        "x-default": `/transfer/${landing.landingSlug}`
       }
     },
     openGraph: {

@@ -261,7 +261,12 @@ export async function buildSosuaPartyBoatMetadata(locale: Locale): Promise<Metad
       : `${PROACTIVITIS_URL}/${locale}${canonicalPath}`;
 
   return {
-    title: copy.title,
+    title:
+      locale === "en"
+        ? "Sosua Party Boat | Private Catamaran & Open Bar | Proactivitis"
+        : locale === "fr"
+          ? "Sosua Party Boat | Catamaran prive & Open Bar | Proactivitis"
+          : "Sosua Party Boat | Catamaran privado y Open Bar | Proactivitis",
     description: copy.subtitle,
     keywords: [
       copy.title,
@@ -281,7 +286,8 @@ export async function buildSosuaPartyBoatMetadata(locale: Locale): Promise<Metad
       languages: {
         es: `${PROACTIVITIS_URL}${canonicalPath}`,
         en: `${PROACTIVITIS_URL}/en${canonicalPath}`,
-        fr: `${PROACTIVITIS_URL}/fr${canonicalPath}`
+        fr: `${PROACTIVITIS_URL}/fr${canonicalPath}`,
+        "x-default": `${PROACTIVITIS_URL}${canonicalPath}`
       }
     },
     openGraph: {

@@ -77,7 +77,15 @@ export async function generateMetadata(): Promise<Metadata> {
     title: seoTitle,
     description: seoDescription,
     keywords: buildKeywords(),
-    alternates: { canonical },
+    alternates: {
+      canonical,
+      languages: {
+        es: canonical,
+        en: `https://proactivitis.com/en/thingtodo/tours/${LANDING_SLUG}`,
+        fr: `https://proactivitis.com/fr/thingtodo/tours/${LANDING_SLUG}`,
+        "x-default": canonical
+      }
+    },
     openGraph: {
       title: seoTitle,
       description: seoDescription,

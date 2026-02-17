@@ -187,9 +187,9 @@ const buildDescription = (keyword: string, locale: "es" | "en" | "fr") => {
 };
 
 const buildSeoTitle = (keyword: string, locale: "es" | "en" | "fr") => {
-  if (locale === "en") return `${keyword} | Proactivitis`;
-  if (locale === "fr") return `Excursions Punta Cana | ${keyword} | Proactivitis`;
-  return `Excursiones Punta Cana | ${keyword} | Proactivitis`;
+  if (locale === "en") return `${keyword} | Punta Cana Tours | Proactivitis`;
+  if (locale === "fr") return `${keyword} | Excursions Punta Cana | Proactivitis`;
+  return `${keyword} | Tours en Punta Cana | Proactivitis`;
 };
 
 const buildMetaDescription = (keyword: string, locale: "es" | "en" | "fr") => {

@@ -8,6 +8,7 @@ import { excursionKeywordLandings } from "@/data/excursion-keyword-landings";
 import { Locale, translate, type TranslationKey } from "@/lib/translations";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 import type { Prisma } from "@prisma/client";
+import StructuredData from "@/components/schema/StructuredData";
 
 const BASE_URL = "https://proactivitis.com";
 const MAX_TOURS = 9;
@@ -230,7 +231,13 @@ export async function buildExcursionLandingMetadata(landingSlug: string, locale:
   const landing = findExcursionKeywordLandingBySlug(landingSlug);
   if (!landing) return {};
   const canonical = buildCanonical(landing.landingSlug, locale);
-  const seoTitle = landing.seoTitle[locale];
+  const marketTitle =
+    locale === "en"
+      ? `${landing.keyword} | Punta Cana Excursions`
+      : locale === "fr"
+        ? `${landing.keyword} | Excursions a Punta Cana`
+        : `${landing.keyword} | Excursiones en Punta Cana`;
+  const seoTitle = `${marketTitle} | Proactivitis`;
   const seoDescription = landing.metaDescription[locale];
   const imageUrl = encodeURI(`${BASE_URL}/fototours/fototour.jpeg`);
   return {
@@ -241,7 +248,8 @@ export async function buildExcursionLandingMetadata(landingSlug: string, locale:
       languages: {
         es: `/excursiones/${landing.landingSlug}`,
         en: `/en/excursiones/${landing.landingSlug}`,
-        fr: `/fr/excursiones/${landing.landingSlug}`
+        fr: `/fr/excursiones/${landing.landingSlug}`,
+        "x-default": `/excursiones/${landing.landingSlug}`
       }
     },
     openGraph: {
@@ -276,11 +284,52 @@ export async function ExcursionKeywordLandingPage({ landingSlug, locale }: { lan
     translate(locale, key, replacements);
 
   const tours = await fetchToursForLanding(landing.focus, locale);
+  const canonical = buildCanonical(landing.landingSlug, locale);
   const longCopy = buildLongCopy(landing.keyword, locale);
   const pluralSuffix = tours.length === 1 ? "" : "s";
+  const listItemSchema = tours.map((tour, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: tour.translations?.[0]?.title ?? tour.title,
+    url: `${BASE_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`
+  }));
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: locale === "fr" ? "Accueil" : locale === "en" ? "Home" : "Inicio",
+        item: `${BASE_URL}${locale === "es" ? "/" : `/${locale}`}`
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: locale === "fr" ? "Excursions" : "Excursiones",
+        item: `${BASE_URL}${locale === "es" ? "/excursiones" : `/${locale}/excursiones`}`
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: landing.keyword,
+        item: canonical
+      }
+    ]
+  };
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: landing.keyword,
+    itemListOrder: "https://schema.org/ItemListOrderAscending",
+    numberOfItems: listItemSchema.length,
+    itemListElement: listItemSchema
+  };
 
   return (
     <main className="bg-white">
+      <StructuredData data={breadcrumbSchema} />
+      <StructuredData data={itemListSchema} />
       <section className="bg-gradient-to-br from-emerald-50 to-white">
         <div className="mx-auto max-w-6xl px-4 py-12">
           <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Proactivitis Tours</p>

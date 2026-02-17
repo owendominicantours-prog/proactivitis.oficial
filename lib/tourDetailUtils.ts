@@ -23,7 +23,7 @@ const resolveTourHeroImage = (tour: TourImageSource) => {
   return tour.heroImage ?? gallery[0] ?? DEFAULT_TOUR_IMAGE;
 };
 
-const MAX_TITLE_LENGTH = 55;
+const MAX_TITLE_LENGTH = 60;
 const MAX_DESCRIPTION_LENGTH = 160;
 const BRAND_SUFFIX = " | Proactivitis";
 const PUNTA_CANA_MARKERS = [
@@ -107,6 +107,46 @@ const TOUR_KEYWORDS_BY_SLUG: Record<string, Partial<Record<Locale, string[]>>> =
     es: ["isla saona desde punta cana", "tour saona punta cana", "excursion isla saona"],
     en: ["saona island from punta cana", "saona island tour", "saona excursion punta cana"],
     fr: ["ile saona depuis punta cana", "excursion ile saona", "tour saona punta cana"]
+  },
+  "tour-isla-saona-desde-bayhibe-la-romana": {
+    es: ["isla saona desde bayahibe", "isla saona la romana", "tour saona bayahibe"],
+    en: ["saona island from bayahibe", "saona tour la romana", "saona island day trip bayahibe"],
+    fr: ["ile saona depuis bayahibe", "tour saona la romana", "excursion ile saona bayahibe"]
+  },
+  "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana": {
+    es: ["avistamiento de ballenas samana", "samana desde punta cana", "cayo levantado tour"],
+    en: ["samana whale watching from punta cana", "samana day trip", "cayo levantado excursion"],
+    fr: ["observation baleines samana", "samana depuis punta cana", "cayo levantado excursion"]
+  },
+  "cayo-levantado-luxury-beach-day": {
+    es: ["samana cayo levantado desde punta cana", "samana day trip punta cana", "el limon y cayo levantado"],
+    en: ["samana day trip from punta cana", "cayo levantado tour", "el limon waterfall tour"],
+    fr: ["samana depuis punta cana", "cayo levantado tour", "cascade el limon excursion"]
+  },
+  "excursion-de-un-dia-a-santo-domingo-desde-punta-cana": {
+    es: ["santo domingo desde punta cana", "excursion santo domingo", "zona colonial tour"],
+    en: ["santo domingo day trip from punta cana", "santo domingo tour", "colonial zone tour"],
+    fr: ["saint domingue depuis punta cana", "excursion saint domingue", "zone coloniale tour"]
+  },
+  "parasailing-punta-cana": {
+    es: ["parasailing punta cana", "paravelismo punta cana", "parasail en punta cana"],
+    en: ["parasailing punta cana", "parasail punta cana", "punta cana parasailing tour"],
+    fr: ["parasailing punta cana", "parachute ascensionnel punta cana", "tour parasailing punta cana"]
+  },
+  "half-day-atv-o-buggy-4x4-from-bayahibe-la-romana": {
+    es: ["buggy bayahibe", "atv la romana", "tour 4x4 bayahibe"],
+    en: ["half day atv from bayahibe", "buggy la romana", "4x4 bayahibe tour"],
+    fr: ["atv bayahibe", "buggy la romana", "tour 4x4 bayahibe"]
+  },
+  "tour-de-safari-cultural-por-el-pais-de-republica-dominicana-desde-punta-cana": {
+    es: ["safari cultural punta cana", "tour cultural republica dominicana", "campo dominicano tour"],
+    en: ["dominican cultural safari", "cultural tour from punta cana", "dominican countryside tour"],
+    fr: ["safari culturel depuis punta cana", "tour culturel republique dominicaine", "campagne dominicaine tour"]
+  },
+  "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua": {
+    es: ["barco privado sosua", "party boat privado puerto plata", "yate privado sosua"],
+    en: ["private party boat sosua", "private boat puerto plata", "sosua private yacht charter"],
+    fr: ["bateau prive sosua", "party boat prive puerto plata", "yacht prive sosua"]
   }
 };
 const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
@@ -116,9 +156,9 @@ const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     fr: "Transfert prive a Punta Cana avec chauffeur verifie"
   },
   "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana": {
-    es: "Avistamiento de ballenas en Samana + Cayo Levantado",
-    en: "Samana whale watching + Cayo Levantado day trip",
-    fr: "Observation des baleines a Samana + Cayo Levantado"
+    es: "Avistamiento de ballenas en Samana desde Punta Cana",
+    en: "Samana whale watching tour from Punta Cana",
+    fr: "Observation des baleines a Samana depuis Punta Cana"
   },
   "tour-y-entrada-para-de-isla-saona-desde-punta-cana": {
     es: "Isla Saona desde Punta Cana: tour + entrada",
@@ -126,9 +166,9 @@ const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     fr: "Ile Saona depuis Punta Cana : tour + billet"
   },
   "half-day-atv-o-buggy-4x4-from-bayahibe-la-romana": {
-    es: "Medio dia en ATV o buggy 4x4 desde Bayahibe",
+    es: "ATV o buggy 4x4 desde Bayahibe y La Romana",
     en: "Half-day ATV or buggy 4x4 from Bayahibe",
-    fr: "Demi-journee en ATV ou buggy 4x4 depuis Bayahibe"
+    fr: "Demi-journee ATV ou buggy 4x4 depuis Bayahibe"
   },
   "tour-en-buggy-en-punta-cana": {
     es: "Tour en buggy en Punta Cana: aventura off-road",
@@ -146,9 +186,9 @@ const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     fr: "Excursion buggy et ATV a Punta Cana"
   },
   "tour-isla-saona-desde-bayhibe-la-romana": {
-    es: "Isla Saona desde Bayahibe: tour de dia",
-    en: "Saona Island day tour from Bayahibe",
-    fr: "Ile Saona : excursion d'une journee depuis Bayahibe"
+    es: "Isla Saona desde Bayahibe y La Romana",
+    en: "Saona Island day trip from Bayahibe",
+    fr: "Ile Saona depuis Bayahibe et La Romana"
   },
   "sunset-catamaran-snorkel": {
     es: "Party boat en Punta Cana: catamaran con snorkel",
@@ -161,19 +201,24 @@ const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     fr: "Parasailing a Punta Cana : vues aeriennes"
   },
   "excursion-de-un-dia-a-santo-domingo-desde-punta-cana": {
-    es: "Santo Domingo desde Punta Cana: tour de un dia",
+    es: "Excursion de un dia a Santo Domingo desde Punta Cana",
     en: "Santo Domingo day trip from Punta Cana",
-    fr: "Excursion a Saint-Domingue depuis Punta Cana"
+    fr: "Excursion d'une journee a Saint-Domingue depuis Punta Cana"
   },
   "cayo-levantado-luxury-beach-day": {
-    es: "Samana + Cayo Levantado desde Punta Cana",
-    en: "Samana + Cayo Levantado from Punta Cana",
-    fr: "Samana + Cayo Levantado depuis Punta Cana"
+    es: "Samana y Cayo Levantado desde Punta Cana",
+    en: "Samana day trip + Cayo Levantado from Punta Cana",
+    fr: "Samana et Cayo Levantado depuis Punta Cana"
   },
   "party-boat-sosua": {
-    es: "Sosua Party Boat: open bar y snorkel",
-    en: "Sosua party boat: open bar & snorkel",
-    fr: "Party boat a Sosua : open bar et snorkel"
+    es: "Sosua Party Boat con open bar y snorkel",
+    en: "Sosua party boat with open bar and snorkel",
+    fr: "Party boat a Sosua avec open bar et snorkel"
+  },
+  "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua": {
+    es: "Barco privado en Sosua desde Puerto Plata",
+    en: "Private party boat in Sosua from Puerto Plata",
+    fr: "Bateau prive a Sosua depuis Puerto Plata"
   }
 };
 const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
@@ -188,9 +233,9 @@ const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>
     fr: "Baleines a bosse a Samana, cascade El Limon et Cayo Levantado en une journee. Dejeuner et transferts inclus."
   },
   "tour-y-entrada-para-de-isla-saona-desde-punta-cana": {
-    es: "Isla Saona desde Punta Cana con entradas, transporte y playa. Reserva rapida con confirmacion inmediata.",
-    en: "Saona Island from Punta Cana with tickets, transport and beach time. Fast booking and instant confirmation.",
-    fr: "Ile Saona depuis Punta Cana avec billets, transport et plage. Reservation rapide et confirmation immediate."
+    es: "Tour a Isla Saona desde Punta Cana con entradas, transporte y playa. Incluye pick-up en hotel y reserva rapida.",
+    en: "Saona Island tour from Punta Cana with tickets, transport and beach time. Hotel pickup and fast booking.",
+    fr: "Tour Ile Saona depuis Punta Cana avec billets, transport et plage. Pickup hotel et reservation rapide."
   },
   "half-day-atv-o-buggy-4x4-from-bayahibe-la-romana": {
     es: "Aventura 4x4 en ATV o buggy desde Bayahibe/La Romana con rutas off-road y paradas locales. Reserva en minutos.",
@@ -213,9 +258,9 @@ const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>
     fr: "Excursion buggy & ATV sur pistes a Punta Cana avec arrets locaux. Reservation facile et confirmation claire."
   },
   "tour-isla-saona-desde-bayhibe-la-romana": {
-    es: "Salida desde Bayahibe/La Romana a Isla Saona con playa, navegacion y almuerzo. Reserva facil y rapida.",
-    en: "Depart from Bayahibe/La Romana to Saona Island with beach time, cruise and lunch. Easy, fast booking.",
-    fr: "Depart de Bayahibe/La Romana vers l'Ile Saona avec plage, navigation et dejeuner. Reservation facile."
+    es: "Excursion a Isla Saona desde Bayahibe y La Romana con playa, catamaran y almuerzo. Confirmacion inmediata.",
+    en: "Saona Island day trip from Bayahibe and La Romana with beach time, catamaran and lunch. Instant confirmation.",
+    fr: "Excursion Ile Saona depuis Bayahibe et La Romana avec plage, catamaran et dejeuner. Confirmation rapide."
   },
   "sunset-catamaran-snorkel": {
     es: "Party boat en Punta Cana con catamaran, snorkel y musica. Incluye open bar y paradas en el mar.",
@@ -233,14 +278,19 @@ const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>
     fr: "Excursion d'une journee a Saint-Domingue depuis Punta Cana avec histoire coloniale et guide local."
   },
   "cayo-levantado-luxury-beach-day": {
-    es: "Dia de playa en Samana y Cayo Levantado desde Punta Cana con traslados y tiempo libre.",
-    en: "Samana and Cayo Levantado beach day from Punta Cana with transfers and free time.",
-    fr: "Journee plage a Samana et Cayo Levantado depuis Punta Cana avec transferts et temps libre."
+    es: "Samana y Cayo Levantado desde Punta Cana con Cascada El Limon, playa y almuerzo. Tour de dia completo.",
+    en: "Samana day trip from Punta Cana with Cayo Levantado, El Limon Waterfall, beach time and lunch.",
+    fr: "Journee Samana depuis Punta Cana avec Cayo Levantado, cascade El Limon, plage et dejeuner."
   },
   "party-boat-sosua": {
-    es: "Party boat en Sosua con open bar, snorkel y pick-up desde Puerto Plata. Elige Share, Private o VIP con brunch.",
-    en: "Sosua party boat with open bar, snorkel and pickup from Puerto Plata. Choose Share, Private or VIP with brunch.",
-    fr: "Party boat a Sosua avec open bar, snorkel et pickup depuis Puerto Plata. Choisissez Share, Private ou VIP."
+    es: "Sosua Party Boat con open bar, snorkel y pick-up desde Puerto Plata. Opciones compartida, privada o VIP.",
+    en: "Sosua party boat with open bar, snorkel and pickup from Puerto Plata. Shared, private and VIP options.",
+    fr: "Party boat a Sosua avec open bar, snorkel et pickup depuis Puerto Plata. Options share, private et VIP."
+  },
+  "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua": {
+    es: "Barco privado para fiestas en Sosua con todo incluido, open bar y snorkel. Salida desde Puerto Plata.",
+    en: "Private party boat in Sosua with all inclusive service, open bar and snorkel. Departure from Puerto Plata.",
+    fr: "Bateau prive pour fete a Sosua avec tout inclus, open bar et snorkel. Depart depuis Puerto Plata."
   }
 };
 

@@ -149,14 +149,20 @@ export async function buildBoatActivitiesMetadata(locale: Locale): Promise<Metad
   const heroImage = toAbsoluteUrl(DEFAULT_TOUR_IMAGE);
 
   return {
-    title: copy.title,
+    title:
+      locale === "en"
+        ? "Boat Tours Dominican Republic | Saona, Samana & Party Boat | Proactivitis"
+        : locale === "fr"
+          ? "Excursions Bateau Republique Dominicaine | Saona, Samana & Party Boat | Proactivitis"
+          : "Tours en Barco Republica Dominicana | Saona, Samana y Party Boat | Proactivitis",
     description: copy.subtitle,
     alternates: {
       canonical: canonicalUrl,
       languages: {
         es: `${PROACTIVITIS_URL}${canonicalPath}`,
         en: `${PROACTIVITIS_URL}/en${canonicalPath}`,
-        fr: `${PROACTIVITIS_URL}/fr${canonicalPath}`
+        fr: `${PROACTIVITIS_URL}/fr${canonicalPath}`,
+        "x-default": `${PROACTIVITIS_URL}${canonicalPath}`
       }
     },
     openGraph: {

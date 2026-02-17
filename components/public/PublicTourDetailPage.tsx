@@ -92,6 +92,16 @@ const TOUR_H1_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     es: "Santo Domingo desde Punta Cana: excursion de un dia",
     en: "Santo Domingo day trip from Punta Cana",
     fr: "Excursion a Saint-Domingue depuis Punta Cana"
+  },
+  "half-day-atv-o-buggy-4x4-from-bayahibe-la-romana": {
+    es: "ATV o buggy 4x4 desde Bayahibe y La Romana",
+    en: "Half-day ATV or buggy 4x4 from Bayahibe",
+    fr: "Demi-journee ATV ou buggy 4x4 depuis Bayahibe"
+  },
+  "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua": {
+    es: "Barco privado en Sosua desde Puerto Plata",
+    en: "Private party boat in Sosua from Puerto Plata",
+    fr: "Bateau prive a Sosua depuis Puerto Plata"
   }
 };
 
