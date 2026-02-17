@@ -36,6 +36,10 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Meilleures Excursions a Punta Cana | Proactivitis",
     description: "Reservez des activites a Punta Cana avec prix clairs et support 24/7."
+  },
+  robots: {
+    index: true,
+    follow: true
   }
 };
 

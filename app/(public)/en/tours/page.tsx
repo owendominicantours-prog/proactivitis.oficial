@@ -36,6 +36,10 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Best Punta Cana Tours and Excursions | Proactivitis",
     description: "Book top Punta Cana experiences with hotel pickup and clear pricing."
+  },
+  robots: {
+    index: true,
+    follow: true
   }
 };
 

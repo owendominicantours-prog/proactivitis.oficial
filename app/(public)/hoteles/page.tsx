@@ -23,6 +23,22 @@ export const metadata: Metadata = {
       fr: "/fr/hotels",
       "x-default": "/hoteles"
     }
+  },
+  openGraph: {
+    title: "Hoteles en Punta Cana Todo Incluido | Proactivitis",
+    description:
+      "Encuentra hoteles y resorts en Punta Cana para cotizar al mejor precio en Bavaro, Cap Cana y Uvero Alto.",
+    url: canonicalUrl,
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Hoteles en Punta Cana Todo Incluido | Proactivitis",
+    description: "Cotiza hoteles y resorts en Punta Cana con asesoria personalizada."
+  },
+  robots: {
+    index: true,
+    follow: true
   }
 };
 

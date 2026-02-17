@@ -23,6 +23,22 @@ export const metadata: Metadata = {
       fr: "/fr/punta-cana/tours",
       "x-default": "/punta-cana/tours"
     }
+  },
+  openGraph: {
+    title: "Meilleurs Tours a Punta Cana: Saona, Buggy et Party Boat | Proactivitis",
+    description:
+      "Comparez et reservez les meilleurs tours a Punta Cana avec pickup hotel: Saona, buggy, party boat et catamaran.",
+    url: canonicalUrl,
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Meilleurs Tours a Punta Cana: Saona, Buggy et Party Boat | Proactivitis",
+    description: "Reservez des activites incontournables a Punta Cana avec confirmation rapide."
+  },
+  robots: {
+    index: true,
+    follow: true
   }
 };
 

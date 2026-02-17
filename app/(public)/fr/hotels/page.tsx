@@ -23,6 +23,22 @@ export const metadata: Metadata = {
       fr: "/fr/hotels",
       "x-default": "/hoteles"
     }
+  },
+  openGraph: {
+    title: "Hotels et Resorts Tout Inclus a Punta Cana | Proactivitis",
+    description:
+      "Consultez les hotels et resorts tout inclus a Punta Cana et demandez un devis au meilleur prix.",
+    url: canonicalUrl,
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Hotels et Resorts Tout Inclus a Punta Cana | Proactivitis",
+    description: "Demandez un devis hotel a Punta Cana avec accompagnement personnalise."
+  },
+  robots: {
+    index: true,
+    follow: true
   }
 };
 

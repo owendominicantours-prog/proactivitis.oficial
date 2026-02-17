@@ -23,6 +23,22 @@ export const metadata: Metadata = {
       fr: "/fr/hotels",
       "x-default": "/hoteles"
     }
+  },
+  openGraph: {
+    title: "Punta Cana Hotels and All-Inclusive Resorts | Proactivitis",
+    description:
+      "Browse Punta Cana hotels and all-inclusive resorts and request a quote at the best rate in Bavaro, Cap Cana, and Uvero Alto.",
+    url: canonicalUrl,
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Punta Cana Hotels and All-Inclusive Resorts | Proactivitis",
+    description: "Request hotel quotes in Punta Cana with personalized assistance."
+  },
+  robots: {
+    index: true,
+    follow: true
   }
 };
 

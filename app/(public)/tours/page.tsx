@@ -36,6 +36,10 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Mejores Tours y Excursiones en Punta Cana | Proactivitis",
     description: "Reserva tours en Punta Cana con precios claros y soporte 24/7."
+  },
+  robots: {
+    index: true,
+    follow: true
   }
 };
 

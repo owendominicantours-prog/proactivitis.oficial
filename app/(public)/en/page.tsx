@@ -23,6 +23,22 @@ export const metadata: Metadata = {
       fr: "/fr",
       "x-default": "/"
     }
+  },
+  openGraph: {
+    title: "Punta Cana Tours, Excursions and Airport Transfers | Proactivitis",
+    description:
+      "Book Punta Cana tours, excursions, and private airport transfers with transparent pricing and instant confirmation.",
+    url: canonicalUrl,
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Punta Cana Tours, Excursions and Airport Transfers | Proactivitis",
+    description: "Book top Punta Cana experiences and private airport transfers in minutes."
+  },
+  robots: {
+    index: true,
+    follow: true
   }
 };
 

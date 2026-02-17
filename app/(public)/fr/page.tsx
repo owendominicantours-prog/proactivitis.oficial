@@ -23,6 +23,22 @@ export const metadata: Metadata = {
       fr: "/fr",
       "x-default": "/"
     }
+  },
+  openGraph: {
+    title: "Tours, Excursions et Transferts a Punta Cana | Proactivitis",
+    description:
+      "Reservez des tours, excursions et transferts prives a Punta Cana avec confirmation rapide.",
+    url: canonicalUrl,
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tours, Excursions et Transferts a Punta Cana | Proactivitis",
+    description: "Reservez vos activites et transferts a Punta Cana avec prix clairs."
+  },
+  robots: {
+    index: true,
+    follow: true
   }
 };
 

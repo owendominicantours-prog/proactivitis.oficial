@@ -23,6 +23,22 @@ export const metadata: Metadata = {
       fr: "/fr/punta-cana/traslado",
       "x-default": "/punta-cana/traslado"
     }
+  },
+  openGraph: {
+    title: "Punta Cana Transfers: PUJ Airport and Hotels | Proactivitis",
+    description:
+      "Book Punta Cana transfers from PUJ airport to Bavaro, Cap Cana, Uvero Alto, and resorts with fixed rates and 24/7 support.",
+    url: canonicalUrl,
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Punta Cana Transfers: PUJ Airport and Hotels | Proactivitis",
+    description: "Private PUJ airport transfers to Punta Cana hotels with professional drivers."
+  },
+  robots: {
+    index: true,
+    follow: true
   }
 };
 

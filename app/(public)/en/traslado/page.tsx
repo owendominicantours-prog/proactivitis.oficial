@@ -23,6 +23,22 @@ export const metadata: Metadata = {
       fr: "/fr/traslado",
       "x-default": "/traslado"
     }
+  },
+  openGraph: {
+    title: "Punta Cana Airport Transfers and Hotel Transportation | Proactivitis",
+    description:
+      "Book private Punta Cana airport transfers from PUJ to hotels and resorts with fixed rates and instant confirmation.",
+    url: canonicalUrl,
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Punta Cana Airport Transfers and Hotel Transportation | Proactivitis",
+    description: "Book private PUJ airport transfers with fixed rates and professional drivers."
+  },
+  robots: {
+    index: true,
+    follow: true
   }
 };
 

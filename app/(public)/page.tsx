@@ -23,6 +23,22 @@ export const metadata: Metadata = {
       fr: "/fr",
       "x-default": "/"
     }
+  },
+  openGraph: {
+    title: "Tours, Excursiones y Traslados en Punta Cana | Proactivitis",
+    description:
+      "Reserva tours en Punta Cana, excursiones todo incluido y traslados privados con confirmacion inmediata.",
+    url: canonicalUrl,
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tours, Excursiones y Traslados en Punta Cana | Proactivitis",
+    description: "Reserva experiencias y traslados en Punta Cana con precios claros y soporte 24/7."
+  },
+  robots: {
+    index: true,
+    follow: true
   }
 };
 
