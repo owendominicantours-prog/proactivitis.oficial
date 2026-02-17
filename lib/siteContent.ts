@@ -88,6 +88,27 @@ export type GlobalBannerOverrides = {
   tone?: "info" | "success" | "warning" | "urgent";
 };
 
+export type PremiumTransferContentOverrides = {
+  seoTitle?: string;
+  seoDescription?: string;
+  heroBadge?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroBackgroundImage?: string;
+  heroSpotlightImage?: string;
+  ctaPrimaryLabel?: string;
+  ctaSecondaryLabel?: string;
+  bookingTitle?: string;
+  fleetTitle?: string;
+  experienceTitle?: string;
+  experienceBody?: string;
+  galleryImages?: string[];
+  cadillacImage?: string;
+  suburbanImage?: string;
+  lifestyleImage?: string;
+  vipBullets?: string[];
+};
+
 export type HotelLandingOverrides = {
   seoTitle?: string;
   seoDescription?: string;
@@ -119,6 +140,120 @@ export type HotelLandingOverrides = {
   bullet4?: string;
   toursTitle?: string;
   transfersTitle?: string;
+};
+
+const PREMIUM_TRANSFER_FALLBACKS: Record<Locale, PremiumTransferContentOverrides> = {
+  es: {
+    seoTitle: "Punta Cana Premium Transfer Services | Cadillac Escalade & Chevrolet Suburban",
+    seoDescription:
+      "Servicio VIP en Punta Cana con SUV de lujo, chofer profesional y reserva inmediata. Cadillac Escalade y Chevrolet Suburban para aeropuerto, hoteles y eventos privados.",
+    heroBadge: "Elite Ground Transportation",
+    heroTitle: "Punta Cana Premium Transfer Services",
+    heroSubtitle:
+      "Traslados VIP con Cadillac Escalade y Chevrolet Suburban. Servicio privado, puntual y de alto nivel para viajeros que exigen excelencia.",
+    heroBackgroundImage:
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80",
+    heroSpotlightImage:
+      "https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=1400&q=80",
+    ctaPrimaryLabel: "Reservar Transfer VIP",
+    ctaSecondaryLabel: "Hablar por WhatsApp",
+    bookingTitle: "Cotiza tu transfer premium ahora",
+    fleetTitle: "Flota premium seleccionada",
+    experienceTitle: "Experiencia de lujo desde que aterrizas",
+    experienceBody:
+      "Nuestro equipo coordina tu llegada con seguimiento de vuelo y conductor asignado. Desde PUJ hasta tu resort, marina o villa privada, disfrutas una experiencia discreta, segura y de primer nivel.",
+    galleryImages: [
+      "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1549925862-9909b6cf2d0f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    cadillacImage:
+      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80",
+    suburbanImage:
+      "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=80",
+    lifestyleImage:
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1400&q=80",
+    vipBullets: [
+      "Chofer profesional bilingue con protocolo VIP.",
+      "Monitoreo de vuelo y ventana de espera incluida.",
+      "Vehiculos full size con aire premium y espacio superior.",
+      "Servicio privado 24/7 para aeropuertos, hoteles y eventos."
+    ]
+  },
+  en: {
+    seoTitle: "Punta Cana Premium Transfer Services | Cadillac Escalade & Chevrolet Suburban",
+    seoDescription:
+      "VIP transfer service in Punta Cana with luxury SUVs, professional drivers, and instant booking. Cadillac Escalade and Chevrolet Suburban for airport, resorts, and private events.",
+    heroBadge: "Elite Ground Transportation",
+    heroTitle: "Punta Cana Premium Transfer Services",
+    heroSubtitle:
+      "VIP transfers with Cadillac Escalade and Chevrolet Suburban. Private, punctual, and high-standard service for travelers who expect excellence.",
+    heroBackgroundImage:
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80",
+    heroSpotlightImage:
+      "https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=1400&q=80",
+    ctaPrimaryLabel: "Book VIP Transfer",
+    ctaSecondaryLabel: "Chat on WhatsApp",
+    bookingTitle: "Get your premium transfer quote",
+    fleetTitle: "Curated premium fleet",
+    experienceTitle: "Luxury experience from touchdown",
+    experienceBody:
+      "Our operations team coordinates your arrival with flight tracking and assigned driver. From PUJ to your resort, marina, or private villa, you get a discreet and premium ride.",
+    galleryImages: [
+      "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1549925862-9909b6cf2d0f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    cadillacImage:
+      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80",
+    suburbanImage:
+      "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=80",
+    lifestyleImage:
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1400&q=80",
+    vipBullets: [
+      "Professional bilingual driver with VIP protocol.",
+      "Flight tracking and included waiting window.",
+      "Full-size vehicles with premium comfort and luggage space.",
+      "24/7 private service for airports, resorts, and events."
+    ]
+  },
+  fr: {
+    seoTitle: "Punta Cana Premium Transfer Services | Cadillac Escalade & Chevrolet Suburban",
+    seoDescription:
+      "Service VIP a Punta Cana avec SUV de luxe, chauffeur professionnel et reservation immediate. Cadillac Escalade et Chevrolet Suburban pour aeroport, resorts et evenements prives.",
+    heroBadge: "Elite Ground Transportation",
+    heroTitle: "Punta Cana Premium Transfer Services",
+    heroSubtitle:
+      "Transferts VIP en Cadillac Escalade et Chevrolet Suburban. Service prive, ponctuel et haut de gamme pour voyageurs exigeants.",
+    heroBackgroundImage:
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80",
+    heroSpotlightImage:
+      "https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=1400&q=80",
+    ctaPrimaryLabel: "Reserver un transfer VIP",
+    ctaSecondaryLabel: "WhatsApp direct",
+    bookingTitle: "Obtenez votre devis premium",
+    fleetTitle: "Flotte premium selectionnee",
+    experienceTitle: "Experience luxe des votre arrivee",
+    experienceBody:
+      "Notre equipe coordonne votre arrivee avec suivi de vol et chauffeur dedie. De PUJ vers votre resort, marina ou villa, vous profitez d'un trajet discret et premium.",
+    galleryImages: [
+      "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1549925862-9909b6cf2d0f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    cadillacImage:
+      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80",
+    suburbanImage:
+      "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=80",
+    lifestyleImage:
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1400&q=80",
+    vipBullets: [
+      "Chauffeur bilingue professionnel avec protocole VIP.",
+      "Suivi de vol et fenetre d'attente incluse.",
+      "Vehicules full-size avec confort premium et grand espace bagages.",
+      "Service prive 24/7 pour aeroport, resorts et evenements."
+    ]
+  }
 };
 
 const HOTEL_LANDING_FALLBACKS: Record<string, Partial<Record<Locale, HotelLandingOverrides>>> = {
@@ -383,6 +518,37 @@ export const getGlobalBannerOverrides = async (locale: Locale): Promise<GlobalBa
   } catch (error) {
     warnOnce("site-content-global-banner-fallback", "No se pudo cargar SiteContentSetting GLOBAL_BANNER", error);
     return {};
+  }
+};
+
+export const getPremiumTransferContentOverrides = async (
+  locale: Locale
+): Promise<PremiumTransferContentOverrides> => {
+  const fallback = PREMIUM_TRANSFER_FALLBACKS[locale] ?? PREMIUM_TRANSFER_FALLBACKS.es;
+  try {
+    const record = await prisma.siteContentSetting.findUnique({
+      where: { key: "PREMIUM_TRANSFER_LANDING" }
+    });
+    if (!record?.content || typeof record.content !== "object") return fallback;
+    const content = record.content as Record<string, unknown>;
+    const localeContent = content[locale];
+    if (!localeContent || typeof localeContent !== "object") return fallback;
+    const override = localeContent as PremiumTransferContentOverrides;
+    return {
+      ...fallback,
+      ...override,
+      galleryImages:
+        Array.isArray(override.galleryImages) && override.galleryImages.length > 0
+          ? override.galleryImages
+          : fallback.galleryImages,
+      vipBullets:
+        Array.isArray(override.vipBullets) && override.vipBullets.length > 0
+          ? override.vipBullets
+          : fallback.vipBullets
+    };
+  } catch (error) {
+    warnOnce("site-content-premium-transfer-fallback", "No se pudo cargar SiteContentSetting PREMIUM_TRANSFER_LANDING", error);
+    return fallback;
   }
 };
 

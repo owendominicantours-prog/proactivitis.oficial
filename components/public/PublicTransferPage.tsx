@@ -40,6 +40,10 @@ type Props = {
 export default async function PublicTransferPage({ locale, heroTitleOverride, heroDescriptionOverride }: Props) {
   const transfersV2Enabled = process.env.TRANSFERS_V2_ENABLED === "true";
   const puntaCanaHubHref = locale === "es" ? "/punta-cana/traslado" : `/${locale}/punta-cana/traslado`;
+  const premiumVipHref =
+    locale === "es"
+      ? "/punta-cana/premium-transfer-services"
+      : `/${locale}/punta-cana/premium-transfer-services`;
   const transferHref = (slug: string) => (locale === "es" ? `/transfer/${slug}` : `/${locale}/transfer/${slug}`);
   let options: LocationOption[] = [];
   let originPoints: TransferPointOption[] = [];
@@ -147,6 +151,31 @@ export default async function PublicTransferPage({ locale, heroTitleOverride, he
       </section>
 
       <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-10 px-4 py-10">
+        <section className="rounded-[32px] border border-amber-300/30 bg-gradient-to-r from-[#1f2937] via-[#111827] to-[#0f172a] p-6 text-white shadow-xl">
+          <p className="text-xs uppercase tracking-[0.35em] text-amber-200">
+            {locale === "es" ? "Elite Collection" : locale === "fr" ? "Collection Elite" : "Elite Collection"}
+          </p>
+          <h2 className="mt-2 text-2xl font-black">
+            {locale === "es"
+              ? "Punta Cana Premium Transfer Services"
+              : locale === "fr"
+              ? "Punta Cana Premium Transfer Services"
+              : "Punta Cana Premium Transfer Services"}
+          </h2>
+          <p className="mt-2 text-sm text-slate-200">
+            {locale === "es"
+              ? "Flota VIP con Cadillac y Suburban para clientes premium."
+              : locale === "fr"
+              ? "Flotte VIP avec Cadillac et Suburban pour clients premium."
+              : "VIP fleet with Cadillac and Suburban for premium clients."}
+          </p>
+          <Link
+            href={premiumVipHref}
+            className="mt-4 inline-flex rounded-full bg-amber-300 px-5 py-2 text-xs font-bold uppercase tracking-[0.25em] text-slate-900 transition hover:bg-amber-200"
+          >
+            {locale === "es" ? "Ver Landing VIP" : locale === "fr" ? "Voir Landing VIP" : "Open VIP Landing"}
+          </Link>
+        </section>
 
         <section className="rounded-[36px] border border-slate-100 bg-white/90 p-6 shadow-2xl">
           <Suspense fallback={<div />}>

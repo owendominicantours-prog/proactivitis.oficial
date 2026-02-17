@@ -6,11 +6,14 @@ import { translate, type TranslationKey, type Locale } from "@/lib/translations"
 import type {
   ContactContentOverrides,
   GlobalBannerOverrides,
-  HomeContentOverrides
+  HomeContentOverrides,
+  PremiumTransferContentOverrides
 } from "@/lib/siteContent";
+import { getPremiumTransferContentOverrides } from "@/lib/siteContent";
 import HomeSettingsForm from "@/components/admin/HomeSettingsForm";
 import ContactSettingsForm from "@/components/admin/ContactSettingsForm";
 import GlobalBannerSettingsForm from "@/components/admin/GlobalBannerSettingsForm";
+import PremiumTransferSettingsForm from "@/components/admin/PremiumTransferSettingsForm";
 
 export default async function AdminSettingsPage() {
   const landingCount = await prisma.landingPage.count();
@@ -24,10 +27,20 @@ export default async function AdminSettingsPage() {
   const homeSetting = await prisma.siteContentSetting.findUnique({ where: { key: "HOME" } });
   const contactSetting = await prisma.siteContentSetting.findUnique({ where: { key: "CONTACT" } });
   const bannerSetting = await prisma.siteContentSetting.findUnique({ where: { key: "GLOBAL_BANNER" } });
+  const premiumTransferSetting = await prisma.siteContentSetting.findUnique({
+    where: { key: "PREMIUM_TRANSFER_LANDING" }
+  });
   const homeContentMap = (homeSetting?.content as Record<string, HomeContentOverrides> | null) ?? {};
   const contactContentMap = (contactSetting?.content as Record<string, ContactContentOverrides> | null) ?? {};
   const bannerContentMap = (bannerSetting?.content as Record<string, GlobalBannerOverrides> | null) ?? {};
+  const premiumTransferContentMap =
+    (premiumTransferSetting?.content as Record<string, PremiumTransferContentOverrides> | null) ?? {};
   const locales: Locale[] = ["es", "en", "fr"];
+  const premiumTransferFallbacks = Object.fromEntries(
+    await Promise.all(
+      locales.map(async (locale) => [locale, await getPremiumTransferContentOverrides(locale)])
+    )
+  ) as Record<Locale, PremiumTransferContentOverrides>;
 
   const buildHomeDefaults = (locale: Locale) => {
     const homeContent = homeContentMap[locale] ?? {};
@@ -156,9 +169,39 @@ export default async function AdminSettingsPage() {
     };
   };
 
+  const buildPremiumTransferDefaults = (locale: Locale) => {
+    const premium = {
+      ...(premiumTransferFallbacks[locale] ?? {}),
+      ...(premiumTransferContentMap[locale] ?? {})
+    };
+    return {
+      seoTitle: premium.seoTitle ?? "",
+      seoDescription: premium.seoDescription ?? "",
+      heroBadge: premium.heroBadge ?? "",
+      heroTitle: premium.heroTitle ?? "",
+      heroSubtitle: premium.heroSubtitle ?? "",
+      heroBackgroundImage: premium.heroBackgroundImage ?? "",
+      heroSpotlightImage: premium.heroSpotlightImage ?? "",
+      ctaPrimaryLabel: premium.ctaPrimaryLabel ?? "",
+      ctaSecondaryLabel: premium.ctaSecondaryLabel ?? "",
+      bookingTitle: premium.bookingTitle ?? "",
+      fleetTitle: premium.fleetTitle ?? "",
+      experienceTitle: premium.experienceTitle ?? "",
+      experienceBody: premium.experienceBody ?? "",
+      galleryImages: premium.galleryImages ?? [],
+      cadillacImage: premium.cadillacImage ?? "",
+      suburbanImage: premium.suburbanImage ?? "",
+      lifestyleImage: premium.lifestyleImage ?? "",
+      vipBullets: premium.vipBullets ?? []
+    };
+  };
+
   const homeDefaults = Object.fromEntries(locales.map((locale) => [locale, buildHomeDefaults(locale)]));
   const contactDefaults = Object.fromEntries(locales.map((locale) => [locale, buildContactDefaults(locale)]));
   const bannerDefaults = Object.fromEntries(locales.map((locale) => [locale, buildBannerDefaults(locale)]));
+  const premiumTransferDefaults = Object.fromEntries(
+    locales.map((locale) => [locale, buildPremiumTransferDefaults(locale)])
+  );
 
   return (
     <section className="space-y-8 rounded-[32px] border border-slate-200 bg-white p-10 shadow-sm">
@@ -243,6 +286,7 @@ export default async function AdminSettingsPage() {
       </div>
 
       <GlobalBannerSettingsForm locales={locales} defaultsByLocale={bannerDefaults} />
+      <PremiumTransferSettingsForm locales={locales} defaultsByLocale={premiumTransferDefaults} />
       <HomeSettingsForm locales={locales} defaultsByLocale={homeDefaults} />
       <ContactSettingsForm locales={locales} defaultsByLocale={contactDefaults} />
     </section>

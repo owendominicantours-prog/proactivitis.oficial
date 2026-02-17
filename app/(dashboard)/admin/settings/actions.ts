@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { normalizeRecipients, notificationEmailDefaults, type NotificationEmailKey } from "@/lib/notificationEmailSettings";
-import type { HomeContentOverrides, ContactContentOverrides, GlobalBannerOverrides } from "@/lib/siteContent";
+import type {
+  HomeContentOverrides,
+  ContactContentOverrides,
+  GlobalBannerOverrides,
+  PremiumTransferContentOverrides
+} from "@/lib/siteContent";
 
 const allowedKeys = new Set<NotificationEmailKey>(notificationEmailDefaults.map((entry) => entry.key));
 
@@ -41,6 +46,11 @@ export async function updateNotificationEmailSettingAction(formData: FormData) {
 }
 
 const readField = (formData: FormData, key: string) => String(formData.get(key) ?? "").trim();
+const parseLines = (value: string) =>
+  value
+    .split(/\r?\n|,/g)
+    .map((item) => item.trim())
+    .filter(Boolean);
 
 export async function updateHomeContentAction(formData: FormData) {
   const locale = readField(formData, "locale") || "es";
@@ -206,5 +216,45 @@ export async function updateGlobalBannerContentAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/en");
   revalidatePath("/fr");
+  revalidatePath("/admin/settings");
+}
+
+export async function updatePremiumTransferContentAction(formData: FormData) {
+  const locale = (readField(formData, "locale") || "es") as "es" | "en" | "fr";
+
+  const payload: PremiumTransferContentOverrides = {
+    seoTitle: readField(formData, "premium_seo_title"),
+    seoDescription: readField(formData, "premium_seo_description"),
+    heroBadge: readField(formData, "premium_hero_badge"),
+    heroTitle: readField(formData, "premium_hero_title"),
+    heroSubtitle: readField(formData, "premium_hero_subtitle"),
+    heroBackgroundImage: readField(formData, "premium_hero_background"),
+    heroSpotlightImage: readField(formData, "premium_hero_spotlight"),
+    ctaPrimaryLabel: readField(formData, "premium_cta_primary"),
+    ctaSecondaryLabel: readField(formData, "premium_cta_secondary"),
+    bookingTitle: readField(formData, "premium_booking_title"),
+    fleetTitle: readField(formData, "premium_fleet_title"),
+    experienceTitle: readField(formData, "premium_experience_title"),
+    experienceBody: readField(formData, "premium_experience_body"),
+    galleryImages: parseLines(readField(formData, "premium_gallery_images")),
+    cadillacImage: readField(formData, "premium_cadillac_image"),
+    suburbanImage: readField(formData, "premium_suburban_image"),
+    lifestyleImage: readField(formData, "premium_lifestyle_image"),
+    vipBullets: parseLines(readField(formData, "premium_vip_bullets"))
+  };
+
+  const existing = await prisma.siteContentSetting.findUnique({ where: { key: "PREMIUM_TRANSFER_LANDING" } });
+  const content = (existing?.content as Record<string, PremiumTransferContentOverrides> | null) ?? {};
+  content[locale] = payload;
+
+  await prisma.siteContentSetting.upsert({
+    where: { key: "PREMIUM_TRANSFER_LANDING" },
+    update: { content },
+    create: { key: "PREMIUM_TRANSFER_LANDING", content }
+  });
+
+  revalidatePath("/punta-cana/premium-transfer-services");
+  revalidatePath("/en/punta-cana/premium-transfer-services");
+  revalidatePath("/fr/punta-cana/premium-transfer-services");
   revalidatePath("/admin/settings");
 }
