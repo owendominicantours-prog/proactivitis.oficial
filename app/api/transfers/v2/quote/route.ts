@@ -1,6 +1,5 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { notifyDiscordTransferQuoteRequested } from "@/lib/discordNotifications";
 
 type QuoteVehicle = {
   id: string;
@@ -88,15 +87,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    void notifyDiscordTransferQuoteRequested({
-      originName: origin.name,
-      destinationName: destination.name,
-      passengers,
-      vehiclesCount: vehicles.length
-    }).catch((error) => {
-      console.warn("No se pudo enviar notificacion Discord de cotizacion traslado", error);
-    });
-
     return NextResponse.json({
       routeId: route.id,
       currency: "USD",
@@ -107,3 +97,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No se pudo calcular la tarifa." }, { status: 500 });
   }
 }
+

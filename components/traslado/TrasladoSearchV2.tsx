@@ -53,6 +53,7 @@ export default function TrasladoSearchV2() {
   const [selectedOrigin, setSelectedOrigin] = useState<LocationSummary | null>(null);
   const [selectedDestination, setSelectedDestination] = useState<LocationSummary | null>(null);
   const [passengers, setPassengers] = useState(2);
+  const [passengersInput, setPassengersInput] = useState("2");
   const [departureDate, setDepartureDate] = useState("");
   const [departureTime, setDepartureTime] = useState("");
   const [returnDate, setReturnDate] = useState("");
@@ -163,6 +164,12 @@ export default function TrasladoSearchV2() {
   };
 
   const handleQuote = async () => {
+    const normalizedPassengers = Math.max(1, Number(passengersInput || passengers));
+    if (normalizedPassengers !== passengers) {
+      setPassengers(normalizedPassengers);
+    }
+    setPassengersInput(String(normalizedPassengers));
+
     if (!selectedOrigin || !selectedDestination) {
       setQuoteError(t("transfer.search.error.originDestination"));
       return;
@@ -176,7 +183,7 @@ export default function TrasladoSearchV2() {
     const payload: Record<string, unknown> = {
       origin_location_id: selectedOrigin.id,
       destination_location_id: selectedDestination.id,
-      passengers,
+      passengers: normalizedPassengers,
       trip_type: tripType
     };
     if (returnDate && returnTime) {
@@ -385,8 +392,22 @@ export default function TrasladoSearchV2() {
             <input
               type="number"
               min={1}
-              value={passengers}
-              onChange={(event) => setPassengers(Math.max(1, Number(event.target.value)))}
+              value={passengersInput}
+              onChange={(event) => {
+                const value = event.target.value;
+                if (value === "") {
+                  setPassengersInput("");
+                  return;
+                }
+                if (!/^\d+$/.test(value)) return;
+                setPassengersInput(value);
+                setPassengers(Math.max(1, Number(value)));
+              }}
+              onBlur={() => {
+                const normalizedPassengers = Math.max(1, Number(passengersInput || passengers));
+                setPassengers(normalizedPassengers);
+                setPassengersInput(String(normalizedPassengers));
+              }}
               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800"
             />
           </div>
