@@ -10,6 +10,8 @@ import type { Prisma } from "@prisma/client";
 import { Locale, translate, type TranslationKey } from "@/lib/translations";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import StructuredData from "@/components/schema/StructuredData";
+import { PROACTIVITIS_URL } from "@/lib/seo";
 
 const parseDurationMeta = (value?: string | null) => {
   if (!value) return null;
@@ -348,9 +350,45 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
       return a.index - b.index;
     })
     .map(({ tour }) => tour);
+  const toursHubPath = locale === "es" ? "/tours" : `/${locale}/tours`;
+  const toursHubUrl = `${PROACTIVITIS_URL}${toursHubPath}`;
+  const listItemSchema = toursSorted.slice(0, 24).map((tour, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    url: `${PROACTIVITIS_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`,
+    name: tour.translations?.[0]?.title ?? tour.title
+  }));
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: t("tours.header.title"),
+    itemListOrder: "https://schema.org/ItemListOrderAscending",
+    numberOfItems: listItemSchema.length,
+    itemListElement: listItemSchema
+  };
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: locale === "es" ? "Inicio" : locale === "en" ? "Home" : "Accueil",
+        item: `${PROACTIVITIS_URL}${locale === "es" ? "/" : `/${locale}`}`
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: locale === "fr" ? "Excursions" : "Tours",
+        item: toursHubUrl
+      }
+    ]
+  };
 
   return (
     <div className="bg-slate-50 pb-16">
+      <StructuredData data={itemListSchema} />
+      <StructuredData data={breadcrumbSchema} />
       <section className="border-b border-slate-200 bg-gradient-to-br from-white via-slate-50 to-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 md:flex-row md:items-end md:justify-between">
           <div className="space-y-4">

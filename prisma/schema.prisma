@@ -100,6 +100,7 @@ model Booking {
   paymentLast4          String?        @map("payment_last4")
   paymentMethod         String?        @map("payment_method")
   TourReviews           TourReview[]
+  TransferReviews       TransferReview[]
 }
 
 model Conversation {
@@ -735,6 +736,28 @@ model User {
   AgencyProLinks          AgencyProLink[]
   BlogPosts               BlogPost[]
   TourReviews             TourReview[]
+  TransferReviews         TransferReview[]
+}
+
+model TransferReview {
+  id            String   @id @default(cuid())
+  bookingId      String   @unique
+  userId         String?
+  customerName   String
+  customerEmail  String
+  locale         String   @default("es")
+  rating         Int
+  title          String?
+  body           String   @db.Text
+  status         String   @default("PENDING")
+  createdAt      DateTime @default(now())
+  approvedAt     DateTime?
+
+  Booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  User    User?   @relation(fields: [userId], references: [id])
+
+  @@index([status])
+  @@index([customerEmail])
 }
 
 model CustomerPreference {

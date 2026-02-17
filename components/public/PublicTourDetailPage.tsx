@@ -585,6 +585,12 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
 const resolveTourH1 = (slug: string, locale: Locale, fallback: string) =>
   TOUR_H1_OVERRIDES[slug]?.[locale] ?? fallback;
 
+const localeLabel = (locale: Locale, esLabel: string, enLabel: string, frLabel: string) => {
+  if (locale === "en") return enLabel;
+  if (locale === "fr") return frLabel;
+  return esLabel;
+};
+
 const TOUR_SCHEMA_KEYWORDS: Record<Locale, string[]> = {
   es: [
     "tours punta cana",
@@ -876,6 +882,8 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       includesList: true,
       notIncludedList: true,
       category: true,
+      destinationId: true,
+      departureDestinationId: true,
       language: true,
       location: true,
       timeOptions: true,
@@ -920,6 +928,35 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   }
 
   if (tour.status !== "published") notFound();
+
+  const relatedConditions: Prisma.TourWhereInput[] = [];
+  if (tour.destinationId) {
+    relatedConditions.push({ destinationId: tour.destinationId });
+  }
+  if (tour.departureDestinationId) {
+    relatedConditions.push({ departureDestinationId: tour.departureDestinationId });
+  }
+  const relatedTours = await prisma.tour.findMany({
+    where: {
+      status: "published",
+      id: { not: tour.id },
+      ...(relatedConditions.length ? { OR: relatedConditions } : {})
+    },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      price: true,
+      heroImage: true,
+      gallery: true,
+      translations: {
+        where: { locale },
+        select: { title: true }
+      }
+    },
+    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+    take: 6
+  });
 
   const translations = await fetchTourTranslations(tour.id);
 
@@ -1008,6 +1045,18 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     : [];
   const trustBadges = buildTourTrustBadges(locale, languages, categories);
   const faqList = buildTourFaq(locale, tour.slug, heroTitle, durationLabel, displayTime, priceLabel);
+  const relatedTourCards = relatedTours.map((item) => {
+    const localizedRelatedTitle = item.translations?.[0]?.title ?? item.title;
+    const relatedImage = resolveTourHeroImage(item);
+    const relatedHref = locale === "es" ? `/tours/${item.slug}` : `/${locale}/tours/${item.slug}`;
+    return {
+      id: item.id,
+      href: relatedHref,
+      title: localizedRelatedTitle,
+      price: `$${item.price.toFixed(0)} USD`,
+      image: relatedImage.startsWith("http") ? relatedImage : `${PROACTIVITIS_URL}${relatedImage}`
+    };
+  });
 
   const approvedReviews = await getApprovedTourReviews(tour.id);
   const reviewLocale =
@@ -1125,6 +1174,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     .filter((image) => image && image !== heroImageAbsolute);
   const schemaImages = [heroImageAbsolute, ...galleryImagesAbsolute].slice(0, 5);
   const tourUrl = `${PROACTIVITIS_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`;
+  const toursHubUrl = `${PROACTIVITIS_URL}${locale === "es" ? "/tours" : `/${locale}/tours`}`;
   const priceValidUntil = getPriceValidUntil();
   const touristTypeFallback = categories.find((category) =>
     ["Family", "Adventure", "Couples"].includes(category)
@@ -1181,46 +1231,62 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       priceValidUntil,
       availability: "https://schema.org/InStock",
       seller: PROACTIVITIS_LOCALBUSINESS,
-      shippingDetails: {
-        "@type": "OfferShippingDetails",
-        shippingRate: {
-          "@type": "MonetaryAmount",
-          value: "0",
-          currency: "USD"
-        },
-        shippingDestination: {
-          "@type": "DefinedRegion",
-          addressCountry: "DO"
-        },
-        deliveryTime: {
-          "@type": "ShippingDeliveryTime",
-          handlingTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 0,
-            unitCode: "DAY"
-          },
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 0,
-            unitCode: "DAY"
-          }
-        }
+      eligibleRegion: {
+        "@type": "Country",
+        name: "Dominican Republic"
       },
-      hasMerchantReturnPolicy: {
-        "@type": "MerchantReturnPolicy",
-        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
-        merchantReturnDays: 1,
-        returnFees: "https://schema.org/FreeReturn",
-        returnMethod: "https://schema.org/ReturnByMail",
-        applicableCountry: "DO"
-      }
+      itemCondition: "https://schema.org/NewCondition"
     },
     sameAs: SAME_AS_URLS,
     ...(schemaKeywords ? { keywords: schemaKeywords.join(", ") } : {}),
     ...(aggregateRating ? { aggregateRating } : {}),
     ...(reviewSchema ? { review: reviewSchema } : {})
+  };
+
+  const touristTripSchema = {
+    "@context": "https://schema.org",
+    "@type": "TouristTrip",
+    "@id": `${tourUrl}#trip`,
+    name: heroTitle,
+    description: localizedDescription ?? shortTeaser,
+    image: schemaImages,
+    url: tourUrl,
+    inLanguage: locale,
+    touristType: categories.length ? categories : [touristTypeFallback ?? "General"],
+    provider: PROACTIVITIS_LOCALBUSINESS,
+    offers: {
+      "@type": "Offer",
+      url: tourUrl,
+      price: tour.price,
+      priceCurrency: "USD",
+      priceValidUntil,
+      availability: "https://schema.org/InStock"
+    }
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: localeLabel(locale, "Inicio", "Home", "Accueil"),
+        item: `${PROACTIVITIS_URL}${locale === "es" ? "/" : `/${locale}`}`
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: localeLabel(locale, "Tours", "Tours", "Excursions"),
+        item: toursHubUrl
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: heroTitle,
+        item: tourUrl
+      }
+    ]
   };
 
   const faqSchema = {
@@ -1277,6 +1343,8 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   return (
   <div className="min-h-screen bg-[#FDFDFD] text-slate-950 pb-24 overflow-x-hidden">
       <StructuredData data={tourSchema} />
+      <StructuredData data={touristTripSchema} />
+      <StructuredData data={breadcrumbSchema} />
       <StructuredData data={faqSchema} />
 
       <section className="mx-auto max-w-[1240px] px-4 pt-8 sm:pt-10">
@@ -1604,6 +1672,42 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
               ))}
             </div>
           </section>
+
+          {relatedTourCards.length ? (
+            <section className="space-y-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                  {localeLabel(locale, "Mas tours", "More tours", "Plus d excursions")}
+                </p>
+                <h2 className="text-[20px] font-semibold text-slate-900">
+                  {localeLabel(locale, "Tours relacionados", "Related tours", "Excursions associees")}
+                </h2>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {relatedTourCards.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className="group overflow-hidden rounded-[16px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    <div className="relative h-44 w-full">
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        fill
+                        className="object-cover transition duration-500 group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                    </div>
+                    <div className="space-y-1 p-4">
+                      <p className="text-base font-semibold text-slate-900">{item.title}</p>
+                      <p className="text-sm font-bold text-indigo-600">{item.price}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
 
         <aside className="hidden lg:block">

@@ -64,6 +64,51 @@ const PUNTA_CANA_KEYWORDS: Record<Locale, string[]> = {
     "choses a faire punta cana"
   ]
 };
+const TOUR_KEYWORDS_BY_SLUG: Record<string, Partial<Record<Locale, string[]>>> = {
+  "party-boat-sosua": {
+    es: [
+      "sosua party boat",
+      "party boat sosua",
+      "boat party puerto plata",
+      "sosua catamaran",
+      "private party boat sosua"
+    ],
+    en: [
+      "sosua party boat",
+      "party boat sosua prices",
+      "best party boat in sosua",
+      "puerto plata boat party",
+      "private yacht sosua"
+    ],
+    fr: [
+      "party boat sosua",
+      "catamaran sosua",
+      "bateau prive sosua",
+      "sortie bateau puerto plata",
+      "soiree bateau sosua"
+    ]
+  },
+  "sunset-catamaran-snorkel": {
+    es: ["party boat punta cana", "catamaran punta cana", "snorkel punta cana", "tour en catamaran punta cana"],
+    en: ["punta cana party boat", "catamaran punta cana", "snorkeling party boat", "sunset catamaran punta cana"],
+    fr: ["party boat punta cana", "catamaran punta cana", "snorkeling punta cana", "croisiere catamaran punta cana"]
+  },
+  "tour-en-buggy-en-punta-cana": {
+    es: ["tour buggy punta cana", "buggy punta cana", "excursion buggy punta cana", "aventura buggy punta cana"],
+    en: ["buggy tour punta cana", "punta cana buggy adventure", "off road tour punta cana", "atv buggy punta cana"],
+    fr: ["tour buggy punta cana", "excursion buggy punta cana", "aventure buggy punta cana", "atv punta cana"]
+  },
+  "excursion-en-buggy-y-atv-en-punta-cana": {
+    es: ["buggy y atv punta cana", "excursion atv punta cana", "tour 4x4 punta cana"],
+    en: ["buggy and atv punta cana", "atv excursion punta cana", "4x4 tour punta cana"],
+    fr: ["buggy et atv punta cana", "excursion atv punta cana", "tour 4x4 punta cana"]
+  },
+  "tour-y-entrada-para-de-isla-saona-desde-punta-cana": {
+    es: ["isla saona desde punta cana", "tour saona punta cana", "excursion isla saona"],
+    en: ["saona island from punta cana", "saona island tour", "saona excursion punta cana"],
+    fr: ["ile saona depuis punta cana", "excursion ile saona", "tour saona punta cana"]
+  }
+};
 const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
   "transfer-privado-proactivitis": {
     es: "Traslado privado en Punta Cana con chofer verificado",
@@ -228,6 +273,45 @@ const toAbsoluteUrl = (value: string) => {
   return `${PROACTIVITIS_URL}${normalized}`;
 };
 
+const dedupeKeywords = (items: string[]) =>
+  Array.from(
+    new Set(
+      items
+        .map((item) => item.trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
+
+const buildTourKeywords = ({
+  slug,
+  title,
+  destination,
+  departure,
+  locale
+}: {
+  slug: string;
+  title: string;
+  destination?: string | null;
+  departure?: string | null;
+  locale: Locale;
+}) => {
+  const explicitKeywords = TOUR_KEYWORDS_BY_SLUG[slug]?.[locale] ?? [];
+  const baseTokens =
+    locale === "es"
+      ? ["tour", "excursion", "actividades"]
+      : locale === "fr"
+        ? ["excursion", "activites", "tour"]
+        : ["tour", "excursion", "activities"];
+  const place = (destination || departure || "").trim();
+  const titleClean = title.toLowerCase();
+  const generated = [
+    titleClean,
+    ...baseTokens.map((token) => (place ? `${token} ${place.toLowerCase()}` : token)),
+    place ? `${place.toLowerCase()} tours` : ""
+  ];
+  return dedupeKeywords([...explicitKeywords, ...generated]).slice(0, 12);
+};
+
 const buildLanguageAlternates = (slug: string) => {
   const normalizedSlug = slug.startsWith("/") ? slug : `/tours/${slug}`;
   return {
@@ -305,6 +389,17 @@ export async function generateTourMetadata(
     .join(" ")
     .toLowerCase();
   const isPuntaCanaTour = PUNTA_CANA_MARKERS.some((marker) => haystack.includes(marker));
+  const keywordSource = buildTourKeywords({
+    slug,
+    title: resolvedTitle,
+    destination: tour.destination?.name,
+    departure: tour.departureDestination?.name,
+    locale
+  });
+  const keywords = dedupeKeywords([
+    ...keywordSource,
+    ...(isPuntaCanaTour ? PUNTA_CANA_KEYWORDS[locale] : [])
+  ]);
   const title = buildSeoTitle(resolvedTitle);
   const description = trimDescription(resolvedDescription);
   const heroImage = toAbsoluteUrl(resolveTourHeroImage(tour));
@@ -319,13 +414,14 @@ export async function generateTourMetadata(
   return {
     title,
     description,
-    keywords: isPuntaCanaTour ? PUNTA_CANA_KEYWORDS[locale] : undefined,
+    keywords,
     alternates: {
       canonical: canonicalUrl,
       languages: {
         es: buildLanguageAlternates(slug).es,
         en: buildLanguageAlternates(slug).en,
-        fr: buildLanguageAlternates(slug).fr
+        fr: buildLanguageAlternates(slug).fr,
+        "x-default": buildLanguageAlternates(slug).es
       }
     },
     openGraph: {
