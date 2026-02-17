@@ -73,5 +73,13 @@ export async function POST(request: Request) {
     }
   });
 
+  await prisma.transferReviewReminder.updateMany({
+    where: { bookingId: booking.id, stoppedAt: null },
+    data: {
+      stoppedAt: new Date(),
+      stopReason: "REVIEW_SUBMITTED"
+    }
+  });
+
   return NextResponse.json({ ok: true });
 }

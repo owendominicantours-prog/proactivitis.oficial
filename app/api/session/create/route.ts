@@ -98,6 +98,19 @@ export async function POST(request: NextRequest) {
     }
   });
 
+  if ((booking.flowType ?? "tour") === "transfer") {
+    await prisma.transferReviewReminder.upsert({
+      where: { bookingId },
+      update: {
+        stoppedAt: null,
+        stopReason: null
+      },
+      create: {
+        bookingId
+      }
+    });
+  }
+
   if (booking.discountPercent && booking.User.id) {
     await prisma.customerPreference.updateMany({
       where: { userId: booking.User.id },

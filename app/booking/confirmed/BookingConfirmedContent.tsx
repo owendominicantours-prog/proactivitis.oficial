@@ -5,7 +5,6 @@ import ContactoProveedor from "@/components/booking/ContactoProveedor";
 import Eticket from "@/components/booking/Eticket";
 import BookingEmailDispatcher from "@/components/booking/BookingEmailDispatcher";
 import { ItineraryTimeline } from "@/components/itinerary/ItineraryTimeline";
-import TransferReviewForm from "@/components/public/TransferReviewForm";
 import { BookingConfirmationData } from "./helpers";
 import { useTranslation } from "../../../context/LanguageProvider";
 
@@ -114,12 +113,14 @@ export function BookingConfirmedContent({
               >
                 {t("booking.confirmation.buttons.whatsapp")}
               </a>
-              <Link
-                href={isTransfer ? "#transfer-review" : `/tours/${tour.slug}#reviews`}
-                className="inline-flex items-center justify-center rounded-full border border-indigo-200 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-indigo-600 transition hover:bg-indigo-50"
-              >
-                {t("booking.confirmation.buttons.leaveReview")}
-              </Link>
+              {!isTransfer ? (
+                <Link
+                  href={`/tours/${tour.slug}#reviews`}
+                  className="inline-flex items-center justify-center rounded-full border border-indigo-200 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-indigo-600 transition hover:bg-indigo-50"
+                >
+                  {t("booking.confirmation.buttons.leaveReview")}
+                </Link>
+              ) : null}
             </div>
             <p className="mt-4 text-sm text-slate-600">
               {heroNote}
@@ -235,16 +236,6 @@ export function BookingConfirmedContent({
             orderCode={orderCode}
           />
         </section>
-
-        {isTransfer ? (
-          <section id="transfer-review" className="border-t border-slate-200 pt-8">
-            <TransferReviewForm
-              bookingId={booking.id}
-              defaultName={booking.customerName}
-              defaultEmail={booking.customerEmail}
-            />
-          </section>
-        ) : null}
       </main>
     </div>
   );

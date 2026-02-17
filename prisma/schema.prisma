@@ -101,6 +101,7 @@ model Booking {
   paymentMethod         String?        @map("payment_method")
   TourReviews           TourReview[]
   TransferReviews       TransferReview[]
+  TransferReviewReminder TransferReviewReminder?
 }
 
 model Conversation {
@@ -758,6 +759,21 @@ model TransferReview {
 
   @@index([status])
   @@index([customerEmail])
+}
+
+model TransferReviewReminder {
+  id         String   @id @default(cuid())
+  bookingId  String   @unique
+  sendCount  Int      @default(0)
+  lastSentAt DateTime?
+  stoppedAt  DateTime?
+  stopReason String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  Booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([stoppedAt])
 }
 
 model CustomerPreference {
