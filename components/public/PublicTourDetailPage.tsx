@@ -601,6 +601,95 @@ const localeLabel = (locale: Locale, esLabel: string, enLabel: string, frLabel: 
   return esLabel;
 };
 
+type IntentLink = {
+  href: string;
+  title: string;
+  description: string;
+};
+
+const buildCommercialIntentLinks = (locale: Locale, slug: string): IntentLink[] => {
+  const prefix = locale === "es" ? "" : `/${locale}`;
+  const links: IntentLink[] = [
+    {
+      href: `${prefix}/tours`,
+      title: localeLabel(
+        locale,
+        "Mejores tours en Punta Cana",
+        "Best Punta Cana tours",
+        "Meilleurs tours a Punta Cana"
+      ),
+      description: localeLabel(
+        locale,
+        "Comparar excursiones por precio, duracion y categoria.",
+        "Compare excursions by price, duration, and category.",
+        "Comparer les excursions par prix, duree et categorie."
+      )
+    },
+    {
+      href: `${prefix}/punta-cana/tours`,
+      title: localeLabel(
+        locale,
+        "Excursiones en Punta Cana con pickup",
+        "Punta Cana excursions with hotel pickup",
+        "Excursions a Punta Cana avec pickup hotel"
+      ),
+      description: localeLabel(
+        locale,
+        "Rutas populares como Saona, buggy, party boat y mas.",
+        "Top routes like Saona, buggy, party boat, and more.",
+        "Itineraires populaires: Saona, buggy, party boat et plus."
+      )
+    },
+    {
+      href: `${prefix}/traslado`,
+      title: localeLabel(
+        locale,
+        "Traslado aeropuerto Punta Cana",
+        "Punta Cana airport transfers",
+        "Transferts aeroport Punta Cana"
+      ),
+      description: localeLabel(
+        locale,
+        "Transfer privado PUJ a hoteles con precio fijo.",
+        "Private PUJ-to-hotel transfer with fixed rates.",
+        "Transfert prive PUJ vers hotel avec tarif fixe."
+      )
+    },
+    {
+      href: `${prefix}/${locale === "es" ? "hoteles" : "hotels"}`,
+      title: localeLabel(
+        locale,
+        "Hoteles en Punta Cana",
+        "Punta Cana hotels",
+        "Hotels a Punta Cana"
+      ),
+      description: localeLabel(
+        locale,
+        "Cotiza resorts todo incluido con soporte personalizado.",
+        locale === "en"
+          ? "Request all-inclusive resort quotes with personalized support."
+          : "Demandez un devis resort tout inclus avec support personnalise.",
+        "Demandez un devis resort tout inclus avec support personnalise."
+      )
+    }
+  ];
+
+  if (slug.includes("sosua") || slug.includes("puerto-plata")) {
+    links.push({
+      href: `${prefix}/sosua/party-boat`,
+      title: localeLabel(locale, "Sosua Party Boat", "Sosua party boat", "Party boat a Sosua"),
+      description: localeLabel(
+        locale,
+        "Versiones privada, VIP y grupos en Puerto Plata.",
+        "Private, VIP, and group options in Puerto Plata.",
+        "Options privees, VIP et groupes a Puerto Plata."
+      )
+    });
+  }
+
+  return links;
+};
+
 const TOUR_SCHEMA_KEYWORDS: Record<Locale, string[]> = {
   es: [
     "tours punta cana",
@@ -1067,6 +1156,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       image: relatedImage.startsWith("http") ? relatedImage : `${PROACTIVITIS_URL}${relatedImage}`
     };
   });
+  const commercialIntentLinks = buildCommercialIntentLinks(locale, tour.slug);
 
   const approvedReviews = await getApprovedTourReviews(tour.id);
   const reviewLocale =
@@ -1329,6 +1419,22 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     originHotelName: originHotel?.name ?? undefined,
     discountPercent
   };
+  const relatedToursSchema = relatedTourCards.length
+    ? {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "@id": `${tourUrl}#related-tours`,
+        name: localeLabel(locale, "Tours relacionados", "Related tours", "Excursions associees"),
+        itemListOrder: "https://schema.org/ItemListOrderAscending",
+        numberOfItems: relatedTourCards.length,
+        itemListElement: relatedTourCards.map((item, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: item.title,
+          url: `${PROACTIVITIS_URL}${item.href}`
+        }))
+      }
+    : null;
 
   const BookingPanel = ({ className = "" }: { className?: string }) => (
     <div className={`rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl ${className}`}>
@@ -1356,6 +1462,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       <StructuredData data={touristTripSchema} />
       <StructuredData data={breadcrumbSchema} />
       <StructuredData data={faqSchema} />
+      {relatedToursSchema ? <StructuredData data={relatedToursSchema} /> : null}
 
       <section className="mx-auto max-w-[1240px] px-4 pt-8 sm:pt-10">
         <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">
@@ -1679,6 +1786,34 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{item.question}</p>
                   <p className="mt-2 text-sm font-semibold text-slate-900">{item.answer}</p>
                 </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                {localeLabel(locale, "Planifica mejor", "Plan better", "Planifiez mieux")}
+              </p>
+              <h2 className="text-[20px] font-semibold text-slate-900">
+                {localeLabel(
+                  locale,
+                  "Enlaces utiles para reservar",
+                  "Useful booking links",
+                  "Liens utiles pour reserver"
+                )}
+              </h2>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {commercialIntentLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-[16px] border border-slate-200 bg-white px-5 py-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                  <p className="mt-1 text-sm text-slate-600">{item.description}</p>
+                </Link>
               ))}
             </div>
           </section>
