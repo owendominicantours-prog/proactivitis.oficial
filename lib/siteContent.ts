@@ -107,6 +107,7 @@ export type PremiumTransferContentOverrides = {
   suburbanImage?: string;
   lifestyleImage?: string;
   vipBullets?: string[];
+  vipCertifications?: string[];
 };
 
 export type HotelLandingOverrides = {
@@ -178,6 +179,12 @@ const PREMIUM_TRANSFER_FALLBACKS: Record<Locale, PremiumTransferContentOverrides
       "Monitoreo de vuelo y ventana de espera incluida.",
       "Vehiculos full size con aire premium y espacio superior.",
       "Servicio privado 24/7 para aeropuertos, hoteles y eventos."
+    ],
+    vipCertifications: [
+      "Operador turistico verificado en Republica Dominicana",
+      "Conductores con licencia profesional y entrenamiento VIP",
+      "Poliza de responsabilidad civil activa",
+      "Protocolos de seguridad y asistencia 24/7"
     ]
   },
   en: {
@@ -215,6 +222,12 @@ const PREMIUM_TRANSFER_FALLBACKS: Record<Locale, PremiumTransferContentOverrides
       "Flight tracking and included waiting window.",
       "Full-size vehicles with premium comfort and luggage space.",
       "24/7 private service for airports, resorts, and events."
+    ],
+    vipCertifications: [
+      "Verified Dominican Republic tourism operator",
+      "Licensed professional chauffeurs with VIP training",
+      "Active liability insurance coverage",
+      "24/7 safety and guest assistance protocols"
     ]
   },
   fr: {
@@ -252,6 +265,12 @@ const PREMIUM_TRANSFER_FALLBACKS: Record<Locale, PremiumTransferContentOverrides
       "Suivi de vol et fenetre d'attente incluse.",
       "Vehicules full-size avec confort premium et grand espace bagages.",
       "Service prive 24/7 pour aeroport, resorts et evenements."
+    ],
+    vipCertifications: [
+      "Operateur touristique verifie en Republique Dominicaine",
+      "Chauffeurs professionnels licences avec formation VIP",
+      "Assurance responsabilite civile active",
+      "Protocoles de securite et assistance client 24/7"
     ]
   }
 };
@@ -544,7 +563,11 @@ export const getPremiumTransferContentOverrides = async (
       vipBullets:
         Array.isArray(override.vipBullets) && override.vipBullets.length > 0
           ? override.vipBullets
-          : fallback.vipBullets
+          : fallback.vipBullets,
+      vipCertifications:
+        Array.isArray(override.vipCertifications) && override.vipCertifications.length > 0
+          ? override.vipCertifications
+          : fallback.vipCertifications
     };
   } catch (error) {
     warnOnce("site-content-premium-transfer-fallback", "No se pudo cargar SiteContentSetting PREMIUM_TRANSFER_LANDING", error);

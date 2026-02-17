@@ -7,9 +7,21 @@ export async function generateMetadata(): Promise<Metadata> {
   const content = await getPremiumTransferContentOverrides("es");
   const path = "/punta-cana/premium-transfer-services";
   const canonical = `${PROACTIVITIS_URL}${path}`;
+  const image = content.heroBackgroundImage || "/transfer/suv.png";
   return {
     title: content.seoTitle,
     description: content.seoDescription,
+    robots: {
+      index: true,
+      follow: true
+    },
+    keywords: [
+      "punta cana premium transfer services",
+      "cadillac escalade punta cana",
+      "suburban transfer punta cana",
+      "vip airport transfer punta cana",
+      "luxury transfer punta cana"
+    ],
     alternates: {
       canonical,
       languages: {
@@ -23,7 +35,16 @@ export async function generateMetadata(): Promise<Metadata> {
       title: content.seoTitle,
       description: content.seoDescription,
       url: canonical,
-      images: [content.heroBackgroundImage || "/transfer/suv.png"]
+      siteName: "Proactivitis",
+      type: "website",
+      locale: "es_DO",
+      images: [image]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: content.seoTitle,
+      description: content.seoDescription,
+      images: [image]
     }
   };
 }

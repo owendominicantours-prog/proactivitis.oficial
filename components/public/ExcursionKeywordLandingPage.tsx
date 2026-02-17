@@ -9,6 +9,7 @@ import { Locale, translate, type TranslationKey } from "@/lib/translations";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 import type { Prisma } from "@prisma/client";
 import StructuredData from "@/components/schema/StructuredData";
+import { normalizeTextDeep } from "@/lib/text-format";
 
 const BASE_URL = "https://proactivitis.com";
 const MAX_TOURS = 9;
@@ -230,15 +231,16 @@ const buildCanonical = (slug: string, locale: Locale) =>
 export async function buildExcursionLandingMetadata(landingSlug: string, locale: Locale): Promise<Metadata> {
   const landing = findExcursionKeywordLandingBySlug(landingSlug);
   if (!landing) return {};
-  const canonical = buildCanonical(landing.landingSlug, locale);
+  const normalizedLanding = normalizeTextDeep(landing);
+  const canonical = buildCanonical(normalizedLanding.landingSlug, locale);
   const marketTitle =
     locale === "en"
-      ? `${landing.keyword} | Punta Cana Excursions`
+      ? `${normalizedLanding.keyword} | Punta Cana Excursions`
       : locale === "fr"
-        ? `${landing.keyword} | Excursions a Punta Cana`
-        : `${landing.keyword} | Excursiones en Punta Cana`;
+        ? `${normalizedLanding.keyword} | Excursions a Punta Cana`
+        : `${normalizedLanding.keyword} | Excursiones en Punta Cana`;
   const seoTitle = `${marketTitle} | Proactivitis`;
-  const seoDescription = landing.metaDescription[locale];
+  const seoDescription = normalizedLanding.metaDescription[locale];
   const imageUrl = encodeURI(`${BASE_URL}/fototours/fototour.jpeg`);
   return {
     title: seoTitle,
@@ -246,10 +248,10 @@ export async function buildExcursionLandingMetadata(landingSlug: string, locale:
     alternates: {
       canonical,
       languages: {
-        es: `/excursiones/${landing.landingSlug}`,
-        en: `/en/excursiones/${landing.landingSlug}`,
-        fr: `/fr/excursiones/${landing.landingSlug}`,
-        "x-default": `/excursiones/${landing.landingSlug}`
+        es: `/excursiones/${normalizedLanding.landingSlug}`,
+        en: `/en/excursiones/${normalizedLanding.landingSlug}`,
+        fr: `/fr/excursiones/${normalizedLanding.landingSlug}`,
+        "x-default": `/excursiones/${normalizedLanding.landingSlug}`
       }
     },
     openGraph: {
@@ -262,7 +264,7 @@ export async function buildExcursionLandingMetadata(landingSlug: string, locale:
       images: [
         {
           url: imageUrl,
-          alt: landing.keyword
+          alt: normalizedLanding.keyword
         }
       ]
     },
@@ -272,20 +274,21 @@ export async function buildExcursionLandingMetadata(landingSlug: string, locale:
       description: seoDescription,
       images: [imageUrl]
     },
-    keywords: landing.keywords
+    keywords: normalizedLanding.keywords
   };
 }
 
 export async function ExcursionKeywordLandingPage({ landingSlug, locale }: { landingSlug: string; locale: Locale }) {
   const landing = findExcursionKeywordLandingBySlug(landingSlug);
   if (!landing) return notFound();
+  const normalizedLanding = normalizeTextDeep(landing);
 
   const t = (key: TranslationKey, replacements?: Parameters<typeof translate>[2]) =>
     translate(locale, key, replacements);
 
-  const tours = await fetchToursForLanding(landing.focus, locale);
-  const canonical = buildCanonical(landing.landingSlug, locale);
-  const longCopy = buildLongCopy(landing.keyword, locale);
+  const tours = await fetchToursForLanding(normalizedLanding.focus, locale);
+  const canonical = buildCanonical(normalizedLanding.landingSlug, locale);
+  const longCopy = normalizeTextDeep(buildLongCopy(normalizedLanding.keyword, locale));
   const pluralSuffix = tours.length === 1 ? "" : "s";
   const listItemSchema = tours.map((tour, index) => ({
     "@type": "ListItem",
@@ -312,7 +315,7 @@ export async function ExcursionKeywordLandingPage({ landingSlug, locale }: { lan
       {
         "@type": "ListItem",
         position: 3,
-        name: landing.keyword,
+        name: normalizedLanding.keyword,
         item: canonical
       }
     ]
@@ -320,7 +323,7 @@ export async function ExcursionKeywordLandingPage({ landingSlug, locale }: { lan
   const itemListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: landing.keyword,
+    name: normalizedLanding.keyword,
     itemListOrder: "https://schema.org/ItemListOrderAscending",
     numberOfItems: listItemSchema.length,
     itemListElement: listItemSchema
@@ -333,8 +336,8 @@ export async function ExcursionKeywordLandingPage({ landingSlug, locale }: { lan
       <section className="bg-gradient-to-br from-emerald-50 to-white">
         <div className="mx-auto max-w-6xl px-4 py-12">
           <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Proactivitis Tours</p>
-          <h1 className="mt-4 text-4xl font-black text-slate-900 md:text-5xl">{landing.titles[locale]}</h1>
-          <p className="mt-4 max-w-2xl text-base text-slate-600">{landing.descriptions[locale]}</p>
+          <h1 className="mt-4 text-4xl font-black text-slate-900 md:text-5xl">{normalizedLanding.titles[locale]}</h1>
+          <p className="mt-4 max-w-2xl text-base text-slate-600">{normalizedLanding.descriptions[locale]}</p>
           <div className="mt-6 grid gap-3 text-sm text-slate-600 md:grid-cols-3">
             {longCopy.map((item) => (
               <p key={item}>{item}</p>
@@ -345,7 +348,7 @@ export async function ExcursionKeywordLandingPage({ landingSlug, locale }: { lan
 
       <section className="mx-auto max-w-6xl px-4 py-10">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-slate-900">{landing.keyword}</h2>
+          <h2 className="text-2xl font-bold text-slate-900">{normalizedLanding.keyword}</h2>
           <Link href={locale === "es" ? "/tours" : `/${locale}/tours`} className="text-sm font-semibold text-emerald-600">
             {t("tours.destinations.cta")}
           </Link>

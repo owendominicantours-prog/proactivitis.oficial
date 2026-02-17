@@ -20,6 +20,7 @@ type PremiumDefaults = {
   suburbanImage: string;
   lifestyleImage: string;
   vipBullets: string[];
+  vipCertifications: string[];
 };
 
 type Props = {
@@ -160,6 +161,16 @@ export default function PremiumTransferSettingsForm({ locales, defaultsByLocale 
                   name="premium_vip_bullets"
                   rows={4}
                   defaultValue={defaults.vipBullets.join("\n")}
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                />
+              </label>
+
+              <label className="text-sm text-slate-600">
+                Certificaciones VIP (una por linea)
+                <textarea
+                  name="premium_vip_certifications"
+                  rows={4}
+                  defaultValue={defaults.vipCertifications.join("\n")}
                   className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
                 />
               </label>

@@ -1,33 +1,48 @@
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import type { Locale } from "@/lib/translations";
 import { getPremiumTransferContentOverrides } from "@/lib/siteContent";
 import { prisma } from "@/lib/prisma";
 import PremiumTransferBookingWidget from "@/components/transfers/PremiumTransferBookingWidget";
 import StructuredData from "@/components/schema/StructuredData";
-import { PROACTIVITIS_URL } from "@/lib/seo";
+import { PROACTIVITIS_URL, PROACTIVITIS_LOCALBUSINESS, SAME_AS_URLS } from "@/lib/seo";
+import { normalizeTextDeep } from "@/lib/text-format";
 
 const WHATSAPP_LINK = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/18093949877";
+const DOMINICAN_COUNTRY_CODES = ["RD", "DO", "DOMINICAN-REPUBLIC"];
 
 const LABELS = {
   es: {
     eliteRoute: "Ruta premium recomendada",
     galleryTitle: "Galeria VIP",
     fleetCadillac: "Cadillac Escalade Class",
-    fleetSuburban: "Chevrolet Suburban Class"
+    fleetSuburban: "Chevrolet Suburban Class",
+    connectedHotels: "Hoteles conectados para transfer VIP",
+    certificationsTitle: "Certificaciones VIP",
+    bookingFallback:
+      "No hay destinos premium disponibles ahora mismo. Escribe por WhatsApp para cotizacion inmediata.",
+    faqTitle: "Preguntas frecuentes VIP"
   },
   en: {
     eliteRoute: "Recommended premium route",
     galleryTitle: "VIP Gallery",
     fleetCadillac: "Cadillac Escalade Class",
-    fleetSuburban: "Chevrolet Suburban Class"
+    fleetSuburban: "Chevrolet Suburban Class",
+    connectedHotels: "Connected hotels for VIP transfer",
+    certificationsTitle: "VIP Certifications",
+    bookingFallback: "No premium destinations available right now. Message us on WhatsApp for instant quote.",
+    faqTitle: "VIP Frequently Asked Questions"
   },
   fr: {
     eliteRoute: "Itineraire premium recommande",
     galleryTitle: "Galerie VIP",
     fleetCadillac: "Cadillac Escalade Class",
-    fleetSuburban: "Chevrolet Suburban Class"
+    fleetSuburban: "Chevrolet Suburban Class",
+    connectedHotels: "Hotels connectes pour transfert VIP",
+    certificationsTitle: "Certifications VIP",
+    bookingFallback:
+      "Aucune destination premium disponible pour le moment. Ecrivez-nous sur WhatsApp pour un devis immediat.",
+    faqTitle: "Questions frequentes VIP"
   }
 } as const;
 
@@ -36,54 +51,106 @@ type Props = {
 };
 
 export default async function PremiumTransferLandingPage({ locale }: Props) {
-  const content = await getPremiumTransferContentOverrides(locale);
-  const copy = LABELS[locale] ?? LABELS.es;
+  const content = normalizeTextDeep(await getPremiumTransferContentOverrides(locale));
+  const copy = normalizeTextDeep(LABELS[locale] ?? LABELS.es);
 
-  const origin = await prisma.transferLocation.findFirst({
-    where: {
-      type: "AIRPORT",
-      countryCode: "RD",
-      active: true,
-      OR: [{ slug: { contains: "punta-cana" } }, { slug: { contains: "puj" } }]
-    },
-    orderBy: { name: "asc" },
-    select: { id: true, slug: true, name: true }
-  });
+  let origin:
+    | {
+        id: string;
+        slug: string;
+        name: string;
+      }
+    | null = null;
+  let origins: Array<{ id: string; slug: string; name: string }> = [];
+  let locationOptions: Array<{ id: string; slug: string; name: string }> = [];
+  let destinations: Array<{ id: string; slug: string; name: string }> = [];
 
-  if (!origin) notFound();
+  try {
+    origins = await prisma.transferLocation.findMany({
+      where: {
+        type: "AIRPORT",
+        countryCode: { in: DOMINICAN_COUNTRY_CODES },
+        active: true
+      },
+      select: { id: true, slug: true, name: true },
+      orderBy: { name: "asc" },
+      take: 20
+    });
 
-  let destinations = await prisma.transferLocation.findMany({
-    where: {
-      type: "HOTEL",
-      countryCode: "RD",
-      active: true,
-      zone: { slug: { contains: "punta-cana" } }
-    },
-    select: { id: true, slug: true, name: true },
-    orderBy: { name: "asc" },
-    take: 100
-  });
-  if (!destinations.length) {
+    const allHotelsAndAirports = await prisma.transferLocation.findMany({
+      where: {
+        active: true,
+        countryCode: { in: DOMINICAN_COUNTRY_CODES },
+        type: { in: ["HOTEL", "AIRPORT"] }
+      },
+      select: { id: true, slug: true, name: true },
+      orderBy: { name: "asc" },
+      take: 500
+    });
+    locationOptions = allHotelsAndAirports;
+
+    origin = await prisma.transferLocation.findFirst({
+      where: {
+        type: "AIRPORT",
+        countryCode: { in: DOMINICAN_COUNTRY_CODES },
+        active: true,
+        OR: [{ slug: { contains: "punta-cana" } }, { slug: { contains: "puj" } }]
+      },
+      orderBy: { name: "asc" },
+      select: { id: true, slug: true, name: true }
+    });
+    if (!origin) {
+      origin = origins[0] ?? null;
+    }
+
     destinations = await prisma.transferLocation.findMany({
       where: {
         type: "HOTEL",
-        countryCode: "RD",
-        active: true
+        countryCode: { in: DOMINICAN_COUNTRY_CODES },
+        active: true,
+        zone: { slug: { contains: "punta-cana" } }
       },
       select: { id: true, slug: true, name: true },
       orderBy: { name: "asc" },
       take: 100
     });
+    if (!destinations.length) {
+      destinations = await prisma.transferLocation.findMany({
+        where: {
+          type: "HOTEL",
+          countryCode: { in: DOMINICAN_COUNTRY_CODES },
+          active: true
+        },
+        select: { id: true, slug: true, name: true },
+        orderBy: { name: "asc" },
+        take: 100
+      });
+    }
+  } catch (error) {
+    console.warn("premium-transfer: fallback mode without transfer locations", error);
   }
+
+  const originFallback = {
+    id: "",
+    slug: "puj-airport",
+    name: "Punta Cana International Airport (PUJ)"
+  };
+  const safeOrigin = origin ?? originFallback;
+  const safeOrigins = origins.length ? origins : [safeOrigin];
+  const safeLocationOptions = locationOptions.length ? locationOptions : [...safeOrigins, ...destinations];
+  const canBook = safeLocationOptions.length > 1;
 
   const gallery = content.galleryImages ?? [];
   const bullets = content.vipBullets ?? [];
+  const certifications = content.vipCertifications ?? [];
 
   const canonicalPath =
     locale === "es" ? "/punta-cana/premium-transfer-services" : `/${locale}/punta-cana/premium-transfer-services`;
   const canonicalUrl = `${PROACTIVITIS_URL}${canonicalPath}`;
+  const homePath = locale === "es" ? "/" : `/${locale}`;
+  const puntaCanaPath = locale === "es" ? "/punta-cana/traslado" : `/${locale}/punta-cana/traslado`;
 
-  const schema = {
+  const serviceSchema = {
     "@context": "https://schema.org",
     "@type": "Service",
     name: content.heroTitle,
@@ -94,9 +161,7 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
       name: "Punta Cana"
     },
     provider: {
-      "@type": "LocalBusiness",
-      name: "Proactivitis",
-      url: PROACTIVITIS_URL
+      ...PROACTIVITIS_LOCALBUSINESS
     },
     offers: {
       "@type": "Offer",
@@ -104,6 +169,7 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
       url: canonicalUrl,
       priceCurrency: "USD"
     },
+    sameAs: SAME_AS_URLS,
     image: [
       content.heroBackgroundImage,
       content.heroSpotlightImage,
@@ -113,9 +179,110 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
     ].filter(Boolean)
   };
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
+        item: `${PROACTIVITIS_URL}${homePath}`
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Punta Cana Transfers",
+        item: `${PROACTIVITIS_URL}${puntaCanaPath}`
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: content.heroTitle,
+        item: canonicalUrl
+      }
+    ]
+  };
+
+  const faqQuestions =
+    locale === "es"
+      ? [
+          {
+            q: "Puedo reservar un transfer VIP para hoy?",
+            a: "Si hay disponibilidad de flota premium, confirmamos el servicio el mismo dia."
+          },
+          {
+            q: "Monitorean retrasos de vuelo?",
+            a: "Si, operamos con seguimiento de vuelo para ajustar la recogida automaticamente."
+          },
+          {
+            q: "Solo trabajan con Cadillac y Suburban?",
+            a: "Priorizamos SUVs premium como Cadillac Escalade y Chevrolet Suburban, sujetas a disponibilidad."
+          }
+        ]
+      : locale === "fr"
+      ? [
+          {
+            q: "Puis-je reserver un transfert VIP pour aujourd'hui ?",
+            a: "Si la flotte premium est disponible, nous confirmons le service le jour meme."
+          },
+          {
+            q: "Suivez-vous les retards de vol ?",
+            a: "Oui, nous utilisons le suivi de vol pour ajuster automatiquement la prise en charge."
+          },
+          {
+            q: "Travaillez-vous uniquement avec Cadillac et Suburban ?",
+            a: "Nous privilegions les SUV premium comme Cadillac Escalade et Chevrolet Suburban selon disponibilite."
+          }
+        ]
+      : [
+          {
+            q: "Can I book a VIP transfer for today?",
+            a: "If premium fleet is available, we can confirm same-day service."
+          },
+          {
+            q: "Do you track flight delays?",
+            a: "Yes, we monitor flights and adjust pickup time automatically."
+          },
+          {
+            q: "Do you only work with Cadillac and Suburban?",
+            a: "We prioritize premium SUVs such as Cadillac Escalade and Chevrolet Suburban, subject to availability."
+          }
+        ];
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqQuestions.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.a
+      }
+    }))
+  };
+
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: content.seoTitle,
+    description: content.seoDescription,
+    url: canonicalUrl,
+    inLanguage: locale,
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Proactivitis",
+      url: PROACTIVITIS_URL
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#020617] text-slate-100">
-      <StructuredData data={schema} />
+      <StructuredData data={serviceSchema} />
+      <StructuredData data={breadcrumbSchema} />
+      <StructuredData data={faqSchema} />
+      <StructuredData data={webPageSchema} />
 
       <section className="relative overflow-hidden border-b border-amber-200/20">
         <div className="absolute inset-0">
@@ -153,7 +320,7 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
               </Link>
             </div>
             <p className="text-xs uppercase tracking-[0.28em] text-slate-300">
-              {copy.eliteRoute}: {origin.name} {"->"} Punta Cana Resorts
+              {copy.eliteRoute}: {safeOrigin.name} {"->"} Punta Cana Resorts
             </p>
           </div>
           <div className="relative min-h-[380px] overflow-hidden rounded-[34px] border border-amber-200/30 shadow-[0_40px_90px_rgba(0,0,0,0.45)]">
@@ -169,21 +336,43 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
       </section>
 
       <section id="vip-booking" className="mx-auto max-w-7xl px-4 py-12">
-        {destinations.length ? (
+        {canBook ? (
           <PremiumTransferBookingWidget
             locale={locale}
-            originId={origin.id}
-            originSlug={origin.slug}
-            originLabel={origin.name}
-            destinations={destinations}
+            locations={safeLocationOptions}
             title={content.bookingTitle || "Book your premium transfer"}
+            cadillacImage={content.cadillacImage}
+            suburbanImage={content.suburbanImage}
           />
         ) : (
           <div className="rounded-2xl border border-amber-200/30 bg-slate-900/70 p-6 text-sm text-amber-100">
-            No hay destinos premium disponibles ahora mismo. Escribe por WhatsApp para cotizacion inmediata.
+            {copy.bookingFallback}
           </div>
         )}
       </section>
+
+      {destinations.length > 0 ? (
+        <section className="mx-auto max-w-7xl px-4 pb-12">
+          <article className="rounded-3xl border border-amber-200/20 bg-slate-900/60 p-6">
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-200">{copy.connectedHotels}</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {destinations.slice(0, 12).map((hotel) => (
+                <Link
+                  key={hotel.id}
+                  href={
+                    locale === "es"
+                      ? `/transfer/${safeOrigin.slug}-to-${hotel.slug}`
+                      : `/${locale}/transfer/${safeOrigin.slug}-to-${hotel.slug}`
+                  }
+                  className="rounded-xl border border-amber-200/25 bg-slate-800/70 px-3 py-3 text-sm text-slate-100 transition hover:border-amber-200/60"
+                >
+                  {hotel.name}
+                </Link>
+              ))}
+            </div>
+          </article>
+        </section>
+      ) : null}
 
       <section className="mx-auto grid max-w-7xl gap-6 px-4 pb-12 md:grid-cols-2">
         <article className="overflow-hidden rounded-3xl border border-amber-200/20 bg-slate-900/60">
@@ -234,6 +423,39 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
             {gallery.slice(0, 4).map((image, index) => (
               <div key={image + index} className="relative h-28 overflow-hidden rounded-xl">
                 <Image src={image} alt={`Premium gallery ${index + 1}`} fill className="object-cover" />
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      {certifications.length > 0 ? (
+        <section className="mx-auto max-w-7xl px-4 pb-14">
+          <article className="rounded-3xl border border-amber-200/20 bg-slate-900/60 p-6">
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-200">{copy.certificationsTitle}</p>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {certifications.map((item) => (
+                <div
+                  key={item}
+                  className="flex items-start gap-3 rounded-xl border border-amber-200/20 bg-slate-800/60 p-4"
+                >
+                  <span className="mt-0.5 text-base text-amber-200">✓</span>
+                  <p className="text-sm text-slate-100">{item}</p>
+                </div>
+              ))}
+            </div>
+          </article>
+        </section>
+      ) : null}
+
+      <section className="mx-auto max-w-7xl px-4 pb-20">
+        <article className="rounded-3xl border border-amber-200/20 bg-slate-900/60 p-6">
+          <p className="text-xs uppercase tracking-[0.3em] text-amber-200">{copy.faqTitle}</p>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {faqQuestions.map((item) => (
+              <div key={item.q} className="rounded-xl border border-amber-200/20 bg-slate-800/60 p-4">
+                <h3 className="text-sm font-semibold text-white">{item.q}</h3>
+                <p className="mt-2 text-xs text-slate-200">{item.a}</p>
               </div>
             ))}
           </div>

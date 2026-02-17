@@ -14,12 +14,18 @@ import { Locale, translate } from "@/lib/translations";
 import { TransferLocationType } from "@prisma/client";
 import { findDynamicLandingBySlug, getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import PublicTransferPage from "@/components/public/PublicTransferPage";
+import { normalizeTextDeep } from "@/lib/text-format";
 
 const DEFAULT_AIRPORT_SLUG = "puj-airport";
 const DEFAULT_AIRPORT_NAME = "Punta Cana International Airport (PUJ)";
 const BASE_URL = "https://proactivitis.com";
 const FALLBACK_PRICE = 44;
 const FALLBACK_HERO_IMAGES = ["/transfer/mini van.png", "/transfer/sedan.png", "/transfer/suv.png"];
+const DEFAULT_ORIGIN_LABELS: Record<Locale, string> = {
+  es: "Aeropuerto de Punta Cana (PUJ)",
+  en: "Punta Cana Airport (PUJ)",
+  fr: "Aeroport de Punta Cana (PUJ)"
+};
 
 const pickHeroImage = (slug: string) => {
   const hash = slug.split("").reduce((value, char) => value + char.charCodeAt(0), 0);
@@ -194,6 +200,30 @@ const ensureMetaDescription = (description: string, locale: Locale, hotelName?: 
   return `${base} ${buildMetaSuffix(locale, hotelName)}`.trim();
 };
 
+const buildMarketTransferTitles = (
+  locale: Locale,
+  hotelName: string,
+  originName?: string
+): { heroTitle: string; seoTitle: string } => {
+  const origin = originName?.trim() || DEFAULT_ORIGIN_LABELS[locale] || DEFAULT_ORIGIN_LABELS.es;
+  if (locale === "en") {
+    return {
+      heroTitle: `${origin} to ${hotelName} Private Transfer`,
+      seoTitle: `${hotelName} Private Transfer from Punta Cana Airport (PUJ)`
+    };
+  }
+  if (locale === "fr") {
+    return {
+      heroTitle: `Transfert prive ${origin} vers ${hotelName}`,
+      seoTitle: `${hotelName} transfert prive depuis l'aeroport de Punta Cana (PUJ)`
+    };
+  }
+  return {
+    heroTitle: `Traslado privado ${origin} a ${hotelName}`,
+    seoTitle: `${hotelName}: traslado privado desde el aeropuerto de Punta Cana (PUJ)`
+  };
+};
+
 export async function buildTransferMetadata(landingSlug: string, locale: Locale): Promise<Metadata> {
   const generic = findGenericTransferLandingBySlug(landingSlug);
   if (generic) {
@@ -245,7 +275,8 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
   if (!landing) return {};
   const localized = await localizeLanding(landing, locale);
   const canonical = buildCanonical(landing.landingSlug, locale);
-  const seoTitle = `${localized.seoTitle} | Proactivitis`;
+  const marketTitles = buildMarketTransferTitles(locale, landing.hotelName);
+  const seoTitle = `${marketTitles.seoTitle} | Proactivitis`;
   const rawDescription = ensureMetaDescription(localized.metaDescription, locale, landing.hotelName);
   const seoDescription = rawDescription.endsWith(".") ? rawDescription : `${rawDescription}.`;
   const imageUrl = encodeURI(`${BASE_URL}${localized.heroImage}`);
@@ -313,7 +344,7 @@ export async function TransferLandingPage({
 
   const landing = await resolveLanding(landingSlug);
   if (!landing) return notFound();
-  const localizedLanding = await localizeLanding(landing, locale);
+  const localizedLanding = normalizeTextDeep(await localizeLanding(landing, locale));
 
   const originSlug = landing.landingSlug.includes("-to-") ? landing.landingSlug.split("-to-")[0] : DEFAULT_AIRPORT_SLUG;
   const [originLocation, destinationLocation] = await Promise.all([
@@ -323,6 +354,11 @@ export async function TransferLandingPage({
   if (!originLocation || !destinationLocation) {
     return notFound();
   }
+  const marketTitles = buildMarketTransferTitles(
+    locale,
+    localizedLanding.hotelName,
+    originLocation.name ?? DEFAULT_AIRPORT_NAME
+  );
 
   const defaultDeparture = formatDateTime(new Date(Date.now() + 2 * 60 * 60 * 1000));
 
@@ -390,7 +426,7 @@ export async function TransferLandingPage({
       {
         "@type": "ListItem",
         position: 3,
-        name: localizedLanding.heroTitle,
+        name: marketTitles.heroTitle,
         item: buildCanonical(landing.landingSlug, locale)
       }
     ]
@@ -416,7 +452,7 @@ export async function TransferLandingPage({
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 lg:grid-cols-2">
           <div className="space-y-4">
             <p className="text-xs uppercase tracking-[0.5em] text-emerald-600">{t("transferLanding.hero.label")}</p>
-            <h1 className="text-3xl font-black text-slate-900 md:text-4xl">{localizedLanding.heroTitle}</h1>
+            <h1 className="text-3xl font-black text-slate-900 md:text-4xl">{marketTitles.heroTitle}</h1>
             <p className="text-lg text-slate-600">{localizedLanding.heroSubtitle}</p>
             <p className="text-sm text-slate-500">{localizedLanding.heroTagline}</p>
           </div>
@@ -433,7 +469,8 @@ export async function TransferLandingPage({
       </section>
       <section className="mx-auto max-w-6xl px-4 py-12">
         <p className="text-sm text-slate-500">
-          {t("transferLanding.route.label")} {originLocation.name ?? DEFAULT_AIRPORT_NAME}  {localizedLanding.hotelName}
+          {t("transferLanding.route.label")} {originLocation.name ?? DEFAULT_AIRPORT_NAME} {"->"}{" "}
+          {localizedLanding.hotelName}
         </p>
         <TransferQuoteCards
           originId={originLocation.id}

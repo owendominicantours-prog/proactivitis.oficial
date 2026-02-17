@@ -192,7 +192,8 @@ export default async function AdminSettingsPage() {
       cadillacImage: premium.cadillacImage ?? "",
       suburbanImage: premium.suburbanImage ?? "",
       lifestyleImage: premium.lifestyleImage ?? "",
-      vipBullets: premium.vipBullets ?? []
+      vipBullets: premium.vipBullets ?? [],
+      vipCertifications: premium.vipCertifications ?? []
     };
   };
 

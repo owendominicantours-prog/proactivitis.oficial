@@ -8,6 +8,7 @@ import { getApprovedTourReviews, getTourReviewSummary } from "@/lib/tourReviews"
 import Link from "next/link";
 import SosuaPartyBoatOptions from "@/components/public/SosuaPartyBoatOptions";
 import { SOSUA_PARTY_BOAT_VARIANTS } from "@/data/sosua-party-boat-variants";
+import { normalizeTextDeep } from "@/lib/text-format";
 
 const TOUR_SLUG = "party-boat-sosua";
 const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
@@ -75,27 +76,27 @@ const buildOptionPricingLabel = (option: {
 
 const BASE_COPY = {
   eyebrow: "Sosua Party Boat",
-  title: "Sosua Party Boats | Book Your Private Boats Tours",
+  title: "Sosua Party Boat | Private Catamaran, Snorkeling and Open Bar",
   subtitle:
-    "Open bar, snorkel, snacks y BBQ con vibra caribeña y equipo profesional. Elige la opción que más te conviene y reserva en minutos.",
+    "Open bar, snorkel, snacks y BBQ con vibra caribena y equipo profesional. Elige la opcion que mas te conviene y reserva en minutos.",
   highlights: [
-    "Open bar real con bebidas locales y cócteles fríos.",
+    "Open bar real con bebidas locales y cocteles frios.",
     "Parada para snorkel en arrecifes y aguas cristalinas.",
-    "Staff especializado y coordinación de pick-up desde hoteles."
+    "Staff especializado y coordinacion de pick-up desde hoteles."
   ],
-  overviewTitle: "¿Qué hace diferente el Party Boat de Sosua?",
+  overviewTitle: "Que hace diferente el Party Boat de Sosua?",
   overviewBody:
-    "En Sosua la clave es la logística. Nosotros coordinamos todo: transporte, horarios, bebidas y servicio. Te subes al catamarán con todo listo y un equipo que se encarga de que solo disfrutes. Esta experiencia combina mar abierto, música, snacks y un ambiente seguro para grupos y celebraciones.",
+    "En Sosua la clave es la logistica. Nosotros coordinamos todo: transporte, horarios, bebidas y servicio. Te subes al catamaran con todo listo y un equipo que se encarga de que solo disfrutes. Esta experiencia combina mar abierto, musica, snacks y un ambiente seguro para grupos y celebraciones.",
   experienceTitle: "Experiencia completa en el Caribe norte",
   experienceBody:
-    "Navega por la costa de Puerto Plata, disfruta aguas cristalinas y un equipo que se ocupa del ritmo. La excursión tiene horarios claros, regreso garantizado y un itinerario diseñado para aprovechar cada hora en el mar.",
+    "Navega por la costa de Puerto Plata, disfruta aguas cristalinas y un equipo que se ocupa del ritmo. La excursion tiene horarios claros, regreso garantizado y un itinerario disenado para aprovechar cada hora en el mar.",
   optionTitle: "Opciones disponibles",
   optionSubtitle: "Tres formas de vivir Sosua Party Boat. Selecciona la tuya.",
   inclusionsTitle: "Incluye",
   scheduleTitle: "Horarios de recogida",
   bookingTitle: "Reserva hoy",
   bookingSubtitle:
-    "Selecciona fecha, número de viajeros y elige la opción ideal. Confirmación rápida y soporte inmediato.",
+    "Selecciona fecha, numero de viajeros y elige la opcion ideal. Confirmacion rapida y soporte inmediato.",
   testimonialsTitle: "Opiniones reales de viajeros",
   testimonials: [
     {
@@ -104,11 +105,11 @@ const BASE_COPY = {
     },
     {
       name: "Carlos R.",
-      quote: "Todo organizado, pick-up puntual y el equipo súper atento. Repetiríamos sin dudar."
+      quote: "Todo organizado, pick-up puntual y el equipo super atento. Repetiriamos sin dudar."
     },
     {
       name: "Sophie L.",
-      quote: "Ambiente increíble y vista preciosa. Perfecto para grupos y celebraciones."
+      quote: "Ambiente increible y vista preciosa. Perfecto para grupos y celebraciones."
     }
   ],
   seoSections: [
@@ -120,36 +121,36 @@ const BASE_COPY = {
     {
       title: "Sosua Party Boats | Private Yacht Charters",
       body:
-        "Opciones privadas con tripulación dedicada, música y open bar. Perfecto para cumpleaños, despedidas y eventos especiales."
+        "Opciones privadas con tripulacion dedicada, musica y open bar. Perfecto para cumpleanos, despedidas y eventos especiales."
     },
     {
       title: "Sosua Party Boat con Brunch, Drinks y Snacks",
       body:
-        "Plan completo con bebidas frías, snacks y brunch ligero. Reserva rápida con confirmación directa."
+        "Plan completo con bebidas frias, snacks y brunch ligero. Reserva rapida con confirmacion directa."
     },
     {
       title: "Sosua Party Boats | Book Your Private Boats Tours",
       body:
-        "Reserva directa con atención humana, logística clara y horarios confirmados. Experiencia diseñada para disfrutar sin estrés."
+        "Reserva directa con atencion humana, logistica clara y horarios confirmados. Experiencia disenada para disfrutar sin estres."
     }
   ],
   faqTitle: "Preguntas frecuentes",
   faqs: [
     {
-      q: "¿Cuánto dura el tour de Sosua Party Boat?",
-      a: "Normalmente dura alrededor de 4 horas, según la opción elegida y la logística del día."
+      q: "Cuanto dura el tour de Sosua Party Boat?",
+      a: "Normalmente dura alrededor de 4 horas, segun la opcion elegida y la logistica del dia."
     },
     {
-      q: "¿Incluye recogida en hotel?",
-      a: "Sí, coordinamos pick-up en hoteles de Sosua, Cabarete y zonas cercanas tras confirmar la reserva."
+      q: "Incluye recogida en hotel?",
+      a: "Si, coordinamos pick-up en hoteles de Sosua, Cabarete y zonas cercanas tras confirmar la reserva."
     },
     {
-      q: "¿Qué incluye el open bar?",
-      a: "Bebidas locales, refrescos y cócteles básicos durante la salida."
+      q: "Que incluye el open bar?",
+      a: "Bebidas locales, refrescos y cocteles basicos durante la salida."
     },
     {
-      q: "¿Puedo reservar un barco privado?",
-      a: "Sí. Tenemos opciones privadas con tripulación dedicada y horarios personalizados."
+      q: "Puedo reservar un barco privado?",
+      a: "Si. Tenemos opciones privadas con tripulacion dedicada y horarios personalizados."
     }
   ]
 };
@@ -237,17 +238,17 @@ const localizeCopy = async (locale: Locale): Promise<SosuaLandingCopy> => {
 const getOptionDetails = (optionName: string) => {
   const normalized = optionName.toLowerCase();
   if (normalized.includes("vip")) {
-    return ["Brunch premium incluido", "Open bar ilimitado", "Atención personalizada"];
+    return ["Brunch premium incluido", "Open bar ilimitado", "Atencion personalizada"];
   }
   if (normalized.includes("private")) {
-    return ["Catamarán privado", "Snack + bebidas incluidas", "Ideal para grupos y eventos"];
+    return ["Catamaran privado", "Snack + bebidas incluidas", "Ideal para grupos y eventos"];
   }
-  return ["Catamarán compartido", "Barra libre incluida", "Ambiente social y animación"];
+  return ["Catamaran compartido", "Barra libre incluida", "Ambiente social y animacion"];
 };
 
 export async function buildSosuaPartyBoatMetadata(locale: Locale): Promise<Metadata> {
   const [copy, tour] = await Promise.all([
-    localizeCopy(locale),
+    localizeCopy(locale).then((content) => normalizeTextDeep(content)),
     prisma.tour.findFirst({
       where: { slug: TOUR_SLUG },
       select: { heroImage: true, gallery: true }
@@ -317,7 +318,7 @@ export async function buildSosuaPartyBoatMetadata(locale: Locale): Promise<Metad
 
 export default async function SosuaPartyBoatLanding({ locale }: { locale: Locale }) {
   const [copy, tour] = await Promise.all([
-    localizeCopy(locale),
+    localizeCopy(locale).then((content) => normalizeTextDeep(content)),
     prisma.tour.findFirst({
       where: { slug: TOUR_SLUG },
       include: {
@@ -528,7 +529,7 @@ export default async function SosuaPartyBoatLanding({ locale }: { locale: Locale
             )}
             <div className="mt-4 space-y-2 text-xs uppercase tracking-[0.3em] text-slate-300">
               {pickupTimes.length ? (
-                <span>{pickupTimes.join(" · ")}</span>
+                <span>{pickupTimes.join(" - ")}</span>
               ) : (
                 <span>Pick-up confirmado tras la reserva</span>
               )}
@@ -596,14 +597,14 @@ export default async function SosuaPartyBoatLanding({ locale }: { locale: Locale
         <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400">{copy.scheduleTitle}</p>
           <p className="mt-3 text-sm text-slate-700">
-            {pickupTimes.length ? pickupTimes.join(" · ") : "Pick-up confirmado tras la reserva"}
+            {pickupTimes.length ? pickupTimes.join(" - ") : "Pick-up confirmado tras la reserva"}
           </p>
           <Link
             href={mainTourHref}
             className="mt-4 inline-block text-sm font-semibold text-emerald-700 underline underline-offset-2"
           >
             {locale === "es"
-              ? "Ver ficha completa del Sosua Party Boat con reseñas verificadas"
+              ? "Ver ficha completa del Sosua Party Boat con resenas verificadas"
               : locale === "en"
                 ? "View full Sosua Party Boat product page with verified reviews"
                 : "Voir la fiche complete Sosua Party Boat avec avis verifies"}
@@ -617,7 +618,7 @@ export default async function SosuaPartyBoatLanding({ locale }: { locale: Locale
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             {copy.testimonials.map((item) => (
               <div key={item.name} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <p className="text-sm text-slate-700">“{item.quote}”</p>
+                <p className="text-sm text-slate-700">"{item.quote}"</p>
                 <p className="mt-3 text-xs uppercase tracking-[0.3em] text-slate-500">{item.name}</p>
               </div>
             ))}

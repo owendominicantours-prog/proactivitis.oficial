@@ -23,6 +23,7 @@ import HotelGallerySlider from "@/components/public/HotelGallerySlider";
 import HotelQuoteWidget from "@/components/public/HotelQuoteWidget";
 import { Locale, translate } from "@/lib/translations";
 import { getHotelLandingOverrides } from "@/lib/siteContent";
+import { normalizeTextDeep } from "@/lib/text-format";
 
 const BASE_URL = "https://proactivitis.com";
 const FALLBACK_IMAGE = "/transfer/mini van.png";
@@ -277,7 +278,7 @@ export async function buildThingsToDoMetadata(
 ): Promise<Metadata> {
   const hotel = await getHotel(hotelSlug);
   if (!hotel) return {};
-  const overrides = await getHotelLandingOverrides(hotelSlug, locale);
+  const overrides = normalizeTextDeep(await getHotelLandingOverrides(hotelSlug, locale));
 
   const fallbackTitle =
     locale === "es"
@@ -344,11 +345,11 @@ export async function ThingsToDoHotelPage({
   const hotel = await getHotel(hotelSlug);
   if (!hotel) return notFound();
 
-  const overrides = await getHotelLandingOverrides(hotelSlug, locale);
+  const overrides = normalizeTextDeep(await getHotelLandingOverrides(hotelSlug, locale));
 
   const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
     translate(locale, key, replacements);
-  const ui = UI_COPY[locale] ?? UI_COPY.es;
+  const ui = normalizeTextDeep(UI_COPY[locale] ?? UI_COPY.es);
 
   const transferSlug = buildTransferSlug(hotel.slug);
   const allTransferLandings = allLandings();

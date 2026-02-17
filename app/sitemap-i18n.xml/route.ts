@@ -64,6 +64,7 @@ export async function GET() {
       buildEntry(`${BASE_URL}/${locale}`, 1.0),
       buildEntry(`${BASE_URL}/${locale}/tours`, 0.9),
       buildEntry(`${BASE_URL}/${locale}/traslado`, 0.9),
+      buildEntry(`${BASE_URL}/${locale}/punta-cana/premium-transfer-services`, 0.85),
       buildEntry(`${BASE_URL}/${locale}/contact`, 0.7)
     );
 

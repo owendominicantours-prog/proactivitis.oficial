@@ -8,6 +8,7 @@ import SosuaPartyBoatOptions from "@/components/public/SosuaPartyBoatOptions";
 import TourGalleryCollage from "@/components/tours/TourGalleryCollage";
 import GalleryLightbox from "@/components/shared/GalleryLightbox";
 import { SOSUA_PARTY_BOAT_VARIANTS, type SosuaPartyBoatVariant } from "@/data/sosua-party-boat-variants";
+import { normalizeTextDeep } from "@/lib/text-format";
 
 const TOUR_SLUG = "party-boat-sosua";
 const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
@@ -86,19 +87,19 @@ const getVariantCopy = (variant: SosuaPartyBoatVariant, locale: Locale) => ({
 const getOptionDetails = (optionName: string) => {
   const normalized = optionName.toLowerCase();
   if (normalized.includes("vip")) {
-    return ["Brunch premium incluido", "Open bar ilimitado", "Atención personalizada"];
+    return ["Brunch premium incluido", "Open bar ilimitado", "Atencion personalizada"];
   }
   if (normalized.includes("private")) {
-    return ["Catamarán privado", "Snack + bebidas incluidas", "Ideal para grupos y eventos"];
+    return ["Catamaran privado", "Snack + bebidas incluidas", "Ideal para grupos y eventos"];
   }
-  return ["Catamarán compartido", "Barra libre incluida", "Ambiente social y animación"];
+  return ["Catamaran compartido", "Barra libre incluida", "Ambiente social y animacion"];
 };
 
 export async function buildSosuaPartyBoatVariantMetadata(
   locale: Locale,
   variant: SosuaPartyBoatVariant
 ): Promise<Metadata> {
-  const copy = getVariantCopy(variant, locale);
+  const copy = normalizeTextDeep(getVariantCopy(variant, locale));
   const tour = await prisma.tour.findFirst({
     where: { slug: TOUR_SLUG },
     select: { heroImage: true, gallery: true }
@@ -186,7 +187,7 @@ export default async function SosuaPartyBoatVariantLanding({
     notFound();
   }
 
-  const copy = getVariantCopy(variant, locale);
+  const copy = normalizeTextDeep(getVariantCopy(variant, locale));
   const translation = tour.translations?.[0];
   const localizedTitle = translation?.title ?? tour.title;
   const localizedShortDescription =

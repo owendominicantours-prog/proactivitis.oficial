@@ -240,7 +240,8 @@ export async function updatePremiumTransferContentAction(formData: FormData) {
     cadillacImage: readField(formData, "premium_cadillac_image"),
     suburbanImage: readField(formData, "premium_suburban_image"),
     lifestyleImage: readField(formData, "premium_lifestyle_image"),
-    vipBullets: parseLines(readField(formData, "premium_vip_bullets"))
+    vipBullets: parseLines(readField(formData, "premium_vip_bullets")),
+    vipCertifications: parseLines(readField(formData, "premium_vip_certifications"))
   };
 
   const existing = await prisma.siteContentSetting.findUnique({ where: { key: "PREMIUM_TRANSFER_LANDING" } });
