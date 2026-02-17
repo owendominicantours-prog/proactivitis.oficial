@@ -1234,6 +1234,9 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       image: relatedImage.startsWith("http") ? relatedImage : `${PROACTIVITIS_URL}${relatedImage}`
     };
   });
+  const isSosuaPartyBoatTour =
+    tour.slug === "party-boat-sosua" ||
+    tour.slug === "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua";
   const commercialIntentLinks = buildCommercialIntentLinks(locale, tour.slug);
 
   const approvedReviews = await getApprovedTourReviews(tour.id);
@@ -1848,6 +1851,31 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
             <div className="mt-6">
               <TourReviewForm tourId={tour.id} locale={locale} />
             </div>
+            {isSosuaPartyBoatTour && reviewHighlights.length ? (
+              <div className="rounded-[16px] border border-emerald-100 bg-emerald-50/60 p-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-emerald-700">
+                  {localeLabel(locale, "Resenas verificadas", "Verified reviews", "Avis verifies")}
+                </p>
+                <h3 className="mt-2 text-sm font-semibold text-slate-900">
+                  {localeLabel(
+                    locale,
+                    "Lo que dicen clientes reales de Sosua Party Boat",
+                    "What real travelers say about Sosua Party Boat",
+                    "Ce que disent les vrais voyageurs sur Sosua Party Boat"
+                  )}
+                </h3>
+                <div className="mt-3 grid gap-3 md:grid-cols-3">
+                  {reviewHighlights.slice(0, 3).map((item) => (
+                    <article key={item.id} className="rounded-xl border border-emerald-100 bg-white p-3">
+                      <p className="text-sm text-slate-700">"{item.quote}"</p>
+                      <p className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                        {item.name}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </section>
 
           <section id="faq" className="space-y-4">

@@ -201,6 +201,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   const params = resolvedSearchParams ?? {};
   const puntaCanaHubHref = locale === "es" ? "/punta-cana/tours" : `/${locale}/punta-cana/tours`;
   const tourHref = (slug: string) => (locale === "es" ? `/tours/${slug}` : `/${locale}/tours/${slug}`);
+  const sosuaPartyBoatHref = tourHref("party-boat-sosua");
 
   let countries: CountryOption[] = [];
   try {
@@ -479,6 +480,25 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                   <li>{t("tours.seo.list.item3")}</li>
                   <li>{t("tours.seo.list.item4")}</li>
                 </ul>
+              </div>
+              <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700">
+                  {locale === "es"
+                    ? "Recomendado en costa norte"
+                    : locale === "en"
+                      ? "North coast top pick"
+                      : "Choix top cote nord"}
+                </p>
+                <Link
+                  href={sosuaPartyBoatHref}
+                  className="mt-2 inline-block text-sm font-semibold text-emerald-800 underline underline-offset-2"
+                >
+                  {locale === "es"
+                    ? "Sosua Party Boat: precios, open bar y opcion privada"
+                    : locale === "en"
+                      ? "Sosua Party Boat: prices, open bar, and private option"
+                      : "Sosua Party Boat : prix, open bar et option privee"}
+                </Link>
               </div>
             </div>
 

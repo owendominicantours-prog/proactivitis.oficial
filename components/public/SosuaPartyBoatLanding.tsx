@@ -442,6 +442,7 @@ export default async function SosuaPartyBoatLanding({ locale }: { locale: Locale
   };
 
   const hasRatings = reviewSummary.count > 0;
+  const mainTourHref = locale === "es" ? "/tours/party-boat-sosua" : `/${locale}/tours/party-boat-sosua`;
   const offerPrice = Number.isFinite(tour.price) ? Number(tour.price.toFixed(2)) : undefined;
   const tourSchema = {
     "@context": "https://schema.org",
@@ -597,6 +598,16 @@ export default async function SosuaPartyBoatLanding({ locale }: { locale: Locale
           <p className="mt-3 text-sm text-slate-700">
             {pickupTimes.length ? pickupTimes.join(" · ") : "Pick-up confirmado tras la reserva"}
           </p>
+          <Link
+            href={mainTourHref}
+            className="mt-4 inline-block text-sm font-semibold text-emerald-700 underline underline-offset-2"
+          >
+            {locale === "es"
+              ? "Ver ficha completa del Sosua Party Boat con reseñas verificadas"
+              : locale === "en"
+                ? "View full Sosua Party Boat product page with verified reviews"
+                : "Voir la fiche complete Sosua Party Boat avec avis verifies"}
+          </Link>
         </div>
       </section>
 

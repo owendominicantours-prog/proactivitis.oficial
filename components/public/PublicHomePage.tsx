@@ -28,6 +28,21 @@ const PUNTA_CANA_LINKS = [
   { slug: "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana", labelKey: "puntaCana.links.item.10" }
 ] as const;
 
+const SOSUA_PARTY_BOAT_LINKS = [
+  {
+    slug: "party-boat-sosua",
+    es: "Sosua Party Boat: precios y opciones VIP",
+    en: "Sosua Party Boat: prices and VIP options",
+    fr: "Sosua Party Boat : prix et options VIP"
+  },
+  {
+    slug: "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua",
+    es: "Barco privado en Sosua desde Puerto Plata",
+    en: "Private party boat in Sosua from Puerto Plata",
+    fr: "Bateau prive a Sosua depuis Puerto Plata"
+  }
+] as const;
+
 export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
     translate(locale, key, replacements);
@@ -133,6 +148,29 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
                 className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
               >
                 {t(item.labelKey)}
+              </Link>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+            Sosua Party Boat
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+            {locale === "es"
+              ? "Reserva tu party boat en Sosua al mejor precio"
+              : locale === "en"
+                ? "Book your Sosua party boat at the best price"
+                : "Reservez votre party boat a Sosua au meilleur prix"}
+          </h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {SOSUA_PARTY_BOAT_LINKS.map((item) => (
+              <Link
+                key={item.slug}
+                href={tourHref(item.slug)}
+                className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
+              >
+                {locale === "es" ? item.es : locale === "en" ? item.en : item.fr}
               </Link>
             ))}
           </div>
