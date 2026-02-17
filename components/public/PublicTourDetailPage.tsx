@@ -37,6 +37,11 @@ const PUNTA_CANA_TOP_TOURS = new Set([
   "transfer-privado-proactivitis"
 ]);
 
+const NORTH_COAST_PARTY_BOAT_TOURS = new Set([
+  "party-boat-sosua",
+  "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua"
+]);
+
 const TOUR_H1_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
   "tour-en-buggy-en-punta-cana": {
     es: "Tour en buggy en Punta Cana: barro, cueva y aventura",
@@ -102,6 +107,11 @@ const TOUR_H1_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     es: "Barco privado en Sosua desde Puerto Plata",
     en: "Private party boat in Sosua from Puerto Plata",
     fr: "Bateau prive a Sosua depuis Puerto Plata"
+  },
+  "party-boat-sosua": {
+    es: "Sosua Party Boat: snorkel, open bar y opcion privada",
+    en: "Sosua Party Boat: snorkel, open bar, private option",
+    fr: "Sosua Party Boat : snorkel, open bar, option privee"
   }
 };
 
@@ -589,6 +599,50 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
         answer: "Excursion a la journee avec depart tot."
       }
     ]
+  },
+  "party-boat-sosua": {
+    es: [
+      {
+        question: "Cuanto cuesta el Sosua Party Boat?",
+        answer: "Las salidas compartidas empiezan desde USD 65 por persona. Tambien hay opciones privadas y VIP para grupos."
+      },
+      {
+        question: "El tour incluye open bar y snorkel?",
+        answer: "Si, incluye open bar, musica a bordo, parada de snorkel y tiempo para disfrutar la bahia de Sosua."
+      },
+      {
+        question: "Hay pickup desde Puerto Plata, Amber Cove o Taino Bay?",
+        answer: "Si, coordinamos recogida en Puerto Plata y zonas de cruceros segun horario y disponibilidad."
+      }
+    ],
+    en: [
+      {
+        question: "How much is the Sosua Party Boat?",
+        answer: "Shared departures start from USD 65 per person. Private and VIP options are also available for groups."
+      },
+      {
+        question: "Does it include open bar and snorkeling?",
+        answer: "Yes, it includes open bar, onboard music, a snorkeling stop, and swim time in Sosua Bay."
+      },
+      {
+        question: "Is pickup available from Puerto Plata, Amber Cove, or Taino Bay?",
+        answer: "Yes, we coordinate pickup from Puerto Plata and cruise-port areas based on schedule and availability."
+      }
+    ],
+    fr: [
+      {
+        question: "Combien coute le Sosua Party Boat?",
+        answer: "Les departs partages commencent a USD 65 par personne. Des options privees et VIP sont aussi disponibles."
+      },
+      {
+        question: "Le tour inclut-il open bar et snorkeling?",
+        answer: "Oui, open bar, musique a bord, arret snorkeling et temps de baignade dans la baie de Sosua sont inclus."
+      },
+      {
+        question: "Pickup possible depuis Puerto Plata, Amber Cove ou Taino Bay?",
+        answer: "Oui, nous coordonnons la prise en charge depuis Puerto Plata et les zones de croisiere selon horaire et disponibilite."
+      }
+    ]
   }
 };
 
@@ -711,6 +765,30 @@ const TOUR_SCHEMA_KEYWORDS: Record<Locale, string[]> = {
     "choses a faire punta cana",
     "prise en charge hotel punta cana",
     "transferts punta cana"
+  ]
+};
+
+const NORTH_COAST_SCHEMA_KEYWORDS: Record<Locale, string[]> = {
+  es: [
+    "sosua party boat",
+    "party boat sosua prices",
+    "puerto plata party boat",
+    "barco privado sosua",
+    "catamaran sosua"
+  ],
+  en: [
+    "sosua party boat",
+    "party boat sosua prices",
+    "puerto plata party boat",
+    "private party boat sosua",
+    "sosua catamaran"
+  ],
+  fr: [
+    "party boat sosua",
+    "prix party boat sosua",
+    "party boat puerto plata",
+    "bateau prive sosua",
+    "catamaran sosua"
   ]
 };
 
@@ -1281,7 +1359,9 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   );
   const schemaKeywords = PUNTA_CANA_TOP_TOURS.has(tour.slug)
     ? TOUR_SCHEMA_KEYWORDS[locale]
-    : undefined;
+    : NORTH_COAST_PARTY_BOAT_TOURS.has(tour.slug)
+      ? NORTH_COAST_SCHEMA_KEYWORDS[locale]
+      : undefined;
   const aggregateRating =
     detailReviewCount > 0
       ? {

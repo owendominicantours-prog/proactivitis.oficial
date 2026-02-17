@@ -69,7 +69,11 @@ const TOUR_KEYWORDS_BY_SLUG: Record<string, Partial<Record<Locale, string[]>>> =
     es: [
       "sosua party boat",
       "party boat sosua",
+      "sosua party boat precios",
+      "party boat sosua prices",
       "boat party puerto plata",
+      "puerto plata party boat",
+      "luxury yacht rental sosua",
       "sosua catamaran",
       "private party boat sosua"
     ],
@@ -78,14 +82,19 @@ const TOUR_KEYWORDS_BY_SLUG: Record<string, Partial<Record<Locale, string[]>>> =
       "party boat sosua prices",
       "best party boat in sosua",
       "puerto plata boat party",
+      "puerto plata party boat",
+      "sosua private catamaran",
+      "sosua yacht rental",
       "private yacht sosua"
     ],
     fr: [
       "party boat sosua",
+      "prix party boat sosua",
       "catamaran sosua",
       "bateau prive sosua",
       "sortie bateau puerto plata",
-      "soiree bateau sosua"
+      "soiree bateau sosua",
+      "location yacht sosua"
     ]
   },
   "sunset-catamaran-snorkel": {
@@ -211,9 +220,9 @@ const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     fr: "Samana et Cayo Levantado depuis Punta Cana"
   },
   "party-boat-sosua": {
-    es: "Sosua Party Boat con open bar y snorkel",
-    en: "Sosua party boat with open bar and snorkel",
-    fr: "Party boat a Sosua avec open bar et snorkel"
+    es: "Sosua Party Boat: precios, privado y VIP",
+    en: "Sosua Party Boat: prices, private and VIP",
+    fr: "Sosua Party Boat: prix, prive et VIP"
   },
   "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua": {
     es: "Barco privado en Sosua desde Puerto Plata",
@@ -283,9 +292,9 @@ const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>
     fr: "Journee Samana depuis Punta Cana avec Cayo Levantado, cascade El Limon, plage et dejeuner."
   },
   "party-boat-sosua": {
-    es: "Sosua Party Boat con open bar, snorkel y pick-up desde Puerto Plata. Opciones compartida, privada o VIP.",
-    en: "Sosua party boat with open bar, snorkel and pickup from Puerto Plata. Shared, private and VIP options.",
-    fr: "Party boat a Sosua avec open bar, snorkel et pickup depuis Puerto Plata. Options share, private et VIP."
+    es: "Sosua Party Boat desde USD 65 con open bar, snorkel y pick-up en Puerto Plata. Elige opcion compartida, privada o VIP.",
+    en: "Sosua Party Boat from USD 65 with open bar, snorkel, and Puerto Plata pickup. Choose shared, private, or VIP options.",
+    fr: "Sosua Party Boat des 65 USD avec open bar, snorkel et pickup Puerto Plata. Option partagee, privee ou VIP."
   },
   "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua": {
     es: "Barco privado para fiestas en Sosua con todo incluido, open bar y snorkel. Salida desde Puerto Plata.",
