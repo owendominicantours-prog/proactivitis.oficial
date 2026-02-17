@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import type { TourSearchParams } from "@/lib/filterBuilder";
 import { es } from "@/lib/translations";
 import PublicToursPage from "@/components/public/PublicToursPage";
@@ -6,15 +6,15 @@ import PublicToursPage from "@/components/public/PublicToursPage";
 const canonicalUrl = "https://proactivitis.com/tours";
 
 export const metadata: Metadata = {
-  title: "Tours y excursiones en Punta Cana | Proactivitis",
+  title: "Mejores Tours y Excursiones en Punta Cana | Proactivitis",
   description:
-    "Reserva tours, excursiones y actividades en Punta Cana con precios claros, recogida en hotel y confirmacion inmediata. Compara opciones y reserva en minutos.",
+    "Reserva los mejores tours en Punta Cana con recogida en hotel, precios claros y confirmacion inmediata. Saona, buggies, catamaran, party boat y mas.",
   keywords: [
-    "tours punta cana",
+    "mejores tours punta cana",
     "excursiones punta cana",
-    "actividades punta cana",
-    "tours con recogida en hotel",
-    "mejores tours punta cana"
+    "isla saona tour",
+    "buggy punta cana",
+    "party boat punta cana"
   ],
   alternates: {
     canonical: canonicalUrl,
@@ -26,16 +26,16 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: "Tours y excursiones en Punta Cana | Proactivitis",
+    title: "Mejores Tours y Excursiones en Punta Cana | Proactivitis",
     description:
-      "Reserva tours, excursiones y actividades en Punta Cana con recogida en hotel y confirmacion inmediata.",
+      "Reserva tours y excursiones en Punta Cana con recogida en hotel y confirmacion inmediata.",
     url: canonicalUrl,
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tours y excursiones en Punta Cana | Proactivitis",
-    description: "Reserva tours y excursiones en Punta Cana con recogida en hotel y precios claros."
+    title: "Mejores Tours y Excursiones en Punta Cana | Proactivitis",
+    description: "Reserva tours en Punta Cana con precios claros y soporte 24/7."
   }
 };
 

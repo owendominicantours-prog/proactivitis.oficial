@@ -5,15 +5,23 @@ import PublicHomePage from "@/components/public/PublicHomePage";
 const canonicalUrl = "https://proactivitis.com/en";
 
 export const metadata: Metadata = {
-  title: "Proactivitis | Tours, Transfers & Activities to Book",
+  title: "Punta Cana Tours, Excursions and Airport Transfers | Proactivitis",
   description:
-    "Book tours, transfers, and activities with Proactivitis. Clear pricing, verified providers, and instant confirmation.",
+    "Book Punta Cana tours, top excursions, and private airport transfers with clear pricing, verified operators, and instant confirmation.",
+  keywords: [
+    "punta cana tours",
+    "punta cana excursions",
+    "punta cana airport transfers",
+    "things to do in punta cana",
+    "private transfer punta cana"
+  ],
   alternates: {
     canonical: canonicalUrl,
     languages: {
       es: "/",
       en: "/en",
-      fr: "/fr"
+      fr: "/fr",
+      "x-default": "/"
     }
   }
 };

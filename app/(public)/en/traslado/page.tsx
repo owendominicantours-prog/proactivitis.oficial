@@ -5,14 +5,23 @@ import PublicTransferPage from "@/components/public/PublicTransferPage";
 const canonicalUrl = "https://proactivitis.com/en/traslado";
 
 export const metadata: Metadata = {
-  title: "Punta Cana airport transfers | Proactivitis",
-  description: "Book private airport and hotel transfers in Punta Cana with fixed pricing, flight tracking, and 24/7 support. Door-to-door service with instant confirmation.",
+  title: "Punta Cana Airport Transfers and Hotel Transportation | Proactivitis",
+  description:
+    "Book private Punta Cana airport transfers from PUJ to hotels and resorts with fixed rates, flight tracking, bilingual drivers, and instant confirmation.",
+  keywords: [
+    "punta cana airport transfer",
+    "private transfer punta cana",
+    "puj transfer",
+    "punta cana hotel transportation",
+    "punta cana taxi service"
+  ],
   alternates: {
     canonical: canonicalUrl,
     languages: {
       es: "/traslado",
       en: "/en/traslado",
-      fr: "/fr/traslado"
+      fr: "/fr/traslado",
+      "x-default": "/traslado"
     }
   }
 };

@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import type { TourSearchParams } from "@/lib/filterBuilder";
 import { fr } from "@/lib/translations";
 import PublicToursPage from "@/components/public/PublicToursPage";
@@ -6,15 +6,15 @@ import PublicToursPage from "@/components/public/PublicToursPage";
 const canonicalUrl = "https://proactivitis.com/fr/tours";
 
 export const metadata: Metadata = {
-  title: "Excursions a Punta Cana | Proactivitis",
+  title: "Meilleures Excursions a Punta Cana | Proactivitis",
   description:
-    "Reservez des excursions a Punta Cana avec prise en charge hotel, prix clairs et confirmation rapide. Comparez les options et reservez en minutes.",
+    "Reservez les meilleures excursions a Punta Cana avec pickup hotel, prix clairs et confirmation rapide. Ile Saona, buggy, catamaran, party boat et plus.",
   keywords: [
-    "excursions punta cana",
-    "activites punta cana",
-    "choses a faire punta cana",
-    "excursions avec prise en charge hotel",
-    "meilleures excursions punta cana"
+    "meilleures excursions punta cana",
+    "tours punta cana",
+    "excursion ile saona",
+    "tour buggy punta cana",
+    "party boat punta cana"
   ],
   alternates: {
     canonical: canonicalUrl,
@@ -26,16 +26,16 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: "Excursions a Punta Cana | Proactivitis",
+    title: "Meilleures Excursions a Punta Cana | Proactivitis",
     description:
-      "Reservez des excursions a Punta Cana avec prise en charge hotel et prix clairs.",
+      "Reservez des excursions a Punta Cana avec pickup hotel et confirmation rapide.",
     url: canonicalUrl,
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Excursions a Punta Cana | Proactivitis",
-    description: "Reservez des excursions a Punta Cana avec prise en charge hotel."
+    title: "Meilleures Excursions a Punta Cana | Proactivitis",
+    description: "Reservez des activites a Punta Cana avec prix clairs et support 24/7."
   }
 };
 
