@@ -473,7 +473,15 @@ export default async function SosuaPartyBoatLanding({ locale }: { locale: Locale
           availability: "https://schema.org/InStock",
           availabilityStarts: new Date().toISOString(),
           priceValidUntil,
-          itemCondition: "https://schema.org/NewCondition"
+          itemCondition: "https://schema.org/NewCondition",
+          shippingDetails: {
+            "@type": "OfferShippingDetails",
+            doesNotShip: true
+          },
+          hasMerchantReturnPolicy: {
+            "@type": "MerchantReturnPolicy",
+            returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+          }
         }
       : undefined,
     ...(hasRatings
