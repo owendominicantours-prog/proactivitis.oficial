@@ -728,19 +728,6 @@ const buildCommercialIntentLinks = (locale: Locale, slug: string): IntentLink[] 
     }
   ];
 
-  if (slug.includes("sosua") || slug.includes("puerto-plata")) {
-    links.push({
-      href: `${prefix}/sosua/party-boat`,
-      title: localeLabel(locale, "Sosua Party Boat", "Sosua party boat", "Party boat a Sosua"),
-      description: localeLabel(
-        locale,
-        "Versiones privada, VIP y grupos en Puerto Plata.",
-        "Private, VIP, and group options in Puerto Plata.",
-        "Options privees, VIP et groupes a Puerto Plata."
-      )
-    });
-  }
-
   return links;
 };
 
@@ -1418,7 +1405,15 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
         "@type": "Country",
         name: "Dominican Republic"
       },
-      itemCondition: "https://schema.org/NewCondition"
+      itemCondition: "https://schema.org/NewCondition",
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        doesNotShip: true
+      },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+      }
     },
     sameAs: SAME_AS_URLS,
     ...(schemaKeywords ? { keywords: schemaKeywords.join(", ") } : {}),
@@ -1443,7 +1438,15 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       price: tour.price,
       priceCurrency: "USD",
       priceValidUntil,
-      availability: "https://schema.org/InStock"
+      availability: "https://schema.org/InStock",
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        doesNotShip: true
+      },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+      }
     }
   };
 

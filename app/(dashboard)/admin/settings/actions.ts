@@ -52,6 +52,37 @@ const parseLines = (value: string) =>
     .map((item) => item.trim())
     .filter(Boolean);
 
+const parseSharedImageMap = (value: string): Record<string, string> =>
+  Object.fromEntries(
+    value
+      .split(/\r?\n/g)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [rawKey, ...rest] = line.split("|");
+        const key = (rawKey ?? "").trim().toLowerCase();
+        const url = rest.join("|").trim();
+        return [key, url] as const;
+      })
+      .filter(([key, url]) => key.length > 0 && url.length > 0)
+  );
+
+export async function updateSharedImagesAction(formData: FormData) {
+  const value = readField(formData, "shared_images_map");
+  const content = parseSharedImageMap(value);
+
+  await prisma.siteContentSetting.upsert({
+    where: { key: "SHARED_IMAGES" },
+    update: { content },
+    create: { key: "SHARED_IMAGES", content }
+  });
+
+  revalidatePath("/");
+  revalidatePath("/en");
+  revalidatePath("/fr");
+  revalidatePath("/admin/settings");
+}
+
 export async function updateHomeContentAction(formData: FormData) {
   const locale = readField(formData, "locale") || "es";
 

@@ -240,7 +240,15 @@ export default async function HipHopLandingPage() {
       price: tour.price,
       priceCurrency: "USD",
       priceValidUntil: getPriceValidUntil(),
-      availability: "https://schema.org/InStock"
+      availability: "https://schema.org/InStock",
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        doesNotShip: true
+      },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+      }
     },
     sameAs: SAME_AS_URLS
   };

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { DynamicImage } from "@/components/shared/DynamicImage";
 import type { Locale } from "@/lib/translations";
 import type { TourMarketIntent } from "@/lib/tourMarketVariants";
+import { buildTourMarketIntentCards, buildTourMarketIntentFaqs } from "@/lib/tourMarketVariants";
 
 const FALLBACK_TOUR_IMAGE = "/fototours/fototour.jpeg";
 const FALLBACK_TRANSFER_IMAGE = "/transfer/sedan.png";
@@ -42,6 +43,8 @@ export default function TourMarketVariantLanding({ locale, tour, intent, transfe
 
   const subtitle = intent.angle[locale];
   const description = tour.shortDescription || tour.description;
+  const intentCards = buildTourMarketIntentCards(intent, locale, tour.title, allHotels.length);
+  const intentFaqs = buildTourMarketIntentFaqs(intent, locale, tour.title);
 
   return (
     <main className="bg-white">
@@ -96,6 +99,14 @@ export default function TourMarketVariantLanding({ locale, tour, intent, transfe
               : "Recommended airport-to-hotel transfers in Punta Cana"}
           </h2>
           <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {intentCards.map((card) => (
+              <article key={card.title} className="rounded-2xl border border-slate-200 bg-white p-4">
+                <h3 className="text-sm font-semibold text-slate-900">{card.title}</h3>
+                <p className="mt-2 text-xs leading-relaxed text-slate-600">{card.body}</p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {transferHotels.map((hotel) => (
               <Link
                 key={hotel.slug}
@@ -145,7 +156,20 @@ export default function TourMarketVariantLanding({ locale, tour, intent, transfe
           </div>
         </div>
       </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-16">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">FAQ</p>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {intentFaqs.map((faq) => (
+              <article key={faq.q} className="rounded-xl border border-slate-200 bg-white p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{faq.q}</p>
+                <p className="mt-2 text-sm text-slate-700">{faq.a}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
-

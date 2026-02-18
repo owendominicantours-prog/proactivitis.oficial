@@ -24,6 +24,7 @@ import HotelQuoteWidget from "@/components/public/HotelQuoteWidget";
 import { Locale, translate } from "@/lib/translations";
 import { getHotelLandingOverrides } from "@/lib/siteContent";
 import { normalizeTextDeep } from "@/lib/text-format";
+import { getPriceValidUntil } from "@/lib/seo";
 
 const BASE_URL = "https://proactivitis.com";
 const FALLBACK_IMAGE = "/transfer/mini van.png";
@@ -420,6 +421,7 @@ export async function ThingsToDoHotelPage({
   const reviewCount = parseNumber(overrides.reviewCount);
 
   const canonicalUrl = buildCanonical(hotel.slug, locale, routeBase);
+  const priceValidUntil = getPriceValidUntil();
 
   const schema = {
     "@context": "https://schema.org",
@@ -459,7 +461,16 @@ export async function ThingsToDoHotelPage({
           priceCurrency: "USD",
           price: priceFrom ?? undefined,
           availability: "https://schema.org/InStock",
-          url: canonicalUrl
+          priceValidUntil,
+          url: canonicalUrl,
+          shippingDetails: {
+            "@type": "OfferShippingDetails",
+            doesNotShip: true
+          },
+          hasMerchantReturnPolicy: {
+            "@type": "MerchantReturnPolicy",
+            returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+          }
         }
       }
     ]

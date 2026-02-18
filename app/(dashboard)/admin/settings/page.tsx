@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { formatRecipientsForDisplay, notificationEmailDefaults } from "@/lib/notificationEmailSettings";
-import { updateNotificationEmailSettingAction } from "./actions";
+import { updateNotificationEmailSettingAction, updateSharedImagesAction } from "./actions";
 import { translate, type TranslationKey, type Locale } from "@/lib/translations";
 import type {
   ContactContentOverrides,
@@ -9,7 +9,7 @@ import type {
   HomeContentOverrides,
   PremiumTransferContentOverrides
 } from "@/lib/siteContent";
-import { getPremiumTransferContentOverrides } from "@/lib/siteContent";
+import { getPremiumTransferContentOverrides, getSharedImageRegistry } from "@/lib/siteContent";
 import HomeSettingsForm from "@/components/admin/HomeSettingsForm";
 import ContactSettingsForm from "@/components/admin/ContactSettingsForm";
 import GlobalBannerSettingsForm from "@/components/admin/GlobalBannerSettingsForm";
@@ -35,6 +35,10 @@ export default async function AdminSettingsPage() {
   const bannerContentMap = (bannerSetting?.content as Record<string, GlobalBannerOverrides> | null) ?? {};
   const premiumTransferContentMap =
     (premiumTransferSetting?.content as Record<string, PremiumTransferContentOverrides> | null) ?? {};
+  const sharedImagesMap = await getSharedImageRegistry();
+  const sharedImagesText = Object.entries(sharedImagesMap)
+    .map(([key, value]) => `${key}|${value}`)
+    .join("\n");
   const locales: Locale[] = ["es", "en", "fr"];
   const premiumTransferFallbacks = Object.fromEntries(
     await Promise.all(
@@ -240,6 +244,28 @@ export default async function AdminSettingsPage() {
           Abrir editor de resorts
         </Link>
       </article>
+
+      <form action={updateSharedImagesAction} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Imagenes compartidas</p>
+        <h3 className="mt-1 text-lg font-semibold text-slate-900">Biblioteca global para todas las landings</h3>
+        <p className="text-sm text-slate-500">
+          Formato por linea: <code>clave|url</code>. Luego usa <code>shared:clave</code> en cualquier campo de imagen.
+          Si cambias la URL aqui, se actualiza en todos los lugares donde se use esa clave.
+        </p>
+        <textarea
+          name="shared_images_map"
+          defaultValue={sharedImagesText}
+          rows={8}
+          className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+          placeholder={"premium.hero|https://...\npremium.cadillac|https://...\npremium.suburban|https://..."}
+        />
+        <button
+          type="submit"
+          className="mt-3 inline-flex items-center justify-center rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand/90"
+        >
+          Guardar imagenes compartidas
+        </button>
+      </form>
 
       <div className="space-y-4">
         <div>

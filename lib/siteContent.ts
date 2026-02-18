@@ -2,6 +2,27 @@ import { prisma } from "@/lib/prisma";
 import { Locale } from "@/lib/translations";
 import { warnOnce } from "@/lib/logOnce";
 
+export type SharedImageRegistry = Record<string, string>;
+
+const DEFAULT_SHARED_IMAGES: SharedImageRegistry = {
+  "premium.hero.background":
+    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80",
+  "premium.hero.spotlight":
+    "https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=1400&q=80",
+  "premium.gallery.1":
+    "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80",
+  "premium.gallery.2":
+    "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
+  "premium.gallery.3":
+    "https://images.unsplash.com/photo-1549925862-9909b6cf2d0f?auto=format&fit=crop&w=1200&q=80",
+  "premium.vehicle.cadillac":
+    "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80",
+  "premium.vehicle.suburban":
+    "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=80",
+  "premium.lifestyle":
+    "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1400&q=80"
+};
+
 export type HomeContentOverrides = {
   hero?: {
     brand?: string;
@@ -153,9 +174,9 @@ const PREMIUM_TRANSFER_FALLBACKS: Record<Locale, PremiumTransferContentOverrides
     heroSubtitle:
       "Traslados VIP con Cadillac Escalade y Chevrolet Suburban. Servicio privado, puntual y de alto nivel para viajeros que exigen excelencia.",
     heroBackgroundImage:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80",
+      "shared:premium.hero.background",
     heroSpotlightImage:
-      "https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=1400&q=80",
+      "shared:premium.hero.spotlight",
     ctaPrimaryLabel: "Reservar Transfer VIP",
     ctaSecondaryLabel: "Hablar por WhatsApp",
     bookingTitle: "Cotiza tu transfer premium ahora",
@@ -164,16 +185,13 @@ const PREMIUM_TRANSFER_FALLBACKS: Record<Locale, PremiumTransferContentOverrides
     experienceBody:
       "Nuestro equipo coordina tu llegada con seguimiento de vuelo y conductor asignado. Desde PUJ hasta tu resort, marina o villa privada, disfrutas una experiencia discreta, segura y de primer nivel.",
     galleryImages: [
-      "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1549925862-9909b6cf2d0f?auto=format&fit=crop&w=1200&q=80"
+      "shared:premium.gallery.1",
+      "shared:premium.gallery.2",
+      "shared:premium.gallery.3"
     ],
-    cadillacImage:
-      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80",
-    suburbanImage:
-      "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=80",
-    lifestyleImage:
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1400&q=80",
+    cadillacImage: "shared:premium.vehicle.cadillac",
+    suburbanImage: "shared:premium.vehicle.suburban",
+    lifestyleImage: "shared:premium.lifestyle",
     vipBullets: [
       "Chofer profesional bilingue con protocolo VIP.",
       "Monitoreo de vuelo y ventana de espera incluida.",
@@ -196,9 +214,9 @@ const PREMIUM_TRANSFER_FALLBACKS: Record<Locale, PremiumTransferContentOverrides
     heroSubtitle:
       "VIP transfers with Cadillac Escalade and Chevrolet Suburban. Private, punctual, and high-standard service for travelers who expect excellence.",
     heroBackgroundImage:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80",
+      "shared:premium.hero.background",
     heroSpotlightImage:
-      "https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=1400&q=80",
+      "shared:premium.hero.spotlight",
     ctaPrimaryLabel: "Book VIP Transfer",
     ctaSecondaryLabel: "Chat on WhatsApp",
     bookingTitle: "Get your premium transfer quote",
@@ -207,16 +225,13 @@ const PREMIUM_TRANSFER_FALLBACKS: Record<Locale, PremiumTransferContentOverrides
     experienceBody:
       "Our operations team coordinates your arrival with flight tracking and assigned driver. From PUJ to your resort, marina, or private villa, you get a discreet and premium ride.",
     galleryImages: [
-      "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1549925862-9909b6cf2d0f?auto=format&fit=crop&w=1200&q=80"
+      "shared:premium.gallery.1",
+      "shared:premium.gallery.2",
+      "shared:premium.gallery.3"
     ],
-    cadillacImage:
-      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80",
-    suburbanImage:
-      "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=80",
-    lifestyleImage:
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1400&q=80",
+    cadillacImage: "shared:premium.vehicle.cadillac",
+    suburbanImage: "shared:premium.vehicle.suburban",
+    lifestyleImage: "shared:premium.lifestyle",
     vipBullets: [
       "Professional bilingual driver with VIP protocol.",
       "Flight tracking and included waiting window.",
@@ -239,9 +254,9 @@ const PREMIUM_TRANSFER_FALLBACKS: Record<Locale, PremiumTransferContentOverrides
     heroSubtitle:
       "Transferts VIP en Cadillac Escalade et Chevrolet Suburban. Service prive, ponctuel et haut de gamme pour voyageurs exigeants.",
     heroBackgroundImage:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80",
+      "shared:premium.hero.background",
     heroSpotlightImage:
-      "https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=1400&q=80",
+      "shared:premium.hero.spotlight",
     ctaPrimaryLabel: "Reserver un transfer VIP",
     ctaSecondaryLabel: "WhatsApp direct",
     bookingTitle: "Obtenez votre devis premium",
@@ -250,16 +265,13 @@ const PREMIUM_TRANSFER_FALLBACKS: Record<Locale, PremiumTransferContentOverrides
     experienceBody:
       "Notre equipe coordonne votre arrivee avec suivi de vol et chauffeur dedie. De PUJ vers votre resort, marina ou villa, vous profitez d'un trajet discret et premium.",
     galleryImages: [
-      "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1549925862-9909b6cf2d0f?auto=format&fit=crop&w=1200&q=80"
+      "shared:premium.gallery.1",
+      "shared:premium.gallery.2",
+      "shared:premium.gallery.3"
     ],
-    cadillacImage:
-      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80",
-    suburbanImage:
-      "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=80",
-    lifestyleImage:
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1400&q=80",
+    cadillacImage: "shared:premium.vehicle.cadillac",
+    suburbanImage: "shared:premium.vehicle.suburban",
+    lifestyleImage: "shared:premium.lifestyle",
     vipBullets: [
       "Chauffeur bilingue professionnel avec protocole VIP.",
       "Suivi de vol et fenetre d'attente incluse.",
@@ -494,6 +506,7 @@ const HOTEL_LANDING_FALLBACKS: Record<string, Partial<Record<Locale, HotelLandin
 
 export const getHomeContentOverrides = async (locale: Locale): Promise<HomeContentOverrides> => {
   try {
+    const sharedImages = await getSharedImageRegistry();
     const record = await prisma.siteContentSetting.findUnique({
       where: { key: "HOME" }
     });
@@ -501,7 +514,7 @@ export const getHomeContentOverrides = async (locale: Locale): Promise<HomeConte
     const content = record.content as Record<string, unknown>;
     const localeContent = content[locale];
     if (!localeContent || typeof localeContent !== "object") return {};
-    return localeContent as HomeContentOverrides;
+    return resolveSharedImagesDeep(localeContent as HomeContentOverrides, sharedImages);
   } catch (error) {
     warnOnce("site-content-home-fallback", "No se pudo cargar SiteContentSetting HOME", error);
     return {};
@@ -510,6 +523,7 @@ export const getHomeContentOverrides = async (locale: Locale): Promise<HomeConte
 
 export const getContactContentOverrides = async (locale: Locale): Promise<ContactContentOverrides> => {
   try {
+    const sharedImages = await getSharedImageRegistry();
     const record = await prisma.siteContentSetting.findUnique({
       where: { key: "CONTACT" }
     });
@@ -517,7 +531,7 @@ export const getContactContentOverrides = async (locale: Locale): Promise<Contac
     const content = record.content as Record<string, unknown>;
     const localeContent = content[locale];
     if (!localeContent || typeof localeContent !== "object") return {};
-    return localeContent as ContactContentOverrides;
+    return resolveSharedImagesDeep(localeContent as ContactContentOverrides, sharedImages);
   } catch (error) {
     warnOnce("site-content-contact-fallback", "No se pudo cargar SiteContentSetting CONTACT", error);
     return {};
@@ -526,6 +540,7 @@ export const getContactContentOverrides = async (locale: Locale): Promise<Contac
 
 export const getGlobalBannerOverrides = async (locale: Locale): Promise<GlobalBannerOverrides> => {
   try {
+    const sharedImages = await getSharedImageRegistry();
     const record = await prisma.siteContentSetting.findUnique({
       where: { key: "GLOBAL_BANNER" }
     });
@@ -533,7 +548,7 @@ export const getGlobalBannerOverrides = async (locale: Locale): Promise<GlobalBa
     const content = record.content as Record<string, unknown>;
     const localeContent = content[locale];
     if (!localeContent || typeof localeContent !== "object") return {};
-    return localeContent as GlobalBannerOverrides;
+    return resolveSharedImagesDeep(localeContent as GlobalBannerOverrides, sharedImages);
   } catch (error) {
     warnOnce("site-content-global-banner-fallback", "No se pudo cargar SiteContentSetting GLOBAL_BANNER", error);
     return {};
@@ -543,7 +558,11 @@ export const getGlobalBannerOverrides = async (locale: Locale): Promise<GlobalBa
 export const getPremiumTransferContentOverrides = async (
   locale: Locale
 ): Promise<PremiumTransferContentOverrides> => {
-  const fallback = PREMIUM_TRANSFER_FALLBACKS[locale] ?? PREMIUM_TRANSFER_FALLBACKS.es;
+  const sharedImages = await getSharedImageRegistry();
+  const fallback = resolveSharedImagesDeep(
+    PREMIUM_TRANSFER_FALLBACKS[locale] ?? PREMIUM_TRANSFER_FALLBACKS.es,
+    sharedImages
+  );
   try {
     const record = await prisma.siteContentSetting.findUnique({
       where: { key: "PREMIUM_TRANSFER_LANDING" }
@@ -553,7 +572,8 @@ export const getPremiumTransferContentOverrides = async (
     const localeContent = content[locale];
     if (!localeContent || typeof localeContent !== "object") return fallback;
     const override = localeContent as PremiumTransferContentOverrides;
-    return {
+    return resolveSharedImagesDeep(
+      {
       ...fallback,
       ...override,
       galleryImages:
@@ -568,7 +588,9 @@ export const getPremiumTransferContentOverrides = async (
         Array.isArray(override.vipCertifications) && override.vipCertifications.length > 0
           ? override.vipCertifications
           : fallback.vipCertifications
-    };
+      },
+      sharedImages
+    );
   } catch (error) {
     warnOnce("site-content-premium-transfer-fallback", "No se pudo cargar SiteContentSetting PREMIUM_TRANSFER_LANDING", error);
     return fallback;
@@ -579,7 +601,8 @@ export const getHotelLandingOverrides = async (
   hotelSlug: string,
   locale: Locale
 ): Promise<HotelLandingOverrides> => {
-  const fallback = getHotelLandingFallbackSafe(hotelSlug, locale);
+  const sharedImages = await getSharedImageRegistry();
+  const fallback = resolveSharedImagesDeep(getHotelLandingFallbackSafe(hotelSlug, locale), sharedImages);
   try {
     const record = await prisma.siteContentSetting.findUnique({
       where: { key: "HOTEL_LANDING" }
@@ -590,7 +613,7 @@ export const getHotelLandingOverrides = async (
     if (!hotelMap || typeof hotelMap !== "object") return fallback;
     const localeContent = hotelMap[locale];
     if (!localeContent || typeof localeContent !== "object") return fallback;
-    return mergeHotelOverrides(fallback, localeContent as HotelLandingOverrides);
+    return resolveSharedImagesDeep(mergeHotelOverrides(fallback, localeContent as HotelLandingOverrides), sharedImages);
   } catch (error) {
     warnOnce("site-content-hotel-landing-fallback", "No se pudo cargar SiteContentSetting HOTEL_LANDING", error);
     return fallback;
@@ -627,3 +650,49 @@ function mergeHotelOverrides(
 
   return merged;
 }
+
+const SHARED_IMAGE_TOKEN_PREFIX = "shared:";
+
+const resolveSharedImageString = (value: string, registry: SharedImageRegistry): string => {
+  const trimmed = value.trim();
+  if (!trimmed.toLowerCase().startsWith(SHARED_IMAGE_TOKEN_PREFIX)) return value;
+  const key = trimmed.slice(SHARED_IMAGE_TOKEN_PREFIX.length).trim().toLowerCase();
+  if (!key) return value;
+  return registry[key] ?? value;
+};
+
+const resolveSharedImagesDeep = <T>(value: T, registry: SharedImageRegistry): T => {
+  if (typeof value === "string") {
+    return resolveSharedImageString(value, registry) as T;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => resolveSharedImagesDeep(item, registry)) as T;
+  }
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>).map(([key, item]) => [
+      key,
+      resolveSharedImagesDeep(item, registry)
+    ]);
+    return Object.fromEntries(entries) as T;
+  }
+  return value;
+};
+
+export const getSharedImageRegistry = async (): Promise<SharedImageRegistry> => {
+  try {
+    const record = await prisma.siteContentSetting.findUnique({ where: { key: "SHARED_IMAGES" } });
+    if (!record?.content || typeof record.content !== "object") return DEFAULT_SHARED_IMAGES;
+    const raw = record.content as Record<string, unknown>;
+    return {
+      ...DEFAULT_SHARED_IMAGES,
+      ...Object.fromEntries(
+        Object.entries(raw)
+          .map(([key, value]) => [key.trim().toLowerCase(), typeof value === "string" ? value.trim() : ""])
+          .filter(([key, value]) => key.length > 0 && value.length > 0)
+      )
+    };
+  } catch (error) {
+    warnOnce("site-content-shared-images-fallback", "No se pudo cargar SiteContentSetting SHARED_IMAGES", error);
+    return DEFAULT_SHARED_IMAGES;
+  }
+};

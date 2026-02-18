@@ -437,7 +437,15 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       price: sedanPrice ?? 0,
       priceCurrency: "USD",
       priceValidUntil,
-      url: pageUrl
+      url: pageUrl,
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        doesNotShip: true
+      },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+      }
     },
     hasMap: locationMapUrl,
     sameAs: SAME_AS_URLS,

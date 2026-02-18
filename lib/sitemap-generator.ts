@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { landingPages } from "./landing";
-import { SOSUA_PARTY_BOAT_VARIANTS } from "@/data/sosua-party-boat-variants";
 import { excursionKeywordLandings } from "../data/excursion-keyword-landings";
 import { premiumTransferMarketLandings } from "@/data/premium-transfer-market-landings";
 import { allLandings } from "@/data/transfer-landings";
@@ -33,8 +32,7 @@ const TRANSLATED_PREFIXES = [
   "/recogida",
   "/excursiones-seguras-punta-cana",
   "/excursiones",
-  "/punta-cana",
-  "/sosua"
+  "/punta-cana"
 ];
 const TRANSLATED_ROOTS = ["/", "/tours", "/traslado"];
 const TRANSLATION_LOCALES = ["en", "fr"];
@@ -225,11 +223,6 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
     })),
     ...TRANSFER_QUESTION_SALES_URLS,
     ...HOTEL_TRANSFER_SALES_VARIANT_URLS,
-    { url: `${BASE_URL}/sosua/party-boat`, priority: 0.8 },
-    ...SOSUA_PARTY_BOAT_VARIANTS.map((variant) => ({
-      url: `${BASE_URL}/sosua/party-boat/${variant.slug}`,
-      priority: 0.75
-    })),
     ...tours.map((tour) => ({
       url: `${BASE_URL}/tours/${tour.slug}`,
       priority: 0.8
@@ -321,11 +314,6 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
       })),
       ...TRANSFER_QUESTION_SALES_URLS,
       ...HOTEL_TRANSFER_SALES_VARIANT_URLS,
-      { url: `${BASE_URL}/sosua/party-boat`, priority: 0.8 },
-      ...SOSUA_PARTY_BOAT_VARIANTS.map((variant) => ({
-        url: `${BASE_URL}/sosua/party-boat/${variant.slug}`,
-        priority: 0.75
-      })),
       ...landingPages.map((landing) => ({
         url: `${BASE_URL}${landing.path ?? `/thingtodo/tours/${landing.slug}`}`,
         priority: 0.7
