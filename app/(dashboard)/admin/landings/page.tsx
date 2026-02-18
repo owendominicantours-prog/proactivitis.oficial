@@ -17,6 +17,7 @@ import {
   buildTransferHotelVariantSlug,
   TRANSFER_HOTEL_SALES_VARIANTS
 } from "@/data/transfer-hotel-sales-variants";
+import { TRANSFER_QUESTION_SALES_LANDINGS } from "@/data/transfer-question-sales-landings";
 import CollapsibleSection from "@/components/admin/CollapsibleSection";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import LandingRefreshControl from "@/components/admin/LandingRefreshControl";
@@ -192,6 +193,12 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       active: true
     }))
   );
+  const transferQuestionEntries = TRANSFER_QUESTION_SALES_LANDINGS.map((entry) => ({
+    slug: `punta-cana/premium-transfer-services/questions/${entry.slug}`,
+    name: entry.question.es,
+    zone: "Google Questions",
+    active: true
+  }));
   const tourLandingSlugs = landingPages.map((landing) => landing.slug);
   const thingsToDoSlugs = hotelThingsToDoEntries.map((entry) => entry.slug);
   const pickupHotelSlugs = pickupHotelEntries.map((entry) => entry.slug);
@@ -206,6 +213,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
   const hotelSalesTransferSlugs = hotelSalesTransferEntries.map((entry) =>
     entry.slug.replace(/^transfer\//, "")
   );
+  const transferQuestionSlugs = transferQuestionEntries.map((entry) => entry.slug);
   const excursionKeywordSlugs = excursionKeywordEntries.map((entry) => entry.slug);
   const landingSlugs = Array.from(
     new Set([
@@ -222,7 +230,8 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       ...parasailingSlugs,
       ...samanaWhaleSlugs,
       ...premiumTransferSlugs,
-      ...hotelSalesTransferSlugs
+      ...hotelSalesTransferSlugs,
+      ...transferQuestionSlugs
     ])
   );
   const trafficRows = await prisma.landingPageTraffic.findMany({
@@ -339,6 +348,34 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
                 >
                   {entry.active ? "Activo" : "Inactivo"}
                 </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Google Question Sales Pages"
+        description="Paginas de preguntas reales de Google con respuesta directa e intencion de venta."
+        badge={`${transferQuestionEntries.length} items`}
+      >
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {transferQuestionEntries.map((entry) => (
+            <Link
+              key={entry.slug}
+              href={`https://proactivitis.com/${entry.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-700 transition hover:border-slate-400 hover:shadow-lg"
+            >
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.zone}</p>
+                <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">Q&A Sales</p>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                <p>{entry.slug}</p>
+                <p>Visitas {trafficMap.get(entry.slug)?.toLocaleString() ?? "0"}</p>
               </div>
             </Link>
           ))}

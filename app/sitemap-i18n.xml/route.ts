@@ -4,6 +4,7 @@ import { allLandings } from "@/data/transfer-landings";
 import { excursionKeywordLandings } from "@/data/excursion-keyword-landings";
 import { premiumTransferMarketLandings } from "@/data/premium-transfer-market-landings";
 import { buildTransferHotelVariantSlug, TRANSFER_HOTEL_SALES_VARIANTS } from "@/data/transfer-hotel-sales-variants";
+import { TRANSFER_QUESTION_SALES_LANDINGS } from "@/data/transfer-question-sales-landings";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import { warnOnce } from "@/lib/logOnce";
 
@@ -80,6 +81,11 @@ export async function GET() {
     premiumTransferMarketLandings.forEach((landing) => {
       entries.push(
         buildEntry(`${BASE_URL}/${locale}/punta-cana/premium-transfer-services/${landing.slug}`, 0.75)
+      );
+    });
+    TRANSFER_QUESTION_SALES_LANDINGS.forEach((landing) => {
+      entries.push(
+        buildEntry(`${BASE_URL}/${locale}/punta-cana/premium-transfer-services/questions/${landing.slug}`, 0.76)
       );
     });
 
