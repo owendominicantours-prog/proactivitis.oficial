@@ -447,7 +447,8 @@ export default async function SosuaPartyBoatLanding({ locale }: { locale: Locale
   const offerPrice = Number.isFinite(tour.price) ? Number(tour.price.toFixed(2)) : undefined;
   const tourSchema = {
     "@context": "https://schema.org",
-    "@type": "TouristTrip",
+    "@type": "Product",
+    additionalType: "https://schema.org/TouristTrip",
     name: copy.title,
     description: copy.subtitle,
     image: Array.from(
