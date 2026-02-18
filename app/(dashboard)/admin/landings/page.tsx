@@ -18,6 +18,7 @@ import {
   TRANSFER_HOTEL_SALES_VARIANTS
 } from "@/data/transfer-hotel-sales-variants";
 import { TRANSFER_QUESTION_SALES_LANDINGS } from "@/data/transfer-question-sales-landings";
+import { TOUR_MARKET_INTENTS, buildTourMarketVariantSlug } from "@/lib/tourMarketVariants";
 import CollapsibleSection from "@/components/admin/CollapsibleSection";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import LandingRefreshControl from "@/components/admin/LandingRefreshControl";
@@ -39,7 +40,7 @@ const buildLandingSlug = (slug: string) => `punta-cana-international-airport-to-
 export default async function LandingsAdminPage({ searchParams }: LandingsAdminPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const params = resolvedSearchParams ?? {};
-  const [zones, locations, dynamicCombos] = await Promise.all([
+  const [zones, locations, dynamicCombos, publishedTours] = await Promise.all([
     prisma.transferZoneV2.findMany({
       where: { countryCode: "RD" },
       select: { id: true, name: true, slug: true },
@@ -50,7 +51,12 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       include: { zone: true },
       orderBy: { name: "asc" }
     }),
-    getDynamicTransferLandingCombos()
+    getDynamicTransferLandingCombos(),
+    prisma.tour.findMany({
+      where: { status: "published" },
+      select: { slug: true, title: true },
+      orderBy: { createdAt: "desc" }
+    })
   ]);
 
   const manual = allLandings();
@@ -199,6 +205,14 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
     zone: "Google Questions",
     active: true
   }));
+  const tourMarketVariantEntries = publishedTours.flatMap((tour) =>
+    TOUR_MARKET_INTENTS.map((intent) => ({
+      slug: `thingtodo/tours/${buildTourMarketVariantSlug(tour.slug, intent.id)}`,
+      name: `${tour.title} - ${intent.heroPrefix.es}`,
+      zone: "Tour Market Variants",
+      active: true
+    }))
+  );
   const tourLandingSlugs = landingPages.map((landing) => landing.slug);
   const thingsToDoSlugs = hotelThingsToDoEntries.map((entry) => entry.slug);
   const pickupHotelSlugs = pickupHotelEntries.map((entry) => entry.slug);
@@ -214,6 +228,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
     entry.slug.replace(/^transfer\//, "")
   );
   const transferQuestionSlugs = transferQuestionEntries.map((entry) => entry.slug);
+  const tourMarketVariantSlugs = tourMarketVariantEntries.map((entry) => entry.slug);
   const excursionKeywordSlugs = excursionKeywordEntries.map((entry) => entry.slug);
   const landingSlugs = Array.from(
     new Set([
@@ -231,7 +246,8 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       ...samanaWhaleSlugs,
       ...premiumTransferSlugs,
       ...hotelSalesTransferSlugs,
-      ...transferQuestionSlugs
+      ...transferQuestionSlugs,
+      ...tourMarketVariantSlugs
     ])
   );
   const trafficRows = await prisma.landingPageTraffic.findMany({
@@ -597,6 +613,34 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
             </Link>
             );
           })}
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Tour Market Variants"
+        description="Variantes de mercado por tour (30 por tour) con enfoque de venta + traslados + hoteles."
+        badge={`${tourMarketVariantEntries.length} items`}
+      >
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {tourMarketVariantEntries.map((entry) => (
+            <Link
+              key={entry.slug}
+              href={`https://proactivitis.com/${entry.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-700 transition hover:border-slate-400 hover:shadow-lg"
+            >
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.zone}</p>
+                <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">ThingToDo</p>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                <p>{entry.slug}</p>
+                <p>Visitas {trafficMap.get(entry.slug)?.toLocaleString() ?? "0"}</p>
+              </div>
+            </Link>
+          ))}
         </div>
       </CollapsibleSection>
 

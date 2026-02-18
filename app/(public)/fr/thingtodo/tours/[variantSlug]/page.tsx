@@ -11,9 +11,11 @@ import SantoDomingoVariantLanding from "@/components/public/SantoDomingoVariantL
 import BuggyAtvVariantLanding from "@/components/public/BuggyAtvVariantLanding";
 import ParasailingVariantLanding from "@/components/public/ParasailingVariantLanding";
 import SamanaWhaleVariantLanding from "@/components/public/SamanaWhaleVariantLanding";
+import TourMarketVariantLanding from "@/components/public/TourMarketVariantLanding";
 import { fr } from "@/lib/translations";
 import { findStaticVariant } from "@/lib/tourVariantCatalog";
 import { getPublishedVariantBySlug } from "@/lib/tourVariantStore";
+import { parseTourMarketVariantSlug } from "@/lib/tourMarketVariants";
 
 const BASE_URL = "https://proactivitis.com";
 
@@ -76,6 +78,48 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ variantSlug: string }> }): Promise<Metadata> {
   const resolved = await params;
+  const marketVariant = parseTourMarketVariantSlug(resolved.variantSlug);
+  if (marketVariant) {
+    const tour = await prisma.tour.findFirst({
+      where: { slug: marketVariant.tourSlug, status: "published" },
+      select: { slug: true, title: true, shortDescription: true, description: true, heroImage: true, gallery: true, price: true }
+    });
+    if (!tour) return { title: "Landing introuvable" };
+    const canonical = `https://proactivitis.com/fr/thingtodo/tours/${resolved.variantSlug}`;
+    const seoTitle = `${marketVariant.intent.heroPrefix.fr}: ${tour.title} a Punta Cana | Proactivitis`;
+    const seoDescription = `${marketVariant.intent.angle.fr} Reservez ${tour.title} a partir de USD ${Math.round(tour.price)} avec support local.`;
+    const imageUrl = toAbsoluteUrl(resolveTourImage(tour.heroImage ?? null, tour.gallery ?? null));
+    return {
+      title: seoTitle,
+      description: seoDescription,
+      keywords: [marketVariant.intent.keyword.fr, "excursions punta cana", tour.title, "tour pickup hotel punta cana"],
+      alternates: {
+        canonical,
+        languages: {
+          es: `https://proactivitis.com/thingtodo/tours/${resolved.variantSlug}`,
+          en: `https://proactivitis.com/en/thingtodo/tours/${resolved.variantSlug}`,
+          fr: canonical,
+          "x-default": `https://proactivitis.com/thingtodo/tours/${resolved.variantSlug}`
+        }
+      },
+      openGraph: {
+        title: seoTitle,
+        description: seoDescription,
+        url: canonical,
+        siteName: "Proactivitis",
+        type: "website",
+        locale: OG_LOCALE.fr,
+        images: imageUrl ? [{ url: imageUrl }] : undefined
+      },
+      twitter: {
+        card: imageUrl ? "summary_large_image" : "summary",
+        title: seoTitle,
+        description: seoDescription,
+        images: imageUrl ? [imageUrl] : undefined
+      }
+    };
+  }
+
   const dbVariant = await getPublishedVariantBySlug(resolved.variantSlug);
   const staticVariant = findStaticVariant(resolved.variantSlug);
   const variant = dbVariant ?? staticVariant;
@@ -125,6 +169,47 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
 
 export default async function PartyBoatVariantPage({ params }: { params: Promise<{ variantSlug: string }> }) {
   const resolved = await params;
+  const marketVariant = parseTourMarketVariantSlug(resolved.variantSlug);
+  if (marketVariant) {
+    const [tour, transferHotels, allHotels] = await Promise.all([
+      prisma.tour.findFirst({
+        where: { slug: marketVariant.tourSlug, status: "published" },
+        select: {
+          slug: true,
+          title: true,
+          shortDescription: true,
+          description: true,
+          duration: true,
+          price: true,
+          heroImage: true,
+          location: true
+        }
+      }),
+      prisma.transferLocation.findMany({
+        where: { type: "HOTEL", active: true },
+        select: { slug: true, name: true, heroImage: true, zone: { select: { name: true } } },
+        orderBy: { updatedAt: "desc" },
+        take: 9
+      }),
+      prisma.transferLocation.findMany({
+        where: { type: "HOTEL", active: true },
+        select: { slug: true, name: true },
+        orderBy: { name: "asc" },
+        take: 500
+      })
+    ]);
+    if (!tour) return notFound();
+    return (
+      <TourMarketVariantLanding
+        locale={fr}
+        intent={marketVariant.intent}
+        tour={tour}
+        transferHotels={transferHotels}
+        allHotels={allHotels}
+      />
+    );
+  }
+
   const dbVariant = await getPublishedVariantBySlug(resolved.variantSlug);
   const staticVariant = findStaticVariant(resolved.variantSlug);
   const variant = dbVariant ?? staticVariant;

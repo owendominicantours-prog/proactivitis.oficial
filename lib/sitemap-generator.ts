@@ -7,6 +7,7 @@ import { allLandings } from "@/data/transfer-landings";
 import { buildTransferHotelVariantSlug, TRANSFER_HOTEL_SALES_VARIANTS } from "@/data/transfer-hotel-sales-variants";
 import { TRANSFER_QUESTION_SALES_LANDINGS } from "@/data/transfer-question-sales-landings";
 import { warnOnce } from "@/lib/logOnce";
+import { TOUR_MARKET_INTENTS, buildTourMarketVariantSlug } from "@/lib/tourMarketVariants";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -251,6 +252,12 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
       url: `${BASE_URL}${landing.path ?? `/thingtodo/tours/${landing.slug}`}`,
       priority: 0.7
     })),
+    ...tours.flatMap((tour) =>
+      TOUR_MARKET_INTENTS.map((intent) => ({
+        url: `${BASE_URL}/thingtodo/tours/${buildTourMarketVariantSlug(tour.slug, intent.id)}`,
+        priority: 0.66
+      }))
+    ),
     ...excursionKeywordLandings.map((landing) => ({
       url: `${BASE_URL}/excursiones/${landing.landingSlug}`,
       priority: 0.7
