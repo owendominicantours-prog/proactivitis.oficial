@@ -122,7 +122,7 @@ export const applyTransferHotelSalesVariant = (
     heroSubtitle: `${variant.subtitleHook} ${landing.heroSubtitle}`,
     heroTagline: `${variant.badge} | ${variant.ctaAngle}`,
     longCopy: [
-      `${transferFocus}. Disenada para captar busquedas como "${variant.marketKeyword}" y convertir visitas en reservas con respuesta rapida.`,
+      `${transferFocus}. Servicio privado con confirmacion rapida y atencion clara desde la reserva hasta la llegada.`,
       `${toursFocus}. Al llegar al hotel puedes continuar tu plan con excursiones verificadas y recogida en lobby para vender experiencia completa.`,
       `Este enfoque combina traslado + tours en una sola decision de compra, aumentando conversion y ticket promedio sin friccion.`
     ],
@@ -135,7 +135,7 @@ export const applyTransferHotelSalesVariant = (
       {
         question: `El servicio ${variant.marketKeyword} aplica para ${hotel}?`,
         answer:
-          "Si, esta landing esta optimizada para ese servicio y permite confirmar traslado privado con seguimiento de vuelo."
+          "Si. Este servicio esta disponible para ese hotel con traslado privado, seguimiento de vuelo y confirmacion inmediata."
       },
       {
         question: "Puedo reservar tours luego del traslado?",

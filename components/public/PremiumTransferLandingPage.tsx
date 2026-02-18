@@ -416,10 +416,10 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
       ) : null}
 
       {!variant ? (
-        <section className="mx-auto max-w-7xl px-4 pb-12">
+      <section className="mx-auto max-w-7xl px-4 pb-12">
           <article className="rounded-3xl border border-amber-200/20 bg-slate-900/60 p-6">
             <p className="text-xs uppercase tracking-[0.3em] text-amber-200">
-              {locale === "es" ? "Landings premium por intencion" : locale === "fr" ? "Landings premium par intention" : "Premium intent landings"}
+              {locale === "es" ? "Mas rutas premium en Punta Cana" : locale === "fr" ? "Plus d itineraires premium a Punta Cana" : "More premium routes in Punta Cana"}
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {premiumTransferMarketLandings.map((item) => (

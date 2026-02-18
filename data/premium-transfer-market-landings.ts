@@ -265,9 +265,9 @@ export const premiumTransferMarketLandings: PremiumTransferMarketLanding[] = INT
         fr: `Couverture premium reelle pour ${area.label.fr}`
       },
       bodyIntro: {
-        es: `Esta landing esta optimizada para la intencion de busqueda "${intent.keyword.es}" y conecta PUJ con hoteles de ${area.label.es} en modalidad VIP.`,
-        en: `This landing is optimized for the search intent "${intent.keyword.en}" and connects PUJ with ${area.label.en} hotels in VIP mode.`,
-        fr: `Cette landing est optimisee pour l intention de recherche "${intent.keyword.fr}" et relie PUJ aux hotels de ${area.label.fr} en mode VIP.`
+        es: `Servicio VIP puerta a puerta desde PUJ hacia ${area.label.es}, con chofer profesional, seguimiento de vuelo y confirmacion inmediata.`,
+        en: `VIP door-to-door service from PUJ to ${area.label.en}, with professional chauffeur, flight tracking, and instant confirmation.`,
+        fr: `Service VIP porte-a-porte depuis PUJ vers ${area.label.fr}, avec chauffeur professionnel, suivi de vol et confirmation immediate.`
       }
     };
   })
@@ -277,4 +277,3 @@ export const premiumTransferMarketLandingSlugs = premiumTransferMarketLandings.m
 
 export const findPremiumTransferMarketLandingBySlug = (slug: string) =>
   premiumTransferMarketLandings.find((item) => item.slug === slug);
-
