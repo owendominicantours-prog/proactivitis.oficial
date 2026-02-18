@@ -338,6 +338,51 @@ const formatDateTime = (date: Date) => {
   return iso.slice(0, 16);
 };
 
+const SALES_CARDS = {
+  es: [
+    {
+      title: "Recepcion VIP en aeropuerto",
+      body: "Tu chofer te espera con cartel, monitoreo de vuelo y salida prioritaria sin filas innecesarias."
+    },
+    {
+      title: "Tarifa clara sin sorpresas",
+      body: "Precio final confirmado antes de pagar, con equipaje y asistencia incluidos en el servicio."
+    },
+    {
+      title: "Ideal para familias y grupos",
+      body: "Opciones privadas con espacio real para maletas, ninos y viaje comodo hasta el hotel."
+    }
+  ],
+  en: [
+    {
+      title: "VIP airport meet & greet",
+      body: "Your chauffeur waits with a sign, tracks your flight, and gets you out fast without unnecessary lines."
+    },
+    {
+      title: "Clear pricing, no surprises",
+      body: "Final price is confirmed before payment, including luggage handling and on-trip assistance."
+    },
+    {
+      title: "Perfect for families and groups",
+      body: "Private options with real luggage room and comfortable seating all the way to your resort."
+    }
+  ],
+  fr: [
+    {
+      title: "Accueil VIP a l aeroport",
+      body: "Votre chauffeur vous attend avec pancarte, suivi de vol et sortie rapide sans attente inutile."
+    },
+    {
+      title: "Tarif clair sans surprise",
+      body: "Prix final confirme avant paiement, avec bagages et assistance inclus."
+    },
+    {
+      title: "Ideal familles et groupes",
+      body: "Options privees avec vrai espace bagages et trajet confortable jusqu a l hotel."
+    }
+  ]
+} as const;
+
 export async function TransferLandingPage({
   landingSlug,
   locale
@@ -383,11 +428,30 @@ export async function TransferLandingPage({
     locale === "es" ? `/things-to-do/${landing.hotelSlug}` : `/${locale}/things-to-do/${landing.hotelSlug}`;
 
   const defaultDeparture = formatDateTime(new Date(Date.now() + 2 * 60 * 60 * 1000));
+  const salesCards = SALES_CARDS[locale] ?? SALES_CARDS.es;
 
   const otherLandings = allLandings()
     .filter((item) => item.landingSlug !== landing.landingSlug)
     .slice(0, 3);
   const priceValidUntil = getPriceValidUntil();
+  const recommendedTours = await prisma.tour.findMany({
+    where: {
+      status: "published",
+      countryId: "RD"
+    },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      shortDescription: true,
+      duration: true,
+      price: true,
+      heroImage: true,
+      featured: true
+    },
+    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+    take: 6
+  });
 
   const schema = {
     "@context": "https://schema.org",
@@ -500,7 +564,7 @@ export async function TransferLandingPage({
           </div>
         </div>
       </section>
-      <section className="mx-auto max-w-6xl px-4 py-12">
+      <section id="transfer-quote-cards" className="mx-auto max-w-6xl px-4 py-12">
         <p className="text-sm text-slate-500">
           {t("transferLanding.route.label")} {originLocation.name ?? DEFAULT_AIRPORT_NAME} {"->"}{" "}
           {localizedLanding.hotelName}
@@ -517,6 +581,25 @@ export async function TransferLandingPage({
           locale={locale}
         />
       </section>
+      <section className="mx-auto max-w-6xl px-4 pb-8">
+        <div className="grid gap-4 md:grid-cols-3">
+          {salesCards.map((card) => (
+            <article key={card.title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-emerald-600">
+                {locale === "es" ? "Beneficio" : locale === "fr" ? "Avantage" : "Benefit"}
+              </p>
+              <h3 className="mt-2 text-lg font-bold text-slate-900">{card.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">{card.body}</p>
+              <Link
+                href="#transfer-quote-cards"
+                className="mt-4 inline-flex text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700 hover:text-emerald-800"
+              >
+                {locale === "es" ? "Cotizar ahora" : locale === "fr" ? "Demander un devis" : "Get a quote"}
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
       <section className="mx-auto max-w-6xl space-y-5 px-4 py-12">
         {localizedLanding.longCopy.map((paragraph, index) => (
           <p key={index} className="text-base leading-relaxed text-slate-600">
@@ -524,6 +607,56 @@ export async function TransferLandingPage({
           </p>
         ))}
       </section>
+      {recommendedTours.length > 0 ? (
+        <section className="mx-auto max-w-6xl px-4 pb-12">
+          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+              {locale === "es" ? "Tours recomendados" : locale === "fr" ? "Tours recommandes" : "Recommended tours"}
+            </p>
+            <h2 className="mt-2 text-2xl font-bold text-slate-900">
+              {locale === "es"
+                ? `Combina tu traslado a ${localizedLanding.hotelName} con estas excursiones`
+                : locale === "fr"
+                ? `Combinez votre transfert vers ${localizedLanding.hotelName} avec ces excursions`
+                : `Pair your transfer to ${localizedLanding.hotelName} with these tours`}
+            </h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {recommendedTours.map((tour) => {
+                const tourHref = locale === "es" ? `/tours/${tour.slug}` : `/${locale}/tours/${tour.slug}`;
+                return (
+                  <article key={tour.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                    <div className="relative h-40">
+                      <Image
+                        src={tour.heroImage || "/transfer/sedan.png"}
+                        alt={tour.title}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 33vw"
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="space-y-2 p-4">
+                      <h3 className="line-clamp-2 text-base font-bold text-slate-900">{tour.title}</h3>
+                      <p className="line-clamp-2 text-sm text-slate-600">{tour.shortDescription || localizedLanding.heroSubtitle}</p>
+                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                        {locale === "es" ? "Duracion" : locale === "fr" ? "Duree" : "Duration"}: {tour.duration}
+                      </p>
+                      <p className="text-sm font-semibold text-emerald-700">
+                        {locale === "es" ? "Desde" : locale === "fr" ? "A partir de" : "From"} USD {Math.round(tour.price)}
+                      </p>
+                      <Link
+                        href={tourHref}
+                        className="inline-flex rounded-full border border-emerald-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 transition hover:bg-emerald-50"
+                      >
+                        {locale === "es" ? "Ver tour" : locale === "fr" ? "Voir le tour" : "View tour"}
+                      </Link>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      ) : null}
       <section className="mx-auto max-w-6xl px-4 py-10">
         <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
