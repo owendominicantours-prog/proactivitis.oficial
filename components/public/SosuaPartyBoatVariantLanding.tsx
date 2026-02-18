@@ -278,6 +278,7 @@ export default async function SosuaPartyBoatVariantLanding({
 
   const hasRatings = reviewSummary.count > 0;
   const offerPrice = Number.isFinite(tour.price) ? Number(tour.price.toFixed(2)) : undefined;
+  const priceValidUntil = new Date(Date.now() + 1000 * 60 * 60 * 24 * 365).toISOString().split("T")[0];
   const tourSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -304,6 +305,7 @@ export default async function SosuaPartyBoatVariantLanding({
               : `${PROACTIVITIS_URL}/${locale}${canonicalPath}`,
           availability: "https://schema.org/InStock",
           availabilityStarts: new Date().toISOString(),
+          priceValidUntil,
           itemCondition: "https://schema.org/NewCondition"
         }
       : undefined,

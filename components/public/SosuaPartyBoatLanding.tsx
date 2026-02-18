@@ -445,6 +445,7 @@ export default async function SosuaPartyBoatLanding({ locale }: { locale: Locale
   const hasRatings = reviewSummary.count > 0;
   const mainTourHref = locale === "es" ? "/tours/party-boat-sosua" : `/${locale}/tours/party-boat-sosua`;
   const offerPrice = Number.isFinite(tour.price) ? Number(tour.price.toFixed(2)) : undefined;
+  const priceValidUntil = new Date(Date.now() + 1000 * 60 * 60 * 24 * 365).toISOString().split("T")[0];
   const tourSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -471,6 +472,7 @@ export default async function SosuaPartyBoatLanding({ locale }: { locale: Locale
               : `${PROACTIVITIS_URL}/${locale}/sosua/party-boat`,
           availability: "https://schema.org/InStock",
           availabilityStarts: new Date().toISOString(),
+          priceValidUntil,
           itemCondition: "https://schema.org/NewCondition"
         }
       : undefined,
