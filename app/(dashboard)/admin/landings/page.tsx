@@ -12,6 +12,7 @@ import { SANTO_DOMINGO_VARIANTS } from "@/data/santo-domingo-variants";
 import { BUGGY_ATV_VARIANTS } from "@/data/buggy-atv-variants";
 import { PARASAILING_VARIANTS } from "@/data/parasailing-variants";
 import { SAMANA_WHALE_VARIANTS } from "@/data/samana-whale-variants";
+import { premiumTransferMarketLandings } from "@/data/premium-transfer-market-landings";
 import CollapsibleSection from "@/components/admin/CollapsibleSection";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import LandingRefreshControl from "@/components/admin/LandingRefreshControl";
@@ -165,6 +166,20 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
     zone: "Samana Whale",
     active: true
   }));
+  const premiumTransferEntries = [
+    {
+      slug: "punta-cana/premium-transfer-services",
+      name: "Punta Cana Premium Transfer Services",
+      zone: "Premium Transfer",
+      active: true
+    },
+    ...premiumTransferMarketLandings.map((landing) => ({
+      slug: `punta-cana/premium-transfer-services/${landing.slug}`,
+      name: landing.heroTitle.es,
+      zone: "Premium Transfer",
+      active: true
+    }))
+  ];
   const tourLandingSlugs = landingPages.map((landing) => landing.slug);
   const thingsToDoSlugs = hotelThingsToDoEntries.map((entry) => entry.slug);
   const pickupHotelSlugs = pickupHotelEntries.map((entry) => entry.slug);
@@ -175,6 +190,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
   const buggyAtvSlugs = buggyAtvEntries.map((entry) => entry.slug);
   const parasailingSlugs = parasailingEntries.map((entry) => entry.slug);
   const samanaWhaleSlugs = samanaWhaleEntries.map((entry) => entry.slug);
+  const premiumTransferSlugs = premiumTransferEntries.map((entry) => entry.slug);
   const excursionKeywordSlugs = excursionKeywordEntries.map((entry) => entry.slug);
   const landingSlugs = Array.from(
     new Set([
@@ -189,7 +205,8 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       ...santoDomingoSlugs,
       ...buggyAtvSlugs,
       ...parasailingSlugs,
-      ...samanaWhaleSlugs
+      ...samanaWhaleSlugs,
+      ...premiumTransferSlugs
     ])
   );
   const trafficRows = await prisma.landingPageTraffic.findMany({
@@ -306,6 +323,34 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
                 >
                   {entry.active ? "Activo" : "Inactivo"}
                 </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Premium Transfer landings"
+        description="Landing principal premium + variantes SEO de alta intencion."
+        badge={`${premiumTransferEntries.length} items`}
+      >
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {premiumTransferEntries.map((entry) => (
+            <Link
+              key={entry.slug}
+              href={`https://proactivitis.com/${entry.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-700 transition hover:border-slate-400 hover:shadow-lg"
+            >
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.zone}</p>
+                <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">VIP</p>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                <p>{entry.slug}</p>
+                <p>Visitas {trafficMap.get(entry.slug)?.toLocaleString() ?? "0"}</p>
               </div>
             </Link>
           ))}
