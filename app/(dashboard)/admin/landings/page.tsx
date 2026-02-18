@@ -13,6 +13,10 @@ import { BUGGY_ATV_VARIANTS } from "@/data/buggy-atv-variants";
 import { PARASAILING_VARIANTS } from "@/data/parasailing-variants";
 import { SAMANA_WHALE_VARIANTS } from "@/data/samana-whale-variants";
 import { premiumTransferMarketLandings } from "@/data/premium-transfer-market-landings";
+import {
+  buildTransferHotelVariantSlug,
+  TRANSFER_HOTEL_SALES_VARIANTS
+} from "@/data/transfer-hotel-sales-variants";
 import CollapsibleSection from "@/components/admin/CollapsibleSection";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import LandingRefreshControl from "@/components/admin/LandingRefreshControl";
@@ -180,6 +184,14 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       active: true
     }))
   ];
+  const hotelSalesTransferEntries = allLandings().flatMap((landing) =>
+    TRANSFER_HOTEL_SALES_VARIANTS.map((variant) => ({
+      slug: `transfer/${buildTransferHotelVariantSlug(landing.landingSlug, variant.id)}`,
+      name: `${landing.hotelName} - ${variant.heroHook}`,
+      zone: "Transfer Sales",
+      active: true
+    }))
+  );
   const tourLandingSlugs = landingPages.map((landing) => landing.slug);
   const thingsToDoSlugs = hotelThingsToDoEntries.map((entry) => entry.slug);
   const pickupHotelSlugs = pickupHotelEntries.map((entry) => entry.slug);
@@ -191,6 +203,9 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
   const parasailingSlugs = parasailingEntries.map((entry) => entry.slug);
   const samanaWhaleSlugs = samanaWhaleEntries.map((entry) => entry.slug);
   const premiumTransferSlugs = premiumTransferEntries.map((entry) => entry.slug);
+  const hotelSalesTransferSlugs = hotelSalesTransferEntries.map((entry) =>
+    entry.slug.replace(/^transfer\//, "")
+  );
   const excursionKeywordSlugs = excursionKeywordEntries.map((entry) => entry.slug);
   const landingSlugs = Array.from(
     new Set([
@@ -206,7 +221,8 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       ...buggyAtvSlugs,
       ...parasailingSlugs,
       ...samanaWhaleSlugs,
-      ...premiumTransferSlugs
+      ...premiumTransferSlugs,
+      ...hotelSalesTransferSlugs
     ])
   );
   const trafficRows = await prisma.landingPageTraffic.findMany({
@@ -326,6 +342,37 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
               </div>
             </Link>
           ))}
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Transfer Sales Landings por hotel"
+        description="10 landings comerciales por hotel para vender traslados + tours."
+        badge={`${hotelSalesTransferEntries.length} items`}
+      >
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {hotelSalesTransferEntries.map((entry) => {
+            const cleanSlug = entry.slug.replace(/^transfer\//, "");
+            return (
+              <Link
+                key={entry.slug}
+                href={`https://proactivitis.com/${entry.slug}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-700 transition hover:border-slate-400 hover:shadow-lg"
+              >
+                <div>
+                  <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.zone}</p>
+                  <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
+                  <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">Transfer + Tours</p>
+                </div>
+                <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                  <p>{entry.slug}</p>
+                  <p>Visitas {trafficMap.get(cleanSlug)?.toLocaleString() ?? "0"}</p>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </CollapsibleSection>
 

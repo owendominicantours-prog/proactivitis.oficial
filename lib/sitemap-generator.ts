@@ -3,6 +3,8 @@ import { landingPages } from "./landing";
 import { SOSUA_PARTY_BOAT_VARIANTS } from "@/data/sosua-party-boat-variants";
 import { excursionKeywordLandings } from "../data/excursion-keyword-landings";
 import { premiumTransferMarketLandings } from "@/data/premium-transfer-market-landings";
+import { allLandings } from "@/data/transfer-landings";
+import { buildTransferHotelVariantSlug, TRANSFER_HOTEL_SALES_VARIANTS } from "@/data/transfer-hotel-sales-variants";
 import { warnOnce } from "@/lib/logOnce";
 
 declare global {
@@ -42,6 +44,12 @@ const PICKUP_BASE_PATHS = {
 const MAX_TOP_HOTELS = 80;
 const MAX_TOURS_PER_HOTEL = 35;
 const MAX_TOTAL_COMBOS = 4000;
+const HOTEL_TRANSFER_SALES_VARIANT_URLS = allLandings().flatMap((landing) =>
+  TRANSFER_HOTEL_SALES_VARIANTS.map((variant) => ({
+    url: `${BASE_URL}/transfer/${buildTransferHotelVariantSlug(landing.landingSlug, variant.id)}`,
+    priority: 0.72
+  }))
+);
 
 export type RouteEntry = { url: string; priority: number };
 
@@ -209,6 +217,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
       url: `${BASE_URL}/punta-cana/premium-transfer-services/${landing.slug}`,
       priority: 0.74
     })),
+    ...HOTEL_TRANSFER_SALES_VARIANT_URLS,
     { url: `${BASE_URL}/sosua/party-boat`, priority: 0.8 },
     ...SOSUA_PARTY_BOAT_VARIANTS.map((variant) => ({
       url: `${BASE_URL}/sosua/party-boat/${variant.slug}`,
@@ -297,6 +306,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
         url: `${BASE_URL}/punta-cana/premium-transfer-services/${landing.slug}`,
         priority: 0.74
       })),
+      ...HOTEL_TRANSFER_SALES_VARIANT_URLS,
       { url: `${BASE_URL}/sosua/party-boat`, priority: 0.8 },
       ...SOSUA_PARTY_BOAT_VARIANTS.map((variant) => ({
         url: `${BASE_URL}/sosua/party-boat/${variant.slug}`,

@@ -6,6 +6,13 @@ import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import type { TransferLandingData } from "@/data/transfer-landings";
 import { findGenericTransferLandingBySlug } from "@/data/transfer-generic-landings";
+import {
+  applyTransferHotelSalesVariant,
+  buildTransferHotelVariantSlug,
+  findTransferHotelSalesVariant,
+  parseTransferHotelVariantSlug,
+  TRANSFER_HOTEL_SALES_VARIANTS
+} from "@/data/transfer-hotel-sales-variants";
 import TransferQuoteCards from "@/components/transfers/TransferQuoteCards";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 import StructuredData from "@/components/schema/StructuredData";
@@ -15,6 +22,7 @@ import { TransferLocationType } from "@prisma/client";
 import { findDynamicLandingBySlug, getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import PublicTransferPage from "@/components/public/PublicTransferPage";
 import { normalizeTextDeep } from "@/lib/text-format";
+import { getPriceValidUntil } from "@/lib/seo";
 
 const DEFAULT_AIRPORT_SLUG = "puj-airport";
 const DEFAULT_AIRPORT_NAME = "Punta Cana International Airport (PUJ)";
@@ -87,7 +95,7 @@ const buildFallbackLanding = ({
   };
 };
 
-const resolveLanding = async (landingSlug: string): Promise<TransferLandingData | null> => {
+const resolveBaseLanding = async (landingSlug: string): Promise<TransferLandingData | null> => {
   const manual = allLandings().find((landing) => landing.landingSlug === landingSlug);
   if (manual) return manual;
 
@@ -132,6 +140,15 @@ const resolveLanding = async (landingSlug: string): Promise<TransferLandingData 
     destinationName: destination.name,
     destinationSlug: destination.slug
   });
+};
+
+const resolveLanding = async (landingSlug: string): Promise<TransferLandingData | null> => {
+  const parsed = parseTransferHotelVariantSlug(landingSlug);
+  const baseLanding = await resolveBaseLanding(parsed.baseSlug);
+  if (!baseLanding) return null;
+  const variant = findTransferHotelSalesVariant(parsed.variantId);
+  if (!variant) return baseLanding;
+  return applyTransferHotelSalesVariant(baseLanding, variant);
 };
 
 const localizeLanding = async (landing: TransferLandingData, locale: Locale) => {
@@ -359,12 +376,18 @@ export async function TransferLandingPage({
     localizedLanding.hotelName,
     originLocation.name ?? DEFAULT_AIRPORT_NAME
   );
+  const activeSalesVariant = findTransferHotelSalesVariant(parseTransferHotelVariantSlug(landingSlug).variantId);
+  const toursHubHref = locale === "es" ? "/tours" : `/${locale}/tours`;
+  const puntaCanaToursHref = locale === "es" ? "/punta-cana/tours" : `/${locale}/punta-cana/tours`;
+  const hotelThingsToDoHref =
+    locale === "es" ? `/things-to-do/${landing.hotelSlug}` : `/${locale}/things-to-do/${landing.hotelSlug}`;
 
   const defaultDeparture = formatDateTime(new Date(Date.now() + 2 * 60 * 60 * 1000));
 
   const otherLandings = allLandings()
     .filter((item) => item.landingSlug !== landing.landingSlug)
     .slice(0, 3);
+  const priceValidUntil = getPriceValidUntil();
 
   const schema = {
     "@context": "https://schema.org",
@@ -392,7 +415,17 @@ export async function TransferLandingPage({
             name: t("transferLanding.schema.offerName", { hotel: localizedLanding.hotelName })
           },
           priceCurrency: "USD",
-          price: localizedLanding.priceFrom
+          price: localizedLanding.priceFrom,
+          availability: "https://schema.org/InStock",
+          priceValidUntil,
+          shippingDetails: {
+            "@type": "OfferShippingDetails",
+            doesNotShip: true
+          },
+          hasMerchantReturnPolicy: {
+            "@type": "MerchantReturnPolicy",
+            returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+          }
         }
       ]
     }
@@ -491,6 +524,47 @@ export async function TransferLandingPage({
           </p>
         ))}
       </section>
+      <section className="mx-auto max-w-6xl px-4 py-10">
+        <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6">
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+            {activeSalesVariant ? `${activeSalesVariant.badge} + Tours` : t("transferLanding.other.title")}
+          </p>
+          <h2 className="mt-2 text-2xl font-bold text-slate-900">
+            {locale === "es"
+              ? `Completa tu viaje en ${localizedLanding.hotelName} con tours`
+              : locale === "fr"
+              ? `Completez votre voyage a ${localizedLanding.hotelName} avec des tours`
+              : `Complete your trip in ${localizedLanding.hotelName} with tours`}
+          </h2>
+          <p className="mt-3 text-sm text-slate-600">
+            {locale === "es"
+              ? "Ademas del traslado privado, puedes vender actividades con recogida desde el hotel para aumentar conversion y ticket promedio."
+              : locale === "fr"
+              ? "En plus du transfert prive, vous pouvez vendre des activites avec pickup hotel pour augmenter conversion et revenu."
+              : "Besides private transfer, you can sell hotel-pickup tours to increase conversion and average order value."}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href={hotelThingsToDoHref}
+              className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-800 hover:border-emerald-500 hover:text-emerald-700"
+            >
+              {locale === "es" ? "Ver tours desde este hotel" : locale === "fr" ? "Voir tours depuis cet hotel" : "See tours from this hotel"}
+            </Link>
+            <Link
+              href={puntaCanaToursHref}
+              className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-800 hover:border-emerald-500 hover:text-emerald-700"
+            >
+              {locale === "es" ? "Tours Punta Cana" : locale === "fr" ? "Tours Punta Cana" : "Punta Cana Tours"}
+            </Link>
+            <Link
+              href={toursHubHref}
+              className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-800 hover:border-emerald-500 hover:text-emerald-700"
+            >
+              {locale === "es" ? "Todas las excursiones" : locale === "fr" ? "Toutes les excursions" : "All excursions"}
+            </Link>
+          </div>
+        </div>
+      </section>
       <section className="mx-auto max-w-6xl px-4 py-8">
         <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
@@ -573,5 +647,10 @@ export async function generateTransferStaticParams() {
   const manualParams = allLandings()
     .filter((landing) => !slugs.has(landing.landingSlug))
     .map((landing) => ({ landingSlug: landing.landingSlug }));
-  return [...dynamicParams, ...manualParams];
+  const variantParams = allLandings().flatMap((landing) =>
+    TRANSFER_HOTEL_SALES_VARIANTS.map((variant) => ({
+      landingSlug: buildTransferHotelVariantSlug(landing.landingSlug, variant.id)
+    }))
+  );
+  return [...dynamicParams, ...manualParams, ...variantParams];
 }

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import { excursionKeywordLandings } from "@/data/excursion-keyword-landings";
 import { premiumTransferMarketLandings } from "@/data/premium-transfer-market-landings";
+import { buildTransferHotelVariantSlug, TRANSFER_HOTEL_SALES_VARIANTS } from "@/data/transfer-hotel-sales-variants";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import { warnOnce } from "@/lib/logOnce";
 
@@ -46,9 +47,16 @@ export async function GET() {
     slug: landing.landingSlug,
     lastMod: new Date().toISOString()
   }));
+  const hotelSalesLandings = allLandings().flatMap((landing) =>
+    TRANSFER_HOTEL_SALES_VARIANTS.map((variant) => ({
+      slug: buildTransferHotelVariantSlug(landing.landingSlug, variant.id),
+      lastMod: new Date().toISOString()
+    }))
+  );
   const landingMap = new Map<string, { slug: string; lastMod: string }>();
   [
     ...manualLandings,
+    ...hotelSalesLandings,
     ...transferCombos.map((combo) => ({ slug: combo.landingSlug, lastMod: combo.lastMod.toISOString() }))
   ].forEach((entry) => {
     landingMap.set(entry.slug, entry);
