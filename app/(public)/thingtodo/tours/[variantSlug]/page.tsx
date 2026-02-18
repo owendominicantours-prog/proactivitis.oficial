@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PARTY_BOAT_BASE_TOUR, PARTY_BOAT_VARIANTS } from "@/data/party-boat-variants";
 import { SANTO_DOMINGO_BASE_TOUR, SANTO_DOMINGO_VARIANTS } from "@/data/santo-domingo-variants";
@@ -60,6 +60,12 @@ const OG_LOCALE = {
 
 const ensureContains = (text: string, token: string) =>
   text.toLowerCase().includes(token.toLowerCase()) ? text : `${text} ${token}`;
+
+const LEGACY_THINGTODO_REDIRECTS: Record<string, string> = {
+  "sunrise-hotel": "/landing/sunrise-hotel",
+  "caribbean-adventure": "/landing/caribbean-adventure",
+  "hip-hop-party-boat": "/landing/tours/hip-hop-party-boat"
+};
 
 export async function generateStaticParams() {
   const staticSlugs = [
@@ -169,6 +175,10 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
 
 export default async function PartyBoatVariantPage({ params }: { params: Promise<{ variantSlug: string }> }) {
   const resolved = await params;
+  const legacyRedirect = LEGACY_THINGTODO_REDIRECTS[resolved.variantSlug];
+  if (legacyRedirect) {
+    redirect(legacyRedirect);
+  }
   const marketVariant = parseTourMarketVariantSlug(resolved.variantSlug);
   if (marketVariant) {
     const [tour, transferHotels, allHotels] = await Promise.all([

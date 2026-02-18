@@ -37,6 +37,28 @@ const PUNTA_CANA_TOP_TOURS = new Set([
   "transfer-privado-proactivitis"
 ]);
 
+const LEGACY_TOUR_SLUG_REDIRECTS: Record<string, string> = {
+  "transfer-privado-proactivitis": "/punta-cana/premium-transfer-services",
+  "saona-island-full-day-tour": "/tours/tour-y-entrada-para-de-isla-saona-desde-punta-cana",
+  "atv-horseback-parasailing-combo": "/tours/excursion-en-buggy-y-atv-en-punta-cana",
+  "sunset-sup-cocktails": "/tours/sunset-catamaran-snorkel",
+  "zip-line-adventure-punta-cana": "/tours",
+  "party-boat-punta-cana": "/thingtodo/tours/party-boat-punta-cana-guia-completa",
+  "samana-cayo-levantado-waterfall-full-day":
+    "/tours/avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana",
+  "cenote-y-cuevas-adventure": "/tours/excursion-en-buggy-y-atv-en-punta-cana",
+  "kayak-snorkel-en-isla-saona": "/tours/tour-y-entrada-para-de-isla-saona-desde-punta-cana",
+  "katamaran-fiesta-punta-cana": "/tours/sunset-catamaran-snorkel",
+  "isla-catalina-snorkeling": "/tours",
+  "horseback-riding-punta-cana": "/tours",
+  "ocean-world-dolphin-encounter": "/tours",
+  "punta-cana-city-tour-y-cultura": "/tours",
+  "sunrise-yoga-wellness-retreat": "/tours",
+  "punta-cana-night-show-dinner": "/tours"
+};
+
+const toLocalizedPath = (path: string, locale: Locale) => (locale === "es" ? path : `/${locale}${path}`);
+
 const NORTH_COAST_PARTY_BOAT_TOURS = new Set([
   "party-boat-sosua",
   "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua"
@@ -1017,7 +1039,23 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
         })
       : null;
   if (!slug) notFound();
-  if (slug === HIDDEN_TRANSFER_SLUG) notFound();
+  const normalizedSlug = slug.toLowerCase();
+  const legacyDirectPath = LEGACY_TOUR_SLUG_REDIRECTS[normalizedSlug];
+  if (legacyDirectPath) {
+    redirect(toLocalizedPath(legacyDirectPath, locale));
+  }
+  const numericSuffixMatch = normalizedSlug.match(/^(.*)-\d+$/);
+  if (numericSuffixMatch) {
+    const baseSlug = numericSuffixMatch[1];
+    const baseLegacyPath = LEGACY_TOUR_SLUG_REDIRECTS[baseSlug];
+    if (baseLegacyPath) {
+      redirect(toLocalizedPath(baseLegacyPath, locale));
+    }
+    redirect(toLocalizedPath("/tours", locale));
+  }
+  if (slug === HIDDEN_TRANSFER_SLUG) {
+    redirect(toLocalizedPath("/punta-cana/premium-transfer-services", locale));
+  }
   const session = await getServerSession(authOptions);
   const sessionUserId = (session?.user as { id?: string } | null)?.id ?? null;
   const preference = sessionUserId

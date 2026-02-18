@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 
 import { prisma } from "@/lib/prisma";
@@ -298,6 +298,9 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
   const LOCALE = await resolveLocale();
   const resolvedParams = await params;
   const segments = resolvedParams.segments ?? [];
+  if (segments.length === 2 && segments[0] === "dominican-republic" && segments[1] === "punta-cana") {
+    redirect(LOCALE === "es" ? "/punta-cana/traslado" : `/${LOCALE}/punta-cana/traslado`);
+  }
   const context = await buildSegmentsContext(segments);
   if (!context) {
     notFound();
