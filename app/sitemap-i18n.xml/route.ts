@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import { excursionKeywordLandings } from "@/data/excursion-keyword-landings";
+import { premiumTransferMarketLandings } from "@/data/premium-transfer-market-landings";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import { warnOnce } from "@/lib/logOnce";
 
@@ -67,6 +68,12 @@ export async function GET() {
       buildEntry(`${BASE_URL}/${locale}/punta-cana/premium-transfer-services`, 0.85),
       buildEntry(`${BASE_URL}/${locale}/contact`, 0.7)
     );
+
+    premiumTransferMarketLandings.forEach((landing) => {
+      entries.push(
+        buildEntry(`${BASE_URL}/${locale}/punta-cana/premium-transfer-services/${landing.slug}`, 0.75)
+      );
+    });
 
     tours.forEach((tour) => {
       entries.push(buildEntry(`${BASE_URL}/${locale}/tours/${tour.slug}`, 0.8));

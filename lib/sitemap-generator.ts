@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { landingPages } from "./landing";
 import { SOSUA_PARTY_BOAT_VARIANTS } from "@/data/sosua-party-boat-variants";
 import { excursionKeywordLandings } from "../data/excursion-keyword-landings";
+import { premiumTransferMarketLandings } from "@/data/premium-transfer-market-landings";
 import { warnOnce } from "@/lib/logOnce";
 
 declare global {
@@ -204,6 +205,10 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
     { url: `${BASE_URL}/punta-cana/tours`, priority: 0.85 },
     { url: `${BASE_URL}/punta-cana/traslado`, priority: 0.85 },
     { url: `${BASE_URL}/punta-cana/premium-transfer-services`, priority: 0.86 },
+    ...premiumTransferMarketLandings.map((landing) => ({
+      url: `${BASE_URL}/punta-cana/premium-transfer-services/${landing.slug}`,
+      priority: 0.74
+    })),
     { url: `${BASE_URL}/sosua/party-boat`, priority: 0.8 },
     ...SOSUA_PARTY_BOAT_VARIANTS.map((variant) => ({
       url: `${BASE_URL}/sosua/party-boat/${variant.slug}`,
@@ -288,6 +293,10 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
       { url: `${BASE_URL}/en/hotels`, priority: 0.85 },
       { url: `${BASE_URL}/fr/hotels`, priority: 0.85 },
       { url: `${BASE_URL}/punta-cana/premium-transfer-services`, priority: 0.86 },
+      ...premiumTransferMarketLandings.map((landing) => ({
+        url: `${BASE_URL}/punta-cana/premium-transfer-services/${landing.slug}`,
+        priority: 0.74
+      })),
       { url: `${BASE_URL}/sosua/party-boat`, priority: 0.8 },
       ...SOSUA_PARTY_BOAT_VARIANTS.map((variant) => ({
         url: `${BASE_URL}/sosua/party-boat/${variant.slug}`,

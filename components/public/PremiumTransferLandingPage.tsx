@@ -5,8 +5,12 @@ import { getPremiumTransferContentOverrides } from "@/lib/siteContent";
 import { prisma } from "@/lib/prisma";
 import PremiumTransferBookingWidget from "@/components/transfers/PremiumTransferBookingWidget";
 import StructuredData from "@/components/schema/StructuredData";
-import { PROACTIVITIS_URL, PROACTIVITIS_LOCALBUSINESS, SAME_AS_URLS } from "@/lib/seo";
+import { PROACTIVITIS_URL, PROACTIVITIS_LOCALBUSINESS, SAME_AS_URLS, getPriceValidUntil } from "@/lib/seo";
 import { normalizeTextDeep } from "@/lib/text-format";
+import {
+  premiumTransferMarketLandings,
+  type PremiumTransferMarketLanding
+} from "@/data/premium-transfer-market-landings";
 
 const WHATSAPP_LINK = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/18093949877";
 const DOMINICAN_COUNTRY_CODES = ["RD", "DO", "DOMINICAN-REPUBLIC"];
@@ -48,11 +52,19 @@ const LABELS = {
 
 type Props = {
   locale: Locale;
+  variant?: PremiumTransferMarketLanding;
 };
 
-export default async function PremiumTransferLandingPage({ locale }: Props) {
+export default async function PremiumTransferLandingPage({ locale, variant }: Props) {
   const content = normalizeTextDeep(await getPremiumTransferContentOverrides(locale));
   const copy = normalizeTextDeep(LABELS[locale] ?? LABELS.es);
+  const heroTitle = variant?.heroTitle[locale] ?? content.heroTitle;
+  const heroSubtitle = variant?.heroSubtitle[locale] ?? content.heroSubtitle;
+  const seoTitle = variant?.seoTitle[locale] ?? content.seoTitle;
+  const seoDescription = variant?.seoDescription[locale] ?? content.seoDescription;
+  const variantKeyword = variant?.keyword[locale];
+  const variantBodyTitle = variant?.bodyTitle[locale];
+  const variantBodyIntro = variant?.bodyIntro[locale];
 
   let origin:
     | {
@@ -112,7 +124,7 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
       },
       select: { id: true, slug: true, name: true },
       orderBy: { name: "asc" },
-      take: 100
+      take: 500
     });
     if (!destinations.length) {
       destinations = await prisma.transferLocation.findMany({
@@ -123,7 +135,7 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
         },
         select: { id: true, slug: true, name: true },
         orderBy: { name: "asc" },
-        take: 100
+        take: 500
       });
     }
   } catch (error) {
@@ -144,17 +156,18 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
   const bullets = content.vipBullets ?? [];
   const certifications = content.vipCertifications ?? [];
 
-  const canonicalPath =
-    locale === "es" ? "/punta-cana/premium-transfer-services" : `/${locale}/punta-cana/premium-transfer-services`;
+  const localizedBasePath = locale === "es" ? "/punta-cana/premium-transfer-services" : `/${locale}/punta-cana/premium-transfer-services`;
+  const canonicalPath = variant ? `${localizedBasePath}/${variant.slug}` : localizedBasePath;
   const canonicalUrl = `${PROACTIVITIS_URL}${canonicalPath}`;
+  const priceValidUntil = getPriceValidUntil();
   const homePath = locale === "es" ? "/" : `/${locale}`;
   const puntaCanaPath = locale === "es" ? "/punta-cana/traslado" : `/${locale}/punta-cana/traslado`;
 
   const serviceSchema = {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: content.heroTitle,
-    description: content.heroSubtitle,
+    name: heroTitle,
+    description: heroSubtitle,
     serviceType: "Luxury Airport Transfer",
     areaServed: {
       "@type": "City",
@@ -167,9 +180,19 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
       "@type": "Offer",
       availability: "https://schema.org/InStock",
       url: canonicalUrl,
-      priceCurrency: "USD"
+      priceCurrency: "USD",
+      priceValidUntil,
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        doesNotShip: true
+      },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+      }
     },
     sameAs: SAME_AS_URLS,
+    ...(variantKeyword ? { keywords: variantKeyword } : {}),
     image: [
       content.heroBackgroundImage,
       content.heroSpotlightImage,
@@ -198,7 +221,7 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
       {
         "@type": "ListItem",
         position: 3,
-        name: content.heroTitle,
+        name: heroTitle,
         item: canonicalUrl
       }
     ]
@@ -266,8 +289,8 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
   const webPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: content.seoTitle,
-    description: content.seoDescription,
+    name: seoTitle,
+    description: seoDescription,
     url: canonicalUrl,
     inLanguage: locale,
     isPartOf: {
@@ -288,7 +311,7 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
         <div className="absolute inset-0">
           <Image
             src={content.heroBackgroundImage || "/transfer/suv.png"}
-            alt={content.heroTitle || "Premium transfer"}
+            alt={heroTitle || "Premium transfer"}
             fill
             className="object-cover"
             sizes="100vw"
@@ -302,9 +325,9 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
               {content.heroBadge}
             </p>
             <h1 className="max-w-3xl text-4xl font-black leading-tight text-white md:text-6xl">
-              {content.heroTitle}
+              {heroTitle}
             </h1>
-            <p className="max-w-2xl text-lg text-slate-200 md:text-xl">{content.heroSubtitle}</p>
+            <p className="max-w-2xl text-lg text-slate-200 md:text-xl">{heroSubtitle}</p>
             <div className="flex flex-wrap gap-3">
               <a
                 href="#vip-booking"
@@ -326,7 +349,7 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
           <div className="relative min-h-[380px] overflow-hidden rounded-[34px] border border-amber-200/30 shadow-[0_40px_90px_rgba(0,0,0,0.45)]">
             <Image
               src={content.heroSpotlightImage || content.lifestyleImage || "/transfer/sedan.png"}
-              alt={content.heroTitle || "VIP spotlight"}
+              alt={heroTitle || "VIP spotlight"}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 45vw"
@@ -356,7 +379,7 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
           <article className="rounded-3xl border border-amber-200/20 bg-slate-900/60 p-6">
             <p className="text-xs uppercase tracking-[0.3em] text-amber-200">{copy.connectedHotels}</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {destinations.slice(0, 12).map((hotel) => (
+              {(variant ? destinations : destinations.slice(0, 12)).map((hotel) => (
                 <Link
                   key={hotel.id}
                   href={
@@ -367,6 +390,49 @@ export default async function PremiumTransferLandingPage({ locale }: Props) {
                   className="rounded-xl border border-amber-200/25 bg-slate-800/70 px-3 py-3 text-sm text-slate-100 transition hover:border-amber-200/60"
                 >
                   {hotel.name}
+                </Link>
+              ))}
+            </div>
+          </article>
+        </section>
+      ) : null}
+
+      {variant && destinations.length > 0 ? (
+        <section className="mx-auto max-w-7xl px-4 pb-12">
+          <article className="rounded-3xl border border-amber-200/20 bg-slate-900/60 p-6">
+            {variantKeyword ? <p className="text-xs uppercase tracking-[0.3em] text-amber-200">{variantKeyword}</p> : null}
+            {variantBodyTitle ? <h2 className="mt-2 text-2xl font-semibold text-white">{variantBodyTitle}</h2> : null}
+            {variantBodyIntro ? <p className="mt-3 text-sm leading-relaxed text-slate-200">{variantBodyIntro}</p> : null}
+            <p className="mt-3 text-sm leading-relaxed text-slate-300">
+              {locale === "es"
+                ? "Cobertura hotelera completa en esta landing premium: "
+                : locale === "fr"
+                ? "Couverture hoteliere complete sur cette landing premium : "
+                : "Full hotel coverage in this premium landing: "}
+              {destinations.map((hotel) => hotel.name).join(", ")}.
+            </p>
+          </article>
+        </section>
+      ) : null}
+
+      {!variant ? (
+        <section className="mx-auto max-w-7xl px-4 pb-12">
+          <article className="rounded-3xl border border-amber-200/20 bg-slate-900/60 p-6">
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-200">
+              {locale === "es" ? "Landings premium por intencion" : locale === "fr" ? "Landings premium par intention" : "Premium intent landings"}
+            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {premiumTransferMarketLandings.map((item) => (
+                <Link
+                  key={item.slug}
+                  href={
+                    locale === "es"
+                      ? `/punta-cana/premium-transfer-services/${item.slug}`
+                      : `/${locale}/punta-cana/premium-transfer-services/${item.slug}`
+                  }
+                  className="rounded-xl border border-amber-200/25 bg-slate-800/70 px-3 py-3 text-sm text-slate-100 transition hover:border-amber-200/60"
+                >
+                  {item.keyword[locale]}
                 </Link>
               ))}
             </div>
