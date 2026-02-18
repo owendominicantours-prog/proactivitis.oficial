@@ -35,6 +35,104 @@ const DEFAULT_ORIGIN_LABELS: Record<Locale, string> = {
   fr: "Aeroport de Punta Cana (PUJ)"
 };
 
+const normalizeLoose = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/Ã©/g, "e")
+    .replace(/Ã¡/g, "a")
+    .replace(/Ã­/g, "i")
+    .replace(/Ã³/g, "o")
+    .replace(/Ãº/g, "u")
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+const slugTokens = (value: string) => normalizeLoose(value).split("-").filter((token) => token.length > 2);
+
+const looksLikeAirportSlug = (value: string) => {
+  const normalized = normalizeLoose(value);
+  return (
+    normalized.includes("airport") ||
+    normalized.includes("aeropuerto") ||
+    normalized.includes("puj") ||
+    normalized.includes("las-americas") ||
+    normalized.includes("aeropuerto-internacional")
+  );
+};
+
+const buildSlugAliases = (value: string) => {
+  const normalized = normalizeLoose(value);
+  const aliases = new Set<string>([value, normalized]);
+  aliases.add(normalized.replace("punta-cana-international-airport", "puj-airport"));
+  aliases.add(normalized.replace("punta-cana-airport", "puj-airport"));
+  aliases.add(normalized.replace("aeropuerto-las-americas", "aeropuerto-internacional-las-americas"));
+  aliases.add(normalized.replace("aeropuerto-las-americas", "las-americas-airport"));
+  aliases.add(normalized.replace("aeropuerto-internacional-las-americas", "aeropuerto-las-americas"));
+  return Array.from(aliases).filter(Boolean);
+};
+
+type TransferLocationLite = {
+  slug: string;
+  name: string;
+  type: TransferLocationType;
+  zoneId: string;
+};
+
+const scoreLocationMatch = (target: string, location: TransferLocationLite) => {
+  const targetTokens = slugTokens(target);
+  const haystack = `${normalizeLoose(location.slug)} ${normalizeLoose(location.name)}`;
+  return targetTokens.reduce((score, token) => score + (haystack.includes(token) ? 1 : 0), 0);
+};
+
+const findBestLocation = (target: string, locations: TransferLocationLite[]) => {
+  if (locations.length === 0) return null;
+  let best: TransferLocationLite | null = null;
+  let bestScore = -1;
+  for (const candidate of locations) {
+    const score = scoreLocationMatch(target, candidate);
+    if (score > bestScore) {
+      best = candidate;
+      bestScore = score;
+    }
+  }
+  return bestScore <= 0 ? null : best;
+};
+
+const resolveLocationByAlias = async (
+  rawSlug: string,
+  expectedType?: TransferLocationType
+): Promise<TransferLocationLite | null> => {
+  const aliases = buildSlugAliases(rawSlug);
+  for (const alias of aliases) {
+    const exact = await prisma.transferLocation.findUnique({
+      where: { slug: alias },
+      select: { slug: true, name: true, type: true, zoneId: true }
+    });
+    if (exact && (!expectedType || exact.type === expectedType)) {
+      return exact;
+    }
+  }
+
+  if (expectedType || looksLikeAirportSlug(rawSlug)) {
+    const airports = await prisma.transferLocation.findMany({
+      where: { type: TransferLocationType.AIRPORT, active: true },
+      select: { slug: true, name: true, type: true, zoneId: true }
+    });
+    const bestAirport = findBestLocation(rawSlug, airports);
+    if (bestAirport) return bestAirport;
+  }
+
+  const expectedWhere = expectedType ? { type: expectedType, active: true } : { active: true };
+  const generic = await prisma.transferLocation.findMany({
+    where: expectedWhere,
+    select: { slug: true, name: true, type: true, zoneId: true },
+    take: 2500
+  });
+  return findBestLocation(rawSlug, generic);
+};
+
 const pickHeroImage = (slug: string) => {
   const hash = slug.split("").reduce((value, char) => value + char.charCodeAt(0), 0);
   return FALLBACK_HERO_IMAGES[Math.abs(hash) % FALLBACK_HERO_IMAGES.length];
@@ -96,7 +194,14 @@ const buildFallbackLanding = ({
 };
 
 const resolveBaseLanding = async (landingSlug: string): Promise<TransferLandingData | null> => {
-  const manual = allLandings().find((landing) => landing.landingSlug === landingSlug);
+  const normalizedLandingSlug = normalizeLoose(landingSlug);
+  const manual = allLandings().find(
+    (landing) =>
+      landing.landingSlug === landingSlug ||
+      landing.reverseSlug === landingSlug ||
+      normalizeLoose(landing.landingSlug) === normalizedLandingSlug ||
+      normalizeLoose(landing.reverseSlug) === normalizedLandingSlug
+  );
   if (manual) return manual;
 
   const dynamic = await findDynamicLandingBySlug(landingSlug);
@@ -114,31 +219,45 @@ const resolveBaseLanding = async (landingSlug: string): Promise<TransferLandingD
   }
 
   const [originSlug, destinationSlug] = landingSlug.split("-to-");
-  const [origin, destination] = await Promise.all([
-    prisma.transferLocation.findUnique({ where: { slug: originSlug } }),
-    prisma.transferLocation.findUnique({ where: { slug: destinationSlug } })
+  const [originGuess, destinationGuess] = await Promise.all([
+    resolveLocationByAlias(
+      originSlug,
+      looksLikeAirportSlug(originSlug) ? TransferLocationType.AIRPORT : undefined
+    ),
+    resolveLocationByAlias(
+      destinationSlug,
+      looksLikeAirportSlug(destinationSlug) ? TransferLocationType.AIRPORT : undefined
+    )
   ]);
-  const resolvedOrigin =
-    origin ??
-    (await prisma.transferLocation.findFirst({
-      where: {
-        type: TransferLocationType.AIRPORT,
-        OR: [
-          { slug: { contains: originSlug } },
-          { slug: { contains: "punta-cana-international-airport" } },
-          { slug: { contains: "punta-cana" } }
-        ]
-      }
-    }));
-  if (!resolvedOrigin || !destination) {
+
+  let resolvedOrigin = originGuess;
+  let resolvedDestination = destinationGuess;
+
+  if (resolvedOrigin && resolvedDestination) {
+    if (
+      resolvedOrigin.type !== TransferLocationType.AIRPORT &&
+      resolvedDestination.type === TransferLocationType.AIRPORT
+    ) {
+      const swappedOrigin = resolvedDestination;
+      resolvedDestination = resolvedOrigin;
+      resolvedOrigin = swappedOrigin;
+    }
+  }
+
+  if (
+    !resolvedOrigin ||
+    !resolvedDestination ||
+    resolvedOrigin.type !== TransferLocationType.AIRPORT ||
+    resolvedDestination.type === TransferLocationType.AIRPORT
+  ) {
     return null;
   }
 
   return buildFallbackLanding({
     originName: resolvedOrigin.name,
     originSlug: resolvedOrigin.slug,
-    destinationName: destination.name,
-    destinationSlug: destination.slug
+    destinationName: resolvedDestination.name,
+    destinationSlug: resolvedDestination.slug
   });
 };
 
