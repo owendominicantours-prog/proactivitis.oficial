@@ -138,6 +138,13 @@ const pickHeroImage = (slug: string) => {
   return FALLBACK_HERO_IMAGES[Math.abs(hash) % FALLBACK_HERO_IMAGES.length];
 };
 
+const humanizeSlug = (value: string) =>
+  normalizeLoose(value)
+    .split("-")
+    .filter(Boolean)
+    .map((token) => token.charAt(0).toUpperCase() + token.slice(1))
+    .join(" ");
+
 const buildFallbackLanding = ({
   originName,
   originSlug,
@@ -250,7 +257,20 @@ const resolveBaseLanding = async (landingSlug: string): Promise<TransferLandingD
     resolvedOrigin.type !== TransferLocationType.AIRPORT ||
     resolvedDestination.type === TransferLocationType.AIRPORT
   ) {
-    return null;
+    const [leftSlug, rightSlug] = landingSlug.split("-to-");
+    if (!leftSlug || !rightSlug) return null;
+    const leftIsAirport = looksLikeAirportSlug(leftSlug);
+    const rightIsAirport = looksLikeAirportSlug(rightSlug);
+    if (!leftIsAirport && !rightIsAirport) return null;
+    const originSlugFallback = normalizeLoose(leftIsAirport ? leftSlug : rightSlug) || DEFAULT_AIRPORT_SLUG;
+    const destinationSlugFallback = normalizeLoose(leftIsAirport ? rightSlug : leftSlug);
+    if (!destinationSlugFallback) return null;
+    return buildFallbackLanding({
+      originName: DEFAULT_AIRPORT_NAME,
+      originSlug: originSlugFallback,
+      destinationName: humanizeSlug(destinationSlugFallback),
+      destinationSlug: destinationSlugFallback
+    });
   }
 
   return buildFallbackLanding({
@@ -532,13 +552,13 @@ export async function TransferLandingPage({
     prisma.transferLocation.findUnique({ where: { slug: originSlug } }),
     prisma.transferLocation.findUnique({ where: { slug: landing.hotelSlug } })
   ]);
-  if (!originLocation || !destinationLocation) {
-    return notFound();
-  }
+  const originLabel = originLocation?.name ?? DEFAULT_AIRPORT_NAME;
+  const destinationLabel = destinationLocation?.name ?? localizedLanding.hotelName;
+  const canQuote = Boolean(originLocation?.id && destinationLocation?.id);
   const marketTitles = buildMarketTransferTitles(
     locale,
     localizedLanding.hotelName,
-    originLocation.name ?? DEFAULT_AIRPORT_NAME
+    originLabel
   );
   const activeSalesVariant = findTransferHotelSalesVariant(parseTransferHotelVariantSlug(landingSlug).variantId);
   const toursHubHref = locale === "es" ? "/tours" : `/${locale}/tours`;
@@ -685,20 +705,37 @@ export async function TransferLandingPage({
       </section>
       <section id="transfer-quote-cards" className="mx-auto max-w-6xl px-4 py-12">
         <p className="text-sm text-slate-500">
-          {t("transferLanding.route.label")} {originLocation.name ?? DEFAULT_AIRPORT_NAME} {"->"}{" "}
-          {localizedLanding.hotelName}
+          {t("transferLanding.route.label")} {originLabel} {"->"} {destinationLabel}
         </p>
-        <TransferQuoteCards
-          originId={originLocation.id}
-          destinationId={destinationLocation.id}
-          originSlug={originLocation.slug}
-          destinationSlug={destinationLocation.slug}
-          originLabel={originLocation.name ?? DEFAULT_AIRPORT_NAME}
-          destinationLabel={destinationLocation.name ?? localizedLanding.hotelName}
-          defaultDeparture={defaultDeparture}
-          priceFrom={localizedLanding.priceFrom}
-          locale={locale}
-        />
+        {canQuote ? (
+          <TransferQuoteCards
+            originId={originLocation!.id}
+            destinationId={destinationLocation!.id}
+            originSlug={originLocation!.slug}
+            destinationSlug={destinationLocation!.slug}
+            originLabel={originLabel}
+            destinationLabel={destinationLabel}
+            defaultDeparture={defaultDeparture}
+            priceFrom={localizedLanding.priceFrom}
+            locale={locale}
+          />
+        ) : (
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            {locale === "es"
+              ? "Estamos actualizando esta ruta para cotizacion automatica. Puedes cotizar ahora mismo en el formulario general de traslados."
+              : locale === "fr"
+              ? "Nous mettons a jour cette route pour un devis automatique. Vous pouvez demander un devis immediat via le formulaire general."
+              : "We are updating this route for automatic pricing. You can still request an instant quote from the general transfer form."}
+            <div className="mt-3">
+              <Link
+                href={locale === "es" ? "/traslado" : `/${locale}/traslado`}
+                className="inline-flex rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white hover:bg-slate-700"
+              >
+                {locale === "es" ? "Cotizar traslado" : locale === "fr" ? "Demander un devis" : "Get transfer quote"}
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
       <section className="mx-auto max-w-6xl px-4 pb-8">
         <div className="grid gap-4 md:grid-cols-3">
