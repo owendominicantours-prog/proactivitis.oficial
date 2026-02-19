@@ -42,6 +42,11 @@ export const metadata: Metadata = {
   }
 };
 
-export default function SpanishHotelsIndexPage() {
-  return <HotelsDirectoryPage locale={es} />;
+export default function SpanishHotelsIndexPage({
+  searchParams
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  return <HotelsDirectoryPage locale={es} searchParams={searchParams} />;
 }
+
