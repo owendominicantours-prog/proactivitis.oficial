@@ -84,6 +84,23 @@ const OFFICIAL_URL_HINTS = {
   "radisson-blu-punta-cana": "https://www.radissonhotels.com/",
   "catalonia-bavaro": "https://www.cataloniahotels.com/en/hotel/catalonia-bavaro-beach-golf-casino-resort",
   "catalonia-santo-domingo": "https://www.cataloniahotels.com/en/hotel/catalonia-santo-domingo",
+  "caribe-deluxe-princess": "https://www.princess-hotels.com/en/punta-cana/caribe-deluxe-princess/",
+  "grand-bavaro-princess": "https://www.princess-hotels.com/en/punta-cana/grand-bavaro-princess/",
+  "tropical-deluxe-princess": "https://www.princess-hotels.com/en/punta-cana/tropical-deluxe-princess/",
+  "punta-cana-princess": "https://www.princess-hotels.com/en/punta-cana/punta-cana-princess/",
+  "grand-princess-punta-cana": "https://www.princess-hotels.com/en/punta-cana/",
+  "grand-sirenis-punta-cana":
+    "https://www.sirenishotels.com/en/hotels/dominican-republic/punta-cana/grand-sirenis-punta-cana-resort/",
+  "impressive-punta-cana": "https://www.impressiveresorts.com/",
+  "live-aqua-punta-cana": "https://www.liveaqua.com/en/hotels/live-aqua-punta-cana",
+  "ducassi-suites": "https://ducassisuites.com/",
+  "ocean-blue-and-sand": "https://www.h10hotels.com/en/punta-cana-hotels/ocean-blue-sand",
+  "occidental-caribe": "https://www.barcelo.com/en-us/occidental-caribe/",
+  "occidental-punta-cana": "https://www.barcelo.com/en-us/occidental-punta-cana/",
+  "serenade-punta-cana": "https://www.serenadepuntacana.com/",
+  "serenade-all-suites-adults-only": "https://www.serenadepuntacana.com/",
+  "vista-sol-punta-cana": "https://www.vistasolhotels.com/",
+  "wp-santo-domingo": "https://www.wphotelsdo.com/",
   "whala-bavaro": "https://www.whalahotels.com/",
   "vista-sol-punta-cana": "https://www.vistasolhotels.com/"
 };
@@ -110,6 +127,20 @@ const shorten = (value = "", max = 165) => {
   const cut = cleaned.slice(0, max);
   const edge = cut.lastIndexOf(" ");
   return `${cut.slice(0, edge > 70 ? edge : max)}...`;
+};
+
+const buildFallbackDescription = (hotelName, baseDescription = "") => {
+  const source = cleanText(baseDescription);
+  if (source) {
+    return shorten(
+      `${source}. Book ${hotelName} with local support, fast confirmation, and transfer + tour assistance in Punta Cana.`,
+      150
+    );
+  }
+  return shorten(
+    `${hotelName} in Punta Cana with local support, fast confirmation, and custom hotel + transfer + tour planning.`,
+    150
+  );
 };
 
 const getHotelTokens = (hotelName) =>
@@ -372,22 +403,22 @@ const run = async () => {
     const preferredUrl = OFFICIAL_URL_HINTS[hotel.slug] ?? "";
     const meta = await pickBestMeta(hotel.name, preferredUrl);
     if (!meta) {
-      console.log(`  no metadata found`);
-      await sleep(350);
-      continue;
+      console.log(`  no metadata found, using fallback`);
     }
 
-    const shortDescription = shorten(meta.description || hotel.description || hotel.name, 150);
+    const shortDescription = meta
+      ? shorten(meta.description || hotel.description || hotel.name, 150)
+      : buildFallbackDescription(hotel.name, hotel.description || "");
     content[hotel.slug] = {
-      officialUrl: meta.url,
-      coverImage: meta.image || current?.coverImage || "",
+      officialUrl: meta?.url || preferredUrl || current?.officialUrl || "",
+      coverImage: meta?.image || current?.coverImage || "",
       shortDescription,
-      seoTitle: meta.title || current?.seoTitle || hotel.name,
-      metaDescription: shorten(meta.description || current?.metaDescription || shortDescription, 160),
+      seoTitle: meta?.title || current?.seoTitle || `${hotel.name} | Punta Cana Resort`,
+      metaDescription: shorten(meta?.description || current?.metaDescription || shortDescription, 160),
       updatedAt: new Date().toISOString()
     };
 
-    if (!hotel.heroImage && meta.image) {
+    if (!hotel.heroImage && meta?.image) {
       await prisma.transferLocation.update({
         where: { slug: hotel.slug },
         data: { heroImage: meta.image }
