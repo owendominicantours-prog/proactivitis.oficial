@@ -298,7 +298,11 @@ export default async function LandingPage({ params }: Params) {
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {selectedTours.map((tour) => (
-                  <article key={tour.slug} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                  <Link
+                    key={tour.slug}
+                    href={`/tours/${tour.slug}`}
+                    className="block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  >
                     <div className="h-40 w-full">
                       <img src={resolveTourImage(tour.heroImage, tour.gallery)} alt={tour.title} className="h-full w-full object-cover" />
                     </div>
@@ -312,7 +316,7 @@ export default async function LandingPage({ params }: Params) {
                         <span className="font-semibold text-slate-900">From ${Math.round(tour.price || 0)}</span>
                       </div>
                     </div>
-                  </article>
+                  </Link>
                 ))}
               </div>
             </section>
@@ -333,7 +337,11 @@ export default async function LandingPage({ params }: Params) {
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {selectedHotels.map((hotel) => (
-                  <article key={hotel.slug} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                  <Link
+                    key={hotel.slug}
+                    href={`/hoteles/${hotel.slug}`}
+                    className="block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  >
                     <div className="h-40 w-full">
                       <img src={hotel.heroImage || "/transfer/mini van.png"} alt={hotel.name} className="h-full w-full object-cover" />
                     </div>
@@ -347,7 +355,7 @@ export default async function LandingPage({ params }: Params) {
                         <span className="rounded-full bg-emerald-100 px-2 py-1 font-semibold text-emerald-700">Available</span>
                       </div>
                     </div>
-                  </article>
+                  </Link>
                 ))}
               </div>
             </section>
@@ -368,7 +376,11 @@ export default async function LandingPage({ params }: Params) {
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {selectedTransfers.map((transfer) => (
-                  <article key={transfer.landingSlug} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                  <Link
+                    key={transfer.landingSlug}
+                    href={`/transfer/${transfer.landingSlug}`}
+                    className="block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  >
                     <div className="h-40 w-full">
                       <img
                         src={transfer.heroImage || "/transfer/mini van.png"}
@@ -384,7 +396,7 @@ export default async function LandingPage({ params }: Params) {
                         <span className="font-semibold text-slate-900">From ${transfer.priceFrom}</span>
                       </div>
                     </div>
-                  </article>
+                  </Link>
                 ))}
               </div>
             </section>
