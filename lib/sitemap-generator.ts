@@ -298,7 +298,10 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
     ...transferHotels.flatMap((hotel) => [
       { url: `${BASE_URL}/hoteles/${hotel.slug}`, priority: 0.76 },
       { url: `${BASE_URL}/en/hotels/${hotel.slug}`, priority: 0.76 },
-      { url: `${BASE_URL}/fr/hotels/${hotel.slug}`, priority: 0.76 }
+      { url: `${BASE_URL}/fr/hotels/${hotel.slug}`, priority: 0.76 },
+      { url: `${BASE_URL}/things-to-do/${hotel.slug}`, priority: 0.72 },
+      { url: `${BASE_URL}/en/things-to-do/${hotel.slug}`, priority: 0.72 },
+      { url: `${BASE_URL}/fr/things-to-do/${hotel.slug}`, priority: 0.72 }
     ])
   ]);
 
