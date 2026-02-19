@@ -78,6 +78,32 @@ const parseGallery = (gallery?: string | null) => {
 const resolveTourImage = (heroImage?: string | null, gallery?: string | null) =>
   heroImage || parseGallery(gallery)[0] || "/fototours/fotosimple.jpg";
 
+const formatTourDuration = (duration: string | null | undefined) => {
+  if (!duration) return "Flexible duration";
+  const value = String(duration).trim();
+  if (!value) return "Flexible duration";
+  if (!value.startsWith("{")) return value;
+  try {
+    const parsed = JSON.parse(value);
+    if (!parsed || typeof parsed !== "object") return "Flexible duration";
+    const rawValue = parsed.value ? String(parsed.value).trim() : "";
+    const unitRaw = parsed.unit ? String(parsed.unit).trim().toLowerCase() : "";
+    if (!rawValue) return "Flexible duration";
+    if (unitRaw.includes("hora")) {
+      return `${rawValue} hour${rawValue === "1" ? "" : "s"}`;
+    }
+    if (unitRaw.includes("min")) {
+      return `${rawValue} min`;
+    }
+    if (unitRaw.includes("dia")) {
+      return `${rawValue} day${rawValue === "1" ? "" : "s"}`;
+    }
+    return `${rawValue} ${parsed.unit ? String(parsed.unit) : ""}`.trim();
+  } catch {
+    return "Flexible duration";
+  }
+};
+
 const countryHash = (country: string) =>
   country.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
 
@@ -312,7 +338,7 @@ export default async function LandingPage({ params }: Params) {
                         {shorten(tour.shortDescription || tour.description || "Punta Cana excursion with local support.")}
                       </p>
                       <div className="flex items-center justify-between text-xs text-slate-500">
-                        <span>{tour.duration || "Flexible duration"}</span>
+                        <span>{formatTourDuration(tour.duration)}</span>
                         <span className="font-semibold text-slate-900">From ${Math.round(tour.price || 0)}</span>
                       </div>
                     </div>
@@ -350,6 +376,15 @@ export default async function LandingPage({ params }: Params) {
                       <p className="line-clamp-2 text-sm text-slate-600">
                         {shorten(hotel.description || "All-inclusive and premium hotel option in Punta Cana.")}
                       </p>
+                      <p className="text-xs font-semibold text-amber-600">★★★★★ Resort Collection</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-700">
+                          All Inclusive
+                        </span>
+                        <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-700">
+                          Beach Area
+                        </span>
+                      </div>
                       <div className="flex items-center justify-between text-xs text-slate-500">
                         <span>{hotel.zone?.name || "Punta Cana"}</span>
                         <span className="rounded-full bg-emerald-100 px-2 py-1 font-semibold text-emerald-700">Available</span>
