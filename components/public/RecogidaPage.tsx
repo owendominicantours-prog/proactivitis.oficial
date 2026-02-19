@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import type { Metadata } from "next";
 import { Locale, translate } from "@/lib/translations";
+import StructuredData from "@/components/schema/StructuredData";
 
 const RECENT_TOURS_LIMIT = 6;
 const BASE_URL = "https://proactivitis.com";
@@ -282,8 +283,49 @@ export async function RecogidaPage({
     }
   }
 
+  const canonicalUrl = buildCanonical(location.slug, locale);
+  const localizedHome = locale === "es" ? "/" : `/${locale}`;
+  const localizedRecogidaBase = locale === "es" ? "/excursiones-con-recogida" : pickupBasePathByLocale[locale];
+
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: t("recogida.meta.title", { hotel: location.name }),
+    description: t("recogida.meta.description", { hotel: location.name }),
+    url: canonicalUrl
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Proactivitis", item: `${BASE_URL}${localizedHome}` },
+      { "@type": "ListItem", position: 2, name: t("recogida.hero.eyebrow"), item: `${BASE_URL}${localizedRecogidaBase}` },
+      { "@type": "ListItem", position: 3, name: location.name, item: canonicalUrl }
+    ]
+  };
+
+  const toursItemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: t("recogida.tours.title"),
+    itemListElement: displayTours.slice(0, 6).map((tour, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${BASE_URL}${buildTourUrl(tour, location.slug, bookingCode)}`,
+      item: {
+        "@type": "TouristTrip",
+        name: tour.title,
+        description: tour.shortDescription ?? t("recogida.tours.cardFallback")
+      }
+    }))
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
+      <StructuredData data={webPageSchema} />
+      <StructuredData data={breadcrumbSchema} />
+      <StructuredData data={toursItemListSchema} />
       <section className="bg-gradient-to-br from-white via-slate-50 to-slate-100 border-b border-slate-200">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-12">
           <div className="space-y-2">
