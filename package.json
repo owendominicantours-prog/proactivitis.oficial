@@ -17,6 +17,7 @@
     "seed:countries": "node scripts/seed-countries.cjs",
     "generate:sitemap": "ts-node --project tsconfig.seed.json scripts/generate-sitemap.ts",
     "seed:destinations": "node scripts/seed-destinations.ts",
+    "hotels:enrich": "node scripts/enrich-hotel-directory-from-official.mjs",
     "translate:tours": "cross-env TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' ts-node scripts/translateTours.ts",
     "postinstall": "prisma generate"
   },

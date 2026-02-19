@@ -1,13 +1,24 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Locale } from "@/lib/translations";
+import type { HotelLandingOverrides } from "@/lib/siteContent";
+import StructuredData from "@/components/schema/StructuredData";
 
 type DirectorySearchParams = Record<string, string | string[] | undefined>;
+type HotelDirectoryEnrichment = {
+  officialUrl?: string;
+  coverImage?: string;
+  shortDescription?: string;
+  seoTitle?: string;
+  metaDescription?: string;
+  updatedAt?: string;
+};
 
 type HotelCardInfo = {
   slug: string;
   name: string;
   heroImage: string | null;
+  description: string;
   zoneName: string;
   price: number;
   rating: number;
@@ -195,6 +206,42 @@ const getRoomsLeft = (name: string) => {
   return 2 + (sum % 7);
 };
 
+const cleanText = (value: string) => value.replace(/\s+/g, " ").trim();
+
+const shortenText = (value: string, max = 160) => {
+  const cleaned = cleanText(value);
+  if (cleaned.length <= max) return cleaned;
+  const trimmed = cleaned.slice(0, max);
+  const lastSpace = trimmed.lastIndexOf(" ");
+  const end = lastSpace > 70 ? lastSpace : max;
+  return `${trimmed.slice(0, end)}...`;
+};
+
+const firstSentence = (value?: string) => {
+  if (!value) return "";
+  const cleaned = cleanText(value);
+  const match = cleaned.match(/^[^.!?]+[.!?]?/);
+  return match?.[0] ?? cleaned;
+};
+
+const coverStyleFromSlug = (slug: string) => {
+  const hash = slug.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const x = 30 + (hash % 40);
+  const y = 30 + ((hash * 7) % 40);
+  const hue = hash % 360;
+  return {
+    objectPosition: `${x}% ${y}%`,
+    overlay: `linear-gradient(120deg, hsla(${hue}, 70%, 45%, 0.26), hsla(${(hue + 80) % 360}, 70%, 30%, 0.18))`
+  };
+};
+
+const toAbsoluteUrl = (value: string) => {
+  if (!value) return "https://proactivitis.com/transfer/mini van.png";
+  if (value.startsWith("http")) return value;
+  const normalized = value.startsWith("/") ? value : `/${value}`;
+  return `https://proactivitis.com${normalized}`;
+};
+
 const buildBadges = (zoneName: string, rating: number, reviews: number, locale: Locale) => {
   const dictionary: Record<Locale, { top: string; cancel: string; transfer: string; area: string }> = {
     es: {
@@ -231,11 +278,23 @@ export default async function HotelsDirectoryPage({
   locale: Locale;
   searchParams?: Promise<DirectorySearchParams>;
 }) {
-  const hotels = await prisma.transferLocation.findMany({
-    where: { type: "HOTEL", active: true },
-    select: { slug: true, name: true, heroImage: true, zone: { select: { name: true } } },
-    orderBy: { name: "asc" }
-  });
+  const [hotels, hotelLandingSetting, enrichmentSetting] = await Promise.all([
+    prisma.transferLocation.findMany({
+      where: { type: "HOTEL", active: true },
+      select: { slug: true, name: true, heroImage: true, description: true, zone: { select: { name: true } } },
+      orderBy: { name: "asc" }
+    }),
+    prisma.siteContentSetting.findUnique({ where: { key: "HOTEL_LANDING" }, select: { content: true } }),
+    prisma.siteContentSetting.findUnique({
+      where: { key: "HOTEL_DIRECTORY_ENRICHMENT" },
+      select: { content: true }
+    })
+  ]);
+
+  const hotelLandingContent =
+    (hotelLandingSetting?.content as Record<string, Partial<Record<Locale, HotelLandingOverrides>>> | null) ?? {};
+  const enrichmentContent =
+    (enrichmentSetting?.content as Record<string, HotelDirectoryEnrichment | undefined> | null) ?? {};
 
   const t = copy[locale];
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
@@ -252,10 +311,19 @@ export default async function HotelsDirectoryPage({
     const price = getStartingPrice(hotel.name);
     const rating = getReviewScore(hotel.name);
     const reviews = getReviewCount(hotel.name);
+    const localizedLanding = hotelLandingContent[hotel.slug]?.[locale];
+    const localizedDescription = firstSentence(localizedLanding?.description1);
+    const enrichment = enrichmentContent[hotel.slug];
+    const descriptionSource =
+      enrichment?.shortDescription ||
+      localizedDescription ||
+      hotel.description ||
+      `${hotel.name} in ${zoneName} with all-inclusive options and direct quote support.`;
     return {
       slug: hotel.slug,
       name: hotel.name,
-      heroImage: hotel.heroImage,
+      heroImage: enrichment?.coverImage || hotel.heroImage,
+      description: shortenText(descriptionSource, 140),
       zoneName,
       price,
       rating,
@@ -291,6 +359,22 @@ export default async function HotelsDirectoryPage({
   const hotelsPage = sortedHotels.slice(startIndex, startIndex + pageSize);
 
   const listingBaseHref = getDirectoryHref(locale);
+  const listSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: t.title,
+    itemListElement: hotelsPage.map((hotel, index) => ({
+      "@type": "ListItem",
+      position: startIndex + index + 1,
+      url: `https://proactivitis.com${getHotelHref(hotel.slug, locale)}`,
+      item: {
+        "@type": "Hotel",
+        name: hotel.name,
+        description: hotel.description,
+        image: toAbsoluteUrl(hotel.heroImage || "")
+      }
+    }))
+  };
   const getPageHref = (targetPage: number) => {
     const params = new URLSearchParams();
     if (q) params.set("q", q);
@@ -303,6 +387,7 @@ export default async function HotelsDirectoryPage({
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+      <StructuredData data={listSchema} />
       <header className="overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#334155] p-6 text-white shadow-xl sm:p-8">
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
           <div>
@@ -437,10 +522,14 @@ export default async function HotelsDirectoryPage({
                           src={hotel.heroImage}
                           alt={hotel.name}
                           className="h-full w-full object-cover"
+                          style={{ objectPosition: coverStyleFromSlug(hotel.slug).objectPosition }}
                           loading="lazy"
                         />
                       ) : (
-                        <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-200 to-slate-100">
+                        <div
+                          className="flex h-full items-center justify-center"
+                          style={{ background: coverStyleFromSlug(hotel.slug).overlay }}
+                        >
                           <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                             Punta Cana
                           </span>
@@ -449,6 +538,10 @@ export default async function HotelsDirectoryPage({
                       <div className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-slate-900">
                         {hotel.zoneName}
                       </div>
+                      <div
+                        className="pointer-events-none absolute inset-0"
+                        style={{ background: coverStyleFromSlug(hotel.slug).overlay }}
+                      />
                     </div>
 
                     <div className="flex w-full flex-col justify-between gap-4 p-5">
@@ -461,6 +554,7 @@ export default async function HotelsDirectoryPage({
                           <p className="mt-1 text-xs text-amber-600">
                             {"*".repeat(hotel.stars)} {t.starLabel}
                           </p>
+                          <p className="mt-3 text-sm leading-relaxed text-slate-600">{hotel.description}</p>
                           <div className="mt-3 flex flex-wrap gap-2">
                             {hotel.badges.map((badge) => (
                               <span
