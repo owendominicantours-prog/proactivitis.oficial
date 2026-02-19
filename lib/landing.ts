@@ -1,40 +1,74 @@
-export const landingPages = [
+import { countryPuntaCanaLandings } from "@/data/country-punta-cana-landings";
+
+export type LandingEntry = {
+  slug: string;
+  title: string;
+  tagline: string;
+  sections: string[];
+  path?: string;
+  metaDescription?: string;
+  country?: string;
+  buyerAngle?: string;
+  transferPitch?: string;
+  hotelPitch?: string;
+  excursionPitch?: string;
+};
+
+const baseLandings: LandingEntry[] = [
   {
     slug: "sunrise-hotel",
     title: "Sunrise Hotel Experiences",
-    tagline: "Tours premium diseñados para tus huéspedes.",
+    tagline: "Premium tours designed for your guests.",
     sections: [
-      "Landing builder drag & drop.",
-      "Ofertas con comisiones y contenido multilenguaje.",
-      "Mini sitio white-label con tu branding."
+      "Landing builder drag and drop.",
+      "Offers with commissions and multilingual content.",
+      "White-label mini site with your branding."
     ]
   },
   {
     slug: "caribbean-adventure",
     title: "Caribbean Adventure Agency",
-    tagline: "Reserva, paga y comunica desde un mismo lugar.",
-    sections: ["Portal Agency", "Reportes CSV", "Chat CRM integrado"]
+    tagline: "Book, pay and communicate in one place.",
+    sections: ["Agency portal", "CSV reports", "Integrated CRM chat"]
   },
   {
     slug: "hip-hop-party-boat",
     path: "/thingtodo/tours/hip-hop-party-boat",
     title: "Hip Hop Party Boat with Snorkeling",
-    tagline: "Una fiesta en catamarán con DJ, snorkel y sunset premium en Punta Cana.",
+    tagline: "Catamaran party with DJ, snorkeling and premium sunset in Punta Cana.",
     sections: [
-      "Barra abierta premium con snacks tropicales.",
-      "Snorkel guiado en arrecifes de Bávaro y Cap Cana.",
-      "Transporte privado desde hoteles clave y foam party."
+      "Premium open bar with tropical snacks.",
+      "Guided snorkeling in Bavaro and Cap Cana reefs.",
+      "Private hotel pickup and foam party experience."
     ]
   },
   {
     slug: "things-to-do/boat-activities-dominican-republic",
     path: "/things-to-do/boat-activities-dominican-republic",
-    title: "Top actividades en barco en Republica Dominicana",
-    tagline: "Saona, ballenas y party boats en una sola seleccion.",
+    title: "Top boat activities in Dominican Republic",
+    tagline: "Saona, whale watching and party boats in one selection.",
     sections: [
-      "Experiencias verificadas con horarios claros.",
-      "Opciones para grupos, parejas y celebraciones.",
-      "Reserva directa con soporte en espanol."
+      "Verified experiences with clear schedules.",
+      "Options for groups, couples and celebrations.",
+      "Direct booking with local support."
     ]
   }
 ];
+
+const countryLandings: LandingEntry[] = countryPuntaCanaLandings.map((landing) => ({
+  slug: landing.slug,
+  title: landing.title,
+  tagline: landing.tagline,
+  sections: landing.sections,
+  metaDescription: landing.metaDescription,
+  country: landing.country,
+  buyerAngle: landing.buyerAngle,
+  transferPitch: landing.transferPitch,
+  hotelPitch: landing.hotelPitch,
+  excursionPitch: landing.excursionPitch
+}));
+
+export const landingPages: LandingEntry[] = [...baseLandings, ...countryLandings];
+
+export const countryToPuntaCanaLandingSlugs = new Set(countryLandings.map((landing) => landing.slug));
+

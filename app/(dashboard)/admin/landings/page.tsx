@@ -21,6 +21,7 @@ import { TOUR_MARKET_INTENTS, buildTourMarketVariantSlug } from "@/lib/tourMarke
 import CollapsibleSection from "@/components/admin/CollapsibleSection";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import LandingRefreshControl from "@/components/admin/LandingRefreshControl";
+import { countryPuntaCanaLandings } from "@/data/country-punta-cana-landings";
 
 type SearchParams = {
   zone?: string;
@@ -199,6 +200,12 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
     }))
   );
   const tourLandingSlugs = landingPages.map((landing) => landing.slug);
+  const countrySalesLandingEntries = countryPuntaCanaLandings.map((landing) => ({
+    slug: `landing/${landing.slug}`,
+    name: landing.title,
+    zone: "Country to Punta Cana",
+    active: true
+  }));
   const thingsToDoSlugs = hotelThingsToDoEntries.map((entry) => entry.slug);
   const pickupHotelSlugs = pickupHotelEntries.map((entry) => entry.slug);
   const safetyGuideSlugs = safetyGuideEntries.map((entry) => entry.slug);
@@ -230,7 +237,8 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       ...premiumTransferSlugs,
       ...hotelSalesTransferSlugs,
       ...transferQuestionSlugs,
-      ...tourMarketVariantSlugs
+      ...tourMarketVariantSlugs,
+      ...countrySalesLandingEntries.map((entry) => entry.slug)
     ])
   );
   const trafficRows = await prisma.landingPageTraffic.findMany({
@@ -617,6 +625,34 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
                 <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.zone}</p>
                 <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
                 <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">ThingToDo</p>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                <p>{entry.slug}</p>
+                <p>Visitas {trafficMap.get(entry.slug)?.toLocaleString() ?? "0"}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Country to Punta Cana landings"
+        description="Paginas comerciales por pais para vender excursiones, hoteles y traslados en Punta Cana."
+        badge={`${countrySalesLandingEntries.length} items`}
+      >
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {countrySalesLandingEntries.map((entry) => (
+            <Link
+              key={entry.slug}
+              href={`https://proactivitis.com/${entry.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-700 transition hover:border-slate-400 hover:shadow-lg"
+            >
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.zone}</p>
+                <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">Country Sales</p>
               </div>
               <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
                 <p>{entry.slug}</p>
