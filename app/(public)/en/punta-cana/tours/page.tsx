@@ -5,9 +5,9 @@ import PuntaCanaToursHub from "@/components/public/PuntaCanaToursHub";
 const canonicalUrl = "https://proactivitis.com/en/punta-cana/tours";
 
 export const metadata: Metadata = {
-  title: "Best Punta Cana Tours: Saona, Buggy and Party Boat | Proactivitis",
+  title: "Punta Cana Excursions: Saona, Buggy, Party Boat and Catamaran | Proactivitis",
   description:
-    "Compare and book the best Punta Cana tours with hotel pickup, including Saona Island, buggy tours, party boat cruises, and catamaran experiences.",
+    "Compare and book Punta Cana excursions with hotel pickup, including Saona Island, buggy tours, party boat cruises, and catamaran experiences.",
   keywords: [
     "best punta cana tours",
     "saona island tour punta cana",
@@ -25,16 +25,16 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: "Best Punta Cana Tours: Saona, Buggy and Party Boat | Proactivitis",
+    title: "Punta Cana Excursions: Saona, Buggy, Party Boat and Catamaran | Proactivitis",
     description:
-      "Compare and book top Punta Cana tours with hotel pickup: Saona Island, buggy tours, party boat cruises, and catamaran trips.",
+      "Book top Punta Cana excursions with hotel pickup, clear pricing, and local support.",
     url: canonicalUrl,
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Best Punta Cana Tours: Saona, Buggy and Party Boat | Proactivitis",
-    description: "Book top-rated Punta Cana activities with instant confirmation."
+    title: "Punta Cana Excursions: Saona, Buggy, Party Boat and Catamaran | Proactivitis",
+    description: "Book top Punta Cana activities with hotel pickup, clear pricing, and fast confirmation."
   },
   robots: {
     index: true,

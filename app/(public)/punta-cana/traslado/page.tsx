@@ -5,9 +5,9 @@ import PuntaCanaTransferHub from "@/components/public/PuntaCanaTransferHub";
 const canonicalUrl = "https://proactivitis.com/punta-cana/traslado";
 
 export const metadata: Metadata = {
-  title: "Transfer Punta Cana: Aeropuerto PUJ y Hoteles | Proactivitis",
+  title: "Traslado Punta Cana: Aeropuerto PUJ, Bavaro, Cap Cana y Hoteles | Proactivitis",
   description:
-    "Reserva transfer en Punta Cana desde el aeropuerto PUJ a Bavaro, Cap Cana, Uvero Alto y hoteles con precio fijo, chofer profesional y soporte 24/7.",
+    "Reserva traslado en Punta Cana desde PUJ a Bavaro, Cap Cana, Uvero Alto y hoteles con tarifa fija, chofer profesional y soporte 24/7.",
   keywords: [
     "transfer punta cana",
     "traslado puj",
@@ -25,16 +25,16 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: "Transfer Punta Cana: Aeropuerto PUJ y Hoteles | Proactivitis",
+    title: "Traslado Punta Cana: Aeropuerto PUJ, Bavaro, Cap Cana y Hoteles | Proactivitis",
     description:
-      "Reserva transfer en Punta Cana desde PUJ a Bavaro, Cap Cana y Uvero Alto con precio fijo y confirmacion inmediata.",
+      "Reserva traslado en Punta Cana desde PUJ a hoteles y zonas turisticas con tarifa fija y confirmacion rapida.",
     url: canonicalUrl,
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Transfer Punta Cana: Aeropuerto PUJ y Hoteles | Proactivitis",
-    description: "Traslados privados en Punta Cana con chofer profesional y soporte 24/7."
+    title: "Traslado Punta Cana: Aeropuerto PUJ, Bavaro, Cap Cana y Hoteles | Proactivitis",
+    description: "Traslados privados en Punta Cana con tarifa fija y chofer profesional."
   },
   robots: {
     index: true,

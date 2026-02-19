@@ -5,9 +5,9 @@ import { es } from "@/lib/translations";
 const canonicalUrl = "https://proactivitis.com/hoteles";
 
 export const metadata: Metadata = {
-  title: "Hoteles en Punta Cana Todo Incluido | Proactivitis",
+  title: "Hoteles Punta Cana Todo Incluido: Bavaro, Cap Cana y Uvero Alto | Proactivitis",
   description:
-    "Encuentra hoteles y resorts en Punta Cana para cotizar al mejor precio: Bavaro, Cap Cana y Uvero Alto con atencion personalizada.",
+    "Compara hoteles y resorts todo incluido en Punta Cana y solicita cotizacion en Bavaro, Cap Cana y Uvero Alto con asesoria personalizada.",
   keywords: [
     "hoteles punta cana",
     "resorts punta cana",
@@ -25,15 +25,15 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: "Hoteles en Punta Cana Todo Incluido | Proactivitis",
+    title: "Hoteles Punta Cana Todo Incluido: Bavaro, Cap Cana y Uvero Alto | Proactivitis",
     description:
-      "Encuentra hoteles y resorts en Punta Cana para cotizar al mejor precio en Bavaro, Cap Cana y Uvero Alto.",
+      "Compara hoteles y resorts todo incluido en Punta Cana y cotiza tu estancia en minutos.",
     url: canonicalUrl,
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Hoteles en Punta Cana Todo Incluido | Proactivitis",
+    title: "Hoteles Punta Cana Todo Incluido: Bavaro, Cap Cana y Uvero Alto | Proactivitis",
     description: "Cotiza hoteles y resorts en Punta Cana con asesoria personalizada."
   },
   robots: {

@@ -5,9 +5,9 @@ import PublicTransferPage from "@/components/public/PublicTransferPage";
 const canonicalUrl = "https://proactivitis.com/traslado";
 
 export const metadata: Metadata = {
-  title: "Traslado Aeropuerto Punta Cana y Hoteles | Proactivitis",
+  title: "Traslados Privados Punta Cana: Aeropuerto PUJ a Hoteles | Proactivitis",
   description:
-    "Reserva traslado privado en Punta Cana desde PUJ a hoteles y zonas turisticas con precio fijo, monitoreo de vuelo, chofer profesional y confirmacion inmediata.",
+    "Reserva traslados privados en Punta Cana desde el aeropuerto PUJ a hoteles y resorts con tarifa fija, monitoreo de vuelo y soporte 24/7.",
   keywords: [
     "traslado aeropuerto punta cana",
     "transfer punta cana",
@@ -25,16 +25,16 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: "Traslado Aeropuerto Punta Cana y Hoteles | Proactivitis",
+    title: "Traslados Privados Punta Cana: Aeropuerto PUJ a Hoteles | Proactivitis",
     description:
-      "Reserva traslado privado en Punta Cana desde PUJ a hoteles y zonas turisticas con precio fijo y confirmacion inmediata.",
+      "Reserva traslados privados en Punta Cana desde PUJ a hoteles y resorts con tarifa fija y monitoreo de vuelo.",
     url: canonicalUrl,
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Traslado Aeropuerto Punta Cana y Hoteles | Proactivitis",
-    description: "Reserva tu transfer privado en Punta Cana con monitoreo de vuelo y soporte 24/7."
+    title: "Traslados Privados Punta Cana: Aeropuerto PUJ a Hoteles | Proactivitis",
+    description: "Reserva tu transfer privado en Punta Cana con tarifa fija y soporte 24/7."
   },
   robots: {
     index: true,

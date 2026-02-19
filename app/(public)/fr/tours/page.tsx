@@ -6,9 +6,9 @@ import PublicToursPage from "@/components/public/PublicToursPage";
 const canonicalUrl = "https://proactivitis.com/fr/tours";
 
 export const metadata: Metadata = {
-  title: "Meilleures Excursions a Punta Cana | Proactivitis",
+  title: "Excursions a Punta Cana: Saona, Buggy, Catamaran et Party Boat | Proactivitis",
   description:
-    "Reservez les meilleures excursions a Punta Cana avec pickup hotel, prix clairs et confirmation rapide. Ile Saona, buggy, catamaran, party boat et plus.",
+    "Reservez des excursions a Punta Cana avec pickup hotel, prix clairs et support local. Ile Saona, buggy, catamaran, party boat et plus.",
   keywords: [
     "meilleures excursions punta cana",
     "tours punta cana",
@@ -26,16 +26,16 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: "Meilleures Excursions a Punta Cana | Proactivitis",
+    title: "Excursions a Punta Cana: Saona, Buggy, Catamaran et Party Boat | Proactivitis",
     description:
-      "Reservez des excursions a Punta Cana avec pickup hotel et confirmation rapide.",
+      "Reservez des excursions a Punta Cana avec pickup hotel, prix clairs et confirmation rapide.",
     url: canonicalUrl,
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Meilleures Excursions a Punta Cana | Proactivitis",
-    description: "Reservez des activites a Punta Cana avec prix clairs et support 24/7."
+    title: "Excursions a Punta Cana: Saona, Buggy, Catamaran et Party Boat | Proactivitis",
+    description: "Reservez des activites a Punta Cana avec pickup hotel et support 24/7."
   },
   robots: {
     index: true,
