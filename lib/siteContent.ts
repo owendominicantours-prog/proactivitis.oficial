@@ -397,19 +397,19 @@ const HOTEL_LANDING_FALLBACKS: Record<string, Partial<Record<Locale, HotelLandin
   },
   "bahia-principe-grand-punta-cana": {
     es: {
-      seoTitle: "Bahia Principe Grand Bavaro - Reserva en Punta Cana al Mejor Precio",
+      seoTitle: "Bahia Principe Grand Punta Cana - Reserva en Punta Cana al Mejor Precio",
       seoDescription:
-        "Bahia Principe Grand Bavaro Todo Incluido en Punta Cana al Mejor Precio. Resort familiar con piscinas, 16 bares, restaurantes y areas para ninos.",
-      heroTitle: "Bahia Principe Grand Bavaro - Reserva en Punta Cana al Mejor Precio",
+        "Bahia Principe Grand Punta Cana Todo Incluido en Punta Cana al Mejor Precio. Resort familiar con piscinas, restaurantes y areas para ninos.",
+      heroTitle: "Bahia Principe Grand Punta Cana - Reserva en Punta Cana al Mejor Precio",
       heroSubtitle:
         "Resort todo incluido ideal para familias, con gran oferta gastronomica, ocio y actividades en Bavaro.",
       stars: "5",
       locationLabel: "Arena Gorda, Bavaro, Punta Cana",
-      mapUrl: "https://www.google.com/maps/search/?api=1&query=Bahia+Principe+Grand+Bavaro",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=Bahia+Principe+Grand+Punta+Cana",
       quoteCta: "Consultar Disponibilidad",
-      overviewTitle: "Bahia Principe Grand Bavaro: resort familiar todo incluido",
+      overviewTitle: "Bahia Principe Grand Punta Cana: resort familiar todo incluido",
       description1:
-        "Bahia Principe Grand Bavaro es un resort de gran formato en Arena Gorda, Punta Cana, pensado para viajeros que buscan un plan todo incluido con infraestructura completa y entretenimiento diario.",
+        "Bahia Principe Grand Punta Cana es un resort de gran formato en Arena Gorda, Punta Cana, pensado para viajeros que buscan un plan todo incluido con infraestructura completa y entretenimiento diario.",
       description2:
         "El hotel integra piscinas tipo lago, jacuzzi, spa, instalaciones deportivas, centro de actividades acuaticas, campo de golf cercano, espacios para eventos y una oferta gastronomica robusta.",
       description3:
@@ -498,8 +498,8 @@ const HOTEL_LANDING_FALLBACKS: Record<string, Partial<Record<Locale, HotelLandin
         "Las politicas pueden variar por tarifa y temporada. Solicita cotizacion para validar condiciones exactas antes de confirmar.",
       groupPolicy:
         "Atencion especial para grupos, bodas, incentivos y aniversarios. Tarifas para grupos disponibles segun volumen y fechas.",
-      toursTitle: "Excursiones recomendadas desde Bahia Principe Grand Bavaro",
-      transfersTitle: "Traslados recomendados para Bahia Principe Grand Bavaro"
+      toursTitle: "Excursiones recomendadas desde Bahia Principe Grand Punta Cana",
+      transfersTitle: "Traslados recomendados para Bahia Principe Grand Punta Cana"
     }
   }
 };
@@ -622,8 +622,160 @@ export const getHotelLandingOverrides = async (
 
 function getHotelLandingFallbackSafe(hotelSlug: string, locale: Locale): HotelLandingOverrides {
   const byHotel = HOTEL_LANDING_FALLBACKS[hotelSlug];
-  if (!byHotel) return {};
-  return byHotel[locale] ?? {};
+  if (!byHotel) return buildBahiaHotelFallback(hotelSlug, locale);
+  return byHotel[locale] ?? buildBahiaHotelFallback(hotelSlug, locale);
+}
+
+function buildBahiaHotelFallback(hotelSlug: string, locale: Locale): HotelLandingOverrides {
+  if (!hotelSlug.startsWith("bahia-principe-")) return {};
+
+  const hotelName = hotelSlug
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ")
+    .replace("Principe", "Principe");
+
+  if (locale === "en") {
+    return {
+      seoTitle: `${hotelName} - Book in Punta Cana at the Best Price`,
+      seoDescription:
+        `${hotelName} all inclusive in Punta Cana at the best price. Family and adults areas, pools, restaurants, bars, and easy transfer booking.`,
+      heroTitle: `${hotelName} - Book in Punta Cana at the Best Price`,
+      heroSubtitle:
+        `All-inclusive resort in Punta Cana with strong food options, entertainment, and practical logistics for families, couples, and groups.`,
+      stars: "5",
+      locationLabel: "Punta Cana, Dominican Republic",
+      quoteCta: "Check Availability",
+      overviewTitle: `${hotelName}: all-inclusive stay with smart planning`,
+      description1:
+        `${hotelName} is a high-demand resort complex in Punta Cana with all-inclusive operation, multiple dining venues, pools, and daily activities.`,
+      description2:
+        `You can combine resort booking, airport transfer, and tours in one workflow to reduce friction and keep your trip organized.`,
+      description3:
+        `This hotel works well for travelers who want full-service infrastructure plus quick access to top excursions and private transportation.`,
+      highlights: [
+        "All-inclusive format with multiple restaurants and bars.",
+        "Pool areas, beach access, and daily entertainment options.",
+        "Good fit for families, couples, and private groups.",
+        "Easy package with airport transfer and local tours.",
+        "Fast quote and booking support via WhatsApp."
+      ],
+      amenities: [
+        "Free Wi-Fi",
+        "All Inclusive",
+        "Swimming Pool",
+        "Restaurants and Bars",
+        "Kids and Family Areas",
+        "Gym and Sports",
+        "Spa Services",
+        "Beach Access",
+        "24h Front Desk",
+        "Airport Transfer Available"
+      ],
+      checkInTime: "3:00 PM",
+      checkOutTime: "12:00 PM",
+      cancellationPolicy:
+        "Cancellation conditions can vary by rate and dates. Request your quote to receive exact policy before payment.",
+      groupPolicy:
+        "Special conditions available for groups, celebrations, and corporate travel. Contact us for group pricing.",
+      toursTitle: `Recommended tours from ${hotelName}`,
+      transfersTitle: `Recommended transfers for ${hotelName}`
+    };
+  }
+
+  if (locale === "fr") {
+    return {
+      seoTitle: `${hotelName} - Reservation a Punta Cana au Meilleur Prix`,
+      seoDescription:
+        `${hotelName} tout compris a Punta Cana au meilleur prix. Piscines, restaurants, bars et transfert prive reserve rapidement.`,
+      heroTitle: `${hotelName} - Reservation a Punta Cana au Meilleur Prix`,
+      heroSubtitle:
+        `Resort tout compris a Punta Cana avec restauration variee, animations et logistique simple pour familles, couples et groupes.`,
+      stars: "5",
+      locationLabel: "Punta Cana, Republique dominicaine",
+      quoteCta: "Verifier la disponibilite",
+      overviewTitle: `${hotelName} : sejour tout compris bien organise`,
+      description1:
+        `${hotelName} est un complexe tres demande a Punta Cana avec operation tout compris, restaurants multiples, piscines et activites quotidiennes.`,
+      description2:
+        `Vous pouvez combiner reservation hotel, transfert aeroport et excursions dans un seul flux pour un voyage plus simple.`,
+      description3:
+        `Cet hotel convient aux voyageurs qui veulent une infrastructure complete et un acces rapide aux excursions et transferts prives.`,
+      highlights: [
+        "Formule tout compris avec plusieurs restaurants et bars.",
+        "Piscines, acces plage et animations quotidiennes.",
+        "Adapté aux familles, couples et groupes prives.",
+        "Pack simple avec transfert aeroport et excursions.",
+        "Support rapide par WhatsApp pour devis et reservation."
+      ],
+      amenities: [
+        "Wi-Fi gratuit",
+        "Tout compris",
+        "Piscine",
+        "Restaurants et bars",
+        "Espaces famille et enfants",
+        "Gym et sport",
+        "Spa",
+        "Acces plage",
+        "Reception 24h/24",
+        "Transfert aeroport disponible"
+      ],
+      checkInTime: "15:00",
+      checkOutTime: "12:00",
+      cancellationPolicy:
+        "Les conditions d annulation varient selon le tarif et les dates. Demandez un devis pour les conditions exactes avant paiement.",
+      groupPolicy:
+        "Conditions speciales disponibles pour groupes, celebrations et voyages corporate. Contactez-nous pour tarif groupe.",
+      toursTitle: `Excursions recommandees depuis ${hotelName}`,
+      transfersTitle: `Transferts recommandes pour ${hotelName}`
+    };
+  }
+
+  return {
+    seoTitle: `${hotelName} - Reserva en Punta Cana al Mejor Precio`,
+    seoDescription:
+      `${hotelName} Todo Incluido en Punta Cana al Mejor Precio. Piscinas, restaurantes, bares y soporte rapido para reserva y traslados.`,
+    heroTitle: `${hotelName} - Reserva en Punta Cana al Mejor Precio`,
+    heroSubtitle:
+      `Resort todo incluido en Punta Cana con buena oferta gastronomica, entretenimiento y logistica practica para familias, parejas y grupos.`,
+    stars: "5",
+    locationLabel: "Punta Cana, Republica Dominicana",
+    quoteCta: "Consultar Disponibilidad",
+    overviewTitle: `${hotelName}: estancia todo incluido con planificacion inteligente`,
+    description1:
+      `${hotelName} es un resort de alta demanda en Punta Cana con operacion todo incluido, restaurantes multiples, piscinas y actividades diarias.`,
+    description2:
+      `Puedes combinar reserva de hotel, traslado aeropuerto y excursiones en un solo flujo para reducir friccion durante el viaje.`,
+    description3:
+      `Este hotel funciona muy bien para viajeros que buscan infraestructura completa y acceso rapido a tours y transporte privado.`,
+    highlights: [
+      "Formato todo incluido con restaurantes y bares variados.",
+      "Piscinas, acceso a playa y entretenimiento diario.",
+      "Ideal para familias, parejas y grupos privados.",
+      "Paquete facil con traslado aeropuerto y excursiones.",
+      "Soporte rapido por WhatsApp para cotizar y reservar."
+    ],
+    amenities: [
+      "Wi-Fi Gratis",
+      "Todo Incluido",
+      "Piscina",
+      "Restaurantes y Bares",
+      "Areas para Ninos y Familia",
+      "Gimnasio y Deportes",
+      "Spa",
+      "Acceso a Playa",
+      "Recepcion 24 Horas",
+      "Traslado al Aeropuerto Disponible"
+    ],
+    checkInTime: "3:00 PM",
+    checkOutTime: "12:00 PM",
+    cancellationPolicy:
+      "Las condiciones de cancelacion pueden variar por tarifa y fechas. Solicita cotizacion para recibir la politica exacta antes del pago.",
+    groupPolicy:
+      "Condiciones especiales para grupos, celebraciones y viajes corporativos. Contactanos para tarifas de grupo.",
+    toursTitle: `Excursiones recomendadas desde ${hotelName}`,
+    transfersTitle: `Traslados recomendados para ${hotelName}`
+  };
 }
 
 function mergeHotelOverrides(
