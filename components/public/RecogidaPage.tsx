@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -23,6 +23,98 @@ type TourWithDeparture = Prisma.TourGetPayload<{
     departureDestination: { select: { name: true; slug: true; country: { select: { slug: true } } } };
   };
 }>;
+
+type TransferCard = {
+  title: string;
+  body: string;
+  cta: string;
+  href: string;
+};
+
+type TransferSectionCopy = {
+  eyebrow: string;
+  title: string;
+  body: string;
+  cards: [TransferCard, TransferCard, TransferCard];
+};
+
+const transferCopyByLocale: Record<Locale, TransferSectionCopy> = {
+  es: {
+    eyebrow: "Traslados recomendados",
+    title: "Coordina tu transporte desde {hotel}",
+    body: "Reserva traslado privado, premium o combinaciones con tours desde un solo panel. Confirmacion rapida y soporte 24/7.",
+    cards: [
+      {
+        title: "Traslado privado aeropuerto -> hotel",
+        body: "Servicio directo, chofer verificado y tarifa clara para llegar sin demoras.",
+        cta: "Ver traslados privados",
+        href: "/traslado"
+      },
+      {
+        title: "Premium transfer VIP",
+        body: "Cadillac Escalade y Suburban para una llegada ejecutiva con seguimiento de vuelo.",
+        cta: "Ver servicio premium",
+        href: "/punta-cana/premium-transfer-services"
+      },
+      {
+        title: "Excursiones con recogida en tu hotel",
+        body: "Combina tours con pickup confirmado en lobby para optimizar tiempo y presupuesto.",
+        cta: "Ver landing de recogida",
+        href: "/excursiones-con-recogida"
+      }
+    ]
+  },
+  en: {
+    eyebrow: "Recommended transfers",
+    title: "Arrange transportation from {hotel}",
+    body: "Book private transfer, VIP options, or transfer + tour bundles from one place with fast confirmation.",
+    cards: [
+      {
+        title: "Private airport to hotel transfer",
+        body: "Direct service, vetted driver, and clear pricing for a smooth arrival.",
+        cta: "View private transfers",
+        href: "/traslado"
+      },
+      {
+        title: "Premium VIP transfer",
+        body: "Cadillac Escalade and Suburban service with flight tracking and executive comfort.",
+        cta: "View premium service",
+        href: "/punta-cana/premium-transfer-services"
+      },
+      {
+        title: "Hotel pickup excursions",
+        body: "Bundle tours with lobby pickup to save time and keep logistics simple.",
+        cta: "View hotel pickup page",
+        href: "/excursions-with-hotel-pickup"
+      }
+    ]
+  },
+  fr: {
+    eyebrow: "Transferts recommandes",
+    title: "Organisez vos transferts depuis {hotel}",
+    body: "Reservez transfert prive, service VIP ou packs transfert + excursions avec confirmation rapide.",
+    cards: [
+      {
+        title: "Transfert prive aeroport -> hotel",
+        body: "Service direct, chauffeur verifie et tarif clair pour arriver sans stress.",
+        cta: "Voir les transferts prives",
+        href: "/traslado"
+      },
+      {
+        title: "Transfert premium VIP",
+        body: "Cadillac Escalade et Suburban avec suivi de vol et confort haut de gamme.",
+        cta: "Voir le service premium",
+        href: "/punta-cana/premium-transfer-services"
+      },
+      {
+        title: "Excursions avec pickup hotel",
+        body: "Combinez vos excursions avec pickup au lobby pour une logistique simple.",
+        cta: "Voir la page pickup hotel",
+        href: "/excursions-avec-pickup-hotel"
+      }
+    ]
+  }
+};
 
 const buildCanonical = (slug: string, locale: Locale) =>
   locale === "es" ? `${BASE_URL}/recogida/${slug}` : `${BASE_URL}/${locale}/recogida/${slug}`;
@@ -103,6 +195,8 @@ export async function RecogidaPage({
   const bookingCode = resolvedSearchParams?.bookingCode;
   const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
     translate(locale, key, replacements);
+  const transferCopy = transferCopyByLocale[locale];
+  const localPath = (path: string) => (locale === "es" ? path : `/${locale}${path}`);
 
   let location = null;
   try {
@@ -198,7 +292,7 @@ export async function RecogidaPage({
               {t("recogida.hero.title", { hotel: location.name })}
             </h1>
             <p className="flex items-center gap-2 text-sm text-slate-500">
-              <span className="text-lg text-green-500">✅</span>
+              <span className="text-lg text-green-500">{"\u2713"}</span>
               {t("recogida.hero.confirmed", { hotel: location.name })}
             </p>
             <p className="max-w-3xl text-sm text-slate-600">{t("recogida.hero.body")}</p>
@@ -223,6 +317,33 @@ export async function RecogidaPage({
       </section>
 
       <main className="mx-auto max-w-6xl px-4 py-10 space-y-8">
+        <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-500">{transferCopy.eyebrow}</p>
+            <h2 className="text-2xl font-semibold text-slate-900">
+              {transferCopy.title.replace("{hotel}", location.name)}
+            </h2>
+            <p className="text-sm text-slate-600">{transferCopy.body}</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {transferCopy.cards.map((card) => (
+              <article
+                key={card.title}
+                className="flex h-full flex-col rounded-2xl border border-slate-200 bg-slate-50 p-4"
+              >
+                <h3 className="text-base font-semibold text-slate-900">{card.title}</h3>
+                <p className="mt-2 flex-1 text-sm text-slate-600">{card.body}</p>
+                <Link
+                  href={localPath(card.href)}
+                  className="mt-4 inline-flex items-center justify-center rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-slate-700"
+                >
+                  {card.cta}
+                </Link>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <div className="flex flex-col gap-2">
           <p className="text-xs uppercase tracking-[0.35em] text-slate-500">{t("recogida.tours.eyebrow")}</p>
           <h2 className="text-3xl font-semibold text-slate-900">{t("recogida.tours.title")}</h2>
@@ -267,3 +388,4 @@ export async function RecogidaPage({
     </div>
   );
 }
+

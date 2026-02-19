@@ -205,18 +205,26 @@ const getRoomsLeft = (name: string) => {
   return 2 + (sum % 7);
 };
 
-const parseUsdPrice = (value?: string) => {
-  if (!value) return null;
-  const normalized = value.replace(/[^0-9.]/g, "");
+const safeText = (value: unknown) => {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return "";
+};
+
+const parseUsdPrice = (value: unknown) => {
+  const text = safeText(value);
+  if (!text) return null;
+  const normalized = text.replace(/[^0-9.]/g, "");
   const parsed = Number(normalized);
   if (!Number.isFinite(parsed) || parsed <= 0) return null;
   return Math.round(parsed);
 };
 
-const cleanText = (value: string) => value.replace(/\s+/g, " ").trim();
+const cleanText = (value: unknown) => safeText(value).replace(/\s+/g, " ").trim();
 
-const shortenText = (value: string, max = 160) => {
+const shortenText = (value: unknown, max = 160) => {
   const cleaned = cleanText(value);
+  if (!cleaned) return "";
   if (cleaned.length <= max) return cleaned;
   const trimmed = cleaned.slice(0, max);
   const lastSpace = trimmed.lastIndexOf(" ");
@@ -224,9 +232,9 @@ const shortenText = (value: string, max = 160) => {
   return `${trimmed.slice(0, end)}...`;
 };
 
-const firstSentence = (value?: string) => {
-  if (!value) return "";
+const firstSentence = (value: unknown) => {
   const cleaned = cleanText(value);
+  if (!cleaned) return "";
   const match = cleaned.match(/^[^.!?]+[.!?]?/);
   return match?.[0] ?? cleaned;
 };
