@@ -7,6 +7,7 @@ import { buildTransferHotelVariantSlug, TRANSFER_HOTEL_SALES_VARIANTS } from "@/
 import { TRANSFER_QUESTION_SALES_LANDINGS } from "@/data/transfer-question-sales-landings";
 import { warnOnce } from "@/lib/logOnce";
 import { TOUR_MARKET_INTENTS, buildTourMarketVariantSlug } from "@/lib/tourMarketVariants";
+import { getIndexableTourMarketIntentIds, getIndexableTransferVariantIds } from "@/lib/seo-index-policy";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -44,8 +45,11 @@ const PICKUP_BASE_PATHS = {
 const MAX_TOP_HOTELS = 80;
 const MAX_TOURS_PER_HOTEL = 35;
 const MAX_TOTAL_COMBOS = 4000;
+const INDEXABLE_TRANSFER_VARIANT_IDS = new Set(getIndexableTransferVariantIds());
+const INDEXABLE_TOUR_MARKET_INTENT_IDS = new Set(getIndexableTourMarketIntentIds());
+
 const HOTEL_TRANSFER_SALES_VARIANT_URLS = allLandings().flatMap((landing) =>
-  TRANSFER_HOTEL_SALES_VARIANTS.map((variant) => ({
+  TRANSFER_HOTEL_SALES_VARIANTS.filter((variant) => INDEXABLE_TRANSFER_VARIANT_IDS.has(variant.id)).map((variant) => ({
     url: `${BASE_URL}/transfer/${buildTransferHotelVariantSlug(landing.landingSlug, variant.id)}`,
     priority: 0.72
   }))
@@ -250,7 +254,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
       priority: 0.7
     })),
     ...tours.flatMap((tour) =>
-      TOUR_MARKET_INTENTS.map((intent) => ({
+      TOUR_MARKET_INTENTS.filter((intent) => INDEXABLE_TOUR_MARKET_INTENT_IDS.has(intent.id)).map((intent) => ({
         url: `${BASE_URL}/thingtodo/tours/${buildTourMarketVariantSlug(tour.slug, intent.id)}`,
         priority: 0.66
       }))

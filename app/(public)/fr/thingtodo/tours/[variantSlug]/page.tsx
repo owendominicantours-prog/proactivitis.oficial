@@ -16,6 +16,7 @@ import { fr } from "@/lib/translations";
 import { findStaticVariant } from "@/lib/tourVariantCatalog";
 import { getPublishedVariantBySlug } from "@/lib/tourVariantStore";
 import { parseTourMarketVariantSlug } from "@/lib/tourMarketVariants";
+import { isIndexableTourMarketIntent } from "@/lib/seo-index-policy";
 
 const BASE_URL = "https://proactivitis.com";
 
@@ -91,7 +92,10 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
       select: { slug: true, title: true, shortDescription: true, description: true, heroImage: true, gallery: true, price: true }
     });
     if (!tour) return { title: "Landing introuvable" };
-    const canonical = `https://proactivitis.com/fr/thingtodo/tours/${resolved.variantSlug}`;
+    const canIndexVariant = isIndexableTourMarketIntent(marketVariant.intent.id);
+    const canonical = canIndexVariant
+      ? `https://proactivitis.com/fr/thingtodo/tours/${resolved.variantSlug}`
+      : `https://proactivitis.com/fr/tours/${tour.slug}`;
     const seoTitle = `${marketVariant.intent.heroPrefix.fr}: ${tour.title} a Punta Cana | Proactivitis`;
     const seoDescription = `${marketVariant.intent.angle.fr} Reservez ${tour.title} a partir de USD ${Math.round(tour.price)} avec support local.`;
     const imageUrl = toAbsoluteUrl(resolveTourImage(tour.heroImage ?? null, tour.gallery ?? null));
@@ -102,11 +106,21 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
       alternates: {
         canonical,
         languages: {
-          es: `https://proactivitis.com/thingtodo/tours/${resolved.variantSlug}`,
-          en: `https://proactivitis.com/en/thingtodo/tours/${resolved.variantSlug}`,
-          fr: canonical,
-          "x-default": `https://proactivitis.com/thingtodo/tours/${resolved.variantSlug}`
+          es: canIndexVariant
+            ? `https://proactivitis.com/thingtodo/tours/${resolved.variantSlug}`
+            : `https://proactivitis.com/tours/${tour.slug}`,
+          en: canIndexVariant
+            ? `https://proactivitis.com/en/thingtodo/tours/${resolved.variantSlug}`
+            : `https://proactivitis.com/en/tours/${tour.slug}`,
+          fr: canIndexVariant ? canonical : `https://proactivitis.com/fr/tours/${tour.slug}`,
+          "x-default": canIndexVariant
+            ? `https://proactivitis.com/thingtodo/tours/${resolved.variantSlug}`
+            : `https://proactivitis.com/tours/${tour.slug}`
         }
+      },
+      robots: {
+        index: canIndexVariant,
+        follow: true
       },
       openGraph: {
         title: seoTitle,

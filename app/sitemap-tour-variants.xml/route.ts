@@ -3,9 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { warnOnce } from "@/lib/logOnce";
 import { TOUR_MARKET_INTENTS, buildTourMarketVariantSlug } from "@/lib/tourMarketVariants";
+import { getIndexableTourMarketIntentIds } from "@/lib/seo-index-policy";
 
 const BASE_URL = "https://proactivitis.com";
 const LOCALES = ["es", "en", "fr"] as const;
+const INDEXABLE_TOUR_MARKET_INTENT_IDS = new Set(getIndexableTourMarketIntentIds());
 export const revalidate = 86400;
 
 export async function GET() {
@@ -38,7 +40,7 @@ export async function GET() {
   }
 
   const marketVariantSlugs = tourSlugs.flatMap((tour) =>
-    TOUR_MARKET_INTENTS.map((intent) => ({
+    TOUR_MARKET_INTENTS.filter((intent) => INDEXABLE_TOUR_MARKET_INTENT_IDS.has(intent.id)).map((intent) => ({
       slug: buildTourMarketVariantSlug(tour.slug, intent.id)
     }))
   );

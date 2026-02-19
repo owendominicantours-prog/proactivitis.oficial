@@ -7,9 +7,11 @@ import { buildTransferHotelVariantSlug, TRANSFER_HOTEL_SALES_VARIANTS } from "@/
 import { TRANSFER_QUESTION_SALES_LANDINGS } from "@/data/transfer-question-sales-landings";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import { warnOnce } from "@/lib/logOnce";
+import { getIndexableTransferVariantIds } from "@/lib/seo-index-policy";
 
 const BASE_URL = "https://proactivitis.com";
 const LOCALES = ["en", "fr"] as const;
+const INDEXABLE_TRANSFER_VARIANT_IDS = new Set(getIndexableTransferVariantIds());
 export const revalidate = 86400;
 
 type SitemapEntry = {
@@ -49,7 +51,7 @@ export async function GET() {
     lastMod: new Date().toISOString()
   }));
   const hotelSalesLandings = allLandings().flatMap((landing) =>
-    TRANSFER_HOTEL_SALES_VARIANTS.map((variant) => ({
+    TRANSFER_HOTEL_SALES_VARIANTS.filter((variant) => INDEXABLE_TRANSFER_VARIANT_IDS.has(variant.id)).map((variant) => ({
       slug: buildTransferHotelVariantSlug(landing.landingSlug, variant.id),
       lastMod: new Date().toISOString()
     }))

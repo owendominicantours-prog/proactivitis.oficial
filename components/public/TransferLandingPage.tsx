@@ -23,6 +23,7 @@ import { findDynamicLandingBySlug, getDynamicTransferLandingCombos } from "@/lib
 import PublicTransferPage from "@/components/public/PublicTransferPage";
 import { normalizeTextDeep } from "@/lib/text-format";
 import { getPriceValidUntil } from "@/lib/seo";
+import { isIndexableTransferVariant } from "@/lib/seo-index-policy";
 
 const DEFAULT_AIRPORT_SLUG = "puj-airport";
 const DEFAULT_AIRPORT_NAME = "Punta Cana International Airport (PUJ)";
@@ -381,6 +382,8 @@ const buildMarketTransferTitles = (
 };
 
 export async function buildTransferMetadata(landingSlug: string, locale: Locale): Promise<Metadata> {
+  const parsedSlug = parseTransferHotelVariantSlug(landingSlug);
+  const canIndexVariant = isIndexableTransferVariant(parsedSlug.variantId);
   const generic = findGenericTransferLandingBySlug(landingSlug);
   if (generic) {
     const canonical = buildCanonical(generic.landingSlug, locale);
@@ -430,7 +433,8 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
   const landing = await resolveLanding(landingSlug);
   if (!landing) return {};
   const localized = await localizeLanding(landing, locale);
-  const canonical = buildCanonical(landing.landingSlug, locale);
+  const canonicalTargetSlug = canIndexVariant ? landing.landingSlug : parsedSlug.baseSlug;
+  const canonical = buildCanonical(canonicalTargetSlug, locale);
   const marketTitles = buildMarketTransferTitles(locale, landing.hotelName);
   const seoTitle = `${marketTitles.seoTitle} | Proactivitis`;
   const rawDescription = ensureMetaDescription(localized.metaDescription, locale, landing.hotelName);
@@ -442,11 +446,15 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
     alternates: {
       canonical,
       languages: {
-        es: `/transfer/${landing.landingSlug}`,
-        en: `/en/transfer/${landing.landingSlug}`,
-        fr: `/fr/transfer/${landing.landingSlug}`,
-        "x-default": `/transfer/${landing.landingSlug}`
+        es: `/transfer/${canonicalTargetSlug}`,
+        en: `/en/transfer/${canonicalTargetSlug}`,
+        fr: `/fr/transfer/${canonicalTargetSlug}`,
+        "x-default": `/transfer/${canonicalTargetSlug}`
       }
+    },
+    robots: {
+      index: canIndexVariant,
+      follow: true
     },
     openGraph: {
       title: seoTitle,
