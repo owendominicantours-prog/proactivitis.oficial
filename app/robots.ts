@@ -12,6 +12,7 @@ export default function robots(): MetadataRoute.Robots {
       }
     ],
     sitemap: [
+      `${BASE_URL}/sitemap-index.xml`,
       `${BASE_URL}/sitemap.xml`,
       `${BASE_URL}/sitemap-hotels.xml`,
       `${BASE_URL}/sitemap-transfers.xml`,

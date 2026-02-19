@@ -146,7 +146,8 @@ export async function buildRecogidaMetadata(slug: string, locale: Locale): Promi
       languages: {
         es: `/recogida/${location.slug}`,
         en: `/en/recogida/${location.slug}`,
-        fr: `/fr/recogida/${location.slug}`
+        fr: `/fr/recogida/${location.slug}`,
+        "x-default": `/recogida/${location.slug}`
       }
     }
   };
@@ -169,7 +170,8 @@ export async function buildRecogidaPickupMetadata(slug: string, locale: Locale):
       languages: {
         es: `${pickupBasePathByLocale.es}/${location.slug}`,
         en: `${pickupBasePathByLocale.en}/${location.slug}`,
-        fr: `${pickupBasePathByLocale.fr}/${location.slug}`
+        fr: `${pickupBasePathByLocale.fr}/${location.slug}`,
+        "x-default": `${pickupBasePathByLocale.es}/${location.slug}`
       }
     }
   };
