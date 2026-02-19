@@ -20,7 +20,7 @@ type HotelCardInfo = {
   heroImage: string | null;
   description: string;
   zoneName: string;
-  price: number;
+  price: number | null;
   rating: number;
   reviews: number;
   stars: number;
@@ -62,6 +62,7 @@ const copy: Record<
     leftLabel: string;
     starLabel: string;
     smartChoiceLabel: string;
+    consultRateLabel: string;
   }
 > = {
   es: {
@@ -96,7 +97,8 @@ const copy: Record<
     availableNowLabel: "Disponible hoy",
     leftLabel: "habitaciones restantes",
     starLabel: "estrellas",
-    smartChoiceLabel: "Eleccion inteligente"
+    smartChoiceLabel: "Eleccion inteligente",
+    consultRateLabel: "Consultar tarifa"
   },
   en: {
     title: "Accommodation in Punta Cana",
@@ -130,7 +132,8 @@ const copy: Record<
     availableNowLabel: "Available now",
     leftLabel: "rooms left",
     starLabel: "stars",
-    smartChoiceLabel: "Smart choice"
+    smartChoiceLabel: "Smart choice",
+    consultRateLabel: "Check rate"
   },
   fr: {
     title: "Hebergement a Punta Cana",
@@ -164,7 +167,8 @@ const copy: Record<
     availableNowLabel: "Disponible maintenant",
     leftLabel: "chambres restantes",
     starLabel: "etoiles",
-    smartChoiceLabel: "Choix intelligent"
+    smartChoiceLabel: "Choix intelligent",
+    consultRateLabel: "Demander tarif"
   }
 };
 
@@ -180,11 +184,6 @@ const getDirectoryHref = (locale: Locale) => {
 
 const firstParamValue = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
-
-const getStartingPrice = (name: string) => {
-  const sum = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return 145 + (sum % 120);
-};
 
 const getReviewScore = (name: string) => {
   const sum = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -204,6 +203,14 @@ const getStars = (name: string) => {
 const getRoomsLeft = (name: string) => {
   const sum = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return 2 + (sum % 7);
+};
+
+const parseUsdPrice = (value?: string) => {
+  if (!value) return null;
+  const normalized = value.replace(/[^0-9.]/g, "");
+  const parsed = Number(normalized);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return Math.round(parsed);
 };
 
 const cleanText = (value: string) => value.replace(/\s+/g, " ").trim();
@@ -308,10 +315,14 @@ export default async function HotelsDirectoryPage({
 
   const hotelCards: HotelCardInfo[] = hotels.map((hotel) => {
     const zoneName = hotel.zone?.name ?? "Punta Cana";
-    const price = getStartingPrice(hotel.name);
+    const localizedLanding = hotelLandingContent[hotel.slug]?.[locale];
+    const fallbackLanding =
+      hotelLandingContent[hotel.slug]?.es ??
+      hotelLandingContent[hotel.slug]?.en ??
+      hotelLandingContent[hotel.slug]?.fr;
+    const price = parseUsdPrice(localizedLanding?.priceFromUSD) ?? parseUsdPrice(fallbackLanding?.priceFromUSD);
     const rating = getReviewScore(hotel.name);
     const reviews = getReviewCount(hotel.name);
-    const localizedLanding = hotelLandingContent[hotel.slug]?.[locale];
     const localizedDescription = firstSentence(localizedLanding?.description1);
     const enrichment = enrichmentContent[hotel.slug];
     const descriptionSource =
@@ -344,11 +355,15 @@ export default async function HotelsDirectoryPage({
   });
 
   const sortedHotels = [...filteredHotels].sort((a, b) => {
-    if (sort === "price-asc") return a.price - b.price;
-    if (sort === "price-desc") return b.price - a.price;
+    const safePriceA = a.price ?? Number.POSITIVE_INFINITY;
+    const safePriceB = b.price ?? Number.POSITIVE_INFINITY;
+    if (sort === "price-asc") return safePriceA - safePriceB;
+    if (sort === "price-desc") return safePriceB - safePriceA;
     if (sort === "rating") return b.rating - a.rating || b.reviews - a.reviews;
-    const aScore = a.rating * 10 + a.reviews / 25 - a.price / 80;
-    const bScore = b.rating * 10 + b.reviews / 25 - b.price / 80;
+    const pricePenaltyA = a.price ? a.price / 80 : 2.6;
+    const pricePenaltyB = b.price ? b.price / 80 : 2.6;
+    const aScore = a.rating * 10 + a.reviews / 25 - pricePenaltyA;
+    const bScore = b.rating * 10 + b.reviews / 25 - pricePenaltyB;
     return bScore - aScore;
   });
 
@@ -575,9 +590,15 @@ export default async function HotelsDirectoryPage({
                             {hotel.roomsLeft} {t.leftLabel}
                           </p>
                           <p className="mt-3 text-sm text-slate-500">
-                            {t.fromLabel}{" "}
-                            <span className="text-2xl font-bold leading-none text-slate-900">${hotel.price}</span>{" "}
-                            {t.perNight}
+                            {hotel.price ? (
+                              <>
+                                {t.fromLabel}{" "}
+                                <span className="text-2xl font-bold leading-none text-slate-900">${hotel.price}</span>{" "}
+                                {t.perNight}
+                              </>
+                            ) : (
+                              <span className="text-base font-semibold text-slate-900">{t.consultRateLabel}</span>
+                            )}
                           </p>
                           <Link
                             href={getHotelHref(hotel.slug, locale)}
