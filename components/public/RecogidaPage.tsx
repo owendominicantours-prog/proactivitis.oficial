@@ -317,25 +317,30 @@ export async function RecogidaPage({
       </section>
 
       <main className="mx-auto max-w-6xl px-4 py-10 space-y-8">
-        <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-500">{transferCopy.eyebrow}</p>
-            <h2 className="text-2xl font-semibold text-slate-900">
+        <section className="relative overflow-hidden rounded-[32px] border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-6 shadow-2xl">
+          <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-orange-500/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -left-20 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl" />
+          <div className="relative space-y-2">
+            <p className="text-xs uppercase tracking-[0.35em] text-orange-300">{transferCopy.eyebrow}</p>
+            <h2 className="text-2xl font-semibold text-white">
               {transferCopy.title.replace("{hotel}", location.name)}
             </h2>
-            <p className="text-sm text-slate-600">{transferCopy.body}</p>
+            <p className="max-w-3xl text-sm text-slate-200">{transferCopy.body}</p>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="relative mt-5 grid gap-4 md:grid-cols-3">
             {transferCopy.cards.map((card) => (
               <article
                 key={card.title}
-                className="flex h-full flex-col rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                className="group flex h-full flex-col rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-orange-300/60 hover:bg-white/15"
               >
-                <h3 className="text-base font-semibold text-slate-900">{card.title}</h3>
-                <p className="mt-2 flex-1 text-sm text-slate-600">{card.body}</p>
+                <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-sm text-white">
+                  VIP
+                </div>
+                <h3 className="text-base font-semibold text-white">{card.title}</h3>
+                <p className="mt-2 flex-1 text-sm text-slate-200">{card.body}</p>
                 <Link
                   href={localPath(card.href)}
-                  className="mt-4 inline-flex items-center justify-center rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-slate-700"
+                  className="mt-5 inline-flex items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-orange-300"
                 >
                   {card.cta}
                 </Link>
@@ -351,7 +356,7 @@ export async function RecogidaPage({
         </div>
         <div className="grid gap-6 md:grid-cols-2">
           {displayTours.map((tour) => (
-            <article key={tour.id} className="group flex flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+            <article key={tour.id} className="group flex flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl">
               <div className="relative h-44 w-full overflow-hidden bg-slate-200">
                 <Image
                   src={tour.heroImage ?? "/fototours/fototour.jpeg"}
@@ -375,7 +380,7 @@ export async function RecogidaPage({
                   <span className="text-slate-900 font-semibold">${tour.price.toFixed(0)} USD</span>
                 <Link
                   href={buildTourUrl(tour, location.slug, bookingCode)}
-                  className="rounded-2xl bg-orange-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-lg transition hover:bg-orange-600"
+                  className="rounded-full bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-2 text-sm font-semibold text-white shadow-lg transition hover:from-orange-600 hover:to-rose-600"
                 >
                   {t("recogida.tours.cardCta", { tour: tour.title, hotel: location.name })}
                 </Link>
