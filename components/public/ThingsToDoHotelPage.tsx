@@ -32,6 +32,74 @@ const FALLBACK_IMAGE = "/transfer/mini van.png";
 type RouteBase = "things-to-do" | "hoteles";
 
 const DEFAULT_AMENITIES = ["Wi-Fi Gratis", "Todo Incluido", "Piscina", "Club de Ninos", "Gimnasio"];
+const BAHIA_ACTIVITY_COPY: Record<
+  Locale,
+  {
+    sectionTitle: string;
+    sectionSubtitle: string;
+    cards: Array<{ title: string; body: string; icon: "waves" | "utensils" | "dumbbell" | "martini" | "users" | "sparkles" }>;
+    plansTitle: string;
+    plans: Array<{ title: string; body: string }>;
+  }
+> = {
+  es: {
+    sectionTitle: "Que hacer en Bahia Principe y alrededor",
+    sectionSubtitle:
+      "Planifica dias completos sin perder tiempo: playa, gastronomia, bienestar, nightlife y excursiones premium desde el mismo hotel.",
+    cards: [
+      { title: "Playa y piscinas", body: "Bloques de manana en playa y tarde en piscinas tipo lago con zonas de relax y servicio cercano.", icon: "waves" },
+      { title: "Gastronomia por especialidad", body: "Combina buffet + restaurantes tematicos para variar cada noche sin repetir experiencia.", icon: "utensils" },
+      { title: "Wellness y deporte", body: "Rutina flexible entre gimnasio, tenis, actividades acuaticas y spa para equilibrar descanso y accion.", icon: "dumbbell" },
+      { title: "Bares y ambiente nocturno", body: "Cierra el dia con bares, musica y areas de entretenimiento dentro del complejo.", icon: "martini" },
+      { title: "Plan familiar real", body: "Programa para ninos y teens, mientras adultos mantienen agenda de playa, spa o tours.", icon: "users" },
+      { title: "Excursiones top desde el resort", body: "Coordina Saona, catamaran, buggy y city tours con recogida y retorno al hotel.", icon: "sparkles" }
+    ],
+    plansTitle: "Planes recomendados (3, 5 y 7 noches)",
+    plans: [
+      { title: "3 noches", body: "Llegada + playa/piscina + 1 excursion corta + cena de especialidad." },
+      { title: "5 noches", body: "2 dias resort + 2 excursiones (mar y aventura) + 1 noche de entretenimiento interno." },
+      { title: "7 noches", body: "Semana completa con ritmo equilibrado: descanso, tours premium, gastronomia y wellness." }
+    ]
+  },
+  en: {
+    sectionTitle: "Things to do at Bahia Principe and nearby",
+    sectionSubtitle:
+      "Build full days without friction: beach, dining, wellness, nightlife, and premium excursions departing from your resort.",
+    cards: [
+      { title: "Beach and pool flow", body: "Morning beach blocks and afternoon lagoon-style pools with easy access service.", icon: "waves" },
+      { title: "Specialty dining strategy", body: "Mix buffet and specialty restaurants to keep each night different.", icon: "utensils" },
+      { title: "Wellness and sports", body: "Balance rest and action with gym, tennis, water activities, and spa sessions.", icon: "dumbbell" },
+      { title: "Bars and night vibe", body: "Finish your day with bars, music, and in-resort nightlife options.", icon: "martini" },
+      { title: "Family-first planning", body: "Kids and teen areas let adults keep their own beach, spa, or tour schedule.", icon: "users" },
+      { title: "Top tours from the resort", body: "Book Saona, catamaran, buggy, and city tours with hotel pickup/return.", icon: "sparkles" }
+    ],
+    plansTitle: "Suggested plans (3, 5 and 7 nights)",
+    plans: [
+      { title: "3 nights", body: "Arrival + beach/pool + one short tour + one specialty dinner." },
+      { title: "5 nights", body: "2 resort days + 2 excursions (ocean and adventure) + 1 in-resort night activity." },
+      { title: "7 nights", body: "Full-week rhythm: recovery, premium tours, dining rotation, and wellness." }
+    ]
+  },
+  fr: {
+    sectionTitle: "Que faire a Bahia Principe et autour",
+    sectionSubtitle:
+      "Construisez des journees completes sans perte de temps: plage, gastronomie, wellness, nightlife et excursions premium depuis l hotel.",
+    cards: [
+      { title: "Plage et piscines", body: "Matin plage, apres-midi piscines type lagon avec zones de detente.", icon: "waves" },
+      { title: "Gastronomie par specialite", body: "Combinez buffet et restaurants thematiques pour varier chaque soir.", icon: "utensils" },
+      { title: "Wellness et sport", body: "Equilibrez repos et action entre gym, tennis, activites aquatiques et spa.", icon: "dumbbell" },
+      { title: "Bars et ambiance de nuit", body: "Terminez la journee avec bars, musique et divertissement du resort.", icon: "martini" },
+      { title: "Organisation famille", body: "Espaces enfants/ados pendant que les adultes gardent leur planning personnel.", icon: "users" },
+      { title: "Excursions depuis le resort", body: "Saona, catamaran, buggy et city tour avec pickup/retour hotel.", icon: "sparkles" }
+    ],
+    plansTitle: "Plans recommandes (3, 5 et 7 nuits)",
+    plans: [
+      { title: "3 nuits", body: "Arrivee + plage/piscine + une excursion courte + un diner specialite." },
+      { title: "5 nuits", body: "2 jours resort + 2 excursions (mer et aventure) + 1 soiree animation." },
+      { title: "7 nuits", body: "Semaine complete: repos, tours premium, gastronomie et wellness." }
+    ]
+  }
+};
 const UI_COPY: Record<
   Locale,
   {
@@ -217,6 +285,15 @@ const getAmenityIcon = (label: string) => {
   if (text.includes("gym") || text.includes("gimnasio") || text.includes("fitness")) return Dumbbell;
   if (text.includes("restaurant") || text.includes("restaurante") || text.includes("food") || text.includes("comida")) return Utensils;
   return ShieldCheck;
+};
+
+const getBahiaCardIcon = (icon: "waves" | "utensils" | "dumbbell" | "martini" | "users" | "sparkles") => {
+  if (icon === "waves") return Waves;
+  if (icon === "utensils") return Utensils;
+  if (icon === "dumbbell") return Dumbbell;
+  if (icon === "martini") return Martini;
+  if (icon === "users") return Users;
+  return Sparkles;
 };
 
 const categorizeAmenities = (items: string[]) => {
@@ -421,6 +498,8 @@ export async function ThingsToDoHotelPage({
   const reviewCount = parseNumber(overrides.reviewCount);
 
   const canonicalUrl = buildCanonical(hotel.slug, locale, routeBase);
+  const isBahiaHotel = hotel.slug.startsWith("bahia-principe-");
+  const bahiaActivityPack = BAHIA_ACTIVITY_COPY[locale] ?? BAHIA_ACTIVITY_COPY.es;
   const priceValidUntil = getPriceValidUntil();
 
   const schema = {
@@ -561,6 +640,36 @@ export async function ThingsToDoHotelPage({
           ))}
         </ul>
       </section>
+
+      {isBahiaHotel ? (
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
+          <h2 className="text-2xl font-semibold text-slate-900">{bahiaActivityPack.sectionTitle}</h2>
+          <p className="mt-3 text-sm text-slate-600">{bahiaActivityPack.sectionSubtitle}</p>
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {bahiaActivityPack.cards.map((card) => {
+              const Icon = getBahiaCardIcon(card.icon);
+              return (
+                <article key={card.title} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                    <Icon className="h-4 w-4 text-emerald-600" />
+                    {card.title}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-600">{card.body}</p>
+                </article>
+              );
+            })}
+          </div>
+          <h3 className="mt-8 text-lg font-semibold text-slate-900">{bahiaActivityPack.plansTitle}</h3>
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            {bahiaActivityPack.plans.map((plan) => (
+              <article key={plan.title} className="rounded-2xl border border-slate-200 bg-white p-4">
+                <p className="text-sm font-semibold text-slate-900">{plan.title}</p>
+                <p className="mt-2 text-sm text-slate-600">{plan.body}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="rounded-3xl border border-slate-200 bg-slate-900 p-5 text-white shadow-sm md:p-10">
         <h2 className="text-2xl font-semibold">{ui.whyBook}</h2>
