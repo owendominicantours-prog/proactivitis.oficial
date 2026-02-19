@@ -381,6 +381,50 @@ const buildMarketTransferTitles = (
   };
 };
 
+const parseGalleryImages = (value?: string | null): string[] => {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((item) => String(item)).filter(Boolean);
+  } catch {
+    return [];
+  }
+};
+
+const resolveTourCardImage = (heroImage?: string | null, gallery?: string | null) => {
+  if (heroImage) return heroImage;
+  return parseGalleryImages(gallery)[0] ?? "/transfer/sedan.png";
+};
+
+const formatTourDuration = (value?: string | null, locale: Locale = "es") => {
+  if (!value) {
+    return locale === "fr" ? "Duree variable" : locale === "en" ? "Flexible duration" : "Duracion variable";
+  }
+  const trimmed = value.trim();
+  if (!trimmed.startsWith("{")) return trimmed;
+  try {
+    const parsed = JSON.parse(trimmed) as { value?: string; unit?: string };
+    const durationValue = parsed?.value ? String(parsed.value).trim() : "";
+    const unitRaw = parsed?.unit ? String(parsed.unit).trim().toLowerCase() : "";
+    if (!durationValue || !unitRaw) return trimmed;
+    if (unitRaw.includes("hora") || unitRaw.includes("hour") || unitRaw.includes("heure")) {
+      if (locale === "fr") return `${durationValue} heure${durationValue === "1" ? "" : "s"}`;
+      if (locale === "en") return `${durationValue} hour${durationValue === "1" ? "" : "s"}`;
+      return `${durationValue} hora${durationValue === "1" ? "" : "s"}`;
+    }
+    if (unitRaw.includes("min")) return `${durationValue} min`;
+    if (unitRaw.includes("dia") || unitRaw.includes("day") || unitRaw.includes("jour")) {
+      if (locale === "fr") return `${durationValue} jour${durationValue === "1" ? "" : "s"}`;
+      if (locale === "en") return `${durationValue} day${durationValue === "1" ? "" : "s"}`;
+      return `${durationValue} dia${durationValue === "1" ? "" : "s"}`;
+    }
+    return `${durationValue} ${parsed.unit ?? ""}`.trim();
+  } catch {
+    return trimmed;
+  }
+};
+
 export async function buildTransferMetadata(landingSlug: string, locale: Locale): Promise<Metadata> {
   const parsedSlug = parseTransferHotelVariantSlug(landingSlug);
   const canIndexVariant = isIndexableTransferVariant(parsedSlug.variantId);
@@ -581,10 +625,25 @@ export async function TransferLandingPage({
     .filter((item) => item.landingSlug !== landing.landingSlug)
     .slice(0, 3);
   const priceValidUntil = getPriceValidUntil();
+  const hotelLocation = await prisma.location.findUnique({
+    where: { slug: landing.hotelSlug },
+    select: {
+      countryId: true,
+      destinationId: true,
+      microZoneId: true
+    }
+  });
+
+  const countryId = hotelLocation?.countryId ?? "RD";
   const recommendedTours = await prisma.tour.findMany({
     where: {
       status: "published",
-      countryId: "RD"
+      slug: { not: "transfer-privado-proactivitis" },
+      OR: [
+        ...(hotelLocation?.microZoneId ? [{ countryId, microZoneId: hotelLocation.microZoneId }] : []),
+        ...(hotelLocation?.destinationId ? [{ countryId, destinationId: hotelLocation.destinationId }] : []),
+        { countryId }
+      ]
     },
     select: {
       id: true,
@@ -594,7 +653,15 @@ export async function TransferLandingPage({
       duration: true,
       price: true,
       heroImage: true,
-      featured: true
+      gallery: true,
+      featured: true,
+      translations: {
+        where: { locale },
+        select: {
+          title: true,
+          shortDescription: true
+        }
+      }
     },
     orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
     take: 6
@@ -791,18 +858,23 @@ export async function TransferLandingPage({
                   <article key={tour.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
                     <div className="relative h-40">
                       <Image
-                        src={tour.heroImage || "/transfer/sedan.png"}
-                        alt={tour.title}
+                        src={resolveTourCardImage(tour.heroImage, tour.gallery)}
+                        alt={tour.translations?.[0]?.title ?? tour.title}
                         fill
                         sizes="(max-width: 1024px) 100vw, 33vw"
                         className="object-cover"
                       />
                     </div>
                     <div className="space-y-2 p-4">
-                      <h3 className="line-clamp-2 text-base font-bold text-slate-900">{tour.title}</h3>
-                      <p className="line-clamp-2 text-sm text-slate-600">{tour.shortDescription || localizedLanding.heroSubtitle}</p>
+                      <h3 className="line-clamp-2 text-base font-bold text-slate-900">
+                        {tour.translations?.[0]?.title ?? tour.title}
+                      </h3>
+                      <p className="line-clamp-2 text-sm text-slate-600">
+                        {tour.translations?.[0]?.shortDescription || tour.shortDescription || localizedLanding.heroSubtitle}
+                      </p>
                       <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                        {locale === "es" ? "Duracion" : locale === "fr" ? "Duree" : "Duration"}: {tour.duration}
+                        {locale === "es" ? "Duracion" : locale === "fr" ? "Duree" : "Duration"}:{" "}
+                        {formatTourDuration(tour.duration, locale)}
                       </p>
                       <p className="text-sm font-semibold text-emerald-700">
                         {locale === "es" ? "Desde" : locale === "fr" ? "A partir de" : "From"} USD {Math.round(tour.price)}
