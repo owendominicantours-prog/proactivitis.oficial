@@ -312,6 +312,12 @@ export default async function HotelsDirectoryPage({
     (enrichmentSetting?.content as Record<string, HotelDirectoryEnrichment | undefined> | null) ?? {};
 
   const t = copy[locale];
+  const toursHref = locale === "es" ? "/tours" : `/${locale}/tours`;
+  const transfersHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
+  const premiumTransferHref =
+    locale === "es"
+      ? "/punta-cana/premium-transfer-services"
+      : `/${locale}/punta-cana/premium-transfer-services`;
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const q = (firstParamValue(resolvedSearchParams?.q) ?? "").trim();
   const zone = (firstParamValue(resolvedSearchParams?.zone) ?? "").trim();
@@ -434,6 +440,39 @@ export default async function HotelsDirectoryPage({
           </div>
         </div>
       </header>
+
+      <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
+          {locale === "es" ? "Reserva completa" : locale === "fr" ? "Reservation complete" : "Complete booking"}
+        </p>
+        <h2 className="mt-2 text-xl font-semibold text-slate-900">
+          {locale === "es"
+            ? "Combina hotel + traslado + tours en un solo flujo"
+            : locale === "fr"
+              ? "Combinez hotel + transfert + excursions dans un seul flux"
+              : "Bundle hotel + transfer + tours in one flow"}
+        </h2>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link
+            href={transfersHref}
+            className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-400"
+          >
+            {locale === "es" ? "Ver traslados" : locale === "fr" ? "Voir transferts" : "View transfers"}
+          </Link>
+          <Link
+            href={toursHref}
+            className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-400"
+          >
+            {locale === "es" ? "Ver tours" : locale === "fr" ? "Voir excursions" : "View tours"}
+          </Link>
+          <Link
+            href={premiumTransferHref}
+            className="rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800 transition hover:bg-amber-100"
+          >
+            {locale === "es" ? "Transfer VIP" : locale === "fr" ? "Transfert VIP" : "VIP transfer"}
+          </Link>
+        </div>
+      </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
         <form

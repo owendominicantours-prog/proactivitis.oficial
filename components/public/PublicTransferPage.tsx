@@ -39,6 +39,9 @@ type Props = {
 
 export default async function PublicTransferPage({ locale, heroTitleOverride, heroDescriptionOverride }: Props) {
   const transfersV2Enabled = process.env.TRANSFERS_V2_ENABLED === "true";
+  const homeHref = locale === "es" ? "/" : `/${locale}`;
+  const toursRootHref = locale === "es" ? "/tours" : `/${locale}/tours`;
+  const hotelsRootHref = locale === "es" ? "/hoteles" : `/${locale}/hotels`;
   const puntaCanaHubHref = locale === "es" ? "/punta-cana/traslado" : `/${locale}/punta-cana/traslado`;
   const premiumVipHref =
     locale === "es"
@@ -114,13 +117,13 @@ export default async function PublicTransferPage({ locale, heroTitleOverride, he
               </p>
               <div className="flex flex-wrap gap-3 text-sm font-semibold uppercase tracking-[0.2em] text-white">
                 <Link
-                  href="/"
+                  href={homeHref}
                   className="inline-flex items-center justify-center rounded-full border border-white/70 bg-white/90 px-4 py-2 text-slate-900 shadow-sm transition hover:bg-white"
                 >
                   {translate(locale, "transfer.link.home")}
                 </Link>
                 <Link
-                  href="/tours"
+                  href={toursRootHref}
                   className="inline-flex items-center justify-center rounded-full border border-white/80 bg-transparent px-4 py-2 text-white transition hover:bg-white/10"
                 >
                   {translate(locale, "transfer.link.tours")}
@@ -175,6 +178,39 @@ export default async function PublicTransferPage({ locale, heroTitleOverride, he
           >
             {locale === "es" ? "Ver Landing VIP" : locale === "fr" ? "Voir Landing VIP" : "Open VIP Landing"}
           </Link>
+        </section>
+
+        <section className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-500">
+            {locale === "es" ? "Planifica todo en un solo flujo" : locale === "fr" ? "Planifiez tout en un seul flux" : "Plan everything in one flow"}
+          </p>
+          <h2 className="mt-2 text-xl font-bold text-slate-900">
+            {locale === "es"
+              ? "Combina traslado + hotel + tours sin salir de Proactivitis"
+              : locale === "fr"
+              ? "Combinez transfert + hotel + excursions sans quitter Proactivitis"
+              : "Bundle transfer + hotel + tours without leaving Proactivitis"}
+          </h2>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href={hotelsRootHref}
+              className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-400"
+            >
+              {locale === "es" ? "Ver hoteles" : locale === "fr" ? "Voir hotels" : "View hotels"}
+            </Link>
+            <Link
+              href={toursRootHref}
+              className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-400"
+            >
+              {locale === "es" ? "Ver tours" : locale === "fr" ? "Voir excursions" : "View tours"}
+            </Link>
+            <Link
+              href={premiumVipHref}
+              className="rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800 transition hover:bg-amber-100"
+            >
+              {locale === "es" ? "VIP transfer" : locale === "fr" ? "Transfert VIP" : "VIP transfer"}
+            </Link>
+          </div>
         </section>
 
         <section className="rounded-[36px] border border-slate-100 bg-white/90 p-6 shadow-2xl">

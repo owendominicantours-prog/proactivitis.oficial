@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { logPrismaError, prisma } from "@/lib/prisma";
 import { buildTourFilter, TourSearchParams } from "@/lib/filterBuilder";
 import { TourFilters } from "@/components/public/TourFilters";
@@ -200,6 +200,12 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const params = resolvedSearchParams ?? {};
   const puntaCanaHubHref = locale === "es" ? "/punta-cana/tours" : `/${locale}/punta-cana/tours`;
+  const transfersHubHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
+  const hotelsHubHref = locale === "es" ? "/hoteles" : `/${locale}/hotels`;
+  const premiumTransferHref =
+    locale === "es"
+      ? "/punta-cana/premium-transfer-services"
+      : `/${locale}/punta-cana/premium-transfer-services`;
   const tourHref = (slug: string) => (locale === "es" ? `/tours/${slug}` : `/${locale}/tours/${slug}`);
   const sosuaPartyBoatHref = tourHref("party-boat-sosua");
 
@@ -406,6 +412,24 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                 className="rounded-full bg-brand px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-sm shadow-brand/30"
               >
                 {t("tours.puntaCanaHub.cta")}
+              </Link>
+              <Link
+                href={transfersHubHref}
+                className="rounded-full border border-slate-300 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-400"
+              >
+                {locale === "es" ? "Traslados" : locale === "en" ? "Transfers" : "Transferts"}
+              </Link>
+              <Link
+                href={hotelsHubHref}
+                className="rounded-full border border-slate-300 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-400"
+              >
+                {locale === "es" ? "Hoteles" : "Hotels"}
+              </Link>
+              <Link
+                href={premiumTransferHref}
+                className="rounded-full border border-amber-300 bg-amber-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800 transition hover:bg-amber-100"
+              >
+                {locale === "es" ? "Transfer VIP" : locale === "en" ? "VIP Transfer" : "Transfert VIP"}
               </Link>
             </div>
             <TrustBadges locale={locale} compact className="pt-2" />
@@ -666,3 +690,4 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
     </div>
   );
 }
+
