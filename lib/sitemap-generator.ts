@@ -111,7 +111,7 @@ const buildLocalizedEntries = (entries: RouteEntry[]) => {
 
 export async function buildSitemapEntries(): Promise<SitemapEntries> {
   try {
-    const [tours, locations, bookings, countries, destinations, microZones] = await Promise.all([
+    const [tours, locations, bookings, countries, destinations, microZones, transferHotels] = await Promise.all([
       prisma.tour.findMany({
         where: { status: "published" },
         select: {
@@ -153,6 +153,10 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
             }
           }
         }
+      }),
+      prisma.transferLocation.findMany({
+        where: { type: "HOTEL", active: true },
+        select: { slug: true }
       })
     ]);
 
@@ -286,7 +290,12 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
     ...localizedRecogidaEntries,
     ...pickupHotelEntries,
     ...pickupHotelLocalizedEntries,
-    ...trasladoHotelEntries
+    ...trasladoHotelEntries,
+    ...transferHotels.flatMap((hotel) => [
+      { url: `${BASE_URL}/hoteles/${hotel.slug}`, priority: 0.76 },
+      { url: `${BASE_URL}/en/hotels/${hotel.slug}`, priority: 0.76 },
+      { url: `${BASE_URL}/fr/hotels/${hotel.slug}`, priority: 0.76 }
+    ])
   ]);
 
     return {
