@@ -1,8 +1,10 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { landingPages, countryToPuntaCanaLandingSlugs } from "@/lib/landing";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 import StructuredData from "@/components/schema/StructuredData";
+import { prisma } from "@/lib/prisma";
+import { allLandings } from "@/data/transfer-landings";
 
 const BASE_URL = "https://proactivitis.com";
 
@@ -52,26 +54,72 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-const defaultExcursionPicks = [
-  "Saona Island full-day boat experience",
-  "Catamaran party boat with snorkeling",
-  "ATV and buggy adventure routes",
-  "Santo Domingo cultural city tour"
-];
+const cleanText = (value: string) => value.replace(/\s+/g, " ").trim();
 
-const defaultHotelPicks = [
-  "All-inclusive resorts in Bavaro",
-  "Luxury stays in Cap Cana",
-  "Family resorts in Uvero Alto",
-  "Adults-only premium options"
-];
+const shorten = (value: string, max = 150) => {
+  const text = cleanText(value);
+  if (text.length <= max) return text;
+  const sliced = text.slice(0, max);
+  const cut = sliced.lastIndexOf(" ");
+  return `${sliced.slice(0, cut > 70 ? cut : max)}...`;
+};
 
-const defaultTransferPicks = [
-  "Private airport transfer from PUJ",
-  "Executive SUV transfer options",
-  "Group transportation for families",
-  "24/7 support and flight monitoring"
-];
+const parseGallery = (gallery?: string | null) => {
+  if (!gallery) return [];
+  try {
+    const parsed = JSON.parse(gallery);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((item) => String(item)).filter(Boolean);
+  } catch {
+    return [];
+  }
+};
+
+const resolveTourImage = (heroImage?: string | null, gallery?: string | null) =>
+  heroImage || parseGallery(gallery)[0] || "/fototours/fotosimple.jpg";
+
+const countryHash = (country: string) =>
+  country.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+const pickWindow = <T,>(items: T[], count: number, seed: string) => {
+  if (items.length <= count) return items;
+  const start = countryHash(seed) % items.length;
+  const result: T[] = [];
+  for (let i = 0; i < count; i += 1) {
+    result.push(items[(start + i) % items.length] as T);
+  }
+  return result;
+};
+
+const getCountryProfile = (country: string) => {
+  const key = country.toLowerCase();
+  if (["united states", "canada", "united kingdom"].includes(key)) {
+    return {
+      buyerPersona: "High planning behavior with premium service expectations and fast response demand.",
+      packageIntent: "Most requested bundle: all-inclusive resort + airport transfer + 2 premium excursions.",
+      bookingWindow: "Average planning window: 20-45 days before travel."
+    };
+  }
+  if (["spain", "france", "germany", "italy", "portugal"].includes(key)) {
+    return {
+      buyerPersona: "Experience-first travelers focused on quality curation and transparent logistics.",
+      packageIntent: "Most requested bundle: curated hotel shortlist + sea excursions + private mobility.",
+      bookingWindow: "Average planning window: 25-50 days before travel."
+    };
+  }
+  if (["mexico", "colombia", "argentina", "chile", "peru", "ecuador", "panama"].includes(key)) {
+    return {
+      buyerPersona: "Value-oriented buyers with strong interest in complete planning and flexible support.",
+      packageIntent: "Most requested bundle: hotel + transfer + activity mix for family and social travel.",
+      bookingWindow: "Average planning window: 12-30 days before travel."
+    };
+  }
+  return {
+    buyerPersona: "Travelers looking for trusted local support and smooth end-to-end execution.",
+    packageIntent: "Most requested bundle: resort + airport transfer + top-rated excursions.",
+    bookingWindow: "Average planning window: 10-35 days before travel."
+  };
+};
 
 export default async function LandingPage({ params }: Params) {
   const resolvedParams = await params;
@@ -121,11 +169,41 @@ export default async function LandingPage({ params }: Params) {
     );
   }
 
+  const [tourRows, hotelRows] = await Promise.all([
+    prisma.tour.findMany({
+      where: { status: "published" },
+      select: {
+        slug: true,
+        title: true,
+        heroImage: true,
+        gallery: true,
+        shortDescription: true,
+        description: true,
+        price: true,
+        duration: true
+      },
+      orderBy: { createdAt: "desc" },
+      take: 80
+    }),
+    prisma.transferLocation.findMany({
+      where: { type: "HOTEL", active: true },
+      select: { slug: true, name: true, heroImage: true, description: true, zone: { select: { name: true } } },
+      orderBy: { name: "asc" },
+      take: 120
+    })
+  ]);
+
+  const transferRows = allLandings();
+  const selectedTours = pickWindow(tourRows, 6, `${landing.country}-tours`);
+  const selectedHotels = pickWindow(hotelRows, 6, `${landing.country}-hotels`);
+  const selectedTransfers = pickWindow(transferRows, 6, `${landing.country}-transfers`);
+  const profile = getCountryProfile(landing.country ?? "international");
+
   return (
     <div className="bg-slate-50 py-10">
       <LandingViewTracker landingSlug={landing.slug} />
       <StructuredData data={schema} />
-      <div className="mx-auto max-w-6xl space-y-8 px-4">
+      <div className="mx-auto max-w-7xl space-y-8 px-4">
         <section className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 p-8 text-white shadow-sm">
           <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
             <div>
@@ -156,16 +234,16 @@ export default async function LandingPage({ params }: Params) {
 
             <div className="grid grid-cols-3 gap-3 self-end">
               <div className="rounded-2xl border border-white/20 bg-white/10 p-3 text-center">
-                <p className="text-2xl font-bold">76+</p>
+                <p className="text-2xl font-bold">{hotelRows.length}+</p>
                 <p className="text-[11px] uppercase tracking-[0.12em] text-slate-200">Resorts</p>
+              </div>
+              <div className="rounded-2xl border border-white/20 bg-white/10 p-3 text-center">
+                <p className="text-2xl font-bold">{tourRows.length}+</p>
+                <p className="text-[11px] uppercase tracking-[0.12em] text-slate-200">Tours</p>
               </div>
               <div className="rounded-2xl border border-white/20 bg-white/10 p-3 text-center">
                 <p className="text-2xl font-bold">24/7</p>
                 <p className="text-[11px] uppercase tracking-[0.12em] text-slate-200">Support</p>
-              </div>
-              <div className="rounded-2xl border border-white/20 bg-white/10 p-3 text-center">
-                <p className="text-2xl font-bold">VIP</p>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-slate-200">Transfers</p>
               </div>
             </div>
           </div>
@@ -202,41 +280,45 @@ export default async function LandingPage({ params }: Params) {
           </div>
         </section>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-4">
-            <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="grid gap-4 lg:grid-cols-[1fr_220px]">
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Excursions</p>
-                  <h2 className="mt-2 text-2xl font-semibold text-slate-900">{landing.country} travelers' top excursions</h2>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-900">{landing.country} travelers top excursions</h2>
                   <p className="mt-2 text-sm text-slate-600">
                     {landing.excursionPitch ??
                       "Sell the strongest excursion portfolio with local operation support and clear conversion flow."}
                   </p>
-                  <ul className="mt-4 space-y-2 text-sm text-slate-700">
-                    {defaultExcursionPicks.map((item) => (
-                      <li key={item} className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs uppercase tracking-[0.25em] text-emerald-700">Best Seller Bundle</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-900">Excursion + Transfer Package</p>
-                  <p className="mt-2 text-sm text-slate-600">Custom itinerary with local assistant and fast confirmation.</p>
-                  <Link
-                    href="/tours"
-                    className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-                  >
-                    View Excursions
-                  </Link>
-                </div>
+                <Link href="/tours" className="text-sm font-semibold text-slate-700 underline underline-offset-4">
+                  View all
+                </Link>
               </div>
-            </article>
+              <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {selectedTours.map((tour) => (
+                  <article key={tour.slug} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div className="h-40 w-full">
+                      <img src={resolveTourImage(tour.heroImage, tour.gallery)} alt={tour.title} className="h-full w-full object-cover" />
+                    </div>
+                    <div className="space-y-2 p-4">
+                      <h3 className="line-clamp-2 text-base font-semibold text-slate-900">{tour.title}</h3>
+                      <p className="line-clamp-2 text-sm text-slate-600">
+                        {shorten(tour.shortDescription || tour.description || "Punta Cana excursion with local support.")}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-slate-500">
+                        <span>{tour.duration || "Flexible duration"}</span>
+                        <span className="font-semibold text-slate-900">From ${Math.round(tour.price || 0)}</span>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
 
-            <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="grid gap-4 lg:grid-cols-[1fr_220px]">
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Hotels</p>
                   <h2 className="mt-2 text-2xl font-semibold text-slate-900">Resorts and hotels in Punta Cana</h2>
@@ -244,64 +326,82 @@ export default async function LandingPage({ params }: Params) {
                     {landing.hotelPitch ??
                       "Position all-inclusive and premium resorts with practical guidance by area and traveler profile."}
                   </p>
-                  <ul className="mt-4 space-y-2 text-sm text-slate-700">
-                    {defaultHotelPicks.map((item) => (
-                      <li key={item} className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs uppercase tracking-[0.25em] text-emerald-700">Smart Match</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-900">Resort by traveler profile</p>
-                  <p className="mt-2 text-sm text-slate-600">Family, couples, premium, groups, and celebration trips.</p>
-                  <Link
-                    href="/hoteles"
-                    className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-                  >
-                    Browse Hotels
-                  </Link>
-                </div>
+                <Link href="/hoteles" className="text-sm font-semibold text-slate-700 underline underline-offset-4">
+                  View all
+                </Link>
               </div>
-            </article>
+              <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {selectedHotels.map((hotel) => (
+                  <article key={hotel.slug} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div className="h-40 w-full">
+                      <img src={hotel.heroImage || "/transfer/mini van.png"} alt={hotel.name} className="h-full w-full object-cover" />
+                    </div>
+                    <div className="space-y-2 p-4">
+                      <h3 className="line-clamp-2 text-base font-semibold text-slate-900">{hotel.name}</h3>
+                      <p className="line-clamp-2 text-sm text-slate-600">
+                        {shorten(hotel.description || "All-inclusive and premium hotel option in Punta Cana.")}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-slate-500">
+                        <span>{hotel.zone?.name || "Punta Cana"}</span>
+                        <span className="rounded-full bg-emerald-100 px-2 py-1 font-semibold text-emerald-700">Available</span>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
 
-            <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="grid gap-4 lg:grid-cols-[1fr_220px]">
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Transfers</p>
-                  <h2 className="mt-2 text-2xl font-semibold text-slate-900">Airport transfers from PUJ</h2>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-900">Airport transfer routes from PUJ</h2>
                   <p className="mt-2 text-sm text-slate-600">
                     {landing.transferPitch ??
                       "Convert arrivals with transfer-first planning and a direct support line before travel day."}
                   </p>
-                  <ul className="mt-4 space-y-2 text-sm text-slate-700">
-                    {defaultTransferPicks.map((item) => (
-                      <li key={item} className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs uppercase tracking-[0.25em] text-emerald-700">Transfer Ready</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-900">Private & executive options</p>
-                  <p className="mt-2 text-sm text-slate-600">Flight tracking, direct support and smooth arrival logistics.</p>
-                  <Link
-                    href="/traslado"
-                    className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-                  >
-                    Book Transfer
-                  </Link>
-                </div>
+                <Link href="/traslado" className="text-sm font-semibold text-slate-700 underline underline-offset-4">
+                  View all
+                </Link>
               </div>
-            </article>
+              <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {selectedTransfers.map((transfer) => (
+                  <article key={transfer.landingSlug} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div className="h-40 w-full">
+                      <img
+                        src={transfer.heroImage || "/transfer/mini van.png"}
+                        alt={transfer.heroImageAlt || transfer.hotelName}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="space-y-2 p-4">
+                      <h3 className="line-clamp-2 text-base font-semibold text-slate-900">{transfer.hotelName}</h3>
+                      <p className="line-clamp-2 text-sm text-slate-600">{shorten(transfer.heroSubtitle || transfer.heroTagline)}</p>
+                      <div className="flex items-center justify-between text-xs text-slate-500">
+                        <span>PUJ route</span>
+                        <span className="font-semibold text-slate-900">From ${transfer.priceFrom}</span>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
           </div>
 
           <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
             <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Buyer Angle</p>
               <p className="mt-3 text-sm text-slate-700">{landing.buyerAngle ?? landing.sections[0]}</p>
+            </article>
+            <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Market Profile: {landing.country}</p>
+              <div className="mt-3 space-y-2 text-sm text-slate-700">
+                <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">{profile.buyerPersona}</div>
+                <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">{profile.packageIntent}</div>
+                <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">{profile.bookingWindow}</div>
+              </div>
             </article>
             <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Execution Notes</p>
@@ -315,19 +415,6 @@ export default async function LandingPage({ params }: Params) {
             </article>
           </aside>
         </div>
-
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-2xl font-semibold text-slate-900">
-            {landing.country} to Punta Cana: sales execution framework
-          </h2>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            {landing.sections.map((section) => (
-              <div key={section} className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-700">
-                {section}
-              </div>
-            ))}
-          </div>
-        </section>
       </div>
     </div>
   );
