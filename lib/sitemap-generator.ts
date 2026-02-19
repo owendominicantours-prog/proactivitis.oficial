@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { landingPages } from "./landing";
+import { countryToPuntaCanaLandingSlugs, landingPages } from "./landing";
 import { excursionKeywordLandings } from "../data/excursion-keyword-landings";
 import { premiumTransferMarketLandings } from "@/data/premium-transfer-market-landings";
 import { allLandings } from "@/data/transfer-landings";
@@ -249,10 +249,12 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
     })),
     ...trasladoHotelEntries,
     ...combos.map(({ url, priority }) => ({ url, priority })),
-    ...landingPages.map((landing) => ({
-      url: `${BASE_URL}${landing.path ?? `/thingtodo/tours/${landing.slug}`}`,
-      priority: 0.7
-    })),
+    ...landingPages
+      .filter((landing) => countryToPuntaCanaLandingSlugs.has(landing.slug) || Boolean(landing.path))
+      .map((landing) => ({
+        url: `${BASE_URL}${landing.path ?? `/landing/${landing.slug}`}`,
+        priority: countryToPuntaCanaLandingSlugs.has(landing.slug) ? 0.72 : 0.7
+      })),
     ...tours.flatMap((tour) =>
       TOUR_MARKET_INTENTS.filter((intent) => INDEXABLE_TOUR_MARKET_INTENT_IDS.has(intent.id)).map((intent) => ({
         url: `${BASE_URL}/thingtodo/tours/${buildTourMarketVariantSlug(tour.slug, intent.id)}`,
@@ -330,10 +332,12 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
       })),
       ...TRANSFER_QUESTION_SALES_URLS,
       ...HOTEL_TRANSFER_SALES_VARIANT_URLS,
-      ...landingPages.map((landing) => ({
-        url: `${BASE_URL}${landing.path ?? `/thingtodo/tours/${landing.slug}`}`,
-        priority: 0.7
-      })),
+      ...landingPages
+        .filter((landing) => countryToPuntaCanaLandingSlugs.has(landing.slug) || Boolean(landing.path))
+        .map((landing) => ({
+          url: `${BASE_URL}${landing.path ?? `/landing/${landing.slug}`}`,
+          priority: countryToPuntaCanaLandingSlugs.has(landing.slug) ? 0.72 : 0.7
+        })),
       ...excursionKeywordLandings.map((landing) => ({
         url: `${BASE_URL}/excursiones/${landing.landingSlug}`,
         priority: 0.7
