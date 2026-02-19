@@ -1,8 +1,21 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Locale } from "@/lib/translations";
 
 type DirectorySearchParams = Record<string, string | string[] | undefined>;
+
+type HotelCardInfo = {
+  slug: string;
+  name: string;
+  heroImage: string | null;
+  zoneName: string;
+  price: number;
+  rating: number;
+  reviews: number;
+  stars: number;
+  badges: string[];
+  roomsLeft: number;
+};
 
 const copy: Record<
   Locale,
@@ -13,6 +26,11 @@ const copy: Record<
     searchPlaceholder: string;
     zoneLabel: string;
     zoneAll: string;
+    sortLabel: string;
+    sortRecommended: string;
+    sortPriceLow: string;
+    sortPriceHigh: string;
+    sortRating: string;
     applyFilters: string;
     clearFilters: string;
     resultsLabel: string;
@@ -23,6 +41,16 @@ const copy: Record<
     reviewLabel: string;
     quoteCta: string;
     pageLabel: string;
+    prevPage: string;
+    nextPage: string;
+    trustedTitle: string;
+    trustedBody: string;
+    selectedAreaLabel: string;
+    selectedSortLabel: string;
+    availableNowLabel: string;
+    leftLabel: string;
+    starLabel: string;
+    smartChoiceLabel: string;
   }
 > = {
   es: {
@@ -33,7 +61,12 @@ const copy: Record<
     searchPlaceholder: "Buscar hotel o zona",
     zoneLabel: "Zona",
     zoneAll: "Todas las zonas",
-    applyFilters: "Aplicar filtros",
+    sortLabel: "Orden",
+    sortRecommended: "Recomendados",
+    sortPriceLow: "Precio mas bajo",
+    sortPriceHigh: "Precio mas alto",
+    sortRating: "Mejor valorados",
+    applyFilters: "Aplicar",
     clearFilters: "Limpiar",
     resultsLabel: "resultados",
     noResultsTitle: "No encontramos hoteles con esos filtros",
@@ -42,7 +75,17 @@ const copy: Record<
     perNight: "por noche",
     reviewLabel: "resenas verificadas",
     quoteCta: "Solicitar cotizacion",
-    pageLabel: "Pagina"
+    pageLabel: "Pagina",
+    prevPage: "Anterior",
+    nextPage: "Siguiente",
+    trustedTitle: "Reserva con asistencia real",
+    trustedBody: "Confirmacion rapida, soporte 24/7 y ayuda para combinar hotel + traslado + tours.",
+    selectedAreaLabel: "Zona seleccionada",
+    selectedSortLabel: "Orden actual",
+    availableNowLabel: "Disponible hoy",
+    leftLabel: "habitaciones restantes",
+    starLabel: "estrellas",
+    smartChoiceLabel: "Eleccion inteligente"
   },
   en: {
     title: "Accommodation in Punta Cana",
@@ -52,7 +95,12 @@ const copy: Record<
     searchPlaceholder: "Search hotel or area",
     zoneLabel: "Area",
     zoneAll: "All areas",
-    applyFilters: "Apply filters",
+    sortLabel: "Sort",
+    sortRecommended: "Recommended",
+    sortPriceLow: "Price lowest",
+    sortPriceHigh: "Price highest",
+    sortRating: "Top rated",
+    applyFilters: "Apply",
     clearFilters: "Clear",
     resultsLabel: "results",
     noResultsTitle: "No hotels match your filters",
@@ -61,7 +109,17 @@ const copy: Record<
     perNight: "per night",
     reviewLabel: "verified reviews",
     quoteCta: "Request quote",
-    pageLabel: "Page"
+    pageLabel: "Page",
+    prevPage: "Previous",
+    nextPage: "Next",
+    trustedTitle: "Book with real local support",
+    trustedBody: "Fast confirmation, 24/7 support, and help to bundle hotel + transfers + tours.",
+    selectedAreaLabel: "Selected area",
+    selectedSortLabel: "Current sort",
+    availableNowLabel: "Available now",
+    leftLabel: "rooms left",
+    starLabel: "stars",
+    smartChoiceLabel: "Smart choice"
   },
   fr: {
     title: "Hebergement a Punta Cana",
@@ -71,6 +129,11 @@ const copy: Record<
     searchPlaceholder: "Rechercher hotel ou zone",
     zoneLabel: "Zone",
     zoneAll: "Toutes les zones",
+    sortLabel: "Tri",
+    sortRecommended: "Recommandes",
+    sortPriceLow: "Prix le plus bas",
+    sortPriceHigh: "Prix le plus eleve",
+    sortRating: "Mieux notes",
     applyFilters: "Appliquer",
     clearFilters: "Effacer",
     resultsLabel: "resultats",
@@ -80,7 +143,17 @@ const copy: Record<
     perNight: "par nuit",
     reviewLabel: "avis verifies",
     quoteCta: "Demander un devis",
-    pageLabel: "Page"
+    pageLabel: "Page",
+    prevPage: "Precedent",
+    nextPage: "Suivant",
+    trustedTitle: "Reservation avec assistance reelle",
+    trustedBody: "Confirmation rapide, support 24/7 et aide pour combiner hotel + transferts + tours.",
+    selectedAreaLabel: "Zone selectionnee",
+    selectedSortLabel: "Tri actuel",
+    availableNowLabel: "Disponible maintenant",
+    leftLabel: "chambres restantes",
+    starLabel: "etoiles",
+    smartChoiceLabel: "Choix intelligent"
   }
 };
 
@@ -104,12 +177,51 @@ const getStartingPrice = (name: string) => {
 
 const getReviewScore = (name: string) => {
   const sum = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return (4.3 + (sum % 7) / 10).toFixed(1);
+  return Number((4.2 + (sum % 8) / 10).toFixed(1));
 };
 
 const getReviewCount = (name: string) => {
   const sum = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return 80 + (sum % 230);
+};
+
+const getStars = (name: string) => {
+  const sum = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return 4 + (sum % 2);
+};
+
+const getRoomsLeft = (name: string) => {
+  const sum = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return 2 + (sum % 7);
+};
+
+const buildBadges = (zoneName: string, rating: number, reviews: number, locale: Locale) => {
+  const dictionary: Record<Locale, { top: string; cancel: string; transfer: string; area: string }> = {
+    es: {
+      top: "Top vendido",
+      cancel: "Cancelacion flexible",
+      transfer: "Traslado disponible",
+      area: `Zona ${zoneName}`
+    },
+    en: {
+      top: "Top seller",
+      cancel: "Flexible cancellation",
+      transfer: "Transfer available",
+      area: `${zoneName} area`
+    },
+    fr: {
+      top: "Meilleure vente",
+      cancel: "Annulation flexible",
+      transfer: "Transfert disponible",
+      area: `Zone ${zoneName}`
+    }
+  };
+
+  const base = [dictionary[locale].transfer, dictionary[locale].cancel, dictionary[locale].area];
+  if (rating >= 4.8 || reviews > 250) {
+    return [dictionary[locale].top, ...base].slice(0, 3);
+  }
+  return base;
 };
 
 export default async function HotelsDirectoryPage({
@@ -129,31 +241,61 @@ export default async function HotelsDirectoryPage({
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const q = (firstParamValue(resolvedSearchParams?.q) ?? "").trim();
   const zone = (firstParamValue(resolvedSearchParams?.zone) ?? "").trim();
+  const sort = (firstParamValue(resolvedSearchParams?.sort) ?? "recommended").trim();
   const pageRaw = Number(firstParamValue(resolvedSearchParams?.page) ?? "1");
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? Math.floor(pageRaw) : 1;
 
   const zones = Array.from(new Set(hotels.map((hotel) => hotel.zone?.name).filter(Boolean))).sort();
 
-  const filteredHotels = hotels.filter((hotel) => {
+  const hotelCards: HotelCardInfo[] = hotels.map((hotel) => {
+    const zoneName = hotel.zone?.name ?? "Punta Cana";
+    const price = getStartingPrice(hotel.name);
+    const rating = getReviewScore(hotel.name);
+    const reviews = getReviewCount(hotel.name);
+    return {
+      slug: hotel.slug,
+      name: hotel.name,
+      heroImage: hotel.heroImage,
+      zoneName,
+      price,
+      rating,
+      reviews,
+      stars: getStars(hotel.name),
+      badges: buildBadges(zoneName, rating, reviews, locale),
+      roomsLeft: getRoomsLeft(hotel.name)
+    };
+  });
+
+  const filteredHotels = hotelCards.filter((hotel) => {
     const matchesQuery =
       q.length === 0 ||
       hotel.name.toLowerCase().includes(q.toLowerCase()) ||
-      (hotel.zone?.name ?? "").toLowerCase().includes(q.toLowerCase());
-    const matchesZone = zone.length === 0 || (hotel.zone?.name ?? "") === zone;
+      hotel.zoneName.toLowerCase().includes(q.toLowerCase());
+    const matchesZone = zone.length === 0 || hotel.zoneName === zone;
     return matchesQuery && matchesZone;
   });
 
+  const sortedHotels = [...filteredHotels].sort((a, b) => {
+    if (sort === "price-asc") return a.price - b.price;
+    if (sort === "price-desc") return b.price - a.price;
+    if (sort === "rating") return b.rating - a.rating || b.reviews - a.reviews;
+    const aScore = a.rating * 10 + a.reviews / 25 - a.price / 80;
+    const bScore = b.rating * 10 + b.reviews / 25 - b.price / 80;
+    return bScore - aScore;
+  });
+
   const pageSize = 18;
-  const totalPages = Math.max(1, Math.ceil(filteredHotels.length / pageSize));
+  const totalPages = Math.max(1, Math.ceil(sortedHotels.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const startIndex = (currentPage - 1) * pageSize;
-  const hotelsPage = filteredHotels.slice(startIndex, startIndex + pageSize);
+  const hotelsPage = sortedHotels.slice(startIndex, startIndex + pageSize);
 
   const listingBaseHref = getDirectoryHref(locale);
   const getPageHref = (targetPage: number) => {
     const params = new URLSearchParams();
     if (q) params.set("q", q);
     if (zone) params.set("zone", zone);
+    if (sort && sort !== "recommended") params.set("sort", sort);
     if (targetPage > 1) params.set("page", String(targetPage));
     const query = params.toString();
     return query ? `${listingBaseHref}?${query}` : listingBaseHref;
@@ -186,7 +328,11 @@ export default async function HotelsDirectoryPage({
       </header>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-        <form action={listingBaseHref} method="get" className="grid gap-3 lg:grid-cols-[1fr_260px_170px]">
+        <form
+          action={listingBaseHref}
+          method="get"
+          className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_220px_180px]"
+        >
           <label className="block">
             <span className="sr-only">{t.searchPlaceholder}</span>
             <input
@@ -211,6 +357,19 @@ export default async function HotelsDirectoryPage({
               ))}
             </select>
           </label>
+          <label className="block">
+            <span className="sr-only">{t.sortLabel}</span>
+            <select
+              name="sort"
+              defaultValue={sort}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+            >
+              <option value="recommended">{t.sortRecommended}</option>
+              <option value="price-asc">{t.sortPriceLow}</option>
+              <option value="price-desc">{t.sortPriceHigh}</option>
+              <option value="rating">{t.sortRating}</option>
+            </select>
+          </label>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="submit"
@@ -226,93 +385,170 @@ export default async function HotelsDirectoryPage({
             </Link>
           </div>
         </form>
-        <p className="mt-3 text-sm text-slate-600">
-          <span className="font-semibold text-slate-900">{filteredHotels.length}</span> {t.resultsLabel}
-        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-slate-600">
+          <span>
+            <span className="font-semibold text-slate-900">{sortedHotels.length}</span> {t.resultsLabel}
+          </span>
+          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+            {t.trustedTitle}
+          </span>
+        </div>
       </section>
 
-      {hotelsPage.length === 0 ? (
-        <section className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
-          <h2 className="text-xl font-semibold text-slate-900">{t.noResultsTitle}</h2>
-          <p className="mt-2 text-sm text-slate-600">{t.noResultsBody}</p>
-        </section>
-      ) : (
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {hotelsPage.map((hotel) => {
-            const price = getStartingPrice(hotel.name);
-            const rating = getReviewScore(hotel.name);
-            const reviews = getReviewCount(hotel.name);
-            return (
-              <article
-                key={hotel.slug}
-                className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
-              >
-                <div className="relative h-48 w-full bg-slate-100">
-                  {hotel.heroImage ? (
-                    <img
-                      src={hotel.heroImage}
-                      alt={hotel.name}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-200 to-slate-100">
-                      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                        Punta Cana
-                      </span>
+      <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
+        <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
+            <p className="font-semibold text-slate-900">{t.trustedTitle}</p>
+            <p className="mt-2">{t.trustedBody}</p>
+          </section>
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-sm">
+            <p className="font-semibold text-slate-900">{t.selectedAreaLabel}</p>
+            <p className="mt-1 text-slate-600">{zone || t.zoneAll}</p>
+            <p className="mt-4 font-semibold text-slate-900">{t.selectedSortLabel}</p>
+            <p className="mt-1 text-slate-600">
+              {sort === "price-asc"
+                ? t.sortPriceLow
+                : sort === "price-desc"
+                  ? t.sortPriceHigh
+                  : sort === "rating"
+                    ? t.sortRating
+                    : t.sortRecommended}
+            </p>
+          </section>
+        </aside>
+
+        <div className="space-y-4">
+          {hotelsPage.length === 0 ? (
+            <section className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
+              <h2 className="text-xl font-semibold text-slate-900">{t.noResultsTitle}</h2>
+              <p className="mt-2 text-sm text-slate-600">{t.noResultsBody}</p>
+            </section>
+          ) : (
+            <section className="space-y-4">
+              {hotelsPage.map((hotel) => (
+                <article
+                  key={hotel.slug}
+                  className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:shadow-xl"
+                >
+                  <div className="flex flex-col md:flex-row">
+                    <div className="relative h-56 w-full shrink-0 bg-slate-100 md:h-auto md:w-80">
+                      {hotel.heroImage ? (
+                        <img
+                          src={hotel.heroImage}
+                          alt={hotel.name}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-200 to-slate-100">
+                          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                            Punta Cana
+                          </span>
+                        </div>
+                      )}
+                      <div className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-slate-900">
+                        {hotel.zoneName}
+                      </div>
                     </div>
-                  )}
-                  <div className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-slate-900">
-                    {hotel.zone?.name ?? "Punta Cana"}
+
+                    <div className="flex w-full flex-col justify-between gap-4 p-5">
+                      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
+                        <div>
+                          <h2 className="text-xl font-semibold leading-tight text-slate-900">{hotel.name}</h2>
+                          <p className="mt-1 text-xs text-slate-600">
+                            {hotel.rating.toFixed(1)} / 5 * {hotel.reviews} {t.reviewLabel}
+                          </p>
+                          <p className="mt-1 text-xs text-amber-600">
+                            {"*".repeat(hotel.stars)} {t.starLabel}
+                          </p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {hotel.badges.map((badge) => (
+                              <span
+                                key={`${hotel.slug}-${badge}`}
+                                className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700"
+                              >
+                                {badge}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                            {t.availableNowLabel}
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-emerald-700">
+                            {hotel.roomsLeft} {t.leftLabel}
+                          </p>
+                          <p className="mt-3 text-sm text-slate-500">
+                            {t.fromLabel}{" "}
+                            <span className="text-2xl font-bold leading-none text-slate-900">${hotel.price}</span>{" "}
+                            {t.perNight}
+                          </p>
+                          <Link
+                            href={getHotelHref(hotel.slug, locale)}
+                            className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+                          >
+                            {t.quoteCta}
+                          </Link>
+                          <p className="mt-2 text-center text-[11px] font-semibold text-slate-500">
+                            {t.smartChoiceLabel}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-3 p-5">
-                  <div>
-                    <h2 className="line-clamp-2 text-lg font-semibold leading-tight text-slate-900">
-                      {hotel.name}
-                    </h2>
-                    <p className="mt-1 text-xs text-slate-600">
-                      {rating} / 5 · {reviews} {t.reviewLabel}
-                    </p>
-                  </div>
-                  <div className="flex items-end justify-between">
-                    <p className="text-sm text-slate-500">
-                      {t.fromLabel}{" "}
-                      <span className="text-2xl font-bold leading-none text-slate-900">${price}</span> {t.perNight}
-                    </p>
-                    <Link
-                      href={getHotelHref(hotel.slug, locale)}
-                      className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
-                    >
-                      {t.quoteCta}
-                    </Link>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
-        </section>
-      )}
+                </article>
+              ))}
+            </section>
+          )}
+        </div>
+      </div>
 
       {totalPages > 1 ? (
-        <nav className="flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          {Array.from({ length: totalPages }, (_, index) => {
-            const target = index + 1;
-            const isCurrent = target === currentPage;
-            return (
-              <Link
-                key={target}
-                href={getPageHref(target)}
-                className={
-                  isCurrent
-                    ? "rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white"
-                    : "rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-500 hover:text-slate-900"
-                }
-              >
-                {t.pageLabel} {target}
-              </Link>
-            );
-          })}
+        <nav className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="mb-3 flex items-center justify-between text-sm">
+            <span className="text-slate-500">
+              {t.pageLabel} {currentPage}/{totalPages}
+            </span>
+            <div className="flex gap-2">
+              {currentPage > 1 ? (
+                <Link
+                  href={getPageHref(currentPage - 1)}
+                  className="rounded-lg border border-slate-300 px-3 py-2 font-semibold text-slate-700 transition hover:border-slate-500 hover:text-slate-900"
+                >
+                  {t.prevPage}
+                </Link>
+              ) : null}
+              {currentPage < totalPages ? (
+                <Link
+                  href={getPageHref(currentPage + 1)}
+                  className="rounded-lg border border-slate-300 px-3 py-2 font-semibold text-slate-700 transition hover:border-slate-500 hover:text-slate-900"
+                >
+                  {t.nextPage}
+                </Link>
+              ) : null}
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {Array.from({ length: totalPages }, (_, index) => {
+              const target = index + 1;
+              const isCurrent = target === currentPage;
+              return (
+                <Link
+                  key={target}
+                  href={getPageHref(target)}
+                  className={
+                    isCurrent
+                      ? "rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white"
+                      : "rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-500 hover:text-slate-900"
+                  }
+                >
+                  {target}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
       ) : null}
     </div>
