@@ -88,7 +88,8 @@ export default function VisitorSalesChat() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         content,
-        pagePath: pathname
+        pagePath: pathname,
+        pageTitle: typeof document !== "undefined" ? document.title : undefined
       })
     });
     mutate();

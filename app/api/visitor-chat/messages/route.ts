@@ -7,6 +7,7 @@ import { ensureVisitorChatSession, VISITOR_CHAT_COOKIE } from "@/lib/visitorChat
 type MessageBody = {
   content?: string;
   pagePath?: string;
+  pageTitle?: string;
 };
 
 export async function GET(request: NextRequest) {
@@ -78,9 +79,20 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    const history = await prisma.message.findMany({
+      where: { conversationId: session.conversationId },
+      orderBy: { createdAt: "asc" },
+      take: 30,
+      select: {
+        senderRole: true,
+        content: true
+      }
+    });
+
     const autoReply = await generateVisitorChatReply({
       message: content,
-      pagePath: body.pagePath
+      pagePath: body.pagePath,
+      history
     });
 
     await prisma.message.create({

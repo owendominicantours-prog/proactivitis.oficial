@@ -32,13 +32,13 @@ export async function POST(request: NextRequest) {
           senderRole: "BOT",
           content: hasContext
             ? [
-                "Hola, bienvenido. Te ayudo a reservar ahora mismo.",
+                "Hola, soy tu asesor de reservas. Puedes escribirme normal y te ayudo paso a paso.",
                 cleanTitle ? `Pagina actual: ${cleanTitle}` : null,
                 cleanUrl ? `Enlace: ${cleanUrl}` : null
               ]
                 .filter(Boolean)
                 .join("\n")
-            : "Hola, bienvenido. Te ayudo a reservar ahora mismo."
+            : "Hola, soy tu asesor de reservas. Puedes escribirme normal y te ayudo paso a paso."
         }
       });
     }
