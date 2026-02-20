@@ -339,6 +339,11 @@ export default async function HotelsDirectoryPage({
     const reviews = getReviewCount(hotel.name);
     const localizedDescription = firstSentence(localizedLanding?.description1);
     const enrichment = enrichmentContent[hotel.slug];
+    const resolvedHeroImage =
+      cleanText(localizedLanding?.heroImage) ||
+      cleanText(fallbackLanding?.heroImage) ||
+      cleanText(enrichment?.coverImage) ||
+      cleanText(hotel.heroImage);
     const descriptionSource =
       enrichment?.shortDescription ||
       localizedDescription ||
@@ -347,7 +352,7 @@ export default async function HotelsDirectoryPage({
     return {
       slug: hotel.slug,
       name: hotel.name,
-      heroImage: enrichment?.coverImage || hotel.heroImage,
+      heroImage: resolvedHeroImage || null,
       description: shortenText(descriptionSource, 140),
       zoneName,
       price,
