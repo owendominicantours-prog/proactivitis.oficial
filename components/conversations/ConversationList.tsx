@@ -53,6 +53,11 @@ export const ConversationList = ({ onSelect, selectedId, typeFilter }: Props) =>
         <span className="text-emerald-500">{unreadCount} nuevas</span>
       </div>
       <div className="space-y-2">
+        {summaries.length === 0 && (
+          <div className="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
+            No hay conversaciones disponibles.
+          </div>
+        )}
         {summaries.map((conv) => (
           <button
             key={conv.id}
@@ -68,6 +73,9 @@ export const ConversationList = ({ onSelect, selectedId, typeFilter }: Props) =>
               <span>{conv.bookingCode ?? conv.type}</span>
             </div>
             <p className="mt-1 text-sm font-semibold text-slate-900">{conv.participants.map((p) => p.name).join(", ")}</p>
+            <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400">
+              Usuarios: {conv.participants.length}
+            </p>
             <p className="mt-1 text-xs text-slate-500">
               {conv.lastMessage
                 ? `${conv.lastMessage.sender.name ?? "Tú"} · ${new Date(conv.lastMessage.createdAt).toLocaleString()}`

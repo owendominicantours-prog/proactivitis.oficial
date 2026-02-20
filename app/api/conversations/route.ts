@@ -10,12 +10,17 @@ export async function GET(request: NextRequest) {
   }
 
   const typeFilter = request.nextUrl.searchParams.get("type")?.toUpperCase();
+  const isAdmin = session.user.role === "ADMIN";
   const filterClause = {
-    participants: {
-      some: {
-        userId: session.user.id
-      }
-    },
+    ...(isAdmin
+      ? {}
+      : {
+          ConversationParticipant: {
+            some: {
+              userId: session.user.id
+            }
+          }
+        }),
     ...(typeFilter ? { type: typeFilter } : {})
   };
 
