@@ -1,8 +1,7 @@
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { generateVisitorAIReply } from "@/lib/visitorChatAI";
-import { generateVisitorChatReply } from "@/lib/visitorChatBot";
+import { sendEmail } from "@/lib/email";
 import { ensureVisitorChatSession, VISITOR_CHAT_COOKIE } from "@/lib/visitorChatSession";
 
 type MessageBody = {
@@ -80,43 +79,28 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    const history = await prisma.message.findMany({
-      where: { conversationId: session.conversationId },
-      orderBy: { createdAt: "asc" },
-      take: 30,
-      select: {
-        senderRole: true,
-        content: true
-      }
-    });
-
-    const aiReply = await generateVisitorAIReply({
-      message: content,
-      pagePath: body.pagePath,
-      history
-    });
-
-    const autoReply =
-      aiReply ??
-      (await generateVisitorChatReply({
-        message: content,
-        pagePath: body.pagePath,
-        history
-      }));
-
-    await prisma.message.create({
-      data: {
-        id: randomUUID(),
-        conversationId: session.conversationId,
-        senderId: session.adminUserId,
-        senderRole: "BOT",
-        content: autoReply
-      }
-    });
-
     await prisma.conversation.update({
       where: { id: session.conversationId },
       data: { updatedAt: new Date() }
+    });
+
+    const adminChatUrl = "https://proactivitis.com/admin/chat";
+    const html = `
+      <div style="font-family:Arial,sans-serif;line-height:1.5;color:#0f172a;">
+        <h2 style="margin:0 0 12px;">Nuevo mensaje de visitante en chat</h2>
+        <p style="margin:0 0 8px;"><strong>Conversacion:</strong> ${session.conversationId}</p>
+        <p style="margin:0 0 8px;"><strong>Pagina:</strong> ${body.pageTitle ?? body.pagePath ?? "N/D"}</p>
+        <p style="margin:0 0 12px;"><strong>Mensaje:</strong> ${content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+        <p style="margin:0 0 8px;">
+          <a href="${adminChatUrl}" style="color:#0ea5e9;font-weight:700;">Abrir chat en admin</a>
+        </p>
+      </div>
+    `;
+
+    void sendEmail({
+      to: "admin@proactivitis.com",
+      subject: "Nuevo mensaje de visitante - Chat Web",
+      html
     });
 
     const response = NextResponse.json({ ok: true });
