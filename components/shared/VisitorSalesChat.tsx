@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Send, X } from "lucide-react";
+import { ExternalLink, MessageCircle, Send, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import useSWR from "swr";
@@ -33,20 +33,31 @@ export default function VisitorSalesChat() {
   }, []);
 
   const formatMessage = (content: string) => {
-    const parts = content.split(/(https?:\/\/[^\s]+)/g);
-    return parts.map((part, index) => {
-      const isUrl = /^https?:\/\/[^\s]+$/.test(part);
-      if (!isUrl) return <span key={`${part}-${index}`}>{part}</span>;
+    const lines = content.split("\n");
+    return lines.map((line, lineIndex) => {
+      const urls = line.match(/https?:\/\/[^\s]+/g) ?? [];
+      const cleanText = line.replace(/https?:\/\/[^\s]+/g, "").trim();
+
       return (
-        <a
-          key={`${part}-${index}`}
-          href={part}
-          target="_blank"
-          rel="noreferrer"
-          className="underline underline-offset-2"
-        >
-          {part}
-        </a>
+        <div key={`${line}-${lineIndex}`} className="mb-1 last:mb-0">
+          {cleanText && <p>{cleanText}</p>}
+          {urls.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {urls.map((url, urlIndex) => (
+                <a
+                  key={`${url}-${urlIndex}`}
+                  href={url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700 hover:bg-emerald-100"
+                >
+                  Ver enlace
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
       );
     });
   };
