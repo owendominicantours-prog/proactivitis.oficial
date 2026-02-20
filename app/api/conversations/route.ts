@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { parseVisitorContext } from "@/lib/visitorChatContext";
 
+const VISITOR_ACTIVE_WINDOW_MS = 3 * 60 * 1000;
+
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
@@ -78,6 +80,12 @@ export async function GET(request: NextRequest) {
     const nonSystem = conv.Message.find((item) => item.senderRole !== "SYSTEM") ?? null;
     const latestContextMsg = conv.Message.find((item) => item.senderRole === "SYSTEM");
     const visitorContext = latestContextMsg ? parseVisitorContext(latestContextMsg.content) : null;
+    const lastVisitorActivity =
+      conv.Message.find((item) => item.senderRole === "VISITOR")?.createdAt ??
+      (visitorContext?.at ? new Date(visitorContext.at) : null);
+    const isVisitorActive = lastVisitorActivity
+      ? Date.now() - new Date(lastVisitorActivity).getTime() <= VISITOR_ACTIVE_WINDOW_MS
+      : false;
 
     return {
       id: conv.id,
@@ -101,6 +109,13 @@ export async function GET(request: NextRequest) {
         : null,
       pendingForMe: nonSystem ? nonSystem.senderId !== session.user.id : false,
       visitorContext,
+      visitorPresence:
+        conv.type === "VISITOR_CHAT"
+          ? {
+              active: isVisitorActive,
+              lastSeenAt: lastVisitorActivity ? new Date(lastVisitorActivity).toISOString() : null
+            }
+          : null,
       participants: conv.ConversationParticipant.map((participant) => ({
         id: participant.User?.id ?? participant.userId,
         name: participant.User?.name ?? participant.userId,

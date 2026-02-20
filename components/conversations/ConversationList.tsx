@@ -29,6 +29,10 @@ type ConversationSummary = {
     pageTitle?: string | null;
     pagePath?: string | null;
   } | null;
+  visitorPresence?: {
+    active: boolean;
+    lastSeenAt?: string | null;
+  } | null;
   participants: Array<{
     id: string;
     name: string;
@@ -122,7 +126,24 @@ export const ConversationList = ({ onSelect, selectedId, typeFilter, refreshToke
                 <span>{conv.bookingCode ?? conv.type}</span>
               </span>
             </div>
-            <p className="mt-1 text-sm font-semibold text-slate-900">{conv.participants.map((p) => p.name).join(", ")}</p>
+            <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <span>{conv.participants.map((p) => p.name).join(", ")}</span>
+              {conv.type === "VISITOR_CHAT" && conv.visitorPresence ? (
+                <span
+                  title={conv.visitorPresence.active ? "Activo ahora" : "Inactivo"}
+                  className={`inline-block h-2.5 w-2.5 rounded-full ${
+                    conv.visitorPresence.active ? "bg-emerald-500" : "bg-rose-500"
+                  }`}
+                />
+              ) : null}
+            </p>
+            {conv.type === "VISITOR_CHAT" && conv.visitorPresence?.lastSeenAt ? (
+              <p className="mt-1 text-[11px] text-slate-500">
+                {conv.visitorPresence.active
+                  ? "Activo ahora"
+                  : `Ultima actividad: ${new Date(conv.visitorPresence.lastSeenAt).toLocaleString()}`}
+              </p>
+            ) : null}
             {conv.visitorContext?.country ? (
               <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-indigo-600">
                 Pais: {conv.visitorContext.country}{conv.visitorContext.city ? ` · ${conv.visitorContext.city}` : ""}
