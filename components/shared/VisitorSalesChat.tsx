@@ -1,7 +1,7 @@
 "use client";
 
-import { ExternalLink, MessageCircle, Send, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ExternalLink, MessageCircle, Minimize2, Send } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
@@ -56,6 +56,7 @@ export default function VisitorSalesChat() {
   const [sessionReady, setSessionReady] = useState(false);
   const [loadingSession, setLoadingSession] = useState(false);
   const [text, setText] = useState("");
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
   const messagesKey = sessionReady && open ? "/api/visitor-chat/messages" : null;
   const { data, mutate, isLoading } = useSWR<{ messages: VisitorMessage[] }>(messagesKey, fetcher, {
@@ -146,6 +147,15 @@ export default function VisitorSalesChat() {
 
   const messages = useMemo(() => data?.messages ?? [], [data]);
 
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container || !open) return;
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: "smooth"
+    });
+  }, [messages, open]);
+
   const sendMessage = async () => {
     if (!text.trim()) return;
     await ensureSession();
@@ -173,11 +183,17 @@ export default function VisitorSalesChat() {
               <p className="text-sm font-semibold">Asesor de reservas</p>
               <p className="text-xs text-slate-300">Ayuda inmediata para cerrar tu compra</p>
             </div>
-            <button type="button" onClick={() => setOpen(false)} className="rounded-full p-1 hover:bg-white/10">
-              <X className="h-4 w-4" />
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Minimizar chat"
+              title="Minimizar chat"
+              className="rounded-full p-1 hover:bg-white/10"
+            >
+              <Minimize2 className="h-4 w-4" />
             </button>
           </div>
-          <div className="h-[320px] space-y-2 overflow-y-auto bg-slate-50 px-3 py-3">
+          <div ref={messagesContainerRef} className="h-[320px] space-y-2 overflow-y-auto bg-slate-50 px-3 py-3">
             {isLoading && <p className="text-xs text-slate-500">Conectando...</p>}
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.mine ? "justify-end" : "justify-start"}`}>
