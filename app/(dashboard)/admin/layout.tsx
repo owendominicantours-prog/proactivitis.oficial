@@ -19,6 +19,7 @@ const adminNav = [
   { label: "Finanzas", href: "/admin/finance" },
   { label: "Reportes", href: "/admin/reports" },
   { label: "Solicitudes", href: "/admin/partner-applications" },
+  { label: "Chat", href: "/admin/chat" },
   { label: "CRM", href: "/admin/crm" },
   { label: "Paises", href: "/admin/countries" },
   { label: "Usuarios", href: "/admin/users" },
