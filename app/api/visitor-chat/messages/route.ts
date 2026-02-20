@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
+import { resolveNotificationRecipients } from "@/lib/notificationEmailSettings";
 import { ensureVisitorChatSession, VISITOR_CHAT_COOKIE } from "@/lib/visitorChatSession";
 
 type MessageBody = {
@@ -97,8 +98,9 @@ export async function POST(request: NextRequest) {
       </div>
     `;
 
+    const recipients = await resolveNotificationRecipients("ADMIN_CONTACT_REQUEST");
     void sendEmail({
-      to: "admin@proactivitis.com",
+      to: recipients,
       subject: "Nuevo mensaje de visitante - Chat Web",
       html
     });
