@@ -76,6 +76,13 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
     refreshInterval: 0
   });
 
+  const messages: ChatMessage[] = data?.messages ?? [];
+  const tours = useMemo(() => toursData?.tours ?? [], [toursData]);
+  const unreadInThread = useMemo(
+    () => messages.filter((msg) => msg.senderRole !== "ADMIN").length,
+    [messages]
+  );
+
   if (!conversationId) {
     return (
       <div className="flex h-full min-h-[320px] flex-col items-center justify-center gap-4 rounded-[28px] border border-slate-200 bg-white p-6 text-center text-sm text-slate-500 shadow-lg">
@@ -83,13 +90,6 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
       </div>
     );
   }
-
-  const messages: ChatMessage[] = data?.messages ?? [];
-  const tours = useMemo(() => toursData?.tours ?? [], [toursData]);
-  const unreadInThread = useMemo(
-    () => messages.filter((msg) => msg.senderRole !== "ADMIN").length,
-    [messages]
-  );
 
   const sendRawMessage = async (content: string) => {
     if (!content.trim()) return;
