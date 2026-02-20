@@ -4,6 +4,7 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import GlobalBanner from "@/components/public/GlobalBanner";
 import WhatsappFloatingChat from "@/components/shared/WhatsappFloatingChat";
+import VisitorSalesChat from "@/components/shared/VisitorSalesChat";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -82,6 +83,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <main className="flex-1">{children}</main>
 
       <Suspense fallback={null}>
+        <VisitorSalesChat />
         <WhatsappFloatingChat />
       </Suspense>
       <PublicFooter />
