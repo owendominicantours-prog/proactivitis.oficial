@@ -36,6 +36,7 @@ type EncodedTourCard = {
 };
 
 const TOUR_CARD_PREFIX = "[[TOUR_CARD]]";
+const VISITOR_CONTEXT_PREFIX = "[[VISITOR_CONTEXT]]";
 
 const parseTourCard = (content: string): EncodedTourCard | null => {
   if (!content.startsWith(TOUR_CARD_PREFIX)) return null;
@@ -44,6 +45,25 @@ const parseTourCard = (content: string): EncodedTourCard | null => {
     const parsed = JSON.parse(payload) as EncodedTourCard;
     if (!parsed?.title || !parsed?.url) return null;
     return parsed;
+  } catch {
+    return null;
+  }
+};
+
+type VisitorContextPayload = {
+  country?: string | null;
+  city?: string | null;
+  region?: string | null;
+  pageTitle?: string | null;
+  pagePath?: string | null;
+  pageUrl?: string | null;
+  at?: string;
+};
+
+const parseVisitorContext = (content: string): VisitorContextPayload | null => {
+  if (!content.startsWith(VISITOR_CONTEXT_PREFIX)) return null;
+  try {
+    return JSON.parse(content.slice(VISITOR_CONTEXT_PREFIX.length)) as VisitorContextPayload;
   } catch {
     return null;
   }
@@ -79,7 +99,7 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
   const messages: ChatMessage[] = data?.messages ?? [];
   const tours = useMemo(() => toursData?.tours ?? [], [toursData]);
   const unreadInThread = useMemo(
-    () => messages.filter((msg) => msg.senderRole !== "ADMIN").length,
+    () => messages.filter((msg) => msg.senderRole !== "ADMIN" && msg.senderRole !== "SYSTEM").length,
     [messages]
   );
 
@@ -162,7 +182,21 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
         {messages.length === 0 && <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Sin mensajes por el momento</p>}
         {messages.map((message) => {
           const tourCard = parseTourCard(message.content);
+          const visitorContext = parseVisitorContext(message.content);
           const isAdminMessage = message.senderRole === "ADMIN";
+          if (visitorContext) {
+            return (
+              <div key={message.id} className="rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs text-indigo-800">
+                <p className="font-semibold uppercase tracking-[0.2em]">Contexto visitante</p>
+                <p className="mt-1">
+                  {visitorContext.country ?? "Pais N/D"}
+                  {visitorContext.city ? ` · ${visitorContext.city}` : ""}
+                  {visitorContext.region ? ` · ${visitorContext.region}` : ""}
+                </p>
+                <p className="line-clamp-1">{visitorContext.pageTitle ?? visitorContext.pagePath ?? "Pagina N/D"}</p>
+              </div>
+            );
+          }
           if (tourCard) {
             return (
               <div

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
+import { parseVisitorContext } from "@/lib/visitorChatContext";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
         orderBy: {
           createdAt: "desc"
         },
-        take: 1,
+        take: 20,
         include: {
           User: {
             select: {
@@ -73,34 +74,41 @@ export async function GET(request: NextRequest) {
     }
   });
 
-  const payload = conversations.map((conv) => ({
-    id: conv.id,
-    type: conv.type,
-    tour: conv.Booking?.Tour
-      ? {
-          id: conv.Booking.Tour.id,
-          title: conv.Booking.Tour.title
-        }
-      : null,
-    bookingCode: conv.Booking?.id ?? null,
-    lastMessage: conv.Message[0]
-      ? {
-          id: conv.Message[0].id,
-          content: conv.Message[0].content,
-          createdAt: conv.Message[0].createdAt,
-          sender: conv.Message[0].User,
-          senderId: conv.Message[0].senderId,
-          senderRole: conv.Message[0].senderRole
-        }
-      : null,
-    pendingForMe: conv.Message[0] ? conv.Message[0].senderId !== session.user.id : false,
-    participants: conv.ConversationParticipant.map((participant) => ({
-      id: participant.User?.id ?? participant.userId,
-      name: participant.User?.name ?? participant.userId,
-      email: participant.User?.email ?? null,
-      role: participant.User?.role ?? null
-    }))
-  }));
+  const payload = conversations.map((conv) => {
+    const nonSystem = conv.Message.find((item) => item.senderRole !== "SYSTEM") ?? null;
+    const latestContextMsg = conv.Message.find((item) => item.senderRole === "SYSTEM");
+    const visitorContext = latestContextMsg ? parseVisitorContext(latestContextMsg.content) : null;
+
+    return {
+      id: conv.id,
+      type: conv.type,
+      tour: conv.Booking?.Tour
+        ? {
+            id: conv.Booking.Tour.id,
+            title: conv.Booking.Tour.title
+          }
+        : null,
+      bookingCode: conv.Booking?.id ?? null,
+      lastMessage: nonSystem
+        ? {
+            id: nonSystem.id,
+            content: nonSystem.content,
+            createdAt: nonSystem.createdAt,
+            sender: nonSystem.User,
+            senderId: nonSystem.senderId,
+            senderRole: nonSystem.senderRole
+          }
+        : null,
+      pendingForMe: nonSystem ? nonSystem.senderId !== session.user.id : false,
+      visitorContext,
+      participants: conv.ConversationParticipant.map((participant) => ({
+        id: participant.User?.id ?? participant.userId,
+        name: participant.User?.name ?? participant.userId,
+        email: participant.User?.email ?? null,
+        role: participant.User?.role ?? null
+      }))
+    };
+  });
 
   return NextResponse.json(payload);
 }

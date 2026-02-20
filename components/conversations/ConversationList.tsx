@@ -23,6 +23,12 @@ type ConversationSummary = {
     senderRole: string;
   } | null;
   pendingForMe?: boolean;
+  visitorContext?: {
+    country?: string | null;
+    city?: string | null;
+    pageTitle?: string | null;
+    pagePath?: string | null;
+  } | null;
   participants: Array<{
     id: string;
     name: string;
@@ -115,6 +121,16 @@ export const ConversationList = ({ onSelect, selectedId, typeFilter }: Props) =>
               </span>
             </div>
             <p className="mt-1 text-sm font-semibold text-slate-900">{conv.participants.map((p) => p.name).join(", ")}</p>
+            {conv.visitorContext?.country ? (
+              <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-indigo-600">
+                Pais: {conv.visitorContext.country}{conv.visitorContext.city ? ` · ${conv.visitorContext.city}` : ""}
+              </p>
+            ) : null}
+            {conv.visitorContext?.pageTitle || conv.visitorContext?.pagePath ? (
+              <p className="mt-1 line-clamp-1 text-[11px] text-slate-500">
+                {conv.visitorContext.pageTitle ?? conv.visitorContext.pagePath}
+              </p>
+            ) : null}
             <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400">
               Usuarios: {conv.participants.length}
             </p>

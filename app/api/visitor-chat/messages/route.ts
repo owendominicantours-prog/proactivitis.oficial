@@ -4,11 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { resolveNotificationRecipients } from "@/lib/notificationEmailSettings";
 import { ensureVisitorChatSession, VISITOR_CHAT_COOKIE } from "@/lib/visitorChatSession";
+import { buildVisitorContextFromRequest, encodeVisitorContext } from "@/lib/visitorChatContext";
 
 type MessageBody = {
   content?: string;
   pagePath?: string;
   pageTitle?: string;
+  pageUrl?: string;
 };
 
 export async function GET(request: NextRequest) {
@@ -34,14 +36,16 @@ export async function GET(request: NextRequest) {
     });
 
     const response = NextResponse.json({
-      messages: messages.map((message) => ({
+      messages: messages
+        .filter((message) => message.senderRole !== "SYSTEM")
+        .map((message) => ({
         id: message.id,
         content: message.content,
         createdAt: message.createdAt,
         senderRole: message.senderRole,
         mine: message.senderId === session.visitorUserId,
         senderName: message.User?.name ?? "Soporte"
-      }))
+        }))
     });
 
     response.cookies.set(VISITOR_CHAT_COOKIE, session.token, {
@@ -80,6 +84,22 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    const contextPayload = buildVisitorContextFromRequest(request, {
+      pagePath: body.pagePath,
+      pageTitle: body.pageTitle,
+      pageUrl: body.pageUrl
+    });
+
+    await prisma.message.create({
+      data: {
+        id: randomUUID(),
+        conversationId: session.conversationId,
+        senderId: session.adminUserId,
+        senderRole: "SYSTEM",
+        content: encodeVisitorContext(contextPayload)
+      }
+    });
+
     await prisma.conversation.update({
       where: { id: session.conversationId },
       data: { updatedAt: new Date() }
@@ -91,6 +111,7 @@ export async function POST(request: NextRequest) {
         <h2 style="margin:0 0 12px;">Nuevo mensaje de visitante en chat</h2>
         <p style="margin:0 0 8px;"><strong>Conversacion:</strong> ${session.conversationId}</p>
         <p style="margin:0 0 8px;"><strong>Pagina:</strong> ${body.pageTitle ?? body.pagePath ?? "N/D"}</p>
+        <p style="margin:0 0 8px;"><strong>Pais:</strong> ${contextPayload.country ?? "N/D"} ${contextPayload.city ? `(${contextPayload.city})` : ""}</p>
         <p style="margin:0 0 12px;"><strong>Mensaje:</strong> ${content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
         <p style="margin:0 0 8px;">
           <a href="${adminChatUrl}" style="color:#0ea5e9;font-weight:700;">Abrir chat en admin</a>
