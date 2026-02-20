@@ -5,6 +5,8 @@ import { ensureVisitorChatSession, VISITOR_CHAT_COOKIE } from "@/lib/visitorChat
 
 type SessionBody = {
   pagePath?: string;
+  pageTitle?: string;
+  pageUrl?: string;
 };
 
 export async function POST(request: NextRequest) {
@@ -18,13 +20,25 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingCount === 0) {
+      const cleanTitle = body.pageTitle?.trim();
+      const cleanUrl = body.pageUrl?.trim();
+      const hasContext = Boolean(cleanTitle || cleanUrl);
+
       await prisma.message.create({
         data: {
           id: randomUUID(),
           conversationId: session.conversationId,
           senderId: session.adminUserId,
           senderRole: "BOT",
-          content: `Hola, necesitas ayuda para reservar? Estoy aqui para ayudarte.${body.pagePath ? `\nPagina actual: ${body.pagePath}` : ""}`
+          content: hasContext
+            ? [
+                "Hola, bienvenido. Te ayudo a reservar ahora mismo.",
+                cleanTitle ? `Pagina actual: ${cleanTitle}` : null,
+                cleanUrl ? `Enlace: ${cleanUrl}` : null
+              ]
+                .filter(Boolean)
+                .join("\n")
+            : "Hola, bienvenido. Te ayudo a reservar ahora mismo."
         }
       });
     }

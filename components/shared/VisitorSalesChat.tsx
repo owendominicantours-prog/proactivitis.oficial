@@ -32,6 +32,25 @@ export default function VisitorSalesChat() {
     return () => clearTimeout(timer);
   }, []);
 
+  const formatMessage = (content: string) => {
+    const parts = content.split(/(https?:\/\/[^\s]+)/g);
+    return parts.map((part, index) => {
+      const isUrl = /^https?:\/\/[^\s]+$/.test(part);
+      if (!isUrl) return <span key={`${part}-${index}`}>{part}</span>;
+      return (
+        <a
+          key={`${part}-${index}`}
+          href={part}
+          target="_blank"
+          rel="noreferrer"
+          className="underline underline-offset-2"
+        >
+          {part}
+        </a>
+      );
+    });
+  };
+
   const ensureSession = async () => {
     if (loadingSession || sessionReady) return;
     setLoadingSession(true);
@@ -39,7 +58,11 @@ export default function VisitorSalesChat() {
       await fetch("/api/visitor-chat/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pagePath: pathname })
+        body: JSON.stringify({
+          pagePath: pathname,
+          pageTitle: typeof document !== "undefined" ? document.title : undefined,
+          pageUrl: typeof window !== "undefined" ? window.location.href : undefined
+        })
       });
       setSessionReady(true);
     } finally {
@@ -94,7 +117,7 @@ export default function VisitorSalesChat() {
                   }`}
                 >
                   {!message.mine && <p className="mb-1 text-[10px] font-semibold uppercase text-slate-500">{message.senderName}</p>}
-                  {message.content}
+                  {formatMessage(message.content)}
                 </div>
               </div>
             ))}
