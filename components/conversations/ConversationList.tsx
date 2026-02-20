@@ -41,10 +41,12 @@ type Props = {
   onSelect: (conversation: ConversationSummary) => void;
   selectedId?: string;
   typeFilter?: string;
+  refreshToken?: number;
 };
 
-export const ConversationList = ({ onSelect, selectedId, typeFilter }: Props) => {
-  const query = typeFilter ? `/api/conversations?type=${encodeURIComponent(typeFilter)}` : "/api/conversations";
+export const ConversationList = ({ onSelect, selectedId, typeFilter, refreshToken = 0 }: Props) => {
+  const queryBase = typeFilter ? `/api/conversations?type=${encodeURIComponent(typeFilter)}` : "/api/conversations";
+  const query = `${queryBase}${queryBase.includes("?") ? "&" : "?"}r=${refreshToken}`;
   const { data } = useSWR<ConversationSummary[]>(query, fetcher, {
     refreshInterval: 5000
   });

@@ -112,3 +112,33 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json(payload);
 }
+
+export async function DELETE(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  const type = request.nextUrl.searchParams.get("type")?.toUpperCase();
+  if (!type) {
+    return NextResponse.json({ error: "Debes indicar type" }, { status: 400 });
+  }
+
+  const conversations = await prisma.conversation.findMany({
+    where: { type },
+    select: { id: true }
+  });
+  const ids = conversations.map((item) => item.id);
+
+  if (!ids.length) {
+    return NextResponse.json({ ok: true, deleted: 0 });
+  }
+
+  await prisma.$transaction([
+    prisma.message.deleteMany({ where: { conversationId: { in: ids } } }),
+    prisma.conversationParticipant.deleteMany({ where: { conversationId: { in: ids } } }),
+    prisma.conversation.deleteMany({ where: { id: { in: ids } } })
+  ]);
+
+  return NextResponse.json({ ok: true, deleted: ids.length });
+}
