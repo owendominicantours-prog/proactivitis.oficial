@@ -48,6 +48,28 @@ type Props = {
   refreshToken?: number;
 };
 
+const countryCodeToFlag = (countryCode?: string | null) => {
+  if (!countryCode || countryCode.length !== 2) return "";
+  return countryCode
+    .toUpperCase()
+    .split("")
+    .map((char) => String.fromCodePoint(127397 + char.charCodeAt(0)))
+    .join("");
+};
+
+const regionDisplay =
+  typeof Intl !== "undefined" && "DisplayNames" in Intl
+    ? new Intl.DisplayNames(["es"], { type: "region" })
+    : null;
+
+const getCountryLabel = (code?: string | null) => {
+  if (!code) return null;
+  const normalized = code.toUpperCase();
+  const countryName = regionDisplay?.of(normalized) ?? normalized;
+  const flag = countryCodeToFlag(normalized);
+  return `${flag ? `${flag} ` : ""}${countryName}`;
+};
+
 export const ConversationList = ({ onSelect, selectedId, typeFilter, refreshToken = 0 }: Props) => {
   const queryBase = typeFilter ? `/api/conversations?type=${encodeURIComponent(typeFilter)}` : "/api/conversations";
   const query = `${queryBase}${queryBase.includes("?") ? "&" : "?"}r=${refreshToken}`;
@@ -56,11 +78,7 @@ export const ConversationList = ({ onSelect, selectedId, typeFilter, refreshToke
   });
 
   const summaries = useMemo(() => data ?? [], [data]);
-
-  const unreadCount = useMemo(
-    () => summaries.filter((conv) => conv.pendingForMe).length,
-    [summaries]
-  );
+  const unreadCount = useMemo(() => summaries.filter((conv) => conv.pendingForMe).length, [summaries]);
   const lastUnreadRef = useRef<number>(0);
   const initializedRef = useRef(false);
 
@@ -74,9 +92,7 @@ export const ConversationList = ({ onSelect, selectedId, typeFilter, refreshToke
     if (unreadCount > lastUnreadRef.current) {
       const canNotify = typeof window !== "undefined" && "Notification" in window;
       if (canNotify && Notification.permission === "granted") {
-        const summary =
-          summaries.find((conv) => conv.pendingForMe)?.participants?.[0]?.name ??
-          "Cliente";
+        const summary = summaries.find((conv) => conv.pendingForMe)?.participants?.[0]?.name ?? "Cliente";
         new Notification("Nuevo mensaje en admin/chat", {
           body: `${summary} envio un mensaje nuevo.`
         });
@@ -90,7 +106,11 @@ export const ConversationList = ({ onSelect, selectedId, typeFilter, refreshToke
     <div className="space-y-3">
       <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-slate-500">
         <span>Conversaciones</span>
-        <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${unreadCount > 0 ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+        <span
+          className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
+            unreadCount > 0 ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
+          }`}
+        >
           {unreadCount} nuevas
         </span>
       </div>
@@ -100,19 +120,17 @@ export const ConversationList = ({ onSelect, selectedId, typeFilter, refreshToke
         </div>
       ) : null}
       <div className="space-y-2">
-        {summaries.length === 0 && (
+        {summaries.length === 0 ? (
           <div className="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
             No hay conversaciones disponibles.
           </div>
-        )}
+        ) : null}
         {summaries.map((conv) => (
           <button
             key={conv.id}
             onClick={() => onSelect(conv)}
             className={`w-full rounded-2xl border px-4 py-3 text-left transition ${
-              selectedId === conv.id
-                ? "border-sky-500 bg-white shadow-lg"
-                : "border-slate-100 bg-white/70 hover:border-slate-300"
+              selectedId === conv.id ? "border-sky-500 bg-white shadow-lg" : "border-slate-100 bg-white/70 hover:border-slate-300"
             }`}
           >
             <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
@@ -131,9 +149,7 @@ export const ConversationList = ({ onSelect, selectedId, typeFilter, refreshToke
               {conv.type === "VISITOR_CHAT" && conv.visitorPresence ? (
                 <span
                   title={conv.visitorPresence.active ? "Activo ahora" : "Inactivo"}
-                  className={`inline-block h-2.5 w-2.5 rounded-full ${
-                    conv.visitorPresence.active ? "bg-emerald-500" : "bg-rose-500"
-                  }`}
+                  className={`inline-block h-2.5 w-2.5 rounded-full ${conv.visitorPresence.active ? "bg-emerald-500" : "bg-rose-500"}`}
                 />
               ) : null}
             </p>
@@ -146,21 +162,18 @@ export const ConversationList = ({ onSelect, selectedId, typeFilter, refreshToke
             ) : null}
             {conv.visitorContext?.country ? (
               <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-indigo-600">
-                Pais: {conv.visitorContext.country}{conv.visitorContext.city ? ` · ${conv.visitorContext.city}` : ""}
+                Pais: {getCountryLabel(conv.visitorContext.country)}
+                {conv.visitorContext.city ? ` - ${conv.visitorContext.city}` : ""}
               </p>
             ) : null}
             {conv.visitorContext?.pageTitle || conv.visitorContext?.pagePath ? (
-              <p className="mt-1 line-clamp-1 text-[11px] text-slate-500">
-                {conv.visitorContext.pageTitle ?? conv.visitorContext.pagePath}
-              </p>
+              <p className="mt-1 line-clamp-1 text-[11px] text-slate-500">{conv.visitorContext.pageTitle ?? conv.visitorContext.pagePath}</p>
             ) : null}
-            <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400">
-              Usuarios: {conv.participants.length}
-            </p>
+            <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400">Usuarios: {conv.participants.length}</p>
             <p className="mt-1 text-xs text-slate-500">
               {conv.lastMessage
-                ? `${conv.lastMessage.sender.name ?? "Tú"} · ${new Date(conv.lastMessage.createdAt).toLocaleString()}`
-                : "Sin mensajes aún"}
+                ? `${conv.lastMessage.sender.name ?? "Tu"} - ${new Date(conv.lastMessage.createdAt).toLocaleString()}`
+                : "Sin mensajes aun"}
             </p>
           </button>
         ))}

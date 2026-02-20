@@ -122,6 +122,28 @@ export default function VisitorSalesChat() {
     }
   }, [open]);
 
+  useEffect(() => {
+    if (!open || !sessionReady) return;
+    const updatePresence = async () => {
+      await fetch("/api/visitor-chat/presence", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pagePath: pathname,
+          pageTitle: typeof document !== "undefined" ? document.title : undefined,
+          pageUrl: typeof window !== "undefined" ? window.location.href : undefined
+        })
+      }).catch(() => undefined);
+    };
+
+    void updatePresence();
+    const interval = window.setInterval(() => {
+      void updatePresence();
+    }, 20000);
+
+    return () => window.clearInterval(interval);
+  }, [open, sessionReady, pathname]);
+
   const messages = useMemo(() => data?.messages ?? [], [data]);
 
   const sendMessage = async () => {
@@ -135,7 +157,8 @@ export default function VisitorSalesChat() {
       body: JSON.stringify({
         content,
         pagePath: pathname,
-        pageTitle: typeof document !== "undefined" ? document.title : undefined
+        pageTitle: typeof document !== "undefined" ? document.title : undefined,
+        pageUrl: typeof window !== "undefined" ? window.location.href : undefined
       })
     });
     mutate();

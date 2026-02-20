@@ -14,7 +14,15 @@ type VisitorContextPayload = {
 };
 
 const clean = (value?: string | null) => {
-  const trimmed = value?.trim();
+  if (!value) return null;
+  const decoded = (() => {
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
+    }
+  })();
+  const trimmed = decoded.trim();
   return trimmed ? trimmed : null;
 };
 
