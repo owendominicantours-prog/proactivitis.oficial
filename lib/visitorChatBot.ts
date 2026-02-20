@@ -484,12 +484,18 @@ const extractPartySize = (text: string) => {
 };
 
 const wantsHuman = (text: string) => /(agente|asesor|humano|persona real|human|agent|whatsapp)/.test(normalize(text));
+const isGreetingOnly = (text: string) =>
+  /^(hola|buenas|buenos dias|buen dia|hi|hello|hey|bonjour|saludos)\b/.test(normalize(text).trim());
+const hasBookingIntent = (text: string) =>
+  /(quiero|necesito|busco|cotizar|reserv|book|price|precio|transfer|traslado|tour|excursion|hotel|taxi)/.test(
+    normalize(text)
+  );
 const wantsTransfer = (text: string, pagePath?: string) =>
   /(traslado|transfer|taxi|recogida|pickup|airport|aeropuerto|puj)/.test(normalize(text)) ||
-  Boolean(pagePath?.includes("/transfer") || pagePath?.includes("/traslado"));
+  (hasBookingIntent(text) && Boolean(pagePath?.includes("/transfer") || pagePath?.includes("/traslado")));
 const wantsTours = (text: string, pagePath?: string) =>
   /(tour|excursion|excursiones|actividad|activity|saona|buggy|party boat|catamaran|snorkel|adventure)/.test(normalize(text)) ||
-  Boolean(pagePath?.includes("/tours"));
+  (hasBookingIntent(text) && Boolean(pagePath?.includes("/tours")));
 const wantsMore = (text: string) => /(que mas|mas opciones|otra opcion|otra|more|anything else|autre option)/.test(normalize(text));
 const wantsPay = (text: string) => /(pagar|pago|checkout|pay|book now|reservar|reserva|payer)/.test(normalize(text));
 const asksTourDetails = (text: string) => /(incluye|included|includes|duracion|duration|precio|price|costo|cost|hora|hours)/.test(normalize(text));
@@ -622,6 +628,15 @@ export async function generateVisitorChatReply({ message, pagePath, history }: S
   const adrenalineIntent = asksAdrenaline(allVisitorText);
 
   if (wantsHuman(message)) return t.human;
+  if (isGreetingOnly(message)) {
+    if (lang === "en") {
+      return `${t.hello}\nDo you want to book transfer, tours, or hotel?`;
+    }
+    if (lang === "fr") {
+      return `${t.hello}\nVous voulez reserver transfert, excursions ou hotel?`;
+    }
+    return `${t.hello}\nQuieres reservar traslado, excursiones o hotel?`;
+  }
 
   if (faqIntent && !transferIntent && !tourIntent) {
     return FAQ_REPLY[faqIntent][lang];

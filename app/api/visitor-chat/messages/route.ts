@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { generateVisitorAIReply } from "@/lib/visitorChatAI";
 import { generateVisitorChatReply } from "@/lib/visitorChatBot";
 import { ensureVisitorChatSession, VISITOR_CHAT_COOKIE } from "@/lib/visitorChatSession";
 
@@ -89,11 +90,19 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    const autoReply = await generateVisitorChatReply({
+    const aiReply = await generateVisitorAIReply({
       message: content,
       pagePath: body.pagePath,
       history
     });
+
+    const autoReply =
+      aiReply ??
+      (await generateVisitorChatReply({
+        message: content,
+        pagePath: body.pagePath,
+        history
+      }));
 
     await prisma.message.create({
       data: {
