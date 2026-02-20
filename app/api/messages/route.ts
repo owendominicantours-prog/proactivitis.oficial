@@ -25,12 +25,23 @@ export async function POST(request: NextRequest) {
   });
 
   if (!conversation) {
-    return NextResponse.json({ error: "Conversación no encontrada" }, { status: 404 });
+    return NextResponse.json({ error: "Conversacion no encontrada" }, { status: 404 });
   }
 
+  const isAdmin = session.user.role === "ADMIN";
   const isParticipant = conversation.ConversationParticipant.some((item) => item.userId === session.user.id);
-  if (!isParticipant) {
-    return NextResponse.json({ error: "No eres parte de esta conversación" }, { status: 403 });
+
+  if (!isParticipant && !isAdmin) {
+    return NextResponse.json({ error: "No eres parte de esta conversacion" }, { status: 403 });
+  }
+
+  if (!isParticipant && isAdmin) {
+    await prisma.conversationParticipant.create({
+      data: {
+        conversationId,
+        userId: session.user.id
+      }
+    });
   }
 
   const message = await prisma.message.create({
@@ -41,6 +52,11 @@ export async function POST(request: NextRequest) {
       senderRole: session.user.role ?? "CUSTOMER",
       content
     }
+  });
+
+  await prisma.conversation.update({
+    where: { id: conversationId },
+    data: { updatedAt: new Date() }
   });
 
   return NextResponse.json({ message });

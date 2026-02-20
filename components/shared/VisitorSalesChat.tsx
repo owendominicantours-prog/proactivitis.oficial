@@ -15,6 +15,41 @@ type VisitorMessage = {
   senderName: string;
 };
 
+type TourCardPayload = {
+  title: string;
+  slug: string;
+  price: number;
+  duration: string | null;
+  image: string | null;
+  url: string;
+};
+
+const TOUR_CARD_PREFIX = "[[TOUR_CARD]]";
+
+const parseTourCard = (content: string): TourCardPayload | null => {
+  if (!content.startsWith(TOUR_CARD_PREFIX)) return null;
+  try {
+    const payload = JSON.parse(content.slice(TOUR_CARD_PREFIX.length)) as TourCardPayload;
+    if (!payload?.title || !payload?.url) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+};
+
+const formatDuration = (value: string | null) => {
+  if (!value) return "Duracion variable";
+  const raw = value.trim();
+  if (!raw) return "Duracion variable";
+  try {
+    const parsed = JSON.parse(raw) as { value?: string | number; unit?: string };
+    if (parsed && (parsed.value || parsed.unit)) return `${parsed.value ?? ""} ${parsed.unit ?? "horas"}`.trim();
+  } catch {
+    // use raw
+  }
+  return raw;
+};
+
 export default function VisitorSalesChat() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -123,14 +158,46 @@ export default function VisitorSalesChat() {
             {isLoading && <p className="text-xs text-slate-500">Conectando...</p>}
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.mine ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap ${
-                    message.mine ? "bg-emerald-500 text-white" : "bg-white text-slate-800 border border-slate-200"
-                  }`}
-                >
-                  {!message.mine && <p className="mb-1 text-[10px] font-semibold uppercase text-slate-500">{message.senderName}</p>}
-                  {formatMessage(message.content)}
-                </div>
+                {(() => {
+                  const tourCard = parseTourCard(message.content);
+                  if (tourCard) {
+                    return (
+                      <div className="max-w-[90%] rounded-2xl border border-sky-200 bg-white px-3 py-2 text-sm text-slate-800">
+                        {!message.mine && <p className="mb-1 text-[10px] font-semibold uppercase text-slate-500">{message.senderName}</p>}
+                        <div className="flex items-center gap-2">
+                          {tourCard.image ? (
+                            <img src={tourCard.image} alt={tourCard.title} className="h-14 w-20 rounded-lg object-cover" />
+                          ) : (
+                            <div className="h-14 w-20 rounded-lg bg-slate-200" />
+                          )}
+                          <div className="min-w-0">
+                            <p className="line-clamp-2 text-sm font-semibold text-slate-900">{tourCard.title}</p>
+                            <p className="text-xs text-slate-500">USD {tourCard.price} · {formatDuration(tourCard.duration)}</p>
+                            <a
+                              href={tourCard.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mt-1 inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700"
+                            >
+                              Ver tour
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap ${
+                        message.mine ? "bg-emerald-500 text-white" : "bg-white text-slate-800 border border-slate-200"
+                      }`}
+                    >
+                      {!message.mine && <p className="mb-1 text-[10px] font-semibold uppercase text-slate-500">{message.senderName}</p>}
+                      {formatMessage(message.content)}
+                    </div>
+                  );
+                })()}
               </div>
             ))}
             {!messages.length && !isLoading && (

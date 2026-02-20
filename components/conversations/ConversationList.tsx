@@ -13,12 +13,16 @@ type ConversationSummary = {
   } | null;
   bookingCode: string | null;
   lastMessage: {
+    id: string;
     content: string;
     createdAt: string;
     sender: {
       name?: string | null;
     };
+    senderId: string;
+    senderRole: string;
   } | null;
+  pendingForMe?: boolean;
   participants: Array<{
     id: string;
     name: string;
@@ -42,7 +46,7 @@ export const ConversationList = ({ onSelect, selectedId, typeFilter }: Props) =>
   const summaries = useMemo(() => data ?? [], [data]);
 
   const unreadCount = useMemo(
-    () => summaries.filter((conv) => !conv.lastMessage || !conv.lastMessage.content).length,
+    () => summaries.filter((conv) => conv.pendingForMe).length,
     [summaries]
   );
 
@@ -70,7 +74,14 @@ export const ConversationList = ({ onSelect, selectedId, typeFilter }: Props) =>
           >
             <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
               <span>{conv.tour?.title ?? "Soporte general"}</span>
-              <span>{conv.bookingCode ?? conv.type}</span>
+              <span className="inline-flex items-center gap-2">
+                {conv.pendingForMe ? (
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-700">
+                    Pendiente
+                  </span>
+                ) : null}
+                <span>{conv.bookingCode ?? conv.type}</span>
+              </span>
             </div>
             <p className="mt-1 text-sm font-semibold text-slate-900">{conv.participants.map((p) => p.name).join(", ")}</p>
             <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400">

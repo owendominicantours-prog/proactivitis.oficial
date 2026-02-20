@@ -33,11 +33,12 @@ export async function GET(
   });
 
   if (!conversation) {
-    return NextResponse.json({ error: "Conversación no encontrada" }, { status: 404 });
+    return NextResponse.json({ error: "Conversacion no encontrada" }, { status: 404 });
   }
 
+  const isAdmin = session.user.role === "ADMIN";
   const isParticipant = conversation.ConversationParticipant.some((item) => item.userId === session.user.id);
-  if (!isParticipant) {
+  if (!isParticipant && !isAdmin) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
