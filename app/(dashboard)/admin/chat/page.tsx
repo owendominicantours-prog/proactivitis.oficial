@@ -2,10 +2,17 @@
 
 import { ChatBox } from "@/components/ChatBox";
 import { ConversationList } from "@/components/conversations/ConversationList";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function AdminChatPage() {
   const [conversationId, setConversationId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+      void Notification.requestPermission();
+    }
+  }, []);
+
   return (
     <div className="mx-auto flex h-[calc(100vh-170px)] max-w-6xl gap-6 px-6 py-6">
       <div className="w-1/3 overflow-y-auto">

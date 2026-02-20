@@ -12,6 +12,7 @@ type Props = {
 type ChatMessage = {
   id: string;
   content: string;
+  senderRole: string;
   sender: { name?: string | null; email?: string | null };
 };
 
@@ -85,6 +86,10 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
 
   const messages: ChatMessage[] = data?.messages ?? [];
   const tours = useMemo(() => toursData?.tours ?? [], [toursData]);
+  const unreadInThread = useMemo(
+    () => messages.filter((msg) => msg.senderRole !== "ADMIN").length,
+    [messages]
+  );
 
   const sendRawMessage = async (content: string) => {
     if (!content.trim()) return;
@@ -149,12 +154,25 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
       ) : null}
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+        {unreadInThread > 0 ? (
+          <div className="sticky top-0 z-10 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-700">
+            Mensajes de cliente activos
+          </div>
+        ) : null}
         {messages.length === 0 && <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Sin mensajes por el momento</p>}
         {messages.map((message) => {
           const tourCard = parseTourCard(message.content);
+          const isAdminMessage = message.senderRole === "ADMIN";
           if (tourCard) {
             return (
-              <div key={message.id} className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-slate-700">
+              <div
+                key={message.id}
+                className={`rounded-2xl px-4 py-3 text-sm ${
+                  isAdminMessage
+                    ? "ml-10 border border-sky-200 bg-sky-50 text-slate-700"
+                    : "mr-10 border border-emerald-200 bg-emerald-50 text-slate-700"
+                }`}
+              >
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{message.sender?.name ?? message.sender?.email}</p>
                 <div className="mt-2 flex items-center gap-3">
                   {tourCard.image ? (
@@ -179,7 +197,14 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
             );
           }
           return (
-            <div key={message.id} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            <div
+              key={message.id}
+              className={`rounded-2xl px-4 py-3 text-sm ${
+                isAdminMessage
+                  ? "ml-10 border border-sky-200 bg-sky-50 text-slate-700"
+                  : "mr-10 border border-emerald-200 bg-emerald-50 text-slate-700"
+              }`}
+            >
               <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{message.sender?.name ?? message.sender?.email}</p>
               <p className="mt-1 text-base text-slate-900">{message.content}</p>
             </div>
