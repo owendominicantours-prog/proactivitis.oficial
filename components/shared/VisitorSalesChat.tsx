@@ -63,11 +63,6 @@ export default function VisitorSalesChat() {
     refreshInterval: open ? 4000 : 0
   });
 
-  useEffect(() => {
-    const timer = setTimeout(() => setOpen(true), 4000);
-    return () => clearTimeout(timer);
-  }, []);
-
   const formatMessage = (content: string) => {
     const lines = content.split("\n");
     return lines.map((line, lineIndex) => {
