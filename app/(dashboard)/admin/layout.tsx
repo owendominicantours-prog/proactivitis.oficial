@@ -11,6 +11,7 @@ const adminNav = [
   { label: "Variantes", href: "/admin/tour-variants" },
   { label: "Blog", href: "/admin/blog" },
   { label: "Resenas", href: "/admin/reviews" },
+  { label: "Clientes de Honor", href: "/admin/honor-clients" },
   { label: "Tours", href: "/admin/tours" },
   { label: "Transfer", href: "/admin/transfers" },
   { label: "Suplidores", href: "/admin/suppliers" },
