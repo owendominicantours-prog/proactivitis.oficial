@@ -65,6 +65,51 @@ export default async function AdminHonorClientsPage() {
               placeholder="Gracias por confiar en Proactivitis desde el inicio."
             />
           </div>
+          <div className="space-y-2">
+            <label className="text-xs uppercase tracking-[0.28em] text-slate-500">Titulo VIP (ES)</label>
+            <input
+              name="vipTitleEs"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-amber-400 focus:outline-none"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs uppercase tracking-[0.28em] text-slate-500">Titulo VIP (EN)</label>
+            <input
+              name="vipTitleEn"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-amber-400 focus:outline-none"
+            />
+          </div>
+          <div className="space-y-2 lg:col-span-2">
+            <label className="text-xs uppercase tracking-[0.28em] text-slate-500">Titulo VIP (FR)</label>
+            <input
+              name="vipTitleFr"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-amber-400 focus:outline-none"
+            />
+          </div>
+          <div className="space-y-2 lg:col-span-2">
+            <label className="text-xs uppercase tracking-[0.28em] text-slate-500">Mensaje (ES)</label>
+            <textarea
+              name="messageEs"
+              rows={2}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-amber-400 focus:outline-none"
+            />
+          </div>
+          <div className="space-y-2 lg:col-span-2">
+            <label className="text-xs uppercase tracking-[0.28em] text-slate-500">Mensaje (EN)</label>
+            <textarea
+              name="messageEn"
+              rows={2}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-amber-400 focus:outline-none"
+            />
+          </div>
+          <div className="space-y-2 lg:col-span-2">
+            <label className="text-xs uppercase tracking-[0.28em] text-slate-500">Mensaje (FR)</label>
+            <textarea
+              name="messageFr"
+              rows={2}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-amber-400 focus:outline-none"
+            />
+          </div>
           <div className="lg:col-span-2">
             <HonorClientPhotoField />
           </div>
@@ -141,6 +186,57 @@ export default async function AdminHonorClientsPage() {
                       rows={3}
                       required
                       defaultValue={client.message}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-[0.28em] text-slate-500">Titulo VIP (ES)</label>
+                    <input
+                      name="vipTitleEs"
+                      defaultValue={client.vipTitleEs ?? ""}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-[0.28em] text-slate-500">Titulo VIP (EN)</label>
+                    <input
+                      name="vipTitleEn"
+                      defaultValue={client.vipTitleEn ?? ""}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+                  <div className="space-y-2 lg:col-span-2">
+                    <label className="text-xs uppercase tracking-[0.28em] text-slate-500">Titulo VIP (FR)</label>
+                    <input
+                      name="vipTitleFr"
+                      defaultValue={client.vipTitleFr ?? ""}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+                  <div className="space-y-2 lg:col-span-2">
+                    <label className="text-xs uppercase tracking-[0.28em] text-slate-500">Mensaje (ES)</label>
+                    <textarea
+                      name="messageEs"
+                      rows={2}
+                      defaultValue={client.messageEs ?? ""}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+                  <div className="space-y-2 lg:col-span-2">
+                    <label className="text-xs uppercase tracking-[0.28em] text-slate-500">Mensaje (EN)</label>
+                    <textarea
+                      name="messageEn"
+                      rows={2}
+                      defaultValue={client.messageEn ?? ""}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+                  <div className="space-y-2 lg:col-span-2">
+                    <label className="text-xs uppercase tracking-[0.28em] text-slate-500">Mensaje (FR)</label>
+                    <textarea
+                      name="messageFr"
+                      rows={2}
+                      defaultValue={client.messageFr ?? ""}
                       className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-amber-400 focus:outline-none"
                     />
                   </div>

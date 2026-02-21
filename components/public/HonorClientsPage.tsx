@@ -6,7 +6,13 @@ type HonorClientPublic = {
   id: string;
   fullName: string;
   vipTitle: string;
+  vipTitleEs?: string | null;
+  vipTitleEn?: string | null;
+  vipTitleFr?: string | null;
   message: string;
+  messageEs?: string | null;
+  messageEn?: string | null;
+  messageFr?: string | null;
   photoUrl: string | null;
 };
 
@@ -55,6 +61,16 @@ export default function HonorClientsPage({ clients, locale = "es" }: HonorClient
   const fallback = "/fototours/fotosimple.jpg";
   const vipMembers = clients.length;
   const copy = copyByLocale[locale];
+  const resolveVipTitle = (client: HonorClientPublic) => {
+    if (locale === "es") return client.vipTitleEs || client.vipTitle;
+    if (locale === "en") return client.vipTitleEn || client.vipTitle;
+    return client.vipTitleFr || client.vipTitle;
+  };
+  const resolveMessage = (client: HonorClientPublic) => {
+    if (locale === "es") return client.messageEs || client.message;
+    if (locale === "en") return client.messageEn || client.message;
+    return client.messageFr || client.message;
+  };
   const schema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -127,10 +143,10 @@ export default function HonorClientsPage({ clients, locale = "es" }: HonorClient
                   </div>
 
                   <div className="mt-5 inline-flex items-center rounded-full border border-[#d2ad62] bg-[#f7ca73]/12 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#fce5ac]">
-                    {client.vipTitle}
+                    {resolveVipTitle(client)}
                   </div>
 
-                  <p className="mt-4 text-sm leading-relaxed text-[#efe0b7]/92">{client.message}</p>
+                  <p className="mt-4 text-sm leading-relaxed text-[#efe0b7]/92">{resolveMessage(client)}</p>
                   <p className="mt-5 text-xs font-semibold uppercase tracking-[0.28em] text-[#ba9754]">
                     {copy.thanks}
                   </p>

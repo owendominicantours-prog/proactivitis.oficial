@@ -190,6 +190,12 @@ model HonorClient {
   fullName   String
   vipTitle   String
   message    String   @db.Text
+  vipTitleEs String?
+  vipTitleEn String?
+  vipTitleFr String?
+  messageEs  String?  @db.Text
+  messageEn  String?  @db.Text
+  messageFr  String?  @db.Text
   photoUrl   String?
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())

@@ -27,6 +27,12 @@ export async function createHonorClientAction(formData: FormData) {
   const fullName = read(formData, "fullName");
   const vipTitle = read(formData, "vipTitle");
   const message = read(formData, "message");
+  const vipTitleEs = read(formData, "vipTitleEs");
+  const vipTitleEn = read(formData, "vipTitleEn");
+  const vipTitleFr = read(formData, "vipTitleFr");
+  const messageEs = read(formData, "messageEs");
+  const messageEn = read(formData, "messageEn");
+  const messageFr = read(formData, "messageFr");
   const photoUrl = read(formData, "photoUrl");
   const isActive = read(formData, "isActive") === "on";
 
@@ -39,6 +45,12 @@ export async function createHonorClientAction(formData: FormData) {
       fullName,
       vipTitle,
       message,
+      vipTitleEs: vipTitleEs || null,
+      vipTitleEn: vipTitleEn || null,
+      vipTitleFr: vipTitleFr || null,
+      messageEs: messageEs || null,
+      messageEn: messageEn || null,
+      messageFr: messageFr || null,
       photoUrl: photoUrl || null,
       isActive
     }
@@ -54,6 +66,12 @@ export async function updateHonorClientAction(formData: FormData) {
   const fullName = read(formData, "fullName");
   const vipTitle = read(formData, "vipTitle");
   const message = read(formData, "message");
+  const vipTitleEs = read(formData, "vipTitleEs");
+  const vipTitleEn = read(formData, "vipTitleEn");
+  const vipTitleFr = read(formData, "vipTitleFr");
+  const messageEs = read(formData, "messageEs");
+  const messageEn = read(formData, "messageEn");
+  const messageFr = read(formData, "messageFr");
   const photoUrl = read(formData, "photoUrl");
   const isActive = read(formData, "isActive") === "on";
 
@@ -70,6 +88,12 @@ export async function updateHonorClientAction(formData: FormData) {
       fullName,
       vipTitle,
       message,
+      vipTitleEs: vipTitleEs || null,
+      vipTitleEn: vipTitleEn || null,
+      vipTitleFr: vipTitleFr || null,
+      messageEs: messageEs || null,
+      messageEn: messageEn || null,
+      messageFr: messageFr || null,
       photoUrl: photoUrl || null,
       isActive
     }
