@@ -132,6 +132,58 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Ruta de transfer requerida" }, { status: 400 });
   }
 
+  if (transferLandingSlug.startsWith("booking:")) {
+    const bookingId = transferLandingSlug.replace("booking:", "").trim();
+    if (!bookingId) {
+      return NextResponse.json({ message: "Reserva de transfer invalida" }, { status: 400 });
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      select: {
+        id: true,
+        flowType: true,
+        userId: true,
+        customerEmail: true,
+        customerName: true,
+        hotel: true,
+        pickup: true,
+        originAirport: true
+      }
+    });
+    if (!booking || (booking.flowType ?? "").toLowerCase() !== "transfer") {
+      return NextResponse.json({ message: "Reserva de transfer no encontrada" }, { status: 404 });
+    }
+
+    const existingByBooking = await prisma.transferReview.findUnique({
+      where: { bookingId: booking.id },
+      select: { id: true }
+    });
+    if (existingByBooking) {
+      return NextResponse.json({ message: "Ya tenemos una resena para esa reserva" }, { status: 409 });
+    }
+
+    await prisma.transferReview.create({
+      data: {
+        bookingId: booking.id,
+        transferLandingSlug: null,
+        transferServiceLabel:
+          transferServiceLabel ??
+          `${booking.originAirport || "PUJ"} -> ${booking.hotel || booking.pickup || "Transfer privado"}`,
+        userId: booking.userId,
+        customerName: name || booking.customerName,
+        customerEmail: email,
+        locale,
+        rating,
+        title,
+        body: reviewBody,
+        status: "PENDING"
+      }
+    });
+
+    return NextResponse.json({ ok: true });
+  }
+
   const existing = await prisma.transferReview.findFirst({
     where: { transferLandingSlug, customerEmail: email },
     select: { id: true }
