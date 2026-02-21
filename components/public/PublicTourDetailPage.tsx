@@ -1446,7 +1446,11 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       itemCondition: "https://schema.org/NewCondition",
       shippingDetails: {
         "@type": "OfferShippingDetails",
-        doesNotShip: true
+        doesNotShip: true,
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "DO"
+        }
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
@@ -1480,7 +1484,11 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       availability: "https://schema.org/InStock",
       shippingDetails: {
         "@type": "OfferShippingDetails",
-        doesNotShip: true
+        doesNotShip: true,
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "DO"
+        }
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",

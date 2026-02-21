@@ -184,7 +184,11 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
       priceValidUntil,
       shippingDetails: {
         "@type": "OfferShippingDetails",
-        doesNotShip: true
+        doesNotShip: true,
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "DO"
+        }
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",

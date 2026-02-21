@@ -10,7 +10,11 @@ const OFFER_SERVICE_SCHEMA = {
   "@type": "Offer",
   shippingDetails: {
     "@type": "OfferShippingDetails",
-    doesNotShip: true
+    doesNotShip: true,
+    shippingDestination: {
+      "@type": "DefinedRegion",
+      addressCountry: "DO"
+    }
   },
   hasMerchantReturnPolicy: {
     "@type": "MerchantReturnPolicy",

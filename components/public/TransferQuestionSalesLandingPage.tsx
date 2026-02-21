@@ -134,7 +134,11 @@ export default async function TransferQuestionSalesLandingPage({
       priceValidUntil,
       shippingDetails: {
         "@type": "OfferShippingDetails",
-        doesNotShip: true
+        doesNotShip: true,
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "DO"
+        }
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",

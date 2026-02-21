@@ -544,7 +544,11 @@ export async function ThingsToDoHotelPage({
           url: canonicalUrl,
           shippingDetails: {
             "@type": "OfferShippingDetails",
-            doesNotShip: true
+            doesNotShip: true,
+            shippingDestination: {
+              "@type": "DefinedRegion",
+              addressCountry: "DO"
+            }
           },
           hasMerchantReturnPolicy: {
             "@type": "MerchantReturnPolicy",

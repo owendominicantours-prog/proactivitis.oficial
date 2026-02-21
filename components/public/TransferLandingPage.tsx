@@ -698,7 +698,11 @@ export async function TransferLandingPage({
           priceValidUntil,
           shippingDetails: {
             "@type": "OfferShippingDetails",
-            doesNotShip: true
+            doesNotShip: true,
+            shippingDestination: {
+              "@type": "DefinedRegion",
+              addressCountry: "DO"
+            }
           },
           hasMerchantReturnPolicy: {
             "@type": "MerchantReturnPolicy",

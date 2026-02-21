@@ -243,7 +243,11 @@ export default async function HipHopLandingPage() {
       availability: "https://schema.org/InStock",
       shippingDetails: {
         "@type": "OfferShippingDetails",
-        doesNotShip: true
+        doesNotShip: true,
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "DO"
+        }
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",

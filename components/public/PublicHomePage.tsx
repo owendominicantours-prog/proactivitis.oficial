@@ -70,7 +70,11 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               "@type": "Offer",
               shippingDetails: {
                 "@type": "OfferShippingDetails",
-                doesNotShip: true
+                doesNotShip: true,
+                shippingDestination: {
+                  "@type": "DefinedRegion",
+                  addressCountry: "DO"
+                }
               },
               hasMerchantReturnPolicy: {
                 "@type": "MerchantReturnPolicy",
@@ -87,7 +91,11 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               "@type": "Offer",
               shippingDetails: {
                 "@type": "OfferShippingDetails",
-                doesNotShip: true
+                doesNotShip: true,
+                shippingDestination: {
+                  "@type": "DefinedRegion",
+                  addressCountry: "DO"
+                }
               },
               hasMerchantReturnPolicy: {
                 "@type": "MerchantReturnPolicy",
@@ -104,7 +112,11 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               "@type": "Offer",
               shippingDetails: {
                 "@type": "OfferShippingDetails",
-                doesNotShip: true
+                doesNotShip: true,
+                shippingDestination: {
+                  "@type": "DefinedRegion",
+                  addressCountry: "DO"
+                }
               },
               hasMerchantReturnPolicy: {
                 "@type": "MerchantReturnPolicy",

@@ -443,7 +443,11 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       url: pageUrl,
       shippingDetails: {
         "@type": "OfferShippingDetails",
-        doesNotShip: true
+        doesNotShip: true,
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "DO"
+        }
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
