@@ -37,6 +37,8 @@ const keepString = (next: string, previous?: string) => (next ? next : previous)
 const keepList = <T>(raw: string, parser: (value: string) => T[], previous?: T[]) =>
   raw.trim() ? parser(raw) : previous;
 
+const SUPPORTED_LOCALES = ["es", "en", "fr"] as const;
+
 export async function updateHotelLandingContentAction(formData: FormData) {
   const hotelSlug = readField(formData, "hotelSlug");
   const locale = readField(formData, "locale") || "es";
@@ -51,6 +53,8 @@ export async function updateHotelLandingContentAction(formData: FormData) {
   const current = hotelMap[locale] ?? {};
 
   const rawGallery = readField(formData, "galleryImages");
+  const incomingHeroImage = readField(formData, "heroImage");
+  const incomingGalleryImages = rawGallery.trim() ? parseGalleryImages(rawGallery) : null;
   const rawHighlights = readField(formData, "highlights");
   const rawRoomTypes = readField(formData, "roomTypes");
   const rawAmenities = readField(formData, "amenities");
@@ -89,6 +93,20 @@ export async function updateHotelLandingContentAction(formData: FormData) {
   };
 
   hotelMap[locale] = payload;
+
+  // Imagenes compartidas entre idiomas: una subida aplica a todas las versiones del hotel.
+  if (incomingHeroImage || (incomingGalleryImages && incomingGalleryImages.length > 0)) {
+    const localesToUpdate = Array.from(new Set([...SUPPORTED_LOCALES, ...Object.keys(hotelMap)]));
+    for (const localeKey of localesToUpdate) {
+      const localeEntry = hotelMap[localeKey] ?? {};
+      hotelMap[localeKey] = {
+        ...localeEntry,
+        ...(incomingHeroImage ? { heroImage: incomingHeroImage } : {}),
+        ...(incomingGalleryImages && incomingGalleryImages.length > 0 ? { galleryImages: incomingGalleryImages } : {})
+      };
+    }
+  }
+
   content[hotelSlug] = hotelMap;
 
   await prisma.siteContentSetting.upsert({

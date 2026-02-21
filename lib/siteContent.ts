@@ -611,9 +611,43 @@ export const getHotelLandingOverrides = async (
     const content = record.content as Record<string, Record<string, HotelLandingOverrides>>;
     const hotelMap = content[hotelSlug];
     if (!hotelMap || typeof hotelMap !== "object") return fallback;
-    const localeContent = hotelMap[locale];
-    if (!localeContent || typeof localeContent !== "object") return fallback;
-    return resolveSharedImagesDeep(mergeHotelOverrides(fallback, localeContent as HotelLandingOverrides), sharedImages);
+    const localeContentRaw = hotelMap[locale];
+    const localeContent =
+      localeContentRaw && typeof localeContentRaw === "object"
+        ? (localeContentRaw as HotelLandingOverrides)
+        : {};
+
+    // Fallback de media entre idiomas para que fotos/galeria no dependan de un solo locale.
+    const mediaFallbackLocales: Locale[] = [locale, "es", "en", "fr"];
+    let fallbackHeroImage: string | undefined;
+    let fallbackGalleryImages: string[] | undefined;
+    for (const mediaLocale of mediaFallbackLocales) {
+      const candidate = hotelMap[mediaLocale];
+      if (!candidate || typeof candidate !== "object") continue;
+      if (!fallbackHeroImage && typeof candidate.heroImage === "string" && candidate.heroImage.trim()) {
+        fallbackHeroImage = candidate.heroImage;
+      }
+      if (
+        !fallbackGalleryImages &&
+        Array.isArray(candidate.galleryImages) &&
+        candidate.galleryImages.length > 0
+      ) {
+        fallbackGalleryImages = candidate.galleryImages;
+      }
+      if (fallbackHeroImage && fallbackGalleryImages) break;
+    }
+
+    const hydratedLocaleContent: HotelLandingOverrides = {
+      ...localeContent,
+      ...(localeContent.heroImage ? {} : fallbackHeroImage ? { heroImage: fallbackHeroImage } : {}),
+      ...(Array.isArray(localeContent.galleryImages) && localeContent.galleryImages.length > 0
+        ? {}
+        : fallbackGalleryImages
+          ? { galleryImages: fallbackGalleryImages }
+          : {})
+    };
+
+    return resolveSharedImagesDeep(mergeHotelOverrides(fallback, hydratedLocaleContent), sharedImages);
   } catch (error) {
     warnOnce("site-content-hotel-landing-fallback", "No se pudo cargar SiteContentSetting HOTEL_LANDING", error);
     return fallback;
