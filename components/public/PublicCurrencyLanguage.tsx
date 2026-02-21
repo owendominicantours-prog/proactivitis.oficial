@@ -16,6 +16,22 @@ const languageOptions: LanguageOption[] = [
   { label: "FR", value: "fr", textKey: "language.french" }
 ];
 
+const SEGMENT_LOCALIZATION: Record<string, Record<Locale, string>> = {
+  hotels: { es: "hoteles", en: "hotels", fr: "hotels" }
+};
+
+const invertSegmentLocalization = () => {
+  const index: Record<string, string> = {};
+  for (const [canonical, localizedByLocale] of Object.entries(SEGMENT_LOCALIZATION)) {
+    for (const localized of Object.values(localizedByLocale)) {
+      index[localized] = canonical;
+    }
+  }
+  return index;
+};
+
+const LOCALIZED_SEGMENT_TO_CANONICAL = invertSegmentLocalization();
+
 export function PublicCurrencyLanguage() {
   const { locale, setLocale, t } = useTranslation();
   const [languageOpen, setLanguageOpen] = useState(false);
@@ -27,7 +43,15 @@ export function PublicCurrencyLanguage() {
     pathSegments.length > 0 && ["en", "fr"].includes(pathSegments[0]) ? pathSegments.slice(1) : pathSegments;
 
   const buildLocalizedPath = (target: Locale) => {
-    const pathPart = normalizedSegments.length ? `/${normalizedSegments.join("/")}` : "";
+    const translatedSegments = [...normalizedSegments];
+    if (translatedSegments.length > 0) {
+      const first = translatedSegments[0];
+      const canonical = LOCALIZED_SEGMENT_TO_CANONICAL[first];
+      if (canonical && SEGMENT_LOCALIZATION[canonical]?.[target]) {
+        translatedSegments[0] = SEGMENT_LOCALIZATION[canonical][target];
+      }
+    }
+    const pathPart = translatedSegments.length ? `/${translatedSegments.join("/")}` : "";
     const prefix = target === "es" ? "" : `/${target}`;
     const path = `${prefix}${pathPart}` || "/";
     const query = searchParams.toString();
