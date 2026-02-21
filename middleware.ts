@@ -40,6 +40,20 @@ export default withAuth(
       response.cookies.set("proactivitis-language", locale, { path: "/", sameSite: "lax" });
       return response;
     }
+    if (pathname === "/en/hoteles" || pathname.startsWith("/en/hoteles/")) {
+      const url = req.nextUrl.clone();
+      url.pathname = pathname.replace("/en/hoteles", "/en/hotels");
+      const response = NextResponse.redirect(url, 301);
+      response.cookies.set("proactivitis-language", locale, { path: "/", sameSite: "lax" });
+      return response;
+    }
+    if (pathname === "/fr/hoteles" || pathname.startsWith("/fr/hoteles/")) {
+      const url = req.nextUrl.clone();
+      url.pathname = pathname.replace("/fr/hoteles", "/fr/hotels");
+      const response = NextResponse.redirect(url, 301);
+      response.cookies.set("proactivitis-language", locale, { path: "/", sameSite: "lax" });
+      return response;
+    }
     const response = NextResponse.next({ request: { headers: requestHeaders } });
     response.cookies.set("proactivitis-language", locale, { path: "/", sameSite: "lax" });
     return response;
