@@ -117,6 +117,9 @@ export function PublicFooter() {
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const locale = normalizeLocale(usePathname());
   const copy = FOOTER_TRANSLATIONS[locale] ?? FOOTER_TRANSLATIONS.es;
+  const honorHref = locale === "es" ? "/cliente-de-honor" : `/${locale}/cliente-de-honor`;
+  const honorLabel =
+    locale === "es" ? "Cliente de Honor" : locale === "en" ? "Honor Client" : "Client d'Honneur";
 
   const groups = FOOTER_STRUCTURE.map((section) => ({
     title: copy[section.key].title,
@@ -151,6 +154,12 @@ export function PublicFooter() {
           </div>
         ))}
         <TrustBadges locale={locale} compact className="rounded-2xl border border-white/10 bg-slate-900/80 p-4" />
+        <Link
+          href={honorHref}
+          className="block rounded-2xl border border-amber-300/40 bg-gradient-to-r from-amber-500/10 via-transparent to-amber-500/10 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.3em] text-amber-200 transition hover:border-amber-200 hover:text-amber-100"
+        >
+          {honorLabel}
+        </Link>
         <div className="space-y-2 border-t border-white/10 pt-4 text-[0.65rem] uppercase tracking-[0.3em] text-gray-500">
           <p className="text-center font-semibold text-slate-100">{copy.tagline}</p>
           <p className="text-center">&copy; {new Date().getFullYear()} Proactivitis</p>
@@ -182,7 +191,15 @@ export function PublicFooter() {
               </span>
             ))}
           </div>
-          <div className="space-y-1 md:space-y-0">
+          <div className="space-y-2 md:space-y-1">
+            <p className="text-center md:text-left">
+              <Link
+                href={honorHref}
+                className="inline-flex rounded-full border border-amber-300/45 bg-amber-500/10 px-4 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.28em] text-amber-200 transition hover:border-amber-200 hover:text-amber-100"
+              >
+                {honorLabel}
+              </Link>
+            </p>
             <p className="text-center text-[0.65rem] uppercase tracking-[0.3em] text-gray-500 md:text-left">
               &copy; {new Date().getFullYear()} Proactivitis
             </p>
