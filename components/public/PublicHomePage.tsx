@@ -68,6 +68,14 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           itemListElement: [
             {
               "@type": "Offer",
+              shippingDetails: {
+                "@type": "OfferShippingDetails",
+                doesNotShip: true
+              },
+              hasMerchantReturnPolicy: {
+                "@type": "MerchantReturnPolicy",
+                returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+              },
               itemOffered: {
                 "@type": "Service",
                 name: "Tours y Excursiones",
@@ -76,6 +84,14 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
             },
             {
               "@type": "Offer",
+              shippingDetails: {
+                "@type": "OfferShippingDetails",
+                doesNotShip: true
+              },
+              hasMerchantReturnPolicy: {
+                "@type": "MerchantReturnPolicy",
+                returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+              },
               itemOffered: {
                 "@type": "Service",
                 name: "Traslados Privados",
@@ -84,6 +100,14 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
             },
             {
               "@type": "Offer",
+              shippingDetails: {
+                "@type": "OfferShippingDetails",
+                doesNotShip: true
+              },
+              hasMerchantReturnPolicy: {
+                "@type": "MerchantReturnPolicy",
+                returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+              },
               itemOffered: {
                 "@type": "Service",
                 name: "Portal para Agencias y Suplidores",
