@@ -26,3 +26,19 @@ export const rejectTourReview = async (reviewId: string) => {
     data: { status: "REJECTED" }
   });
 };
+
+export const approveTransferReview = async (reviewId: string) => {
+  await requireAdmin();
+  await prisma.transferReview.update({
+    where: { id: reviewId },
+    data: { status: "APPROVED", approvedAt: new Date() }
+  });
+};
+
+export const rejectTransferReview = async (reviewId: string) => {
+  await requireAdmin();
+  await prisma.transferReview.update({
+    where: { id: reviewId },
+    data: { status: "REJECTED" }
+  });
+};

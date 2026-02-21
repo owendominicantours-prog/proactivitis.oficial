@@ -666,6 +666,14 @@ export async function TransferLandingPage({
     orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
     take: 6
   });
+  const approvedTransferReviews = await prisma.transferReview.findMany({
+    where: {
+      status: "APPROVED",
+      transferLandingSlug: landing.landingSlug
+    },
+    orderBy: [{ approvedAt: "desc" }, { createdAt: "desc" }],
+    take: 6
+  });
 
   const schema = {
     "@context": "https://schema.org",
@@ -894,6 +902,34 @@ export async function TransferLandingPage({
                   </article>
                 );
               })}
+            </div>
+          </div>
+        </section>
+      ) : null}
+      {approvedTransferReviews.length > 0 ? (
+        <section className="mx-auto max-w-6xl px-4 pb-12">
+          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+              {locale === "es" ? "Resenas verificadas" : locale === "fr" ? "Avis verifies" : "Verified reviews"}
+            </p>
+            <h2 className="mt-2 text-2xl font-bold text-slate-900">
+              {locale === "es"
+                ? "Lo que dicen los clientes de este transfer"
+                : locale === "fr"
+                ? "Ce que disent les clients de ce transfert"
+                : "What clients say about this transfer"}
+            </h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {approvedTransferReviews.map((review) => (
+                <article key={review.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-sm font-semibold text-slate-900">{review.customerName}</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.25em] text-amber-600">
+                    {"★".repeat(Math.max(1, Math.min(5, review.rating)))} {review.rating}/5
+                  </p>
+                  {review.title ? <p className="mt-2 text-sm font-semibold text-slate-700">{review.title}</p> : null}
+                  <p className="mt-2 text-sm text-slate-600">{review.body}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>

@@ -442,6 +442,23 @@ export async function ThingsToDoHotelPage({
 
   const secondaryTransfers = allTransferLandings.filter((landing) => landing.hotelSlug !== hotel.slug).slice(0, 2);
   const transferCards = [primaryTransfer, ...secondaryTransfers];
+  const transferReviewRows = await prisma.transferReview.groupBy({
+    by: ["transferLandingSlug"],
+    where: {
+      status: "APPROVED",
+      transferLandingSlug: { in: transferCards.map((item) => item.landingSlug) }
+    },
+    _count: { _all: true },
+    _avg: { rating: true }
+  });
+  const transferReviewSummary = new Map(
+    transferReviewRows
+      .filter((row) => Boolean(row.transferLandingSlug))
+      .map((row) => [
+        row.transferLandingSlug as string,
+        { count: row._count._all, avg: Number(row._avg.rating ?? 0) }
+      ])
+  );
 
   const heroTitle =
     overrides.heroTitle?.trim() ||
@@ -791,6 +808,16 @@ export async function ThingsToDoHotelPage({
               <div className="flex flex-1 flex-col gap-2 p-4">
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("thingsToDo.transfers.cardTag")}</p>
                 <h3 className="text-base font-semibold text-slate-900">{landing.hotelName}</h3>
+                {transferReviewSummary.has(landing.landingSlug) ? (
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-600">
+                    ★ {transferReviewSummary.get(landing.landingSlug)!.avg.toFixed(1)} ·{" "}
+                    {transferReviewSummary.get(landing.landingSlug)!.count} {locale === "fr" ? "avis" : "resenas"}
+                  </p>
+                ) : (
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    {locale === "es" ? "Sin resenas aun" : locale === "fr" ? "Pas encore d'avis" : "No reviews yet"}
+                  </p>
+                )}
                 <p className="text-sm text-slate-600">
                   {locale === "es" ? landing.heroSubtitle : t("thingsToDo.transfers.cardSubtitle", { hotel: landing.hotelName })}
                 </p>

@@ -50,6 +50,24 @@ export default async function PublicTransferPage({ locale, heroTitleOverride, he
   const transferHref = (slug: string) => (locale === "es" ? `/transfer/${slug}` : `/${locale}/transfer/${slug}`);
   let options: LocationOption[] = [];
   let originPoints: TransferPointOption[] = [];
+  const transferLandingSlugs = PUNTA_CANA_TRANSFER_LINKS.map((item) => item.slug);
+  const transferReviewRows = await prisma.transferReview.groupBy({
+    by: ["transferLandingSlug"],
+    where: {
+      status: "APPROVED",
+      transferLandingSlug: { in: transferLandingSlugs }
+    },
+    _count: { _all: true },
+    _avg: { rating: true }
+  });
+  const transferReviewSummary = new Map(
+    transferReviewRows
+      .filter((row) => Boolean(row.transferLandingSlug))
+      .map((row) => [
+        row.transferLandingSlug as string,
+        { count: row._count._all, avg: Number(row._avg.rating ?? 0) }
+      ])
+  );
 
   if (!transfersV2Enabled) {
     const hotels = await prisma.location.findMany({
@@ -237,7 +255,17 @@ export default async function PublicTransferPage({ locale, heroTitleOverride, he
                 href={transferHref(item.slug)}
                 className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
               >
-                {translate(locale, item.labelKey)}
+                <p>{translate(locale, item.labelKey)}</p>
+                {transferReviewSummary.has(item.slug) ? (
+                  <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-600">
+                    ★ {transferReviewSummary.get(item.slug)!.avg.toFixed(1)} · {transferReviewSummary.get(item.slug)!.count}{" "}
+                    {locale === "fr" ? "avis" : "resenas"}
+                  </p>
+                ) : (
+                  <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    {locale === "es" ? "Sin resenas aun" : locale === "fr" ? "Pas encore d'avis" : "No reviews yet"}
+                  </p>
+                )}
               </Link>
             ))}
           </div>

@@ -742,7 +742,9 @@ model User {
 
 model TransferReview {
   id            String   @id @default(cuid())
-  bookingId      String   @unique
+  bookingId      String?  @unique
+  transferLandingSlug String?
+  transferServiceLabel String?
   userId         String?
   customerName   String
   customerEmail  String
@@ -754,11 +756,12 @@ model TransferReview {
   createdAt      DateTime @default(now())
   approvedAt     DateTime?
 
-  Booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  Booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
   User    User?   @relation(fields: [userId], references: [id])
 
   @@index([status])
   @@index([customerEmail])
+  @@index([transferLandingSlug])
 }
 
 model TransferReviewReminder {
