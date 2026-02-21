@@ -548,7 +548,8 @@ export async function ThingsToDoHotelPage({
           },
           hasMerchantReturnPolicy: {
             "@type": "MerchantReturnPolicy",
-            returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+            returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+            applicableCountry: "DO"
           }
         }
       }

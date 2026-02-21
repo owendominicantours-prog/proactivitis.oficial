@@ -188,7 +188,8 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
-        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+        applicableCountry: "DO"
       }
     },
     sameAs: SAME_AS_URLS,

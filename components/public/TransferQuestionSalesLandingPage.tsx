@@ -138,7 +138,8 @@ export default async function TransferQuestionSalesLandingPage({
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
-        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+        applicableCountry: "DO"
       }
     },
     keywords: entry.keywords.join(", "),
@@ -238,4 +239,3 @@ export default async function TransferQuestionSalesLandingPage({
 
 export const findQuestionLandingOrNull = (questionSlug: string): TransferQuestionSalesLanding | undefined =>
   findTransferQuestionSalesLandingBySlug(questionSlug);
-

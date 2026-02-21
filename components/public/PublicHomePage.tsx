@@ -74,7 +74,8 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               },
               hasMerchantReturnPolicy: {
                 "@type": "MerchantReturnPolicy",
-                returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+                returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+                applicableCountry: "DO"
               },
               itemOffered: {
                 "@type": "Service",
@@ -90,7 +91,8 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               },
               hasMerchantReturnPolicy: {
                 "@type": "MerchantReturnPolicy",
-                returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+                returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+                applicableCountry: "DO"
               },
               itemOffered: {
                 "@type": "Service",
@@ -106,7 +108,8 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               },
               hasMerchantReturnPolicy: {
                 "@type": "MerchantReturnPolicy",
-                returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+                returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+                applicableCountry: "DO"
               },
               itemOffered: {
                 "@type": "Service",

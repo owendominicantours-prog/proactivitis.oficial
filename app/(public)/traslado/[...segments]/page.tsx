@@ -447,7 +447,8 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
-        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted"
+        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+        applicableCountry: "DO"
       }
     },
     hasMap: locationMapUrl,
