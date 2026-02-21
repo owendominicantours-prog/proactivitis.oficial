@@ -12,15 +12,53 @@ type HonorClientPublic = {
 
 type HonorClientsPageProps = {
   clients: HonorClientPublic[];
+  locale?: "es" | "en" | "fr";
 };
 
-export default function HonorClientsPage({ clients }: HonorClientsPageProps) {
+const copyByLocale = {
+  es: {
+    seoName: "Cliente de Honor Proactivitis",
+    eyebrow: "Miembros Elite",
+    title: "Cliente De Honor",
+    subtitle: "Reconociendo a los clientes que creyeron en nosotros desde el principio.",
+    activeMembers: "miembros de honor activos",
+    emptyEyebrow: "Seccion exclusiva en actualizacion",
+    emptyBody: "Proximamente publicaremos nuevos clientes de honor.",
+    badge: "Insignia VIP",
+    thanks: "Gracias por confiar en Proactivitis"
+  },
+  en: {
+    seoName: "Proactivitis Honor Client",
+    eyebrow: "Elite Members",
+    title: "Honor Client",
+    subtitle: "Recognizing the clients who believed in us from the beginning.",
+    activeMembers: "active honor members",
+    emptyEyebrow: "Exclusive section updating",
+    emptyBody: "We will publish new honor clients soon.",
+    badge: "VIP Badge",
+    thanks: "Thank you for trusting Proactivitis"
+  },
+  fr: {
+    seoName: "Client d'Honneur Proactivitis",
+    eyebrow: "Membres Elite",
+    title: "Client D'Honneur",
+    subtitle: "Nous reconnaissons les clients qui ont cru en nous des le debut.",
+    activeMembers: "membres d'honneur actifs",
+    emptyEyebrow: "Section exclusive en mise a jour",
+    emptyBody: "Nous publierons bientot de nouveaux clients d'honneur.",
+    badge: "Badge VIP",
+    thanks: "Merci de faire confiance a Proactivitis"
+  }
+} as const;
+
+export default function HonorClientsPage({ clients, locale = "es" }: HonorClientsPageProps) {
   const fallback = "/fototours/fotosimple.jpg";
   const vipMembers = clients.length;
+  const copy = copyByLocale[locale];
   const schema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "Cliente de Honor Proactivitis",
+    name: copy.seoName,
     numberOfItems: clients.length,
     itemListElement: clients.map((client, index) => ({
       "@type": "ListItem",
@@ -41,15 +79,15 @@ export default function HonorClientsPage({ clients }: HonorClientsPageProps) {
 
       <section className="relative mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
         <div className="rounded-[2rem] border border-[#c8a85a]/55 bg-black/50 p-8 shadow-[0_0_80px_rgba(255,210,110,0.08)] backdrop-blur">
-          <p className="text-xs uppercase tracking-[0.44em] text-[#d6b36d]">Elite Members</p>
+          <p className="text-xs uppercase tracking-[0.44em] text-[#d6b36d]">{copy.eyebrow}</p>
           <h1 className="mt-3 text-4xl font-black uppercase leading-tight text-[#fff4d4] sm:text-5xl">
-            Cliente De Honor
+            {copy.title}
           </h1>
           <p className="mt-4 max-w-3xl text-sm text-[#f6e6bf]/88 sm:text-base">
-            Reconociendo a los clientes que creyeron en nosotros desde el principio.
+            {copy.subtitle}
           </p>
           <div className="mt-6 inline-flex items-center rounded-full border border-[#d2ad62] bg-[#f0c778]/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-[#ffe8a9]">
-            {vipMembers} miembros de honor activos
+            {vipMembers} {copy.activeMembers}
           </div>
         </div>
       </section>
@@ -57,9 +95,9 @@ export default function HonorClientsPage({ clients }: HonorClientsPageProps) {
       <section className="relative mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
         {clients.length === 0 ? (
           <div className="rounded-3xl border border-[#ad8644]/40 bg-black/45 p-10 text-center">
-            <p className="text-sm uppercase tracking-[0.32em] text-[#d6b36d]">Seccion exclusiva en actualizacion</p>
+            <p className="text-sm uppercase tracking-[0.32em] text-[#d6b36d]">{copy.emptyEyebrow}</p>
             <p className="mt-4 text-base text-[#f7e8c1]/90">
-              Proximamente publicaremos nuevos clientes de honor.
+              {copy.emptyBody}
             </p>
           </div>
         ) : (
@@ -83,7 +121,7 @@ export default function HonorClientsPage({ clients }: HonorClientsPageProps) {
                       />
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase tracking-[0.36em] text-[#caa258]">Insignia VIP</p>
+                      <p className="text-[10px] uppercase tracking-[0.36em] text-[#caa258]">{copy.badge}</p>
                       <h2 className="mt-1 text-xl font-bold text-[#fff2ca]">{client.fullName}</h2>
                     </div>
                   </div>
@@ -94,7 +132,7 @@ export default function HonorClientsPage({ clients }: HonorClientsPageProps) {
 
                   <p className="mt-4 text-sm leading-relaxed text-[#efe0b7]/92">{client.message}</p>
                   <p className="mt-5 text-xs font-semibold uppercase tracking-[0.28em] text-[#ba9754]">
-                    Gracias por confiar en Proactivitis
+                    {copy.thanks}
                   </p>
                 </div>
               </article>

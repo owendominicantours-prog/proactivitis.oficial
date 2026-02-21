@@ -23,5 +23,5 @@ export const metadata: Metadata = {
 
 export default async function HonorClientsPublicPage() {
   const clients = await getActiveHonorClients();
-  return <HonorClientsPage clients={clients} />;
+  return <HonorClientsPage clients={clients} locale="es" />;
 }
