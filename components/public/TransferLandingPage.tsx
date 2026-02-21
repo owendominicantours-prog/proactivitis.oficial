@@ -21,7 +21,7 @@ import { Locale, translate } from "@/lib/translations";
 import { TransferLocationType } from "@prisma/client";
 import { findDynamicLandingBySlug, getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import PublicTransferPage from "@/components/public/PublicTransferPage";
-import { normalizeTextDeep } from "@/lib/text-format";
+import { ensureLeadingCapital, normalizeTextDeep } from "@/lib/text-format";
 import { getPriceValidUntil } from "@/lib/seo";
 import { isIndexableTransferVariant } from "@/lib/seo-index-policy";
 
@@ -431,7 +431,7 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
   const generic = findGenericTransferLandingBySlug(landingSlug);
   if (generic) {
     const canonical = buildCanonical(generic.landingSlug, locale);
-    const seoTitle = generic.seoTitle[locale];
+    const seoTitle = ensureLeadingCapital(generic.seoTitle[locale]);
     const seoDescription = ensureMetaDescription(generic.metaDescription[locale], locale);
     const imageUrl = encodeURI(`${BASE_URL}/transfer/sedan.png`);
     return {
@@ -480,7 +480,7 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
   const canonicalTargetSlug = canIndexVariant ? landing.landingSlug : parsedSlug.baseSlug;
   const canonical = buildCanonical(canonicalTargetSlug, locale);
   const marketTitles = buildMarketTransferTitles(locale, landing.hotelName);
-  const seoTitle = `${marketTitles.seoTitle} | Proactivitis`;
+  const seoTitle = ensureLeadingCapital(`${marketTitles.seoTitle} | Proactivitis`);
   const rawDescription = ensureMetaDescription(localized.metaDescription, locale, landing.hotelName);
   const seoDescription = rawDescription.endsWith(".") ? rawDescription : `${rawDescription}.`;
   const imageUrl = encodeURI(`${BASE_URL}${localized.heroImage}`);

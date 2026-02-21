@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import PremiumTransferLandingPage from "@/components/public/PremiumTransferLandingPage";
 import { getPremiumTransferContentOverrides } from "@/lib/siteContent";
 import { PROACTIVITIS_URL } from "@/lib/seo";
+import { ensureLeadingCapital } from "@/lib/text-format";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getPremiumTransferContentOverrides("en");
   const path = "/punta-cana/premium-transfer-services";
   const canonical = `${PROACTIVITIS_URL}/en${path}`;
   const image = content.heroBackgroundImage || "/transfer/suv.png";
+  const seoTitle = ensureLeadingCapital(content.seoTitle ?? "Punta Cana Premium Transfer Services | Proactivitis");
   return {
-    title: content.seoTitle,
+    title: seoTitle,
     description: content.seoDescription,
     robots: {
       index: true,
@@ -32,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
       }
     },
     openGraph: {
-      title: content.seoTitle,
+      title: seoTitle,
       description: content.seoDescription,
       url: canonical,
       siteName: "Proactivitis",
@@ -42,7 +44,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: content.seoTitle,
+      title: seoTitle,
       description: content.seoDescription,
       images: [image]
     }

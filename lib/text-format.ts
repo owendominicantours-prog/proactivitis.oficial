@@ -20,3 +20,13 @@ export const normalizeTextDeep = <T>(value: T): T => {
   return value;
 };
 
+export const ensureLeadingCapital = (value: string): string => {
+  const text = value ?? "";
+  if (!text) return text;
+  const chars = [...text];
+  const firstLetterIndex = chars.findIndex((char) => /[A-Za-zÀ-ÖØ-öø-ÿ]/.test(char));
+  if (firstLetterIndex < 0) return text;
+  const updated = [...chars];
+  updated[firstLetterIndex] = updated[firstLetterIndex].toLocaleUpperCase();
+  return updated.join("");
+};

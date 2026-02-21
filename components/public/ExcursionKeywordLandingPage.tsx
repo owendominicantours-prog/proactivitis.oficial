@@ -9,7 +9,7 @@ import { Locale, translate, type TranslationKey } from "@/lib/translations";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 import type { Prisma } from "@prisma/client";
 import StructuredData from "@/components/schema/StructuredData";
-import { normalizeTextDeep } from "@/lib/text-format";
+import { ensureLeadingCapital, normalizeTextDeep } from "@/lib/text-format";
 
 const BASE_URL = "https://proactivitis.com";
 const MAX_TOURS = 9;
@@ -239,7 +239,7 @@ export async function buildExcursionLandingMetadata(landingSlug: string, locale:
       : locale === "fr"
         ? `${normalizedLanding.keyword} | Excursions a Punta Cana`
         : `${normalizedLanding.keyword} | Excursiones en Punta Cana`;
-  const seoTitle = `${marketTitle} | Proactivitis`;
+  const seoTitle = ensureLeadingCapital(`${marketTitle} | Proactivitis`);
   const seoDescription = normalizedLanding.metaDescription[locale];
   const imageUrl = encodeURI(`${BASE_URL}/fototours/fototour.jpeg`);
   return {

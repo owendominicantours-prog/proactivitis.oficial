@@ -4,6 +4,7 @@ import { translate } from "@/lib/translations";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_URL } from "@/lib/seo";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
+import { ensureLeadingCapital } from "@/lib/text-format";
 
 const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
 
@@ -304,7 +305,7 @@ const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>
 };
 
 const buildSeoTitle = (baseTitle: string) => {
-  const trimmed = baseTitle.trim();
+  const trimmed = ensureLeadingCapital(baseTitle.trim());
   if (!trimmed) return `Proactivitis`;
   if (trimmed.length + BRAND_SUFFIX.length <= MAX_TITLE_LENGTH) {
     return `${trimmed}${BRAND_SUFFIX}`;

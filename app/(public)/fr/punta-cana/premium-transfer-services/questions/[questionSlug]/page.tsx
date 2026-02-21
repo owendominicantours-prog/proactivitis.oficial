@@ -5,6 +5,7 @@ import TransferQuestionSalesLandingPage, {
 } from "@/components/public/TransferQuestionSalesLandingPage";
 import { transferQuestionSalesLandingSlugs } from "@/data/transfer-question-sales-landings";
 import { PROACTIVITIS_URL } from "@/lib/seo";
+import { ensureLeadingCapital } from "@/lib/text-format";
 
 export async function generateStaticParams() {
   return transferQuestionSalesLandingSlugs.map((questionSlug) => ({ questionSlug }));
@@ -20,8 +21,9 @@ export async function generateMetadata({
   if (!entry) return {};
   const path = `/punta-cana/premium-transfer-services/questions/${entry.slug}`;
   const canonical = `${PROACTIVITIS_URL}/fr${path}`;
+  const seoTitle = ensureLeadingCapital(entry.seoTitle.fr);
   return {
-    title: entry.seoTitle.fr,
+    title: seoTitle,
     description: entry.seoDescription.fr,
     keywords: entry.keywords,
     alternates: {
@@ -45,4 +47,3 @@ export default async function TransferQuestionSalesPageFR({
   if (!findQuestionLandingOrNull(questionSlug)) return notFound();
   return <TransferQuestionSalesLandingPage locale="fr" questionSlug={questionSlug} />;
 }
-

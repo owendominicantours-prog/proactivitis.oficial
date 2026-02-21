@@ -7,6 +7,7 @@ import {
 } from "@/data/premium-transfer-market-landings";
 import { getPremiumTransferContentOverrides } from "@/lib/siteContent";
 import { PROACTIVITIS_URL } from "@/lib/seo";
+import { ensureLeadingCapital } from "@/lib/text-format";
 
 export async function generateStaticParams() {
   return premiumTransferMarketLandingSlugs.map((variantSlug) => ({ variantSlug }));
@@ -25,9 +26,10 @@ export async function generateMetadata({
   const path = `/punta-cana/premium-transfer-services/${variant.slug}`;
   const canonical = `${PROACTIVITIS_URL}/fr${path}`;
   const image = fallback.heroBackgroundImage || "/transfer/suv.png";
+  const seoTitle = ensureLeadingCapital(variant.seoTitle.fr);
 
   return {
-    title: variant.seoTitle.fr,
+    title: seoTitle,
     description: variant.seoDescription.fr,
     keywords: [variant.keyword.fr, "punta cana premium transfer services", "transfert vip punta cana"],
     alternates: {
@@ -40,7 +42,7 @@ export async function generateMetadata({
       }
     },
     openGraph: {
-      title: variant.seoTitle.fr,
+      title: seoTitle,
       description: variant.seoDescription.fr,
       url: canonical,
       siteName: "Proactivitis",
@@ -50,7 +52,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: variant.seoTitle.fr,
+      title: seoTitle,
       description: variant.seoDescription.fr,
       images: [image]
     }
@@ -67,4 +69,3 @@ export default async function PremiumTransferVariantPageFR({
   if (!variant) return notFound();
   return <PremiumTransferLandingPage locale="fr" variant={variant} />;
 }
-

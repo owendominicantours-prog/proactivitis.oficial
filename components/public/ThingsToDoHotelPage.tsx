@@ -23,7 +23,7 @@ import HotelGallerySlider from "@/components/public/HotelGallerySlider";
 import HotelQuoteWidget from "@/components/public/HotelQuoteWidget";
 import { Locale, translate } from "@/lib/translations";
 import { getHotelLandingOverrides } from "@/lib/siteContent";
-import { normalizeTextDeep } from "@/lib/text-format";
+import { ensureLeadingCapital, normalizeTextDeep } from "@/lib/text-format";
 import { getPriceValidUntil } from "@/lib/seo";
 
 const BASE_URL = "https://proactivitis.com";
@@ -366,7 +366,7 @@ export async function buildThingsToDoMetadata(
         : `${hotel.name} - Book in Punta Cana at the Best Price`;
 
   const fallbackDescription = translate(locale, "thingsToDo.meta.description", { hotel: hotel.name }).trim();
-  const seoTitle = (overrides.seoTitle?.trim() || fallbackTitle).trim();
+  const seoTitle = ensureLeadingCapital((overrides.seoTitle?.trim() || fallbackTitle).trim());
   const rawDescription = (overrides.seoDescription?.trim() || fallbackDescription).trim();
   const seoDescription = locale === "es" ? ensureSpanishMeta(rawDescription, hotel.name) : rawDescription;
   const canonical = buildCanonical(hotel.slug, locale, routeBase);
@@ -383,7 +383,7 @@ export async function buildThingsToDoMetadata(
   const imageUrl = toAbsoluteUrl(overrides.heroImage?.trim() || hotel.heroImage || tourImage);
 
   return {
-    title: `${seoTitle} | Proactivitis`,
+    title: ensureLeadingCapital(`${seoTitle} | Proactivitis`),
     description: seoDescription,
     keywords: buildKeywords(hotel.name, locale),
     alternates: {
@@ -395,7 +395,7 @@ export async function buildThingsToDoMetadata(
       }
     },
     openGraph: {
-      title: seoTitle,
+      title: ensureLeadingCapital(seoTitle),
       description: seoDescription,
       url: canonical,
       siteName: "Proactivitis",
@@ -404,7 +404,7 @@ export async function buildThingsToDoMetadata(
     },
     twitter: {
       card: "summary_large_image",
-      title: seoTitle,
+      title: ensureLeadingCapital(seoTitle),
       description: seoDescription,
       images: [imageUrl]
     }

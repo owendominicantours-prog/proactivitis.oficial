@@ -6,6 +6,7 @@ import type { Prisma } from "@prisma/client";
 import type { Metadata } from "next";
 import { Locale, translate } from "@/lib/translations";
 import StructuredData from "@/components/schema/StructuredData";
+import { ensureLeadingCapital } from "@/lib/text-format";
 
 const RECENT_TOURS_LIMIT = 6;
 const BASE_URL = "https://proactivitis.com";
@@ -133,13 +134,13 @@ export async function buildRecogidaMetadata(slug: string, locale: Locale): Promi
   const location = await prisma.location.findUnique({ where: { slug } });
   if (!location) {
     return {
-      title: translate(locale, "recogida.meta.fallbackTitle"),
+      title: ensureLeadingCapital(translate(locale, "recogida.meta.fallbackTitle")),
       description: translate(locale, "recogida.meta.fallbackDescription")
     };
   }
 
   return {
-    title: translate(locale, "recogida.meta.title", { hotel: location.name }),
+    title: ensureLeadingCapital(translate(locale, "recogida.meta.title", { hotel: location.name })),
     description: translate(locale, "recogida.meta.description", { hotel: location.name }),
     alternates: {
       canonical: buildCanonical(location.slug, locale),
@@ -157,13 +158,13 @@ export async function buildRecogidaPickupMetadata(slug: string, locale: Locale):
   const location = await prisma.location.findUnique({ where: { slug } });
   if (!location) {
     return {
-      title: translate(locale, "recogida.pickup.meta.fallbackTitle"),
+      title: ensureLeadingCapital(translate(locale, "recogida.pickup.meta.fallbackTitle")),
       description: translate(locale, "recogida.pickup.meta.fallbackDescription")
     };
   }
 
   return {
-    title: translate(locale, "recogida.pickup.meta.title", { hotel: location.name }),
+    title: ensureLeadingCapital(translate(locale, "recogida.pickup.meta.title", { hotel: location.name })),
     description: translate(locale, "recogida.pickup.meta.description", { hotel: location.name }),
     alternates: {
       canonical: buildPickupCanonical(location.slug, locale),
