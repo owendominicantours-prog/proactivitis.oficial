@@ -18,6 +18,7 @@ import { Locale, translate, type TranslationKey } from "@/lib/translations";
 import { translateText } from "@/lib/translationService";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { ensureLeadingCapital } from "@/lib/text-format";
 
 const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
 
@@ -1224,7 +1225,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
           ? itinerarySource
           : [];
   const hasVisualTimeline = visualTimeline.length > 0;
-  const localizedTitle = translation?.title ?? tour.title;
+  const localizedTitle = ensureLeadingCapital(translation?.title ?? tour.title);
   const heroTitle = resolveTourH1(tour.slug, locale, localizedTitle);
   const localizedSubtitle = translation?.subtitle ?? tour.subtitle ?? "";
   const localizedShortDescription = translation?.shortDescription ?? tour.shortDescription;
@@ -1248,7 +1249,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const trustBadges = buildTourTrustBadges(locale, languages, categories);
   const faqList = buildTourFaq(locale, tour.slug, heroTitle, durationLabel, displayTime, priceLabel);
   const relatedTourCards = relatedTours.map((item) => {
-    const localizedRelatedTitle = item.translations?.[0]?.title ?? item.title;
+    const localizedRelatedTitle = ensureLeadingCapital(item.translations?.[0]?.title ?? item.title);
     const relatedImage = resolveTourHeroImage(item);
     const relatedHref = locale === "es" ? `/tours/${item.slug}` : `/${locale}/tours/${item.slug}`;
     return {

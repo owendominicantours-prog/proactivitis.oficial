@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma, logPrismaError } from "@/lib/prisma";
+import { ensureLeadingCapital } from "@/lib/text-format";
 
 export type PublicTourFilter = {
   countrySlug?: string;
@@ -158,7 +159,7 @@ export async function getPublishedTours(filter: PublicTourFilter = {}, limit = 2
   return tours.map((tour) => ({
     id: tour.id,
     slug: tour.slug,
-    title: tour.title,
+    title: ensureLeadingCapital(tour.title),
     description: tour.description,
     location: tour.location,
     price: tour.price,

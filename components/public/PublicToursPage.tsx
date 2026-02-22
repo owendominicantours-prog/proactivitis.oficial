@@ -12,6 +12,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import StructuredData from "@/components/schema/StructuredData";
 import { PROACTIVITIS_URL } from "@/lib/seo";
+import { ensureLeadingCapital } from "@/lib/text-format";
 
 const parseDurationMeta = (value?: string | null) => {
   if (!value) return null;
@@ -363,7 +364,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
     "@type": "ListItem",
     position: index + 1,
     url: `${PROACTIVITIS_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`,
-    name: tour.translations?.[0]?.title ?? tour.title
+    name: ensureLeadingCapital(tour.translations?.[0]?.title ?? tour.title)
   }));
   const itemListSchema = {
     "@context": "https://schema.org",
@@ -551,7 +552,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {toursSorted.map((tour) => {
                 const translation = tour.translations?.[0];
-                const localizedTitle = translation?.title ?? tour.title;
+                const localizedTitle = ensureLeadingCapital(translation?.title ?? tour.title);
                 const tourPath = locale === "es" ? `/tours/${tour.slug}` : `/${locale}/tours/${tour.slug}`;
                 const verifiedText = t("tour.card.verifiedLabel");
                 const fromLabel = t("tour.card.fromLabel");
