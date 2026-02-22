@@ -14,6 +14,7 @@ import {
 
 const WHATSAPP_LINK = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/18093949877";
 const DOMINICAN_COUNTRY_CODES = ["RD", "DO", "DOMINICAN-REPUBLIC"];
+const PREMIUM_AREA_HINTS = ["bavaro", "cap-cana", "uvero-alto", "arena-gorda", "punta-cana-resorts"];
 
 const LABELS = {
   es: {
@@ -151,6 +152,13 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
   const safeOrigins = origins.length ? origins : [safeOrigin];
   const safeLocationOptions = locationOptions.length ? locationOptions : [...safeOrigins, ...destinations];
   const canBook = safeLocationOptions.length > 1;
+  const preferredDestinationHint =
+    variant?.slug
+      ?.split("-")
+      .slice(-3)
+      .join("-")
+      .toLowerCase() ?? "";
+  const matchedHint = PREMIUM_AREA_HINTS.find((item) => variant?.slug?.includes(item));
 
   const gallery = content.galleryImages ?? [];
   const bullets = content.vipBullets ?? [];
@@ -367,10 +375,12 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
         {canBook ? (
           <PremiumTransferBookingWidget
             locale={locale}
-            locations={safeLocationOptions}
+            origins={safeOrigins}
+            destinations={destinations.length ? destinations : safeLocationOptions}
             title={content.bookingTitle || "Book your premium transfer"}
             cadillacImage={content.cadillacImage}
             suburbanImage={content.suburbanImage}
+            preferredDestinationHint={matchedHint ?? preferredDestinationHint}
           />
         ) : (
           <div className="rounded-2xl border border-amber-200/30 bg-slate-900/70 p-6 text-sm text-amber-100">

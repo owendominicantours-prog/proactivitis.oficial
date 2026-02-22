@@ -94,9 +94,10 @@ export default async function TransferQuestionSalesLandingPage({
   if (!entry) return notFound();
   const copy = UI[locale] ?? UI.es;
 
-  let locations: Array<{ id: string; slug: string; name: string }> = [];
+  let origins: Array<{ id: string; slug: string; name: string }> = [];
+  let destinations: Array<{ id: string; slug: string; name: string }> = [];
   try {
-    locations = await prisma.transferLocation.findMany({
+    const allLocations = await prisma.transferLocation.findMany({
       where: {
         active: true,
         countryCode: { in: DOMINICAN_COUNTRY_CODES },
@@ -106,11 +107,15 @@ export default async function TransferQuestionSalesLandingPage({
       orderBy: { name: "asc" },
       take: 500
     });
+    origins = allLocations.filter((item) => item.slug.includes("airport") || item.slug.includes("puj"));
+    if (!origins.length) origins = allLocations.slice(0, 5);
+    destinations = allLocations.filter((item) => !origins.some((origin) => origin.id === item.id));
+    if (!destinations.length) destinations = allLocations;
   } catch (error) {
     console.warn("transfer-question-sales: fallback without locations", error);
   }
 
-  const canBook = locations.length > 1;
+  const canBook = origins.length > 0 && destinations.length > 0;
   const pagePath =
     locale === "es"
       ? `/punta-cana/premium-transfer-services/questions/${entry.slug}`
@@ -216,7 +221,12 @@ export default async function TransferQuestionSalesLandingPage({
 
       <section className="mx-auto max-w-6xl px-4 pb-12">
         {canBook ? (
-          <PremiumTransferBookingWidget locale={locale} locations={locations} title={copy.bookingTitle} />
+          <PremiumTransferBookingWidget
+            locale={locale}
+            origins={origins}
+            destinations={destinations}
+            title={copy.bookingTitle}
+          />
         ) : (
           <div className="rounded-2xl border border-amber-200/30 bg-slate-900/70 p-6 text-sm text-amber-100">
             {copy.fallback}
