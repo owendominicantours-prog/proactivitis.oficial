@@ -8,6 +8,7 @@ import { TourCard } from "@/components/public/TourCard";
 import BlogReadingProgress from "@/components/blog/BlogReadingProgress";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import BlogLibraryClient from "@/components/blog/BlogLibraryClient";
 
 const BASE_URL = "https://proactivitis.com";
 
@@ -768,53 +769,33 @@ export async function buildBlogPostMetadata(slug: string, locale: "es" | "en" | 
 export async function renderBlogList(locale: "es" | "en" | "fr") {
   const labels = LABELS[locale];
   const posts = await getBlogList(locale);
+  const serializedPosts = posts.map((post) => ({
+    id: post.id,
+    title: post.title,
+    slug: post.slug,
+    excerpt: post.excerpt ?? null,
+    coverImage: post.coverImage ?? null,
+    publishedAt: post.publishedAt ? new Date(post.publishedAt).toISOString() : null
+  }));
 
   return (
     <div className="min-h-screen bg-slate-50">
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-12 space-y-3">
+        <div className="mx-auto max-w-7xl px-4 py-12 space-y-3">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Blog</p>
           <h1 className="text-4xl font-semibold text-slate-900">{labels.listTitle}</h1>
           <p className="text-sm text-slate-600">{labels.listSubtitle}</p>
         </div>
       </section>
-
-      <main className="mx-auto max-w-6xl px-4 py-10">
-        <div className="grid gap-6 md:grid-cols-2">
-          {posts.length === 0 ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
-              {labels.listEmpty}
-            </div>
-          ) : (
-            posts.map((post) => (
-              <article key={post.id} className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                <div className="relative h-48 w-full bg-slate-100">
-                  <Image
-                    src={post.coverImage ?? "/fototours/fotosimple.jpg"}
-                    alt={post.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover"
-                  />
-                </div>
-                <div className="space-y-3 p-6">
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                    {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString("es-ES") : "Proactivitis"}
-                  </p>
-                  <h2 className="text-2xl font-semibold text-slate-900">{post.title}</h2>
-                  <p className="text-sm text-slate-600">{post.excerpt ?? "Proactivitis"}</p>
-                  <Link
-                    href={locale === "es" ? `/news/${post.slug}` : `/${locale}/news/${post.slug}`}
-                    className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600 hover:bg-slate-50"
-                  >
-                    {labels.listCta}
-                  </Link>
-                </div>
-              </article>
-            ))
-          )}
-        </div>
-      </main>
+      {posts.length === 0 ? (
+        <main className="mx-auto max-w-7xl px-4 py-10">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+            {labels.listEmpty}
+          </div>
+        </main>
+      ) : (
+        <BlogLibraryClient locale={locale} posts={serializedPosts} />
+      )}
     </div>
   );
 }
