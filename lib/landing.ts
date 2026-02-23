@@ -1,4 +1,5 @@
 import { countryPuntaCanaLandings } from "@/data/country-punta-cana-landings";
+import { keywordSalesLandings, keywordSalesLandingSlugs } from "@/data/keyword-sales-landings";
 
 export type LandingEntry = {
   slug: string;
@@ -71,4 +72,20 @@ const countryLandings: LandingEntry[] = countryPuntaCanaLandings.map((landing) =
 export const landingPages: LandingEntry[] = [...baseLandings, ...countryLandings];
 
 export const countryToPuntaCanaLandingSlugs = new Set(countryLandings.map((landing) => landing.slug));
+export const keywordIntentSalesLandingSlugs = keywordSalesLandingSlugs;
 
+landingPages.push(
+  ...keywordSalesLandings.map((landing) => ({
+    slug: landing.slug,
+    title: landing.title,
+    tagline: landing.tagline,
+    sections: landing.sections,
+    path: landing.path,
+    metaDescription: landing.metaDescription,
+    country: landing.country,
+    buyerAngle: landing.buyerAngle,
+    transferPitch: landing.transferPitch,
+    hotelPitch: landing.hotelPitch,
+    excursionPitch: landing.excursionPitch
+  }))
+);

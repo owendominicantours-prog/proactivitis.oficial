@@ -1,6 +1,6 @@
 ﻿import type { Metadata } from "next";
 import Link from "next/link";
-import { landingPages, countryToPuntaCanaLandingSlugs } from "@/lib/landing";
+import { landingPages, countryToPuntaCanaLandingSlugs, keywordIntentSalesLandingSlugs } from "@/lib/landing";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 import StructuredData from "@/components/schema/StructuredData";
 import { prisma } from "@/lib/prisma";
@@ -27,6 +27,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   }
 
   const isCountryLanding = countryToPuntaCanaLandingSlugs.has(landing.slug);
+  const isKeywordSalesLanding = keywordIntentSalesLandingSlugs.has(landing.slug);
   const canonical = `${BASE_URL}/landing/${landing.slug}`;
   const description =
     landing.metaDescription ??
@@ -48,7 +49,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       description
     },
     robots: {
-      index: isCountryLanding,
+      index: isCountryLanding || isKeywordSalesLanding,
       follow: true
     }
   };
@@ -160,6 +161,7 @@ export default async function LandingPage({ params }: Params) {
   }
 
   const isCountryLanding = countryToPuntaCanaLandingSlugs.has(landing.slug);
+  const isKeywordSalesLanding = keywordIntentSalesLandingSlugs.has(landing.slug);
   const canonical = `${BASE_URL}/landing/${landing.slug}`;
 
   const schema = {
@@ -172,7 +174,7 @@ export default async function LandingPage({ params }: Params) {
     url: canonical
   };
 
-  if (!isCountryLanding) {
+  if (!isCountryLanding && !isKeywordSalesLanding) {
     return (
       <div className="bg-slate-50 py-12">
         <LandingViewTracker landingSlug={landing.slug} />
