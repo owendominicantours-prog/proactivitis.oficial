@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { slugifyBlog } from "../lib/blog";
+import { buildSeoBlogDraft } from "./seoBlogWriter";
 
 const prisma = new PrismaClient();
 
@@ -138,9 +139,14 @@ const CLUSTER_CONFIG: Record<
   Cluster,
   {
     titlePrefix: string;
-    excerpt: string;
+    excerptLead: string;
     intro: string;
-    buyerIntent: string;
+    planning: string;
+    practicalBlockTitle: string;
+    practicalTips: string[];
+    mistakesTitle: string;
+    mistakes: string[];
+    close: string;
     ctaLabel: string;
     ctaHref: string;
     ctaSupportHref: string;
@@ -148,50 +154,130 @@ const CLUSTER_CONFIG: Record<
 > = {
   resorts: {
     titlePrefix: "Review de resort",
-    excerpt: "Guia comercial para evaluar resort, ubicacion, ventajas y mejor forma de reserva.",
-    intro: "Las busquedas por nombre de resort tienen intencion de reserva alta. El objetivo es resolver dudas clave y mover al usuario a accion.",
-    buyerIntent:
-      "Este contenido optimiza conversion: compara valor, logistica y experiencia real para cerrar hotel + traslados + actividades.",
+    excerptLead: "Analisis completo del resort para decidir con criterio real de viaje.",
+    intro:
+      "Cuando buscas un resort especifico, normalmente ya estas cerca de reservar. La clave es validar si ese hotel encaja contigo.",
+    planning:
+      "No todos los resorts sirven para el mismo perfil. Conviene revisar ubicacion, ambiente, servicios y conexion con excursiones.",
+    practicalBlockTitle: "Como evaluar un resort antes de pagar",
+    practicalTips: [
+      "Define si prefieres ambiente familiar, parejas o solo adultos.",
+      "Revisa distancia entre resort y actividades principales.",
+      "Confirma politica de cancelacion y cambios de fecha.",
+      "Valida costos adicionales de restaurantes o experiencias premium."
+    ],
+    mistakesTitle: "Errores comunes al comparar resorts",
+    mistakes: [
+      "Elegir solo por foto sin revisar zona.",
+      "No confirmar que incluye la tarifa final.",
+      "Ignorar el tiempo real de traslados."
+    ],
+    close:
+      "Un resort bien elegido hace que todo el viaje funcione mejor: descanso, movilidad y excursiones sin fricciones.",
     ctaLabel: "Ver hoteles y resorts",
     ctaHref: "/hoteles",
     ctaSupportHref: "/traslado"
   },
   excursiones: {
     titlePrefix: "Guia de excursion",
-    excerpt: "Enfoque orientado a venta: precio, modalidad, duracion y recomendacion para reservar mejor.",
-    intro: "En excursiones de larga cola, la confianza y la claridad comercial son decisivas para la conversion.",
-    buyerIntent:
-      "Esta pagina responde la duda concreta y empuja al usuario al siguiente paso: cotizar o reservar con soporte inmediato.",
+    excerptLead: "Informacion util para escoger modalidad, duracion y nivel de experiencia.",
+    intro:
+      "Las excursiones en Punta Cana tienen formatos distintos. Elegir la correcta depende de tu plan, no solo del nombre del tour.",
+    planning:
+      "Si defines bien horarios, nivel de actividad y punto de salida, la experiencia mejora y reduces cancelaciones de ultimo minuto.",
+    practicalBlockTitle: "Checklist para elegir excursion",
+    practicalTips: [
+      "Confirma si la actividad es medio dia o dia completo.",
+      "Valida inclusiones: transporte, alimentos y equipos.",
+      "Revisa restricciones por edad o condicion fisica.",
+      "Reserva temprano en fechas de alta demanda."
+    ],
+    mistakesTitle: "Errores frecuentes en tours",
+    mistakes: [
+      "No leer condiciones de la modalidad elegida.",
+      "Reservar sin revisar distancia desde tu hotel.",
+      "Hacer dos actividades intensas el mismo dia."
+    ],
+    close:
+      "Cuando eliges una excursion alineada a tu ritmo, se disfruta mas y el viaje se siente mucho mas equilibrado.",
     ctaLabel: "Reservar excursiones",
     ctaHref: "/tours",
     ctaSupportHref: "/traslado"
   },
   zonas: {
     titlePrefix: "Guia por zona",
-    excerpt: "Mapa comercial de zonas, servicios y recomendaciones para alojarte y moverte mejor.",
-    intro: "Las busquedas por zonas y calles ayudan a decidir donde quedarse y como planificar traslados sin errores.",
-    buyerIntent:
-      "La estrategia es convertir informacion de ubicacion en reservas reales de hotel, transporte y tours.",
+    excerptLead: "Mapa real de zonas y servicios para hospedarte y moverte con seguridad.",
+    intro:
+      "Conocer bien las zonas de Punta Cana te ayuda a elegir hotel, calcular trayectos y evitar tiempos muertos.",
+    planning:
+      "Antes de decidir alojamiento, conviene entender que ofrece cada area y como afecta tu presupuesto diario.",
+    practicalBlockTitle: "Que revisar al elegir una zona",
+    practicalTips: [
+      "Distancia al aeropuerto y principales playas.",
+      "Tipo de ambiente: tranquilo, familiar o social.",
+      "Acceso a restaurantes, supermercados y servicios.",
+      "Opciones de transporte para moverte sin depender del azar."
+    ],
+    mistakesTitle: "Errores tipicos por desconocer la zona",
+    mistakes: [
+      "Elegir hotel sin revisar ubicacion exacta.",
+      "Subestimar costos de transporte diario.",
+      "No validar horarios de movilidad nocturna."
+    ],
+    close:
+      "Elegir bien la zona te ahorra dinero, reduce estres y mejora todo tu itinerario.",
     ctaLabel: "Ver opciones por zona",
     ctaHref: "/hoteles",
     ctaSupportHref: "/traslado"
   },
   logistica: {
     titlePrefix: "Guia tecnica de viaje",
-    excerpt: "Informacion operativa de aeropuerto, transporte, conectividad y servicios para turistas.",
-    intro: "La logistica avanzada puede bloquear la compra. Este contenido elimina friccion y acelera decisiones.",
-    buyerIntent:
-      "Resolviendo dudas tecnicas primero, se incrementa el cierre de reservas en traslados, hoteles y excursiones.",
+    excerptLead: "Guia operativa de aeropuerto, rutas y servicios utiles para turistas.",
+    intro:
+      "Una buena logistica marca la diferencia entre un viaje fluido y uno lleno de retrasos. Aqui va lo esencial para organizarte mejor.",
+    planning:
+      "Confirmar vuelos, terminal, traslados y tiempos reales evita sorpresas en llegada y salida.",
+    practicalBlockTitle: "Base logistica recomendada",
+    practicalTips: [
+      "Confirma terminal y punto de encuentro al aterrizar.",
+      "Define traslado privado o compartido segun presupuesto.",
+      "Guarda opciones de transporte de respaldo.",
+      "Ten a mano documentos y reservas offline."
+    ],
+    mistakesTitle: "Errores comunes en logistica de viaje",
+    mistakes: [
+      "Llegar sin transporte reservado.",
+      "No revisar tiempos en rutas largas.",
+      "Confiar solo en una opcion de movilidad."
+    ],
+    close:
+      "Con logistica clara, se aprovecha mejor cada dia de viaje y se reduce el desgaste desde el primer traslado.",
     ctaLabel: "Cotizar traslado ahora",
     ctaHref: "/traslado",
     ctaSupportHref: "/tours"
   },
   gastronomia: {
     titlePrefix: "Guia de ocio",
-    excerpt: "Restaurantes, bares y cafes con enfoque de experiencia y venta cruzada de servicios.",
-    intro: "Las busquedas de ocio son una oportunidad comercial para construir itinerarios completos de viaje.",
-    buyerIntent:
-      "Convertimos una consulta de comida o nightlife en plan completo con movilidad y actividades reservadas.",
+    excerptLead: "Recomendaciones reales para comer y salir en Punta Cana con buena planificacion.",
+    intro:
+      "La experiencia gastronomica cambia mucho segun la zona y el horario. Elegir bien te ayuda a disfrutar mas y gastar mejor.",
+    planning:
+      "Combinar restaurantes con un plan de movilidad claro evita esperas largas y cierres de noche complicados.",
+    practicalBlockTitle: "Como organizar salidas de comida y nightlife",
+    practicalTips: [
+      "Reserva en lugares demandados con anticipacion.",
+      "Revisa distancia entre hotel y restaurante.",
+      "Confirma opciones de transporte para regreso seguro.",
+      "Agrupa planes por zona para optimizar tiempos."
+    ],
+    mistakesTitle: "Errores comunes en planes de ocio",
+    mistakes: [
+      "No verificar ubicacion exacta del local.",
+      "Salir sin plan de retorno nocturno.",
+      "Elegir por tendencia sin revisar si encaja contigo."
+    ],
+    close:
+      "Una salida bien planificada se disfruta mas y evita gastos innecesarios durante la noche.",
     ctaLabel: "Ver experiencias",
     ctaHref: "/tours",
     ctaSupportHref: "/traslado"
@@ -204,31 +290,6 @@ const normalize = (s: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/\s+/g, " ")
     .trim();
-
-const buildContentHtml = (keyword: string, cluster: Cluster) => {
-  const cfg = CLUSTER_CONFIG[cluster];
-  return `
-<h1>${keyword}</h1>
-<p>${cfg.intro}</p>
-<p>${cfg.buyerIntent}</p>
-
-<h2>Puntos clave antes de reservar</h2>
-<ul>
-  <li>Confirma ubicacion exacta y tiempos de traslado.</li>
-  <li>Valida disponibilidad real para tu fecha de viaje.</li>
-  <li>Compara valor final en USD y servicios incluidos.</li>
-  <li>Define si necesitas soporte por WhatsApp para cerrar rapido.</li>
-</ul>
-
-<h2>Recomendacion comercial</h2>
-<p>Para ${keyword}, la mejor ruta es asegurar primero disponibilidad y logistica, y luego cerrar servicios complementarios para maximizar experiencia y eficiencia.</p>
-
-<h2>Plan de accion Proactivitis</h2>
-<p>Trabajamos con enfoque de conversion y soporte en vivo para ayudarte a decidir y reservar sin complicaciones.</p>
-
-<p><a href="${cfg.ctaHref}">${cfg.ctaLabel}</a> | <a href="${cfg.ctaSupportHref}">Soporte de movilidad</a></p>
-`;
-};
 
 async function main() {
   const tourImages = await prisma.tour.findMany({
@@ -245,38 +306,49 @@ async function main() {
   const fallbackImage = "/tours/default.jpg";
 
   let created = 0;
-  let skipped = 0;
+  let updated = 0;
   const now = new Date();
 
   for (let i = 0; i < KEYWORDS.length; i += 1) {
     const entry = KEYWORDS[i];
     const keyword = normalize(entry.keyword);
     const slug = `seo-${slugifyBlog(keyword)}`;
+    const cfg = CLUSTER_CONFIG[entry.cluster];
+    const { title, excerpt, contentHtml } = buildSeoBlogDraft(keyword, cfg, {
+      label: cfg.ctaLabel,
+      href: cfg.ctaHref,
+      supportLabel: "Soporte de movilidad",
+      supportHref: cfg.ctaSupportHref
+    });
+    const coverImage = images.length ? images[i % images.length] : fallbackImage;
     const exists = await prisma.blogPost.findUnique({ where: { slug }, select: { id: true } });
     if (exists) {
-      skipped += 1;
-      continue;
+      await prisma.blogPost.update({
+        where: { id: exists.id },
+        data: {
+          title,
+          excerpt,
+          coverImage,
+          contentHtml,
+          status: "PUBLISHED"
+        }
+      });
+      updated += 1;
+    } else {
+      await prisma.blogPost.create({
+        data: {
+          id: randomUUID(),
+          title,
+          slug,
+          excerpt,
+          coverImage,
+          contentHtml,
+          status: "PUBLISHED",
+          publishedAt: now
+        }
+      });
+      created += 1;
     }
-
-    const cfg = CLUSTER_CONFIG[entry.cluster];
-    const title = `${cfg.titlePrefix}: ${keyword}`;
-    const excerpt = `${cfg.excerpt} Keyword objetivo: ${keyword}.`;
-    const coverImage = images.length ? images[i % images.length] : fallbackImage;
-    const contentHtml = buildContentHtml(keyword, entry.cluster);
-
-    await prisma.blogPost.create({
-      data: {
-        id: randomUUID(),
-        title,
-        slug,
-        excerpt,
-        coverImage,
-        contentHtml,
-        status: "PUBLISHED",
-        publishedAt: now
-      }
-    });
-    created += 1;
   }
 
   console.log(
@@ -284,7 +356,7 @@ async function main() {
       {
         totalKeywords: KEYWORDS.length,
         created,
-        skippedExisting: skipped
+        updated
       },
       null,
       2
@@ -300,4 +372,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-

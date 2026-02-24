@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { slugifyBlog } from "../lib/blog";
+import { buildSeoBlogDraft } from "./seoBlogWriter";
 
 const prisma = new PrismaClient();
 
@@ -174,9 +175,14 @@ const CLUSTER_CONFIG: Record<
   Cluster,
   {
     titlePrefix: string;
-    excerpt: string;
+    excerptLead: string;
     intro: string;
-    buyerIntent: string;
+    planning: string;
+    practicalBlockTitle: string;
+    practicalTips: string[];
+    mistakesTitle: string;
+    mistakes: string[];
+    close: string;
     ctaLabel: string;
     ctaHref: string;
     ctaSupportHref: string;
@@ -184,117 +190,338 @@ const CLUSTER_CONFIG: Record<
 > = {
   comparativas: {
     titlePrefix: "Comparativa de viaje",
-    excerpt: "Analisis de decision para viajeros con enfoque de conversion.",
-    intro: "Este tipo de busqueda implica duda antes de comprar. El objetivo es resolver objeciones y cerrar con una recomendacion concreta.",
-    buyerIntent: "Comparar bien reduce errores y acelera la reserva de hotel, excursiones y traslados.",
+    excerptLead: "Comparativa clara para elegir mejor y viajar con mas seguridad.",
+    intro:
+      "Cuando comparas opciones de viaje, necesitas informacion concreta para decidir sin dudas y sin perder presupuesto.",
+    planning:
+      "La comparacion correcta no es solo precio: tambien influyen distancias, tiempos de traslado y tipo de experiencia que buscas.",
+    practicalBlockTitle: "Como comparar destinos o servicios de forma util",
+    practicalTips: [
+      "Compara costo total y no solo precio base.",
+      "Revisa logistica de transporte y tiempos reales.",
+      "Define prioridad: playa, descanso, aventura o vida nocturna.",
+      "Elige segun perfil del grupo y edad de viajeros."
+    ],
+    mistakesTitle: "Errores comunes al comparar opciones",
+    mistakes: [
+      "Decidir por precio sin revisar ubicacion.",
+      "No validar condiciones de cancelacion.",
+      "Ignorar gastos extra de transporte o accesos."
+    ],
+    close:
+      "Una comparacion bien hecha reduce sorpresas y te permite reservar con confianza desde el inicio.",
     ctaLabel: "Ver tours recomendados",
     ctaHref: "/tours",
     ctaSupportHref: "/traslado"
   },
   luxury: {
     titlePrefix: "Guia premium",
-    excerpt: "Contenido high-end orientado a clientes de lujo en Punta Cana.",
-    intro: "Las keywords premium requieren posicionamiento de autoridad y propuestas de valor superiores.",
-    buyerIntent: "Convertimos interes de lujo en itinerarios privados y reservas de alto ticket.",
+    excerptLead: "Experiencias premium en Punta Cana con enfoque real de servicio y confort.",
+    intro:
+      "Si buscas opciones de lujo, lo importante es asegurar servicio consistente, privacidad y una logistica impecable.",
+    planning:
+      "En viajes premium, cada detalle cuenta: desde el traslado hasta la seleccion del hotel o experiencia privada.",
+    practicalBlockTitle: "Claves para una experiencia premium real",
+    practicalTips: [
+      "Prioriza proveedores con soporte directo y rapido.",
+      "Confirma privacidad, capacidad y horarios.",
+      "Solicita detalle de todo lo incluido antes de pagar.",
+      "Coordina movilidad VIP para evitar esperas."
+    ],
+    mistakesTitle: "Errores frecuentes en reservas premium",
+    mistakes: [
+      "Pagar sobreprecio sin validar valor real del servicio.",
+      "No revisar condiciones de cambios o reprogramacion.",
+      "Dejar traslados para ultimo momento."
+    ],
+    close:
+      "Una experiencia premium bien cerrada se nota en comodidad, tiempos y atencion personalizada durante todo el viaje.",
     ctaLabel: "Explorar experiencias premium",
     ctaHref: "/punta-cana/premium-transfer-services",
     ctaSupportHref: "/hoteles"
   },
   deportes: {
     titlePrefix: "Guia de actividad",
-    excerpt: "Respuesta directa para deportes y actividades acuaticas con intencion de reserva.",
-    intro: "Las busquedas tecnicas de deporte suelen estar en fase de compra, no solo inspiracion.",
-    buyerIntent: "Al aclarar requisitos y beneficios, mejoramos conversion en actividades especializadas.",
+    excerptLead: "Guia practica para deportes y actividades acuaticas en Punta Cana.",
+    intro:
+      "Las actividades deportivas requieren mas planificacion que un tour tradicional. Elegir bien evita cancelaciones y mejora la experiencia.",
+    planning:
+      "Antes de reservar, conviene revisar nivel fisico, condiciones del mar y requisitos tecnicos de cada actividad.",
+    practicalBlockTitle: "Checklist para actividades deportivas",
+    practicalTips: [
+      "Valida experiencia previa si la actividad lo requiere.",
+      "Revisa condiciones de clima y mar por temporada.",
+      "Confirma equipamiento incluido.",
+      "Coordina traslado con margen de tiempo."
+    ],
+    mistakesTitle: "Errores frecuentes en deportes de aventura",
+    mistakes: [
+      "Reservar sin leer requisitos fisicos.",
+      "No llevar ropa/equipo adecuado.",
+      "Programar la actividad sin margen de movilidad."
+    ],
+    close:
+      "Con buena preparacion, las actividades deportivas en Punta Cana son mas seguras y mucho mas disfrutables.",
     ctaLabel: "Reservar actividades",
     ctaHref: "/tours",
     ctaSupportHref: "/traslado"
   },
   golf: {
     titlePrefix: "Guia de golf",
-    excerpt: "Informacion de campos, tarifas y valor para turismo deportivo de elite.",
-    intro: "El golf en Punta Cana es mercado premium con alta intencion de gasto.",
-    buyerIntent: "Combinamos informacion precisa con oferta comercial para cerrar reservas de alto valor.",
+    excerptLead: "Campos, tarifas y recomendaciones de golf para viajeros exigentes.",
+    intro:
+      "El golf en Punta Cana combina escenarios top y servicios premium. Para disfrutarlo, la planificacion marca diferencia.",
+    planning:
+      "Reserva tee times con antelacion, confirma green fees actualizados y organiza movilidad privada para cumplir horarios.",
+    practicalBlockTitle: "Como planear una jornada de golf sin fricciones",
+    practicalTips: [
+      "Confirma horarios y disponibilidad del campo.",
+      "Revisa codigo de vestimenta y reglas locales.",
+      "Valida costo final de carrito, caddie o equipos.",
+      "Coordina traslados de ida y vuelta con tiempo."
+    ],
+    mistakesTitle: "Errores frecuentes en viajes de golf",
+    mistakes: [
+      "No reservar con anticipacion en temporada alta.",
+      "Asumir tarifas sin confirmar cargos adicionales.",
+      "Subestimar distancias entre hotel y campo."
+    ],
+    close:
+      "Con un plan bien armado, el golf en Punta Cana se convierte en una experiencia de alto nivel desde el primer hoyo.",
     ctaLabel: "Ver experiencias y traslados",
     ctaHref: "/tours",
     ctaSupportHref: "/punta-cana/premium-transfer-services"
   },
   foto: {
     titlePrefix: "Guia visual y eventos",
-    excerpt: "Contenido para bodas, fotografia y eventos con enfoque en conversion.",
-    intro: "Este segmento responde mejor cuando hay pasos claros de planificacion y logistica.",
-    buyerIntent: "Transformamos consultas visuales en paquetes completos con movilidad y soporte.",
+    excerptLead: "Bodas, fotografia y eventos con recomendaciones reales de planificacion.",
+    intro:
+      "Los eventos visuales en Punta Cana requieren coordinacion fina: clima, ubicacion, horarios y movilidad del equipo.",
+    planning:
+      "Con un cronograma claro y buenas locaciones, los resultados mejoran y se reducen retrasos durante el dia del evento.",
+    practicalBlockTitle: "Puntos clave para sesiones y eventos",
+    practicalTips: [
+      "Define locacion y horario segun luz natural.",
+      "Confirma permisos o accesos en zonas privadas.",
+      "Ten plan B por lluvia o cambios de clima.",
+      "Coordina transporte para equipo y participantes."
+    ],
+    mistakesTitle: "Errores frecuentes en producciones de foto y video",
+    mistakes: [
+      "Improvisar locacion sin visita previa.",
+      "No reservar transporte para todo el equipo.",
+      "No considerar tiempos de montaje y desplazamiento."
+    ],
+    close:
+      "La diferencia entre una sesion regular y una excelente suele estar en la planificacion previa.",
     ctaLabel: "Planificar experiencia",
     ctaHref: "/tours",
     ctaSupportHref: "/traslado"
   },
   movilidad: {
     titlePrefix: "Movilidad y rutas",
-    excerpt: "Informacion practica de transporte interno y conexiones regionales.",
-    intro: "Resolver movilidad reduce friccion y aumenta conversion en servicios complementarios.",
-    buyerIntent: "Cuando el cliente entiende como moverse, compra mas rapido actividades y hoteles.",
+    excerptLead: "Transporte interno y rutas regionales explicadas de forma simple y util.",
+    intro:
+      "Moverse bien en Punta Cana cambia por completo la experiencia. Con una ruta clara, aprovechas mas tiempo y evitas estres.",
+    planning:
+      "Antes de salir, define como te moveras entre aeropuerto, hotel, playas y actividades para evitar gastos imprevistos.",
+    practicalBlockTitle: "Como organizar tu movilidad en Punta Cana",
+    practicalTips: [
+      "Confirma tarifa estimada antes de iniciar el traslado.",
+      "Prioriza transporte formal para trayectos largos.",
+      "Guarda opciones de respaldo para horas pico.",
+      "Ten ubicaciones clave guardadas en el movil."
+    ],
+    mistakesTitle: "Errores comunes de movilidad",
+    mistakes: [
+      "Subir sin acordar tarifa o ruta.",
+      "No validar seguridad en transporte informal.",
+      "Programar salidas sin margen de tiempo."
+    ],
+    close:
+      "Una movilidad bien planificada te da mas libertad para disfrutar el destino sin depender de improvisaciones.",
     ctaLabel: "Cotizar traslado",
     ctaHref: "/traslado",
     ctaSupportHref: "/tours"
   },
   compras: {
     titlePrefix: "Guia de compras y servicios",
-    excerpt: "Recomendaciones de vida diaria para turistas con orientacion de venta cruzada.",
-    intro: "Las busquedas de compras y servicios crean oportunidades para extender tiempo y gasto en destino.",
-    buyerIntent: "Convertimos dudas operativas en planes de viaje completos y reservas seguras.",
+    excerptLead: "Recomendaciones utiles para compras y servicios diarios en Punta Cana.",
+    intro:
+      "Saber donde comprar y resolver servicios basicos te permite viajar mas comodo y evitar precios inflados para turistas.",
+    planning:
+      "Una buena referencia de supermercados, farmacias y zonas de compra te ayuda a controlar mejor el presupuesto.",
+    practicalBlockTitle: "Checklist para compras inteligentes en destino",
+    practicalTips: [
+      "Compara precios en mas de un punto antes de comprar.",
+      "Pregunta por horarios reales de apertura.",
+      "Evita cargar efectivo excesivo en salidas largas.",
+      "Compra souvenirs en zonas con referencias claras."
+    ],
+    mistakesTitle: "Errores comunes al comprar en viaje",
+    mistakes: [
+      "Comprar en el primer lugar sin comparar.",
+      "No revisar autenticidad en productos tipicos.",
+      "No considerar transporte de regreso con compras."
+    ],
+    close:
+      "Con informacion local correcta, compras mejor, gastas menos y aprovechas el viaje con mas tranquilidad.",
     ctaLabel: "Ver actividades cercanas",
     ctaHref: "/tours",
     ctaSupportHref: "/hoteles"
   },
   salud: {
     titlePrefix: "Guia de salud y seguridad",
-    excerpt: "Respuestas practicas de seguridad y asistencia medica para viajeros.",
-    intro: "Cuando se resuelven dudas de salud, el cliente avanza con mayor confianza hacia la reserva.",
-    buyerIntent: "La confianza sanitaria impulsa conversion en hoteles, tours y traslados.",
+    excerptLead: "Informacion de salud y seguridad para viajar con confianza.",
+    intro:
+      "Resolver dudas de salud antes de viajar reduce ansiedad y permite disfrutar mas cada actividad en destino.",
+    planning:
+      "Conocer hospitales, farmacias y recomendaciones basicas te da un plan claro ante cualquier imprevisto.",
+    practicalBlockTitle: "Puntos de salud y seguridad que conviene tener listos",
+    practicalTips: [
+      "Guarda numeros de emergencia y ubicaciones medicas.",
+      "Lleva seguro con cobertura internacional activa.",
+      "Usa protector solar y repelente adecuado al clima.",
+      "Prioriza transporte seguro en horarios nocturnos."
+    ],
+    mistakesTitle: "Errores comunes en temas de salud de viaje",
+    mistakes: [
+      "Viajar sin seguro o sin revisar cobertura.",
+      "No llevar medicamentos personales esenciales.",
+      "No hidratarse correctamente en jornadas largas."
+    ],
+    close:
+      "Con medidas basicas y buena informacion, tu viaje a Punta Cana se vuelve mas seguro y predecible.",
     ctaLabel: "Plan de viaje seguro",
     ctaHref: "/tours",
     ctaSupportHref: "/traslado"
   },
   inversion: {
     titlePrefix: "Guia inmobiliaria",
-    excerpt: "Contenido de inversion y real estate con enfoque en demanda internacional.",
-    intro: "Este nicho requiere precision comercial y contexto local para convertir consultas en leads calificados.",
-    buyerIntent: "Posicionamos autoridad local para captar interesados en inversion y estancias prolongadas.",
+    excerptLead: "Panorama real de inversion y bienes raices para compradores internacionales.",
+    intro:
+      "Invertir en Punta Cana puede ser una gran oportunidad si conoces bien zonas, regulaciones y modelo de rentabilidad.",
+    planning:
+      "Antes de tomar una decision, compara proyecto, ubicacion, costos de mantenimiento y proyeccion de ocupacion.",
+    practicalBlockTitle: "Checklist para evaluar inversion inmobiliaria",
+    practicalTips: [
+      "Revisa historial del desarrollador.",
+      "Valida aspectos legales con profesional local.",
+      "Calcula rentabilidad con escenarios realistas.",
+      "Confirma costos fijos anuales y administracion."
+    ],
+    mistakesTitle: "Errores comunes al invertir",
+    mistakes: [
+      "Comprar sin asesoria legal independiente.",
+      "Subestimar costos de operacion y mantenimiento.",
+      "Basarse solo en promesas comerciales."
+    ],
+    close:
+      "Una inversion bien analizada protege tu capital y mejora las probabilidades de retorno sostenible.",
     ctaLabel: "Conocer zonas y servicios",
     ctaHref: "/hoteles",
     ctaSupportHref: "/traslado"
   },
   nightlife: {
     titlePrefix: "Guia nightlife",
-    excerpt: "Vida nocturna y entretenimiento con enfoque en conversion turistica.",
-    intro: "Los usuarios que buscan nightlife suelen estar listos para comprar experiencias y movilidad nocturna.",
-    buyerIntent: "Alineamos ocio + logistica para cerrar reservas de manera inmediata.",
+    excerptLead: "Vida nocturna en Punta Cana con recomendaciones reales para salir mejor.",
+    intro:
+      "Punta Cana tiene opciones nocturnas para todos los estilos: bares, clubs y eventos con musica en vivo.",
+    planning:
+      "Planear bien la noche significa elegir zona, reservar donde aplique y tener transporte de regreso confirmado.",
+    practicalBlockTitle: "Checklist para una salida nocturna sin estres",
+    practicalTips: [
+      "Define presupuesto de la noche antes de salir.",
+      "Confirma ubicacion y horario de cierre del lugar.",
+      "Coordina regreso al hotel con antelacion.",
+      "Evita cambiar de zona sin plan de movilidad."
+    ],
+    mistakesTitle: "Errores comunes en nightlife",
+    mistakes: [
+      "Salir sin transporte de vuelta.",
+      "No revisar dress code o edad minima.",
+      "Improvisar rutas largas de madrugada."
+    ],
+    close:
+      "Con una buena organizacion, la vida nocturna se disfruta mas y se mantiene segura de principio a fin.",
     ctaLabel: "Reservar experiencias",
     ctaHref: "/tours",
     ctaSupportHref: "/traslado"
   },
   familiar: {
     titlePrefix: "Guia familiar",
-    excerpt: "Contenido para familias, edades y necesidades especiales con enfoque de compra.",
-    intro: "El turismo familiar convierte mejor cuando se responde con claridad sobre comodidad y seguridad.",
-    buyerIntent: "Reducimos incertidumbre y facilitamos reserva integral para todo el grupo.",
+    excerptLead: "Consejos para familias que viajan a Punta Cana con ninos o adultos mayores.",
+    intro:
+      "Los viajes familiares requieren mas organizacion, pero con un buen plan se vuelven mucho mas comodos y disfrutable para todos.",
+    planning:
+      "La clave esta en equilibrar descanso, actividades y movilidad para que nadie termine agotado en mitad del viaje.",
+    practicalBlockTitle: "Como organizar un viaje familiar funcional",
+    practicalTips: [
+      "Escoge actividades segun edades y energia del grupo.",
+      "Prioriza traslados comodos y horarios realistas.",
+      "Deja espacios libres entre excursiones.",
+      "Confirma servicios especiales del hotel si los necesitas."
+    ],
+    mistakesTitle: "Errores comunes en viajes familiares",
+    mistakes: [
+      "Saturar agenda todos los dias.",
+      "No considerar tiempos de descanso para ninos.",
+      "Elegir tours sin revisar requisitos de edad."
+    ],
+    close:
+      "Cuando la agenda familiar esta bien equilibrada, el viaje se disfruta mas y con menos contratiempos.",
     ctaLabel: "Ver opciones familiares",
     ctaHref: "/hoteles",
     ctaSupportHref: "/tours"
   },
   global: {
     titlePrefix: "Comparativa global",
-    excerpt: "Comparativas directas del Caribe para capturar demanda de eleccion de destino.",
-    intro: "Estas keywords compiten fuerte en SERP; requieren posicionamiento claro de valor diferencial.",
-    buyerIntent: "Mostramos por que Punta Cana es una decision rentable para cerrar conversion.",
+    excerptLead: "Comparativas del Caribe para elegir destino con datos utiles y realistas.",
+    intro:
+      "Comparar destinos del Caribe ayuda a decidir mejor, especialmente cuando el presupuesto y los dias de viaje son limitados.",
+    planning:
+      "No hay destino perfecto para todos; la mejor eleccion depende de lo que priorizas: playa, precio, ambiente o actividades.",
+    practicalBlockTitle: "Que comparar entre destinos del Caribe",
+    practicalTips: [
+      "Costo total de vuelo + hotel + movilidad.",
+      "Tiempo de traslado desde aeropuerto.",
+      "Variedad de actividades disponibles.",
+      "Estilo de viaje: familiar, pareja o grupos."
+    ],
+    mistakesTitle: "Errores comunes al elegir destino",
+    mistakes: [
+      "Comparar solo por precio de hotel.",
+      "No revisar estacionalidad de clima y sargazo.",
+      "Ignorar conectividad y tiempos de viaje."
+    ],
+    close:
+      "Una comparativa realista te ayuda a elegir el destino correcto para tu tipo de viaje y evitar decepciones.",
     ctaLabel: "Descubrir Punta Cana",
     ctaHref: "/tours",
     ctaSupportHref: "/hoteles"
   },
   conversion: {
     titlePrefix: "Oferta y conversion",
-    excerpt: "Keywords transaccionales para activar compra inmediata en viajes a Punta Cana.",
-    intro: "Este contenido esta orientado a capturar usuarios listos para comprar o comparar oferta final.",
-    buyerIntent: "El foco es accion: descuentos, urgencia y cierre de reservas sin friccion.",
+    excerptLead: "Ofertas y promociones con enfoque practico para reservar sin complicarte.",
+    intro:
+      "Si estas buscando descuentos o tarifas de ultimo minuto, necesitas informacion clara para cerrar la reserva sin errores.",
+    planning:
+      "Las mejores ofertas se aprovechan cuando ya tienes definida fecha, zona y tipo de servicio que realmente necesitas.",
+    practicalBlockTitle: "Como aprovechar ofertas sin equivocarte",
+    practicalTips: [
+      "Confirma condiciones de la promocion antes de pagar.",
+      "Revisa fechas bloqueadas o restricciones.",
+      "Verifica politica de cambios y cancelacion.",
+      "Compara precio final, no solo porcentaje de descuento."
+    ],
+    mistakesTitle: "Errores comunes con ofertas y promociones",
+    mistakes: [
+      "Reservar por urgencia sin revisar terminos.",
+      "No validar disponibilidad real de la oferta.",
+      "Confundir precio base con precio final."
+    ],
+    close:
+      "Una oferta bien elegida te ayuda a ahorrar de verdad sin sacrificar calidad ni tranquilidad durante el viaje.",
     ctaLabel: "Reservar ahora",
     ctaHref: "/tours",
     ctaSupportHref: "/traslado"
@@ -307,29 +534,6 @@ const normalize = (s: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/\s+/g, " ")
     .trim();
-
-const buildContentHtml = (keyword: string, cluster: Cluster) => {
-  const cfg = CLUSTER_CONFIG[cluster];
-  return `
-<h1>${keyword}</h1>
-<p>${cfg.intro}</p>
-<p>${cfg.buyerIntent}</p>
-
-<h2>Checklist de decision</h2>
-<ul>
-  <li>Define objetivo del viaje y presupuesto final en USD.</li>
-  <li>Confirma zona, tiempos de traslado y disponibilidad real.</li>
-  <li>Compara valor total, no solo precio inicial.</li>
-  <li>Cierra servicios clave con soporte por WhatsApp.</li>
-</ul>
-
-<h2>Recomendacion Proactivitis</h2>
-<p>Para ${keyword}, la estrategia mas efectiva es ordenar primero logistica y luego cerrar actividades y alojamiento segun tu perfil de viaje.</p>
-
-<h2>Siguiente paso</h2>
-<p><a href="${cfg.ctaHref}">${cfg.ctaLabel}</a> | <a href="${cfg.ctaSupportHref}">Ver soporte complementario</a></p>
-`;
-};
 
 async function main() {
   const tourImages = await prisma.tour.findMany({
@@ -344,38 +548,49 @@ async function main() {
   const fallbackImage = "/tours/default.jpg";
 
   let created = 0;
-  let skipped = 0;
+  let updated = 0;
   const now = new Date();
 
   for (let i = 0; i < KEYWORDS.length; i += 1) {
     const entry = KEYWORDS[i];
     const keyword = normalize(entry.keyword);
     const slug = `seo-${slugifyBlog(keyword)}`;
+    const cfg = CLUSTER_CONFIG[entry.cluster];
+    const { title, excerpt, contentHtml } = buildSeoBlogDraft(keyword, cfg, {
+      label: cfg.ctaLabel,
+      href: cfg.ctaHref,
+      supportLabel: "Ver soporte complementario",
+      supportHref: cfg.ctaSupportHref
+    });
+    const coverImage = images.length ? images[i % images.length] : fallbackImage;
     const exists = await prisma.blogPost.findUnique({ where: { slug }, select: { id: true } });
     if (exists) {
-      skipped += 1;
-      continue;
+      await prisma.blogPost.update({
+        where: { id: exists.id },
+        data: {
+          title,
+          excerpt,
+          coverImage,
+          contentHtml,
+          status: "PUBLISHED"
+        }
+      });
+      updated += 1;
+    } else {
+      await prisma.blogPost.create({
+        data: {
+          id: randomUUID(),
+          title,
+          slug,
+          excerpt,
+          coverImage,
+          contentHtml,
+          status: "PUBLISHED",
+          publishedAt: now
+        }
+      });
+      created += 1;
     }
-
-    const cfg = CLUSTER_CONFIG[entry.cluster];
-    const title = `${cfg.titlePrefix}: ${keyword}`;
-    const excerpt = `${cfg.excerpt} Keyword objetivo: ${keyword}.`;
-    const coverImage = images.length ? images[i % images.length] : fallbackImage;
-    const contentHtml = buildContentHtml(keyword, entry.cluster);
-
-    await prisma.blogPost.create({
-      data: {
-        id: randomUUID(),
-        title,
-        slug,
-        excerpt,
-        coverImage,
-        contentHtml,
-        status: "PUBLISHED",
-        publishedAt: now
-      }
-    });
-    created += 1;
   }
 
   console.log(
@@ -383,7 +598,7 @@ async function main() {
       {
         totalKeywords: KEYWORDS.length,
         created,
-        skippedExisting: skipped
+        updated
       },
       null,
       2
@@ -399,4 +614,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-
