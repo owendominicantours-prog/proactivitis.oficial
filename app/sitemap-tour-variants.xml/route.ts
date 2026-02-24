@@ -20,7 +20,7 @@ export async function GET() {
         select: { slug: true }
       }),
       prisma.tour.findMany({
-        where: { status: "published" },
+        where: { status: { in: ["published", "seo_only"] } },
         select: { slug: true }
       })
     ]);

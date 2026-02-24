@@ -25,7 +25,7 @@ export async function GET() {
   let tours: { slug: string; heroImage: string | null; gallery: string | null }[] = [];
   try {
     tours = await prisma.tour.findMany({
-      where: { status: "published" },
+      where: { status: { in: ["published", "seo_only"] } },
       select: { slug: true, heroImage: true, gallery: true }
     });
   } catch (error) {

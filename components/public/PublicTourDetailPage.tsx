@@ -1130,7 +1130,8 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     notFound();
   }
 
-  if (tour.status !== "published") notFound();
+  const PUBLIC_DETAIL_STATUSES = new Set(["published", "seo_only"]);
+  if (!PUBLIC_DETAIL_STATUSES.has(tour.status)) notFound();
 
   const relatedConditions: Prisma.TourWhereInput[] = [];
   if (tour.destinationId) {

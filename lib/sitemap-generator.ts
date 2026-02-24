@@ -117,7 +117,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
   try {
     const [tours, locations, bookings, countries, destinations, microZones, transferHotels] = await Promise.all([
       prisma.tour.findMany({
-        where: { status: "published" },
+        where: { status: { in: ["published", "seo_only"] } },
         select: {
           id: true,
           slug: true,

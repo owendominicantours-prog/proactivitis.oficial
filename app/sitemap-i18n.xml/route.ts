@@ -33,7 +33,7 @@ export async function GET() {
   try {
     [tours, hotels, transferCombos] = await Promise.all([
       prisma.tour.findMany({
-        where: { status: "published" },
+        where: { status: { in: ["published", "seo_only"] } },
         select: { slug: true }
       }),
       prisma.transferLocation.findMany({
