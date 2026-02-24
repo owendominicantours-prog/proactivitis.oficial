@@ -53,12 +53,13 @@ export const transferLandings: TransferLandingData[] = [
     reverseSlug: "hard-rock-hotel-punta-cana-to-punta-cana-international-airport",
     hotelSlug: "hard-rock-hotel-punta-cana",
     hotelName: "Hard Rock Hotel & Casino Punta Cana",
-    heroTitle: "Hard Rock Punta Cana shuttle desde PUJ (private transfer)",
-    heroSubtitle: "Door-to-lobby pickup with flight tracking, bilingual driver, and fixed pricing.",
-    heroTagline: "Hard Rock Punta Cana airport shuttle with rockstar-level service",
+    heroTitle: "Hard Rock Punta Cana shuttle",
+    heroSubtitle:
+      "Precio desde $44.00 por servicio privado. Datos actualizados instantaneamente. Punta Cana International Airport (PUJ) conecta con Hard Rock Hotel & Casino Punta Cana.",
+    heroTagline: "Traslado privado PUJ -> Hard Rock con confirmacion inmediata",
     heroImage: "/transfer/mini van.png",
     heroImageAlt: "Mini van premium en la autopista Punta Cana",
-    priceFrom: 45,
+    priceFrom: 44,
     priceDetails: [
       "Confirmacion inmediata con conductor asignado",
       "Espera gratuita de 60 minutos en el aeropuerto",
@@ -67,8 +68,9 @@ export const transferLandings: TransferLandingData[] = [
     longCopy: buildLongCopy("Hard Rock Hotel & Casino Punta Cana"),
     trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
     faq: buildFaq("Hard Rock Hotel & Casino Punta Cana"),
-    seoTitle: "Hard Rock Punta Cana shuttle (PUJ) | Private airport transfer",
-    metaDescription: "Hard Rock Punta Cana shuttle desde el aeropuerto PUJ. Traslado privado con flight tracking, ayuda de equipaje, precio fijo y soporte 24/7.",
+    seoTitle: "Hard Rock Punta Cana shuttle | PUJ to Hard Rock private transfer",
+    metaDescription:
+      "Precio desde $44.00 por servicio privado. Datos actualizados instantaneamente. Punta Cana International Airport (PUJ) conecta con Hard Rock Hotel & Casino Punta Cana.",
     keywords: [
       "PUJ Hard Rock transfer",
       "transfer privado Punta Cana Hard Rock",

@@ -203,12 +203,17 @@ const buildFallbackLanding = ({
 
 const resolveBaseLanding = async (landingSlug: string): Promise<TransferLandingData | null> => {
   const normalizedLandingSlug = normalizeLoose(landingSlug);
+  const normalizedLandingSlugAlias = normalizedLandingSlug
+    .replace("punta-cana-international-airport-puj-to-", "punta-cana-international-airport-to-")
+    .replace("-to-punta-cana-international-airport-puj", "-to-punta-cana-international-airport");
   const manual = allLandings().find(
     (landing) =>
       landing.landingSlug === landingSlug ||
       landing.reverseSlug === landingSlug ||
       normalizeLoose(landing.landingSlug) === normalizedLandingSlug ||
+      normalizeLoose(landing.landingSlug) === normalizedLandingSlugAlias ||
       normalizeLoose(landing.reverseSlug) === normalizedLandingSlug
+      || normalizeLoose(landing.reverseSlug) === normalizedLandingSlugAlias
   );
   if (manual) return manual;
 

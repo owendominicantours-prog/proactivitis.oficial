@@ -291,7 +291,7 @@ export default async function HipHopLandingPage() {
             </p>
             <div className="flex items-end gap-8">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Precio por persona</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Precio desde</p>
                 <p className="text-4xl font-black text-indigo-600">{priceLabel}</p>
               </div>
               <div>
