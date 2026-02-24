@@ -596,6 +596,264 @@ const STATIC_POSTS: StaticBlogPost[] = [
   }
 ];
 
+type BlogLocale = "es" | "en" | "fr";
+
+const STATIC_POST_COVER_OVERRIDES: Record<string, string> = {
+  "punta-cana-travel-guide-2026": "/fototours/fototour.jpeg",
+  "top-attractions-punta-cana-2026": "/fototours/fototour.jpeg",
+  "punta-cana-airport-transfer-guide-2026": "/transfer/sedan.png",
+  "punta-cana-what-to-pack-2026": "/fototours/fotosimple.jpg",
+  "punta-cana-best-beaches-2026": "/fototours/fototour.jpeg",
+  "punta-cana-family-trips-2026": "/transfer/suv.png",
+  "punta-cana-nightlife-guide-2026": "/fototours/fototour.jpeg",
+  "punta-cana-weather-2026": "/fototours/fotosimple.jpg",
+  "punta-cana-couples-itinerary-2026": "/fototours/fototour.jpeg",
+  "punta-cana-adventure-tours-2026": "/fototours/fototour.jpeg",
+  "punta-cana-budget-tips-2026": "/transfer/mini van.png"
+};
+
+type EditorialBlock = {
+  intro: string;
+  planningTitle: string;
+  planningBody: string;
+  checklistTitle: string;
+  checklist: string[];
+  mistakesTitle: string;
+  mistakes: string[];
+  ctaTitle: string;
+  ctaBody: string;
+  ctaHref: string;
+  ctaLabel: string;
+};
+
+const EDITORIAL_DEFAULT: Record<BlogLocale, EditorialBlock> = {
+  es: {
+    intro:
+      "Este articulo se actualizo para ayudarte a decidir mejor, con contexto real de viaje y recomendaciones accionables.",
+    planningTitle: "Como planificarlo sin perder dinero",
+    planningBody:
+      "La mejor forma de aprovechar Punta Cana es ordenar reservas por prioridad: primero traslado, luego tours clave y finalmente actividades opcionales.",
+    checklistTitle: "Checklist recomendado",
+    checklist: [
+      "Define fechas, hotel y numero de viajeros antes de cotizar.",
+      "Confirma horario de recogida y duracion real de cada actividad.",
+      "Reserva solo con precio total cerrado y politica de cancelacion clara.",
+      "Guarda vouchers y soporte de contacto para cambios de ultima hora."
+    ],
+    mistakesTitle: "Errores comunes que debes evitar",
+    mistakes: [
+      "Esperar a llegar al hotel para reservar todo.",
+      "Elegir solo por precio sin validar logistica de recogida.",
+      "Saturar la agenda sin dias de descanso o margen entre tours."
+    ],
+    ctaTitle: "Siguiente paso recomendado",
+    ctaBody:
+      "Si quieres cerrar tu plan hoy, combina traslados y excursiones en una sola ruta de reserva para tener todo confirmado antes de viajar.",
+    ctaHref: "/tours",
+    ctaLabel: "Ver tours disponibles"
+  },
+  en: {
+    intro:
+      "This article was expanded to give you practical, real-world guidance so you can book with confidence.",
+    planningTitle: "How to plan it without overspending",
+    planningBody:
+      "The smartest sequence in Punta Cana is simple: secure transfer first, lock your core tours, then add optional experiences.",
+    checklistTitle: "Recommended checklist",
+    checklist: [
+      "Confirm travel dates, resort, and traveler count first.",
+      "Validate pickup windows and true activity duration.",
+      "Book only with full-price transparency and clear cancellation rules.",
+      "Keep vouchers and support contact ready for last-minute adjustments."
+    ],
+    mistakesTitle: "Common mistakes to avoid",
+    mistakes: [
+      "Waiting until hotel arrival to book everything.",
+      "Choosing only by price without pickup logistics.",
+      "Overloading your itinerary with no recovery time."
+    ],
+    ctaTitle: "Best next step",
+    ctaBody:
+      "If you want to lock your plan now, combine transfers and tours in one booking flow so everything is confirmed before arrival.",
+    ctaHref: "/en/tours",
+    ctaLabel: "Explore available tours"
+  },
+  fr: {
+    intro:
+      "Cet article a ete enrichi pour vous donner des conseils concrets et utiles avant reservation.",
+    planningTitle: "Comment planifier sans depenser trop",
+    planningBody:
+      "La sequence la plus efficace a Punta Cana: transfert d abord, excursions principales ensuite, options additionnelles a la fin.",
+    checklistTitle: "Checklist recommandee",
+    checklist: [
+      "Confirmez vos dates, hotel et nombre de voyageurs.",
+      "Validez horaires de pickup et duree reelle des activites.",
+      "Reservez avec prix total clair et annulation transparente.",
+      "Gardez vouchers et contact support pour les changements."
+    ],
+    mistakesTitle: "Erreurs frequentes a eviter",
+    mistakes: [
+      "Tout reserver uniquement a l arrivee a l hotel.",
+      "Choisir par prix sans verifier la logistique pickup.",
+      "Surcharger le planning sans temps libre."
+    ],
+    ctaTitle: "Prochaine etape conseillee",
+    ctaBody:
+      "Pour verrouiller votre voyage maintenant, combinez transferts et excursions dans un parcours de reservation unique.",
+    ctaHref: "/fr/tours",
+    ctaLabel: "Voir les excursions"
+  }
+};
+
+const EDITORIAL_BY_SLUG: Record<string, Partial<Record<BlogLocale, Partial<EditorialBlock>>>> = {
+  "punta-cana-airport-transfer-guide-2026": {
+    es: {
+      planningTitle: "Plan de llegada profesional en PUJ",
+      planningBody:
+        "Si aterrizas en horario pico, un transfer privado reduce la friccion de llegada: menos espera, ruta directa y soporte local para imprevistos.",
+      checklist: [
+        "Comparar tiempo de traslado segun zona (Bavaro, Cap Cana, Uvero Alto).",
+        "Confirmar equipaje especial (coche de bebe, tablas, maletas extra).",
+        "Compartir numero de vuelo para monitoreo de retrasos.",
+        "Definir punto de salida de retorno al aeropuerto."
+      ],
+      ctaHref: "/traslado",
+      ctaLabel: "Reservar traslado privado"
+    }
+  },
+  "punta-cana-best-beaches-2026": {
+    es: {
+      planningTitle: "Que playa elegir segun tu estilo",
+      planningBody:
+        "Bavaro funciona para todo, Macao para aventura y Cap Cana para ritmo premium. Elegir bien la playa te ahorra traslados innecesarios.",
+      checklist: [
+        "Macao para buggy y ambiente natural.",
+        "Bavaro para combinar playa + actividades.",
+        "Cap Cana para parejas y dias tranquilos.",
+        "Reservar excursion con pickup segun hotel."
+      ]
+    }
+  },
+  "punta-cana-family-trips-2026": {
+    es: {
+      planningTitle: "Viaje familiar sin estres",
+      planningBody:
+        "En viajes con ninos, la clave no es hacer mas tours, sino escoger mejor horarios, distancias y actividades con menor desgaste.",
+      checklist: [
+        "Priorizar tours de medio dia para evitar cansancio.",
+        "Llevar snacks, agua y protector solar de repuesto.",
+        "Coordinar asientos infantiles en traslados.",
+        "Dejar una tarde libre entre actividades fuertes."
+      ]
+    }
+  },
+  "punta-cana-nightlife-guide-2026": {
+    es: {
+      planningTitle: "Noches de Punta Cana con logistica segura",
+      planningBody:
+        "El mejor plan nocturno combina party boat o show con transporte previamente coordinado, evitando improvisaciones al salir.",
+      checklist: [
+        "Revisar codigo de vestimenta del lugar.",
+        "Definir transporte de ida y vuelta antes de salir.",
+        "Reservar con antelacion en fines de semana.",
+        "Evitar compras de ultima hora en puerta sin referencia."
+      ]
+    }
+  },
+  "punta-cana-weather-2026": {
+    es: {
+      planningTitle: "Clima y agenda: como ajustar tu itinerario",
+      planningBody:
+        "No se trata solo de la temporada; tambien importa el horario. Muchas excursiones rinden mejor en la manana por mar mas calmado.",
+      checklist: [
+        "Excursiones acuaticas temprano.",
+        "Actividades urbanas o compras en dias de lluvia.",
+        "Buffer de tiempo entre tours consecutivos.",
+        "Confirmar politica de reprogramacion por clima."
+      ]
+    }
+  },
+  "punta-cana-couples-itinerary-2026": {
+    es: {
+      planningTitle: "Itinerario romantico que si funciona",
+      planningBody:
+        "Para parejas, menos traslados y mas calidad de experiencia. Combina una excursion premium y una actividad relajada para equilibrar energia.",
+      checklist: [
+        "Sunset catamaran o dinner experience.",
+        "Un tour de isla con tiempo libre real.",
+        "Traslado privado para horarios flexibles.",
+        "Un dia completo sin agenda para resort y spa."
+      ]
+    }
+  },
+  "punta-cana-adventure-tours-2026": {
+    es: {
+      planningTitle: "Aventura sin improvisacion",
+      planningBody:
+        "Buggy, ATV y zipline exigen coordinacion de ropa, horarios y energia. Si lo organizas bien, disfrutas mas y reduces tiempos muertos.",
+      checklist: [
+        "Ropa de cambio y calzado cerrado.",
+        "Tour de aventura en dia separado de party boat.",
+        "Hidratacion y snacks antes de salir.",
+        "Confirmar nivel de dificultad por grupo."
+      ]
+    }
+  },
+  "punta-cana-budget-tips-2026": {
+    es: {
+      planningTitle: "Ahorro inteligente, no ahorro riesgoso",
+      planningBody:
+        "Recortar costo no significa bajar calidad. El ahorro real viene de reservar con estructura: paquetes logicos y tiempos bien organizados.",
+      checklist: [
+        "Combinar traslados + tours para mejor tarifa final.",
+        "Evitar intermediarios sin soporte postventa.",
+        "Pedir precio total con impuestos incluidos.",
+        "Comparar valor por experiencia, no solo numero final."
+      ]
+    }
+  }
+};
+
+const getCoverImageForStaticPost = (post: StaticBlogPost) =>
+  STATIC_POST_COVER_OVERRIDES[post.slug] ?? post.coverImage ?? "/fototours/fotosimple.jpg";
+
+const getExcerptForStaticPost = (post: StaticBlogPost, locale: BlogLocale) => {
+  const base = post.translations[locale].excerpt?.trim() ?? "";
+  if (base.length >= 95) return base;
+  return `${base} ${getEditorialBlock(post.slug, locale).planningBody}`.trim().slice(0, 190);
+};
+
+const getEditorialBlock = (slug: string, locale: BlogLocale): EditorialBlock => {
+  const base = EDITORIAL_DEFAULT[locale];
+  const overrides = EDITORIAL_BY_SLUG[slug]?.[locale] ?? {};
+  return {
+    ...base,
+    ...overrides,
+    checklist: overrides.checklist ?? base.checklist,
+    mistakes: overrides.mistakes ?? base.mistakes
+  };
+};
+
+const buildEditorialAppendix = (slug: string, locale: BlogLocale) => {
+  if (slug === "punta-cana-travel-guide-2026") return "";
+  const block = getEditorialBlock(slug, locale);
+  const checklistHtml = block.checklist.map((item) => `<li>${item}</li>`).join("");
+  const mistakesHtml = block.mistakes.map((item) => `<li>${item}</li>`).join("");
+  return `
+    <section>
+      <h2>${block.planningTitle}</h2>
+      <p>${block.intro}</p>
+      <p>${block.planningBody}</p>
+      <h3>${block.checklistTitle}</h3>
+      <ul>${checklistHtml}</ul>
+      <h3>${block.mistakesTitle}</h3>
+      <ul>${mistakesHtml}</ul>
+      <h3>${block.ctaTitle}</h3>
+      <p>${block.ctaBody}</p>
+      <p><a href="${block.ctaHref}">${block.ctaLabel}</a></p>
+    </section>
+  `;
+};
+
 const getStaticPost = (slug: string) => STATIC_POSTS.find((post) => post.slug === slug);
 
 const renderBlogContent = (html: string) => (
@@ -666,8 +924,8 @@ export async function getBlogList(locale: "es" | "en" | "fr") {
     id: post.id,
     title: post.translations[locale].title,
     slug: post.slug,
-    excerpt: post.translations[locale].excerpt,
-    coverImage: post.coverImage,
+    excerpt: getExcerptForStaticPost(post, locale),
+    coverImage: getCoverImageForStaticPost(post),
     publishedAt: post.publishedAt
   }));
 
@@ -712,7 +970,7 @@ export async function buildBlogPostMetadata(slug: string, locale: "es" | "en" | 
       locale === "es" ? `${BASE_URL}/news/${staticPost.slug}` : `${BASE_URL}/${locale}/news/${staticPost.slug}`;
     return {
       title: translation.title,
-      description: translation.excerpt,
+      description: getExcerptForStaticPost(staticPost, locale),
       alternates: {
         canonical,
         languages: {
@@ -725,7 +983,7 @@ export async function buildBlogPostMetadata(slug: string, locale: "es" | "en" | 
         title: translation.title,
         description: translation.excerpt,
         url: canonical,
-        images: staticPost.coverImage ? [{ url: staticPost.coverImage }] : undefined
+        images: [{ url: getCoverImageForStaticPost(staticPost) }]
       }
     };
   }
@@ -825,6 +1083,8 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
     const discountPercent =
       preference?.discountEligible && !preference?.discountRedeemedAt ? 10 : 0;
     const translation = staticPost.translations[locale];
+    const staticCoverImage = getCoverImageForStaticPost(staticPost);
+    const enrichedContentHtml = `${translation.contentHtml}${buildEditorialAppendix(staticPost.slug, locale)}`;
     const shareUrl =
       locale === "es"
         ? `${BASE_URL}/news/${staticPost.slug}`
@@ -869,17 +1129,17 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
             <BlogShareButtons url={shareUrl} title={translation.title} />
           </header>
 
-          <div className="relative h-[320px] w-full overflow-hidden rounded-3xl bg-slate-100">
-            <Image
-              src={staticPost.coverImage ?? "/fototours/fotosimple.jpg"}
-              alt={translation.title}
-              fill
-              sizes="(max-width: 768px) 100vw, 70vw"
-              className="object-cover"
-            />
-          </div>
+        <div className="relative h-[320px] w-full overflow-hidden rounded-3xl bg-slate-100">
+          <Image
+            src={staticCoverImage}
+            alt={translation.title}
+            fill
+            sizes="(max-width: 768px) 100vw, 70vw"
+            className="object-cover"
+          />
+        </div>
 
-          <section className="blog-content">{renderBlogContent(translation.contentHtml)}</section>
+          <section className="blog-content">{renderBlogContent(enrichedContentHtml)}</section>
 
           {relatedTours.length ? (
             <section className="space-y-4">
