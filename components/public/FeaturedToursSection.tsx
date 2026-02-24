@@ -51,9 +51,7 @@ const fetchFeaturedTours = async (
   }
 
   const where: Prisma.TourWhereInput = {
-    status: {
-      not: "draft"
-    },
+    status: "published",
     slug: { not: HIDDEN_TRANSFER_SLUG }
   };
 

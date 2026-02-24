@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { errorOnce } from "@/lib/logOnce";
+import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 
 const safePrismaArray = async <T>(label: string, fn: () => Promise<T[]>): Promise<T[]> => {
   try {
@@ -18,6 +19,11 @@ const safePrismaSingle = async <T>(label: string, fn: () => Promise<T | null>): 
     errorOnce(`destinations-single-${label}`, `Prisma error ${label}:`, error);
     return null;
   }
+};
+
+const publishedTourWhereBase: Prisma.TourWhereInput = {
+  status: "published",
+  slug: { not: HIDDEN_TRANSFER_SLUG }
 };
 
 export type CountryWithMeta = {
@@ -80,6 +86,7 @@ const buildDestinationCountMaps = async () => {
     const grouped = await prisma.tour.groupBy({
       by: ["departureDestinationId"],
       where: {
+        ...publishedTourWhereBase,
         departureDestinationId: {
           not: null
         }
@@ -124,7 +131,7 @@ export async function getCountriesWithTours(): Promise<CountryWithMeta[]> {
         destinations: {
           some: {
             tours: {
-              some: {}
+              some: publishedTourWhereBase
             }
           }
         }
@@ -290,6 +297,7 @@ export async function getToursByCountrySlug(countrySlug: string): Promise<TourFo
   const tours = await safePrismaArray("fetching tours by country", () =>
     prisma.tour.findMany({
       where: {
+        ...publishedTourWhereBase,
         departureDestination: {
           country: {
             slug: countrySlug
@@ -310,6 +318,7 @@ export async function getToursByDestinationSlug(countrySlug: string, destination
   const tours = await safePrismaArray("fetching tours by destination", () =>
     prisma.tour.findMany({
       where: {
+        ...publishedTourWhereBase,
         departureDestination: {
           slug: destinationSlug,
           country: {
@@ -330,6 +339,7 @@ export async function getToursByDestinationSlug(countrySlug: string, destination
 export async function getAllTours(): Promise<TourForCard[]> {
   const tours = await safePrismaArray("fetching all tours", () =>
     prisma.tour.findMany({
+      where: publishedTourWhereBase,
       select: selectTourForCard,
       orderBy: {
         title: "asc"

@@ -39,9 +39,7 @@ const fetchTourSearchItems = async (locale: Locale) => {
 
   return prisma.tour.findMany({
     where: {
-      status: {
-        not: "draft"
-      },
+      status: "published",
       slug: { not: HIDDEN_TRANSFER_SLUG }
     },
     orderBy: { createdAt: "desc" },

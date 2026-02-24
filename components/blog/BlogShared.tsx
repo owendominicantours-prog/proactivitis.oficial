@@ -922,6 +922,7 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
             select: {
               id: true,
               slug: true,
+              status: true,
               title: true,
               price: true,
               heroImage: true,
@@ -973,7 +974,9 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
   const excerpt = translation?.excerpt ?? post.excerpt ?? "";
   const contentHtml = translation?.contentHtml ?? post.contentHtml;
   const shareUrl = locale === "es" ? `${BASE_URL}/news/${post.slug}` : `${BASE_URL}/${locale}/news/${post.slug}`;
-  const relatedTours = post.tours.map((entry) => entry.tour);
+  const relatedTours = post.tours
+    .map((entry) => entry.tour)
+    .filter((tour) => tour.status === "published");
   const filteredTours = applyPreferences
     ? relatedTours.filter((tour) => {
         const destination = tour.departureDestination;
