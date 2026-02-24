@@ -871,7 +871,9 @@ const LABELS = {
     listCta: "Leer articulo",
     detailComments: "Comentarios",
     detailEmptyComments: "Aun no hay comentarios aprobados.",
-    detailTours: "Tours recomendados"
+    detailTours: "Tours recomendados",
+    detailHotels: "Hoteles recomendados",
+    detailHotelsBody: "Seleccionados de nuestro inventario real con fotos cargadas por nuestro equipo."
   },
   en: {
     listTitle: "News & Guides",
@@ -880,7 +882,9 @@ const LABELS = {
     listCta: "Read article",
     detailComments: "Comments",
     detailEmptyComments: "No approved comments yet.",
-    detailTours: "Recommended tours"
+    detailTours: "Recommended tours",
+    detailHotels: "Recommended hotels",
+    detailHotelsBody: "Selected from our live inventory with images uploaded by our team."
   },
   fr: {
     listTitle: "Actualites & Guides",
@@ -889,7 +893,9 @@ const LABELS = {
     listCta: "Lire l'article",
     detailComments: "Commentaires",
     detailEmptyComments: "Aucun commentaire approuve pour le moment.",
-    detailTours: "Tours recommandes"
+    detailTours: "Tours recommandes",
+    detailHotels: "Hotels recommandes",
+    detailHotelsBody: "Selectionnes depuis notre inventaire reel avec des photos telechargees par notre equipe."
   }
 };
 
@@ -1237,6 +1243,27 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
   const relatedTours = post.tours
     .map((entry) => entry.tour)
     .filter((tour) => tour.status === "published");
+  const showHotelCards = post.slug.startsWith("seo-");
+  const seoHotelCards = showHotelCards
+    ? await prisma.transferLocation.findMany({
+        where: {
+          type: "HOTEL",
+          active: true,
+          heroImage: {
+            startsWith: "/uploads/"
+          }
+        },
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+          heroImage: true,
+          address: true
+        },
+        orderBy: { name: "asc" },
+        take: 8
+      })
+    : [];
   const filteredTours = applyPreferences
     ? relatedTours.filter((tour) => {
         const destination = tour.departureDestination;
@@ -1291,6 +1318,44 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
                   image={tour.heroImage ?? "/fototours/fotosimple.jpg"}
                 />
               ))}
+            </div>
+          </section>
+        ) : null}
+
+        {seoHotelCards.length ? (
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-slate-900">{labels.detailHotels}</h2>
+            <p className="text-sm text-slate-600">{labels.detailHotelsBody}</p>
+            <div className="grid gap-5 sm:grid-cols-2">
+              {seoHotelCards.map((hotel) => {
+                const href = locale === "es" ? `/hoteles/${hotel.slug}` : `/${locale}/hotels/${hotel.slug}`;
+                return (
+                  <Link
+                    key={hotel.id}
+                    href={href}
+                    className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    <div className="relative h-44 w-full bg-slate-100">
+                      <Image
+                        src={hotel.heroImage ?? "/fototours/fotosimple.jpg"}
+                        alt={hotel.name}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="space-y-2 p-4">
+                      <h3 className="line-clamp-2 text-lg font-semibold text-slate-900">{hotel.name}</h3>
+                      <p className="line-clamp-2 text-sm text-slate-600">
+                        {hotel.address?.trim() || "Punta Cana, Republica Dominicana"}
+                      </p>
+                      <span className="inline-flex rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700">
+                        Ver hotel
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </section>
         ) : null}
