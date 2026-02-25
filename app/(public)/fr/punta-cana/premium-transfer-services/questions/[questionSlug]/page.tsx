@@ -21,6 +21,7 @@ export async function generateMetadata({
   if (!entry) return {};
   const path = `/punta-cana/premium-transfer-services/questions/${entry.slug}`;
   const canonical = `${PROACTIVITIS_URL}/fr${path}`;
+  const image = `${PROACTIVITIS_URL}/transfer/suv.png`;
   const seoTitle = ensureLeadingCapital(entry.seoTitle.fr);
   return {
     title: seoTitle,
@@ -34,6 +35,21 @@ export async function generateMetadata({
         fr: `/fr${path}`,
         "x-default": path
       }
+    },
+    openGraph: {
+      title: seoTitle,
+      description: entry.seoDescription.fr,
+      url: canonical,
+      siteName: "Proactivitis",
+      type: "website",
+      locale: "fr_FR",
+      images: [image]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seoTitle,
+      description: entry.seoDescription.fr,
+      images: [image]
     }
   };
 }

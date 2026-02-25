@@ -32,6 +32,7 @@ const ORGANIZATION_SCHEMA = {
       name: "Proactivitis",
       url: "https://proactivitis.com/",
       logo: "https://proactivitis.com/logo.png",
+      image: "https://proactivitis.com/icon.png",
       description:
         "Plataforma global de gestion turistica: Soluciones de traslados y tours para Clientes, Agencias de Viajes y Suplidores.",
       hasOfferCatalog: {
@@ -75,6 +76,7 @@ const TRAVEL_AGENCY_SCHEMA = {
   alternateName: "Proactivitis Global",
   url: "https://proactivitis.com",
   logo: "https://proactivitis.com/logo.png",
+  image: "https://proactivitis.com/icon.png",
   telephone: "+1-809-394-9877",
   email: "info@proactivitis.com",
   description:

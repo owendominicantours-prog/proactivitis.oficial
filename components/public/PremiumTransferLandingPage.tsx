@@ -16,6 +16,12 @@ const WHATSAPP_LINK = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/18
 const DOMINICAN_COUNTRY_CODES = ["RD", "DO", "DOMINICAN-REPUBLIC"];
 const PREMIUM_AREA_HINTS = ["bavaro", "cap-cana", "uvero-alto", "arena-gorda", "punta-cana-resorts"];
 
+const toAbsoluteImageUrl = (value?: string | null) => {
+  if (!value) return `${PROACTIVITIS_URL}/transfer/suv.png`;
+  if (value.startsWith("http://") || value.startsWith("https://")) return value;
+  return `${PROACTIVITIS_URL}${value.startsWith("/") ? value : `/${value}`}`;
+};
+
 const LABELS = {
   es: {
     eliteRoute: "Ruta premium recomendada",
@@ -207,12 +213,12 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
     sameAs: SAME_AS_URLS,
     ...(variantKeyword ? { keywords: variantKeyword } : {}),
     image: [
-      content.heroBackgroundImage,
-      content.heroSpotlightImage,
-      content.cadillacImage,
-      content.suburbanImage,
-      ...(content.galleryImages ?? [])
-    ].filter(Boolean)
+      toAbsoluteImageUrl(content.heroBackgroundImage),
+      toAbsoluteImageUrl(content.heroSpotlightImage),
+      toAbsoluteImageUrl(content.cadillacImage),
+      toAbsoluteImageUrl(content.suburbanImage),
+      ...(content.galleryImages ?? []).map((image) => toAbsoluteImageUrl(image))
+    ]
   };
 
   const breadcrumbSchema = {
@@ -306,6 +312,10 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
     description: seoDescription,
     url: canonicalUrl,
     inLanguage: locale,
+    primaryImageOfPage: {
+      "@type": "ImageObject",
+      url: toAbsoluteImageUrl(content.heroBackgroundImage || content.heroSpotlightImage)
+    },
     isPartOf: {
       "@type": "WebSite",
       name: "Proactivitis",

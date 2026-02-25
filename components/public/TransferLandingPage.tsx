@@ -339,6 +339,12 @@ const localizeLanding = async (landing: TransferLandingData, locale: Locale) => 
 const buildCanonical = (slug: string, locale: Locale) =>
   locale === "es" ? `${BASE_URL}/transfer/${slug}` : `${BASE_URL}/${locale}/transfer/${slug}`;
 
+const toAbsoluteImageUrl = (value?: string | null) => {
+  if (!value) return `${BASE_URL}/transfer/suv.png`;
+  if (value.startsWith("http://") || value.startsWith("https://")) return value;
+  return `${BASE_URL}${value.startsWith("/") ? value : `/${value}`}`;
+};
+
 const MIN_META_DESCRIPTION = 140;
 
 const buildMetaSuffix = (locale: Locale, hotelName?: string) => {
@@ -627,7 +633,7 @@ export async function TransferLandingPage({
         url: BASE_URL,
         logo: `${BASE_URL}/icon.png`
       },
-      image: [generic.heroImage],
+      image: [toAbsoluteImageUrl(generic.heroImage)],
       offers: {
         "@type": "Offer",
         "@id": `${genericCanonical}#offer`,
@@ -803,6 +809,7 @@ export async function TransferLandingPage({
       "@type": "Place",
       name: t("transferLanding.schema.area")
     },
+    image: [toAbsoluteImageUrl(localizedLanding.heroImage)],
     hasOfferCatalog: {
       "@type": "OfferCatalog",
       name: t("transferLanding.schema.catalogName"),
@@ -841,6 +848,7 @@ export async function TransferLandingPage({
     name: "Proactivitis",
     url: BASE_URL,
     logo: `${BASE_URL}/icon.png`,
+    image: [toAbsoluteImageUrl(localizedLanding.heroImage)],
     sameAs: ["https://www.instagram.com/proactivitis/", "https://www.facebook.com/proactivitis"]
   };
 

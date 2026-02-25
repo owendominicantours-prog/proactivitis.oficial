@@ -12,6 +12,7 @@ import {
 } from "@/data/transfer-question-sales-landings";
 
 const DOMINICAN_COUNTRY_CODES = ["RD", "DO", "DOMINICAN-REPUBLIC"];
+const DEFAULT_SOCIAL_IMAGE = `${PROACTIVITIS_URL}/transfer/suv.png`;
 
 const FAQ_FOLLOWUPS: Record<Locale, Array<{ q: string; a: string }>> = {
   es: [
@@ -131,6 +132,7 @@ export default async function TransferQuestionSalesLandingPage({
     description: entry.seoDescription[locale],
     serviceType: "Premium Airport Transfer + Tours Assistance",
     provider: PROACTIVITIS_LOCALBUSINESS,
+    image: [DEFAULT_SOCIAL_IMAGE],
     offers: {
       "@type": "Offer",
       url: pageUrl,
@@ -174,7 +176,11 @@ export default async function TransferQuestionSalesLandingPage({
     name: entry.seoTitle[locale],
     description: entry.seoDescription[locale],
     url: pageUrl,
-    inLanguage: locale
+    inLanguage: locale,
+    primaryImageOfPage: {
+      "@type": "ImageObject",
+      url: DEFAULT_SOCIAL_IMAGE
+    }
   };
 
   return (
