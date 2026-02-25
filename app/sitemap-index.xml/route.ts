@@ -19,6 +19,7 @@ const SITEMAPS = [
   "/sitemap-i18n.xml",
   "/sitemap-images.xml",
   "/sitemap-seo-only-tours.xml",
+  "/sitemap-transfer-seo-only.xml",
   "/sitemap-urgent-discovered.xml"
 ] as const;
 

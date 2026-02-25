@@ -1,6 +1,12 @@
 export type GenericTransferLanding = {
   landingSlug: string;
   keyword: string;
+  heroImage: string;
+  heroImageAlt: {
+    es: string;
+    en: string;
+    fr: string;
+  };
   titles: {
     es: string;
     en: string;
@@ -127,6 +133,17 @@ const rawKeywords = [
   "punta cana airport transportation service"
 ];
 
+const TRANSFER_LIBRARY_IMAGES = [
+  "https://images.pexels.com/photos/1178448/pexels-photo-1178448.jpeg",
+  "https://images.pexels.com/photos/193021/pexels-photo-193021.jpeg",
+  "https://images.pexels.com/photos/13861/IMG_3496bfree.jpg",
+  "https://images.pexels.com/photos/1007410/pexels-photo-1007410.jpeg",
+  "https://images.pexels.com/photos/1682666/pexels-photo-1682666.jpeg",
+  "https://images.pexels.com/photos/164634/pexels-photo-164634.jpeg",
+  "https://images.pexels.com/photos/210019/pexels-photo-210019.jpeg",
+  "https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg"
+];
+
 const slugify = (value: string) =>
   value
     .toLowerCase()
@@ -224,9 +241,17 @@ const buildMetaDescription = (keyword: string, locale: "es" | "en" | "fr") => {
 
 export const genericTransferLandings: GenericTransferLanding[] = rawKeywords.map((keyword) => {
   const slug = slugify(keyword);
+  const imageIndex = Math.abs(slug.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)) % TRANSFER_LIBRARY_IMAGES.length;
+  const heroImage = TRANSFER_LIBRARY_IMAGES[imageIndex];
   return {
     landingSlug: slug,
     keyword,
+    heroImage,
+    heroImageAlt: {
+      es: `Traslado privado en Punta Cana para ${keyword}`,
+      en: `Private transfer in Punta Cana for ${keyword}`,
+      fr: `Transfert prive a Punta Cana pour ${keyword}`
+    },
     titles: {
       es: buildTitle(keyword, "es"),
       en: buildTitle(keyword, "en"),

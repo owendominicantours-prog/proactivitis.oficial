@@ -35,9 +35,15 @@ type Props = {
   locale: Locale;
   heroTitleOverride?: string;
   heroDescriptionOverride?: string;
+  heroImageOverride?: string;
 };
 
-export default async function PublicTransferPage({ locale, heroTitleOverride, heroDescriptionOverride }: Props) {
+export default async function PublicTransferPage({
+  locale,
+  heroTitleOverride,
+  heroDescriptionOverride,
+  heroImageOverride
+}: Props) {
   const transfersV2Enabled = process.env.TRANSFERS_V2_ENABLED === "true";
   const homeHref = locale === "es" ? "/" : `/${locale}`;
   const toursRootHref = locale === "es" ? "/tours" : `/${locale}/tours`;
@@ -114,8 +120,7 @@ export default async function PublicTransferPage({ locale, heroTitleOverride, he
       <section
         className="relative flex min-h-[380px] w-full items-center overflow-hidden md:min-h-[520px]"
         style={{
-          backgroundImage:
-            "url('https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg')",
+          backgroundImage: `url('${heroImageOverride || "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg"}')`,
           backgroundSize: "cover",
           backgroundPosition: "center"
         }}

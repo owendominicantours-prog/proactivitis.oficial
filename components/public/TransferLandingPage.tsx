@@ -591,12 +591,109 @@ export async function TransferLandingPage({
 
   const generic = findGenericTransferLandingBySlug(landingSlug);
   if (generic) {
+    const genericCanonical = buildCanonical(generic.landingSlug, locale);
+    const genericFaq = [
+      {
+        "@type": "Question",
+        name: translate(locale, "transfer.faq.where.q"),
+        acceptedAnswer: { "@type": "Answer", text: translate(locale, "transfer.faq.where.a") }
+      },
+      {
+        "@type": "Question",
+        name: translate(locale, "transfer.faq.delay.q"),
+        acceptedAnswer: { "@type": "Answer", text: translate(locale, "transfer.faq.delay.a") }
+      },
+      {
+        "@type": "Question",
+        name: translate(locale, "transfer.faq.cancel.q"),
+        acceptedAnswer: { "@type": "Answer", text: translate(locale, "transfer.faq.cancel.a") }
+      }
+    ];
+    const genericSchema = {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "@id": `${genericCanonical}#service`,
+      name: generic.titles[locale],
+      description: generic.descriptions[locale],
+      serviceType: locale === "es" ? "Traslado aeropuerto y transporte terrestre" : locale === "fr" ? "Transfert aeroport et transport terrestre" : "Airport and ground transfer service",
+      areaServed: {
+        "@type": "Place",
+        name: "Punta Cana"
+      },
+      provider: {
+        "@type": "TravelAgency",
+        name: "Proactivitis",
+        url: BASE_URL,
+        logo: `${BASE_URL}/icon.png`
+      },
+      image: [generic.heroImage],
+      offers: {
+        "@type": "Offer",
+        "@id": `${genericCanonical}#offer`,
+        url: genericCanonical,
+        priceCurrency: "USD",
+        price: 44,
+        availability: "https://schema.org/InStock",
+        priceValidUntil: getPriceValidUntil(),
+        shippingDetails: {
+          "@type": "OfferShippingDetails",
+          doesNotShip: true,
+          shippingDestination: {
+            "@type": "DefinedRegion",
+            addressCountry: "DO"
+          }
+        },
+        hasMerchantReturnPolicy: {
+          "@type": "MerchantReturnPolicy",
+          returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+          applicableCountry: "DO"
+        }
+      }
+    };
+    const genericFaqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: genericFaq
+    };
+    const genericBreadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
+          item: locale === "es" ? `${BASE_URL}/` : `${BASE_URL}/${locale}`
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: locale === "es" ? "Traslados" : locale === "fr" ? "Transferts" : "Transfers",
+          item: locale === "es" ? `${BASE_URL}/traslado` : `${BASE_URL}/${locale}/traslado`
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: generic.titles[locale],
+          item: genericCanonical
+        }
+      ]
+    };
+
     return (
-      <PublicTransferPage
-        locale={locale}
-        heroTitleOverride={generic.titles[locale]}
-        heroDescriptionOverride={generic.descriptions[locale]}
-      />
+      <>
+        <PublicTransferPage
+          locale={locale}
+          heroTitleOverride={generic.titles[locale]}
+          heroDescriptionOverride={generic.descriptions[locale]}
+          heroImageOverride={generic.heroImage}
+        />
+        <section className="sr-only">
+          <StructuredData data={genericSchema} />
+          <StructuredData data={genericFaqSchema} />
+          <StructuredData data={genericBreadcrumbSchema} />
+        </section>
+      </>
     );
   }
 
