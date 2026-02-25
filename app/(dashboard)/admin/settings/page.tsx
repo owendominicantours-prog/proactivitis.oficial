@@ -14,6 +14,7 @@ import HomeSettingsForm from "@/components/admin/HomeSettingsForm";
 import ContactSettingsForm from "@/components/admin/ContactSettingsForm";
 import GlobalBannerSettingsForm from "@/components/admin/GlobalBannerSettingsForm";
 import PremiumTransferSettingsForm from "@/components/admin/PremiumTransferSettingsForm";
+import CollapsibleSection from "@/components/admin/CollapsibleSection";
 
 export default async function AdminSettingsPage() {
   const landingCount = await prisma.landingPage.count();
@@ -209,71 +210,83 @@ export default async function AdminSettingsPage() {
   );
 
   return (
-    <section className="space-y-8 rounded-[32px] border border-slate-200 bg-white p-10 shadow-sm">
-      <div>
+    <div className="space-y-8 pb-10">
+      <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-semibold text-slate-900">Ajustes</h1>
         <p className="text-sm text-slate-500">
-          Configuracion global: branding, integraciones y reglas de disponibilidad.
+          Configuracion global por bloques: negocio, correo, contenido y branding.
         </p>
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        <article className="rounded-2xl border border-slate-100 bg-slate-50 p-5 text-center">
+      </header>
+
+      <section className="grid gap-4 md:grid-cols-3">
+        <article className="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Landings activas</p>
           <p className="text-2xl font-semibold text-slate-900">{landingCount}</p>
         </article>
-        <article className="rounded-2xl border border-slate-100 bg-slate-50 p-5 text-center">
+        <article className="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Tours registrados</p>
           <p className="text-2xl font-semibold text-slate-900">{tourCount}</p>
         </article>
-        <article className="rounded-2xl border border-slate-100 bg-slate-50 p-5 text-center">
+        <article className="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Usuarios totales</p>
           <p className="text-2xl font-semibold text-slate-900">{userCount}</p>
         </article>
-      </div>
+      </section>
 
-      <article className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Hotel pages</p>
-        <h3 className="mt-1 text-lg font-semibold text-slate-900">Editor de resorts / hoteles</h3>
+      <CollapsibleSection
+        title="Atajos"
+        description="Accesos directos a paneles relacionados con configuracion."
+        defaultOpen
+      >
+        <article className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Hotel pages</p>
+          <h3 className="mt-1 text-lg font-semibold text-slate-900">Editor de resorts / hoteles</h3>
           <p className="text-sm text-slate-500">
-          Edita SEO, textos y fotos de cada hotel en /hoteles y /things-to-do desde admin.
+            Edita SEO, textos y fotos de cada hotel en /hoteles y /things-to-do desde admin.
           </p>
-        <Link
-          href="/admin/resorts"
-          className="mt-4 inline-flex rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-        >
-          Abrir editor de resorts
-        </Link>
-      </article>
+          <Link
+            href="/admin/resorts"
+            className="mt-4 inline-flex rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+          >
+            Abrir editor de resorts
+          </Link>
+        </article>
+      </CollapsibleSection>
 
-      <form action={updateSharedImagesAction} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Imagenes compartidas</p>
-        <h3 className="mt-1 text-lg font-semibold text-slate-900">Biblioteca global para todas las landings</h3>
-        <p className="text-sm text-slate-500">
-          Formato por linea: <code>clave|url</code>. Luego usa <code>shared:clave</code> en cualquier campo de imagen.
-          Si cambias la URL aqui, se actualiza en todos los lugares donde se use esa clave.
-        </p>
-        <textarea
-          name="shared_images_map"
-          defaultValue={sharedImagesText}
-          rows={8}
-          className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
-          placeholder={"premium.hero|https://...\npremium.cadillac|https://...\npremium.suburban|https://..."}
-        />
-        <button
-          type="submit"
-          className="mt-3 inline-flex items-center justify-center rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand/90"
-        >
-          Guardar imagenes compartidas
-        </button>
-      </form>
-
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-900">Notificaciones por correo</h2>
+      <CollapsibleSection
+        title="Branding"
+        description="Biblioteca de imagenes compartidas para landings, bloques y formularios."
+        defaultOpen
+      >
+        <form action={updateSharedImagesAction} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Imagenes compartidas</p>
+          <h3 className="mt-1 text-lg font-semibold text-slate-900">Biblioteca global para todas las landings</h3>
           <p className="text-sm text-slate-500">
-            Edita los correos destino para cada alerta. Separa varios emails con comas o saltos de linea.
+            Formato por linea: <code>clave|url</code>. Luego usa <code>shared:clave</code> en cualquier campo de imagen.
+            Si cambias la URL aqui, se actualiza en todos los lugares donde se use esa clave.
           </p>
-        </div>
+          <textarea
+            name="shared_images_map"
+            defaultValue={sharedImagesText}
+            rows={8}
+            className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            placeholder={"premium.hero|https://...\npremium.cadillac|https://...\npremium.suburban|https://..."}
+          />
+          <button
+            type="submit"
+            className="mt-3 inline-flex items-center justify-center rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand/90"
+          >
+            Guardar imagenes compartidas
+          </button>
+        </form>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Notificaciones"
+        description="Correos destino para alertas operativas del sistema."
+        badge={`${notificationEmailDefaults.length} flujos`}
+        defaultOpen={false}
+      >
         <div className="grid gap-4">
           {notificationEmailDefaults.map((setting) => {
             const saved = settingsMap.get(setting.key);
@@ -310,12 +323,18 @@ export default async function AdminSettingsPage() {
             );
           })}
         </div>
-      </div>
+      </CollapsibleSection>
 
-      <GlobalBannerSettingsForm locales={locales} defaultsByLocale={bannerDefaults} />
-      <PremiumTransferSettingsForm locales={locales} defaultsByLocale={premiumTransferDefaults} />
-      <HomeSettingsForm locales={locales} defaultsByLocale={homeDefaults} />
-      <ContactSettingsForm locales={locales} defaultsByLocale={contactDefaults} />
-    </section>
+      <CollapsibleSection
+        title="Contenido Global"
+        description="Edicion por idioma de banner, home, contacto y landing premium de transfer."
+        defaultOpen={false}
+      >
+        <GlobalBannerSettingsForm locales={locales} defaultsByLocale={bannerDefaults} />
+        <PremiumTransferSettingsForm locales={locales} defaultsByLocale={premiumTransferDefaults} />
+        <HomeSettingsForm locales={locales} defaultsByLocale={homeDefaults} />
+        <ContactSettingsForm locales={locales} defaultsByLocale={contactDefaults} />
+      </CollapsibleSection>
+    </div>
   );
 }
