@@ -20,6 +20,14 @@ type RecogidaPageProps = {
   searchParams?: Promise<SearchParams>;
 };
 
+type PickupTarget = {
+  slug: string;
+  name: string;
+  countryId: string;
+  destinationId?: string | null;
+  microZoneId?: string | null;
+};
+
 type TourWithDeparture = Prisma.TourGetPayload<{
   include: {
     departureDestination: { select: { name: true; slug: true; country: { select: { slug: true } } } };
@@ -131,8 +139,8 @@ const buildPickupCanonical = (slug: string, locale: Locale) =>
   `${BASE_URL}${pickupBasePathByLocale[locale]}/${slug}`;
 
 export async function buildRecogidaMetadata(slug: string, locale: Locale): Promise<Metadata> {
-  const location = await prisma.location.findUnique({ where: { slug } });
-  if (!location) {
+  const pickupTarget = await resolvePickupTarget(slug);
+  if (!pickupTarget) {
     return {
       title: ensureLeadingCapital(translate(locale, "recogida.meta.fallbackTitle")),
       description: translate(locale, "recogida.meta.fallbackDescription")
@@ -140,23 +148,23 @@ export async function buildRecogidaMetadata(slug: string, locale: Locale): Promi
   }
 
   return {
-    title: ensureLeadingCapital(translate(locale, "recogida.meta.title", { hotel: location.name })),
-    description: translate(locale, "recogida.meta.description", { hotel: location.name }),
+    title: ensureLeadingCapital(translate(locale, "recogida.meta.title", { hotel: pickupTarget.name })),
+    description: translate(locale, "recogida.meta.description", { hotel: pickupTarget.name }),
     alternates: {
-      canonical: buildCanonical(location.slug, locale),
+      canonical: buildCanonical(pickupTarget.slug, locale),
       languages: {
-        es: `/recogida/${location.slug}`,
-        en: `/en/recogida/${location.slug}`,
-        fr: `/fr/recogida/${location.slug}`,
-        "x-default": `/recogida/${location.slug}`
+        es: `/recogida/${pickupTarget.slug}`,
+        en: `/en/recogida/${pickupTarget.slug}`,
+        fr: `/fr/recogida/${pickupTarget.slug}`,
+        "x-default": `/recogida/${pickupTarget.slug}`
       }
     }
   };
 }
 
 export async function buildRecogidaPickupMetadata(slug: string, locale: Locale): Promise<Metadata> {
-  const location = await prisma.location.findUnique({ where: { slug } });
-  if (!location) {
+  const pickupTarget = await resolvePickupTarget(slug);
+  if (!pickupTarget) {
     return {
       title: ensureLeadingCapital(translate(locale, "recogida.pickup.meta.fallbackTitle")),
       description: translate(locale, "recogida.pickup.meta.fallbackDescription")
@@ -164,29 +172,84 @@ export async function buildRecogidaPickupMetadata(slug: string, locale: Locale):
   }
 
   return {
-    title: ensureLeadingCapital(translate(locale, "recogida.pickup.meta.title", { hotel: location.name })),
-    description: translate(locale, "recogida.pickup.meta.description", { hotel: location.name }),
+    title: ensureLeadingCapital(translate(locale, "recogida.pickup.meta.title", { hotel: pickupTarget.name })),
+    description: translate(locale, "recogida.pickup.meta.description", { hotel: pickupTarget.name }),
     alternates: {
-      canonical: buildPickupCanonical(location.slug, locale),
+      canonical: buildPickupCanonical(pickupTarget.slug, locale),
       languages: {
-        es: `${pickupBasePathByLocale.es}/${location.slug}`,
-        en: `${pickupBasePathByLocale.en}/${location.slug}`,
-        fr: `${pickupBasePathByLocale.fr}/${location.slug}`,
-        "x-default": `${pickupBasePathByLocale.es}/${location.slug}`
+        es: `${pickupBasePathByLocale.es}/${pickupTarget.slug}`,
+        en: `${pickupBasePathByLocale.en}/${pickupTarget.slug}`,
+        fr: `${pickupBasePathByLocale.fr}/${pickupTarget.slug}`,
+        "x-default": `${pickupBasePathByLocale.es}/${pickupTarget.slug}`
       }
     }
   };
 }
 
 
-const buildTourUrl = (tour: { slug: string }, locationSlug: string, bookingCode?: string) => {
+const buildTourUrl = (
+  tour: { slug: string },
+  locationSlug: string,
+  locale: Locale,
+  bookingCode?: string
+) => {
   const params = new URLSearchParams({
     hotelSlug: locationSlug
   });
   if (bookingCode) {
     params.set("bookingCode", bookingCode);
   }
-  return `/tours/${tour.slug}/recogida/${locationSlug}?${params.toString()}`;
+  const basePath =
+    locale === "es"
+      ? `/tours/${tour.slug}/recogida/${locationSlug}`
+      : `/${locale}/tours/${tour.slug}/recogida/${locationSlug}`;
+  return `${basePath}?${params.toString()}`;
+};
+
+const resolvePickupTarget = async (slug: string): Promise<PickupTarget | null> => {
+  const location = await prisma.location.findUnique({
+    where: { slug },
+    select: {
+      slug: true,
+      name: true,
+      countryId: true,
+      destinationId: true,
+      microZoneId: true
+    }
+  });
+
+  if (location) {
+    return location;
+  }
+
+  const transferLocation = await prisma.transferLocation.findUnique({
+    where: { slug },
+    select: {
+      slug: true,
+      name: true,
+      countryCode: true
+    }
+  });
+
+  if (!transferLocation) return null;
+
+  const mappedLocation = await prisma.location.findFirst({
+    where: {
+      OR: [{ slug: transferLocation.slug }, { name: transferLocation.name }]
+    },
+    select: {
+      destinationId: true,
+      microZoneId: true
+    }
+  });
+
+  return {
+    slug: transferLocation.slug,
+    name: transferLocation.name,
+    countryId: transferLocation.countryCode,
+    destinationId: mappedLocation?.destinationId ?? null,
+    microZoneId: mappedLocation?.microZoneId ?? null
+  };
 };
 
 export async function RecogidaPage({
@@ -202,40 +265,33 @@ export async function RecogidaPage({
   const transferCopy = transferCopyByLocale[locale];
   const localPath = (path: string) => (locale === "es" ? path : `/${locale}${path}`);
 
-  let location = null;
+  let pickupTarget: PickupTarget | null = null;
   try {
-    location = await prisma.location.findUnique({
-      where: { slug: resolvedParams.slug },
-      include: {
-        microZone: true,
-        destination: true,
-        country: true
-      }
-    });
+    pickupTarget = await resolvePickupTarget(resolvedParams.slug);
   } catch (error) {
-    console.error("Error cargando location para slug", { slug: resolvedParams.slug, error });
+    console.error("Error cargando pickup target para slug", { slug: resolvedParams.slug, error });
     throw error;
   }
 
-  if (!location) {
-    console.error("Location no encontrada", { slug: resolvedParams.slug });
+  if (!pickupTarget) {
+    console.error("Pickup target no encontrado", { slug: resolvedParams.slug });
     notFound();
   }
 
-  const baseCountryCondition = { countryId: location.countryId };
+  const baseCountryCondition = { countryId: pickupTarget.countryId };
   const orFilters = [];
-  if (location.microZoneId) {
-    orFilters.push({ ...baseCountryCondition, microZoneId: location.microZoneId });
+  if (pickupTarget.microZoneId) {
+    orFilters.push({ ...baseCountryCondition, microZoneId: pickupTarget.microZoneId });
   }
-  if (location.destinationId) {
-    orFilters.push({ ...baseCountryCondition, destinationId: location.destinationId });
+  if (pickupTarget.destinationId) {
+    orFilters.push({ ...baseCountryCondition, destinationId: pickupTarget.destinationId });
   }
   orFilters.push(baseCountryCondition);
   orFilters.push({
     ...baseCountryCondition,
     category: { contains: "Nacional", mode: "insensitive" }
   });
-  if (location.destination?.name?.toLowerCase().includes("punta cana")) {
+  if (pickupTarget.destinationId) {
     orFilters.push({
       ...baseCountryCondition,
       category: { contains: "Punta Cana", mode: "insensitive" }
@@ -269,7 +325,7 @@ export async function RecogidaPage({
       displayTours = await prisma.tour.findMany({
         where: {
           status: "published",
-          countryId: location.countryId
+          countryId: pickupTarget.countryId
         },
         orderBy: { createdAt: "desc" },
         take: RECENT_TOURS_LIMIT,
@@ -280,21 +336,21 @@ export async function RecogidaPage({
     } catch (error) {
       console.error("Fallback tour query failed for location fallback", {
         slug: resolvedParams.slug,
-        countryId: location.countryId,
+        countryId: pickupTarget.countryId,
         error
       });
     }
   }
 
-  const canonicalUrl = buildCanonical(location.slug, locale);
+  const canonicalUrl = buildCanonical(pickupTarget.slug, locale);
   const localizedHome = locale === "es" ? "/" : `/${locale}`;
   const localizedRecogidaBase = locale === "es" ? "/excursiones-con-recogida" : pickupBasePathByLocale[locale];
 
   const webPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: t("recogida.meta.title", { hotel: location.name }),
-    description: t("recogida.meta.description", { hotel: location.name }),
+    name: t("recogida.meta.title", { hotel: pickupTarget.name }),
+    description: t("recogida.meta.description", { hotel: pickupTarget.name }),
     url: canonicalUrl
   };
 
@@ -304,7 +360,7 @@ export async function RecogidaPage({
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Proactivitis", item: `${BASE_URL}${localizedHome}` },
       { "@type": "ListItem", position: 2, name: t("recogida.hero.eyebrow"), item: `${BASE_URL}${localizedRecogidaBase}` },
-      { "@type": "ListItem", position: 3, name: location.name, item: canonicalUrl }
+      { "@type": "ListItem", position: 3, name: pickupTarget.name, item: canonicalUrl }
     ]
   };
 
@@ -315,7 +371,7 @@ export async function RecogidaPage({
     itemListElement: displayTours.slice(0, 6).map((tour, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      url: `${BASE_URL}${buildTourUrl(tour, location.slug, bookingCode)}`,
+      url: `${BASE_URL}${buildTourUrl(tour, pickupTarget.slug, locale, bookingCode)}`,
       item: {
         "@type": "TouristTrip",
         name: tour.title,
@@ -334,18 +390,18 @@ export async function RecogidaPage({
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{t("recogida.hero.eyebrow")}</p>
             <h1 className="text-4xl font-bold text-slate-900">
-              {t("recogida.hero.title", { hotel: location.name })}
+              {t("recogida.hero.title", { hotel: pickupTarget.name })}
             </h1>
             <p className="flex items-center gap-2 text-sm text-slate-500">
               <span className="text-lg text-green-500">{"\u2713"}</span>
-              {t("recogida.hero.confirmed", { hotel: location.name })}
+              {t("recogida.hero.confirmed", { hotel: pickupTarget.name })}
             </p>
             <p className="max-w-3xl text-sm text-slate-600">{t("recogida.hero.body")}</p>
           </div>
           <div className="grid gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-[1fr,1fr]">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("recogida.hotel.label")}</p>
-              <p className="text-2xl font-semibold text-slate-900">{location.name}</p>
+              <p className="text-2xl font-semibold text-slate-900">{pickupTarget.name}</p>
             </div>
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("recogida.booking.label")}</p>
@@ -368,7 +424,7 @@ export async function RecogidaPage({
           <div className="relative space-y-2">
             <p className="text-xs uppercase tracking-[0.35em] text-orange-300">{transferCopy.eyebrow}</p>
             <h2 className="text-2xl font-semibold text-white">
-              {transferCopy.title.replace("{hotel}", location.name)}
+              {transferCopy.title.replace("{hotel}", pickupTarget.name)}
             </h2>
             <p className="max-w-3xl text-sm text-slate-200">{transferCopy.body}</p>
           </div>
@@ -399,10 +455,10 @@ export async function RecogidaPage({
           <h2 className="text-3xl font-semibold text-slate-900">{t("recogida.tours.title")}</h2>
           <p className="text-sm text-slate-600">{t("recogida.tours.body")}</p>
         </div>
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {displayTours.map((tour) => (
-            <article key={tour.id} className="group flex flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl">
-              <div className="relative h-44 w-full overflow-hidden bg-slate-200">
+            <article key={tour.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+              <div className="relative h-44 bg-slate-200">
                 <Image
                   src={tour.heroImage ?? "/fototours/fototour.jpeg"}
                   alt={tour.title}
@@ -411,23 +467,23 @@ export async function RecogidaPage({
                   className="object-cover"
                 />
               </div>
-              <div className="flex flex-1 flex-col gap-4 p-5">
+              <div className="space-y-3 p-4">
                 <div className="space-y-1">
-                  <h3 className="text-xl font-semibold text-slate-900">{tour.title}</h3>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                  <h3 className="line-clamp-2 text-base font-bold text-slate-900">{tour.title}</h3>
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">
                     {tour.departureDestination?.name ?? tour.location}
                   </p>
                 </div>
-                <p className="text-sm text-slate-600 line-clamp-3">
+                <p className="line-clamp-3 text-sm text-slate-600">
                   {tour.shortDescription ?? t("recogida.tours.cardFallback")}
                 </p>
-                <div className="mt-auto flex items-center justify-between text-sm text-slate-700">
-                  <span className="text-slate-900 font-semibold">${tour.price.toFixed(0)} USD</span>
+                <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                  <span className="text-sm font-semibold text-emerald-700">${tour.price.toFixed(0)} USD</span>
                 <Link
-                  href={buildTourUrl(tour, location.slug, bookingCode)}
-                  className="rounded-full bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-2 text-sm font-semibold text-white shadow-lg transition hover:from-orange-600 hover:to-rose-600"
+                  href={buildTourUrl(tour, pickupTarget.slug, locale, bookingCode)}
+                  className="inline-flex rounded-full border border-emerald-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 transition hover:bg-emerald-50"
                 >
-                  {t("recogida.tours.cardCta", { tour: tour.title, hotel: location.name })}
+                  {t("recogida.tours.cardCta", { tour: tour.title, hotel: pickupTarget.name })}
                 </Link>
                 </div>
               </div>
