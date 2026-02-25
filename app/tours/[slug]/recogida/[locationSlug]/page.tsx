@@ -5,6 +5,7 @@ import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import TourGalleryViewer from "@/components/shared/TourGalleryViewer";
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 import { prisma } from "@/lib/prisma";
+import { TransferLocationType } from "@prisma/client";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
 import { formatReviewCountValue, getTourReviewCount } from "@/lib/reviewCounts";
 import { Locale, translate } from "@/lib/translations";
@@ -158,12 +159,72 @@ const buildTourPickupUrl = (slug: string, locationSlug: string, locale: Locale) 
     ? `${BASE_URL}/tours/${slug}/recogida/${locationSlug}`
     : `${BASE_URL}/${locale}/tours/${slug}/recogida/${locationSlug}`;
 
+type PickupTarget = {
+  slug: string;
+  name: string;
+  countryId: string;
+  destinationId?: string | null;
+  microZoneId?: string | null;
+};
+
+const resolvePickupTarget = async (slug: string): Promise<PickupTarget | null> => {
+  const location = await prisma.location.findUnique({
+    where: { slug },
+    select: {
+      slug: true,
+      name: true,
+      countryId: true,
+      destinationId: true,
+      microZoneId: true
+    }
+  });
+
+  if (location) return location;
+
+  const transferLocation = await prisma.transferLocation.findUnique({
+    where: { slug },
+    select: {
+      slug: true,
+      name: true,
+      countryCode: true,
+      type: true
+    }
+  });
+
+  if (!transferLocation) return null;
+
+  if (
+    transferLocation.type !== TransferLocationType.HOTEL &&
+    transferLocation.type !== TransferLocationType.PLACE
+  ) {
+    return null;
+  }
+
+  const mappedLocation = await prisma.location.findFirst({
+    where: {
+      OR: [{ slug: transferLocation.slug }, { name: transferLocation.name }]
+    },
+    select: {
+      destinationId: true,
+      microZoneId: true
+    }
+  });
+
+  return {
+    slug: transferLocation.slug,
+    name: transferLocation.name,
+    countryId: transferLocation.countryCode,
+    destinationId: mappedLocation?.destinationId ?? null,
+    microZoneId: mappedLocation?.microZoneId ?? null
+  };
+};
+
 export async function buildTourPickupMetadata(
   slug: string,
   locationSlug: string,
   locale: Locale
 ): Promise<Metadata> {
-  const [tour, location] = await Promise.all([
+  const [tour, pickupTarget] = await Promise.all([
     prisma.tour.findUnique({
       where: { slug },
       select: {
@@ -175,13 +236,10 @@ export async function buildTourPickupMetadata(
         }
       }
     }),
-    prisma.location.findUnique({
-      where: { slug: locationSlug },
-      select: { name: true, slug: true }
-    })
+    resolvePickupTarget(locationSlug)
   ]);
 
-  if (!tour || !location) {
+  if (!tour || !pickupTarget) {
     return {
       title: translate(locale, "tourPickup.meta.fallbackTitle"),
       description: translate(locale, "tourPickup.meta.fallbackDescription")
@@ -194,24 +252,24 @@ export async function buildTourPickupMetadata(
     translation?.shortDescription ?? translation?.description ?? tour.shortDescription;
   const title = translate(locale, "tourPickup.meta.title", {
     tour: resolvedTitle,
-    hotel: location.name
+    hotel: pickupTarget.name
   });
   const description =
     resolvedDescription ??
     translate(locale, "tourPickup.meta.description", {
       tour: resolvedTitle,
-      hotel: location.name
+      hotel: pickupTarget.name
     });
 
   return {
     title,
     description,
     alternates: {
-      canonical: buildTourPickupUrl(slug, location.slug, locale),
+      canonical: buildTourPickupUrl(slug, pickupTarget.slug, locale),
       languages: {
-        es: `/tours/${slug}/recogida/${location.slug}`,
-        en: `/en/tours/${slug}/recogida/${location.slug}`,
-        fr: `/fr/tours/${slug}/recogida/${location.slug}`
+        es: `/tours/${slug}/recogida/${pickupTarget.slug}`,
+        en: `/en/tours/${slug}/recogida/${pickupTarget.slug}`,
+        fr: `/fr/tours/${slug}/recogida/${pickupTarget.slug}`
       }
     }
   };
@@ -237,9 +295,9 @@ export async function TourHotelLanding({
     translate(locale, key, replacements);
 
   let tour = null;
-  let location = null;
+  let pickupTarget: PickupTarget | null = null;
   try {
-    [tour, location] = await Promise.all([
+    [tour, pickupTarget] = await Promise.all([
       prisma.tour.findUnique({
         where: { slug },
         include: {
@@ -267,10 +325,7 @@ export async function TourHotelLanding({
           }
         }
       }),
-      prisma.location.findUnique({
-        where: { slug: locationSlug },
-        include: { microZone: true, destination: true, country: true }
-      })
+      resolvePickupTarget(locationSlug)
     ]);
   } catch (error) {
         console.error("Error loading tour or location for landing page", {
@@ -286,8 +341,8 @@ export async function TourHotelLanding({
     notFound();
   }
 
-  if (!location) {
-    console.error("Location no encontrada para el slug", { locationSlug, slug });
+  if (!pickupTarget) {
+    console.error("Location/pickup target no encontrado para el slug", { locationSlug, slug });
     notFound();
   }
 
@@ -374,7 +429,7 @@ export async function TourHotelLanding({
     {
       label: t("tourPickup.quickInfo.departure.label"),
       value: displayTime,
-      detail: t("tourPickup.quickInfo.departure.detail", { hotel: location.name }),
+      detail: t("tourPickup.quickInfo.departure.detail", { hotel: pickupTarget.name }),
       icon: (
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
           <path d="M12 4a8 8 0 100 16 8 8 0 000-16Zm0 9V7" />
@@ -417,7 +472,7 @@ export async function TourHotelLanding({
         <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">
           <div className="flex flex-col justify-center gap-6 p-6 sm:p-8 lg:p-16 text-center lg:text-left">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
-              {t("tourPickup.hero.badge", { hotel: location.name })}
+              {t("tourPickup.hero.badge", { hotel: pickupTarget.name })}
             </div>
             <h1 className="mb-6 text-3xl font-black leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
               {localizedTitle}
@@ -504,7 +559,7 @@ export async function TourHotelLanding({
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.summary.eyebrow")}</p>
                 <h2 className="text-[20px] font-semibold text-slate-900">{t("tourPickup.summary.title")}</h2>
               </div>
-              <span className="text-xs uppercase tracking-[0.3em] text-slate-400">{t("tourPickup.summary.badge", { hotel: location.name })}</span>
+              <span className="text-xs uppercase tracking-[0.3em] text-slate-400">{t("tourPickup.summary.badge", { hotel: pickupTarget.name })}</span>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-slate-600">{localizedDescription || shortTeaser}</p>
           </section>
@@ -685,7 +740,7 @@ export async function TourHotelLanding({
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.booking.eyebrow")}</p>
             <h3 className="mt-2 text-2xl font-bold text-slate-900">{t("tourPickup.booking.title")}</h3>
             <p className="text-sm text-slate-600">
-              {t("tourPickup.booking.body", { hotel: location.name })}
+              {t("tourPickup.booking.body", { hotel: pickupTarget.name })}
             </p>
             <TourBookingWidget
               tourId={tour.id}
@@ -696,9 +751,9 @@ export async function TourHotelLanding({
               platformSharePercent={tour.platformSharePercent ?? 20}
               tourTitle={localizedTitle}
               tourImage={heroImage}
-              hotelSlug={location.slug}
+              hotelSlug={pickupTarget.slug}
               bookingCode={bookingCode ?? undefined}
-              originHotelName={location.name}
+              originHotelName={pickupTarget.name}
             />
             <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-600 text-center">
               <p className="font-semibold text-slate-900">
@@ -710,7 +765,7 @@ export async function TourHotelLanding({
           <div className="rounded-[28px] border border-slate-100 bg-emerald-50/80 p-5 text-sm text-emerald-900 shadow-sm">
             <p className="text-xs uppercase tracking-[0.3em] text-emerald-700">{t("tourPickup.urgency.eyebrow")}</p>
             <p className="text-xl font-semibold">{t("tourPickup.urgency.title")}</p>
-            <p className="text-xs text-emerald-700">{t("tourPickup.urgency.body", { hotel: location.name })}</p>
+            <p className="text-xs text-emerald-700">{t("tourPickup.urgency.body", { hotel: pickupTarget.name })}</p>
           </div>
         </aside>
       </main>
