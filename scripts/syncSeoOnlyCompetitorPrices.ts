@@ -2,7 +2,38 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const SANTO_DOMINGO_SEO_PRICE = 55;
+const SANTO_DOMINGO_PRICE_BY_SLUG: Record<string, number> = {
+  "santo-domingo-alcazar-colon-catedral": 59,
+  "santo-domingo-city-tour-completo-capital-rd": 55,
+  "santo-domingo-city-tour-santo-domingo-desde-punta-cana": 55,
+  "santo-domingo-cultura-y-gastronomia-local": 69,
+  "santo-domingo-escapada-cultural-desde-punta-cana": 59,
+  "santo-domingo-excursion-cultural-sin-estres": 55,
+  "santo-domingo-historia-colonial-completa": 59,
+  "santo-domingo-malecon-y-centro-historico": 59,
+  "santo-domingo-patrimonio-y-arquitectura": 59,
+  "santo-domingo-primer-viaje-a-santo-domingo": 55,
+  "santo-domingo-ruta-educativa-familiar": 59,
+  "santo-domingo-rutas-fotograficas-santo-domingo": 69,
+  "santo-domingo-santo-domingo-colonial-unesco": 59,
+  "santo-domingo-santo-domingo-con-entradas": 65,
+  "santo-domingo-santo-domingo-con-paradas-clave": 55,
+  "santo-domingo-santo-domingo-cultural-premium": 85,
+  "santo-domingo-santo-domingo-esencial": 55,
+  "santo-domingo-santo-domingo-familias": 59,
+  "santo-domingo-santo-domingo-grupos": 55,
+  "santo-domingo-santo-domingo-historia-viva": 59,
+  "santo-domingo-santo-domingo-imperdible": 55,
+  "santo-domingo-santo-domingo-panoramico": 65,
+  "santo-domingo-santo-domingo-premium-cultural": 85,
+  "santo-domingo-tour-dia-historia-y-ciudad": 59,
+  "santo-domingo-tour-para-parejas": 69,
+  "santo-domingo-tour-unesco-con-guia": 59,
+  "santo-domingo-tour-vip-dia-completo": 95,
+  "santo-domingo-tour-zona-colonial": 55,
+  "santo-domingo-tres-ojos-experiencia-cultural": 75,
+  "santo-domingo-tres-ojos-y-zona-colonial": 75
+};
 
 const SAONA_PRICE_BY_SLUG: Record<string, number> = {
   "saona-saona-island-tour-with-lunch-and-pickup": 95,
@@ -52,21 +83,20 @@ async function main() {
     saonaUpdated += result.count;
   }
 
-  const santoResult = await prisma.tour.updateMany({
-    where: {
-      status: "seo_only",
-      slug: {
-        startsWith: "santo-domingo-"
-      }
-    },
-    data: { price: SANTO_DOMINGO_SEO_PRICE }
-  });
+  let santoUpdated = 0;
+  for (const [slug, price] of Object.entries(SANTO_DOMINGO_PRICE_BY_SLUG)) {
+    const result = await prisma.tour.updateMany({
+      where: { slug, status: "seo_only" },
+      data: { price }
+    });
+    santoUpdated += result.count;
+  }
 
   console.log(
     JSON.stringify(
       {
-        santoDomingoUpdated: santoResult.count,
-        santoDomingoPrice: SANTO_DOMINGO_SEO_PRICE,
+        santoDomingoMappedSlugs: Object.keys(SANTO_DOMINGO_PRICE_BY_SLUG).length,
+        santoDomingoUpdated: santoUpdated,
         saonaMappedSlugs: saonaSlugs.length,
         saonaUpdated
       },
@@ -84,4 +114,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-
