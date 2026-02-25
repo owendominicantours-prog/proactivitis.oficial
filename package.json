@@ -25,6 +25,7 @@
     "blogs:translate": "ts-node --project tsconfig.seed.json scripts/translatePublishedBlogs.ts",
     "blogs:sitemap": "ts-node --project tsconfig.seed.json scripts/generate-blog-sitemap.ts",
     "tours:create-santo-domingo-seo-variants": "ts-node --project tsconfig.seed.json scripts/createSantoDomingoSeoOnlyVariants.ts",
+    "tours:create-saona-seo-variants": "ts-node --project tsconfig.seed.json scripts/createSaonaPuntaCanaSeoOnlyVariants.ts",
     "translate:tours": "cross-env TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' ts-node scripts/translateTours.ts",
     "postinstall": "prisma generate"
   },
