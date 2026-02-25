@@ -75,6 +75,7 @@ const buildSlugAliases = (value: string) => {
 };
 
 type TransferLocationLite = {
+  id: string;
   slug: string;
   name: string;
   type: TransferLocationType;
@@ -109,7 +110,7 @@ const resolveLocationByAlias = async (
   for (const alias of aliases) {
     const exact = await prisma.transferLocation.findUnique({
       where: { slug: alias },
-      select: { slug: true, name: true, type: true, zoneId: true }
+      select: { id: true, slug: true, name: true, type: true, zoneId: true }
     });
     if (exact && (!expectedType || exact.type === expectedType)) {
       return exact;
@@ -119,7 +120,7 @@ const resolveLocationByAlias = async (
   if (expectedType || looksLikeAirportSlug(rawSlug)) {
     const airports = await prisma.transferLocation.findMany({
       where: { type: TransferLocationType.AIRPORT, active: true },
-      select: { slug: true, name: true, type: true, zoneId: true }
+      select: { id: true, slug: true, name: true, type: true, zoneId: true }
     });
     const bestAirport = findBestLocation(rawSlug, airports);
     if (bestAirport) return bestAirport;
@@ -128,7 +129,7 @@ const resolveLocationByAlias = async (
   const expectedWhere = expectedType ? { type: expectedType, active: true } : { active: true };
   const generic = await prisma.transferLocation.findMany({
     where: expectedWhere,
-    select: { slug: true, name: true, type: true, zoneId: true },
+    select: { id: true, slug: true, name: true, type: true, zoneId: true },
     take: 2500
   });
   return findBestLocation(rawSlug, generic);
@@ -701,10 +702,20 @@ export async function TransferLandingPage({
   if (!landing) return notFound();
   const localizedLanding = normalizeTextDeep(await localizeLanding(landing, locale));
 
-  const originSlug = landing.landingSlug.includes("-to-") ? landing.landingSlug.split("-to-")[0] : DEFAULT_AIRPORT_SLUG;
+  const [originSlugRaw, destinationSlugRaw] = landing.landingSlug.includes("-to-")
+    ? landing.landingSlug.split("-to-")
+    : [DEFAULT_AIRPORT_SLUG, landing.hotelSlug];
+
   const [originLocation, destinationLocation] = await Promise.all([
-    prisma.transferLocation.findUnique({ where: { slug: originSlug } }),
-    prisma.transferLocation.findUnique({ where: { slug: landing.hotelSlug } })
+    resolveLocationByAlias(originSlugRaw || DEFAULT_AIRPORT_SLUG, TransferLocationType.AIRPORT),
+    (async () => {
+      const hotelMatch = await resolveLocationByAlias(landing.hotelSlug, TransferLocationType.HOTEL);
+      if (hotelMatch) return hotelMatch;
+      const placeMatch = await resolveLocationByAlias(landing.hotelSlug, TransferLocationType.PLACE);
+      if (placeMatch) return placeMatch;
+      const destinationSlugCandidate = destinationSlugRaw || landing.hotelSlug;
+      return resolveLocationByAlias(destinationSlugCandidate);
+    })()
   ]);
   const originLabel = originLocation?.name ?? DEFAULT_AIRPORT_NAME;
   const destinationLabel = destinationLocation?.name ?? localizedLanding.hotelName;
