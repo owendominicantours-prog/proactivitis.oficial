@@ -1383,6 +1383,13 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const schemaImages = [heroImageAbsolute, ...galleryImagesAbsolute].slice(0, 5);
   const tourUrl = `${PROACTIVITIS_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`;
   const toursHubUrl = `${PROACTIVITIS_URL}${locale === "es" ? "/tours" : `/${locale}/tours`}`;
+  const schemaImageObjects = schemaImages.map((image, index) => ({
+    "@type": "ImageObject",
+    "@id": `${tourUrl}#image-${index + 1}`,
+    contentUrl: image,
+    url: image,
+    caption: `${heroTitle} - ${index + 1}`
+  }));
   const priceValidUntil = getPriceValidUntil();
   const touristTypeFallback = categories.find((category) =>
     ["Family", "Adventure", "Couples"].includes(category)
@@ -1433,14 +1440,27 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       name: "Proactivitis"
     },
     category: touristTypeFallback ?? "Tour",
+    sku: tour.slug,
+    mpn: tour.productId,
+    areaServed: {
+      "@type": "AdministrativeArea",
+      name: tour.location || "Punta Cana"
+    },
     offers: {
       "@type": "Offer",
+      "@id": `${tourUrl}#offer`,
       url: tourUrl,
       price: tour.price,
       priceCurrency: "USD",
       priceValidUntil,
       availability: "https://schema.org/InStock",
+      availabilityStarts: new Date().toISOString(),
       seller: PROACTIVITIS_LOCALBUSINESS,
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: tour.price,
+        priceCurrency: "USD"
+      },
       eligibleRegion: {
         "@type": "Country",
         name: "Dominican Republic"
@@ -1458,7 +1478,8 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
         "@type": "MerchantReturnPolicy",
         returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
         applicableCountry: "DO"
-      }
+      },
+      acceptedPaymentMethod: ["https://schema.org/CreditCard", "https://schema.org/ByBankTransferInAdvance"]
     },
     sameAs: SAME_AS_URLS,
     ...(schemaKeywords ? { keywords: schemaKeywords.join(", ") } : {}),
@@ -1477,8 +1498,15 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     inLanguage: locale,
     touristType: categories.length ? categories : [touristTypeFallback ?? "General"],
     provider: PROACTIVITIS_LOCALBUSINESS,
+    itinerary: itineraryCards.slice(0, 6).map((stop, index) => ({
+      "@type": "TouristAttraction",
+      name: stop.title,
+      description: stop.description,
+      position: index + 1
+    })),
     offers: {
       "@type": "Offer",
+      "@id": `${tourUrl}#trip-offer`,
       url: tourUrl,
       price: tour.price,
       priceCurrency: "USD",
@@ -1496,8 +1524,23 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
         "@type": "MerchantReturnPolicy",
         returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
         applicableCountry: "DO"
-      }
+      },
+      acceptedPaymentMethod: ["https://schema.org/CreditCard", "https://schema.org/ByBankTransferInAdvance"]
     }
+  };
+
+  const mediaGallerySchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": `${tourUrl}#gallery`,
+    name: `${heroTitle} gallery`,
+    itemListOrder: "https://schema.org/ItemListOrderAscending",
+    numberOfItems: schemaImageObjects.length,
+    itemListElement: schemaImageObjects.map((image, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: image
+    }))
   };
 
   const breadcrumbSchema = {
@@ -1596,6 +1639,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   <div className="min-h-screen bg-[#FDFDFD] text-slate-950 pb-24 overflow-x-hidden">
       <StructuredData data={tourSchema} />
       <StructuredData data={touristTripSchema} />
+      <StructuredData data={mediaGallerySchema} />
       <StructuredData data={breadcrumbSchema} />
       <StructuredData data={faqSchema} />
       {relatedToursSchema ? <StructuredData data={relatedToursSchema} /> : null}
