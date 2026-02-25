@@ -17,6 +17,7 @@ import {
 } from "./actions";
 import LocationList from "@/components/admin/transfers/LocationList";
 import TransferLocationImport from "@/components/admin/transfers/TransferLocationImport";
+import VehicleImageField from "@/components/admin/transfers/VehicleImageField";
 import { allLandings } from "@/data/transfer-landings";
 import CollapsibleSection from "@/components/admin/CollapsibleSection";
 
@@ -394,10 +395,9 @@ export default async function TransfersAdminPage() {
             Slug
             <input name="slug" type="text" required className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
           </label>
-          <label className="text-sm font-semibold text-slate-700">
-            Imagen (URL)
-            <input name="imageUrl" type="url" placeholder="https://..." className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
-          </label>
+          <div className="text-sm font-semibold text-slate-700">
+            <VehicleImageField label="Imagen (URL)" supplierId="admin-transfer" />
+          </div>
           <label className="text-sm font-semibold text-slate-700">
             Categoría
             <select name="category" required defaultValue="" className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm">
@@ -479,10 +479,13 @@ export default async function TransfersAdminPage() {
                       <option value="BUS">MiniBus</option>
                     </select>
                   </label>
-                  <label className="text-xs uppercase tracking-[0.2em] text-slate-500 md:col-span-2">
-                    Imagen (URL)
-                    <input name="imageUrl" type="url" defaultValue={vehicle.imageUrl ?? ""} className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm" />
-                  </label>
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-500 md:col-span-2">
+                    <VehicleImageField
+                      label="Imagen (URL)"
+                      defaultValue={vehicle.imageUrl ?? ""}
+                      supplierId="admin-transfer"
+                    />
+                  </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <button
