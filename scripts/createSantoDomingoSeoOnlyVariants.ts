@@ -95,6 +95,132 @@ const SEO_VARIANTS: SeoVariant[] = [
     subtitle: "Todo lo imprescindible de la capital en un dia",
     shortDescription: "Version esencial con los lugares que no pueden faltar en una visita a Santo Domingo.",
     keywords: ["esencial", "capital dominicana", "day excursion"]
+  },
+  {
+    slugSuffix: "malecon-y-centro-historico",
+    title: "Malecon y Centro Historico: Tour Santo Domingo",
+    subtitle: "Ruta urbana con vistas costeras y patrimonio colonial",
+    shortDescription: "Combina el Malecon con el casco historico en una excursion organizada desde Punta Cana.",
+    keywords: ["malecon santo domingo", "centro historico", "tour urbano"]
+  },
+  {
+    slugSuffix: "cultura-y-gastronomia-local",
+    title: "Santo Domingo Cultura y Gastronomia Local",
+    subtitle: "Historia, sabores dominicanos y recorridos guiados",
+    shortDescription: "Experiencia cultural con paradas estrategicas y ambiente local en Santo Domingo.",
+    keywords: ["gastronomia", "cultura dominicana", "santo domingo"]
+  },
+  {
+    slugSuffix: "tour-para-parejas",
+    title: "Santo Domingo para Parejas: Dia Cultural",
+    subtitle: "Itinerario romantico entre plazas, monumentos y miradores",
+    shortDescription: "Alternativa para parejas que desean un plan cultural completo desde Punta Cana.",
+    keywords: ["parejas", "romantico", "zona colonial"]
+  },
+  {
+    slugSuffix: "tour-vip-dia-completo",
+    title: "Santo Domingo VIP Dia Completo",
+    subtitle: "Servicio premium con enfoque en comodidad y tiempos optimos",
+    shortDescription: "Version VIP para viajeros que buscan una excursion mas comoda y bien coordinada.",
+    keywords: ["vip", "day trip", "premium city tour"]
+  },
+  {
+    slugSuffix: "primer-viaje-a-santo-domingo",
+    title: "Primer Viaje a Santo Domingo desde Punta Cana",
+    subtitle: "Ideal para conocer lo esencial de la capital en una jornada",
+    shortDescription: "Recorrido recomendado para primera visita con guia local y logistica puerta a puerta.",
+    keywords: ["primera vez", "capital", "excursion santo domingo"]
+  },
+  {
+    slugSuffix: "historia-colonial-completa",
+    title: "Historia Colonial Completa en Santo Domingo",
+    subtitle: "Monumentos clave y narrativa historica profesional",
+    shortDescription: "Tour enfocado en legado colonial y puntos iconicos del centro historico.",
+    keywords: ["historia colonial", "monumentos", "zona colonial"]
+  },
+  {
+    slugSuffix: "rutas-fotograficas-santo-domingo",
+    title: "Rutas Fotograficas en Santo Domingo",
+    subtitle: "Paradas visuales en plazas, calles y edificios historicos",
+    shortDescription: "Disenado para viajeros que quieren fotos memorables y recorrido cultural.",
+    keywords: ["fotografia", "spots", "santo domingo fotos"]
+  },
+  {
+    slugSuffix: "patrimonio-y-arquitectura",
+    title: "Patrimonio y Arquitectura de Santo Domingo",
+    subtitle: "Explora estilos coloniales y edificios representativos",
+    shortDescription: "Recorrido guiado por arquitectura historica y lugares de alto valor patrimonial.",
+    keywords: ["arquitectura", "patrimonio", "colonial city"]
+  },
+  {
+    slugSuffix: "santo-domingo-con-entradas",
+    title: "Santo Domingo con Entradas Incluidas",
+    subtitle: "Tour cultural con acceso a puntos destacados",
+    shortDescription: "Incluye accesos y organizacion completa para conocer Santo Domingo sin complicaciones.",
+    keywords: ["entradas incluidas", "city tour", "santo domingo"]
+  },
+  {
+    slugSuffix: "excursion-cultural-sin-estres",
+    title: "Excursion Cultural sin Estres a Santo Domingo",
+    subtitle: "Operacion clara, tiempos definidos y soporte local",
+    shortDescription: "Pensada para quienes quieren una salida cultural comoda y bien asistida.",
+    keywords: ["sin estres", "logistica", "excursion cultural"]
+  },
+  {
+    slugSuffix: "tour-unesco-con-guia",
+    title: "Tour UNESCO en Santo Domingo con Guia",
+    subtitle: "Zona Colonial declarada Patrimonio de la Humanidad",
+    shortDescription: "Recorrido UNESCO con contexto historico y paradas de alto interes cultural.",
+    keywords: ["unesco", "guia", "zona colonial"]
+  },
+  {
+    slugSuffix: "escapada-cultural-desde-punta-cana",
+    title: "Escapada Cultural a Santo Domingo desde Punta Cana",
+    subtitle: "Una salida de dia completo para cambiar de ritmo",
+    shortDescription: "Perfecta para combinar playa con una jornada historica en la capital.",
+    keywords: ["escapada", "desde punta cana", "day trip"]
+  },
+  {
+    slugSuffix: "santo-domingo-imperdible",
+    title: "Santo Domingo Imperdible: Tour de Dia",
+    subtitle: "Los lugares mas buscados en una sola ruta",
+    shortDescription: "Version orientada a viajeros que quieren cubrir lo mas importante en poco tiempo.",
+    keywords: ["imperdible", "top places", "city highlights"]
+  },
+  {
+    slugSuffix: "ruta-educativa-familiar",
+    title: "Ruta Educativa Familiar en Santo Domingo",
+    subtitle: "Historia dominicana explicada de forma simple y dinamica",
+    shortDescription: "Alternativa familiar para aprender y disfrutar la capital en un mismo dia.",
+    keywords: ["educativo", "familias", "historia dominicana"]
+  },
+  {
+    slugSuffix: "santo-domingo-con-paradas-clave",
+    title: "Santo Domingo con Paradas Clave",
+    subtitle: "Recorrido optimizado por sitios de mayor interes",
+    shortDescription: "Itinerario con paradas seleccionadas para maximizar tiempo y experiencia.",
+    keywords: ["paradas clave", "itinerario", "santo domingo"]
+  },
+  {
+    slugSuffix: "city-tour-completo-capital-rd",
+    title: "City Tour Completo por la Capital de RD",
+    subtitle: "Recorrido integral por historia, cultura y vistas urbanas",
+    shortDescription: "Experiencia completa de Santo Domingo para visitantes que buscan contexto y contenido.",
+    keywords: ["capital rd", "city tour completo", "cultura"]
+  },
+  {
+    slugSuffix: "santo-domingo-cultural-premium",
+    title: "Santo Domingo Cultural Premium",
+    subtitle: "Una experiencia cuidada para viajeros exigentes",
+    shortDescription: "Formato premium con enfoque en calidad de ruta, asistencia y tiempos eficientes.",
+    keywords: ["cultural premium", "viajeros exigentes", "santo domingo"]
+  },
+  {
+    slugSuffix: "tour-dia-historia-y-ciudad",
+    title: "Tour de Dia: Historia y Ciudad en Santo Domingo",
+    subtitle: "Legado colonial y vida urbana actual",
+    shortDescription: "Combina historia del Nuevo Mundo con la dinamica moderna de Santo Domingo.",
+    keywords: ["historia y ciudad", "dia completo", "santo domingo tour"]
   }
 ];
 
@@ -237,4 +363,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-
