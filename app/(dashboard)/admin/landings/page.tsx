@@ -27,6 +27,9 @@ type SearchParams = {
   zone?: string;
   status?: "active" | "inactive" | "all";
   query?: string;
+  catalog?: string;
+  sort?: "visits_desc" | "visits_asc" | "name_asc" | "name_desc";
+  page?: string;
 };
 
 type LandingsAdminPageProps = {
@@ -34,8 +37,20 @@ type LandingsAdminPageProps = {
 };
 
 const TRANSFER_ZONE = "punta-cana";
+const EXPLORER_PAGE_SIZE = 60;
 
 const buildLandingSlug = (slug: string) => `punta-cana-international-airport-to-${slug}`;
+
+type ExplorerEntry = {
+  slug: string;
+  name: string;
+  zone: string;
+  active: boolean;
+  type: string;
+  category: string;
+  path: string;
+  visits: number;
+};
 
 export default async function LandingsAdminPage({ searchParams }: LandingsAdminPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
@@ -132,6 +147,14 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
     name: landing.keyword,
     zone: "Excursiones keywords",
     active: true
+  }));
+  const genericTransferEntries = genericTransferLandings.map((landing) => ({
+    slug: landing.landingSlug,
+    name: landing.keyword,
+    zone: "Transfer keywords",
+    active: true,
+    type: "SEO_ONLY",
+    path: `transfer/${landing.landingSlug}`
   }));
   const partyBoatEntries = PARTY_BOAT_VARIANTS.map((variant) => ({
     slug: `thingtodo/tours/${variant.slug}`,
@@ -266,6 +289,167 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
     );
   }
 
+  const explorerEntries: ExplorerEntry[] = [
+    ...entries.map((entry) => ({
+      ...entry,
+      category: entry.type === "GENERIC" ? "seo-transfer-100" : "transfer",
+      path: `transfer/${entry.slug}`
+    })),
+    ...premiumTransferEntries.map((entry) => ({
+      ...entry,
+      type: "VIP",
+      category: "premium-transfer",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    })),
+    ...hotelSalesTransferEntries.map((entry) => ({
+      ...entry,
+      type: "TRANSFER_SALES",
+      category: "hotel-transfer-sales",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug.replace(/^transfer\//, "")) ?? 0
+    })),
+    ...transferQuestionEntries.map((entry) => ({
+      ...entry,
+      type: "Q&A",
+      category: "google-questions",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    })),
+    ...hotelThingsToDoEntries.map((entry) => ({
+      ...entry,
+      type: "HOTEL",
+      category: "hotels-things-to-do",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    })),
+    ...pickupHotelEntries.map((entry) => ({
+      ...entry,
+      type: "HOTEL_PICKUP",
+      category: "hotel-pickup",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    })),
+    ...safetyGuideEntries.map((entry) => ({
+      ...entry,
+      type: "SAFETY",
+      category: "safety-guides",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    })),
+    ...excursionKeywordEntries.map((entry) => ({
+      ...entry,
+      type: "EXCURSION",
+      category: "excursion-keywords",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    })),
+    ...partyBoatEntries.map((entry) => ({
+      ...entry,
+      type: "TOUR_VARIANT",
+      category: "party-boat-variants",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    })),
+    ...santoDomingoEntries.map((entry) => ({
+      ...entry,
+      type: "TOUR_VARIANT",
+      category: "santo-domingo-variants",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    })),
+    ...buggyAtvEntries.map((entry) => ({
+      ...entry,
+      type: "TOUR_VARIANT",
+      category: "buggy-atv-variants",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    })),
+    ...parasailingEntries.map((entry) => ({
+      ...entry,
+      type: "TOUR_VARIANT",
+      category: "parasailing-variants",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    })),
+    ...samanaWhaleEntries.map((entry) => ({
+      ...entry,
+      type: "TOUR_VARIANT",
+      category: "samana-whale-variants",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    })),
+    ...tourMarketVariantEntries.map((entry) => ({
+      ...entry,
+      type: "TOUR_MARKET",
+      category: "tour-market-variants",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    })),
+    ...countrySalesLandingEntries.map((entry) => ({
+      ...entry,
+      type: "COUNTRY",
+      category: "country-sales",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    }))
+  ];
+
+  let filteredExplorer = explorerEntries;
+  if (params.catalog && params.catalog !== "all") {
+    filteredExplorer = filteredExplorer.filter((entry) => entry.category === params.catalog);
+  }
+  if (params.zone) {
+    const normalized = params.zone.toLowerCase();
+    filteredExplorer = filteredExplorer.filter(
+      (entry) =>
+        entry.zone.toLowerCase().includes(normalized) ||
+        entry.category.toLowerCase().includes(normalized)
+    );
+  }
+  if (params.status && params.status !== "all") {
+    const matchActive = params.status === "active";
+    filteredExplorer = filteredExplorer.filter((entry) => entry.active === matchActive);
+  }
+  if (params.query) {
+    const normalized = params.query.toLowerCase();
+    filteredExplorer = filteredExplorer.filter(
+      (entry) =>
+        entry.slug.toLowerCase().includes(normalized) ||
+        entry.name.toLowerCase().includes(normalized) ||
+        entry.path.toLowerCase().includes(normalized)
+    );
+  }
+
+  const sortMode = params.sort ?? "visits_desc";
+  filteredExplorer.sort((a, b) => {
+    if (sortMode === "name_asc") return a.name.localeCompare(b.name);
+    if (sortMode === "name_desc") return b.name.localeCompare(a.name);
+    if (sortMode === "visits_asc") return a.visits - b.visits;
+    return b.visits - a.visits;
+  });
+
+  const currentPage = Math.max(1, Number(params.page ?? "1") || 1);
+  const totalPages = Math.max(1, Math.ceil(filteredExplorer.length / EXPLORER_PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const start = (safePage - 1) * EXPLORER_PAGE_SIZE;
+  const paginatedExplorer = filteredExplorer.slice(start, start + EXPLORER_PAGE_SIZE);
+
+  const seoOnlyTransferCount = genericTransferEntries.length;
+  const transferTotalCount = entries.length;
+  const explorerTotalCount = explorerEntries.length;
+
+  const pageHref = (nextPage: number) => {
+    const query = new URLSearchParams();
+    if (params.zone) query.set("zone", params.zone);
+    if (params.status) query.set("status", params.status);
+    if (params.query) query.set("query", params.query);
+    if (params.catalog) query.set("catalog", params.catalog);
+    if (params.sort) query.set("sort", params.sort);
+    query.set("page", String(nextPage));
+    return `/admin/landings?${query.toString()}`;
+  };
+
   return (
     <div className="space-y-8 pb-10">
       <header className="space-y-2">
@@ -277,8 +461,52 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
         </p>
       </header>
 
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Transfer total</p>
+          <p className="mt-2 text-3xl font-semibold text-slate-900">{transferTotalCount.toLocaleString()}</p>
+          <p className="text-sm text-slate-500">Manuales + dinámicas + SEO transfer.</p>
+        </article>
+        <article className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-emerald-700">SEO-only transfer</p>
+          <p className="mt-2 text-3xl font-semibold text-emerald-900">{seoOnlyTransferCount.toLocaleString()}</p>
+          <p className="text-sm text-emerald-700">Las 100 páginas de keywords de transporte.</p>
+        </article>
+        <article className="rounded-2xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-sky-700">Catálogos</p>
+          <p className="mt-2 text-3xl font-semibold text-sky-900">14</p>
+          <p className="text-sm text-sky-700">Colecciones para filtrar por intención.</p>
+        </article>
+        <article className="rounded-2xl border border-violet-200 bg-violet-50 p-5 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-violet-700">Landings totales</p>
+          <p className="mt-2 text-3xl font-semibold text-violet-900">{explorerTotalCount.toLocaleString()}</p>
+          <p className="text-sm text-violet-700">Inventario completo en el explorador.</p>
+        </article>
+      </section>
+
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <form className="grid gap-4 md:grid-cols-4">
+        <form className="grid gap-4 md:grid-cols-6">
+          <label className="flex flex-col text-sm text-slate-600">
+            Catálogo
+            <select
+              name="catalog"
+              defaultValue={params.catalog ?? "all"}
+              className="mt-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm"
+            >
+              <option value="all">Todos</option>
+              <option value="seo-transfer-100">SEO transfer (100)</option>
+              <option value="transfer">Transfer base</option>
+              <option value="premium-transfer">Premium transfer</option>
+              <option value="hotel-transfer-sales">Transfer sales por hotel</option>
+              <option value="google-questions">Google Questions</option>
+              <option value="hotels-things-to-do">Hotels Things to do</option>
+              <option value="hotel-pickup">Hotel pickup tours</option>
+              <option value="safety-guides">Safety guides</option>
+              <option value="excursion-keywords">Excursiones keywords</option>
+              <option value="tour-market-variants">Tour market variants</option>
+              <option value="country-sales">Country sales</option>
+            </select>
+          </label>
           <label className="flex flex-col text-sm text-slate-600">
             Zona / palabra clave
             <input
@@ -309,16 +537,126 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
               className="mt-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm"
             />
           </label>
+          <label className="flex flex-col text-sm text-slate-600">
+            Orden
+            <select
+              name="sort"
+              defaultValue={params.sort ?? "visits_desc"}
+              className="mt-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm"
+            >
+              <option value="visits_desc">Visitas (alto a bajo)</option>
+              <option value="visits_asc">Visitas (bajo a alto)</option>
+              <option value="name_asc">Nombre (A-Z)</option>
+              <option value="name_desc">Nombre (Z-A)</option>
+            </select>
+          </label>
           <button
             type="submit"
             className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
           >
             Filtrar
           </button>
+          <Link
+            href="/admin/landings"
+            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-400"
+          >
+            Limpiar
+          </Link>
         </form>
       </section>
 
       <LandingRefreshControl />
+
+      <CollapsibleSection
+        title="Explorador moderno de landings"
+        description="Vista única para ordenar, filtrar y abrir cualquier landing sin perderse."
+        badge={`${filteredExplorer.length} items`}
+      >
+        <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
+          <p>
+            Página {safePage} de {totalPages}
+          </p>
+          <p>{filteredExplorer.length.toLocaleString()} resultados filtrados</p>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {paginatedExplorer.map((entry) => (
+            <Link
+              key={`${entry.category}-${entry.slug}-${entry.path}`}
+              href={`https://proactivitis.com/${entry.path}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-full flex-col justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-700 transition hover:border-slate-400 hover:shadow-lg"
+            >
+              <div className="space-y-1">
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.category}</p>
+                <h3 className="text-base font-semibold text-slate-900">{entry.name}</h3>
+                <p className="text-xs text-slate-500">{entry.zone}</p>
+                <p className="line-clamp-2 text-xs text-slate-500">{entry.path}</p>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-slate-500">Visitas: {entry.visits.toLocaleString()}</p>
+                <span
+                  className={`rounded-full px-3 py-1 text-[0.65rem] font-semibold ${
+                    entry.active ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                  }`}
+                >
+                  {entry.active ? "Activo" : "Inactivo"}
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+        <div className="mt-4 flex items-center justify-between">
+          <Link
+            href={pageHref(Math.max(1, safePage - 1))}
+            className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+              safePage <= 1
+                ? "pointer-events-none border border-slate-200 text-slate-300"
+                : "border border-slate-300 text-slate-700 hover:border-slate-500"
+            }`}
+          >
+            Anterior
+          </Link>
+          <Link
+            href={pageHref(Math.min(totalPages, safePage + 1))}
+            className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+              safePage >= totalPages
+                ? "pointer-events-none border border-slate-200 text-slate-300"
+                : "border border-slate-300 text-slate-700 hover:border-slate-500"
+            }`}
+          >
+            Siguiente
+          </Link>
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="SEO-only transfer (100 páginas)"
+        description="Colección de landings SEO de transporte creadas por keyword (ES/EN/FR)."
+        badge={`${genericTransferEntries.length} items`}
+      >
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {genericTransferEntries.map((entry) => (
+            <Link
+              key={entry.slug}
+              href={`https://proactivitis.com/${entry.path}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-sm text-slate-700 transition hover:border-slate-400 hover:shadow-lg"
+            >
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.zone}</p>
+                <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.type}</p>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                <p>{entry.path}</p>
+                <p>Visitas {trafficMap.get(entry.slug)?.toLocaleString() ?? "0"}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </CollapsibleSection>
 
       <CollapsibleSection
         title="Landings de transfer"
