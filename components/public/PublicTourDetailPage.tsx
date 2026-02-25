@@ -1072,6 +1072,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     where: { slug },
     select: {
       id: true,
+      productId: true,
       slug: true,
       status: true,
       title: true,
@@ -1498,7 +1499,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     inLanguage: locale,
     touristType: categories.length ? categories : [touristTypeFallback ?? "General"],
     provider: PROACTIVITIS_LOCALBUSINESS,
-    itinerary: itineraryCards.slice(0, 6).map((stop, index) => ({
+    itinerary: visualTimeline.slice(0, 6).map((stop, index) => ({
       "@type": "TouristAttraction",
       name: stop.title,
       description: stop.description,

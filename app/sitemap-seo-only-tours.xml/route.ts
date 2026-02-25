@@ -8,7 +8,7 @@ export const revalidate = 86400;
 
 type TourRow = {
   slug: string;
-  updatedAt: Date;
+  createdAt: Date;
 };
 
 export async function GET() {
@@ -16,8 +16,8 @@ export async function GET() {
   try {
     tours = await prisma.tour.findMany({
       where: { status: "seo_only" },
-      select: { slug: true, updatedAt: true },
-      orderBy: { updatedAt: "desc" }
+      select: { slug: true, createdAt: true },
+      orderBy: { createdAt: "desc" }
     });
   } catch (error) {
     warnOnce("sitemap-seo-only-tours-db-fallback", "[sitemap-seo-only-tours] Falling back to empty sitemap due to DB error", error);
@@ -28,7 +28,7 @@ export async function GET() {
       const prefix = locale === "es" ? "" : `/${locale}`;
       return {
         loc: `${BASE_URL}${prefix}/tours/${tour.slug}`,
-        lastmod: tour.updatedAt.toISOString()
+        lastmod: tour.createdAt.toISOString()
       };
     })
   );
@@ -50,4 +50,3 @@ ${entries
     headers: { "Content-Type": "application/xml" }
   });
 }
-
