@@ -3,7 +3,7 @@ import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import StructuredData from "@/components/schema/StructuredData";
 import { allLandings } from "@/data/transfer-landings";
 import { prisma } from "@/lib/prisma";
-import { PROACTIVITIS_URL } from "@/lib/seo";
+import { PROACTIVITIS_URL, getPriceValidUntil } from "@/lib/seo";
 import { getTourReviewSummaryForTours } from "@/lib/tourReviews";
 import type { Locale } from "@/lib/translations";
 
@@ -334,6 +334,8 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
     )
   ).slice(0, 3);
 
+  const priceValidUntil = getPriceValidUntil();
+
   const [tours, transferRatings, hotels, latestTourReviews, latestTransferReviews] = await Promise.all([
     prisma.tour.findMany({
       where: { status: { in: ["published", "seo_only"] } },
@@ -651,6 +653,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                   "@type": "Offer",
                   priceCurrency: "USD",
                   price: item.price,
+                  priceValidUntil,
                   availability: "https://schema.org/InStock",
                   url: toAbsoluteUrl(item.href),
                   shippingDetails: {

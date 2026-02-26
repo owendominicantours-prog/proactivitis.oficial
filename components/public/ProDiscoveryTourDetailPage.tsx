@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import StructuredData from "@/components/schema/StructuredData";
 import { prisma } from "@/lib/prisma";
-import { PROACTIVITIS_URL } from "@/lib/seo";
+import { PROACTIVITIS_URL, getPriceValidUntil } from "@/lib/seo";
 import type { Locale } from "@/lib/translations";
 
 type Props = {
@@ -142,6 +142,8 @@ export default async function ProDiscoveryTourDetailPage({ locale, slug, reviewK
   const bookHref = toTourHref(locale, tour.slug);
   const pageUrl = `${PROACTIVITIS_URL}${localePrefix(locale)}/prodiscovery/tour/${tour.slug}`;
 
+  const priceValidUntil = getPriceValidUntil();
+
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -156,6 +158,7 @@ export default async function ProDiscoveryTourDetailPage({ locale, slug, reviewK
           "@type": "Offer",
           price: tour.price,
           priceCurrency: "USD",
+          priceValidUntil,
           availability: "https://schema.org/InStock",
           url: `${PROACTIVITIS_URL}${bookHref}`,
           shippingDetails: {
