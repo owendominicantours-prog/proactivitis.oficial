@@ -5,9 +5,8 @@ import { en } from "@/lib/translations";
 const canonicalUrl = "https://proactivitis.com/en/prodiscovery";
 
 export const metadata: Metadata = {
-  title: "ProDiscovery: Find top-rated tours and transfers | Proactivitis",
-  description:
-    "Compare tours and transfers by reputation and verified reviews before booking. ProDiscovery connects discovery with direct booking.",
+  title: "ProDiscovery: Tour, Hotel and Transfer Reviews",
+  description: "Comparison marketplace with filters, photos, and reviews for tours, hotels, and transfers.",
   alternates: {
     canonical: canonicalUrl,
     languages: {
@@ -18,23 +17,23 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: "ProDiscovery: Find top-rated tours and transfers | Proactivitis",
-    description:
-      "Compare tours and transfers by reputation and verified reviews before booking.",
+    title: "ProDiscovery: Tour, Hotel and Transfer Reviews",
+    description: "Compare by rating, price, photos, and verified traveler comments.",
     url: canonicalUrl,
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "ProDiscovery | Proactivitis",
-    description: "Discover top-rated experiences and book with confidence."
+    title: "ProDiscovery",
+    description: "Explore listings with advanced filters and real feedback."
   },
-  robots: {
-    index: true,
-    follow: true
-  }
+  robots: { index: true, follow: true }
 };
 
-export default function ProDiscoveryEnglishPage() {
-  return <ProDiscoveryPage locale={en} />;
+export default async function ProDiscoveryEnglishPage({
+  searchParams
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  return <ProDiscoveryPage locale={en} searchParams={(await searchParams) ?? {}} />;
 }
