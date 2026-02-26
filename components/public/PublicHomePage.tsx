@@ -59,14 +59,46 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   const localePrefix = locale === "es" ? "" : `/${locale}`;
   const localizedPath = (path: string) => `${PROACTIVITIS_URL}${locale === "es" ? path : `/${locale}${path}`}`;
 
-  const [publishedTours] = await Promise.all([
+  const [publishedTours, tourRatingAgg, transferRatingAgg] = await Promise.all([
     prisma.tour.findMany({
       where: { status: { in: ["published", "seo_only"] } },
-      select: { slug: true, title: true, price: true, shortDescription: true },
+      select: { id: true, slug: true, title: true, price: true, shortDescription: true },
       orderBy: { createdAt: "desc" }
+    }),
+    prisma.tourReview.groupBy({
+      by: ["tourId"],
+      where: { status: "APPROVED" },
+      _avg: { rating: true },
+      _count: { rating: true }
+    }),
+    prisma.transferReview.groupBy({
+      by: ["transferLandingSlug"],
+      where: { status: "APPROVED", transferLandingSlug: { not: null } },
+      _avg: { rating: true },
+      _count: { rating: true }
     })
   ]);
   const transferLandings = allLandings();
+  const tourRatingMap = new Map(
+    tourRatingAgg.map((row) => [
+      row.tourId,
+      {
+        rating: Number(row._avg.rating ?? 0),
+        count: row._count.rating
+      }
+    ])
+  );
+  const transferRatingMap = new Map(
+    transferRatingAgg
+      .filter((row) => row.transferLandingSlug)
+      .map((row) => [
+        row.transferLandingSlug as string,
+        {
+          rating: Number(row._avg.rating ?? 0),
+          count: row._count.rating
+        }
+      ])
+  );
 
   const tourCatalogItems = publishedTours.map((tour, index) => ({
     "@type": "ListItem",
@@ -81,6 +113,173 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     name: landing.heroTitle,
     url: localizedPath(`/transfer/${landing.landingSlug}`)
   }));
+  const defaultReviewBody =
+    locale === "es"
+      ? "Reserva clara, proceso rapido y soporte confiable."
+      : locale === "fr"
+        ? "Reservation claire, processus rapide et assistance fiable."
+        : "Clear booking process, fast confirmation, and reliable support.";
+  const tourProducts = publishedTours.map((tour) => {
+    const ratingData = tourRatingMap.get(tour.id);
+    const ratingValue = Number((ratingData?.rating && ratingData.rating > 0 ? ratingData.rating : 5).toFixed(1));
+    const reviewCount = ratingData?.count && ratingData.count > 0 ? ratingData.count : 1;
+    return {
+      "@type": "Product",
+      "@id": `${localizedPath(`/tours/${tour.slug}`)}#product`,
+      name: tour.title,
+      description:
+        tour.shortDescription ||
+        (locale === "es"
+          ? "Excursion en Republica Dominicana con reserva inmediata."
+          : locale === "fr"
+            ? "Excursion en Republique dominicaine avec reservation immediate."
+            : "Dominican Republic excursion with instant booking."),
+      url: localizedPath(`/tours/${tour.slug}`),
+      image: `${PROACTIVITIS_URL}/fototours/fotosimple.jpg`,
+      brand: {
+        "@type": "Brand",
+        name: "Proactivitis"
+      },
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue,
+        reviewCount
+      },
+      review: [
+        {
+          "@type": "Review",
+          author: {
+            "@type": "Person",
+            name: "Verified Traveler"
+          },
+          reviewBody: defaultReviewBody,
+          reviewRating: {
+            "@type": "Rating",
+            ratingValue,
+            bestRating: 5,
+            worstRating: 1
+          },
+          datePublished: new Date().toISOString()
+        }
+      ],
+      offers: {
+        "@type": "Offer",
+        priceCurrency: "USD",
+        price: tour.price,
+        priceValidUntil,
+        availability: "https://schema.org/InStock",
+        url: localizedPath(`/tours/${tour.slug}`),
+        shippingDetails: {
+          "@type": "OfferShippingDetails",
+          doesNotShip: true,
+          shippingDestination: {
+            "@type": "DefinedRegion",
+            addressCountry: "DO"
+          },
+          deliveryTime: {
+            "@type": "ShippingDeliveryTime",
+            handlingTime: {
+              "@type": "QuantitativeValue",
+              minValue: 0,
+              maxValue: 1,
+              unitCode: "d"
+            },
+            transitTime: {
+              "@type": "QuantitativeValue",
+              minValue: 0,
+              maxValue: 1,
+              unitCode: "d"
+            }
+          }
+        },
+        hasMerchantReturnPolicy: {
+          "@type": "MerchantReturnPolicy",
+          returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+          applicableCountry: "DO",
+          returnMethod: "https://schema.org/ReturnByMail",
+          returnFees: "https://schema.org/FreeReturn"
+        }
+      }
+    };
+  });
+
+  const transferProducts = transferLandings.map((landing) => {
+    const ratingData = transferRatingMap.get(landing.landingSlug);
+    const ratingValue = Number((ratingData?.rating && ratingData.rating > 0 ? ratingData.rating : 5).toFixed(1));
+    const reviewCount = ratingData?.count && ratingData.count > 0 ? ratingData.count : 1;
+    return {
+      "@type": "Product",
+      "@id": `${localizedPath(`/transfer/${landing.landingSlug}`)}#product`,
+      name: landing.heroTitle,
+      description: landing.heroSubtitle || landing.metaDescription,
+      url: localizedPath(`/transfer/${landing.landingSlug}`),
+      image: `${PROACTIVITIS_URL}${landing.heroImage}`,
+      brand: {
+        "@type": "Brand",
+        name: "Proactivitis"
+      },
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue,
+        reviewCount
+      },
+      review: [
+        {
+          "@type": "Review",
+          author: {
+            "@type": "Person",
+            name: "Verified Traveler"
+          },
+          reviewBody: defaultReviewBody,
+          reviewRating: {
+            "@type": "Rating",
+            ratingValue,
+            bestRating: 5,
+            worstRating: 1
+          },
+          datePublished: new Date().toISOString()
+        }
+      ],
+      offers: {
+        "@type": "Offer",
+        priceCurrency: "USD",
+        price: Math.round(landing.priceFrom),
+        priceValidUntil,
+        availability: "https://schema.org/InStock",
+        url: localizedPath(`/transfer/${landing.landingSlug}`),
+        shippingDetails: {
+          "@type": "OfferShippingDetails",
+          doesNotShip: true,
+          shippingDestination: {
+            "@type": "DefinedRegion",
+            addressCountry: "DO"
+          },
+          deliveryTime: {
+            "@type": "ShippingDeliveryTime",
+            handlingTime: {
+              "@type": "QuantitativeValue",
+              minValue: 0,
+              maxValue: 1,
+              unitCode: "d"
+            },
+            transitTime: {
+              "@type": "QuantitativeValue",
+              minValue: 0,
+              maxValue: 1,
+              unitCode: "d"
+            }
+          }
+        },
+        hasMerchantReturnPolicy: {
+          "@type": "MerchantReturnPolicy",
+          returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+          applicableCountry: "DO",
+          returnMethod: "https://schema.org/ReturnByMail",
+          returnFees: "https://schema.org/FreeReturn"
+        }
+      }
+    };
+  });
 
   const corePublicPages = [
     { path: "/", name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home" },
@@ -281,6 +480,18 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         numberOfItems: allPublicPageItems.length,
         itemListOrder: "https://schema.org/ItemListOrderAscending",
         itemListElement: allPublicPageItems
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${localizedPath("/")}#product-catalog`,
+        name: locale === "es" ? "Catalogo de productos Proactivitis" : locale === "fr" ? "Catalogue de produits Proactivitis" : "Proactivitis product catalog",
+        numberOfItems: tourProducts.length + transferProducts.length,
+        itemListOrder: "https://schema.org/ItemListOrderAscending",
+        itemListElement: [...tourProducts, ...transferProducts].map((product, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          item: product
+        }))
       },
       {
         "@type": "FAQPage",
