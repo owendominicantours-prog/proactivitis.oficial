@@ -339,47 +339,47 @@ export const buildTourMarketIntentCards = (
   if (locale === "en") {
     return [
       {
-        title: `${intent.heroPrefix.en} with real conversion focus`,
-        body: `This page is built for travelers searching "${intent.keyword.en}" and pushes direct booking for ${tourTitle}.`
+        title: `${intent.heroPrefix.en} for your trip style`,
+        body: `If you are searching for "${intent.keyword.en}", this version helps you compare ${tourTitle} quickly and book with clear details.`
       },
       {
-        title: "Hotel + transfer + tour in one flow",
-        body: `We connect airport transfer options with ${hotelCount}+ hotel routes so the traveler can close the full plan in one session.`
+        title: "Hotel, transfer, and tour connected",
+        body: `You can plan airport transfer and activities in one place, with access to ${hotelCount}+ hotel routes around Punta Cana.`
       },
       {
-        title: "Sales-ready experience",
-        body: `Clear pricing, hotel pickup context, and WhatsApp follow-up reduce friction and improve booking rate.`
+        title: "Clear booking experience",
+        body: `You get transparent pricing, practical pickup information, and fast support on WhatsApp if you need help before booking.`
       }
     ];
   }
   if (locale === "fr") {
     return [
       {
-        title: `${intent.heroPrefix.fr} avec focus conversion`,
-        body: `Cette page cible les voyageurs qui recherchent "${intent.keyword.fr}" et les guide vers la reservation directe de ${tourTitle}.`
+        title: `${intent.heroPrefix.fr} selon votre profil de voyage`,
+        body: `Si vous recherchez "${intent.keyword.fr}", cette page vous aide a comparer ${tourTitle} rapidement et reserver avec informations claires.`
       },
       {
-        title: "Hotel + transfert + tour en un seul flux",
-        body: `Nous connectons les transferts aeroport avec ${hotelCount}+ hotels pour conclure le plan complet rapidement.`
+        title: "Hotel, transfert et tour connectes",
+        body: `Vous pouvez organiser transfert aeroport et activites au meme endroit, avec plus de ${hotelCount} hotels couverts a Punta Cana.`
       },
       {
-        title: "Parcours commercial clair",
-        body: `Prix lisibles, contexte pickup hotel et suivi WhatsApp pour reduire la friction et augmenter les ventes.`
+        title: "Reservation simple et fiable",
+        body: `Prix lisibles, contexte de pickup hotel et assistance rapide sur WhatsApp pour reserver en toute confiance.`
       }
     ];
   }
   return [
     {
-      title: `${intent.heroPrefix.es} con enfoque de conversion`,
-      body: `Esta pagina ataca la busqueda "${intent.keyword.es}" y lleva al cliente directo a reservar ${tourTitle}.`
+      title: `${intent.heroPrefix.es} segun tu tipo de viaje`,
+      body: `Si llegaste buscando "${intent.keyword.es}", esta pagina te ayuda a comparar ${tourTitle} rapido y reservar con informacion clara.`
     },
     {
-      title: "Hotel + traslado + tour en un solo flujo",
-      body: `Conectamos opciones de traslado aeropuerto con ${hotelCount}+ hoteles para cerrar la venta completa en la misma sesion.`
+      title: "Hotel, traslado y tour en un mismo lugar",
+      body: `Aqui puedes planificar traslado de aeropuerto y actividades en un solo paso, con cobertura para ${hotelCount}+ hoteles de Punta Cana.`
     },
     {
-      title: "Experiencia lista para vender",
-      body: `Precio claro, contexto de recogida en hotel y seguimiento por WhatsApp para reducir friccion y subir conversion.`
+      title: "Reserva sencilla y segura",
+      body: `Ves precio claro, datos reales de recogida en hotel y soporte rapido por WhatsApp para resolver dudas antes de pagar.`
     }
   ];
 };
@@ -393,15 +393,15 @@ export const buildTourMarketIntentFaqs = (
     return [
       {
         q: `Is this a good option if I search "${intent.keyword.en}"?`,
-        a: `Yes. This variant is designed for that search profile and recommends ${tourTitle} with practical booking details.`
+        a: `Yes. This page is tailored to that search and shows ${tourTitle} with practical details like pricing, timing, and pickup information.`
       },
       {
         q: "Can I combine this tour with private transfer?",
-        a: "Yes. You can book transfer routes from Punta Cana airport to hotels and then continue with your tour plan."
+        a: "Yes. You can book airport-to-hotel transfer first and then continue with your tour plan from the same booking flow."
       },
       {
         q: "Do you support same-day or quick confirmation?",
-        a: "Depending on availability, we provide fast confirmation and direct WhatsApp assistance."
+        a: "When availability allows, we confirm quickly and support you directly on WhatsApp."
       }
     ];
   }
@@ -409,30 +409,30 @@ export const buildTourMarketIntentFaqs = (
     return [
       {
         q: `Cette option correspond-elle a la recherche "${intent.keyword.fr}" ?`,
-        a: `Oui. Cette variante est concue pour ce profil de recherche et recommande ${tourTitle} avec details utiles de reservation.`
+        a: `Oui. Cette page correspond a cette recherche et presente ${tourTitle} avec informations utiles: prix, horaires et pickup.`
       },
       {
         q: "Puis-je combiner ce tour avec un transfert prive ?",
-        a: "Oui. Vous pouvez reserver les routes de transfert aeroport-hotel puis continuer avec votre tour."
+        a: "Oui. Vous pouvez reserver d abord le transfert aeroport-hotel, puis ajouter votre tour dans le meme parcours."
       },
       {
         q: "Avez-vous une confirmation rapide ?",
-        a: "Selon disponibilite, nous proposons confirmation rapide et assistance directe sur WhatsApp."
+        a: "Selon disponibilite, nous proposons une confirmation rapide et une assistance directe via WhatsApp."
       }
     ];
   }
   return [
     {
       q: `Esta opcion aplica para quien busca "${intent.keyword.es}"?`,
-      a: `Si. Esta variante esta orientada a ese perfil de busqueda y recomienda ${tourTitle} con informacion practica para reservar.`
+      a: `Si. Esta pagina responde a esa busqueda y te muestra ${tourTitle} con datos utiles para reservar: precio, horarios y recogida.`
     },
     {
       q: "Puedo combinar este tour con traslado privado?",
-      a: "Si. Puedes reservar rutas de traslado aeropuerto-hotel y luego continuar con tu plan de tour."
+      a: "Si. Puedes reservar primero el traslado aeropuerto-hotel y despues completar tu plan de tour en el mismo flujo."
     },
     {
       q: "Tienen confirmacion rapida?",
-      a: "Segun disponibilidad, confirmamos rapido y damos asistencia directa por WhatsApp."
+      a: "Segun disponibilidad, te confirmamos rapido y te damos soporte directo por WhatsApp."
     }
   ];
 };
