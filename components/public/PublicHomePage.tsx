@@ -10,6 +10,7 @@ import HomeTourSearchSection from "@/components/public/HomeTourSearchSection";
 import HomeTransferTicker from "@/components/public/HomeTransferTicker";
 import { Locale, translate } from "@/lib/translations";
 import { getHomeContentOverrides } from "@/lib/siteContent";
+import { getPriceValidUntil } from "@/lib/seo";
 
 type PublicHomePageProps = {
   locale: Locale;
@@ -52,6 +53,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   const transferBannerImage =
     homeOverrides.transferBanner?.backgroundImage ??
     "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
+  const priceValidUntil = getPriceValidUntil();
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -68,6 +70,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           itemListElement: [
             {
               "@type": "Offer",
+              priceValidUntil,
               shippingDetails: {
                 "@type": "OfferShippingDetails",
                 doesNotShip: true,
@@ -89,6 +92,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
             },
             {
               "@type": "Offer",
+              priceValidUntil,
               shippingDetails: {
                 "@type": "OfferShippingDetails",
                 doesNotShip: true,
@@ -110,6 +114,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
             },
             {
               "@type": "Offer",
+              priceValidUntil,
               shippingDetails: {
                 "@type": "OfferShippingDetails",
                 doesNotShip: true,

@@ -4,9 +4,11 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import PublicHeaderSwitch from "@/components/public/PublicHeaderSwitch";
 import WhatsappFloatingChat from "@/components/shared/WhatsappFloatingChat";
 import VisitorSalesChat from "@/components/shared/VisitorSalesChat";
+import { getPriceValidUntil } from "@/lib/seo";
 
 const OFFER_SERVICE_SCHEMA = {
   "@type": "Offer",
+  priceValidUntil: getPriceValidUntil(),
   shippingDetails: {
     "@type": "OfferShippingDetails",
     doesNotShip: true,
