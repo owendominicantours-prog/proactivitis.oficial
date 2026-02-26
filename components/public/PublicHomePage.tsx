@@ -10,7 +10,9 @@ import HomeTourSearchSection from "@/components/public/HomeTourSearchSection";
 import HomeTransferTicker from "@/components/public/HomeTransferTicker";
 import { Locale, translate } from "@/lib/translations";
 import { getHomeContentOverrides } from "@/lib/siteContent";
-import { getPriceValidUntil } from "@/lib/seo";
+import { getPriceValidUntil, PROACTIVITIS_URL } from "@/lib/seo";
+import { prisma } from "@/lib/prisma";
+import { allLandings } from "@/data/transfer-landings";
 
 type PublicHomePageProps = {
   locale: Locale;
@@ -54,6 +56,62 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     homeOverrides.transferBanner?.backgroundImage ??
     "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
   const priceValidUntil = getPriceValidUntil();
+  const localePrefix = locale === "es" ? "" : `/${locale}`;
+  const localizedPath = (path: string) => `${PROACTIVITIS_URL}${locale === "es" ? path : `/${locale}${path}`}`;
+
+  const [publishedTours] = await Promise.all([
+    prisma.tour.findMany({
+      where: { status: { in: ["published", "seo_only"] } },
+      select: { slug: true, title: true, price: true, shortDescription: true },
+      orderBy: { createdAt: "desc" }
+    })
+  ]);
+  const transferLandings = allLandings();
+
+  const tourCatalogItems = publishedTours.map((tour, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: tour.title,
+    url: localizedPath(`/tours/${tour.slug}`)
+  }));
+
+  const transferCatalogItems = transferLandings.map((landing, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: landing.heroTitle,
+    url: localizedPath(`/transfer/${landing.landingSlug}`)
+  }));
+
+  const corePublicPages = [
+    { path: "/", name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home" },
+    { path: "/tours", name: locale === "es" ? "Tours" : locale === "fr" ? "Excursions" : "Tours" },
+    { path: "/traslado", name: locale === "es" ? "Traslados" : locale === "fr" ? "Transferts" : "Transfers" },
+    { path: "/prodiscovery", name: "ProDiscovery" },
+    { path: "/news", name: locale === "es" ? "Noticias" : locale === "fr" ? "Actualites" : "News" },
+    {
+      path: locale === "es" ? "/hoteles" : "/hotels",
+      name: locale === "es" ? "Hoteles" : locale === "fr" ? "Hotels" : "Hotels"
+    },
+    { path: "/punta-cana/tours", name: "Punta Cana Tours" },
+    { path: "/punta-cana/traslado", name: "Punta Cana Transfers" },
+    { path: "/punta-cana/premium-transfer-services", name: "Premium Transfer Services" }
+  ];
+
+  const allPublicPageUrls = Array.from(
+    new Set([
+      ...corePublicPages.map((page) => localizedPath(page.path)),
+      ...publishedTours.map((tour) => localizedPath(`/tours/${tour.slug}`)),
+      ...transferLandings.map((landing) => localizedPath(`/transfer/${landing.landingSlug}`))
+    ])
+  );
+
+  const allPublicPageItems = allPublicPageUrls.map((url, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: url.replace(`${PROACTIVITIS_URL}${localePrefix}`, "") || "/",
+    url
+  }));
+
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -187,6 +245,42 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
             }
           ]
         }
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${localizedPath("/")}#webpage`,
+        url: localizedPath("/"),
+        name: locale === "es" ? "Inicio Proactivitis" : locale === "fr" ? "Accueil Proactivitis" : "Proactivitis Home",
+        isPartOf: {
+          "@id": `${PROACTIVITIS_URL}/#website`
+        },
+        about: {
+          "@id": "https://proactivitis.com/#organization"
+        }
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${localizedPath("/")}#tour-catalog`,
+        name: locale === "es" ? "Catalogo completo de tours" : locale === "fr" ? "Catalogue complet des excursions" : "Complete tours catalog",
+        numberOfItems: tourCatalogItems.length,
+        itemListOrder: "https://schema.org/ItemListOrderAscending",
+        itemListElement: tourCatalogItems
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${localizedPath("/")}#transfer-catalog`,
+        name: locale === "es" ? "Catalogo completo de traslados" : locale === "fr" ? "Catalogue complet des transferts" : "Complete transfers catalog",
+        numberOfItems: transferCatalogItems.length,
+        itemListOrder: "https://schema.org/ItemListOrderAscending",
+        itemListElement: transferCatalogItems
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${localizedPath("/")}#public-pages`,
+        name: locale === "es" ? "Paginas publicas Proactivitis" : locale === "fr" ? "Pages publiques Proactivitis" : "Proactivitis public pages",
+        numberOfItems: allPublicPageItems.length,
+        itemListOrder: "https://schema.org/ItemListOrderAscending",
+        itemListElement: allPublicPageItems
       },
       {
         "@type": "FAQPage",
