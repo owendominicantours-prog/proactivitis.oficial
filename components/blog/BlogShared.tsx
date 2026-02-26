@@ -1033,6 +1033,7 @@ export async function buildBlogPostMetadata(slug: string, locale: "es" | "en" | 
 export async function renderBlogList(locale: "es" | "en" | "fr") {
   const labels = LABELS[locale];
   const posts = await getBlogList(locale);
+  const listUrl = locale === "es" ? `${BASE_URL}/news` : `${BASE_URL}/${locale}/news`;
   const serializedPosts = posts.map((post) => ({
     id: post.id,
     title: post.title,
@@ -1041,9 +1042,53 @@ export async function renderBlogList(locale: "es" | "en" | "fr") {
     coverImage: post.coverImage ?? null,
     publishedAt: post.publishedAt ? new Date(post.publishedAt).toISOString() : null
   }));
+  const listSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${listUrl}#webpage`,
+        url: listUrl,
+        name: labels.listTitle,
+        description: labels.listSubtitle
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${listUrl}#breadcrumbs`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
+            item: locale === "es" ? `${BASE_URL}/` : `${BASE_URL}/${locale}`
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: locale === "es" ? "Noticias" : locale === "fr" ? "Actualites" : "News",
+            item: listUrl
+          }
+        ]
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${listUrl}#posts`,
+        itemListElement: serializedPosts.map((post, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          url: locale === "es" ? `${BASE_URL}/news/${post.slug}` : `${BASE_URL}/${locale}/news/${post.slug}`,
+          name: post.title
+        }))
+      }
+    ]
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }}
+      />
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-12 space-y-3">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Blog</p>
@@ -1095,6 +1140,61 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
       locale === "es"
         ? `${BASE_URL}/news/${staticPost.slug}`
         : `${BASE_URL}/${locale}/news/${staticPost.slug}`;
+    const staticBlogSchema = {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BlogPosting",
+          "@id": `${shareUrl}#article`,
+          mainEntityOfPage: shareUrl,
+          headline: translation.title,
+          description: translation.excerpt,
+          datePublished: staticPost.publishedAt.toISOString(),
+          dateModified: staticPost.publishedAt.toISOString(),
+          author: {
+            "@type": "Organization",
+            name: "Proactivitis"
+          },
+          publisher: {
+            "@type": "Organization",
+            name: "Proactivitis",
+            logo: {
+              "@type": "ImageObject",
+              url: `${BASE_URL}/logo.png`
+            }
+          },
+          image: {
+            "@type": "ImageObject",
+            url: `${BASE_URL}${staticCoverImage.startsWith("/") ? staticCoverImage : `/${staticCoverImage}`}`
+          },
+          inLanguage: locale
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": `${shareUrl}#breadcrumbs`,
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
+              item: locale === "es" ? `${BASE_URL}/` : `${BASE_URL}/${locale}`
+            },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: locale === "es" ? "Noticias" : locale === "fr" ? "Actualites" : "News",
+              item: locale === "es" ? `${BASE_URL}/news` : `${BASE_URL}/${locale}/news`
+            },
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: translation.title,
+              item: shareUrl
+            }
+          ]
+        }
+      ]
+    };
     const relatedTours = await prisma.tour.findMany({
       where: {
         status: "published",
@@ -1124,6 +1224,10 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
 
     return (
       <div className="min-h-screen bg-slate-50">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(staticBlogSchema) }}
+        />
         <BlogReadingProgress locale={locale} />
         <article className="mx-auto max-w-4xl px-4 py-12 space-y-8">
           <header className="space-y-4">
@@ -1240,6 +1344,65 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
   const excerpt = translation?.excerpt ?? post.excerpt ?? "";
   const contentHtml = translation?.contentHtml ?? post.contentHtml;
   const shareUrl = locale === "es" ? `${BASE_URL}/news/${post.slug}` : `${BASE_URL}/${locale}/news/${post.slug}`;
+  const coverImageUrl = post.coverImage
+    ? `${BASE_URL}${post.coverImage.startsWith("/") ? post.coverImage : `/${post.coverImage}`}`
+    : `${BASE_URL}/fototours/fotosimple.jpg`;
+  const publishedIso = post.publishedAt ? new Date(post.publishedAt).toISOString() : new Date().toISOString();
+  const dynamicBlogSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        "@id": `${shareUrl}#article`,
+        mainEntityOfPage: shareUrl,
+        headline: title,
+        description: excerpt,
+        datePublished: publishedIso,
+        dateModified: publishedIso,
+        author: {
+          "@type": "Organization",
+          name: "Proactivitis"
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "Proactivitis",
+          logo: {
+            "@type": "ImageObject",
+            url: `${BASE_URL}/logo.png`
+          }
+        },
+        image: {
+          "@type": "ImageObject",
+          url: coverImageUrl
+        },
+        inLanguage: locale
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${shareUrl}#breadcrumbs`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
+            item: locale === "es" ? `${BASE_URL}/` : `${BASE_URL}/${locale}`
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: locale === "es" ? "Noticias" : locale === "fr" ? "Actualites" : "News",
+            item: locale === "es" ? `${BASE_URL}/news` : `${BASE_URL}/${locale}/news`
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: title,
+            item: shareUrl
+          }
+        ]
+      }
+    ]
+  };
   const relatedTours = post.tours
     .map((entry) => entry.tour)
     .filter((tour) => tour.status === "published");
@@ -1280,6 +1443,10 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(dynamicBlogSchema) }}
+      />
       <BlogReadingProgress locale={locale} />
       <article className="mx-auto max-w-4xl px-4 py-12 space-y-8">
         <header className="space-y-4">
