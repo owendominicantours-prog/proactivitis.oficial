@@ -126,7 +126,21 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
       price: landing.priceFrom,
       priceCurrency: "USD",
       availability: "https://schema.org/InStock",
-      url: bookingUrl
+      url: bookingUrl,
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USD" },
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "DO"
+        }
+      },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 2,
+        applicableCountry: "DO"
+      }
     },
     ...(reviews.length
       ? {

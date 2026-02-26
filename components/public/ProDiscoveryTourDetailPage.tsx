@@ -154,7 +154,21 @@ export default async function ProDiscoveryTourDetailPage({ locale, slug, reviewK
       price: tour.price,
       priceCurrency: "USD",
       availability: "https://schema.org/InStock",
-      url: `${PROACTIVITIS_URL}${bookHref}`
+      url: `${PROACTIVITIS_URL}${bookHref}`,
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USD" },
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "DO"
+        }
+      },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 2,
+        applicableCountry: "DO"
+      }
     },
     ...(reviews.length
       ? {

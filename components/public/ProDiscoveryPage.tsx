@@ -607,7 +607,21 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                 priceCurrency: "USD",
                 price: item.price,
                 availability: "https://schema.org/InStock",
-                url: toAbsoluteUrl(item.href)
+                url: toAbsoluteUrl(item.href),
+                shippingDetails: {
+                  "@type": "OfferShippingDetails",
+                  shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USD" },
+                  shippingDestination: {
+                    "@type": "DefinedRegion",
+                    addressCountry: "DO"
+                  }
+                },
+                hasMerchantReturnPolicy: {
+                  "@type": "MerchantReturnPolicy",
+                  returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+                  merchantReturnDays: 2,
+                  applicableCountry: "DO"
+                }
               }
             }
           : {})
