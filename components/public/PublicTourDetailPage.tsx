@@ -143,43 +143,43 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Que incluye el tour en buggy en Punta Cana?",
-        answer: "Incluye buggy, guia, rutas off-road y paradas para fotos. El precio final se muestra antes de reservar."
+        answer: "Incluye buggy, guia local, ruta off-road y paradas para foto. Antes de pagar ves el total final, sin cargos sorpresa."
       },
       {
         question: "Hay parada en cueva o cenote?",
-        answer: "La ruta suele incluir una parada en cueva o cenote y una casa tipica con cafe y cacao."
+        answer: "Si. Normalmente hacemos parada en cueva o cenote y en casa tipica para probar cafe y cacao dominicano."
       },
       {
         question: "Necesito licencia para conducir?",
-        answer: "Se requiere licencia vigente y ser mayor de edad. El briefing de seguridad es obligatorio."
+        answer: "Si, necesitas licencia vigente y ser mayor de edad para conducir. Antes de salir damos briefing de seguridad obligatorio."
       }
     ],
     en: [
       {
         question: "What is included in the Punta Cana buggy tour?",
-        answer: "Buggy, guide, off-road routes and photo stops. The final price is shown before booking."
+        answer: "It includes buggy, local guide, off-road route and photo stops. You see the full final price before payment."
       },
       {
         question: "Is there a cave or cenote stop?",
-        answer: "Most routes include a cave or cenote stop plus a local house visit with coffee and cacao."
+        answer: "Yes. Most routes include a cave or cenote stop plus a local house visit for Dominican coffee and cacao tasting."
       },
       {
         question: "Do I need a drivers license?",
-        answer: "A valid license and adult age are required. The safety briefing is mandatory."
+        answer: "Yes, a valid drivers license and adult age are required to drive. A mandatory safety briefing happens before departure."
       }
     ],
     fr: [
       {
         question: "Que comprend le tour en buggy a Punta Cana?",
-        answer: "Buggy, guide, pistes off-road et arrets photo. Le prix final est affiche avant la reservation."
+        answer: "Le tour comprend buggy, guide local, piste off-road et arrets photo. Le prix final est affiche avant paiement."
       },
       {
         question: "Y a-t-il un arret grotte ou cenote?",
-        answer: "La plupart des parcours incluent une grotte ou un cenote et une maison locale avec cafe et cacao."
+        answer: "Oui. La plupart des parcours incluent un arret grotte ou cenote et une maison locale avec degustation cafe-cacao."
       },
       {
         question: "Faut-il un permis de conduire?",
-        answer: "Un permis valide et etre adulte sont requis. Le briefing de securite est obligatoire."
+        answer: "Oui, permis valide et majorite sont requis pour conduire. Le briefing securite est obligatoire avant de partir."
       }
     ]
   },
@@ -187,7 +187,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Puedo elegir buggy o ATV?",
-        answer: "Si, eliges el tipo de vehiculo al reservar y confirmamos disponibilidad."
+        answer: "Si. Puedes elegir buggy o ATV al reservar, y te confirmamos disponibilidad real para ese horario."
       },
       {
         question: "Cuanto dura la excursion?",
@@ -195,13 +195,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Hay recogida en hotel?",
-        answer: "La mayoria de salidas incluye pickup en Punta Cana/Bavaro con punto confirmado."
+        answer: "Si, la mayoria de salidas incluye pickup en hoteles de Punta Cana y Bavaro con punto y hora confirmados."
       }
     ],
     en: [
       {
         question: "Can I choose buggy or ATV?",
-        answer: "Yes, you select the vehicle type when booking and we confirm availability."
+        answer: "Yes. You choose buggy or ATV during booking and we confirm real availability for your selected time."
       },
       {
         question: "How long is the excursion?",
@@ -209,13 +209,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Is hotel pickup included?",
-        answer: "Most departures include pickup in Punta Cana/Bavaro with a confirmed meeting point."
+        answer: "Yes, most departures include hotel pickup in Punta Cana/Bavaro with a confirmed time and meeting point."
       }
     ],
     fr: [
       {
         question: "Puis-je choisir buggy ou ATV?",
-        answer: "Oui, vous choisissez le type de vehicule a la reservation et nous confirmons."
+        answer: "Oui. Vous choisissez buggy ou ATV pendant la reservation, puis nous confirmons la disponibilite reelle."
       },
       {
         question: "Quelle est la duree de l excursion?",
@@ -223,7 +223,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "La prise en charge hotel est incluse?",
-        answer: "La plupart des departs incluent la prise en charge a Punta Cana/Bavaro."
+        answer: "Oui, la plupart des departs incluent la prise en charge hotel a Punta Cana/Bavaro avec horaire confirme."
       }
     ]
   },
@@ -275,11 +275,11 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Desde donde sale el tour a Isla Saona?",
-        answer: "Sale desde Bayahibe/La Romana con lancha o catamaran segun el horario."
+        answer: "Sale desde Bayahibe o La Romana. Segun la salida, combinas lancha rapida y catamaran durante el dia."
       },
       {
         question: "Incluye almuerzo y bebidas?",
-        answer: "Si, incluye almuerzo tipico y bebidas segun el operador."
+        answer: "Si, incluye almuerzo tipo buffet y bebidas basicas. Los detalles exactos aparecen antes de confirmar reserva."
       },
       {
         question: "Hay tiempo libre en la playa?",
@@ -289,11 +289,11 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     en: [
       {
         question: "Where does the Saona tour depart from?",
-        answer: "It departs from Bayahibe/La Romana by speedboat or catamaran depending on schedule."
+        answer: "Departure is from Bayahibe or La Romana. Depending on the schedule, the route combines speedboat and catamaran."
       },
       {
         question: "Is lunch and drinks included?",
-        answer: "Yes, lunch and drinks are included depending on the operator."
+        answer: "Yes, buffet lunch and basic drinks are included. Final inclusions are shown clearly before checkout."
       },
       {
         question: "Is there free beach time?",
@@ -303,11 +303,11 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     fr: [
       {
         question: "D ou part le tour Ile Saona?",
-        answer: "Depart de Bayahibe/La Romana en bateau rapide ou catamaran selon l horaire."
+        answer: "Depart depuis Bayahibe ou La Romana. Selon l horaire, le parcours combine bateau rapide et catamaran."
       },
       {
         question: "Dejeuner et boissons inclus?",
-        answer: "Oui, dejeuner et boissons inclus selon l operateur."
+        answer: "Oui, dejeuner buffet et boissons de base inclus. Le detail final des inclusions apparait avant paiement."
       },
       {
         question: "Y a-t-il du temps libre a la plage?",
@@ -319,7 +319,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Que incluye el dia en Samana y Cayo Levantado?",
-        answer: "Incluye traslados, playa, almuerzo y paradas clave del itinerario."
+        answer: "Incluye transporte ida y vuelta, parada en Cascada El Limon, tiempo de playa en Cayo Levantado y almuerzo."
       },
       {
         question: "Cuanto dura el viaje desde Punta Cana?",
@@ -333,7 +333,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     en: [
       {
         question: "What is included in the Samana and Cayo Levantado day?",
-        answer: "Transfers, beach time, lunch and key stops are included."
+        answer: "Round-trip transport, El Limon Waterfall stop, beach time in Cayo Levantado and lunch are included."
       },
       {
         question: "How long is the trip from Punta Cana?",
@@ -347,7 +347,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     fr: [
       {
         question: "Que comprend la journee Samana et Cayo Levantado?",
-        answer: "Transferts, plage, dejeuner et arrets principaux sont inclus."
+        answer: "Transfert aller-retour, arret a la cascade El Limon, temps de plage a Cayo Levantado et dejeuner inclus."
       },
       {
         question: "Combien de temps dure le trajet depuis Punta Cana?",
@@ -363,7 +363,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Es party boat con snorkel?",
-        answer: "Si, catamaran con musica, open bar y parada de snorkel."
+        answer: "Si. Es una salida en catamaran con musica, open bar y parada para snorkel en zona segura."
       },
       {
         question: "Hay recogida en hotel?",
@@ -371,13 +371,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Que llevar?",
-        answer: "Traje de bano, toalla, protector solar y efectivo opcional."
+        answer: "Lleva traje de bano, toalla, protector solar y ropa ligera. Si quieres extras o fotos, lleva efectivo opcional."
       }
     ],
     en: [
       {
         question: "Is it a party boat with snorkel?",
-        answer: "Yes, catamaran with music, open bar and a snorkel stop."
+        answer: "Yes. It is a catamaran trip with music, open bar and a dedicated snorkel stop in a safe area."
       },
       {
         question: "Is hotel pickup included?",
@@ -385,13 +385,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "What should I bring?",
-        answer: "Swimsuit, towel, sunscreen and optional cash."
+        answer: "Bring swimsuit, towel, sunscreen and light clothes. Optional cash is useful for extras and photos."
       }
     ],
     fr: [
       {
         question: "C est un party boat avec snorkel?",
-        answer: "Oui, catamaran avec musique, open bar et arret snorkel."
+        answer: "Oui. Sortie catamaran avec musique, open bar et arret snorkel dans une zone adaptee."
       },
       {
         question: "La prise en charge hotel est incluse?",
@@ -399,7 +399,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Que faut-il apporter?",
-        answer: "Maillot, serviette, creme solaire et cash optionnel."
+        answer: "Prenez maillot, serviette, creme solaire et vetements legers. Cash optionnel pour extras et photos."
       }
     ]
   },
@@ -407,7 +407,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "En que temporada se ven las ballenas?",
-        answer: "La temporada mas fuerte suele ser de enero a marzo."
+        answer: "La mejor ventana suele ser de enero a marzo, cuando Samana recibe la mayor presencia de ballenas jorobadas."
       },
       {
         question: "Incluye Cascada El Limon?",
@@ -415,13 +415,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Es un tour largo?",
-        answer: "Si, es un dia completo con transporte desde Punta Cana."
+        answer: "Si, es jornada completa. Se sale temprano desde Punta Cana y se regresa en la tarde-noche."
       }
     ],
     en: [
       {
         question: "What is the whale season in Samana?",
-        answer: "Peak season is usually from January to March."
+        answer: "Peak season is usually January to March, when humpback whale activity in Samana is strongest."
       },
       {
         question: "Is El Limon Waterfall included?",
@@ -429,13 +429,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Is it a long tour?",
-        answer: "Yes, it is a full-day tour with transport from Punta Cana."
+        answer: "Yes, it is a full-day experience with early departure from Punta Cana and return later in the day."
       }
     ],
     fr: [
       {
         question: "Quelle est la saison des baleines a Samana?",
-        answer: "La haute saison est generalement de janvier a mars."
+        answer: "La haute saison est en general de janvier a mars, quand l activite des baleines est la plus forte a Samana."
       },
       {
         question: "La cascade El Limon est-elle incluse?",
@@ -443,7 +443,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "C est une longue excursion?",
-        answer: "Oui, journee complete avec transport depuis Punta Cana."
+        answer: "Oui, excursion a la journee complete avec depart matinal depuis Punta Cana et retour en fin de journee."
       }
     ]
   },
@@ -451,7 +451,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Cuanto dura el vuelo?",
-        answer: "El vuelo dura entre 10 y 12 minutos en el aire."
+        answer: "El vuelo suele durar entre 10 y 12 minutos en el aire, mas el tiempo de navegacion y preparacion."
       },
       {
         question: "Es seguro?",
@@ -459,13 +459,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Pueden volar dos personas?",
-        answer: "Si, vuelos dobles o triples segun peso."
+        answer: "Si, se puede volar en pareja o trio segun peso combinado y condiciones del viento."
       }
     ],
     en: [
       {
         question: "How long is the flight?",
-        answer: "The flight lasts about 10-12 minutes in the air."
+        answer: "The parasailing flight is usually 10-12 minutes in the air, plus setup and boat navigation time."
       },
       {
         question: "Is it safe?",
@@ -473,13 +473,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Can two people fly?",
-        answer: "Yes, double or triple flights depending on weight."
+        answer: "Yes, double and sometimes triple flights are possible depending on total weight and wind conditions."
       }
     ],
     fr: [
       {
         question: "Combien de temps dure le vol?",
-        answer: "Le vol dure environ 10-12 minutes."
+        answer: "Le vol dure en general 10 a 12 minutes, plus le temps de preparation et de navigation en bateau."
       },
       {
         question: "Est-ce securise?",
@@ -487,7 +487,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Peut-on voler a deux?",
-        answer: "Oui, vols doubles ou triples selon le poids."
+        answer: "Oui, vol double et parfois triple selon le poids combine et les conditions meteo."
       }
     ]
   },
@@ -495,7 +495,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Incluye entrada y transporte?",
-        answer: "Si, incluye ticket, transporte y tiempo de playa."
+        answer: "Si, incluye entradas, transporte y tiempo real en playa. Veras el detalle final antes de confirmar."
       },
       {
         question: "Que tipo de barco se usa?",
@@ -503,13 +503,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Hay pickup en hoteles?",
-        answer: "Si, pickup en Punta Cana/Bavaro confirmado despues de reservar."
+        answer: "Si, coordinamos recogida en hoteles de Punta Cana y Bavaro con horario confirmado despues de reservar."
       }
     ],
     en: [
       {
         question: "Does it include ticket and transport?",
-        answer: "Yes, ticket, transport and beach time are included."
+        answer: "Yes, entry tickets, transport and real beach time are included. Final details are shown before checkout."
       },
       {
         question: "What kind of boat is used?",
@@ -517,13 +517,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Is hotel pickup included?",
-        answer: "Yes, pickup in Punta Cana/Bavaro is confirmed after booking."
+        answer: "Yes, we coordinate hotel pickup in Punta Cana/Bavaro and confirm your exact time after booking."
       }
     ],
     fr: [
       {
         question: "Billet et transport inclus?",
-        answer: "Oui, billet, transport et temps de plage inclus."
+        answer: "Oui, billets, transport et vrai temps de plage inclus. Le detail final apparait avant validation."
       },
       {
         question: "Quel type de bateau est utilise?",
@@ -531,7 +531,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "La prise en charge hotel est incluse?",
-        answer: "Oui, prise en charge a Punta Cana/Bavaro apres reservation."
+        answer: "Oui, nous confirmons la prise en charge hotel a Punta Cana/Bavaro apres la reservation."
       }
     ]
   },
@@ -539,7 +539,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Que lugares se visitan en el safari cultural?",
-        answer: "Campos, pueblos, casa tipica y degustaciones locales."
+        answer: "Visitamos zonas rurales, pueblos locales, casa tipica y paradas para degustaciones dominicanas."
       },
       {
         question: "Incluye guia local?",
@@ -547,13 +547,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Es recomendable para familias?",
-        answer: "Si, es un tour cultural y tranquilo."
+        answer: "Si, es una experiencia tranquila y educativa, recomendada para familias y viajeros de ritmo relajado."
       }
     ],
     en: [
       {
         question: "What places are visited on the cultural safari?",
-        answer: "Countryside, villages, a local house and tastings."
+        answer: "The route includes countryside areas, local villages, a traditional home and Dominican tastings."
       },
       {
         question: "Is a local guide included?",
@@ -561,13 +561,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Is it family friendly?",
-        answer: "Yes, it is a relaxed cultural tour."
+        answer: "Yes, it is a relaxed and educational tour, great for families and travelers who prefer a calm pace."
       }
     ],
     fr: [
       {
         question: "Quels lieux sont visites pendant le safari culturel?",
-        answer: "Campagne, villages, maison locale et degustations."
+        answer: "Le parcours inclut campagne, villages locaux, maison traditionnelle et degustations dominicaines."
       },
       {
         question: "Un guide local est-il inclus?",
@@ -575,7 +575,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "C est adapte aux familles?",
-        answer: "Oui, c est un tour culturel tranquille."
+        answer: "Oui, c est une excursion culturelle calme, ideale pour familles et voyageurs qui veulent un rythme doux."
       }
     ]
   },
@@ -583,7 +583,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Que incluye la visita a Santo Domingo?",
-        answer: "Zona Colonial, paradas historicas y guia local."
+        answer: "Incluye recorrido por Zona Colonial, paradas historicas y acompanamiento de guia local durante la visita."
       },
       {
         question: "Incluye almuerzo?",
@@ -591,13 +591,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Cuanto dura el viaje?",
-        answer: "Es un tour de dia completo con salida temprano."
+        answer: "Es dia completo. La salida es temprano desde Punta Cana y el regreso es en la tarde."
       }
     ],
     en: [
       {
         question: "What is included in the Santo Domingo visit?",
-        answer: "Colonial Zone, key stops and a local guide."
+        answer: "It includes a Colonial Zone tour, key historical stops and a local guide throughout the visit."
       },
       {
         question: "Is lunch included?",
@@ -605,13 +605,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "How long is the trip?",
-        answer: "It is a full-day tour with early departure."
+        answer: "It is a full-day trip, with early departure from Punta Cana and return in the afternoon."
       }
     ],
     fr: [
       {
         question: "Que comprend la visite de Saint-Domingue?",
-        answer: "Zone Coloniale, arrets principaux et guide local."
+        answer: "La visite comprend Zone Coloniale, arrets historiques principaux et accompagnement par un guide local."
       },
       {
         question: "Le dejeuner est-il inclus?",
@@ -619,7 +619,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Quelle est la duree du voyage?",
-        answer: "Excursion a la journee avec depart tot."
+        answer: "C est une excursion a la journee complete, avec depart matinal depuis Punta Cana et retour l apres-midi."
       }
     ]
   },
@@ -627,7 +627,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Cuanto cuesta el Sosua Party Boat?",
-        answer: "Las salidas compartidas empiezan desde USD 65 por persona. Tambien hay opciones privadas y VIP para grupos."
+        answer: "La salida compartida inicia en USD 65 por persona. Si viajas en grupo, tambien puedes elegir opcion privada o VIP."
       },
       {
         question: "El tour incluye open bar y snorkel?",
@@ -635,13 +635,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Hay pickup desde Puerto Plata, Amber Cove o Taino Bay?",
-        answer: "Si, coordinamos recogida en Puerto Plata y zonas de cruceros segun horario y disponibilidad."
+        answer: "Si. Coordinamos recogida en Puerto Plata, Amber Cove y Taino Bay segun horario, trafico y disponibilidad del dia."
       }
     ],
     en: [
       {
         question: "How much is the Sosua Party Boat?",
-        answer: "Shared departures start from USD 65 per person. Private and VIP options are also available for groups."
+        answer: "Shared trips start at USD 65 per person. Private and VIP formats are available for groups who want a custom setup."
       },
       {
         question: "Does it include open bar and snorkeling?",
@@ -649,13 +649,13 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Is pickup available from Puerto Plata, Amber Cove, or Taino Bay?",
-        answer: "Yes, we coordinate pickup from Puerto Plata and cruise-port areas based on schedule and availability."
+        answer: "Yes. We coordinate pickup from Puerto Plata, Amber Cove and Taino Bay based on schedule and same-day availability."
       }
     ],
     fr: [
       {
         question: "Combien coute le Sosua Party Boat?",
-        answer: "Les departs partages commencent a USD 65 par personne. Des options privees et VIP sont aussi disponibles."
+        answer: "Le depart partage commence a USD 65 par personne. Des versions privees et VIP sont aussi disponibles pour les groupes."
       },
       {
         question: "Le tour inclut-il open bar et snorkeling?",
@@ -663,7 +663,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Pickup possible depuis Puerto Plata, Amber Cove ou Taino Bay?",
-        answer: "Oui, nous coordonnons la prise en charge depuis Puerto Plata et les zones de croisiere selon horaire et disponibilite."
+        answer: "Oui. Nous coordonnons la prise en charge depuis Puerto Plata, Amber Cove et Taino Bay selon horaire et disponibilite."
       }
     ]
   }
