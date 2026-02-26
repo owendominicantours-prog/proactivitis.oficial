@@ -754,6 +754,42 @@ const buildCommercialIntentLinks = (locale: Locale, slug: string): IntentLink[] 
   return links;
 };
 
+const buildPracticalInfo = (locale: Locale, slug: string) => {
+  const isBuggy = slug.includes("buggy") || slug.includes("atv");
+  const whatToBring = isBuggy
+    ? localeLabel(
+        locale,
+        ["Ropa que se pueda ensuciar", "Toalla y cambio de ropa", "Protector solar", "Calzado cerrado o deportivo"].join(";"),
+        ["Clothes you can get dirty", "Towel and extra clothes", "Sunscreen", "Closed shoes or sneakers"].join(";"),
+        ["Vetements qui peuvent se salir", "Serviette et vetements de rechange", "Creme solaire", "Chaussures fermees ou baskets"].join(";")
+      )
+    : localeLabel(
+        locale,
+        ["Toalla", "Protector solar", "Efectivo opcional para extras", "Documento de identidad"].join(";"),
+        ["Towel", "Sunscreen", "Optional cash for extras", "ID document"].join(";"),
+        ["Serviette", "Creme solaire", "Cash optionnel pour extras", "Piece d identite"].join(";")
+      );
+
+  const restrictions = isBuggy
+    ? localeLabel(
+        locale,
+        ["No apto para embarazadas", "Edad minima para conducir: 18", "No recomendado para lesiones de espalda severas"].join(";"),
+        ["Not suitable for pregnant travelers", "Minimum driving age: 18", "Not recommended for severe back injuries"].join(";"),
+        ["Non adapte aux femmes enceintes", "Age minimum pour conduire : 18 ans", "Non recommande pour lesions severes du dos"].join(";")
+      )
+    : localeLabel(
+        locale,
+        ["Sujeto a condiciones del clima", "Horarios pueden variar por operacion local", "Seguir siempre indicaciones del guia"].join(";"),
+        ["Weather conditions may affect schedule", "Timings can vary due to local operations", "Always follow guide instructions"].join(";"),
+        ["Les conditions meteo peuvent affecter l horaire", "Les horaires peuvent varier selon l operation locale", "Suivre les instructions du guide"].join(";")
+      );
+
+  return {
+    whatToBring: whatToBring.split(";").map((item) => item.trim()).filter(Boolean),
+    restrictions: restrictions.split(";").map((item) => item.trim()).filter(Boolean)
+  };
+};
+
 const TOUR_SCHEMA_KEYWORDS: Record<Locale, string[]> = {
   es: [
     "tours punta cana",
@@ -1266,6 +1302,11 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     tour.slug === "party-boat-sosua" ||
     tour.slug === "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua";
   const commercialIntentLinks = buildCommercialIntentLinks(locale, tour.slug);
+  const practicalInfo = buildPracticalInfo(locale, tour.slug);
+  const mapQuery = encodeURIComponent(`${heroTitle} ${tour.location ?? "Punta Cana"}`);
+  const mapEmbedUrl = `https://www.google.com/maps?q=${mapQuery}&output=embed`;
+  const mapSearchUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
+  const travelerGallery = [...gallery].reverse().slice(0, 6);
 
   const approvedReviews = await getApprovedTourReviews(tour.id);
   const reviewLocale =
@@ -1713,6 +1754,12 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                       buttonLabel={heroGalleryCta}
                   buttonClassName="rounded-2xl border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-50"
                 />
+                <a
+                  href="#traveler-photos"
+                  className="rounded-2xl border border-emerald-200 bg-emerald-50 px-7 py-3 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-100"
+                >
+                  {localeLabel(locale, "Ver fotos de viajeros", "View traveler photos", "Voir les photos des voyageurs")}
+                </a>
               </div>
             </div>
           </div>
@@ -1786,6 +1833,96 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
         </div>
       </section>
 
+      <section id="practical" className="mx-auto mt-6 max-w-[1240px] px-4">
+        <div className="grid gap-4 md:grid-cols-2">
+          <article className="rounded-[20px] border border-slate-100 bg-white p-5 shadow-md">
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-500">
+              {localeLabel(locale, "Que llevar", "What to bring", "Que faut-il apporter")}
+            </p>
+            <ul className="mt-3 space-y-2 text-sm font-medium text-slate-700">
+              {practicalInfo.whatToBring.map((item) => (
+                <li key={item} className="flex items-center gap-2">
+                  <span aria-hidden className="text-emerald-600">✔</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </article>
+          <article className="rounded-[20px] border border-slate-100 bg-white p-5 shadow-md">
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-500">
+              {localeLabel(locale, "Restricciones y seguridad", "Restrictions and safety", "Restrictions et securite")}
+            </p>
+            <ul className="mt-3 space-y-2 text-sm font-medium text-slate-700">
+              {practicalInfo.restrictions.map((item) => (
+                <li key={item} className="flex items-center gap-2">
+                  <span aria-hidden className="text-rose-500">✖</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="meeting-point" className="mx-auto mt-6 max-w-[1240px] px-4">
+        <div className="overflow-hidden rounded-[24px] border border-slate-100 bg-white shadow-lg">
+          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-500">
+                {localeLabel(locale, "Punto de encuentro", "Meeting point", "Point de rencontre")}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{heroTitle}</p>
+            </div>
+            <a
+              href={mapSearchUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-400"
+            >
+              {localeLabel(locale, "Abrir en Google Maps", "Open in Google Maps", "Ouvrir dans Google Maps")}
+            </a>
+          </div>
+          <iframe
+            title={`${heroTitle} map`}
+            src={mapEmbedUrl}
+            className="h-[320px] w-full"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
+      </section>
+
+      <section id="traveler-photos" className="mx-auto mt-6 max-w-[1240px] px-4">
+        <div className="rounded-[24px] border border-slate-100 bg-white p-5 shadow-md">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-500">
+                {localeLabel(locale, "Fotos de viajeros", "Traveler photos", "Photos des voyageurs")}
+              </p>
+              <p className="mt-1 text-sm text-slate-600">
+                {localeLabel(
+                  locale,
+                  "Momentos compartidos por clientes en experiencias reales.",
+                  "Moments shared by guests from real experiences.",
+                  "Moments partages par des clients lors d experiences reelles."
+                )}
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
+            {travelerGallery.map((img, index) => (
+              <img
+                key={`${img}-${index}`}
+                src={img}
+                alt={localeLabel(locale, "Foto de viajero", "Traveler photo", "Photo voyageur")}
+                className="h-40 w-full rounded-xl object-cover"
+                loading="lazy"
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section id="booking" className="mx-auto mt-6 max-w-[1240px] px-4 lg:hidden">
         <div className="md:hidden mb-3">
           <p className="text-sm font-semibold text-gray-900">
@@ -1821,7 +1958,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                 <ul className="mt-3 space-y-2 text-sm font-semibold text-emerald-600">
                   {includes.map((item) => (
                     <li key={item} className="flex items-center gap-2">
-                      <span aria-hidden className="text-lg text-emerald-500">+</span>
+                      <span aria-hidden className="text-lg text-emerald-500">✔</span>
                       {item}
                     </li>
                   ))}
@@ -1834,7 +1971,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                 <ul className="mt-3 space-y-2 text-sm font-semibold text-rose-500">
                   {excludes.map((item) => (
                     <li key={item} className="flex items-center gap-2">
-                      <span aria-hidden className="text-lg text-rose-500">x</span>
+                      <span aria-hidden className="text-lg text-rose-500">✖</span>
                       {item}
                     </li>
                   ))}
