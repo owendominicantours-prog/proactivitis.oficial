@@ -21,6 +21,7 @@ type DiscoveryItem = {
   title: string;
   description: string;
   image: string;
+  schemaImages?: string[];
   rating: number;
   reviews: number;
   price: number | null;
@@ -229,6 +230,27 @@ const parseGallery = (gallery?: string | null) => {
 
 const firstImage = (primary?: string | null, gallery?: string | null, fallback = "/fototours/fotosimple.jpg") =>
   primary || parseGallery(gallery)[0] || fallback;
+const SCHEMA_COLLAGE_SIZE = 5;
+const TRANSFER_COLLAGE_POOL = ["/transfer/sedan.png", "/transfer/suv.png", "/transfer/mini van.png"];
+
+const uniqueImages = (images: Array<string | null | undefined>) =>
+  Array.from(new Set(images.filter((img): img is string => Boolean(img))));
+
+const buildSchemaImageCollage = (
+  preferred: Array<string | null | undefined>,
+  fallbackPool: string[] = ["/fototours/fotosimple.jpg"],
+  desiredCount: number = SCHEMA_COLLAGE_SIZE
+) => {
+  const merged = uniqueImages([...preferred, ...fallbackPool]);
+  if (merged.length >= desiredCount) return merged.slice(0, desiredCount);
+  const filled = [...merged];
+  let idx = 0;
+  while (filled.length < desiredCount && fallbackPool.length > 0) {
+    filled.push(fallbackPool[idx % fallbackPool.length]);
+    idx += 1;
+  }
+  return uniqueImages(filled).slice(0, desiredCount);
+};
 
 const round1 = (value: number) => Math.round(value * 10) / 10;
 
@@ -246,6 +268,8 @@ const toTourHref = (locale: Locale, slug: string) => `${localePrefix(locale)}/pr
 const toTransferHref = (locale: Locale, slug: string) => `${localePrefix(locale)}/prodiscovery/transfer/${slug}`;
 const toMapHref = (item: DiscoveryItem) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${item.title} ${item.destination.replace("-", " ")}`)}`;
+const toAbsoluteUrl = (path: string) =>
+  path.startsWith("http") ? path : `${PROACTIVITIS_URL}${path.startsWith("/") ? path : `/${path}`}`;
 
 function BubbleRating({ rating, label }: { rating: number; label: string }) {
   return (
@@ -301,8 +325,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
         gallery: true,
         createdAt: true,
         translations: { where: { locale }, select: { title: true, shortDescription: true, description: true } }
-      },
-      take: 300
+      }
     }),
     prisma.transferReview.groupBy({
       by: ["transferLandingSlug"],
@@ -325,13 +348,13 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
       where: { status: "APPROVED" },
       orderBy: { createdAt: "desc" },
       select: { id: true, customerName: true, rating: true, body: true, createdAt: true },
-      take: 20
+      take: 80
     }),
     prisma.transferReview.findMany({
       where: { status: "APPROVED" },
       orderBy: { createdAt: "desc" },
       select: { id: true, customerName: true, rating: true, body: true, createdAt: true },
-      take: 20
+      take: 80
     })
   ]);
 
@@ -355,12 +378,14 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
     const ratingData = tourSummary[tour.id] ?? { average: 0, count: 0 };
     const title = tr?.title || tour.title;
     const description = tr?.shortDescription || tr?.description || tour.shortDescription || tour.description;
+    const gallery = parseGallery(tour.gallery);
     return {
       id: `tour-${tour.id}`,
       type: "tour",
       title,
       description: (description || "").slice(0, 160),
       image: firstImage(tour.heroImage, tour.gallery),
+      schemaImages: buildSchemaImageCollage([tour.heroImage, ...gallery], ["/fototours/fotosimple.jpg"]),
       rating: round1(ratingData.average || 0),
       reviews: ratingData.count || 0,
       price: Math.round(tour.price),
@@ -371,7 +396,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
     };
   });
 
-  const transferItems: DiscoveryItem[] = transferLandings.slice(0, 500).map((landing) => {
+  const transferItems: DiscoveryItem[] = transferLandings.map((landing) => {
     const ratingData = transferBySlug.get(landing.landingSlug) ?? { rating: 0, reviews: 0 };
     return {
       id: `transfer-${landing.landingSlug}`,
@@ -379,6 +404,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
       title: landing.heroTitle,
       description: landing.heroSubtitle || landing.metaDescription,
       image: landing.heroImage || "/transfer/sedan.png",
+      schemaImages: buildSchemaImageCollage([landing.heroImage], TRANSFER_COLLAGE_POOL),
       rating: ratingData.rating,
       reviews: ratingData.reviews,
       price: Math.round(landing.priceFrom),
@@ -404,6 +430,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
       title: hotel.name,
       description: (hotel.description || `${hotel.name} in Punta Cana`).slice(0, 160),
       image: hotel.heroImage || "/fototours/fotosimple.jpg",
+      schemaImages: buildSchemaImageCollage([hotel.heroImage], ["/fototours/fotosimple.jpg"]),
       rating,
       reviews,
       price: null,
@@ -461,7 +488,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
 
   const comments = [...latestTourReviews, ...latestTransferReviews]
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .slice(0, 12);
+    .slice(0, 30);
 
   const makeHref = (
     targetPage?: number,
@@ -541,15 +568,115 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
   ].filter(Boolean) as Array<{ key: string; label: string; href: string }>;
 
   const pageUrl = `${PROACTIVITIS_URL}${makeHref()}`;
+  const localeName = locale === "es" ? "es-DO" : locale === "fr" ? "fr-FR" : "en-US";
+  const keywordDescription =
+    locale === "es"
+      ? "Tours en Punta Cana, party boat en Sosua, excursiones en Republica Dominicana, traslados privados aeropuerto PUJ, hoteles y transporte premium con resenas reales."
+      : locale === "fr"
+        ? "Excursions a Punta Cana, party boat a Sosua, transferts prives aeroport PUJ, hotels et services premium en Republique dominicaine avec avis verifies."
+        : "Punta Cana tours, Sosua party boat, Dominican Republic excursions, private PUJ airport transfers, hotels and premium transportation with verified reviews.";
+
+  const schemaProducts = allItems
+    .filter((item) => item.type === "tour" || item.type === "transfer")
+    .map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Product",
+        name: item.title,
+        description: item.description,
+        image: (item.schemaImages?.length ? item.schemaImages : [item.image]).map((img) => toAbsoluteUrl(img)),
+        url: toAbsoluteUrl(item.href),
+        brand: {
+          "@type": "Brand",
+          name: "ProDiscovery"
+        },
+        ...(item.reviews > 0 && item.rating > 0
+          ? {
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: item.rating,
+                reviewCount: item.reviews
+              }
+            }
+          : {}),
+        ...(item.price
+          ? {
+              offers: {
+                "@type": "Offer",
+                priceCurrency: "USD",
+                price: item.price,
+                availability: "https://schema.org/InStock",
+                url: toAbsoluteUrl(item.href)
+              }
+            }
+          : {})
+      }
+    }));
+
+  const schemaReviews = comments.map((comment, index) => ({
+    "@type": "Review",
+    "@id": `${pageUrl}#review-${index + 1}`,
+    author: {
+      "@type": "Person",
+      name: comment.customerName || "Traveler"
+    },
+    datePublished: comment.createdAt.toISOString(),
+    reviewBody: comment.body,
+    reviewRating: {
+      "@type": "Rating",
+      ratingValue: comment.rating,
+      bestRating: 5,
+      worstRating: 1
+    }
+  }));
+
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${PROACTIVITIS_URL}#organization`,
+        name: "Proactivitis",
+        url: PROACTIVITIS_URL,
+        logo: `${PROACTIVITIS_URL}/logo.png`,
+        sameAs: [
+          "https://www.instagram.com/proactivitis",
+          "https://www.facebook.com/proactivitis"
+        ]
+      },
+      {
+        "@type": "LocalBusiness",
+        "@id": `${PROACTIVITIS_URL}#localbusiness`,
+        name: "ProDiscovery by Proactivitis",
+        url: pageUrl,
+        image: `${PROACTIVITIS_URL}/logo.png`,
+        description: keywordDescription,
+        areaServed: ["DO", "US", "CA", "MX", "ES", "FR"],
+        availableLanguage: ["es", "en", "fr"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${PROACTIVITIS_URL}#website`,
+        url: PROACTIVITIS_URL,
+        name: "ProDiscovery",
+        inLanguage: localeName,
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${PROACTIVITIS_URL}${localePrefix(locale)}/prodiscovery?q={search_term_string}`,
+          "query-input": "required name=search_term_string"
+        }
+      },
       {
         "@type": "CollectionPage",
         "@id": `${pageUrl}#webpage`,
         url: pageUrl,
         name: `${t.title} - ${t.filterAll}`,
-        description: t.subtitle
+        description: `${t.subtitle} ${keywordDescription}`,
+        inLanguage: localeName,
+        mainEntity: {
+          "@id": `${pageUrl}#catalog`
+        }
       },
       {
         "@type": "ItemList",
@@ -560,8 +687,16 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
           name: item.title,
           url: `${PROACTIVITIS_URL}${item.href}`
         }))
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${pageUrl}#catalog`,
+        name: "ProDiscovery tours and transfers catalog",
+        numberOfItems: schemaProducts.length,
+        itemListOrder: "https://schema.org/ItemListOrderAscending",
+        itemListElement: schemaProducts
       }
-    ]
+    ].concat(schemaReviews as unknown as any[])
   };
 
   return (
