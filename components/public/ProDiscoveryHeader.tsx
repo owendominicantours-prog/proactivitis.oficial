@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { Locale } from "@/lib/translations";
 
 type Props = {
@@ -12,7 +15,8 @@ const COPY = {
     tours: "Tours",
     transfers: "Traslados",
     hotels: "Hoteles",
-    rankings: "Rankings"
+    rankings: "Rankings",
+    language: "Idioma"
   },
   en: {
     brand: "ProDiscovery",
@@ -20,7 +24,8 @@ const COPY = {
     tours: "Tours",
     transfers: "Transfers",
     hotels: "Hotels",
-    rankings: "Rankings"
+    rankings: "Rankings",
+    language: "Language"
   },
   fr: {
     brand: "ProDiscovery",
@@ -28,14 +33,29 @@ const COPY = {
     tours: "Excursions",
     transfers: "Transferts",
     hotels: "Hotels",
-    rankings: "Classements"
+    rankings: "Classements",
+    language: "Langue"
   }
 } as const;
 
 const localePrefix = (locale: Locale) => (locale === "es" ? "" : `/${locale}`);
+const stripLocalePrefix = (pathname: string) => {
+  if (pathname === "/en" || pathname === "/fr") return "/";
+  if (pathname.startsWith("/en/")) return pathname.slice(3);
+  if (pathname.startsWith("/fr/")) return pathname.slice(3);
+  return pathname;
+};
+const buildLocaleHref = (locale: Locale, pathname: string, query: string) => {
+  const normalized = stripLocalePrefix(pathname || "/");
+  const localizedPath = locale === "es" ? normalized : `/${locale}${normalized}`;
+  return `${localizedPath}${query ? `?${query}` : ""}`;
+};
 
 export default function ProDiscoveryHeader({ locale }: Props) {
   const t = COPY[locale];
+  const pathname = usePathname() || "/";
+  const searchParams = useSearchParams();
+  const query = searchParams?.toString() ?? "";
   const base = `${localePrefix(locale)}/prodiscovery`;
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -72,6 +92,25 @@ export default function ProDiscoveryHeader({ locale }: Props) {
             {t.rankings}
           </Link>
         </nav>
+        <div className="flex items-center gap-1.5 text-xs">
+          <span className="hidden text-slate-500 sm:inline">{t.language}</span>
+          {(["es", "en", "fr"] as const).map((targetLocale) => {
+            const active = locale === targetLocale;
+            return (
+              <Link
+                key={targetLocale}
+                href={buildLocaleHref(targetLocale, pathname, query)}
+                className={`rounded-full px-2.5 py-1 font-semibold uppercase tracking-[0.08em] ${
+                  active
+                    ? "bg-slate-900 text-white"
+                    : "border border-slate-300 text-slate-700 hover:border-slate-400"
+                }`}
+              >
+                {targetLocale}
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </header>
   );
