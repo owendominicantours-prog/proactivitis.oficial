@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import StructuredData from "@/components/schema/StructuredData";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_URL } from "@/lib/seo";
@@ -150,6 +151,7 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
   return (
     <main className="bg-slate-50 pb-16">
       <StructuredData data={schema} />
+      <ProDiscoveryHeader locale={locale} />
       <section className="mx-auto max-w-6xl px-4 py-10">
         <Link href={basePath} className="text-sm font-semibold text-emerald-700">
           {t.back}

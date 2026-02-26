@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import StructuredData from "@/components/schema/StructuredData";
 import { allLandings } from "@/data/transfer-landings";
 import { prisma } from "@/lib/prisma";
@@ -117,6 +118,7 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
   return (
     <main className="bg-[#f5f7f9] pb-12">
       <StructuredData data={schema} />
+      <ProDiscoveryHeader locale={locale} />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Link href={toDiscoveryHref(locale)} className="text-sm font-semibold text-emerald-700">
           {t.back}

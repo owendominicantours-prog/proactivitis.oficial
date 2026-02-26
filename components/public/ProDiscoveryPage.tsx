@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import StructuredData from "@/components/schema/StructuredData";
 import { allLandings } from "@/data/transfer-landings";
 import { prisma } from "@/lib/prisma";
@@ -532,6 +533,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
   return (
     <main className="bg-[#f5f7f9] pb-28">
       <StructuredData data={schema} />
+      <ProDiscoveryHeader locale={locale} />
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-black tracking-tight text-slate-900">{t.title}</h1>
