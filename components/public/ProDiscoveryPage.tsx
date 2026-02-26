@@ -617,6 +617,9 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
   const schemaReviews = comments.map((comment, index) => ({
     "@type": "Review",
     "@id": `${pageUrl}#review-${index + 1}`,
+    itemReviewed: {
+      "@id": `${PROACTIVITIS_URL}#localbusiness`
+    },
     author: {
       "@type": "Person",
       name: comment.customerName || "Traveler"
