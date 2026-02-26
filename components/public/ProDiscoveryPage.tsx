@@ -662,13 +662,30 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                     shippingDestination: {
                       "@type": "DefinedRegion",
                       addressCountry: "DO"
-                    }
+                    },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 1,
+            unitCode: "d"
+          },
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 1,
+            unitCode: "d"
+          }
+        }
                   },
                   hasMerchantReturnPolicy: {
                     "@type": "MerchantReturnPolicy",
                     returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
                     merchantReturnDays: 2,
-                    applicableCountry: "DO"
+                    applicableCountry: "DO",
+        returnMethod: "https://schema.org/ReturnByMail",
+        returnFees: "https://schema.org/FreeReturn"
                   }
                 }
               }

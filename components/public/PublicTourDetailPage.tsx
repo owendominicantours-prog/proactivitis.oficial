@@ -1514,12 +1514,29 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
         shippingDestination: {
           "@type": "DefinedRegion",
           addressCountry: "DO"
+        },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 1,
+            unitCode: "d"
+          },
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 1,
+            unitCode: "d"
+          }
         }
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
         returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
-        applicableCountry: "DO"
+        applicableCountry: "DO",
+        returnMethod: "https://schema.org/ReturnByMail",
+        returnFees: "https://schema.org/FreeReturn"
       },
       acceptedPaymentMethod: ["https://schema.org/CreditCard", "https://schema.org/ByBankTransferInAdvance"]
     },
@@ -1560,12 +1577,29 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
         shippingDestination: {
           "@type": "DefinedRegion",
           addressCountry: "DO"
+        },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 1,
+            unitCode: "d"
+          },
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 1,
+            unitCode: "d"
+          }
         }
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
         returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
-        applicableCountry: "DO"
+        applicableCountry: "DO",
+        returnMethod: "https://schema.org/ReturnByMail",
+        returnFees: "https://schema.org/FreeReturn"
       },
       acceptedPaymentMethod: ["https://schema.org/CreditCard", "https://schema.org/ByBankTransferInAdvance"]
     }

@@ -247,12 +247,29 @@ export default async function HipHopLandingPage() {
         shippingDestination: {
           "@type": "DefinedRegion",
           addressCountry: "DO"
+        },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 1,
+            unitCode: "d"
+          },
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 1,
+            unitCode: "d"
+          }
         }
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
         returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
-        applicableCountry: "DO"
+        applicableCountry: "DO",
+        returnMethod: "https://schema.org/ReturnByMail",
+        returnFees: "https://schema.org/FreeReturn"
       }
     },
     sameAs: SAME_AS_URLS
