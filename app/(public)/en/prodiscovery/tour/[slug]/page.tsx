@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PublicTourDetailPage, { type TourDetailSearchParams } from "@/components/public/PublicTourDetailPage";
+import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import { prisma } from "@/lib/prisma";
 import { en } from "@/lib/translations";
 import { PROACTIVITIS_URL } from "@/lib/seo";
@@ -40,5 +41,10 @@ export default async function ProDiscoveryTourPageEn({
   params: Promise<{ slug: string }>;
   searchParams?: Promise<TourDetailSearchParams>;
 }) {
-  return <PublicTourDetailPage params={params} searchParams={searchParams} locale={en} />;
+  return (
+    <>
+      <ProDiscoveryHeader locale={en} />
+      <PublicTourDetailPage params={params} searchParams={searchParams} locale={en} />
+    </>
+  );
 }
