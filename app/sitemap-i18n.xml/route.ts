@@ -74,6 +74,7 @@ export async function GET() {
   LOCALES.forEach((locale) => {
     entries.push(
       buildEntry(`${BASE_URL}/${locale}`, 1.0),
+      buildEntry(`${BASE_URL}/${locale}/prodiscovery`, 0.9),
       buildEntry(`${BASE_URL}/${locale}/tours`, 0.9),
       buildEntry(`${BASE_URL}/${locale}/traslado`, 0.9),
       buildEntry(`${BASE_URL}/${locale}/punta-cana/premium-transfer-services`, 0.85),
