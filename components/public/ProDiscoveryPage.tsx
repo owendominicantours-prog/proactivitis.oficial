@@ -602,8 +602,15 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
         ? "Excursions a Punta Cana, party boat a Sosua, transferts prives aeroport PUJ, hotels et services premium en Republique dominicaine avec avis verifies."
         : "Punta Cana tours, Sosua party boat, Dominican Republic excursions, private PUJ airport transfers, hotels and premium transportation with verified reviews.";
 
-  const schemaProducts = allItems
-    .filter((item) => item.type === "tour" || item.type === "transfer")
+  const uniqueSchemaItems = Array.from(
+    new Map(
+      allItems
+        .filter((item) => item.type === "tour" || item.type === "transfer")
+        .map((item) => [item.href, item])
+    ).values()
+  );
+
+  const schemaProducts = uniqueSchemaItems
     .map((item, index) => {
       const fallbackComment = comments[index % Math.max(comments.length, 1)];
       const reviewBody = fallbackComment?.body || "Great booking experience, clear details and reliable service.";
@@ -630,23 +637,6 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
             ratingValue: reviewRatingValue,
             reviewCount: reviewCountValue
           },
-          review: [
-            {
-              "@type": "Review",
-              author: {
-                "@type": "Person",
-                name: fallbackComment?.customerName || "Verified Traveler"
-              },
-              reviewBody,
-              reviewRating: {
-                "@type": "Rating",
-                ratingValue: reviewRatingValue,
-                bestRating: 5,
-                worstRating: 1
-              },
-              datePublished: (fallbackComment?.createdAt || new Date()).toISOString()
-            }
-          ],
           ...(item.price
             ? {
                 offers: {

@@ -79,6 +79,12 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     })
   ]);
   const transferLandings = allLandings();
+  const uniquePublishedTours = Array.from(
+    new Map(publishedTours.map((tour) => [tour.slug, tour])).values()
+  );
+  const uniqueTransferLandings = Array.from(
+    new Map(transferLandings.map((landing) => [landing.landingSlug, landing])).values()
+  );
   const tourRatingMap = new Map(
     tourRatingAgg.map((row) => [
       row.tourId,
@@ -100,26 +106,20 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
       ])
   );
 
-  const tourCatalogItems = publishedTours.map((tour, index) => ({
+  const tourCatalogItems = uniquePublishedTours.map((tour, index) => ({
     "@type": "ListItem",
     position: index + 1,
     name: tour.title,
     url: localizedPath(`/tours/${tour.slug}`)
   }));
 
-  const transferCatalogItems = transferLandings.map((landing, index) => ({
+  const transferCatalogItems = uniqueTransferLandings.map((landing, index) => ({
     "@type": "ListItem",
     position: index + 1,
     name: landing.heroTitle,
     url: localizedPath(`/transfer/${landing.landingSlug}`)
   }));
-  const defaultReviewBody =
-    locale === "es"
-      ? "Reserva clara, proceso rapido y soporte confiable."
-      : locale === "fr"
-        ? "Reservation claire, processus rapide et assistance fiable."
-        : "Clear booking process, fast confirmation, and reliable support.";
-  const tourProducts = publishedTours.map((tour) => {
+  const tourProducts = uniquePublishedTours.map((tour) => {
     const ratingData = tourRatingMap.get(tour.id);
     const ratingValue = Number((ratingData?.rating && ratingData.rating > 0 ? ratingData.rating : 5).toFixed(1));
     const reviewCount = ratingData?.count && ratingData.count > 0 ? ratingData.count : 1;
@@ -145,23 +145,6 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         ratingValue,
         reviewCount
       },
-      review: [
-        {
-          "@type": "Review",
-          author: {
-            "@type": "Person",
-            name: "Verified Traveler"
-          },
-          reviewBody: defaultReviewBody,
-          reviewRating: {
-            "@type": "Rating",
-            ratingValue,
-            bestRating: 5,
-            worstRating: 1
-          },
-          datePublished: new Date().toISOString()
-        }
-      ],
       offers: {
         "@type": "Offer",
         priceCurrency: "USD",
@@ -203,7 +186,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     };
   });
 
-  const transferProducts = transferLandings.map((landing) => {
+  const transferProducts = uniqueTransferLandings.map((landing) => {
     const ratingData = transferRatingMap.get(landing.landingSlug);
     const ratingValue = Number((ratingData?.rating && ratingData.rating > 0 ? ratingData.rating : 5).toFixed(1));
     const reviewCount = ratingData?.count && ratingData.count > 0 ? ratingData.count : 1;
@@ -223,23 +206,6 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         ratingValue,
         reviewCount
       },
-      review: [
-        {
-          "@type": "Review",
-          author: {
-            "@type": "Person",
-            name: "Verified Traveler"
-          },
-          reviewBody: defaultReviewBody,
-          reviewRating: {
-            "@type": "Rating",
-            ratingValue,
-            bestRating: 5,
-            worstRating: 1
-          },
-          datePublished: new Date().toISOString()
-        }
-      ],
       offers: {
         "@type": "Offer",
         priceCurrency: "USD",
@@ -299,8 +265,8 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   const allPublicPageUrls = Array.from(
     new Set([
       ...corePublicPages.map((page) => localizedPath(page.path)),
-      ...publishedTours.map((tour) => localizedPath(`/tours/${tour.slug}`)),
-      ...transferLandings.map((landing) => localizedPath(`/transfer/${landing.landingSlug}`))
+      ...uniquePublishedTours.map((tour) => localizedPath(`/tours/${tour.slug}`)),
+      ...uniqueTransferLandings.map((landing) => localizedPath(`/transfer/${landing.landingSlug}`))
     ])
   );
 
