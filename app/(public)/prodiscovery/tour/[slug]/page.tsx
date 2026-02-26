@@ -34,10 +34,13 @@ export async function generateMetadata({
 }
 
 export default async function ProDiscoveryTourPage({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ kw?: string }>;
 }) {
   const { slug } = await params;
-  return <ProDiscoveryTourDetailPage locale={es} slug={slug} />;
+  const sp = (await searchParams) ?? {};
+  return <ProDiscoveryTourDetailPage locale={es} slug={slug} reviewKeyword={sp.kw} />;
 }

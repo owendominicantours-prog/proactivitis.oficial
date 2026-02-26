@@ -10,16 +10,20 @@ import type { Locale } from "@/lib/translations";
 type Props = {
   locale: Locale;
   landingSlug: string;
+  reviewKeyword?: string;
 };
 
-const COPY: Record<Locale, { back: string; reviews: string; noReviews: string; from: string; book: string; details: string }> = {
+const COPY: Record<Locale, { back: string; reviews: string; noReviews: string; from: string; book: string; details: string; map: string; reviewFilter: string; clear: string }> = {
   es: {
     back: "Volver a ProDiscovery",
     reviews: "Resenas verificadas",
     noReviews: "Este traslado aun no tiene resenas aprobadas.",
     from: "Desde",
     book: "Ir a reserva",
-    details: "Lo que incluye"
+    details: "Lo que incluye",
+    map: "Ver en mapa",
+    reviewFilter: "Filtrar reseñas por tema",
+    clear: "Limpiar"
   },
   en: {
     back: "Back to ProDiscovery",
@@ -27,7 +31,10 @@ const COPY: Record<Locale, { back: string; reviews: string; noReviews: string; f
     noReviews: "This transfer has no approved reviews yet.",
     from: "From",
     book: "Go to booking",
-    details: "What is included"
+    details: "What is included",
+    map: "View map",
+    reviewFilter: "Filter reviews by topic",
+    clear: "Clear"
   },
   fr: {
     back: "Retour a ProDiscovery",
@@ -35,7 +42,10 @@ const COPY: Record<Locale, { back: string; reviews: string; noReviews: string; f
     noReviews: "Ce transfert n a pas encore d avis approuves.",
     from: "A partir de",
     book: "Aller a la reservation",
-    details: "Ce qui est inclus"
+    details: "Ce qui est inclus",
+    map: "Voir la carte",
+    reviewFilter: "Filtrer les avis par theme",
+    clear: "Effacer"
   }
 };
 
@@ -63,17 +73,17 @@ function BubbleRating({ rating }: { rating: number }) {
   );
 }
 
-export default async function ProDiscoveryTransferDetailPage({ locale, landingSlug }: Props) {
+export default async function ProDiscoveryTransferDetailPage({ locale, landingSlug, reviewKeyword }: Props) {
   const t = COPY[locale];
   const landing = allLandings().find((item) => item.landingSlug === landingSlug);
   if (!landing) return notFound();
 
-  const [reviews, related] = await Promise.all([
+  const [reviewsRaw, related] = await Promise.all([
     prisma.transferReview.findMany({
       where: { transferLandingSlug: landingSlug, status: "APPROVED" },
       orderBy: { createdAt: "desc" },
       take: 14,
-      select: { id: true, customerName: true, rating: true, body: true, createdAt: true }
+      select: { id: true, customerName: true, rating: true, title: true, body: true, createdAt: true }
     }),
     prisma.transferReview.groupBy({
       by: ["transferLandingSlug"],
@@ -84,6 +94,20 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
       take: 6
     })
   ]);
+  const keyword = reviewKeyword?.trim().toLowerCase() || "";
+  const reviews = keyword
+    ? reviewsRaw.filter((review) => review.body.toLowerCase().includes(keyword) || (review.title ?? "").toLowerCase().includes(keyword))
+    : reviewsRaw;
+  const keywordPool = reviewsRaw
+    .flatMap((review) => review.body.toLowerCase().split(/[^a-zA-ZÀ-ÿ0-9]+/g))
+    .filter((word) => word.length >= 5 && !["punta", "cana", "hotel", "transfer", "great", "excelente", "proactivitis", "service"].includes(word))
+    .slice(0, 400);
+  const keywordCounts = new Map<string, number>();
+  keywordPool.forEach((word) => keywordCounts.set(word, (keywordCounts.get(word) ?? 0) + 1));
+  const keywordSuggestions = Array.from(keywordCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([word]) => word);
 
   const average = reviews.length ? round1(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) : 0;
   const pageUrl = `${PROACTIVITIS_URL}${localePrefix(locale)}/prodiscovery/transfer/${landingSlug}`;
@@ -152,6 +176,16 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
                   <li key={detail}>- {detail}</li>
                 ))}
               </ul>
+              <div className="mt-3 flex items-center gap-2">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(landing.hotelName)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700"
+                >
+                  {t.map}
+                </a>
+              </div>
               <Link href={toTransferHref(locale, landingSlug)} className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
                 {t.book}
               </Link>
@@ -162,6 +196,26 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <section className="rounded-2xl border border-slate-200 bg-white p-6">
             <h2 className="text-2xl font-bold text-slate-900">{t.reviews}</h2>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{t.reviewFilter}</span>
+              {keywordSuggestions.map((term) => (
+                <Link
+                  key={term}
+                  href={`${localePrefix(locale)}/prodiscovery/transfer/${landingSlug}?kw=${encodeURIComponent(term)}`}
+                  className="rounded-full border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700"
+                >
+                  {term}
+                </Link>
+              ))}
+              {keyword ? (
+                <Link
+                  href={`${localePrefix(locale)}/prodiscovery/transfer/${landingSlug}`}
+                  className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700"
+                >
+                  {t.clear}
+                </Link>
+              ) : null}
+            </div>
             {!reviews.length ? (
               <p className="mt-3 text-slate-600">{t.noReviews}</p>
             ) : (

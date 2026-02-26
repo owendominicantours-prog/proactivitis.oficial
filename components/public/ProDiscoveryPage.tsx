@@ -27,6 +27,7 @@ type DiscoveryItem = {
   destination: Destination;
   href: string;
   tag: string;
+  badges: string[];
 };
 
 type DiscoveryCopy = {
@@ -69,6 +70,10 @@ type DiscoveryCopy = {
   compareClear: string;
   compareTableTitle: string;
   removeFilter: string;
+  map: string;
+  badgeTop: string;
+  badgePrice: string;
+  badgeCertified: string;
 };
 
 const COPY: Record<Locale, DiscoveryCopy> = {
@@ -111,7 +116,11 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     compareLimit: "Maximo 3 fichas",
     compareClear: "Limpiar comparacion",
     compareTableTitle: "Comparacion rapida",
-    removeFilter: "Quitar filtro"
+    removeFilter: "Quitar filtro",
+    map: "Ver en mapa",
+    badgeTop: "Mas reservado",
+    badgePrice: "Mejor precio",
+    badgeCertified: "Certificado ProDiscovery"
   },
   en: {
     title: "ProDiscovery",
@@ -152,7 +161,11 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     compareLimit: "Max 3 listings",
     compareClear: "Clear compare",
     compareTableTitle: "Quick comparison",
-    removeFilter: "Remove filter"
+    removeFilter: "Remove filter",
+    map: "View map",
+    badgeTop: "Most booked",
+    badgePrice: "Best value",
+    badgeCertified: "ProDiscovery certified"
   },
   fr: {
     title: "ProDiscovery",
@@ -193,7 +206,11 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     compareLimit: "Maximum 3 fiches",
     compareClear: "Effacer la comparaison",
     compareTableTitle: "Comparaison rapide",
-    removeFilter: "Supprimer filtre"
+    removeFilter: "Supprimer filtre",
+    map: "Voir la carte",
+    badgeTop: "Plus reserve",
+    badgePrice: "Meilleur prix",
+    badgeCertified: "Certifie ProDiscovery"
   }
 };
 
@@ -227,6 +244,8 @@ const detectDestination = (value: string): Destination => {
 const toHotelHref = (locale: Locale, slug: string) => (locale === "es" ? `/hoteles/${slug}` : `/${locale}/hotels/${slug}`);
 const toTourHref = (locale: Locale, slug: string) => `${localePrefix(locale)}/prodiscovery/tour/${slug}`;
 const toTransferHref = (locale: Locale, slug: string) => `${localePrefix(locale)}/prodiscovery/transfer/${slug}`;
+const toMapHref = (item: DiscoveryItem) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${item.title} ${item.destination.replace("-", " ")}`)}`;
 
 function BubbleRating({ rating, label }: { rating: number; label: string }) {
   return (
@@ -347,7 +366,8 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
       price: Math.round(tour.price),
       destination: detectDestination(tour.location || title),
       href: toTourHref(locale, tour.slug),
-      tag: "Tour"
+      tag: "Tour",
+      badges: []
     };
   });
 
@@ -364,7 +384,8 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
       price: Math.round(landing.priceFrom),
       destination: detectDestination(`${landing.heroTitle} ${landing.hotelName}`),
       href: toTransferHref(locale, landing.landingSlug),
-      tag: "Transfer"
+      tag: "Transfer",
+      badges: []
     };
   });
 
@@ -388,11 +409,24 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
       price: null,
       destination: detectDestination(`${hotel.zone?.name || ""} ${hotel.name}`),
       href: toHotelHref(locale, hotel.slug),
-      tag: "Hotel"
+      tag: "Hotel",
+      badges: []
     };
   });
 
-  const allItems = [...tourItems, ...transferItems, ...hotelItems];
+  const allItemsRaw = [...tourItems, ...transferItems, ...hotelItems];
+  const maxReviewsAll = Math.max(1, ...allItemsRaw.map((item) => item.reviews));
+  const buildBadges = (reviews: number, rating: number, price: number | null) => {
+    const badges: string[] = [];
+    if (reviews >= Math.max(30, Math.round(maxReviewsAll * 0.7))) badges.push(t.badgeTop);
+    if (price !== null && price <= 60) badges.push(t.badgePrice);
+    if (rating >= 4.7 && reviews >= 8) badges.push(t.badgeCertified);
+    return badges.slice(0, 2);
+  };
+  const allItems = allItemsRaw.map((item) => ({
+    ...item,
+    badges: buildBadges(item.reviews, item.rating, item.price)
+  }));
   const queryLower = q.toLowerCase();
   const filtered = allItems.filter((item) => {
     const typeOk = typeFilter === "all" || item.type === typeFilter;
@@ -661,13 +695,33 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
             </article>
           ) : (
             items.map((item) => (
-              <article key={item.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <article
+                key={item.id}
+                className={`group overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg ${
+                  compareIds.includes(item.id) ? "border-emerald-300 ring-1 ring-emerald-200" : "border-slate-200"
+                }`}
+              >
                 <div className="flex flex-col md:flex-row">
                   <Link href={item.href} className="relative block h-52 w-full shrink-0 overflow-hidden bg-slate-100 md:h-auto md:w-72">
-                    <img src={item.image} alt={item.title} className="h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" />
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      loading="lazy"
+                    />
                     <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-800">
                       {item.tag}
                     </span>
+                    {item.badges[0] ? (
+                      <span className="absolute right-3 top-3 rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-semibold text-white">
+                        {item.badges[0]}
+                      </span>
+                    ) : null}
+                    {compareIds.includes(item.id) ? (
+                      <span className="absolute bottom-3 right-3 rounded-full border border-emerald-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+                        {t.compareSelected}
+                      </span>
+                    ) : null}
                   </Link>
                   <div className="flex w-full flex-col justify-between p-5">
                     <div>
@@ -683,6 +737,15 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                         </span>
                       </div>
                       <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600">{item.description}</p>
+                      {item.badges.length > 1 ? (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {item.badges.slice(1).map((badge) => (
+                            <span key={`${item.id}-${badge}`} className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                              {badge}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="mt-4 flex items-center justify-between">
                       <p className="text-sm text-slate-600">
@@ -695,6 +758,14 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                         )}
                       </p>
                       <div className="flex items-center gap-2">
+                        <a
+                          href={toMapHref(item)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
+                        >
+                          {t.map}
+                        </a>
                         <Link
                           href={getToggleCompareHref(item.id)}
                           className={`rounded-xl px-3 py-2 text-xs font-semibold ${
@@ -705,7 +776,10 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                         >
                           {compareIds.includes(item.id) ? t.compareRemove : t.compareSelect}
                         </Link>
-                        <Link href={item.href} className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                        <Link
+                          href={item.href}
+                          className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 group-hover:ring-2 group-hover:ring-emerald-200"
+                        >
                           {t.open}
                         </Link>
                       </div>

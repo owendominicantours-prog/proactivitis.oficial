@@ -29,10 +29,13 @@ export async function generateMetadata({
 }
 
 export default async function ProDiscoveryTransferPageFr({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ landingSlug: string }>;
+  searchParams?: Promise<{ kw?: string }>;
 }) {
   const { landingSlug } = await params;
-  return <ProDiscoveryTransferDetailPage locale={fr} landingSlug={landingSlug} />;
+  const sp = (await searchParams) ?? {};
+  return <ProDiscoveryTransferDetailPage locale={fr} landingSlug={landingSlug} reviewKeyword={sp.kw} />;
 }

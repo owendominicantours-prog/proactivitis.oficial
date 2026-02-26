@@ -1,8 +1,7 @@
 import { Suspense, type ReactNode } from "react";
 import Script from "next/script";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import { PublicHeader } from "@/components/public/PublicHeader";
-import GlobalBanner from "@/components/public/GlobalBanner";
+import PublicHeaderSwitch from "@/components/public/PublicHeaderSwitch";
 import WhatsappFloatingChat from "@/components/shared/WhatsappFloatingChat";
 import VisitorSalesChat from "@/components/shared/VisitorSalesChat";
 
@@ -138,10 +137,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             __html: JSON.stringify(TRAVEL_AGENCY_SCHEMA)
           }}
         />
-        <Suspense fallback={null}>
-          <GlobalBanner />
-          <PublicHeader />
-        </Suspense>
+        <PublicHeaderSwitch />
 
         <main className="flex-1">{children}</main>
 
