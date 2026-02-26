@@ -115,42 +115,71 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
 
   const schema = {
     "@context": "https://schema.org",
-    "@type": "Service",
-    name: landing.heroTitle,
-    description: landing.metaDescription,
-    areaServed: "Punta Cana",
-    image: [`${PROACTIVITIS_URL}${landing.heroImage}`],
-    url: pageUrl,
-    offers: {
-      "@type": "Offer",
-      price: landing.priceFrom,
-      priceCurrency: "USD",
-      availability: "https://schema.org/InStock",
-      url: bookingUrl,
-      shippingDetails: {
-        "@type": "OfferShippingDetails",
-        shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USD" },
-        shippingDestination: {
-          "@type": "DefinedRegion",
-          addressCountry: "DO"
-        }
-      },
-      hasMerchantReturnPolicy: {
-        "@type": "MerchantReturnPolicy",
-        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
-        merchantReturnDays: 2,
-        applicableCountry: "DO"
-      }
-    },
-    ...(reviews.length
-      ? {
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: average,
-            reviewCount: reviews.length
+    "@graph": [
+      {
+        "@type": "Service",
+        "@id": `${pageUrl}#service`,
+        name: landing.heroTitle,
+        description: landing.metaDescription,
+        areaServed: "Punta Cana",
+        image: [`${PROACTIVITIS_URL}${landing.heroImage}`],
+        url: pageUrl,
+        offers: {
+          "@type": "Offer",
+          price: landing.priceFrom,
+          priceCurrency: "USD",
+          availability: "https://schema.org/InStock",
+          url: bookingUrl,
+          shippingDetails: {
+            "@type": "OfferShippingDetails",
+            shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USD" },
+            shippingDestination: {
+              "@type": "DefinedRegion",
+              addressCountry: "DO"
+            }
+          },
+          hasMerchantReturnPolicy: {
+            "@type": "MerchantReturnPolicy",
+            returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+            merchantReturnDays: 2,
+            applicableCountry: "DO"
           }
-        }
-      : {})
+        },
+        ...(reviews.length
+          ? {
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: average,
+                reviewCount: reviews.length
+              }
+            }
+          : {})
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${pageUrl}#breadcrumbs`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
+            item: `${PROACTIVITIS_URL}${locale === "es" ? "/" : `/${locale}`}`
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "ProDiscovery",
+            item: `${PROACTIVITIS_URL}${localePrefix(locale)}/prodiscovery`
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: landing.heroTitle,
+            item: pageUrl
+          }
+        ]
+      }
+    ]
   };
 
   return (

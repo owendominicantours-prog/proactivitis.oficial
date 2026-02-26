@@ -75,6 +75,12 @@ type DiscoveryCopy = {
   badgeTop: string;
   badgePrice: string;
   badgeCertified: string;
+  faqQ1: string;
+  faqA1: string;
+  faqQ2: string;
+  faqA2: string;
+  faqQ3: string;
+  faqA3: string;
 };
 
 const COPY: Record<Locale, DiscoveryCopy> = {
@@ -121,7 +127,13 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     map: "Ver en mapa",
     badgeTop: "Mas reservado",
     badgePrice: "Mejor precio",
-    badgeCertified: "Certificado ProDiscovery"
+    badgeCertified: "Certificado ProDiscovery",
+    faqQ1: "Como comparo tours y traslados en ProDiscovery?",
+    faqA1: "Usa filtros por destino, tipo de servicio, puntuacion y precio para elegir la mejor opcion para tu viaje.",
+    faqQ2: "Las resenas son reales?",
+    faqA2: "Mostramos resenas aprobadas de clientes verificadas por nuestro sistema interno.",
+    faqQ3: "Puedo reservar en USD?",
+    faqA3: "Si, las tarifas se muestran en USD y el proceso de reserva mantiene ese formato."
   },
   en: {
     title: "ProDiscovery",
@@ -166,7 +178,13 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     map: "View map",
     badgeTop: "Most booked",
     badgePrice: "Best value",
-    badgeCertified: "ProDiscovery certified"
+    badgeCertified: "ProDiscovery certified",
+    faqQ1: "How do I compare tours and transfers on ProDiscovery?",
+    faqA1: "Use destination, service type, rating, and price filters to find the best option for your trip.",
+    faqQ2: "Are the reviews real?",
+    faqA2: "We display approved reviews from verified customers through our internal moderation flow.",
+    faqQ3: "Can I book in USD?",
+    faqA3: "Yes. Prices are displayed in USD and booking keeps that same currency format."
   },
   fr: {
     title: "ProDiscovery",
@@ -211,7 +229,13 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     map: "Voir la carte",
     badgeTop: "Plus reserve",
     badgePrice: "Meilleur prix",
-    badgeCertified: "Certifie ProDiscovery"
+    badgeCertified: "Certifie ProDiscovery",
+    faqQ1: "Comment comparer excursions et transferts sur ProDiscovery?",
+    faqA1: "Utilisez les filtres par destination, type de service, note et prix pour choisir la meilleure option.",
+    faqQ2: "Les avis sont-ils reels?",
+    faqA2: "Nous affichons des avis approuves de clients verifies via notre moderation interne.",
+    faqQ3: "Puis-je reserver en USD?",
+    faqA3: "Oui. Les tarifs sont affiches en USD et la reservation conserve cette meme devise."
   }
 };
 
@@ -694,6 +718,45 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
         mainEntity: {
           "@id": `${pageUrl}#catalog`
         }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${pageUrl}#breadcrumbs`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
+            item: `${PROACTIVITIS_URL}${locale === "es" ? "/" : `/${locale}`}`
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "ProDiscovery",
+            item: `${PROACTIVITIS_URL}${localePrefix(locale)}/prodiscovery`
+          }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${pageUrl}#faq`,
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: t.faqQ1,
+            acceptedAnswer: { "@type": "Answer", text: t.faqA1 }
+          },
+          {
+            "@type": "Question",
+            name: t.faqQ2,
+            acceptedAnswer: { "@type": "Answer", text: t.faqA2 }
+          },
+          {
+            "@type": "Question",
+            name: t.faqQ3,
+            acceptedAnswer: { "@type": "Answer", text: t.faqA3 }
+          }
+        ]
       },
       {
         "@type": "ItemList",

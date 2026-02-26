@@ -110,6 +110,20 @@ const TRAVEL_AGENCY_SCHEMA = {
   ]
 };
 
+const WEBSITE_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": "https://proactivitis.com/#website",
+  url: "https://proactivitis.com/",
+  name: "Proactivitis",
+  inLanguage: ["es", "en", "fr"],
+  potentialAction: {
+    "@type": "SearchAction",
+    target: "https://proactivitis.com/search?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+};
+
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <>
@@ -135,6 +149,12 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(TRAVEL_AGENCY_SCHEMA)
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(WEBSITE_SCHEMA)
           }}
         />
         <PublicHeaderSwitch />
