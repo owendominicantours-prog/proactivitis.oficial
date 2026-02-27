@@ -917,7 +917,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="hidden rounded-2xl border border-slate-200 bg-white p-4 lg:block">
             <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-700">{t.commentsTitle}</h2>
             <p className="mt-1 text-xs text-slate-500">{t.commentsSubtitle}</p>
             <div className="mt-3 space-y-3">
@@ -1133,6 +1133,22 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
               </table>
             </section>
           ) : null}
+
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 lg:hidden">
+            <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-700">{t.commentsTitle}</h2>
+            <p className="mt-1 text-xs text-slate-500">{t.commentsSubtitle}</p>
+            <div className="mt-3 space-y-3">
+              {comments.map((comment) => (
+                <article key={`mobile-${comment.id}`} className="rounded-xl border border-slate-200 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="truncate text-sm font-semibold text-slate-900">{comment.customerName}</p>
+                    <BubbleRating rating={comment.rating} label={t.bubbleLabel} />
+                  </div>
+                  <p className="mt-2 line-clamp-3 text-xs text-slate-600">{comment.body}</p>
+                </article>
+              ))}
+            </div>
+          </section>
         </section>
       </div>
 
