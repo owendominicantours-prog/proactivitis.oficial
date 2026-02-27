@@ -26,6 +26,10 @@ export default function robots(): MetadataRoute.Robots {
       `${BASE_URL}/sitemap-safety-guides.xml`,
       `${BASE_URL}/sitemap-i18n.xml`,
       `${BASE_URL}/sitemap-images.xml`,
+      `${BASE_URL}/sitemap-seo-only-tours.xml`,
+      `${BASE_URL}/sitemap-transfer-seo-only.xml`,
+      `${BASE_URL}/sitemap-prodiscovery.xml`,
+      `${BASE_URL}/sitemap-blog.xml`,
       `${BASE_URL}/sitemap-urgent-discovered.xml`
     ]
   };

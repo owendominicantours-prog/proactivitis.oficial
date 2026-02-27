@@ -22,4 +22,8 @@ Sitemap: https://proactivitis.com/sitemap-parasailing.xml
 Sitemap: https://proactivitis.com/sitemap-safety-guides.xml
 Sitemap: https://proactivitis.com/sitemap-i18n.xml
 Sitemap: https://proactivitis.com/sitemap-images.xml
+Sitemap: https://proactivitis.com/sitemap-seo-only-tours.xml
+Sitemap: https://proactivitis.com/sitemap-transfer-seo-only.xml
+Sitemap: https://proactivitis.com/sitemap-prodiscovery.xml
+Sitemap: https://proactivitis.com/sitemap-blog.xml
 Sitemap: https://proactivitis.com/sitemap-urgent-discovered.xml
