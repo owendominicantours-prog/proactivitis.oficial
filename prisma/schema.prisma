@@ -228,12 +228,31 @@ model PartnerApplication {
 
 model Offer {
   id          String   @id @default(cuid())
+  supplierId  String
   tourId      String
   title       String
   description String
+  discountType String  @default("PERCENT")
+  discountValue Float  @default(0)
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   Tour        Tour     @relation(fields: [tourId], references: [id])
+  Supplier    SupplierProfile @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  OfferTours  OfferTour[]
+}
+
+model OfferTour {
+  id        String   @id @default(cuid())
+  offerId   String
+  tourId    String
+  createdAt DateTime @default(now())
+
+  Offer     Offer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  Tour      Tour  @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@unique([offerId, tourId])
+  @@index([tourId])
 }
 
 /// Fase 1: definición de países/destinos públicos para catálogo. Las relaciones y migraciones se aplicarán después.
@@ -493,6 +512,7 @@ model SupplierProfile {
   stripeAccountId String?     @map("stripe_account_id")
   User            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   Tour            Tour[]
+  offers          Offer[]
   drafts          TourDraft[]
   minisite        SupplierMinisite?
 }
@@ -611,6 +631,7 @@ model Tour {
   departureDestination   Destination?               @relation("TourDepartureDestination", fields: [departureDestinationId], references: [id])
   Booking                Booking[]
   Offer                  Offer[]
+  OfferTours             OfferTour[]
   platformSharePercent   Int                        @default(20)
   SupplierProfile        SupplierProfile            @relation(fields: [supplierId], references: [id])
   AgencyProLinks         AgencyProLink[]

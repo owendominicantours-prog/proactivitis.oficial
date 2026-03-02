@@ -1,10 +1,33 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  return NextResponse.json({
-    offers: [
-      { id: "off-1", title: "10% OFF Saona", active: true },
-      { id: "off-2", title: "Día extra de buggy", active: true }
-    ]
+  const offers = await prisma.offer.findMany({
+    where: { active: true },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      discountType: true,
+      discountValue: true,
+      active: true,
+      OfferTours: {
+        select: {
+          Tour: {
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              price: true
+            }
+          }
+        }
+      }
+    },
+    orderBy: { createdAt: "desc" },
+    take: 100
   });
+
+  return NextResponse.json({ offers });
 }
+
