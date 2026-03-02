@@ -9,6 +9,8 @@ type TourCardProps = {
   location: string;
   price: number;
   discountPercent?: number;
+  discountedPrice?: number;
+  discountLabel?: string;
   rating?: number;
   reviewCount?: number;
   image: string;
@@ -48,6 +50,8 @@ export function TourCard({
   location,
   price,
   discountPercent = 0,
+  discountedPrice,
+  discountLabel,
   rating,
   reviewCount,
   image,
@@ -65,8 +69,13 @@ export function TourCard({
   const showBadge = normalizedRating > 0 && normalizedCount > 0;
   const tagList = tags && tags.length ? tags : ["Experiencia Top"];
   const locationText = zone || location?.split(",")[0] || "Punta Cana";
-  const hasDiscount = discountPercent > 0;
-  const discountedPrice = hasDiscount ? price * (1 - discountPercent / 100) : price;
+  const percentDiscountPrice = discountPercent > 0 ? price * (1 - discountPercent / 100) : price;
+  const bestDiscountedPrice =
+    typeof discountedPrice === "number" && discountedPrice > 0
+      ? Math.min(percentDiscountPrice, discountedPrice)
+      : percentDiscountPrice;
+  const hasDiscount = bestDiscountedPrice < price;
+  const computedDiscountPercent = hasDiscount ? Math.max(1, Math.round(((price - bestDiscountedPrice) / price) * 100)) : 0;
 
   return (
     <Link href={`/tours/${slug}`} className="group block">
@@ -123,13 +132,18 @@ export function TourCard({
             <div>
               <p className="text-slate-400 text-[10px] uppercase tracking-[0.4em]">Desde</p>
               <div className="flex items-baseline gap-1">
-                <span className="text-brand text-3xl font-black">${discountedPrice.toFixed(0)}</span>
+                <span className={`text-3xl font-black ${hasDiscount ? "text-red-600" : "text-brand"}`}>
+                  ${bestDiscountedPrice.toFixed(0)}
+                </span>
                 <span className="text-sm font-semibold text-slate-500">USD</span>
               </div>
               {hasDiscount && (
-                <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-emerald-600">
-                  -{discountPercent}% aplicado
-                </p>
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-400 line-through">${price.toFixed(0)} USD</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-red-600">
+                    {discountLabel || `-${computedDiscountPercent}% aplicado`}
+                  </p>
+                </div>
               )}
             </div>
             <span className="rounded-2xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-lg shadow-brand/40 transition-colors group-hover:bg-brand-light">

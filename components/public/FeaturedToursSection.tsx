@@ -4,6 +4,7 @@ import { TourCard } from "@/components/public/TourCard";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 import { Locale, translate } from "@/lib/translations";
 import { getTourReviewSummaryForTours } from "@/lib/tourReviews";
+import { getActiveOfferPriceMapForTours } from "@/lib/offerPricing";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -122,6 +123,7 @@ export default async function FeaturedToursSection({ locale }: Props) {
   });
   const displayedTours = selectRotatingTours(tours);
   const reviewSummary = await getTourReviewSummaryForTours(tours.map((tour) => tour.id));
+  const offerPriceMap = await getActiveOfferPriceMapForTours(tours.map((tour) => ({ id: tour.id, price: tour.price })));
 
   if (!tours.length) {
     return (
@@ -135,6 +137,14 @@ export default async function FeaturedToursSection({ locale }: Props) {
   return (
     <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
       {displayedTours.map((tour) => (
+        (() => {
+          const offer = offerPriceMap.get(tour.id);
+          const offerLabel = offer
+            ? offer.discountType === "PERCENT"
+              ? `-${Math.round(offer.discountValue)}% oferta`
+              : `-${Math.round(offer.discountValue)} USD oferta`
+            : undefined;
+          return (
         <TourCard
           key={tour.id}
           slug={tour.slug}
@@ -156,10 +166,14 @@ export default async function FeaturedToursSection({ locale }: Props) {
           rating={reviewSummary[tour.id]?.average ?? 0}
           reviewCount={reviewSummary[tour.id]?.count ?? 0}
           discountPercent={discountPercent}
+          discountedPrice={offer?.finalPrice}
+          discountLabel={offerLabel}
           maxPax={tour.capacity ?? 15}
           duration={formatDurationValue(tour.duration)}
           pickupIncluded={true}
         />
+          );
+        })()
       ))}
     </div>
   );

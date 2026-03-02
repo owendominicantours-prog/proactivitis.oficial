@@ -13,6 +13,7 @@ import { authOptions } from "@/lib/auth";
 import StructuredData from "@/components/schema/StructuredData";
 import { PROACTIVITIS_URL } from "@/lib/seo";
 import { ensureLeadingCapital } from "@/lib/text-format";
+import { getActiveOfferPriceMapForTours } from "@/lib/offerPricing";
 
 const parseDurationMeta = (value?: string | null) => {
   if (!value) return null;
@@ -349,6 +350,9 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   const pluralSuffix = tours.length === 1 ? "" : "s";
   const resultsLabel = t("tours.results.count", { count: tours.length, plural: pluralSuffix });
   const reviewSummary = await getTourReviewSummaryForTours(tours.map((tour) => tour.id));
+  const offerPriceMap = await getActiveOfferPriceMapForTours(
+    tours.map((tour) => ({ id: tour.id, price: tour.price }))
+  );
   const toursSorted = tours
     .map((tour, index) => ({ tour, index }))
     .sort((a, b) => {
@@ -562,8 +566,18 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                 const reviewCount = reviewSummary[tour.id]?.count ?? 0;
                 const reviewAverage = reviewSummary[tour.id]?.average ?? 0;
                 const reviewsLabel = t("tour.hero.reviewsCount", { count: reviewCount });
+                const preferencePrice = discountPercent > 0 ? tour.price * (1 - discountPercent / 100) : tour.price;
+                const offer = offerPriceMap.get(tour.id);
                 const effectivePrice =
-                  discountPercent > 0 ? tour.price * (1 - discountPercent / 100) : tour.price;
+                  typeof offer?.finalPrice === "number" ? Math.min(preferencePrice, offer.finalPrice) : preferencePrice;
+                const hasDiscount = effectivePrice < tour.price;
+                const discountLabel = offer
+                  ? offer.discountType === "PERCENT"
+                    ? `-${Math.round(offer.discountValue)}% oferta`
+                    : `-${Math.round(offer.discountValue)} USD oferta`
+                  : discountPercent > 0
+                    ? `-${discountPercent}%`
+                    : null;
 
                 return (
                   <Link
@@ -589,15 +603,18 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="text-sm font-semibold text-slate-900">
                           {fromLabel}{" "}
-                          <span className="text-base font-black text-indigo-600">
+                          <span className={`text-base font-black ${hasDiscount ? "text-red-600" : "text-indigo-600"}`}>
                             ${effectivePrice.toFixed(0)}
                           </span>
-                          {discountPercent > 0 && (
-                            <span className="ml-2 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
-                              -{discountPercent}%
+                          {hasDiscount && (
+                            <span className="ml-2 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-red-700">
+                              {discountLabel}
                             </span>
                           )}
                         </span>
+                        {hasDiscount ? (
+                          <span className="text-xs text-slate-400 line-through">${tour.price.toFixed(0)} USD</span>
+                        ) : null}
                         <span className="text-xs text-slate-500">{formatDurationLabel(tour.duration, locale, t)}</span>
                       </div>
                       <div className="flex items-center justify-between text-xs text-slate-500">

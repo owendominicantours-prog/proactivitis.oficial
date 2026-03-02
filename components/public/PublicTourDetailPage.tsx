@@ -19,6 +19,7 @@ import { translateText } from "@/lib/translationService";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { ensureLeadingCapital } from "@/lib/text-format";
+import { getActiveOfferPriceMapForTours } from "@/lib/offerPricing";
 
 const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
 
@@ -1174,6 +1175,20 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   if (tour.destinationId) {
     relatedConditions.push({ destinationId: tour.destinationId });
   }
+
+  const offerPriceMap = await getActiveOfferPriceMapForTours([{ id: tour.id, price: tour.price }]);
+  const activeOffer = offerPriceMap.get(tour.id);
+  const preferencePrice = discountPercent > 0 ? tour.price * (1 - discountPercent / 100) : tour.price;
+  const effectiveTourPrice =
+    typeof activeOffer?.finalPrice === "number" ? Math.min(activeOffer.finalPrice, preferencePrice) : preferencePrice;
+  const hasActiveDiscount = effectiveTourPrice < tour.price;
+  const discountTag = activeOffer
+    ? activeOffer.discountType === "PERCENT"
+      ? `-${Math.round(activeOffer.discountValue)}%`
+      : `-${Math.round(activeOffer.discountValue)} USD`
+    : discountPercent > 0
+      ? `-${discountPercent}%`
+      : null;
   if (tour.departureDestinationId) {
     relatedConditions.push({ departureDestinationId: tour.departureDestinationId });
   }
@@ -1271,7 +1286,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const durationUnitSource = translation?.durationUnit ?? durationValue.unit;
   const durationUnit = normalizeDurationUnit(durationUnitSource, locale);
   const durationLabel = `${durationValue.value} ${durationUnit}`;
-  const priceLabel = `$${tour.price.toFixed(0)} USD`;
+  const priceLabel = `$${effectiveTourPrice.toFixed(0)} USD`;
   const shortDescriptionText = localizedShortDescription ?? localizedDescription;
   const needsReadMore = Boolean(shortDescriptionText && shortDescriptionText.length > 220);
   const shortTeaser =
@@ -1492,7 +1507,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       "@type": "Offer",
       "@id": `${tourUrl}#offer`,
       url: tourUrl,
-      price: tour.price,
+      price: effectiveTourPrice,
       priceCurrency: "USD",
       priceValidUntil,
       availability: "https://schema.org/InStock",
@@ -1500,7 +1515,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       seller: PROACTIVITIS_LOCALBUSINESS,
       priceSpecification: {
         "@type": "UnitPriceSpecification",
-        price: tour.price,
+        price: effectiveTourPrice,
         priceCurrency: "USD"
       },
       eligibleRegion: {
@@ -1567,7 +1582,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       "@type": "Offer",
       "@id": `${tourUrl}#trip-offer`,
       url: tourUrl,
-      price: tour.price,
+      price: effectiveTourPrice,
       priceCurrency: "USD",
       priceValidUntil,
       availability: "https://schema.org/InStock",
@@ -1659,7 +1674,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
 
   const bookingWidgetProps = {
     tourId: tour.id,
-    basePrice: tour.price,
+    basePrice: effectiveTourPrice,
     timeSlots,
     options: tour.options?.map((option) => ({
       ...option,
@@ -1746,7 +1761,15 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
               <div className="flex items-end gap-8">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{heroPriceLabel}</p>
-                  <p className="text-4xl font-black text-indigo-600">{priceLabel}</p>
+                  <p className={`text-4xl font-black ${hasActiveDiscount ? "text-red-600" : "text-indigo-600"}`}>{priceLabel}</p>
+                  {hasActiveDiscount ? (
+                    <div className="mt-1 space-y-1">
+                      <p className="text-xs text-slate-400 line-through">${tour.price.toFixed(0)} USD</p>
+                      {discountTag ? (
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-red-600">{discountTag}</p>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{heroRatingLabel}</p>
