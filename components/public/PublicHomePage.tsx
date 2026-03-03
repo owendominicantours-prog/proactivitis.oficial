@@ -495,7 +495,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         </div>
       </section>
 
-      <section className="bg-slate-50">
+      <section className="travel-surface">
         <div className="mx-auto max-w-6xl space-y-4 px-4 py-12 sm:px-6">
           <HomeRecommendedHeader locale={locale} overrides={homeOverrides.recommended} />
           <HomeTourSearchSection locale={locale} />
@@ -592,7 +592,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         </div>
       </section>
 
-      <section className="bg-slate-50">
+      <section className="travel-surface">
         <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6">
           <div
             className="relative flex min-h-[280px] items-center overflow-hidden rounded-3xl border border-slate-100 shadow-sm"
