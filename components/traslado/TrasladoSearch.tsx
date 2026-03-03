@@ -972,44 +972,67 @@ export default function TrasladoSearch({
             {vehicles.map((vehicle) => (
               <article
                 key={vehicle.id}
-                className="group flex h-full flex-col justify-between rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-xl"
+                className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-card transition-transform duration-300 hover:-translate-y-2"
               >
-                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100">
-                  <img
-                    src={vehicle.image}
-                    alt={t(vehicle.titleKey)}
-                    className="h-36 w-full object-contain p-3 transition duration-300 group-hover:scale-[1.02]"
+                <div className="relative">
+                  <div
+                    className="aspect-[4/3] w-full bg-cover bg-center"
+                    style={{ backgroundImage: `url(${vehicle.image})` }}
+                    role="img"
+                    aria-label={t(vehicle.titleKey)}
                   />
+                  <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-white/80 bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-500 shadow">
+                      {vehicleCategoryMap[vehicle.id] ?? "SEDAN"}
+                    </span>
+                    <span className="rounded-full border border-white/80 bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-500 shadow">
+                      Private Transfer
+                    </span>
+                  </div>
                 </div>
-                <div className="mt-4 space-y-2">
-                      <h3 className="text-xl font-bold leading-tight text-slate-900">{t(vehicle.titleKey)}</h3>
-                      <p className="text-sm text-slate-600">{t(vehicle.descriptionKey)}</p>
-                      <p className="text-sm font-semibold text-slate-900">
+
+                <div className="flex flex-1 flex-col gap-2 p-4">
+                      <p className="text-brand text-[10px] font-medium uppercase tracking-[0.35em]">
+                        {originLabel || t("transfer.search.placeholder.origin")} to {destinationLabel || t("transfer.search.placeholder.hotel")}
+                      </p>
+                      <h3 className="text-2xl font-black leading-tight text-slate-900">{t(vehicle.titleKey)}</h3>
+                      <p className="line-clamp-2 text-sm leading-relaxed text-slate-500">{t(vehicle.descriptionKey)}</p>
+                      <p className="text-sm font-semibold text-slate-700">
                         {t("transfer.search.vehicle.capacityDetail", {
                           pax: vehicle.pax,
                           luggage: vehicle.luggage
                         })}
                       </p>
-                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
-                      {t("transfer.search.vehicle.priceLabel.oneWay")}
-                    </p>
-                    <p className="mt-1 text-3xl font-black leading-none text-slate-900">
-                      {vehicle.price != null ? `$${vehicle.price.toFixed(2)}` : t("transfer.search.vehicle.priceUnavailable")}
-                    </p>
-                  </div>
-                </div>
-                  <ul className="mt-4 space-y-1 text-xs text-slate-600">
-                    {vehicle.features.map((feature) => (
-                      <li key={`${vehicle.id}-${feature}`}>{t(feature)}</li>
+
+                  <ul className="mt-1 space-y-1 border-y border-slate-50 py-2 text-xs text-slate-500">
+                    {vehicle.features.slice(0, 2).map((feature) => (
+                      <li key={`${vehicle.id}-${feature}`} className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        {t(feature)}
+                      </li>
                     ))}
                   </ul>
-                <Link
-                  href={buildCheckoutHref(vehicle)}
-                  className="mt-6 inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.2em] text-white transition hover:bg-emerald-700"
-                >
-                  {t("transfer.search.action.selectAndPay")}
-                </Link>
+
+                  <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400">
+                      {t("transfer.search.vehicle.priceLabel.oneWay")}
+                      </p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-black text-brand">
+                          {vehicle.price != null ? `$${vehicle.price.toFixed(2)}` : t("transfer.search.vehicle.priceUnavailable")}
+                        </span>
+                        {vehicle.price != null ? <span className="text-sm font-semibold text-slate-500">USD</span> : null}
+                      </div>
+                    </div>
+                    <Link
+                      href={buildCheckoutHref(vehicle)}
+                      className="rounded-2xl bg-brand px-6 py-3 text-center text-sm font-bold text-white shadow-lg shadow-brand/40 transition-colors group-hover:bg-brand-light"
+                    >
+                      {t("transfer.search.action.selectAndPay")}
+                    </Link>
+                  </div>
+                </div>
               </article>
             ))}
           </div>
