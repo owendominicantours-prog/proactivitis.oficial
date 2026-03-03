@@ -482,16 +482,16 @@ export default function TrasladoSearchV2() {
             return (
               <article
                 key={vehicle.id}
-                className="flex flex-col justify-between gap-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-lg transition hover:shadow-xl"
+                className="group flex h-full flex-col justify-between gap-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-xl"
               >
                 <div className="flex flex-col gap-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.4em] text-slate-400">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500">
                         {vehicle.category}
                       </p>
-                      <h3 className="text-2xl font-semibold text-slate-900">{vehicle.name}</h3>
-                      <p className="text-sm text-slate-500">
+                      <h3 className="mt-1 text-xl font-bold leading-tight text-slate-900">{vehicle.name}</h3>
+                      <p className="mt-1 text-sm text-slate-600">
                         {t("transfer.search.vehicle.capacityRange", {
                           min: vehicle.minPax,
                           max: vehicle.maxPax
@@ -499,29 +499,31 @@ export default function TrasladoSearchV2() {
                       </p>
                     </div>
                     {isRecommended && (
-                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-emerald-700">
+                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-700">
                         {t("transfer.search.vehicle.badge.mostPopular")}
                       </span>
                     )}
                   </div>
 
                   {vehicle.imageUrl && (
-                    <img
-                      src={vehicle.imageUrl}
-                      alt={vehicle.name}
-                      className="h-48 w-full rounded-2xl object-cover"
-                    />
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100">
+                      <img
+                        src={vehicle.imageUrl}
+                        alt={vehicle.name}
+                        className="h-44 w-full object-contain p-3 transition duration-300 group-hover:scale-[1.02]"
+                      />
+                    </div>
                   )}
 
-                  <div className="space-y-2 text-right">
-                    <p className="text-sm text-slate-500">
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
                       {isRoundTrip
                         ? t("transfer.search.vehicle.priceLabel.roundTrip")
                         : t("transfer.search.vehicle.priceLabel.oneWay")}
                     </p>
-                    <p className="text-3xl font-bold text-slate-900">${displayPrice.toFixed(2)}</p>
+                    <p className="mt-1 text-3xl font-black leading-none text-slate-900">${displayPrice.toFixed(2)}</p>
                     {isRoundTrip && (
-                      <p className="text-[11px] text-slate-500">
+                      <p className="mt-1 text-xs text-emerald-700">
                         {t("transfer.search.vehicle.roundTripSavings", {
                           discount: normalizedDiscountPercent
                         })}
@@ -529,7 +531,7 @@ export default function TrasladoSearchV2() {
                     )}
                   </div>
 
-                  <ul className="grid gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 lg:grid-cols-3">
+                  <ul className="grid gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 lg:grid-cols-2">
                     {TRUST_BULLETS.map((bullet) => (
                       <li key={bullet} className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -541,7 +543,7 @@ export default function TrasladoSearchV2() {
 
                 <Link
                   href={reserveUrl}
-                  className="mt-4 inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
+                  className="mt-2 inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold uppercase tracking-[0.2em] text-white transition hover:bg-emerald-700"
                 >
                   {t("transfer.search.action.reserve")}
                 </Link>

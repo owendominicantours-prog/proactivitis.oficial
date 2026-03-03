@@ -972,30 +972,41 @@ export default function TrasladoSearch({
             {vehicles.map((vehicle) => (
               <article
                 key={vehicle.id}
-                className="flex h-full flex-col justify-between rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-lg"
+                className="group flex h-full flex-col justify-between rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-xl"
               >
-                <img src={vehicle.image} alt={t(vehicle.titleKey)} className="h-32 w-full rounded-2xl object-cover" />
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100">
+                  <img
+                    src={vehicle.image}
+                    alt={t(vehicle.titleKey)}
+                    className="h-36 w-full object-contain p-3 transition duration-300 group-hover:scale-[1.02]"
+                  />
+                </div>
                 <div className="mt-4 space-y-2">
-                      <h3 className="text-lg font-semibold text-slate-900">{t(vehicle.titleKey)}</h3>
-                      <p className="text-sm text-slate-500">{t(vehicle.descriptionKey)}</p>
+                      <h3 className="text-xl font-bold leading-tight text-slate-900">{t(vehicle.titleKey)}</h3>
+                      <p className="text-sm text-slate-600">{t(vehicle.descriptionKey)}</p>
                       <p className="text-sm font-semibold text-slate-900">
                         {t("transfer.search.vehicle.capacityDetail", {
                           pax: vehicle.pax,
                           luggage: vehicle.luggage
                         })}
                       </p>
-                  <p className="text-3xl font-black text-indigo-600">
-                    {vehicle.price != null ? `$${vehicle.price.toFixed(2)}` : t("transfer.search.vehicle.priceUnavailable")}
-                  </p>
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                      {t("transfer.search.vehicle.priceLabel.oneWay")}
+                    </p>
+                    <p className="mt-1 text-3xl font-black leading-none text-slate-900">
+                      {vehicle.price != null ? `$${vehicle.price.toFixed(2)}` : t("transfer.search.vehicle.priceUnavailable")}
+                    </p>
+                  </div>
                 </div>
-                  <ul className="mt-4 space-y-1 text-xs text-slate-500">
+                  <ul className="mt-4 space-y-1 text-xs text-slate-600">
                     {vehicle.features.map((feature) => (
                       <li key={`${vehicle.id}-${feature}`}>{t(feature)}</li>
                     ))}
                   </ul>
                 <Link
                   href={buildCheckoutHref(vehicle)}
-                  className="mt-6 inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-indigo-500"
+                  className="mt-6 inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.2em] text-white transition hover:bg-emerald-700"
                 >
                   {t("transfer.search.action.selectAndPay")}
                 </Link>
