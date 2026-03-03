@@ -133,9 +133,16 @@ export default function PuntaCanaTransferHub({ locale }: Props) {
             <Link
               key={landing.slug}
               href={buildTransferRouteHref(locale, landing.slug)}
-              className="rounded-[20px] border border-slate-100 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-1"
+              className="group rounded-[28px] border border-slate-100 bg-white p-4 shadow-card transition-transform duration-300 hover:-translate-y-2"
             >
-              {landing.name}
+              <p className="text-brand text-[10px] font-medium uppercase tracking-[0.35em]">Private Transfer</p>
+              <p className="mt-1 line-clamp-2 text-lg font-black leading-tight text-slate-900">{landing.name}</p>
+              <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+                <span className="text-[10px] uppercase tracking-[0.28em] text-slate-500">PUJ route</span>
+                <span className="rounded-2xl bg-brand px-4 py-2 text-xs font-bold text-white shadow-lg shadow-brand/40 transition-colors group-hover:bg-brand-light">
+                  Ver
+                </span>
+              </div>
             </Link>
           ))}
         </div>

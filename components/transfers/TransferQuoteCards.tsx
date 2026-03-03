@@ -289,31 +289,59 @@ export default function TransferQuoteCards({
               returnDatetime: tripType === "round-trip" ? returnDatetime : undefined
             });
             return (
-              <article key={vehicle.id} className="flex flex-col justify-between gap-4 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="space-y-3">
-                  {vehicle.imageUrl && (
-                    <img src={vehicle.imageUrl} alt={vehicle.name} className="h-48 w-full rounded-2xl object-cover" />
-                  )}
-                  <h3 className="text-xl font-semibold text-slate-900">{vehicle.name}</h3>
-                  <p className="text-sm text-slate-500">
+              <article
+                key={vehicle.id}
+                className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-card transition-transform duration-300 hover:-translate-y-2"
+              >
+                <div className="relative">
+                  <div
+                    className="aspect-[4/3] w-full bg-cover bg-center"
+                    style={{ backgroundImage: `url(${vehicle.imageUrl || "/transfer/sedan.png"})` }}
+                    role="img"
+                    aria-label={vehicle.name}
+                  />
+                  <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-white/80 bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-500 shadow">
+                      {vehicle.category}
+                    </span>
+                    <span className="rounded-full border border-white/80 bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-500 shadow">
+                      Private Transfer
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-1 flex-col gap-2 p-4">
+                  <p className="text-brand text-[10px] font-medium uppercase tracking-[0.35em]">
+                    {originLabel} to {destinationLabel}
+                  </p>
+                  <h3 className="text-2xl font-black leading-tight text-slate-900">{vehicle.name}</h3>
+                  <p className="text-sm leading-relaxed text-slate-500">
                     {t("transferQuote.passengerRange", { min: vehicle.minPax, max: vehicle.maxPax })}
                   </p>
-                  <p className="text-3xl font-bold text-emerald-600">
-                    ${displayPrice.toFixed(2)}
-                    {tripType === "round-trip" ? ` ${t("transferQuote.totalRoundTrip")}` : ` ${t("transferQuote.perTrip")}`}
-                  </p>
-                  <ul className="space-y-1 text-xs text-slate-500">
+
+                  <ul className="space-y-1 border-y border-slate-50 py-2 text-xs text-slate-500">
                     <li>{t("transferQuote.bullets.private")}</li>
                     <li>{t("transferQuote.bullets.ac")}</li>
-                    <li>{t("transferQuote.bullets.support")}</li>
                   </ul>
+
+                  <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400">
+                        {tripType === "round-trip" ? t("transferQuote.totalRoundTrip") : t("transferQuote.perTrip")}
+                      </p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-black text-brand">${displayPrice.toFixed(2)}</span>
+                        <span className="text-sm font-semibold text-slate-500">USD</span>
+                      </div>
+                    </div>
+                    <Link
+                      href={reserveUrl}
+                      className="rounded-2xl bg-brand px-5 py-3 text-center text-sm font-bold text-white shadow-lg shadow-brand/40 transition-colors group-hover:bg-brand-light"
+                    >
+                      {t("transferQuote.reserve")}
+                    </Link>
+                  </div>
                 </div>
-                <Link
-                  href={reserveUrl}
-                  className="rounded-2xl bg-slate-900 px-5 py-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
-                >
-                  {t("transferQuote.reserve")}
-                </Link>
               </article>
             );
           })}

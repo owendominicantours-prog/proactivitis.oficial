@@ -416,21 +416,34 @@ export default async function LandingPage({ params }: Params) {
                   <Link
                     key={transfer.landingSlug}
                     href={`/transfer/${transfer.landingSlug}`}
-                    className="block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                    className="group block overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-card transition-transform duration-300 hover:-translate-y-2"
                   >
-                    <div className="h-40 w-full">
-                      <img
-                        src={transfer.heroImage || "/transfer/mini van.png"}
-                        alt={transfer.heroImageAlt || transfer.hotelName}
-                        className="h-full w-full object-cover"
+                    <div className="relative">
+                      <div
+                        className="aspect-[4/3] w-full bg-cover bg-center"
+                        style={{ backgroundImage: `url(${transfer.heroImage || "/transfer/mini van.png"})` }}
+                        role="img"
+                        aria-label={transfer.heroImageAlt || transfer.hotelName}
                       />
+                      <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+                        <span className="rounded-full border border-white/80 bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-500 shadow">
+                          Transfer
+                        </span>
+                        <span className="rounded-full border border-white/80 bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-500 shadow">
+                          Private Route
+                        </span>
+                      </div>
                     </div>
-                    <div className="space-y-2 p-4">
-                      <h3 className="line-clamp-2 text-base font-semibold text-slate-900">{transfer.hotelName}</h3>
-                      <p className="line-clamp-2 text-sm text-slate-600">{shorten(transfer.heroSubtitle || transfer.heroTagline)}</p>
-                      <div className="flex items-center justify-between text-xs text-slate-500">
-                        <span>PUJ route</span>
-                        <span className="font-semibold text-slate-900">From ${transfer.priceFrom}</span>
+
+                    <div className="flex flex-1 flex-col gap-2 p-4">
+                      <p className="text-brand text-[10px] font-medium uppercase tracking-[0.35em]">PUJ to Hotel</p>
+                      <h3 className="line-clamp-2 text-2xl font-black leading-tight text-slate-900">{transfer.hotelName}</h3>
+                      <p className="line-clamp-2 text-sm leading-relaxed text-slate-500">
+                        {shorten(transfer.heroSubtitle || transfer.heroTagline)}
+                      </p>
+                      <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-500">
+                        <span className="uppercase tracking-[0.25em]">One way</span>
+                        <span className="text-base font-black text-brand">From ${transfer.priceFrom}</span>
                       </div>
                     </div>
                   </Link>
