@@ -134,7 +134,7 @@ export function TourCard({
           </div>
 
           {pickupIncluded ? (
-            <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-emerald-500">Hotel pickup included</p>
+            <p className="text-[11px] font-semibold text-emerald-600">Hotel pickup included</p>
           ) : null}
 
           <div className={`mt-auto flex items-center justify-between border-t border-slate-100 ${compact ? "pt-2.5" : "pt-4"}`}>
@@ -168,4 +168,3 @@ export function TourCard({
     </Link>
   );
 }
-
