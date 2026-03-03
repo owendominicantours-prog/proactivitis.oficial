@@ -484,139 +484,147 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   };
 
   return (
-    <div className="space-y-16 bg-gradient-to-b from-[#F8FAFC] via-[#F8FAFC] to-emerald-50/40 text-slate-900 overflow-x-hidden">
+    <div className="bg-slate-50 text-slate-900 overflow-x-hidden">
       <HomeHeroCarousel>
         <HomeHeroContent locale={locale} overrides={homeOverrides.hero} />
       </HomeHeroCarousel>
 
-      <section className="mx-auto max-w-6xl space-y-6 px-4 sm:px-6">
-        <HomeBenefitsContent locale={locale} overrides={homeOverrides.benefits} />
-      </section>
-
-      <section className="mx-auto max-w-6xl space-y-4 px-4 sm:px-6">
-        <HomeRecommendedHeader locale={locale} overrides={homeOverrides.recommended} />
-        <HomeTourSearchSection locale={locale} />
-        <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-sm">
-          <FeaturedToursSection locale={locale} />
-        </div>
-        <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-            {homeOverrides.puntaCana?.subtitle ?? t("puntaCana.links.subtitle")}
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-            {homeOverrides.puntaCana?.title ?? t("puntaCana.links.title")}
-          </h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {PUNTA_CANA_LINKS.map((item) => (
-              <Link
-                key={item.slug}
-                href={tourHref(item.slug)}
-                className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
-              >
-                {t(item.labelKey)}
-              </Link>
-            ))}
-          </div>
-        </div>
-        <div className="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-            Sosua Party Boat
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-            {locale === "es"
-              ? "Reserva tu party boat en Sosua al mejor precio"
-              : locale === "en"
-                ? "Book your Sosua party boat at the best price"
-                : "Reservez votre party boat a Sosua au meilleur prix"}
-          </h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {SOSUA_PARTY_BOAT_LINKS.map((item) => (
-              <Link
-                key={item.slug}
-                href={tourHref(item.slug)}
-                className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
-              >
-                {locale === "es" ? item.es : locale === "en" ? item.en : item.fr}
-              </Link>
-            ))}
-          </div>
+      <section className="border-y border-slate-100 bg-white">
+        <div className="mx-auto max-w-6xl space-y-6 px-4 py-12 sm:px-6">
+          <HomeBenefitsContent locale={locale} overrides={homeOverrides.benefits} />
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl space-y-5 px-4 sm:px-6">
-        <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-            {homeOverrides.longform?.eyebrow ?? t("home.longform.eyebrow")}
-          </p>
-          <h2 className="mt-3 text-2xl font-semibold text-slate-900 md:text-3xl">
-            {homeOverrides.longform?.title ?? t("home.longform.title")}
-          </h2>
-          <div className="mt-4 space-y-4 text-sm text-slate-600">
-            <p>{homeOverrides.longform?.body1 ?? t("home.longform.body1")}</p>
-            <p>{homeOverrides.longform?.body2 ?? t("home.longform.body2")}</p>
-            <p>{homeOverrides.longform?.body3 ?? t("home.longform.body3")}</p>
+      <section className="bg-slate-50">
+        <div className="mx-auto max-w-6xl space-y-4 px-4 py-12 sm:px-6">
+          <HomeRecommendedHeader locale={locale} overrides={homeOverrides.recommended} />
+          <HomeTourSearchSection locale={locale} />
+          <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
+            <FeaturedToursSection locale={locale} />
           </div>
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {(
-              [
-                {
-                  titleKey: "home.longform.points.1.title",
-                  bodyKey: "home.longform.points.1.body"
-                },
-                {
-                  titleKey: "home.longform.points.2.title",
-                  bodyKey: "home.longform.points.2.body"
-                },
-                {
-                  titleKey: "home.longform.points.3.title",
-                  bodyKey: "home.longform.points.3.body"
-                }
-              ] as const
-            ).map((item, index) => (
-              <div key={item.titleKey} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                  {homeOverrides.longform?.points?.[index]?.title ?? t(item.titleKey)}
-                </p>
-                <p className="mt-2 text-sm text-slate-600">
-                  {homeOverrides.longform?.points?.[index]?.body ?? t(item.bodyKey)}
-                </p>
-              </div>
-            ))}
+          <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+              {homeOverrides.puntaCana?.subtitle ?? t("puntaCana.links.subtitle")}
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+              {homeOverrides.puntaCana?.title ?? t("puntaCana.links.title")}
+            </h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {PUNTA_CANA_LINKS.map((item) => (
+                <Link
+                  key={item.slug}
+                  href={tourHref(item.slug)}
+                  className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
+                >
+                  {t(item.labelKey)}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+              Sosua Party Boat
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+              {locale === "es"
+                ? "Reserva tu party boat en Sosua al mejor precio"
+                : locale === "en"
+                  ? "Book your Sosua party boat at the best price"
+                  : "Reservez votre party boat a Sosua au meilleur prix"}
+            </h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {SOSUA_PARTY_BOAT_LINKS.map((item) => (
+                <Link
+                  key={item.slug}
+                  href={tourHref(item.slug)}
+                  className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
+                >
+                  {locale === "es" ? item.es : locale === "en" ? item.en : item.fr}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-        <div
-          className="relative flex min-h-[280px] items-center overflow-hidden rounded-3xl border border-slate-100 shadow-sm"
-          style={{
-            backgroundImage: `url('${transferBannerImage}')`,
-            backgroundSize: "cover",
-            backgroundPosition: "center"
-          }}
-        >
-          <div className="absolute inset-0 bg-slate-900/55 md:bg-slate-900/65" />
-          <div className="relative z-10 w-full space-y-6 px-6 py-10 text-center text-white md:text-left">
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/70">
-            {homeOverrides.transferBanner?.label ?? t("home.transferBanner.label")}
-          </p>
-          <h2 className="text-3xl font-semibold leading-tight md:text-4xl">
-            {homeOverrides.transferBanner?.title ?? t("home.transferBanner.title")}
-          </h2>
-          <p className="text-sm text-white/90 md:text-base">
-            {homeOverrides.transferBanner?.description ?? t("home.transferBanner.description")}
-          </p>
-          <HomeTransferTicker locale={locale} />
-          <div className="botones-banner justify-center md:justify-start">
-            <Link href={transferHref} className="boton-verde">
-              {homeOverrides.transferBanner?.cta ?? t("home.transferBanner.cta")}
-            </Link>
-          </div>
+      <section className="border-y border-slate-100 bg-white">
+        <div className="mx-auto max-w-6xl space-y-5 px-4 py-12 sm:px-6">
+          <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+              {homeOverrides.longform?.eyebrow ?? t("home.longform.eyebrow")}
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-900 md:text-3xl">
+              {homeOverrides.longform?.title ?? t("home.longform.title")}
+            </h2>
+            <div className="mt-4 space-y-4 text-sm text-slate-600">
+              <p>{homeOverrides.longform?.body1 ?? t("home.longform.body1")}</p>
+              <p>{homeOverrides.longform?.body2 ?? t("home.longform.body2")}</p>
+              <p>{homeOverrides.longform?.body3 ?? t("home.longform.body3")}</p>
+            </div>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {(
+                [
+                  {
+                    titleKey: "home.longform.points.1.title",
+                    bodyKey: "home.longform.points.1.body"
+                  },
+                  {
+                    titleKey: "home.longform.points.2.title",
+                    bodyKey: "home.longform.points.2.body"
+                  },
+                  {
+                    titleKey: "home.longform.points.3.title",
+                    bodyKey: "home.longform.points.3.body"
+                  }
+                ] as const
+              ).map((item, index) => (
+                <div key={item.titleKey} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                    {homeOverrides.longform?.points?.[index]?.title ?? t(item.titleKey)}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-600">
+                    {homeOverrides.longform?.points?.[index]?.body ?? t(item.bodyKey)}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       <section className="bg-slate-50">
+        <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6">
+          <div
+            className="relative flex min-h-[280px] items-center overflow-hidden rounded-3xl border border-slate-100 shadow-sm"
+            style={{
+              backgroundImage: `url('${transferBannerImage}')`,
+              backgroundSize: "cover",
+              backgroundPosition: "center"
+            }}
+          >
+            <div className="absolute inset-0 bg-slate-900/55 md:bg-slate-900/65" />
+            <div className="relative z-10 w-full space-y-6 px-6 py-10 text-center text-white md:text-left">
+            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/70">
+              {homeOverrides.transferBanner?.label ?? t("home.transferBanner.label")}
+            </p>
+            <h2 className="text-3xl font-semibold leading-tight md:text-4xl">
+              {homeOverrides.transferBanner?.title ?? t("home.transferBanner.title")}
+            </h2>
+            <p className="text-sm text-white/90 md:text-base">
+              {homeOverrides.transferBanner?.description ?? t("home.transferBanner.description")}
+            </p>
+            <HomeTransferTicker locale={locale} />
+            <div className="botones-banner justify-center md:justify-start">
+              <Link href={transferHref} className="boton-verde">
+                {homeOverrides.transferBanner?.cta ?? t("home.transferBanner.cta")}
+              </Link>
+            </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-slate-100 bg-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-2">
           <div className="overflow-hidden rounded-[32px] bg-slate-900">
             <Image
