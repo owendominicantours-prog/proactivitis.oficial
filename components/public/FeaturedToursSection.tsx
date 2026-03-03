@@ -71,7 +71,7 @@ const fetchFeaturedTours = async (
       { featured: "desc" },
       { createdAt: "desc" }
     ],
-    take: 6,
+    take: 20,
     select
   });
 };
@@ -96,7 +96,7 @@ const selectRotatingTours = (tours: Awaited<ReturnType<typeof fetchFeaturedTours
     const j = Math.floor(Math.random() * (i + 1));
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
-  return copy.slice(0, Math.min(3, copy.length));
+  return copy.slice(0, Math.min(8, copy.length));
 };
 
 type Props = {
@@ -135,7 +135,7 @@ export default async function FeaturedToursSection({ locale }: Props) {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {displayedTours.map((tour) => (
         (() => {
           const offer = offerPriceMap.get(tour.id);
@@ -171,6 +171,7 @@ export default async function FeaturedToursSection({ locale }: Props) {
           maxPax={tour.capacity ?? 15}
           duration={formatDurationValue(tour.duration)}
           pickupIncluded={true}
+          compact
         />
           );
         })()

@@ -20,6 +20,7 @@ type TourCardProps = {
   maxPax?: number;
   duration?: string;
   pickupIncluded?: boolean;
+  compact?: boolean;
 };
 
 const IconUsers = () => (
@@ -60,15 +61,17 @@ export function TourCard({
   zone,
   maxPax,
   duration,
-  pickupIncluded
+  pickupIncluded,
+  compact = false
 }: TourCardProps) {
   const normalizedRating = typeof rating === "number" ? rating : 0;
   const normalizedCount = reviewCount ?? 0;
   const reviewLabel = formatReviewCountShort(normalizedCount);
-  const badgeText = `⭐ ${normalizedRating.toFixed(1)} • ${reviewLabel} reseñas`;
+  const badgeText = `★ ${normalizedRating.toFixed(1)} • ${reviewLabel} reviews`;
   const showBadge = normalizedRating > 0 && normalizedCount > 0;
-  const tagList = tags && tags.length ? tags : ["Experiencia Top"];
+  const tagList = tags && tags.length ? tags : ["Top Experience"];
   const locationText = zone || location?.split(",")[0] || "Punta Cana";
+
   const percentDiscountPrice = discountPercent > 0 ? price * (1 - discountPercent / 100) : price;
   const bestDiscountedPrice =
     typeof discountedPrice === "number" && discountedPrice > 0
@@ -79,75 +82,85 @@ export function TourCard({
 
   return (
     <Link href={`/tours/${slug}`} className="group block">
-    <article className="flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-card transition-transform duration-300 hover:-translate-y-2">
+      <article
+        className={`flex h-full flex-col overflow-hidden border border-slate-100 bg-white shadow-card transition-transform duration-300 hover:-translate-y-2 ${
+          compact ? "rounded-[20px]" : "rounded-[28px]"
+        }`}
+      >
         <div className="relative">
           <div
-            className="aspect-[4/3] w-full bg-cover bg-center"
+            className={`${compact ? "aspect-[16/10]" : "aspect-[4/3]"} w-full bg-cover bg-center`}
             style={{ backgroundImage: `url(${image})` }}
             role="img"
             aria-label={title}
           />
-          {showBadge && (
-            <div className="absolute right-4 top-4 rounded-xl bg-white/90 px-3 py-1 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur">
+          {showBadge ? (
+            <div className="absolute right-3 top-3 rounded-xl bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-slate-900 shadow-sm backdrop-blur">
               {badgeText}
             </div>
-          )}
-          <div className="absolute left-4 bottom-4 flex flex-wrap gap-2">
-            {tagList.map((tag) => (
+          ) : null}
+          <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+            {tagList.slice(0, compact ? 1 : 2).map((tag) => (
               <span
                 key={`badge-${tag}`}
-                className="rounded-full border border-white/80 bg-white/90 px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-500 shadow"
+                className="rounded-full border border-white/80 bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-500 shadow"
               >
                 {tag}
               </span>
             ))}
           </div>
         </div>
-        <div className="flex flex-1 flex-col gap-2 p-4">
-          <p className="text-brand font-medium text-[10px] tracking-[0.4em] uppercase">{`Desde ${locationText}`}</p>
-          <h3 className="text-slate-900 text-2xl font-black leading-tight">{title}</h3>
-          <p className="text-slate-500 text-sm leading-relaxed line-clamp-2">
-            {description ?? `Experiencia exclusiva en ${locationText} con guía local certificado.`}
+
+        <div className={`flex flex-1 flex-col gap-2 ${compact ? "p-3" : "p-4"}`}>
+          <p className="text-brand text-[10px] font-medium uppercase tracking-[0.35em]">{`From ${locationText}`}</p>
+          <h3 className={`font-black leading-tight text-slate-900 ${compact ? "text-lg" : "text-2xl"}`}>{title}</h3>
+          <p className={`leading-relaxed text-slate-500 ${compact ? "line-clamp-1 text-xs" : "line-clamp-2 text-sm"}`}>
+            {description ?? `Exclusive experience in ${locationText} with certified local guides.`}
           </p>
-          <div className="flex flex-wrap items-center gap-2 border-y border-slate-50 py-2 text-[11px] text-slate-500">
+
+          <div className={`flex flex-wrap items-center gap-2 border-y border-slate-50 text-[11px] text-slate-500 ${compact ? "py-1.5" : "py-2"}`}>
             <span className="flex items-center gap-1">
               <IconClock />
-              {duration ?? "4 horas"}
+              {duration ?? "4 hours"}
             </span>
             <span className="flex items-center gap-1">
               <IconUsers />
-              {`Máx. ${maxPax ?? 15} pers.`}
+              {`Max ${maxPax ?? 15}`}
             </span>
             <span className="flex items-center gap-1">
               <IconMap />
               {locationText}
             </span>
           </div>
-          {pickupIncluded && (
-            <p className="text-emerald-500 font-semibold text-[10px] uppercase tracking-[0.4em]">
-              Recogida en hotel incluida
-            </p>
-          )}
-          <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
+
+          {pickupIncluded ? (
+            <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-emerald-500">Hotel pickup included</p>
+          ) : null}
+
+          <div className={`mt-auto flex items-center justify-between border-t border-slate-100 ${compact ? "pt-2.5" : "pt-4"}`}>
             <div>
-              <p className="text-slate-400 text-[10px] uppercase tracking-[0.4em]">Desde</p>
+              <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400">From</p>
               <div className="flex items-baseline gap-1">
-                <span className={`text-3xl font-black ${hasDiscount ? "text-red-600" : "text-brand"}`}>
+                <span className={`${compact ? "text-2xl" : "text-3xl"} font-black ${hasDiscount ? "text-red-600" : "text-brand"}`}>
                   ${bestDiscountedPrice.toFixed(0)}
                 </span>
                 <span className="text-sm font-semibold text-slate-500">USD</span>
               </div>
-              {hasDiscount && (
+              {hasDiscount ? (
                 <div className="space-y-1">
                   <p className="text-xs text-slate-400 line-through">${price.toFixed(0)} USD</p>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-red-600">
-                    {discountLabel || `-${computedDiscountPercent}% aplicado`}
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-red-600">
+                    {discountLabel || `-${computedDiscountPercent}%`}
                   </p>
                 </div>
-              )}
+              ) : null}
             </div>
-            <span className="rounded-2xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-lg shadow-brand/40 transition-colors group-hover:bg-brand-light">
-              Ver detalles
+            <span
+              className={`rounded-2xl bg-brand text-sm font-bold text-white shadow-lg shadow-brand/40 transition-colors group-hover:bg-brand-light ${
+                compact ? "px-4 py-2" : "px-6 py-3"
+              }`}
+            >
+              View
             </span>
           </div>
         </div>
@@ -155,3 +168,4 @@ export function TourCard({
     </Link>
   );
 }
+
