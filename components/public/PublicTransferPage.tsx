@@ -116,7 +116,7 @@ export default async function PublicTransferPage({
   }
 
   return (
-    <div className="bg-gradient-to-b from-[#E2FFF8] via-white to-[#F8FAFC]">
+    <div className="travel-surface bg-gradient-to-b from-[#E2FFF8] via-white to-[#F8FAFC]">
       <section
         className="relative flex min-h-[380px] w-full items-center overflow-hidden md:min-h-[520px]"
         style={{

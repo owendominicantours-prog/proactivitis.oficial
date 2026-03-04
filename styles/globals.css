@@ -325,3 +325,7 @@ a {
   background-size: 56px 56px, 56px 56px, 24px 24px;
   background-position: 0 0, 0 0, 0 0;
 }
+
+.travel-surface > section + section {
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+}

@@ -812,7 +812,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
   };
 
   return (
-    <main className="bg-[#f5f7f9] pb-28">
+    <main className="travel-surface bg-[#f5f7f9] pb-28">
       <StructuredData data={schema} />
       <ProDiscoveryHeader locale={locale} />
       <section className="border-b border-slate-200 bg-white">

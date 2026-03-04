@@ -398,7 +398,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   };
 
   return (
-    <div className="bg-slate-50 pb-16">
+    <div className="travel-surface pb-16">
       <StructuredData data={itemListSchema} />
       <StructuredData data={breadcrumbSchema} />
       <section className="border-b border-slate-200 bg-gradient-to-br from-white via-slate-50 to-white">

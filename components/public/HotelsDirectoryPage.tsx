@@ -420,7 +420,7 @@ export default async function HotelsDirectoryPage({
   };
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="travel-surface mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
       <StructuredData data={listSchema} />
       <header className="overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#334155] p-6 text-white shadow-xl sm:p-8">
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
