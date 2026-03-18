@@ -42,6 +42,21 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: "/prodiscovery/:path*",
+        destination: "/tours",
+        permanent: true
+      },
+      {
+        source: "/en/prodiscovery/:path*",
+        destination: "/en/tours",
+        permanent: true
+      },
+      {
+        source: "/fr/prodiscovery/:path*",
+        destination: "/fr/tours",
+        permanent: true
+      },
+      {
         source: "/:path*",
         has: [{ type: "host", value: "www.proactivitis.com" }],
         destination: "https://proactivitis.com/:path*",

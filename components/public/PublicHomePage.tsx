@@ -251,7 +251,6 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     { path: "/", name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home" },
     { path: "/tours", name: locale === "es" ? "Tours" : locale === "fr" ? "Excursions" : "Tours" },
     { path: "/traslado", name: locale === "es" ? "Traslados" : locale === "fr" ? "Transferts" : "Transfers" },
-    { path: "/prodiscovery", name: "ProDiscovery" },
     { path: "/news", name: locale === "es" ? "Noticias" : locale === "fr" ? "Actualites" : "News" },
     {
       path: locale === "es" ? "/hoteles" : "/hotels",
