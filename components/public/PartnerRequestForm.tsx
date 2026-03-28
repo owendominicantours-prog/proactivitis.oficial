@@ -56,7 +56,7 @@ type PartnerRequestFormProps = {
 };
 
 export default function PartnerRequestForm({ role, subtitle, id }: PartnerRequestFormProps) {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const [companyName, setCompanyName] = useState("");
   const [contactName, setContactName] = useState("");
   const [contactRole, setContactRole] = useState("");
@@ -194,6 +194,8 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
         throw new Error(error.error ?? "No se pudo enviar la solicitud");
       }
 
+      await update();
+
       setCompanyName("");
       setContactName("");
       setContactRole("");
@@ -206,7 +208,11 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
       setFile(null);
       setPassword("");
       setConfirmPassword("");
-      setMessage(null);
+      setMessage(
+        role === "AGENCY"
+          ? "Tu cuenta fue convertida a agencia y quedo pendiente de aprobacion."
+          : "Tu cuenta fue convertida a suplidor y quedo pendiente de aprobacion."
+      );
       handleToast(t("partner.form.toast.success"));
     } catch (error) {
       setMessage((error as Error).message);
