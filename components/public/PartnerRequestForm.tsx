@@ -1,7 +1,9 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import { useTranslation } from "@/context/LanguageProvider";
 import type { TranslationKey } from "@/lib/translations";
 
@@ -54,6 +56,7 @@ type PartnerRequestFormProps = {
 };
 
 export default function PartnerRequestForm({ role, subtitle, id }: PartnerRequestFormProps) {
+  const { data: session } = useSession();
   const [companyName, setCompanyName] = useState("");
   const [contactName, setContactName] = useState("");
   const [contactRole, setContactRole] = useState("");
@@ -84,6 +87,15 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (session?.user?.name && !contactName) {
+      setContactName(session.user.name);
+    }
+    if (session?.user?.email && !email) {
+      setEmail(session.user.email);
+    }
+  }, [contactName, email, session]);
 
   const handleServiceToggle = (option: string) => {
     setSelectedServices((current) =>
@@ -223,9 +235,22 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">
             {role === "SUPPLIER" ? t("partner.form.title.supplier") : t("partner.form.title.agency")}
           </p>
-          {subtitle ? (
-            <p className="mt-1 text-lg font-semibold text-slate-900">{subtitle}</p>
-          ) : null}
+          {subtitle ? <p className="mt-1 text-lg font-semibold text-slate-900">{subtitle}</p> : null}
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white/80 p-4">
+          <p className="text-sm font-semibold text-slate-900">
+            Tambien puedes entrar con Google y luego completar esta solicitud con el mismo correo.
+          </p>
+          <p className="mt-1 text-sm text-slate-600">
+            La aprobacion comercial de agencias y suplidores sigue siendo manual para proteger tu portal.
+          </p>
+          <div className="mt-3">
+            <GoogleAuthButton
+              label={role === "SUPPLIER" ? "Continuar con Google como suplidor" : "Continuar con Google como agencia"}
+              callbackUrl={role === "SUPPLIER" ? "/become-a-supplier?social=google" : "/agency-partners?social=google"}
+            />
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -308,26 +333,24 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
           <p className="text-sm text-slate-500">{t("partner.form.services.hint")}</p>
           <div className="flex flex-wrap gap-2">
             {serviceOptions.map((option) => (
-                <button
-                  type="button"
-                  key={option.value}
-                  onClick={() => handleServiceToggle(option.value)}
-                  className={`rounded-full border px-4 py-1 text-sm ${
-                    selectedServices.includes(option.value)
-                      ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                      : "border-slate-200 bg-white text-slate-600"
-                  }`}
-                >
-                  {t(option.labelKey)}
-                </button>
+              <button
+                type="button"
+                key={option.value}
+                onClick={() => handleServiceToggle(option.value)}
+                className={`rounded-full border px-4 py-1 text-sm ${
+                  selectedServices.includes(option.value)
+                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                    : "border-slate-200 bg-white text-slate-600"
+                }`}
+              >
+                {t(option.labelKey)}
+              </button>
             ))}
           </div>
         </div>
 
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">
-            {t("partner.form.description.label")}
-          </span>
+          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("partner.form.description.label")}</span>
           <textarea
             value={description}
             onChange={(event) => setDescription(event.target.value)}
@@ -338,9 +361,7 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
         </label>
 
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">
-            {t("partner.form.file.label")}
-          </span>
+          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("partner.form.file.label")}</span>
           <input
             type="file"
             className="mt-1"
@@ -348,11 +369,7 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
             onChange={handleFileChange}
           />
           <p className="mt-1 text-xs text-slate-500">{t("partner.form.file.hint")}</p>
-          {file && (
-            <p className="mt-1 text-xs text-slate-500">
-              {t("partner.form.file.ready", { fileName: file.name })}
-            </p>
-          )}
+          {file && <p className="mt-1 text-xs text-slate-500">{t("partner.form.file.ready", { fileName: file.name })}</p>}
         </label>
 
         <div className="flex flex-col gap-2">

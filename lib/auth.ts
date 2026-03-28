@@ -1,10 +1,11 @@
 import bcrypt from "bcrypt";
 import { randomUUID } from "crypto";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import CredentialsProvider from "next-auth/providers/credentials";
 import Auth0Provider from "next-auth/providers/auth0";
-import { prisma } from "./prisma";
+import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import type { NextAuthOptions } from "next-auth";
+import { prisma } from "./prisma";
 
 const roleRedirects: Record<string, string> = {
   ADMIN: "/portal/admin",
@@ -15,7 +16,29 @@ const roleRedirects: Record<string, string> = {
 
 const secret = process.env.NEXTAUTH_SECRET;
 if (!secret) {
-  console.warn("NEXTAUTH_SECRET no está definido; configura un valor seguro en despliegue.");
+  console.warn("NEXTAUTH_SECRET no esta definido; configura un valor seguro en despliegue.");
+}
+
+const oauthProviders = [];
+
+if (process.env.AUTH0_CLIENT_ID && process.env.AUTH0_CLIENT_SECRET && process.env.AUTH0_ISSUER) {
+  oauthProviders.push(
+    Auth0Provider({
+      clientId: process.env.AUTH0_CLIENT_ID,
+      clientSecret: process.env.AUTH0_CLIENT_SECRET,
+      issuer: process.env.AUTH0_ISSUER
+    })
+  );
+}
+
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  oauthProviders.push(
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true
+    })
+  );
 }
 
 export const authOptions: NextAuthOptions = {
@@ -25,11 +48,7 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt"
   },
   providers: [
-    Auth0Provider({
-      clientId: process.env.AUTH0_CLIENT_ID ?? "",
-      clientSecret: process.env.AUTH0_CLIENT_SECRET ?? "",
-      issuer: process.env.AUTH0_ISSUER ?? ""
-    }),
+    ...oauthProviders,
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -38,22 +57,27 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
+
         const user = await prisma.user.findUnique({
           where: { email: credentials.email }
         });
+
         if (!user || !user.password) return null;
+
         const validPassword = await bcrypt.compare(credentials.password, user.password);
         if (!validPassword) {
           return null;
         }
+
         const needsApproval = ["SUPPLIER", "AGENCY"].includes(user.role ?? "");
         if (needsApproval && user.accountStatus !== "APPROVED") {
           const defaultMessage =
             user.accountStatus === "REJECTED"
-              ? "Su cuenta ha sido rechazada. Revisa tu correo para más detalles."
-              : "Tu cuenta aún no ha sido aprobada.";
+              ? "Su cuenta ha sido rechazada. Revisa tu correo para mas detalles."
+              : "Tu cuenta aun no ha sido aprobada.";
           throw new Error(user.statusMessage ?? defaultMessage);
         }
+
         return user;
       }
     })
@@ -66,16 +90,19 @@ export const authOptions: NextAuthOptions = {
       }
       session.user.role = token.role as string;
       session.user.supplierApproved = token.supplierApproved === "true";
+      session.user.agencyApproved = token.agencyApproved === "true";
+      session.user.accountStatus = typeof token.accountStatus === "string" ? token.accountStatus : undefined;
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
         token.role = (user as { role?: string }).role ?? "CUSTOMER";
-        token.supplierApproved = (user as { supplierApproved?: boolean }).supplierApproved
-          ? "true"
-          : "false";
+        token.supplierApproved = (user as { supplierApproved?: boolean }).supplierApproved ? "true" : "false";
+        token.agencyApproved = (user as { agencyApproved?: boolean }).agencyApproved ? "true" : "false";
+        token.accountStatus = (user as { accountStatus?: string }).accountStatus ?? "APPROVED";
         return token;
       }
+
       if (token.sub) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub }
@@ -83,30 +110,53 @@ export const authOptions: NextAuthOptions = {
         if (dbUser) {
           token.role = dbUser.role;
           token.supplierApproved = dbUser.supplierApproved ? "true" : "false";
+          token.agencyApproved = dbUser.agencyApproved ? "true" : "false";
+          token.accountStatus = dbUser.accountStatus;
         }
       }
+
       return token;
     },
     async signIn({ user, account }) {
-      if (account?.provider === "auth0" && user?.email) {
-        await prisma.user.upsert({
-          where: { email: user.email },
-          update: {
-            name: user.name ?? undefined,
-            supplierApproved: true,
-            accountStatus: "APPROVED"
-          },
-          create: {
+      const isOAuthProvider = account?.provider && account.provider !== "credentials";
+      if (isOAuthProvider && user?.email) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email }
+        });
+
+        if (existingUser) {
+          await prisma.user.update({
+            where: { id: existingUser.id },
+            data: {
+              name: user.name ?? existingUser.name ?? undefined
+            }
+          });
+
+          const needsApproval = ["SUPPLIER", "AGENCY"].includes(existingUser.role ?? "");
+          if (needsApproval && existingUser.accountStatus !== "APPROVED") {
+            const defaultMessage =
+              existingUser.accountStatus === "REJECTED"
+                ? "Su cuenta ha sido rechazada. Revisa tu correo para mas detalles."
+                : "Tu cuenta aun no ha sido aprobada.";
+            return `/auth/login?error=${encodeURIComponent(existingUser.statusMessage ?? defaultMessage)}`;
+          }
+
+          return true;
+        }
+
+        await prisma.user.create({
+          data: {
             id: randomUUID(),
-            name: user.name ?? "Aliado",
+            name: user.name ?? "Cliente",
             email: user.email,
             role: "CUSTOMER",
-            supplierApproved: true,
+            supplierApproved: false,
             agencyApproved: false,
             accountStatus: "APPROVED"
           }
         });
       }
+
       return true;
     },
     async redirect(params) {
@@ -114,11 +164,24 @@ export const authOptions: NextAuthOptions = {
       const token = (params as { token?: { role?: string } }).token;
       const safeBase = baseUrl ?? "/";
       const safeUrl = typeof url === "string" && url.startsWith(safeBase) ? url : safeBase;
+      const safePath = safeUrl.startsWith(safeBase) ? safeUrl.slice(safeBase.length) || "/" : "/";
+
+      if (
+        safePath !== "/" &&
+        !safePath.startsWith("/auth/login") &&
+        !safePath.startsWith("/auth/register") &&
+        !safePath.startsWith("/portal")
+      ) {
+        return safeUrl;
+      }
+
       if (!token?.role) return safeUrl;
+
       const mapped = roleRedirects[token.role as string];
       if (mapped) {
         return safeBase.endsWith("/") ? `${safeBase.slice(0, -1)}${mapped}` : `${safeBase}${mapped}`;
       }
+
       return safeUrl;
     }
   },

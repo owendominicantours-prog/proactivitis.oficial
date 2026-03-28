@@ -3,14 +3,16 @@
 import Link from "next/link";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(searchParams.get("error") ?? "");
 
   const redirectMap: Record<string, string> = {
     ADMIN: "/admin",
@@ -23,6 +25,7 @@ export default function LoginPage() {
     event.preventDefault();
     setLoading(true);
     setError("");
+
     const result = await signIn("credentials", {
       redirect: false,
       email,
@@ -36,11 +39,13 @@ export default function LoginPage() {
       setError(result.error);
       return;
     }
+
     const sessionResponse = await fetch("/api/auth/session");
     if (!sessionResponse.ok) {
       router.push("/");
       return;
     }
+
     const sessionData = await sessionResponse.json();
     const role = sessionData?.user?.role ?? "CUSTOMER";
     router.push(redirectMap[role] || "/portal");
@@ -53,8 +58,12 @@ export default function LoginPage() {
         <div className="w-full max-w-md rounded-[32px] bg-white p-8 text-center shadow-card">
           <h1 className="text-2xl font-semibold text-slate-900">Acceso restringido</h1>
           <p className="mt-4 text-sm text-slate-600">
-            El inicio de sesión está temporalmente cerrado al público por razones de seguridad. Si perteneces al
-            equipo o eres un cliente autorizado, contacta a <a className="text-brand underline" href="mailto:info@proactivitis.com">info@proactivitis.com</a>.
+            El inicio de sesion esta temporalmente cerrado al publico por razones de seguridad. Si perteneces al
+            equipo o eres un cliente autorizado, contacta a{" "}
+            <a className="text-brand underline" href="mailto:info@proactivitis.com">
+              info@proactivitis.com
+            </a>
+            .
           </p>
         </div>
       </div>
@@ -64,7 +73,15 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-4 py-10">
       <div className="w-full max-w-md rounded-[32px] bg-white p-8 shadow-card">
-        <h1 className="text-2xl font-semibold text-slate-900">Iniciar sesión</h1>
+        <h1 className="text-2xl font-semibold text-slate-900">Iniciar sesion</h1>
+        <div className="mt-6 space-y-3">
+          <GoogleAuthButton label="Entrar con Google" callbackUrl="/portal" />
+          <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-slate-400">
+            <span className="h-px flex-1 bg-slate-200" />
+            O usa tu correo
+            <span className="h-px flex-1 bg-slate-200" />
+          </div>
+        </div>
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <label className="flex flex-col gap-2 text-sm text-slate-600">
             Email
@@ -78,7 +95,7 @@ export default function LoginPage() {
             />
           </label>
           <label className="flex flex-col gap-2 text-sm text-slate-600">
-            Contraseña
+            Contrasena
             <input
               type="password"
               name="password"
@@ -88,7 +105,7 @@ export default function LoginPage() {
               required
             />
           </label>
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error && <p className="text-xs text-red-600">{decodeURIComponent(error)}</p>}
           <button
             type="submit"
             className="w-full rounded-2xl bg-brand px-4 py-3 text-sm font-semibold text-white"
@@ -102,7 +119,7 @@ export default function LoginPage() {
             href="/auth/reset"
             className="rounded-2xl border border-slate-200 px-4 py-2 font-semibold text-slate-700 hover:border-slate-400"
           >
-            Restablecer contraseña
+            Restablecer contrasena
           </Link>
           <Link
             href="/auth/register"
