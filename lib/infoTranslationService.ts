@@ -82,16 +82,18 @@ function hashInfoPage(page: InfoPage) {
 }
 
 async function translateSection(section: InfoSection, locale: InfoLocale): Promise<InfoSection> {
-  const translateString = async (value?: string) => (value ? translateText(value, locale) : value);
+  const translateRequiredString = async (value: string) => translateText(value, locale);
+  const translateOptionalString = async (value?: string) =>
+    (value ? translateText(value, locale) : value);
   switch (section.type) {
     case "columns":
       return {
         ...section,
-        title: await translateString(section.title),
+        title: await translateRequiredString(section.title),
         columns: await Promise.all(
           section.columns.map(async (column) => ({
             ...column,
-            title: await translateString(column.title),
+            title: await translateRequiredString(column.title),
             items: await translateEntries(column.items ?? [], locale)
           }))
         )
@@ -100,28 +102,28 @@ async function translateSection(section: InfoSection, locale: InfoLocale): Promi
     case "faq-group":
       return {
         ...section,
-        title: await translateString(section.title),
+        title: await translateRequiredString(section.title),
         items: await Promise.all(
           section.items.map(async (item) => ({
             ...item,
-            question: await translateString(item.question),
-            answer: await translateString(item.answer),
-            ctaLabel: await translateString(item.ctaLabel)
+            question: await translateRequiredString(item.question),
+            answer: await translateRequiredString(item.answer),
+            ctaLabel: await translateOptionalString(item.ctaLabel)
           }))
         )
       };
     case "cta":
       return {
         ...section,
-        title: await translateString(section.title),
-        body: await translateString(section.body),
-        primaryLabel: await translateString(section.primaryLabel),
-        secondaryLabel: await translateString(section.secondaryLabel)
+        title: await translateRequiredString(section.title),
+        body: await translateRequiredString(section.body),
+        primaryLabel: await translateRequiredString(section.primaryLabel),
+        secondaryLabel: await translateOptionalString(section.secondaryLabel)
       };
     case "contact-info":
       return {
         ...section,
-        title: await translateString(section.title),
+        title: await translateRequiredString(section.title),
         items: await Promise.all(
           section.items.map(async (item) => ({
             ...item,
@@ -132,47 +134,47 @@ async function translateSection(section: InfoSection, locale: InfoLocale): Promi
     case "form":
       return {
         ...section,
-        title: await translateString(section.title),
-        description: await translateString(section.description),
+        title: await translateRequiredString(section.title),
+        description: await translateOptionalString(section.description),
         fields: await Promise.all(
           section.fields.map(async (field) => ({
             ...field,
-            label: await translateString(field.label),
-            placeholder: await translateString(field.placeholder),
+            label: await translateRequiredString(field.label),
+            placeholder: await translateOptionalString(field.placeholder),
             options: field.options ? await translateEntries(field.options, locale) : undefined
           }))
         ),
-        submitLabel: await translateString(section.submitLabel)
+        submitLabel: await translateRequiredString(section.submitLabel)
       };
     case "steps":
       return {
         ...section,
-        title: await translateString(section.title),
+        title: await translateRequiredString(section.title),
         steps: await Promise.all(
           section.steps.map(async (step) => ({
             ...step,
-            label: await translateString(step.label),
-            description: await translateString(step.description)
+            label: await translateRequiredString(step.label),
+            description: await translateRequiredString(step.description)
           }))
         )
       };
     case "text":
       return {
         ...section,
-        title: await translateString(section.title),
+        title: await translateRequiredString(section.title),
         body: section.body ? await translateEntries(section.body, locale) : section.body
       };
     case "bullets":
     case "list":
       return {
         ...section,
-        title: await translateString(section.title),
+        title: await translateRequiredString(section.title),
         items: section.items ? await translateEntries(section.items, locale) : section.items
       };
     case "legal-section":
       return {
         ...section,
-        title: await translateString(section.title),
+        title: await translateRequiredString(section.title),
         body: section.body ? await translateEntries(section.body, locale) : section.body
       };
     default:
