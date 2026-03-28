@@ -35,7 +35,7 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -500,7 +500,7 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SupplierProfile {
@@ -756,6 +756,8 @@ model User {
   id                      String                    @id @default(cuid())
   name                    String?
   email                   String                    @unique
+  emailVerified           DateTime?
+  image                   String?
   password                String?
   role                    String                    @default("CUSTOMER")
   supplierApproved        Boolean                   @default(false)
@@ -764,13 +766,13 @@ model User {
   statusMessage           String?
   rejectionAt             DateTime?
   createdAt               DateTime                  @default(now())
-  Account                 Account[]
+  accounts                Account[]
   AgencyProfile           AgencyProfile?
   Booking                 Booking[]
   Conversation            Conversation[]
   ConversationParticipant ConversationParticipant[]
   Message                 Message[]
-  Session                 Session[]
+  sessions                Session[]
   SupplierProfile         SupplierProfile?
   PartnerApplication      PartnerApplication[]
   CustomerPayment         CustomerPayment?
