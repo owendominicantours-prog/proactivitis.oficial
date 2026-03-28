@@ -1,5 +1,4 @@
 import bcrypt from "bcrypt";
-import { randomUUID } from "crypto";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import Auth0Provider from "next-auth/providers/auth0";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -143,18 +142,6 @@ export const authOptions: NextAuthOptions = {
 
           return true;
         }
-
-        await prisma.user.create({
-          data: {
-            id: randomUUID(),
-            name: user.name ?? "Cliente",
-            email: user.email,
-            role: "CUSTOMER",
-            supplierApproved: false,
-            agencyApproved: false,
-            accountStatus: "APPROVED"
-          }
-        });
       }
 
       return true;
@@ -183,6 +170,21 @@ export const authOptions: NextAuthOptions = {
       }
 
       return safeUrl;
+    }
+  },
+  events: {
+    async createUser({ user }) {
+      if (!user.id) return;
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          role: "CUSTOMER",
+          supplierApproved: false,
+          agencyApproved: false,
+          accountStatus: "APPROVED"
+        }
+      });
     }
   },
   pages: {
