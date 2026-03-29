@@ -54,6 +54,7 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
   const returnDateLabel = booking.returnTravelDate
     ? new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(new Date(booking.returnTravelDate))
     : null;
+  const originDestinationLabel = `${booking.originAirport ?? "Origen pendiente"} / ${booking.hotel ?? meetingPoint}`;
   const meetingLabel = variant === "full" ? "Punto de encuentro" : "Encuentro";
   const containerClass =
     variant === "full"
@@ -95,6 +96,39 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
           <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Pax</p>
           <p className="text-lg font-semibold text-slate-800">{totalGuests} personas</p>
           <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">{pickupTime}</p>
+        </div>
+      </div>
+      <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Resumen operativo</p>
+        <div className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="space-y-1">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Pasajero principal</p>
+            <p className="text-sm font-semibold text-slate-900">{booking.customerName ?? "Pendiente"}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Fecha de ida</p>
+            <p className="text-sm font-semibold text-slate-900">{arrivalDate}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Fecha de regreso</p>
+            <p className="text-sm font-semibold text-slate-900">{returnDateLabel ?? "No aplica"}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Origen / destino</p>
+            <p className="text-sm font-semibold text-slate-900">{originDestinationLabel}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Agencia</p>
+            <p className="text-sm font-semibold text-slate-900">{booking.agencyName ?? "Reserva directa"}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Códigos internos</p>
+            <p className="text-sm font-semibold text-slate-900">{displayOrderCode} · {booking.id.slice(0, 8).toUpperCase()}</p>
+          </div>
+          <div className="space-y-1 xl:col-span-2">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Servicios incluidos</p>
+            <p className="text-sm font-semibold text-slate-900">{booking.pickupNotes ?? "Servicio confirmado y coordinado con el proveedor"}</p>
+          </div>
         </div>
       </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-[2fr,1fr]">

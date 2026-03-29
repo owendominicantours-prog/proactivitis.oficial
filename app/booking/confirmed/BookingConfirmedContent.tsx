@@ -71,6 +71,13 @@ export function BookingConfirmedContent({
     booking.returnTravelDate
       ? new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(new Date(booking.returnTravelDate))
       : null;
+  const mainTraveler = booking.customerName ?? "Viajero principal pendiente";
+  const originValue = booking.originAirport ?? booking.pickup ?? "Pendiente";
+  const destinationValue = booking.hotel ?? pickupValue;
+  const includedServices =
+    typeof tour.includes === "string" && tour.includes.trim().length
+      ? tour.includes.split(";").map((item: string) => item.trim()).filter(Boolean).slice(0, 5).join(", ")
+      : "Coordinación del servicio, soporte y confirmación";
   return (
     <div className="bg-slate-50 min-h-screen">
       <BookingEmailDispatcher bookingId={booking.id} />
@@ -145,6 +152,18 @@ export function BookingConfirmedContent({
                 <InfoRow label={serviceLabel} value={serviceValue} />
                 <InfoRow label={pickupLabel} value={pickupValue} />
                 <InfoRow label={totalLabel} value={totalValue} />
+              </div>
+              <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resumen operativo</p>
+                <div className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  <InfoRow label="Pasajero principal" value={mainTraveler} />
+                  <InfoRow label="Fecha de ida" value={travelDateLabel} />
+                  <InfoRow label="Fecha de regreso" value={returnDateLabel ?? "No aplica"} />
+                  <InfoRow label="Origen / destino" value={`${originValue} / ${destinationValue}`} />
+                  <InfoRow label="Agencia" value={agency?.name ?? "Reserva directa"} />
+                  <InfoRow label="Códigos internos" value={`${orderCode} · ${booking.id.slice(0, 8).toUpperCase()}`} />
+                  <InfoRow label="Servicios incluidos" value={includedServices} />
+                </div>
               </div>
               {isTransfer && booking.tripType === "round-trip" && (
                 <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">

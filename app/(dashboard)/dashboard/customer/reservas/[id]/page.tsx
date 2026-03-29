@@ -189,6 +189,40 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
         </article>
       </div>
 
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resumen operativo</p>
+        <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pasajero principal</p>
+            <p className="text-sm font-semibold text-slate-900">{booking.customerName}</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de ida</p>
+            <p className="text-sm font-semibold text-slate-900">{travelDate}</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de regreso</p>
+            <p className="text-sm font-semibold text-slate-900">{returnDateLabel ?? "No aplica"}</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Origen / destino</p>
+            <p className="text-sm font-semibold text-slate-900">{`${booking.originAirport ?? "Pendiente"} / ${booking.hotel ?? booking.pickup ?? "Pendiente"}`}</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Agencia</p>
+            <p className="text-sm font-semibold text-slate-900">{agencyLabel ?? "Reserva directa"}</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Códigos internos</p>
+            <p className="text-sm font-semibold text-slate-900">{`${booking.bookingCode ?? booking.id} · ${booking.id.slice(0, 8).toUpperCase()}`}</p>
+          </div>
+          <div className="md:col-span-2">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Servicios incluido</p>
+            <p className="text-sm font-semibold text-slate-900">{booking.Tour?.includes ?? "Servicio confirmado con soporte y coordinaciÃ³n previa"}</p>
+          </div>
+        </div>
+      </div>
+
       <div id="ticket" className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
         <h3 className="text-base font-semibold text-slate-900">Voucher digital</h3>
         <div className="flex flex-wrap items-center justify-between gap-3 border-y border-slate-100 py-4">
