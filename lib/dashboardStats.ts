@@ -1,6 +1,7 @@
 import { BookingStatus } from "@/lib/types/booking";
 import { prisma } from "@/lib/prisma";
 import { ensureSupplierProfile } from "@/lib/supplierProfiles";
+import { getAgencyWorkspaceMetrics } from "@/lib/agencyMetrics";
 
 export function getCurrentMonthRange(date = new Date()) {
   const start = new Date(date.getFullYear(), date.getMonth(), 1);
@@ -123,45 +124,5 @@ export async function getSupplierDashboardMetrics(userId: string) {
 }
 
 export async function getAgencyDashboardMetrics(userId: string) {
-  const now = new Date();
-  const { start, end } = getCurrentMonthRange(now);
-
-  const [activeBookings, cancellations, commissionResult, requestCount] = await Promise.all([
-    prisma.booking.count({
-      where: {
-        source: "AGENCY",
-        travelDate: { gte: start, lt: end },
-        status: { in: confirmedStatuses }
-      }
-    }),
-    prisma.booking.count({
-      where: {
-        source: "AGENCY",
-        status: "CANCELLED",
-        cancellationAt: { gte: start, lt: end }
-      }
-    }),
-    prisma.booking.aggregate({
-      where: {
-        source: "AGENCY",
-        travelDate: { gte: start, lt: end },
-        status: { in: confirmedStatuses }
-      },
-      _sum: { totalAmount: true }
-    }),
-    prisma.booking.count({
-      where: {
-        source: "AGENCY",
-        status: "CANCELLATION_REQUESTED",
-        cancellationByRole: "AGENCY"
-      }
-    })
-  ]);
-
-  return {
-    activeBookings,
-    cancellationsThisMonth: cancellations,
-    estimatedCommission: (commissionResult._sum.totalAmount ?? 0) * 0.2,
-    cancellationRequests: requestCount
-  };
+  return getAgencyWorkspaceMetrics(userId);
 }
