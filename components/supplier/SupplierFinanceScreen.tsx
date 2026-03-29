@@ -1,7 +1,8 @@
 "use client";
 
-import { useAccount } from "@/components/AccountProvider";
 import { useEffect, useMemo, useState } from "react";
+
+import { useAccount } from "@/components/AccountProvider";
 
 type AccountSessionResponse = {
   accountId: string;
@@ -112,7 +113,7 @@ export default function SupplierFinanceScreen({ supplierName, initialAccountId }
         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Finanzas</p>
         <h1 className="mt-2 text-2xl font-semibold text-slate-900">Gestión de payouts · {supplierName}</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Administra ingresos, retiros y datos de pagos sin salir de Proactivitis.
+          Administra ingresos, retiros y configuración de cobros sin salir de Proactivitis.
         </p>
       </header>
 
@@ -163,7 +164,7 @@ export default function SupplierFinanceScreen({ supplierName, initialAccountId }
             onClick={handleCreateAccount}
             className="mt-6 inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isCreatingAccount ? "Cargando..." : "Configurar cuenta de Stripe"}
+            {isCreatingAccount ? "Cargando..." : "Completar cuenta de Stripe"}
           </button>
         </div>
       )}
@@ -172,8 +173,7 @@ export default function SupplierFinanceScreen({ supplierName, initialAccountId }
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm font-semibold text-slate-500">Stripe Connect</p>
           <p className="mt-2 text-sm text-slate-600">
-            Parece que aún no tienes una cuenta conectada. Para recibir pagos en Proactivitis primero debes configurar tu cuenta
-            de Stripe.
+            Parece que aún no tienes una cuenta conectada. Para recibir pagos en Proactivitis primero debes configurar tu cuenta de Stripe.
           </p>
           <button
             disabled={isCreatingAccount}

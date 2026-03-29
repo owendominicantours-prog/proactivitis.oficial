@@ -6,9 +6,9 @@ import { getNotificationUnreadCount, getNotificationsForRecipient } from "@/lib/
 import { SupportTicketButton } from "@/components/dashboard/SupportTicketButton";
 
 const supplierNav = [
-  { label: "Panel principal", href: "/supplier" },
-  { label: "Mis tours", href: "/supplier/tours" },
-  { label: "Crear tour", href: "/supplier/tours/create" },
+  { label: "Inicio", href: "/supplier" },
+  { label: "Experiencias", href: "/supplier/tours" },
+  { label: "Nueva experiencia", href: "/supplier/tours/create" },
   { label: "Reservas", href: "/supplier/bookings" },
   { label: "Calendario", href: "/supplier/calendar" },
   { label: "Finanzas", href: "/supplier/finance" },
@@ -44,7 +44,7 @@ export default async function SupplierDashboardLayout({ children }: { children: 
     <>
       <PanelShell
         roleLabel="Proveedor"
-        title="Panel Proveedor"
+        title="Panel supplier"
         navItems={supplierNav}
         navDisplay="dropdown"
         notifications={notifications}

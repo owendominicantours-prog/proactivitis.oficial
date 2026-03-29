@@ -1,8 +1,9 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+
 import AccountProvider from "@/components/AccountProvider";
 import SupplierFinanceScreen from "@/components/supplier/SupplierFinanceScreen";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export const metadata = {
   title: "Finanzas · Proactivitis"
@@ -11,6 +12,7 @@ export const metadata = {
 export default async function SupplierFinancePage() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id ?? null;
+
   if (!userId) {
     return <div className="py-10 text-center text-sm text-slate-600">Accede para administrar tus finanzas.</div>;
   }

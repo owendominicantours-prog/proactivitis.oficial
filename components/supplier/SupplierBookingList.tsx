@@ -74,9 +74,9 @@ const PAGE_SIZE = 20;
 
 const requestOptions: RequestInfoOption[] = [
   {
-    label: "Solicitar nÃºmero de habitaciÃ³n",
+    label: "Solicitar número de habitación",
     value: "room",
-    message: "Por favor envÃ­anos tu nÃºmero de habitaciÃ³n para coordinar el pickup."
+    message: "Por favor envíanos tu número de habitación para coordinar el pickup."
   },
   {
     label: "Solicitar comprobante de pago",
@@ -86,7 +86,7 @@ const requestOptions: RequestInfoOption[] = [
   {
     label: "Informar retraso",
     value: "delay",
-    message: "Tu transporte podrÃ­a tener un retraso; te avisaremos cuÃ¡ndo salimos."
+    message: "Tu transporte podría tener un retraso; te avisaremos cuándo salimos."
   }
 ];
 
@@ -330,9 +330,9 @@ export function SupplierBookingList({ bookings }: Props) {
   };
 
   const handleCancel = async (booking: SupplierBookingSummary) => {
-    const reason = typeof window !== "undefined" ? window.prompt("Motivo de cancelaciÃ³n:") : null;
+    const reason = typeof window !== "undefined" ? window.prompt("Motivo de cancelación:") : null;
     if (!reason?.trim()) {
-      addFeedback(booking.id, "Se cancelÃ³ la acciÃ³n, se requiere motivo.");
+      addFeedback(booking.id, "Se canceló la acción; se requiere motivo.");
       return;
     }
     try {
@@ -346,8 +346,8 @@ export function SupplierBookingList({ bookings }: Props) {
   const handleCopyDetails = (booking: SupplierBookingSummary) => {
     const text =
       booking.flowType === "transfer" && booking.tripType === "round-trip"
-        ? `Reserva ${booking.bookingCode} Â· ${booking.tourTitle} Â· ${booking.customerName ?? "Cliente"} Â· Ida: ${booking.pickup ?? "Pickup pendiente"} ${booking.startTime ?? "Hora por confirmar"} Â· Regreso: ${booking.hotel ?? "Pendiente"} ${booking.returnTravelDate ? new Date(booking.returnTravelDate).toLocaleDateString("es-ES") : "Fecha pendiente"}${booking.returnStartTime ? ` ${booking.returnStartTime}` : ""}`
-        : `Reserva ${booking.bookingCode} Â· ${booking.tourTitle} Â· ${booking.customerName ?? "Cliente"} Â· ${booking.hotel ?? booking.pickup ?? "Pickup pendiente"} Â· ${booking.startTime ?? "Hora por confirmar"}`;
+        ? `Reserva ${booking.bookingCode} · ${booking.tourTitle} · ${booking.customerName ?? "Cliente"} · Ida: ${booking.pickup ?? "Pickup pendiente"} ${booking.startTime ?? "Hora por confirmar"} · Regreso: ${booking.hotel ?? "Pendiente"} ${booking.returnTravelDate ? new Date(booking.returnTravelDate).toLocaleDateString("es-ES") : "Fecha pendiente"}${booking.returnStartTime ? ` ${booking.returnStartTime}` : ""}`
+        : `Reserva ${booking.bookingCode} · ${booking.tourTitle} · ${booking.customerName ?? "Cliente"} · ${booking.hotel ?? booking.pickup ?? "Pickup pendiente"} · ${booking.startTime ?? "Hora por confirmar"}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text);
     } else {
@@ -491,7 +491,7 @@ export function SupplierBookingList({ bookings }: Props) {
                 <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-700">Última reserva</p>
                 <p className="text-lg font-semibold text-slate-900">{latestBooking.tourTitle}</p>
                 <p className="text-sm text-slate-600">
-                  {latestBooking.customerName ?? "Cliente"} Â· {latestBooking.bookingCode}
+                  {latestBooking.customerName ?? "Cliente"} · {latestBooking.bookingCode}
                 </p>
               </div>
               <button
@@ -532,7 +532,7 @@ export function SupplierBookingList({ bookings }: Props) {
             </p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Total dÃ­a</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Total día</p>
             <p className="text-3xl font-semibold text-slate-900">
               ${summary.totalDelDia.toFixed(2)}
             </p>
@@ -662,9 +662,10 @@ export function SupplierBookingList({ bookings }: Props) {
           <div className="mt-4 flex flex-wrap gap-2">
             <button
               type="button"
-              className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+              disabled
+              className="cursor-default rounded-full bg-slate-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
             >
-              Aplicar filtros
+              Filtros automáticos
             </button>
             <button
               type="button"
@@ -726,7 +727,7 @@ export function SupplierBookingList({ bookings }: Props) {
                   </p>
                   <h2 className="text-xl font-semibold text-slate-900">{booking.tourTitle}</h2>
                   <p className="text-sm text-slate-500">
-                    {booking.startTime ?? "Hora por confirmar"} Â· {new Date(booking.travelDateValue).toLocaleDateString("es-ES")}
+                    {booking.startTime ?? "Hora por confirmar"} · {new Date(booking.travelDateValue).toLocaleDateString("es-ES")}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1">
@@ -760,7 +761,7 @@ export function SupplierBookingList({ bookings }: Props) {
                   {booking.agencyName && (
                     <p className="text-xs text-slate-500">
                       Agencia: {booking.agencyName}
-                      {booking.agencyPhone ? ` Â· ${booking.agencyPhone}` : ""}
+                      {booking.agencyPhone ? ` · ${booking.agencyPhone}` : ""}
                     </p>
                   )}
                 </div>
@@ -917,7 +918,7 @@ export function SupplierBookingList({ bookings }: Props) {
               <div>
                 <h3 className="text-xl font-semibold text-slate-900">Detalle {selectedBooking.tourTitle}</h3>
                 <p className="mt-1 text-xs uppercase tracking-[0.3em] text-slate-500">
-                  {selectedBooking.bookingCode} Â· {selectedBooking.statusLabel ?? selectedBooking.status}
+                  {selectedBooking.bookingCode} · {selectedBooking.statusLabel ?? selectedBooking.status}
                 </p>
               </div>
               <button type="button" onClick={closeModal} className="text-slate-500">
@@ -939,7 +940,7 @@ export function SupplierBookingList({ bookings }: Props) {
               </div>
               <div className="space-y-1 text-sm text-slate-600">
                 <p>
-                  <span className="text-xs uppercase text-slate-500">LogÃ­stica</span>
+                  <span className="text-xs uppercase text-slate-500">Logística</span>
                   <br />
                   {selectedBooking.flowType === "transfer" && selectedBooking.tripType === "round-trip" ? (
                     <>
@@ -960,13 +961,13 @@ export function SupplierBookingList({ bookings }: Props) {
                   <span className="text-xs uppercase text-slate-500">Vuelo</span>
                   <br />
                   {selectedBooking.originAirport ?? "Origen pendiente"}
-                  {selectedBooking.flightNumber ? ` Â· ${selectedBooking.flightNumber}` : ""}
+                  {selectedBooking.flightNumber ? ` · ${selectedBooking.flightNumber}` : ""}
                 </p>
                 <p>
                   <span className="text-xs uppercase text-slate-500">Canal</span>
                   <br />
                   {selectedBooking.sourceLabel ?? (selectedBooking.agencyName ? "Agencia" : "Reserva directa")}
-                  {selectedBooking.agencyPhone ? ` Â· ${selectedBooking.agencyPhone}` : ""}
+                  {selectedBooking.agencyPhone ? ` · ${selectedBooking.agencyPhone}` : ""}
                 </p>
               </div>
             </div>
@@ -977,7 +978,7 @@ export function SupplierBookingList({ bookings }: Props) {
                 ${selectedBooking.totalAmount.toFixed(2)}
               </p>
               <p>
-                <span className="text-xs uppercase text-slate-500">ComisiÃ³n plataforma</span>
+                <span className="text-xs uppercase text-slate-500">Comisión plataforma</span>
                 <br />
                 ${selectedBooking.platformFee?.toFixed(2) ?? "0.00"}
               </p>
@@ -1025,13 +1026,13 @@ export function SupplierBookingList({ bookings }: Props) {
                 selectedBooking.notes.map((note) => (
                   <article key={`${selectedBooking.id}-${note.timestamp}-${note.author}`} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
                     <p className="text-[11px] text-slate-500">
-                      {new Date(note.timestamp).toLocaleString("es-ES")} Â· {note.author}
+                      {new Date(note.timestamp).toLocaleString("es-ES")} · {note.author}
                     </p>
                     <p className="text-sm text-slate-700">{note.message}</p>
                   </article>
                 ))
               ) : (
-                <p className="text-xs text-slate-500">No hay notas internas todavÃ­a.</p>
+                <p className="text-xs text-slate-500">No hay notas internas todavía.</p>
               )}
             </div>
           </div>

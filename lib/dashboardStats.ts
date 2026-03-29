@@ -80,7 +80,7 @@ export async function getSupplierDashboardMetrics(userId: string) {
 
   const baseFilter = { tourId: { in: tourIds } };
 
-  const [upcomingCount, paxTodaySum, cancellationsThisMonth, requestCount] = await Promise.all([
+  const [upcomingCount, paxTodaySum, cancellationsThisMonth, requestCount, publishedTours, draftTours, activeOffers, monthlyRevenue, latestUpcomingBooking] = await Promise.all([
     prisma.booking.count({
       where: {
         ...baseFilter,
@@ -112,14 +112,71 @@ export async function getSupplierDashboardMetrics(userId: string) {
         status: "CANCELLATION_REQUESTED",
         cancellationByRole: "SUPPLIER"
       }
+    }),
+    prisma.tour.count({
+      where: {
+        supplierId: supplier.id,
+        status: "published"
+      }
+    }),
+    prisma.tour.count({
+      where: {
+        supplierId: supplier.id,
+        status: { not: "published" }
+      }
+    }),
+    prisma.offer.count({
+      where: {
+        supplierId: supplier.id,
+        active: true
+      }
+    }),
+    prisma.booking.aggregate({
+      where: {
+        ...baseFilter,
+        travelDate: { gte: start, lt: end },
+        status: { in: confirmedStatuses }
+      },
+      _sum: {
+        supplierAmount: true,
+        totalAmount: true
+      }
+    }),
+    prisma.booking.findFirst({
+      where: {
+        ...baseFilter,
+        travelDate: { gte: now },
+        status: { in: ["CONFIRMED", "CANCELLATION_REQUESTED"] }
+      },
+      orderBy: [{ travelDate: "asc" }, { createdAt: "asc" }],
+      select: {
+        bookingCode: true,
+        customerName: true,
+        travelDate: true,
+        startTime: true,
+        Tour: {
+          select: {
+            title: true
+          }
+        }
+      }
     })
   ]);
 
   return {
+    supplierId: supplier.id,
+    company: supplier.company,
+    approved: supplier.approved,
     upcomingBookings: upcomingCount,
     paxToday: (paxTodaySum._sum.paxAdults ?? 0) + (paxTodaySum._sum.paxChildren ?? 0),
     cancellationsThisMonth,
-    cancellationRequests: requestCount
+    cancellationRequests: requestCount,
+    publishedTours,
+    draftTours,
+    activeOffers,
+    supplierRevenueThisMonth: monthlyRevenue._sum.supplierAmount ?? 0,
+    grossSalesThisMonth: monthlyRevenue._sum.totalAmount ?? 0,
+    latestUpcomingBooking
   };
 }
 
