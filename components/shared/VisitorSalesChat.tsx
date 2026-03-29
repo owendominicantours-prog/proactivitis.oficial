@@ -3,6 +3,7 @@
 import { ExternalLink, MessageCircle, Minimize2, Send } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 
@@ -200,7 +201,14 @@ export default function VisitorSalesChat() {
                         {!message.mine && <p className="mb-1 text-[10px] font-semibold uppercase text-slate-500">{message.senderName}</p>}
                         <div className="flex items-center gap-2">
                           {tourCard.image ? (
-                            <img src={tourCard.image} alt={tourCard.title} className="h-14 w-20 rounded-lg object-cover" />
+                            <Image
+                              src={tourCard.image}
+                              alt={tourCard.title}
+                              width={80}
+                              height={56}
+                              className="h-14 w-20 rounded-lg object-cover"
+                              sizes="80px"
+                            />
                           ) : (
                             <div className="h-14 w-20 rounded-lg bg-slate-200" />
                           )}

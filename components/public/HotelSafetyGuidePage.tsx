@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { translate, type Locale, type TranslationKey } from "@/lib/translations";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 import { SAFETY_GUIDE_BASE_PATH, SAFETY_GUIDE_SLUG_SUFFIX } from "@/lib/safety-guide";
@@ -95,8 +96,14 @@ export default function HotelSafetyGuidePage({
             </div>
             <p className="mt-4 text-xs text-slate-500">{t("safetyGuide.hero.urlLabel")}</p>
           </div>
-          <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-slate-100">
-            <img src={heroImage} alt={hotel.name} className="h-full w-full object-cover" />
+          <div className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-slate-100">
+            <Image
+              src={heroImage}
+              alt={hotel.name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 40vw"
+            />
           </div>
         </div>
       </section>
@@ -234,8 +241,14 @@ export default function HotelSafetyGuidePage({
                       href={`${localePrefix}/tours/${tour.slug}`}
                       className="flex h-full flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-sm transition hover:border-slate-400"
                     >
-                      <div className="h-40 w-full overflow-hidden bg-slate-100">
-                        <img src={image} alt={tour.title} className="h-full w-full object-cover" />
+                      <div className="relative h-40 w-full overflow-hidden bg-slate-100">
+                        <Image
+                          src={image}
+                          alt={tour.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                        />
                       </div>
                       <div className="flex flex-1 flex-col gap-2 p-4 text-sm text-slate-700">
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
@@ -265,11 +278,13 @@ export default function HotelSafetyGuidePage({
                     href={`${localePrefix}/transfer/${TRANSFER_LANDING_PREFIX}${transferHotel.slug}`}
                     className="flex h-full flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-sm transition hover:border-slate-400"
                   >
-                    <div className="h-40 w-full overflow-hidden bg-slate-100">
-                      <img
+                    <div className="relative h-40 w-full overflow-hidden bg-slate-100">
+                      <Image
                         src={transferHotel.heroImage ?? FALLBACK_TRANSFER_IMAGE}
                         alt={transferHotel.name}
-                        className="h-full w-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 33vw"
                       />
                     </div>
                     <div className="flex flex-1 flex-col gap-2 p-4 text-sm text-slate-700">

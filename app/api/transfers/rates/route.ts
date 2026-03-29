@@ -43,5 +43,7 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.json({ rates: defaultRates });
+  const response = NextResponse.json({ rates: defaultRates });
+  response.headers.set("Cache-Control", "public, s-maxage=900, stale-while-revalidate=3600");
+  return response;
 }

@@ -1,5 +1,6 @@
 ﻿import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { landingPages, countryToPuntaCanaLandingSlugs, keywordIntentSalesLandingSlugs } from "@/lib/landing";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 import StructuredData from "@/components/schema/StructuredData";
@@ -331,8 +332,14 @@ export default async function LandingPage({ params }: Params) {
                     href={`/tours/${tour.slug}`}
                     className="block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                   >
-                    <div className="h-40 w-full">
-                      <img src={resolveTourImage(tour.heroImage, tour.gallery)} alt={tour.title} className="h-full w-full object-cover" />
+                    <div className="relative h-40 w-full">
+                      <Image
+                        src={resolveTourImage(tour.heroImage, tour.gallery)}
+                        alt={tour.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                      />
                     </div>
                     <div className="space-y-2 p-4">
                       <h3 className="line-clamp-2 text-base font-semibold text-slate-900">{tour.title}</h3>
@@ -370,8 +377,14 @@ export default async function LandingPage({ params }: Params) {
                     href={`/hoteles/${hotel.slug}`}
                     className="block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                   >
-                    <div className="h-40 w-full">
-                      <img src={hotel.heroImage || "/transfer/mini van.png"} alt={hotel.name} className="h-full w-full object-cover" />
+                    <div className="relative h-40 w-full">
+                      <Image
+                        src={hotel.heroImage || "/transfer/mini van.png"}
+                        alt={hotel.name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                      />
                     </div>
                     <div className="space-y-2 p-4">
                       <h3 className="line-clamp-2 text-base font-semibold text-slate-900">{hotel.name}</h3>
@@ -418,12 +431,13 @@ export default async function LandingPage({ params }: Params) {
                     href={`/transfer/${transfer.landingSlug}`}
                     className="group block overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-card transition-transform duration-300 hover:-translate-y-2"
                   >
-                    <div className="relative">
-                      <div
-                        className="aspect-[4/3] w-full bg-cover bg-center"
-                        style={{ backgroundImage: `url(${transfer.heroImage || "/transfer/mini van.png"})` }}
-                        role="img"
-                        aria-label={transfer.heroImageAlt || transfer.hotelName}
+                    <div className="relative aspect-[4/3] w-full">
+                      <Image
+                        src={transfer.heroImage || "/transfer/mini van.png"}
+                        alt={transfer.heroImageAlt || transfer.hotelName}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 33vw"
                       />
                       <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
                         <span className="rounded-full border border-white/80 bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-500 shadow">

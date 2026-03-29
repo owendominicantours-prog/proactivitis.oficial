@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Locale, translate } from "@/lib/translations";
 
 type TourSearchItem = {
@@ -124,7 +125,14 @@ export default function HomeTourSearch({ locale, tours }: Props) {
                       >
                         <div className="h-12 w-14 overflow-hidden rounded-lg bg-slate-200">
                           {tour.image ? (
-                            <img src={tour.image} alt={tour.title} className="h-full w-full object-cover" />
+                            <Image
+                              src={tour.image}
+                              alt={tour.title}
+                              width={56}
+                              height={48}
+                              className="h-full w-full object-cover"
+                              sizes="56px"
+                            />
                           ) : null}
                         </div>
                         <div className="min-w-0">

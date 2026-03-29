@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     include: { zone: true }
   });
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     locations: locations.map((location) => ({
       id: location.id,
       name: location.name,
@@ -33,4 +33,12 @@ export async function GET(request: NextRequest) {
       zoneName: location.zone?.name ?? null
     }))
   });
+
+  response.headers.set(
+    "Cache-Control",
+    query
+      ? "public, s-maxage=120, stale-while-revalidate=600"
+      : "public, s-maxage=600, stale-while-revalidate=3600"
+  );
+  return response;
 }
