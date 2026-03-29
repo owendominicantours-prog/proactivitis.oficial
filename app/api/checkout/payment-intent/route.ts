@@ -301,7 +301,12 @@ export async function POST(request: NextRequest) {
     .filter(Boolean)
     .join(" · ");
 
-  const tripType = payload.tripType === "round-trip" ? "round-trip" : "one-way";
+  const tripType =
+    payload.flowType === "transfer"
+      ? payload.tripType === "round-trip"
+        ? "round-trip"
+        : "one-way"
+      : null;
   const returnTrip =
     tripType === "round-trip"
       ? parseDateTimeParts(payload.returnDatetime)
@@ -405,7 +410,7 @@ export async function POST(request: NextRequest) {
       originAirport: payload.origin ?? payload.originHotelName ?? undefined,
       pickupNotes: pickupNotes || undefined,
       startTime,
-      tripType,
+      tripType: tripType ?? undefined,
       returnTravelDate: returnTrip.travelDate ?? undefined,
       returnStartTime: returnTrip.startTime ?? undefined,
       totalAmount: finalTotalAmount,

@@ -19,6 +19,7 @@ type BookingPresentationInput = {
 export type BookingServiceKind = "transfer" | "activity";
 
 export function getBookingServiceKind(input: BookingPresentationInput): BookingServiceKind {
+  if (input.flowType === "tour") return "activity";
   if (input.flowType === "transfer") return "transfer";
   if (input.originAirport || input.flightNumber) return "transfer";
   if (input.tripType === "round-trip" || input.tripType === "one-way") return "transfer";
