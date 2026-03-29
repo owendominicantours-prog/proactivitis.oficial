@@ -131,6 +131,12 @@ export type PremiumTransferContentOverrides = {
   vipCertifications?: string[];
 };
 
+export type AgencyTutorialLandingOverrides = {
+  screenshotPrimary?: string;
+  screenshotSecondary?: string;
+  screenshotTertiary?: string;
+};
+
 export type HotelLandingOverrides = {
   seoTitle?: string;
   seoDescription?: string;
@@ -594,6 +600,24 @@ export const getPremiumTransferContentOverrides = async (
   } catch (error) {
     warnOnce("site-content-premium-transfer-fallback", "No se pudo cargar SiteContentSetting PREMIUM_TRANSFER_LANDING", error);
     return fallback;
+  }
+};
+
+export const getAgencyTutorialContentOverrides = async (): Promise<AgencyTutorialLandingOverrides> => {
+  try {
+    const sharedImages = await getSharedImageRegistry();
+    const record = await prisma.siteContentSetting.findUnique({
+      where: { key: "AGENCY_TUTORIAL_LANDING" }
+    });
+    if (!record?.content || typeof record.content !== "object") return {};
+    return resolveSharedImagesDeep(record.content as AgencyTutorialLandingOverrides, sharedImages);
+  } catch (error) {
+    warnOnce(
+      "site-content-agency-tutorial-fallback",
+      "No se pudo cargar SiteContentSetting AGENCY_TUTORIAL_LANDING",
+      error
+    );
+    return {};
   }
 };
 

@@ -7,7 +7,8 @@ import type {
   HomeContentOverrides,
   ContactContentOverrides,
   GlobalBannerOverrides,
-  PremiumTransferContentOverrides
+  PremiumTransferContentOverrides,
+  AgencyTutorialLandingOverrides
 } from "@/lib/siteContent";
 
 const allowedKeys = new Set<NotificationEmailKey>(notificationEmailDefaults.map((entry) => entry.key));
@@ -288,5 +289,22 @@ export async function updatePremiumTransferContentAction(formData: FormData) {
   revalidatePath("/punta-cana/premium-transfer-services");
   revalidatePath("/en/punta-cana/premium-transfer-services");
   revalidatePath("/fr/punta-cana/premium-transfer-services");
+  revalidatePath("/admin/settings");
+}
+
+export async function updateAgencyTutorialContentAction(formData: FormData) {
+  const payload: AgencyTutorialLandingOverrides = {
+    screenshotPrimary: readField(formData, "agency_tutorial_screenshot_primary"),
+    screenshotSecondary: readField(formData, "agency_tutorial_screenshot_secondary"),
+    screenshotTertiary: readField(formData, "agency_tutorial_screenshot_tertiary")
+  };
+
+  await prisma.siteContentSetting.upsert({
+    where: { key: "AGENCY_TUTORIAL_LANDING" },
+    update: { content: payload },
+    create: { key: "AGENCY_TUTORIAL_LANDING", content: payload }
+  });
+
+  revalidatePath("/agency-program");
   revalidatePath("/admin/settings");
 }

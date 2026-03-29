@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Users
 } from "lucide-react";
+import Link from "next/link";
 import PartnerRequestForm from "@/components/public/PartnerRequestForm";
 
 export const metadata = {
@@ -141,6 +142,12 @@ export default function AgencyPartnershipPage() {
               >
                 Registrar mi agencia
               </a>
+              <Link
+                href="/agency-program"
+                className="inline-flex items-center justify-center rounded-2xl border border-emerald-300 bg-emerald-50 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-emerald-700 transition hover:border-emerald-400 hover:bg-emerald-100"
+              >
+                Ver tutorial completo
+              </Link>
               <a
                 href="#agency-benefits"
                 className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-slate-700 transition hover:border-slate-400"

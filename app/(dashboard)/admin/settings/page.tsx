@@ -7,14 +7,20 @@ import type {
   ContactContentOverrides,
   GlobalBannerOverrides,
   HomeContentOverrides,
-  PremiumTransferContentOverrides
+  PremiumTransferContentOverrides,
+  AgencyTutorialLandingOverrides
 } from "@/lib/siteContent";
-import { getPremiumTransferContentOverrides, getSharedImageRegistry } from "@/lib/siteContent";
+import {
+  getAgencyTutorialContentOverrides,
+  getPremiumTransferContentOverrides,
+  getSharedImageRegistry
+} from "@/lib/siteContent";
 import HomeSettingsForm from "@/components/admin/HomeSettingsForm";
 import ContactSettingsForm from "@/components/admin/ContactSettingsForm";
 import GlobalBannerSettingsForm from "@/components/admin/GlobalBannerSettingsForm";
 import PremiumTransferSettingsForm from "@/components/admin/PremiumTransferSettingsForm";
 import CollapsibleSection from "@/components/admin/CollapsibleSection";
+import AgencyTutorialSettingsForm from "@/components/admin/AgencyTutorialSettingsForm";
 
 export default async function AdminSettingsPage() {
   const landingCount = await prisma.landingPage.count();
@@ -36,6 +42,12 @@ export default async function AdminSettingsPage() {
   const bannerContentMap = (bannerSetting?.content as Record<string, GlobalBannerOverrides> | null) ?? {};
   const premiumTransferContentMap =
     (premiumTransferSetting?.content as Record<string, PremiumTransferContentOverrides> | null) ?? {};
+  const agencyTutorialSetting = await prisma.siteContentSetting.findUnique({
+    where: { key: "AGENCY_TUTORIAL_LANDING" }
+  });
+  const agencyTutorialContent =
+    (agencyTutorialSetting?.content as AgencyTutorialLandingOverrides | null) ??
+    (await getAgencyTutorialContentOverrides());
   const sharedImagesMap = await getSharedImageRegistry();
   const sharedImagesText = Object.entries(sharedImagesMap)
     .map(([key, value]) => `${key}|${value}`)
@@ -330,6 +342,13 @@ export default async function AdminSettingsPage() {
         description="Edicion por idioma de banner, home, contacto y landing premium de transfer."
         defaultOpen={false}
       >
+        <AgencyTutorialSettingsForm
+          defaults={{
+            screenshotPrimary: agencyTutorialContent.screenshotPrimary ?? "",
+            screenshotSecondary: agencyTutorialContent.screenshotSecondary ?? "",
+            screenshotTertiary: agencyTutorialContent.screenshotTertiary ?? ""
+          }}
+        />
         <GlobalBannerSettingsForm locales={locales} defaultsByLocale={bannerDefaults} />
         <PremiumTransferSettingsForm locales={locales} defaultsByLocale={premiumTransferDefaults} />
         <HomeSettingsForm locales={locales} defaultsByLocale={homeDefaults} />
