@@ -43,6 +43,28 @@ export default async function CustomerPublicReservationsPage() {
         include: {
           SupplierProfile: true
         }
+      },
+      User: {
+        include: {
+          AgencyProfile: true,
+          PartnerApplication: {
+            orderBy: { updatedAt: "desc" },
+            take: 1
+          }
+        }
+      },
+      AgencyProLink: {
+        include: {
+          AgencyUser: {
+            include: {
+              AgencyProfile: true,
+              PartnerApplication: {
+                orderBy: { updatedAt: "desc" },
+                take: 1
+              }
+            }
+          }
+        }
       }
     },
     orderBy: { travelDate: "asc" }
@@ -71,7 +93,27 @@ export default async function CustomerPublicReservationsPage() {
               Aún no tienes reservas. Explora los tours disponibles y únete a una experiencia.
             </div>
           )}
-          {bookings.map((booking) => (
+          {bookings.map((booking) => {
+            const agencyUser = booking.AgencyProLink?.AgencyUser ?? (booking.source === "AGENCY" ? booking.User : null);
+            const agencyApplication = agencyUser?.PartnerApplication?.[0] ?? null;
+            const agencyName =
+              agencyUser
+                ? agencyUser.AgencyProfile?.companyName ?? agencyApplication?.companyName ?? agencyUser.name ?? "Agencia"
+                : null;
+            const agencyPhone = agencyApplication?.phone ?? null;
+            const bookingTripType = (booking as any).tripType as string | null | undefined;
+            const bookingReturnTravelDate = (booking as any).returnTravelDate as Date | null | undefined;
+            const bookingReturnStartTime = (booking as any).returnStartTime as string | null | undefined;
+            const returnDateLabel = bookingReturnTravelDate
+              ? bookingReturnTravelDate.toLocaleDateString("es-ES", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric"
+                })
+              : null;
+            const originDestination = `${booking.originAirport ?? "Pendiente"} / ${booking.hotel ?? booking.pickup ?? "Pendiente"}`;
+
+            return (
             <article key={booking.id} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex flex-wrap items-start gap-4">
                 <div className="h-20 w-20 overflow-hidden rounded-2xl bg-slate-100">
@@ -90,7 +132,7 @@ export default async function CustomerPublicReservationsPage() {
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{booking.bookingCode ?? booking.id.slice(0, 8).toUpperCase()}</p>
                   <h2 className="text-xl font-semibold text-slate-900">{booking.Tour?.title ?? "Tour"}</h2>
                   <p className="text-sm text-slate-500">
                     {booking.travelDate.toLocaleDateString("es-DO")} {booking.startTime ? `- ${booking.startTime}` : ""}
@@ -104,6 +146,52 @@ export default async function CustomerPublicReservationsPage() {
                 <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600">
                   {statusMessages[booking.status as BookingStatus] ?? booking.status}
                 </span>
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resumen operativo</p>
+                <div className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pasajero principal</p>
+                    <p className="text-sm font-semibold text-slate-900">{booking.customerName ?? "Pendiente"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de ida</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {booking.travelDate.toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de regreso</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {returnDateLabel ?? "No aplica"}
+                      {bookingReturnStartTime ? ` · ${bookingReturnStartTime}` : ""}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Origen / destino</p>
+                    <p className="text-sm font-semibold text-slate-900">{originDestination}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Agencia</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {agencyName ?? "Reserva directa"}
+                      {agencyPhone ? ` · ${agencyPhone}` : ""}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Códigos internos</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {(booking.bookingCode ?? booking.id)} · {booking.id.slice(0, 8).toUpperCase()}
+                    </p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Servicios incluidos</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {booking.Tour?.includes ?? booking.pickupNotes ?? "Servicio confirmado y coordinado con el operador"}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
@@ -160,13 +248,20 @@ export default async function CustomerPublicReservationsPage() {
                     id: booking.id,
                     travelDate: booking.travelDate,
                     startTime: booking.startTime,
+                    tripType: bookingTripType ?? undefined,
+                    returnTravelDate: bookingReturnTravelDate ?? undefined,
+                    returnStartTime: bookingReturnStartTime ?? undefined,
                     totalAmount: booking.totalAmount,
                     paxAdults: booking.paxAdults,
                     paxChildren: booking.paxChildren,
                     customerName: booking.customerName,
                     customerEmail: booking.customerEmail,
                     pickupNotes: booking.pickupNotes,
-                    hotel: booking.hotel
+                    hotel: booking.hotel,
+                    originAirport: booking.originAirport,
+                    flightNumber: booking.flightNumber,
+                    agencyName,
+                    agencyPhone
                   }}
                   tour={{
                     id: booking.Tour?.id ?? "",
@@ -181,7 +276,7 @@ export default async function CustomerPublicReservationsPage() {
                 />
               </div>
             </article>
-          ))}
+          )})}
         </section>
       </div>
     </div>
