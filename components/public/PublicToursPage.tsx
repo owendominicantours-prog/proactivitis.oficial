@@ -154,7 +154,7 @@ type DestinationOption = Prisma.DestinationGetPayload<{
   select: {
     name: true;
     slug: true;
-    country: { select: { slug: true } };
+    country: { select: { slug: true; name: true } };
   };
 }>;
 
@@ -227,7 +227,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
       select: {
         name: true,
         slug: true,
-        country: { select: { slug: true } }
+        country: { select: { slug: true, name: true } }
       }
     });
   } catch (error) {
@@ -736,7 +736,10 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
             </p>
             <h2 className="text-3xl font-semibold text-slate-900">{t("tours.destinations.heading")}</h2>
           </div>
-          <Link href="/destinations" className="text-sm font-semibold text-slate-600 underline transition hover:text-slate-900">
+          <Link
+            href={locale === "es" ? "/destinations" : `/${locale}/destinations`}
+            className="text-sm font-semibold text-slate-600 underline transition hover:text-slate-900"
+          >
             {t("tours.destinations.cta")}
           </Link>
           </div>
@@ -744,19 +747,27 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
             {destinations.slice(0, 6).map((dest) => (
               <Link
                 key={dest.slug}
-                href={`/destinations/${dest.country.slug}/${dest.slug}`}
+                href={`${locale === "es" ? "" : `/${locale}`}/destinations/${dest.country.slug}/${dest.slug}`}
                 className="group rounded-2xl border border-slate-200 bg-slate-50 p-6 transition hover:border-sky-500 hover:bg-white"
               >
-                <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Desde {dest.country.slug}</div>
+                <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                  {locale === "es" ? "Desde" : locale === "fr" ? "Depuis" : "From"} {dest.country.name}
+                </div>
                 <h3 className="mt-2 text-xl font-bold text-slate-900">{dest.name}</h3>
-                <p className="mt-1 text-sm text-slate-600">{t("tours.destinations.description")}</p>
+                <p className="mt-1 text-sm text-slate-600">
+                  {locale === "es"
+                    ? "Explora tours y experiencias conectadas con esta zona."
+                    : locale === "fr"
+                      ? "Explorez les excursions et experiences liees a cette zone."
+                      : "Explore tours and experiences connected to this area."}
+                </p>
                 <span className="mt-4 inline-flex items-center text-sm font-semibold text-sky-600">
-                  {t("tours.destinations.link")}
+                  {locale === "es" ? "Ver tours" : locale === "fr" ? "Voir les excursions" : "See tours"}
                 </span>
               </Link>
             ))}
-            <p className="mt-6 text-sm text-slate-500">{t("tours.destinations.footer")}</p>
           </div>
+          <p className="mt-6 text-sm text-slate-500">{t("tours.destinations.footer")}</p>
         </div>
       </section>
     </div>
