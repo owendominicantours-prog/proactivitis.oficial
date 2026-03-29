@@ -77,6 +77,9 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
   const [showToast, setShowToast] = useState(false);
   const toastTimeoutRef = useRef<number | null>(null);
   const { t } = useTranslation();
+  const inputClassName =
+    "mt-1 w-full rounded-xl border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-500 focus:border-slate-900 focus:outline-none";
+  const labelClassName = "text-xs font-semibold uppercase tracking-[0.3em] text-slate-700";
 
   const hasServices = useMemo(() => selectedServices.length > 0, [selectedServices]);
 
@@ -235,20 +238,20 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
       <form
         id={id}
         onSubmit={handleSubmit}
-        className="glass-card space-y-6 border border-white/40 p-8 shadow-xl tracking-tight"
+        className="glass-card space-y-6 border border-slate-300 bg-white/95 p-8 shadow-xl tracking-tight"
       >
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-700">
             {role === "SUPPLIER" ? t("partner.form.title.supplier") : t("partner.form.title.agency")}
           </p>
           {subtitle ? <p className="mt-1 text-lg font-semibold text-slate-900">{subtitle}</p> : null}
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white/80 p-4">
+        <div className="rounded-2xl border border-slate-300 bg-white p-4">
           <p className="text-sm font-semibold text-slate-900">
             Tambien puedes entrar con Google y luego completar esta solicitud con el mismo correo.
           </p>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-slate-700">
             La aprobacion comercial de agencias y suplidores sigue siendo manual para proteger tu portal.
           </p>
           <div className="mt-3">
@@ -262,13 +265,13 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
         <div className="grid gap-4 md:grid-cols-2">
           {fieldDefinitions.map((field) => (
             <label key={field.labelKey} className="block">
-              <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{t(field.labelKey)}</span>
+              <span className={labelClassName}>{t(field.labelKey)}</span>
               {field.isSelect ? (
                 <select
                   value={country}
                   onChange={(event) => field.setter(event.target.value)}
                   required
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+                  className={inputClassName}
                 >
                   {countryOptions.map((option) => (
                     <option value={option.value} key={option.value}>
@@ -282,71 +285,71 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
                   value={field.value}
                   onChange={(event) => field.setter(event.target.value)}
                   required
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+                  className={inputClassName}
                 />
               )}
             </label>
           ))}
           <label className="block">
-            <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("partner.form.website.label")}</span>
+            <span className={labelClassName}>{t("partner.form.website.label")}</span>
             <input
               value={website}
               onChange={(event) => setWebsite(event.target.value)}
-              className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+              className={inputClassName}
               placeholder={t("partner.form.website.placeholder")}
             />
           </label>
         </div>
         <label className="block relative">
-          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("partner.form.field.password")}</span>
+          <span className={labelClassName}>{t("partner.form.field.password")}</span>
           <input
             type={showPassword ? "text" : "password"}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
-            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+            className={inputClassName}
           />
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-3 top-8 text-[0.65rem] uppercase tracking-[0.3em] text-slate-500"
+            className="absolute right-3 top-8 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-slate-700"
           >
             {showPassword ? t("partner.form.toggle.hide") : t("partner.form.toggle.show")}
           </button>
         </label>
         <label className="block relative">
-          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("partner.form.field.confirmPassword")}</span>
+          <span className={labelClassName}>{t("partner.form.field.confirmPassword")}</span>
           <input
             type={showConfirmPassword ? "text" : "password"}
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
             required
-            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+            className={inputClassName}
           />
           <button
             type="button"
             onClick={() => setShowConfirmPassword((prev) => !prev)}
-            className="absolute right-3 top-8 text-[0.65rem] uppercase tracking-[0.3em] text-slate-500"
+            className="absolute right-3 top-8 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-slate-700"
           >
             {showConfirmPassword ? t("partner.form.toggle.hide") : t("partner.form.toggle.show")}
           </button>
         </label>
 
         <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+          <p className={labelClassName}>
             {t("partner.form.services.label")}
           </p>
-          <p className="text-sm text-slate-500">{t("partner.form.services.hint")}</p>
+          <p className="text-sm text-slate-700">{t("partner.form.services.hint")}</p>
           <div className="flex flex-wrap gap-2">
             {serviceOptions.map((option) => (
               <button
                 type="button"
                 key={option.value}
                 onClick={() => handleServiceToggle(option.value)}
-                className={`rounded-full border px-4 py-1 text-sm ${
+                className={`rounded-full border px-4 py-1 text-sm font-semibold ${
                   selectedServices.includes(option.value)
-                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                    : "border-slate-200 bg-white text-slate-600"
+                    ? "border-slate-900 bg-slate-900 text-white"
+                    : "border-slate-400 bg-white text-slate-800"
                 }`}
               >
                 {t(option.labelKey)}
@@ -356,26 +359,26 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
         </div>
 
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("partner.form.description.label")}</span>
+          <span className={labelClassName}>{t("partner.form.description.label")}</span>
           <textarea
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             required
             rows={4}
-            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+            className={inputClassName}
           />
         </label>
 
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("partner.form.file.label")}</span>
+          <span className={labelClassName}>{t("partner.form.file.label")}</span>
           <input
             type="file"
-            className="mt-1"
+            className="mt-1 w-full rounded-xl border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm file:mr-3 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
             accept=".pdf,.doc,.docx,.zip,.png,.jpg,.jpeg"
             onChange={handleFileChange}
           />
-          <p className="mt-1 text-xs text-slate-500">{t("partner.form.file.hint")}</p>
-          {file && <p className="mt-1 text-xs text-slate-500">{t("partner.form.file.ready", { fileName: file.name })}</p>}
+          <p className="mt-1 text-xs text-slate-700">{t("partner.form.file.hint")}</p>
+          {file && <p className="mt-1 text-xs font-medium text-slate-800">{t("partner.form.file.ready", { fileName: file.name })}</p>}
         </label>
 
         <div className="flex flex-col gap-2">
@@ -393,7 +396,7 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
               t("partner.form.submit")
             )}
           </button>
-          {message ? <p className="text-sm text-rose-500">{message}</p> : null}
+          {message ? <p className="text-sm font-medium text-rose-700">{message}</p> : null}
         </div>
       </form>
     </div>
