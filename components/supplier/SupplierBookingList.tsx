@@ -342,7 +342,10 @@ export function SupplierBookingList({ bookings }: Props) {
   };
 
   const handleCopyDetails = (booking: SupplierBookingSummary) => {
-    const text = `Reserva ${booking.bookingCode} Â· ${booking.tourTitle} Â· ${booking.customerName ?? "Cliente"} Â· ${booking.hotel ?? booking.pickup ?? "Pickup pendiente"} Â· ${booking.startTime ?? "Hora por confirmar"}`;
+    const text =
+      booking.flowType === "transfer" && booking.tripType === "round-trip"
+        ? `Reserva ${booking.bookingCode} Â· ${booking.tourTitle} Â· ${booking.customerName ?? "Cliente"} Â· Ida: ${booking.pickup ?? "Pickup pendiente"} ${booking.startTime ?? "Hora por confirmar"} Â· Regreso: ${booking.hotel ?? "Pendiente"} ${booking.returnTravelDate ? new Date(booking.returnTravelDate).toLocaleDateString("es-ES") : "Fecha pendiente"}${booking.returnStartTime ? ` ${booking.returnStartTime}` : ""}`
+        : `Reserva ${booking.bookingCode} Â· ${booking.tourTitle} Â· ${booking.customerName ?? "Cliente"} Â· ${booking.hotel ?? booking.pickup ?? "Pickup pendiente"} Â· ${booking.startTime ?? "Hora por confirmar"}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text);
     } else {
@@ -361,6 +364,11 @@ export function SupplierBookingList({ bookings }: Props) {
         <p><strong>Cliente:</strong> ${booking.customerName ?? "Invitado"}</p>
         <p><strong>Pickup:</strong> ${booking.hotel ?? booking.pickup ?? "Pendiente"}</p>
         <p><strong>Hora:</strong> ${booking.startTime ?? "Pendiente"}</p>
+        ${
+          booking.flowType === "transfer" && booking.tripType === "round-trip"
+            ? `<p><strong>Regreso:</strong> ${booking.hotel ?? "Pendiente"} · ${booking.returnTravelDate ? new Date(booking.returnTravelDate).toLocaleDateString("es-ES") : "Fecha pendiente"}${booking.returnStartTime ? ` · ${booking.returnStartTime}` : ""}</p>`
+            : ""
+        }
       </div>
     `;
     const printWindow = window.open("", "_blank");
@@ -377,9 +385,15 @@ export function SupplierBookingList({ bookings }: Props) {
   const handleSendToDriver = (booking: SupplierBookingSummary) => {
     if (typeof window === "undefined") return;
     const phone = booking.whatsappNumber?.replace(/\D/g, "") ?? "18093949877";
-    const message = encodeURIComponent(
-      `Pickup: ${booking.hotel ?? booking.pickup ?? "Pendiente"} Â· ${booking.startTime ?? "Hora por confirmar"} Â· ${booking.customerName ?? "Cliente"}`
-    );
+    const rawMessage =
+      booking.flowType === "transfer" && booking.tripType === "round-trip"
+        ? `Reserva ${booking.bookingCode}\nCliente: ${booking.customerName ?? "Cliente"}\nIda: ${booking.pickup ?? "Pendiente"} · ${booking.startTime ?? "Hora por confirmar"}\nRegreso: ${booking.hotel ?? "Pendiente"} · ${
+            booking.returnTravelDate
+              ? new Date(booking.returnTravelDate).toLocaleDateString("es-ES")
+              : "Fecha pendiente"
+          }${booking.returnStartTime ? ` · ${booking.returnStartTime}` : ""}\nVehículo: ${booking.transferVehicleName ?? "Pendiente"}`
+        : `Reserva ${booking.bookingCode}\nCliente: ${booking.customerName ?? "Cliente"}\nPickup: ${booking.hotel ?? booking.pickup ?? "Pendiente"} · ${booking.startTime ?? "Hora por confirmar"}\nVehículo: ${booking.transferVehicleName ?? "Pendiente"}`;
+    const message = encodeURIComponent(rawMessage);
     window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
     addFeedback(booking.id, "Mensaje enviado al chofer.");
   };
