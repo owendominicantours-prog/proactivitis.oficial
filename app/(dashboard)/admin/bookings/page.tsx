@@ -63,7 +63,7 @@ const statusLabelMap: Record<string, string> = {
   PENDING: "Pendiente",
   CONFIRMED: "Confirmada",
   PAYMENT_PENDING: "Pago pendiente",
-  CANCELLATION_REQUESTED: "CancelaciÃ³n solicitada",
+  CANCELLATION_REQUESTED: "Cancelación solicitada",
   CANCELLED: "Cancelada",
   COMPLETED: "Completada"
 };
@@ -76,9 +76,9 @@ const sourceLabelMap: Record<string, string> = {
 };
 
 const paymentStatusLabelMap: Record<string, string> = {
-  requires_payment_method: "Falta mÃ©todo de pago",
-  requires_confirmation: "Pendiente de confirmaciÃ³n",
-  requires_action: "Requiere acciÃ³n del cliente",
+  requires_payment_method: "Falta método de pago",
+  requires_confirmation: "Pendiente de confirmación",
+  requires_action: "Requiere acción del cliente",
   processing: "Pago en proceso",
   succeeded: "Pago confirmado",
   canceled: "Pago cancelado"
@@ -104,8 +104,8 @@ const PAGE_SIZE = 20;
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: "today", label: "Hoy" },
-  { key: "tomorrow", label: "MaÃ±ana" },
-  { key: "upcoming", label: "PrÃ³ximos" },
+  { key: "tomorrow", label: "Mañana" },
+  { key: "upcoming", label: "Próximos" },
   { key: "past", label: "Pasados" },
   { key: "payment", label: "Pendientes de pago" }
 ];
@@ -176,14 +176,14 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     const notificationStatus =
       typeof metadata?.status === "string" ? formatStatusLabel(metadata.status) : null;
     const entry: TimelineEntry = {
-      title: notification.title ?? "ActualizaciÃ³n",
+      title: notification.title ?? "Actualización",
       description: notification.message ?? notification.body ?? "Sin detalle adicional",
       timestamp: notification.createdAt.toISOString()
     };
     if (notification.type === "ADMIN_BOOKING_MODIFIED") {
       entry.title = "Estado de la reserva";
       entry.description = notificationStatus
-        ? `La reserva pasÃ³ a ${notificationStatus}.`
+        ? `La reserva pasó a ${notificationStatus}.`
         : entry.description;
     }
     timelineMap[notification.bookingId] = timelineMap[notification.bookingId] ?? [];
@@ -220,7 +220,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     }
     if (booking.cancellationReason) {
       baseTimeline.push({
-        title: "Solicitud de cancelaciÃ³n",
+        title: "Solicitud de cancelación",
         description: booking.cancellationReason,
         timestamp: booking.cancellationAt?.toISOString() ?? booking.updatedAt?.toISOString() ?? booking.createdAt.toISOString()
       });
@@ -294,7 +294,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   const orderParam = (getParam("order") as "created" | "travel") ?? "created";
 
   const uniqueTours = Array.from(
-    new Set(bookings.map((booking) => booking.Tour?.title ?? "Tour sin tÃ­tulo"))
+    new Set(bookings.map((booking) => booking.Tour?.title ?? "Tour sin título"))
   ).sort();
 
   const now = new Date();
@@ -422,10 +422,10 @@ export default async function AdminBookingsPage({ searchParams }: any) {
         <section className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-700">Ãšltima reserva</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-700">Última reserva</p>
               <p className="text-lg font-semibold text-slate-900">{latestBooking.tourTitle}</p>
               <p className="text-sm text-slate-600">
-                {latestBooking.customerName} Â· {latestBooking.bookingCode}
+                {latestBooking.customerName} · {latestBooking.bookingCode}
               </p>
             </div>
             <a
@@ -442,10 +442,10 @@ export default async function AdminBookingsPage({ searchParams }: any) {
         <DashboardMetric label="Pendientes de pago" value={summary.pendientesPago} />
         <DashboardMetric label="Total pax hoy" value={summary.totalPaxHoy} />
         <DashboardMetric
-          label="PrÃ³xima salida"
+          label="Próxima salida"
           value={summary.nextDepartureMinutes !== null ? `en ${summary.nextDepartureMinutes} min` : "sin salidas"}
         />
-        <DashboardMetric label="Total dÃ­a" value={`$${summary.totalDelDia.toFixed(2)}`} />
+        <DashboardMetric label="Total día" value={`$${summary.totalDelDia.toFixed(2)}`} />
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -459,7 +459,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
               className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
             >
               <option value="today">Hoy</option>
-              <option value="tomorrow">MaÃ±ana</option>
+              <option value="tomorrow">Mañana</option>
               <option value="week">Semana</option>
               <option value="range">Rango</option>
             </select>
@@ -551,7 +551,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
               defaultValue={orderParam}
               className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
             >
-              <option value="created">Ãšltimas creadas</option>
+              <option value="created">Últimas creadas</option>
               <option value="travel">Fecha de salida</option>
             </select>
           </div>
@@ -616,24 +616,24 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                 day: "2-digit",
                 month: "long",
                 year: "numeric"
-              })}${booking.startTime ? ` Â· ${booking.startTime}` : ""}`;
+              })}${booking.startTime ? ` · ${booking.startTime}` : ""}`;
               const returnLabel = booking.returnTravelDate
                 ? `${new Date(booking.returnTravelDate).toLocaleDateString("es-ES", {
                     day: "2-digit",
                     month: "long",
                     year: "numeric"
-                  })}${booking.returnStartTime ? ` Â· ${booking.returnStartTime}` : ""}`
+                  })}${booking.returnStartTime ? ` · ${booking.returnStartTime}` : ""}`
                 : "No aplica";
               const routeOrigin = booking.originAirport ?? booking.pickup ?? booking.hotel ?? "Pendiente";
               const routeDestination = booking.hotel ?? booking.pickup ?? booking.tourTitle;
-              const serviceNotes = booking.tourIncludes ?? booking.pickupNotes ?? "Servicio confirmado con coordinaciÃ³n operativa y soporte.";
+              const serviceNotes = booking.tourIncludes ?? booking.pickupNotes ?? "Servicio confirmado con coordinación operativa y soporte.";
               const logisticsSummary = [
                 booking.tripType === "round-trip" ? "Ida y vuelta" : "Servicio principal",
                 booking.flightNumber ? `Vuelo ${booking.flightNumber}` : null,
                 formatTimeUntil(new Date(booking.travelDateValue))
               ]
                 .filter(Boolean)
-                .join(" Â· ");
+                .join(" · ");
 
               return (
                 <article
@@ -650,7 +650,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                       </p>
                       <h3 className="text-xl font-semibold text-slate-900">{booking.tourTitle}</h3>
                       <p className="text-sm text-slate-500">
-                        {booking.travelDate} Â· {booking.startTime ?? "Hora pendiente"} Â· {booking.pax} pax
+                        {booking.travelDate} · {booking.startTime ?? "Hora pendiente"} · {booking.pax} pax
                       </p>
                     </div>
                     <BookingStatusBadge status={booking.status} />
@@ -679,13 +679,13 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Agencia / canal</p>
                         <p className="text-sm font-semibold text-slate-900">
                           {booking.agencyName ?? formatSourceLabel(booking.source)}
-                          {booking.agencyPhone ? ` Â· ${booking.agencyPhone}` : ""}
+                          {booking.agencyPhone ? ` · ${booking.agencyPhone}` : ""}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">CÃ³digos internos</p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Códigos internos</p>
                         <p className="text-sm font-semibold text-slate-900">
-                          {booking.bookingCode} Â· {booking.id.slice(0, 8).toUpperCase()}
+                          {booking.bookingCode} · {booking.id.slice(0, 8).toUpperCase()}
                         </p>
                       </div>
                       <div className="md:col-span-2">
@@ -825,7 +825,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                             type="submit"
                             className="w-full rounded-md bg-rose-600 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
                           >
-                            Confirmar cancelaciÃ³n
+                            Confirmar cancelación
                           </button>
                         </form>
                       </div>
@@ -847,7 +847,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                           </div>
                         ))
                       ) : (
-                        <p className="text-xs text-slate-500">AÃºn no hay actividad registrada.</p>
+                        <p className="text-xs text-slate-500">Aún no hay actividad registrada.</p>
                       )}
                     </div>
                   </div>
@@ -865,7 +865,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                         booking.notes.map((note) => (
                           <article key={`${booking.id}-${note.timestamp}-${note.author}`} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
                             <p className="text-[11px] text-slate-500">
-                              {new Date(note.timestamp).toLocaleString("es-ES")} Â· {note.author}
+                              {new Date(note.timestamp).toLocaleString("es-ES")} · {note.author}
                             </p>
                             <p className="text-sm text-slate-700">{note.message}</p>
                           </article>
@@ -903,7 +903,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
         {sortedRows.length > PAGE_SIZE && (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
             <span>
-              PÃ¡gina {currentPage} de {totalPages}
+              Página {currentPage} de {totalPages}
             </span>
             <div className="flex gap-2">
               <a
@@ -938,7 +938,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
       <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Solicitudes de cancelaciÃ³n</h2>
+            <h2 className="text-lg font-semibold text-slate-900">Solicitudes de cancelación</h2>
             <p className="text-sm text-slate-500">Revisa lo que solicitaron las agencias o proveedores.</p>
           </div>
           <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Pendientes</span>
@@ -951,13 +951,13 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                   <div>
                     <p className="text-base font-semibold text-slate-900">{booking.tourTitle}</p>
                     <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                      {booking.travelDate} Â· {formatTimeUntil(new Date(booking.travelDateValue))}
+                      {booking.travelDate} · {formatTimeUntil(new Date(booking.travelDateValue))}
                     </p>
                   </div>
                   <BookingStatusBadge status="CANCELLATION_REQUESTED" />
                 </div>
                 <p className="text-xs text-slate-500">
-                  Solicitado por {booking.cancellationByRole ?? "Proveedor"} Â· Motivo: {booking.cancellationReason ?? "Sin motivo"}
+                  Solicitado por {booking.cancellationByRole ?? "Proveedor"} · Motivo: {booking.cancellationReason ?? "Sin motivo"}
                 </p>
                 <div className="flex flex-wrap gap-2 text-xs">
                   <form action={adminApproveCancellation} method="post" className="flex">
@@ -966,7 +966,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                       type="submit"
                       className="rounded-md bg-emerald-500 px-3 py-1 text-white hover:bg-emerald-600"
                     >
-                      Aprobar cancelaciÃ³n
+                      Aprobar cancelación
                     </button>
                   </form>
                   <form action={adminCancelBooking} method="post" className="flex">
