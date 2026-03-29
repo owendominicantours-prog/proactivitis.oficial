@@ -127,10 +127,15 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
             <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Fecha de ida</p>
             <p className="text-sm font-semibold text-slate-900">{arrivalDate}</p>
           </div>
-          <div className="space-y-1">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Fecha de regreso</p>
-            <p className="text-sm font-semibold text-slate-900">{returnDateLabel ?? "No aplica"}</p>
-          </div>
+          {booking.flowType === "transfer" && booking.tripType === "round-trip" ? (
+            <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Fecha de regreso</p>
+              <p className="text-sm font-semibold text-slate-900">
+                {returnDateLabel ?? "Pendiente"}
+                {booking.returnStartTime ? ` · ${booking.returnStartTime}` : ""}
+              </p>
+            </div>
+          ) : null}
           <div className="space-y-1">
             <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">{presentation.routeLabel}</p>
             <p className="text-sm font-semibold text-slate-900">{presentation.routeValue}</p>
@@ -207,7 +212,9 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
       </div>
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         <div className="space-y-1">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Hotel</p>
+          <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">
+            {booking.flowType === "transfer" && booking.tripType === "round-trip" ? "Pickup regreso" : "Hotel"}
+          </p>
           <p className="text-sm font-semibold text-slate-900">{booking.hotel ?? "No proporcionado"}</p>
         </div>
         <div className="space-y-1">
@@ -245,13 +252,16 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
           </p>
         </div>
       </div>
-      {booking.tripType === "round-trip" && (
+      {booking.flowType === "transfer" && booking.tripType === "round-trip" && (
         <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
           <p className="text-[10px] uppercase tracking-[0.4em] text-emerald-700">Datos del regreso</p>
           <div className="mt-2 grid gap-3 md:grid-cols-2">
             <p className="text-sm font-semibold text-slate-900">{returnDateLabel ?? "Fecha pendiente"}</p>
             <p className="text-sm font-semibold text-slate-900">{booking.returnStartTime ?? "Hora pendiente"}</p>
           </div>
+          <p className="mt-2 text-sm text-slate-700">
+            Recogida de regreso: <span className="font-semibold text-slate-900">{booking.hotel ?? "Pendiente"}</span>
+          </p>
         </div>
       )}
       <div className="mt-6 grid gap-4 md:grid-cols-2">

@@ -140,7 +140,11 @@ export default async function CustomerPublicReservationsPage() {
                   <div className="mt-3 flex flex-wrap gap-4 text-sm text-slate-600">
                     <p>Pax: {booking.paxAdults + booking.paxChildren}</p>
                     <p>Total: ${booking.totalAmount.toFixed(2)}</p>
-                    <p>Pickup: {booking.hotel ?? booking.pickup ?? "Por confirmar"}</p>
+                    <p>
+                      {booking.flowType === "transfer" && bookingTripType === "round-trip"
+                        ? `Pickup ida / regreso: ${booking.pickup ?? "Por confirmar"} · ${booking.hotel ?? "Por confirmar"}`
+                        : `Pickup: ${booking.hotel ?? booking.pickup ?? "Por confirmar"}`}
+                    </p>
                   </div>
                 </div>
                 <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -161,13 +165,15 @@ export default async function CustomerPublicReservationsPage() {
                       {booking.travelDate.toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de regreso</p>
-                    <p className="text-sm font-semibold text-slate-900">
-                      {returnDateLabel ?? "No aplica"}
-                      {bookingReturnStartTime ? ` · ${bookingReturnStartTime}` : ""}
-                    </p>
-                  </div>
+                  {booking.flowType === "transfer" && bookingTripType === "round-trip" ? (
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de regreso</p>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {returnDateLabel ?? "Pendiente"}
+                        {bookingReturnStartTime ? ` · ${bookingReturnStartTime}` : ""}
+                      </p>
+                    </div>
+                  ) : null}
                   <div>
                     <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Origen / destino</p>
                     <p className="text-sm font-semibold text-slate-900">{originDestination}</p>
@@ -248,6 +254,7 @@ export default async function CustomerPublicReservationsPage() {
                     id: booking.id,
                     travelDate: booking.travelDate,
                     startTime: booking.startTime,
+                    flowType: booking.flowType,
                     tripType: bookingTripType ?? undefined,
                     returnTravelDate: bookingReturnTravelDate ?? undefined,
                     returnStartTime: bookingReturnStartTime ?? undefined,

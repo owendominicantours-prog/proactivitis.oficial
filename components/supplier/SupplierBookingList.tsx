@@ -741,6 +741,15 @@ export function SupplierBookingList({ bookings }: Props) {
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.routeLabel}</p>
                   <p className="text-sm font-semibold text-slate-900">{booking.hotel ?? booking.pickup ?? "Pendiente"}</p>
                   <p className="text-xs text-slate-500">{presentation.logisticsValue || "Operación pendiente"}</p>
+                  {booking.flowType === "transfer" && booking.tripType === "round-trip" ? (
+                    <p className="text-xs text-slate-500">
+                      Regreso:{" "}
+                      {booking.returnTravelDate
+                        ? new Date(booking.returnTravelDate).toLocaleDateString("es-ES")
+                        : "Pendiente"}
+                      {booking.returnStartTime ? ` · ${booking.returnStartTime}` : ""}
+                    </p>
+                  ) : null}
                   {booking.transferVehicleName && (
                     <p className="text-xs text-slate-500">
                       Vehículo: {booking.transferVehicleName}
@@ -883,8 +892,13 @@ export function SupplierBookingList({ bookings }: Props) {
                 <p>
                   <span className="text-xs uppercase text-slate-500">LogÃ­stica</span>
                   <br />
-                  Pickup {selectedBooking.hotel ?? selectedBooking.pickup ?? "Pendiente"}, hora{" "}
-                  {selectedBooking.startTime ?? "Pendiente"}
+                  {selectedBooking.flowType === "transfer" && selectedBooking.tripType === "round-trip"
+                    ? `Pickup ida ${selectedBooking.pickup ?? "Pendiente"}, hora ${selectedBooking.startTime ?? "Pendiente"} · regreso ${selectedBooking.hotel ?? "Pendiente"} · ${
+                        selectedBooking.returnTravelDate
+                          ? new Date(selectedBooking.returnTravelDate).toLocaleDateString("es-ES")
+                          : "Pendiente"
+                      }${selectedBooking.returnStartTime ? ` · ${selectedBooking.returnStartTime}` : ""}`
+                    : `Pickup ${selectedBooking.hotel ?? selectedBooking.pickup ?? "Pendiente"}, hora ${selectedBooking.startTime ?? "Pendiente"}`}
                 </p>
                 <p>
                   <span className="text-xs uppercase text-slate-500">Vuelo</span>
