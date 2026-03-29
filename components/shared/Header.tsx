@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CSSProperties, ReactNode, useEffect, useState } from "react";
 
@@ -31,7 +31,7 @@ export const Header = ({
 
   return (
     <header className="border-b bg-white shadow-sm">
-      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:h-20 sm:px-6">
         <div className="flex min-w-0 items-center overflow-visible">
           <Link href="/" className="flex items-center">
             <Image
@@ -39,7 +39,7 @@ export const Header = ({
               alt="Proactivitis"
               width={200}
               height={60}
-              className="h-14 max-w-[190px] w-auto origin-left object-contain transition-transform md:h-12 md:max-w-none md:scale-[var(--logo-scale)]"
+              className="h-10 max-w-[150px] w-auto origin-left object-contain transition-transform sm:h-14 sm:max-w-[190px] md:h-12 md:max-w-none md:scale-[var(--logo-scale)]"
               style={{ "--logo-scale": logoScale } as CSSProperties}
             />
           </Link>
@@ -101,7 +101,7 @@ export const Header = ({
                 <span className="text-base leading-4">▾</span>
               </button>
               <div
-                className={`pointer-events-auto absolute left-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white shadow-lg transition duration-150 ${
+                className={`pointer-events-auto absolute left-0 z-50 mt-2 w-56 rounded-lg border border-slate-200 bg-white shadow-lg transition duration-150 ${
                   dropdownOpen ? "visible opacity-100" : "invisible opacity-0"
                 }`}
               >
@@ -123,7 +123,7 @@ export const Header = ({
           {rightSlot}
         </nav>
 
-        <div className="flex items-center gap-4 md:hidden">
+        <div className="flex items-center gap-3 md:hidden">
           <button
             type="button"
             className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-700"
@@ -131,7 +131,6 @@ export const Header = ({
           >
             Menú
           </button>
-          {rightSlot}
         </div>
       </div>
 
@@ -139,30 +138,43 @@ export const Header = ({
         className={`border-t border-slate-100 bg-white md:hidden ${mobileOpen ? "block" : "hidden"}`}
         aria-expanded={mobileOpen}
       >
-        <div className="flex flex-col gap-2 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
-              className="rounded-md px-3 py-2 transition hover:bg-slate-50 hover:text-slate-900"
-            >
-              {item.label}
-            </Link>
-          ))}
+        <div className="space-y-3 px-4 py-4">
+          {rightSlot ? (
+            <div className="border-b border-slate-100 pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">{rightSlot}</div>
+            </div>
+          ) : null}
+
+          <div className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className="rounded-xl px-3 py-3 transition hover:bg-slate-50 hover:text-slate-900"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+
           {dropdownNav ? (
-            <div className="mt-2 space-y-2">
-              <p className="px-3 text-[10px] tracking-[0.3em] text-slate-400">{dropdownNav.label}</p>
-              {dropdownNav.items.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="rounded-md px-3 py-2 transition hover:bg-slate-50 hover:text-slate-900"
-                >
-                  {item.label}
-                </Link>
-              ))}
+            <div className="space-y-2 border-t border-slate-100 pt-3">
+              <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400">
+                {dropdownNav.label}
+              </p>
+              <div className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
+                {dropdownNav.items.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-xl px-3 py-3 transition hover:bg-slate-50 hover:text-slate-900"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
           ) : null}
         </div>

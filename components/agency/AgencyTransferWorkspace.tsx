@@ -303,7 +303,7 @@ export function AgencyTransferWorkspace({
 
   return (
     <div className="space-y-5">
-      <section className="grid gap-4 xl:grid-cols-4">
+      <section className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <StatCard label="Comision directa" value={`${commissionPercent}%`} helper="Solo aplica cuando la agencia reserva directo." />
         <StatCard label="Puntos activos" value={String(stats.activeLocations)} helper="Origenes y destinos listos para cotizar." />
         <StatCard label="Vehiculos" value={String(stats.activeVehicles)} helper="Flota activa para rutas privadas." />
@@ -311,7 +311,7 @@ export function AgencyTransferWorkspace({
       </section>
 
       <section className="rounded-[32px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a,#1e293b)] px-6 py-6 text-white shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-sky-200">Herramienta de traslados</p>
             <h1 className="mt-3 text-3xl font-semibold">Cotiza y vende traslados directos para {companyName}</h1>
@@ -493,7 +493,7 @@ export function AgencyTransferWorkspace({
           ) : null}
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
             <span>Cliente final no ve comision.</span>
             <span>Agencia paga tarifa neta.</span>
@@ -502,7 +502,7 @@ export function AgencyTransferWorkspace({
           <button
             type="button"
             onClick={handleQuote}
-            className="rounded-2xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-500"
+            className="w-full rounded-2xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-500 sm:w-auto"
           >
             {quoteLoading ? "Cotizando..." : "Buscar tarifas"}
           </button>
@@ -514,18 +514,18 @@ export function AgencyTransferWorkspace({
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
             <span>{filteredQuote.length} opciones visibles</span>
             <span>Publico agregado: {formatMoney(totals.publicGross)}</span>
             <span>Neto agencia agregado: {formatMoney(totals.netGross)}</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <select
               value={categoryFilter}
               onChange={(event) => setCategoryFilter(event.target.value)}
-              className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-sky-400 focus:bg-white"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-sky-400 focus:bg-white sm:w-auto"
             >
               <option value="">Todas las categorias</option>
               {categoryOptions.map((category) => (
@@ -535,7 +535,7 @@ export function AgencyTransferWorkspace({
               ))}
             </select>
 
-            <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 p-1">
+            <div className="inline-flex self-start rounded-full border border-slate-200 bg-slate-50 p-1">
               <button
                 type="button"
                 onClick={() => setViewMode("cards")}

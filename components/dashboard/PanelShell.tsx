@@ -49,9 +49,9 @@ export const PanelShell = ({
   const displayAccount = formatAccount();
 
   const rightSlot = (
-    <div className="flex items-center gap-6">
+    <div className="flex items-center gap-3 sm:gap-6">
       <NotificationDropdown notifications={notifications} unreadCount={unreadCount} notificationLink={notificationLink} />
-      <div className="flex items-center gap-3 text-slate-600">
+      <div className="hidden items-center gap-3 text-slate-600 sm:flex">
         <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em]">
           {roleLabel}
         </span>
@@ -64,7 +64,7 @@ export const PanelShell = ({
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <Header navItems={navItems} rightSlot={rightSlot} navDisplay={navDisplay} />
-      <main className="mx-auto max-w-6xl px-6 py-10">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:py-10">{children}</main>
     </div>
   );
 };

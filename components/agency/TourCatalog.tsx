@@ -79,7 +79,7 @@ export const TourCatalog = ({ tours }: { tours: AgencyTourSummary[] }) => {
 
   return (
     <div className="space-y-5">
-      <section className="grid gap-4 md:grid-cols-4">
+      <section className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <StatCard label="Tours activos" value={String(tours.length)} helper="Inventario publicado listo para vender" />
         <StatCard label="Destinos" value={String(destinations.length)} helper="Zonas activas en tu catalogo" />
         <StatCard label="Proveedores" value={String(suppliers.length)} helper="Operadores con cupo publicado" />
@@ -160,13 +160,13 @@ export const TourCatalog = ({ tours }: { tours: AgencyTourSummary[] }) => {
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+        <div className="mt-4 flex flex-col gap-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-3">
-          <span>{filtered.length} resultados visibles</span>
-          <span>Total publico: {formatMoney(totalPublicInventory)}</span>
-          <span>Total neto estimado: {formatMoney(totalNetInventory)}</span>
+            <span>{filtered.length} resultados visibles</span>
+            <span>Total publico: {formatMoney(totalPublicInventory)}</span>
+            <span>Total neto estimado: {formatMoney(totalNetInventory)}</span>
           </div>
-          <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 p-1">
+          <div className="inline-flex self-start rounded-full border border-slate-200 bg-slate-50 p-1">
             <button
               type="button"
               onClick={() => setViewMode("cards")}
