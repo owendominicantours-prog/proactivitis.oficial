@@ -11,6 +11,46 @@ import {
   type SupplierNote
 } from "@/components/supplier/SupplierBookingList";
 
+const statusLabelMap: Record<string, string> = {
+  PENDING: "Pendiente",
+  CONFIRMED: "Confirmada",
+  PAYMENT_PENDING: "Pago pendiente",
+  CANCELLATION_REQUESTED: "Cancelación solicitada",
+  CANCELLED: "Cancelada",
+  COMPLETED: "Completada"
+};
+
+const sourceLabelMap: Record<string, string> = {
+  WEB: "Web directa",
+  AGENCY: "Agencia",
+  SUPPLIER: "Supplier",
+  CUSTOMER: "Cliente"
+};
+
+const paymentStatusLabelMap: Record<string, string> = {
+  requires_payment_method: "Falta método de pago",
+  requires_confirmation: "Pendiente de confirmación",
+  requires_action: "Requiere acción del cliente",
+  processing: "Pago en proceso",
+  succeeded: "Pago confirmado",
+  canceled: "Pago cancelado"
+};
+
+const formatStatusLabel = (value?: string | null) => {
+  if (!value) return "Sin estado";
+  return statusLabelMap[value] ?? value.toLowerCase().replace(/_/g, " ");
+};
+
+const formatSourceLabel = (value?: string | null) => {
+  if (!value) return "No definido";
+  return sourceLabelMap[value] ?? value;
+};
+
+const formatPaymentStatusLabel = (value?: string | null) => {
+  if (!value) return "Sin pago registrado";
+  return paymentStatusLabelMap[value] ?? value;
+};
+
 export default async function SupplierBookingsPage() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
@@ -73,6 +113,7 @@ export default async function SupplierBookingsPage() {
   const notesMap: Record<string, SupplierNote[]> = {};
   notifications.forEach((notification) => {
     if (!notification.bookingId) return;
+    if (notification.role !== "SUPPLIER" && notification.type !== "ADMIN_BOOKING_NOTE") return;
     const metadata = parseNotificationMetadata(notification.metadata);
     const entry: SupplierTimelineEntry = {
       title: notification.title ?? "Actualización",
@@ -81,6 +122,14 @@ export default async function SupplierBookingsPage() {
     };
     timelineMap[notification.bookingId] = timelineMap[notification.bookingId] ?? [];
     timelineMap[notification.bookingId].push(entry);
+    if (notification.type === "SUPPLIER_BOOKING_MODIFIED") {
+      const notificationStatus =
+        typeof metadata?.status === "string" ? formatStatusLabel(metadata.status) : null;
+      entry.title = "Estado de la reserva";
+      if (notificationStatus) {
+        entry.description = `La reserva pasó a ${notificationStatus}.`;
+      }
+    }
     if (notification.type === "ADMIN_BOOKING_NOTE" || metadata.supplierNote) {
       const author =
         metadata.author ??
@@ -128,6 +177,22 @@ export default async function SupplierBookingsPage() {
     const timeline = [...baseTimeline, ...notificationEvents].sort(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
+    const normalizedTimeline = timeline.map((event) => {
+      if (event.title === "Reserva creada" && event.description.startsWith("Origen:")) {
+        return {
+          ...event,
+          description: `Canal de entrada: ${formatSourceLabel(booking.source)}`
+        };
+      }
+      if (event.title === "Pago registrado" && event.description.startsWith("Stripe:")) {
+        return {
+          ...event,
+          title: "Estado de pago",
+          description: formatPaymentStatusLabel(booking.paymentStatus)
+        };
+      }
+      return event;
+    });
 
     return {
       id: booking.id,
@@ -160,7 +225,7 @@ export default async function SupplierBookingsPage() {
       createdAt: booking.createdAt.toISOString(),
       updatedAt: booking.updatedAt?.toISOString() ?? booking.createdAt.toISOString(),
       whatsappNumber: booking.customerPhone,
-      timeline,
+      timeline: normalizedTimeline,
       notes: notesMap[booking.id] ?? []
     };
   });
