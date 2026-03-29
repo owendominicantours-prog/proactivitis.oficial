@@ -154,7 +154,11 @@ export default async function AgencyBookingsPage() {
                     </div>
                   </div>
 
-                  <div className="mt-5 grid gap-4 md:grid-cols-3">
+                  <details className="mt-5 rounded-2xl border border-slate-200 bg-slate-50/70 p-3">
+                    <summary className="cursor-pointer list-none text-xs font-semibold uppercase tracking-[0.3em] text-slate-700">
+                      Mostrar detalles
+                    </summary>
+                    <div className="mt-4 grid gap-4 md:grid-cols-3">
                     <article className="rounded-2xl border border-slate-200 bg-white p-4">
                       <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Cliente</p>
                       <p className="mt-2 text-sm font-semibold text-slate-900">{booking.customerName}</p>
@@ -182,6 +186,7 @@ export default async function AgencyBookingsPage() {
                       <p className="text-xs text-slate-500">{formatTimeUntil(booking.travelDate)}</p>
                     </article>
                   </div>
+                  </details>
 
                   <div className="mt-5 flex flex-wrap gap-3">
                     <details className="space-y-2 text-xs text-slate-500">

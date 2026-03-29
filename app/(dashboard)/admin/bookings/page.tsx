@@ -724,7 +724,11 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                     </div>
                   </div>
 
-                  <div className="mt-4 grid gap-3 xl:grid-cols-[1.2fr_1.1fr_0.9fr]">
+                  <details className="mt-4 group rounded-2xl border border-slate-200 bg-slate-50/70 p-3">
+                    <summary className="cursor-pointer list-none text-xs font-semibold uppercase tracking-[0.3em] text-slate-700">
+                      Mostrar detalles
+                    </summary>
+                    <div className="mt-4 grid gap-3 xl:grid-cols-[1.2fr_1.1fr_0.9fr]">
                     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Cliente y contacto</p>
                       <div className="mt-3 space-y-2">
@@ -925,6 +929,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                       </button>
                     </form>
                   </div>
+                  </details>
                 </article>
               );
             })}
