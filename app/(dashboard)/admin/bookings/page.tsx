@@ -8,6 +8,7 @@ import {
   adminApproveCancellation
 } from "@/lib/actions/bookingCancellation";
 import { formatTimeUntil } from "@/lib/bookings";
+import { buildBookingPresentation } from "@/lib/bookingPresentation";
 import { updateBookingStatus } from "@/lib/actions/bookingStatus";
 import { addAdminBookingNote } from "@/app/(dashboard)/admin/bookings/actions";
 
@@ -52,6 +53,10 @@ type AdminBookingView = {
   agencyPhone: string | null;
   pickupNotes: string | null;
   tourIncludes: string | null;
+  flowType: string | null;
+  tourDuration: string | null;
+  tourLanguage: string | null;
+  meetingPoint: string | null;
   cancellationReason: string | null;
   cancellationByRole: string | null;
   cancellationAt: string | null;
@@ -261,6 +266,10 @@ export default async function AdminBookingsPage({ searchParams }: any) {
       agencyPhone: agencyApplication?.phone ?? null,
       pickupNotes: booking.pickupNotes,
       tourIncludes: booking.Tour?.includes ?? null,
+      flowType: booking.flowType ?? null,
+      tourDuration: booking.Tour?.duration ?? null,
+      tourLanguage: booking.Tour?.language ?? null,
+      meetingPoint: booking.Tour?.meetingPoint ?? null,
       cancellationReason: booking.cancellationReason,
       cancellationByRole: booking.cancellationByRole,
       cancellationAt: booking.cancellationAt?.toISOString() ?? null,
@@ -626,10 +635,26 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                 : "No aplica";
               const routeOrigin = booking.originAirport ?? booking.pickup ?? booking.hotel ?? "Pendiente";
               const routeDestination = booking.hotel ?? booking.pickup ?? booking.tourTitle;
-              const serviceNotes = booking.tourIncludes ?? booking.pickupNotes ?? "Servicio confirmado con coordinación operativa y soporte.";
+              const presentation = buildBookingPresentation({
+                flowType: booking.flowType,
+                tripType: booking.tripType,
+                originAirport: booking.originAirport,
+                flightNumber: booking.flightNumber,
+                hotel: booking.hotel,
+                pickup: booking.pickup,
+                pickupNotes: booking.pickupNotes,
+                returnTravelDate: booking.returnTravelDate,
+                returnStartTime: booking.returnStartTime,
+                startTime: booking.startTime,
+                travelDateValue: booking.travelDateValue,
+                tourIncludes: booking.tourIncludes,
+                language: booking.tourLanguage,
+                duration: booking.tourDuration,
+                meetingPoint: booking.meetingPoint
+              });
+              const serviceNotes = presentation.notesValue;
               const logisticsSummary = [
-                booking.tripType === "round-trip" ? "Ida y vuelta" : "Servicio principal",
-                booking.flightNumber ? `Vuelo ${booking.flightNumber}` : null,
+                presentation.logisticsValue || null,
                 formatTimeUntil(new Date(booking.travelDateValue))
               ]
                 .filter(Boolean)
@@ -672,8 +697,8 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                         <p className="text-sm font-semibold text-slate-900">{returnLabel}</p>
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Origen / destino</p>
-                        <p className="text-sm font-semibold text-slate-900">{routeOrigin} / {routeDestination}</p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.routeLabel}</p>
+                        <p className="text-sm font-semibold text-slate-900">{presentation.routeValue}</p>
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Agencia / canal</p>
@@ -689,7 +714,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                         </p>
                       </div>
                       <div className="md:col-span-2">
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Servicios incluidos</p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.notesLabel}</p>
                         <p className="text-sm font-semibold text-slate-900">{serviceNotes}</p>
                       </div>
                     </div>
@@ -710,8 +735,8 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                           {booking.hotel ? ` · ${booking.hotel}` : ""}
                         </div>
                         <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                          <span className="font-semibold text-slate-900">Idioma / notas:</span>{" "}
-                          {booking.pickupNotes ?? "Sin notas especiales"}
+                          <span className="font-semibold text-slate-900">{presentation.primaryDetailsLabel}:</span>{" "}
+                          {presentation.primaryDetailsValue}
                         </div>
                       </div>
                     </section>
@@ -720,15 +745,13 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                       <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Operación del servicio</p>
                       <div className="mt-3 space-y-3 text-sm text-slate-600">
                         <div className="rounded-xl bg-slate-50 px-3 py-2">
-                          <p className="font-semibold text-slate-900">Ruta confirmada</p>
-                          <p>{routeOrigin}</p>
-                          <p className="text-slate-400">hacia</p>
-                          <p>{routeDestination}</p>
+                          <p className="font-semibold text-slate-900">{presentation.routeLabel}</p>
+                          <p>{presentation.routeValue}</p>
                         </div>
                         <div className="grid gap-2 md:grid-cols-2">
                           <div className="rounded-xl bg-slate-50 px-3 py-2">
-                            <p className="font-semibold text-slate-900">Logística</p>
-                            <p>{logisticsSummary}</p>
+                            <p className="font-semibold text-slate-900">{presentation.logisticsLabel}</p>
+                            <p>{logisticsSummary || "Operación pendiente de confirmación"}</p>
                           </div>
                           <div className="rounded-xl bg-slate-50 px-3 py-2">
                             <p className="font-semibold text-slate-900">Códigos</p>

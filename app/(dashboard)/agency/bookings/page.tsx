@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+﻿export const dynamic = "force-dynamic";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -9,6 +9,7 @@ import {
   agencyRequestCancellation
 } from "@/lib/actions/bookingCancellation";
 import { formatTimeUntil, requiresCancellationRequest } from "@/lib/bookings";
+import { buildBookingPresentation } from "@/lib/bookingPresentation";
 import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
 import type { BookingStatus } from "@/lib/types/booking";
 
@@ -16,7 +17,7 @@ export default async function AgencyBookingsPage() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) {
-    return <div className="py-10 text-center text-sm text-slate-600">Inicia sesión para ver tus reservas.</div>;
+    return <div className="py-10 text-center text-sm text-slate-600">Inicia sesiÃ³n para ver tus reservas.</div>;
   }
 
   const bookings = await prisma.booking.findMany({
@@ -65,13 +66,30 @@ export default async function AgencyBookingsPage() {
         <div className="space-y-4">
           {bookings.length === 0 ? (
             <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-500 shadow-sm">
-              Aún no tienes reservas registradas en esta cuenta de agencia.
+              AÃºn no tienes reservas registradas en esta cuenta de agencia.
             </div>
           ) : (
             bookings.map((booking) => {
               const bookingTripType = (booking as any).tripType as string | null | undefined;
               const bookingReturnTravelDate = (booking as any).returnTravelDate as Date | null | undefined;
               const bookingReturnStartTime = (booking as any).returnStartTime as string | null | undefined;
+              const presentation = buildBookingPresentation({
+                flowType: booking.flowType,
+                tripType: bookingTripType,
+                originAirport: booking.originAirport,
+                flightNumber: booking.flightNumber,
+                hotel: booking.hotel,
+                pickup: booking.pickup,
+                pickupNotes: booking.pickupNotes,
+                returnTravelDate: bookingReturnTravelDate,
+                returnStartTime: bookingReturnStartTime,
+                startTime: booking.startTime,
+                travelDateValue: booking.travelDate,
+                tourIncludes: booking.Tour?.includes,
+                language: booking.Tour?.language,
+                duration: booking.Tour?.duration,
+                meetingPoint: booking.Tour?.meetingPoint
+              });
               const returnDateLabel = bookingReturnTravelDate
                 ? bookingReturnTravelDate.toLocaleDateString("es-ES", {
                     day: "2-digit",
@@ -89,7 +107,7 @@ export default async function AgencyBookingsPage() {
                       <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{booking.bookingCode ?? booking.id.slice(0, 8).toUpperCase()}</p>
                       <h2 className="text-xl font-semibold text-slate-900">{booking.Tour?.title ?? "Tour no disponible"}</h2>
                       <p className="text-sm text-slate-500">
-                        {booking.travelDate.toLocaleDateString("es-ES")} · {booking.startTime ?? "Hora pendiente"} · {booking.paxAdults + booking.paxChildren} pax
+                        {booking.travelDate.toLocaleDateString("es-ES")} Â· {booking.startTime ?? "Hora pendiente"} Â· {booking.paxAdults + booking.paxChildren} pax
                       </p>
                     </div>
                     <BookingStatusBadge status={booking.status as BookingStatus} />
@@ -112,30 +130,26 @@ export default async function AgencyBookingsPage() {
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de regreso</p>
                         <p className="text-sm font-semibold text-slate-900">
                           {returnDateLabel ?? "No aplica"}
-                          {bookingReturnStartTime ? ` · ${bookingReturnStartTime}` : ""}
+                          {bookingReturnStartTime ? ` Â· ${bookingReturnStartTime}` : ""}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Origen / destino</p>
-                        <p className="text-sm font-semibold text-slate-900">
-                          {(booking.originAirport ?? "Pendiente")} / {(booking.hotel ?? booking.pickup ?? "Pendiente")}
-                        </p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.routeLabel}</p>
+                        <p className="text-sm font-semibold text-slate-900">{presentation.routeValue}</p>
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Canal</p>
                         <p className="text-sm font-semibold text-slate-900">{channelLabel}</p>
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Códigos internos</p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">CÃ³digos internos</p>
                         <p className="text-sm font-semibold text-slate-900">
-                          {(booking.bookingCode ?? booking.id)} · {booking.id.slice(0, 8).toUpperCase()}
+                          {(booking.bookingCode ?? booking.id)} Â· {booking.id.slice(0, 8).toUpperCase()}
                         </p>
                       </div>
                       <div className="md:col-span-2">
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Servicios incluidos</p>
-                        <p className="text-sm font-semibold text-slate-900">
-                          {booking.Tour?.includes ?? booking.pickupNotes ?? "Servicio confirmado con coordinación previa"}
-                        </p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.notesLabel}</p>
+                        <p className="text-sm font-semibold text-slate-900">{presentation.notesValue}</p>
                       </div>
                     </div>
                   </div>
@@ -154,9 +168,9 @@ export default async function AgencyBookingsPage() {
                       <p className="text-xs text-slate-500">Creada: {booking.createdAt.toLocaleString("es-ES")}</p>
                     </article>
                     <article className="rounded-2xl border border-slate-200 bg-white p-4">
-                      <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Logística</p>
+                      <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.logisticsLabel}</p>
                       <p className="mt-2 text-sm font-semibold text-slate-900">
-                        {bookingTripType === "round-trip" ? "Ida y vuelta" : "Servicio principal"}
+                        {presentation.logisticsValue || "Operación pendiente"}
                       </p>
                       <p className="text-xs text-slate-500">Vuelo: {booking.flightNumber ?? "Pendiente"}</p>
                       <p className="text-xs text-slate-500">{formatTimeUntil(booking.travelDate)}</p>
@@ -166,7 +180,7 @@ export default async function AgencyBookingsPage() {
                   <div className="mt-5 flex flex-wrap gap-3">
                     <details className="space-y-2 text-xs text-slate-500">
                       <summary className="cursor-pointer rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-700">
-                        {needsRequest ? "Solicitar cancelación" : "Cancelar reserva"}
+                        {needsRequest ? "Solicitar cancelaciÃ³n" : "Cancelar reserva"}
                       </summary>
                       <form
                         action={needsRequest ? agencyRequestCancellation : agencyCancelBooking}
@@ -175,7 +189,7 @@ export default async function AgencyBookingsPage() {
                       >
                         <input type="hidden" name="bookingId" value={booking.id} />
                         <label className="block text-[10px] uppercase tracking-[0.3em] text-slate-500">
-                          Motivo de cancelación
+                          Motivo de cancelaciÃ³n
                           <textarea
                             name="reason"
                             required
@@ -201,3 +215,4 @@ export default async function AgencyBookingsPage() {
     </PanelShell>
   );
 }
+

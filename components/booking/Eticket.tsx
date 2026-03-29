@@ -1,11 +1,13 @@
 import Image from "next/image";
 import { toDataURL } from "qrcode";
 import EticketActions from "@/components/booking/EticketActions";
+import { buildBookingPresentation } from "@/lib/bookingPresentation";
 
 type BookingSummary = {
   id: string;
   travelDate: Date;
   startTime?: string | null;
+  flowType?: string | null;
   tripType?: string | null;
   returnTravelDate?: Date | null;
   returnStartTime?: string | null;
@@ -30,6 +32,7 @@ type TourSummary = {
   meetingPoint?: string | null;
   meetingInstructions?: string | null;
   duration?: string | null;
+  language?: string | null;
 };
 
 type EticketProps = {
@@ -54,7 +57,22 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
   const returnDateLabel = booking.returnTravelDate
     ? new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(new Date(booking.returnTravelDate))
     : null;
-  const originDestinationLabel = `${booking.originAirport ?? "Origen pendiente"} / ${booking.hotel ?? meetingPoint}`;
+  const presentation = buildBookingPresentation({
+    flowType: booking.flowType,
+    tripType: booking.tripType,
+    originAirport: booking.originAirport,
+    flightNumber: booking.flightNumber,
+    hotel: booking.hotel,
+    pickup: tour.meetingPoint,
+    pickupNotes: booking.pickupNotes,
+    returnTravelDate: booking.returnTravelDate,
+    returnStartTime: booking.returnStartTime,
+    startTime: booking.startTime,
+    travelDateValue: booking.travelDate,
+    language: tour.language,
+    duration: tour.duration,
+    meetingPoint: tour.meetingPoint
+  });
   const meetingLabel = variant === "full" ? "Punto de encuentro" : "Encuentro";
   const containerClass =
     variant === "full"
@@ -114,8 +132,8 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
             <p className="text-sm font-semibold text-slate-900">{returnDateLabel ?? "No aplica"}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Origen / destino</p>
-            <p className="text-sm font-semibold text-slate-900">{originDestinationLabel}</p>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">{presentation.routeLabel}</p>
+            <p className="text-sm font-semibold text-slate-900">{presentation.routeValue}</p>
           </div>
           <div className="space-y-1">
             <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Agencia</p>
@@ -126,8 +144,8 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
             <p className="text-sm font-semibold text-slate-900">{displayOrderCode} · {booking.id.slice(0, 8).toUpperCase()}</p>
           </div>
           <div className="space-y-1 xl:col-span-2">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Servicios incluidos</p>
-            <p className="text-sm font-semibold text-slate-900">{booking.pickupNotes ?? "Servicio confirmado y coordinado con el proveedor"}</p>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">{presentation.notesLabel}</p>
+            <p className="text-sm font-semibold text-slate-900">{presentation.notesValue}</p>
           </div>
         </div>
       </div>
@@ -150,7 +168,7 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
               </a>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Hora del tour</p>
+              <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">{presentation.kind === "transfer" ? "Hora del servicio" : "Hora del tour"}</p>
               <p className="text-sm font-semibold text-slate-900">{pickupTime}</p>
               <p className="text-xs text-slate-500">Inicio y pick-up coordinados con tu proveedor.</p>
             </div>
@@ -193,8 +211,8 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
           <p className="text-sm font-semibold text-slate-900">{booking.hotel ?? "No proporcionado"}</p>
         </div>
         <div className="space-y-1">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Pickup notes</p>
-          <p className="text-sm font-semibold text-slate-900">{booking.pickupNotes ?? "Coordinar con el proveedor"}</p>
+          <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">{presentation.primaryDetailsLabel}</p>
+          <p className="text-sm font-semibold text-slate-900">{presentation.primaryDetailsValue}</p>
         </div>
         <div className="space-y-1">
           <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Qué llevar</p>

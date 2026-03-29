@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"; // Booking detail must reflect live cancellations or updates.
+﻿export const dynamic = "force-dynamic"; // Booking detail must reflect live cancellations or updates.
 
 import Link from "next/link";
 import { getServerSession } from "next-auth";
@@ -8,6 +8,7 @@ import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
 import { notFound } from "next/navigation";
 import { DynamicImage } from "@/components/shared/DynamicImage";
 import type { BookingStatus } from "@/lib/types/booking";
+import { buildBookingPresentation } from "@/lib/bookingPresentation";
 
 export default async function CustomerBookingDetailPage({ params }: { params: Promise<{ id?: string }> }) {
   const resolved = await params;
@@ -19,7 +20,7 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
   if (!session?.user?.email && !session?.user?.id) {
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm text-center text-sm text-slate-600">
-        Inicia sesión para ver el detalle de tu reserva.
+        Inicia sesiÃ³n para ver el detalle de tu reserva.
       </div>
     );
   }
@@ -93,10 +94,27 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
         year: "numeric"
       })
     : null;
+  const presentation = buildBookingPresentation({
+    flowType: booking.flowType,
+    tripType: bookingTripType,
+    originAirport: booking.originAirport,
+    flightNumber: booking.flightNumber,
+    hotel: booking.hotel,
+    pickup: booking.pickup,
+    pickupNotes: booking.pickupNotes,
+    returnTravelDate: bookingReturnTravelDate,
+    returnStartTime: bookingReturnStartTime,
+    startTime: booking.startTime,
+    travelDateValue: booking.travelDate,
+    tourIncludes: booking.Tour?.includes,
+    language: booking.Tour?.language,
+    duration: booking.Tour?.duration,
+    meetingPoint: booking.Tour?.meetingPoint
+  });
 
   const statusMessages: Record<string, string> = {
-    CONFIRMED: "Tu reserva está confirmada.",
-    CANCELLATION_REQUESTED: "Estamos revisando la cancelación solicitada.",
+    CONFIRMED: "Tu reserva estÃ¡ confirmada.",
+    CANCELLATION_REQUESTED: "Estamos revisando la cancelaciÃ³n solicitada.",
     CANCELLED: "La reserva fue cancelada.",
     COMPLETED: "Tu experiencia ya fue completada."
   };
@@ -105,7 +123,7 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
     <section className="space-y-6">
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold text-slate-900">Reserva {booking.id.slice(0, 8).toUpperCase()}</h1>
-        <p className="text-sm text-slate-500">Todo lo que necesitas para tu tour está aquí.</p>
+        <p className="text-sm text-slate-500">Todo lo que necesitas para tu tour estÃ¡ aquÃ­.</p>
       </header>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -124,7 +142,7 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
             </div>
             <p className="text-xs text-slate-500">{statusMessages[booking.status] ?? ""}</p>
             <p className="text-sm text-slate-500">
-              {travelDate} · {travelTime} · {booking.Tour?.location}
+              {travelDate} Â· {travelTime} Â· {booking.Tour?.location}
             </p>
             <p className="text-sm text-slate-500">
               Proveedor: {booking.Tour?.SupplierProfile?.company ?? "No asignado"}
@@ -153,16 +171,16 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
 
       <div className="grid gap-4 lg:grid-cols-3">
         <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Información del cliente</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">InformaciÃ³n del cliente</p>
           <p className="text-base font-semibold text-slate-900">{booking.customerName}</p>
           <p>{booking.customerEmail}</p>
           {booking.customerPhone && <p>{booking.customerPhone}</p>}
         </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Detalles del tour</p>
-          <p className="text-sm text-slate-700">{booking.Tour?.duration}</p>
-          <p className="text-sm text-slate-700">{booking.Tour?.language}</p>
-          <p className="text-sm text-slate-700">{booking.Tour?.includes}</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.primaryDetailsLabel}</p>
+          <p className="text-sm text-slate-700">{presentation.primaryDetailsValue}</p>
+          {presentation.kind === "activity" && <p className="text-sm text-slate-700">{booking.Tour?.duration}</p>}
+          {presentation.kind === "activity" && <p className="text-sm text-slate-700">{booking.Tour?.language}</p>}
         </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Notas de recogida</p>
@@ -172,10 +190,10 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
 
       <div className="grid gap-4 lg:grid-cols-3">
         <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">LogÃ­stica</p>
-          <p className="text-sm text-slate-700">Origen: {booking.originAirport ?? "Pendiente"}</p>
-          <p className="text-sm text-slate-700">Vuelo: {booking.flightNumber ?? "Pendiente"}</p>
-          <p className="text-sm text-slate-700">Tipo: {bookingTripType === "round-trip" ? "Ida y vuelta" : "Servicio principal"}</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.logisticsLabel}</p>
+          <p className="text-sm text-slate-700">{presentation.logisticsValue || "Operación pendiente"}</p>
+          {presentation.kind === "transfer" && <p className="text-sm text-slate-700">Origen: {booking.originAirport ?? "Pendiente"}</p>}
+          {presentation.kind === "transfer" && <p className="text-sm text-slate-700">Vuelo: {booking.flightNumber ?? "Pendiente"}</p>}
         </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Regreso</p>
@@ -185,7 +203,7 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
         <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Agencia</p>
           <p className="text-sm text-slate-700">{agencyLabel ?? "Reserva directa"}</p>
-          <p className="text-sm text-slate-700">{agencyPhone ?? "Sin telÃ©fono registrado"}</p>
+          <p className="text-sm text-slate-700">{agencyPhone ?? "Sin telÃƒÂ©fono registrado"}</p>
         </article>
       </div>
 
@@ -205,20 +223,20 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
             <p className="text-sm font-semibold text-slate-900">{returnDateLabel ?? "No aplica"}</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Origen / destino</p>
-            <p className="text-sm font-semibold text-slate-900">{`${booking.originAirport ?? "Pendiente"} / ${booking.hotel ?? booking.pickup ?? "Pendiente"}`}</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.routeLabel}</p>
+            <p className="text-sm font-semibold text-slate-900">{presentation.routeValue}</p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Agencia</p>
             <p className="text-sm font-semibold text-slate-900">{agencyLabel ?? "Reserva directa"}</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Códigos internos</p>
-            <p className="text-sm font-semibold text-slate-900">{`${booking.bookingCode ?? booking.id} · ${booking.id.slice(0, 8).toUpperCase()}`}</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">CÃ³digos internos</p>
+            <p className="text-sm font-semibold text-slate-900">{`${booking.bookingCode ?? booking.id} Â· ${booking.id.slice(0, 8).toUpperCase()}`}</p>
           </div>
           <div className="md:col-span-2">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Servicios incluido</p>
-            <p className="text-sm font-semibold text-slate-900">{booking.Tour?.includes ?? "Servicio confirmado con soporte y coordinaciÃ³n previa"}</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.notesLabel}</p>
+            <p className="text-sm font-semibold text-slate-900">{presentation.notesValue}</p>
           </div>
         </div>
       </div>
@@ -226,14 +244,15 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
       <div id="ticket" className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
         <h3 className="text-base font-semibold text-slate-900">Voucher digital</h3>
         <div className="flex flex-wrap items-center justify-between gap-3 border-y border-slate-100 py-4">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Código</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">CÃ³digo</p>
           <p className="text-xl font-semibold text-slate-900">{booking.id.slice(0, 8).toUpperCase()}</p>
         </div>
-        <p>Presenta este código y muestra tu confirmación al proveedor o guía.</p>
+        <p>Presenta este cÃ³digo y muestra tu confirmaciÃ³n al proveedor o guÃ­a.</p>
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-center text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-          QR en construcción · lo tendrás en la próxima versión
+          QR en construcciÃ³n Â· lo tendrÃ¡s en la prÃ³xima versiÃ³n
         </div>
       </div>
     </section>
   );
 }
+
