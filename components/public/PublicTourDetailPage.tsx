@@ -1173,6 +1173,40 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const PUBLIC_DETAIL_STATUSES = new Set(["published", "seo_only"]);
   if (!PUBLIC_DETAIL_STATUSES.has(tour.status)) notFound();
 
+  const agencyProLink = agencyLinkFromQuery
+    ? await prisma.agencyProLink.findUnique({
+        where: { slug: agencyLinkFromQuery },
+        select: {
+          id: true,
+          slug: true,
+          tourId: true,
+          price: true,
+          note: true,
+          active: true,
+          AgencyUser: {
+            select: {
+              name: true,
+              AgencyProfile: {
+                select: {
+                  companyName: true
+                }
+              }
+            }
+          }
+        }
+      })
+    : null;
+
+  if (agencyLinkFromQuery && (!agencyProLink || !agencyProLink.active || agencyProLink.tourId !== tour.id)) {
+    notFound();
+  }
+
+  const agencyMode = Boolean(agencyProLink);
+  const agencyDisplayName =
+    agencyProLink?.AgencyUser.AgencyProfile?.companyName ??
+    agencyProLink?.AgencyUser.name ??
+    null;
+
   const relatedConditions: Prisma.TourWhereInput[] = [];
   if (tour.destinationId) {
     relatedConditions.push({ destinationId: tour.destinationId });
@@ -1182,15 +1216,21 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const activeOffer = offerPriceMap.get(tour.id);
   const preferencePrice = discountPercent > 0 ? tour.price * (1 - discountPercent / 100) : tour.price;
   const effectiveTourPrice =
-    typeof activeOffer?.finalPrice === "number" ? Math.min(activeOffer.finalPrice, preferencePrice) : preferencePrice;
-  const hasActiveDiscount = effectiveTourPrice < tour.price;
-  const discountTag = activeOffer
-    ? activeOffer.discountType === "PERCENT"
-      ? `-${Math.round(activeOffer.discountValue)}%`
-      : `-${Math.round(activeOffer.discountValue)} USD`
-    : discountPercent > 0
-      ? `-${discountPercent}%`
-      : null;
+    agencyProLink
+      ? agencyProLink.price
+      : typeof activeOffer?.finalPrice === "number"
+        ? Math.min(activeOffer.finalPrice, preferencePrice)
+        : preferencePrice;
+  const hasActiveDiscount = !agencyProLink && effectiveTourPrice < tour.price;
+  const discountTag = agencyProLink
+    ? null
+    : activeOffer
+      ? activeOffer.discountType === "PERCENT"
+        ? `-${Math.round(activeOffer.discountValue)}%`
+        : `-${Math.round(activeOffer.discountValue)} USD`
+      : discountPercent > 0
+        ? `-${discountPercent}%`
+        : null;
   if (tour.departureDestinationId) {
     relatedConditions.push({ departureDestinationId: tour.departureDestinationId });
   }
@@ -1678,10 +1718,13 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     tourId: tour.id,
     basePrice: effectiveTourPrice,
     timeSlots,
-    options: tour.options?.map((option) => ({
-      ...option,
-      pickupTimes: normalizePickupTimes(option.pickupTimes)
-    })) ?? [],
+    options:
+      agencyMode
+        ? []
+        : tour.options?.map((option) => ({
+            ...option,
+            pickupTimes: normalizePickupTimes(option.pickupTimes)
+          })) ?? [],
     supplierHasStripeAccount: Boolean(tour.SupplierProfile?.stripeAccountId),
     platformSharePercent: tour.platformSharePercent ?? 20,
     tourTitle: localizedTitle,
@@ -1722,9 +1765,22 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       </div>
       <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-700">
         <p className="font-semibold text-slate-900">
-          {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? translate(locale, "tour.booking.panel.providerFallback")}
+          {agencyDisplayName ??
+            tour.SupplierProfile?.company ??
+            tour.SupplierProfile?.User?.name ??
+            translate(locale, "tour.booking.panel.providerFallback")}
         </p>
-        <p>{translate(locale, "tour.booking.panel.supplier")}</p>
+        <p>
+          {agencyMode
+            ? localeLabel(
+                locale,
+                "Reserva gestionada por tu agencia con precio acordado.",
+                "Booking managed by your agency with agreed pricing.",
+                "Reservation geree par votre agence avec tarif convenu."
+              )
+            : translate(locale, "tour.booking.panel.supplier")}
+        </p>
+        {agencyMode && agencyProLink?.note ? <p className="mt-2 text-xs text-slate-500">{agencyProLink.note}</p> : null}
       </div>
     </div>
   );
