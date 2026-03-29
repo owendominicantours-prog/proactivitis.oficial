@@ -25,6 +25,7 @@ type AgencyRow = {
   lastBookingAt: Date | null;
   createdAt: Date;
   sourceLabel: string;
+  commissionPercent: number | null;
 };
 
 export default async function AdminAgenciesPage({ searchParams }: Props) {
@@ -107,6 +108,7 @@ export default async function AdminAgenciesPage({ searchParams }: Props) {
         user.agencyApproved || user.AgencyProfile?.approved || latestApplication?.status === "APPROVED"
       ),
       hasProfile: Boolean(user.AgencyProfile),
+      commissionPercent: user.AgencyProfile?.commissionPercent ?? null,
       bookingsCount: bookingMap.size,
       linksCount: user.AgencyProLinks.length,
       lastBookingAt: bookingDates[0] ?? null,
@@ -125,6 +127,7 @@ export default async function AdminAgenciesPage({ searchParams }: Props) {
     country: application.country ?? null,
     approved: application.status === "APPROVED",
     hasProfile: false,
+    commissionPercent: null,
     bookingsCount: 0,
     linksCount: 0,
     lastBookingAt: null,
@@ -253,7 +256,7 @@ export default async function AdminAgenciesPage({ searchParams }: Props) {
                 ) : null}
               </div>
 
-              <div className="mt-4 grid gap-3 text-sm text-slate-600 md:grid-cols-4">
+              <div className="mt-4 grid gap-3 text-sm text-slate-600 md:grid-cols-5">
                 <div>
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Telefono</p>
                   <p>{agency.phone ?? "No registrado"}</p>
@@ -269,6 +272,10 @@ export default async function AdminAgenciesPage({ searchParams }: Props) {
                 <div>
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Links</p>
                   <p>{agency.linksCount}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Comision</p>
+                  <p>{agency.commissionPercent !== null ? `${agency.commissionPercent}%` : "Pendiente"}</p>
                 </div>
               </div>
 

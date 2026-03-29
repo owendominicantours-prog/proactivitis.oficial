@@ -36,6 +36,24 @@ async function setAgencyApproval(userId: string, approved: boolean, companyName?
   });
 }
 
+export async function updateAgencyCommission(formData: FormData) {
+  const userId = formData.get("userId");
+  const commissionPercentRaw = formData.get("commissionPercent");
+  if (typeof userId !== "string" || !userId) return;
+
+  const commissionPercent = Math.min(
+    100,
+    Math.max(0, Number(typeof commissionPercentRaw === "string" ? commissionPercentRaw : 20) || 0)
+  );
+
+  await prisma.agencyProfile.updateMany({
+    where: { userId },
+    data: { commissionPercent }
+  });
+
+  revalidateAgencyPaths(userId, userId);
+}
+
 const revalidateAgencyPaths = (referenceId: string, userId: string) => {
   revalidatePath("/admin/agencies");
   revalidatePath(`/admin/agencies/${referenceId}`);

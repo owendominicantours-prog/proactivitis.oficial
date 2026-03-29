@@ -41,11 +41,12 @@ model Account {
 }
 
 model AgencyProfile {
-  id          String  @id
-  userId      String  @unique
-  companyName String
-  approved    Boolean @default(false)
-  User        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id
+  userId            String  @unique
+  companyName       String
+  approved          Boolean @default(false)
+  commissionPercent Float   @default(20)
+  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Booking {

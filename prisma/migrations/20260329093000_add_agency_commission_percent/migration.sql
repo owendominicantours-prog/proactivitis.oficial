@@ -1,0 +1,2 @@
+ALTER TABLE "AgencyProfile"
+ADD COLUMN "commissionPercent" DOUBLE PRECISION NOT NULL DEFAULT 20;

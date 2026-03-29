@@ -316,6 +316,13 @@ export async function POST(request: NextRequest) {
         }
       })
     : null;
+  const agencyProfile =
+    sessionUser?.role === BookingSourceEnum.AGENCY && sessionUser.id
+      ? await prisma.agencyProfile.findUnique({
+          where: { userId: sessionUser.id },
+          select: { commissionPercent: true, companyName: true }
+        })
+      : null;
   const transferVehicle =
     payload.flowType === "transfer" && payload.vehicleId
       ? await prisma.transferVehicle.findUnique({
@@ -366,11 +373,22 @@ export async function POST(request: NextRequest) {
     where: { userId },
     select: { discountEligible: true, discountRedeemedAt: true, completedAt: true }
   });
+  const directAgencyBooking = !agencyProLink && sessionUser?.role === BookingSourceEnum.AGENCY;
+  const agencyCommissionPercent = Math.min(Math.max(agencyProfile?.commissionPercent ?? 20, 0), 100);
   const discountPercent =
-    preference?.completedAt && preference?.discountEligible && !preference?.discountRedeemedAt ? 10 : 0;
+    !directAgencyBooking &&
+    !agencyProLink &&
+    preference?.completedAt &&
+    preference?.discountEligible &&
+    !preference?.discountRedeemedAt
+      ? 10
+      : 0;
   const discountAmount =
     discountPercent > 0 ? Math.round(totalAmount * (discountPercent / 100) * 100) / 100 : 0;
-  const finalTotalAmount = discountPercent > 0 ? Math.max(0, totalAmount - discountAmount) : totalAmount;
+  const agencyDirectDiscountAmount = directAgencyBooking
+    ? Math.round(totalAmount * (agencyCommissionPercent / 100) * 100) / 100
+    : 0;
+  const finalTotalAmount = Math.max(0, totalAmount - discountAmount - agencyDirectDiscountAmount);
 
   const booking = await prisma.booking.create({
     data: {
@@ -408,6 +426,7 @@ export async function POST(request: NextRequest) {
       status: BookingStatusEnum.PAYMENT_PENDING,
       source: bookingSource,
       agencyProLinkId: agencyProLink?.id,
+      agencyFee: directAgencyBooking ? agencyDirectDiscountAmount : undefined,
       agencyMarkupAmount: agencyProLink?.markup ?? undefined,
       agencyPricingMode: Boolean(agencyProLink),
       paymentMethod: payload.paymentOption === "later" ? "PAY_LATER" : "CARD"
@@ -444,6 +463,8 @@ export async function POST(request: NextRequest) {
       agencyLink: payload.agencyLink ?? "",
       supplierAccountId: supplierAccountId ?? "not-configured",
       platformSharePercent: platformSharePercent.toString(),
+      agencyCommissionPercent: directAgencyBooking ? agencyCommissionPercent.toString() : "",
+      agencyModel: agencyProLink ? "agency-pro" : directAgencyBooking ? "direct-agency" : "web",
       discountPercent: discountPercent ? discountPercent.toString() : "",
       discountAmount: discountAmount ? discountAmount.toString() : "",
       hotelSlug: payload.hotelSlug ?? "unknown",
@@ -463,7 +484,7 @@ export async function POST(request: NextRequest) {
     data: {
       stripePaymentIntentId: paymentIntent.id,
       paymentStatus: paymentIntent.status ?? booking.paymentStatus,
-      platformFee: totalAmount,
+      platformFee: finalTotalAmount,
       supplierAmount: 0
     }
   });

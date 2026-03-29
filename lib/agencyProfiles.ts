@@ -8,7 +8,8 @@ export async function ensureAgencyProfile(userId: string, companyName: string) {
       id: userId,
       userId,
       companyName: cleanCompany,
-      approved: true
+      approved: true,
+      commissionPercent: 20
     },
     update: {
       companyName: cleanCompany,

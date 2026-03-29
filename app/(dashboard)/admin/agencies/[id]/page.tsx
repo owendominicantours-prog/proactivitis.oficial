@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { approveApplication, rejectApplication } from "@/app/(dashboard)/admin/partner-applications/actions";
-import { approveAgency, rejectAgency } from "./actions";
+import { approveAgency, rejectAgency, updateAgencyCommission } from "./actions";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -209,6 +209,7 @@ export default async function AgencyDetailPage({ params }: { params: Promise<{ i
   const totalSales = bookings.reduce((sum, booking) => sum + booking.totalAmount, 0);
   const totalAgencyFees = bookings.reduce((sum, booking) => sum + (booking.agencyFee ?? booking.agencyMarkupAmount ?? 0), 0);
   const lastBookingAt = bookings[0]?.createdAt ?? null;
+  const commissionPercent = user.AgencyProfile?.commissionPercent ?? 20;
   const serviceTypes =
     latestApplication?.serviceTypes
       ?.split(",")
@@ -233,7 +234,7 @@ export default async function AgencyDetailPage({ params }: { params: Promise<{ i
         </span>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-6">
         <article className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reservas</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900">{bookings.length}</p>
@@ -253,6 +254,10 @@ export default async function AgencyDetailPage({ params }: { params: Promise<{ i
         <article className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Ultima reserva</p>
           <p className="mt-2 text-sm font-semibold text-slate-900">{formatDate(lastBookingAt)}</p>
+        </article>
+        <article className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Comision directa</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-900">{commissionPercent}%</p>
         </article>
       </div>
 
@@ -297,6 +302,32 @@ export default async function AgencyDetailPage({ params }: { params: Promise<{ i
           <p className="mt-4 text-sm text-slate-600">
             Esta ficha concentra historial comercial, links, reservas y datos de contacto de la agencia.
           </p>
+          <form action={updateAgencyCommission} className="mt-5 space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+            <input type="hidden" name="userId" value={user.id} />
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500">Comision para reservas directas</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Este porcentaje solo aplica cuando la agencia reserva desde su cuenta. AgencyPro usa margen propio.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                name="commissionPercent"
+                min="0"
+                max="100"
+                step="1"
+                defaultValue={commissionPercent}
+                className="w-28 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-900"
+              />
+              <button
+                type="submit"
+                className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white hover:bg-slate-800"
+              >
+                Guardar %
+              </button>
+            </div>
+          </form>
         </article>
 
         <article className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
