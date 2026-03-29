@@ -200,6 +200,7 @@ export default async function SupplierBookingsPage() {
       travelDate: booking.travelDate.toLocaleDateString("es-ES"),
       travelDateValue: booking.travelDate.toISOString(),
       startTime: booking.startTime,
+      flowType: booking.flowType ?? null,
       customerName: booking.customerName,
       customerEmail: booking.customerEmail,
       customerPhone: booking.customerPhone,

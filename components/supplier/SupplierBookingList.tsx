@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useMemo, useState } from "react";
 import {
@@ -11,6 +11,7 @@ import {
   Send,
   Slack
 } from "lucide-react";
+import { buildBookingPresentation } from "@/lib/bookingPresentation";
 
 export type SupplierTimelineEntry = {
   title: string;
@@ -30,6 +31,7 @@ export type SupplierBookingSummary = {
   travelDate: string;
   travelDateValue: string;
   startTime: string | null;
+  flowType?: string | null;
   customerName: string | null;
   customerEmail: string;
   customerPhone?: string | null;
@@ -68,9 +70,9 @@ const PAGE_SIZE = 20;
 
 const requestOptions: RequestInfoOption[] = [
   {
-    label: "Solicitar número de habitación",
+    label: "Solicitar nÃºmero de habitaciÃ³n",
     value: "room",
-    message: "Por favor envíanos tu número de habitación para coordinar el pickup."
+    message: "Por favor envÃ­anos tu nÃºmero de habitaciÃ³n para coordinar el pickup."
   },
   {
     label: "Solicitar comprobante de pago",
@@ -80,7 +82,7 @@ const requestOptions: RequestInfoOption[] = [
   {
     label: "Informar retraso",
     value: "delay",
-    message: "Tu transporte podría tener un retraso; te avisaremos cuándo salimos."
+    message: "Tu transporte podrÃ­a tener un retraso; te avisaremos cuÃ¡ndo salimos."
   }
 ];
 
@@ -102,8 +104,8 @@ const statusOptions = [
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: "today", label: "Hoy" },
-  { key: "tomorrow", label: "Mañana" },
-  { key: "upcoming", label: "Próximos" },
+  { key: "tomorrow", label: "MaÃ±ana" },
+  { key: "upcoming", label: "PrÃ³ximos" },
   { key: "past", label: "Pasados" },
   { key: "payment", label: "Pendientes de pago" }
 ];
@@ -308,7 +310,7 @@ export function SupplierBookingList({ bookings }: Props) {
     });
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error((error && (error.error ?? error.message)) || "Acción fallida.");
+      throw new Error((error && (error.error ?? error.message)) || "AcciÃ³n fallida.");
     }
     return true;
   };
@@ -324,28 +326,28 @@ export function SupplierBookingList({ bookings }: Props) {
   };
 
   const handleCancel = async (booking: SupplierBookingSummary) => {
-    const reason = typeof window !== "undefined" ? window.prompt("Motivo de cancelación:") : null;
+    const reason = typeof window !== "undefined" ? window.prompt("Motivo de cancelaciÃ³n:") : null;
     if (!reason?.trim()) {
-      addFeedback(booking.id, "Se canceló la acción, se requiere motivo.");
+      addFeedback(booking.id, "Se cancelÃ³ la acciÃ³n, se requiere motivo.");
       return;
     }
     try {
       await sendSupplierAction(booking.id, { action: "requestCancel", reason: reason.trim() });
-      addFeedback(booking.id, "Solicitud de cancelación enviada al equipo.");
+      addFeedback(booking.id, "Solicitud de cancelaciÃ³n enviada al equipo.");
     } catch (error) {
       addFeedback(booking.id, (error as Error).message);
     }
   };
 
   const handleCopyDetails = (booking: SupplierBookingSummary) => {
-    const text = `Reserva ${booking.bookingCode} · ${booking.tourTitle} · ${booking.customerName ?? "Cliente"} · ${booking.hotel ?? booking.pickup ?? "Pickup pendiente"} · ${booking.startTime ?? "Hora por confirmar"}`;
+    const text = `Reserva ${booking.bookingCode} Â· ${booking.tourTitle} Â· ${booking.customerName ?? "Cliente"} Â· ${booking.hotel ?? booking.pickup ?? "Pickup pendiente"} Â· ${booking.startTime ?? "Hora por confirmar"}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text);
     } else {
       addFeedback(booking.id, "Navegador no soporta portapapeles.");
       return;
     }
-    addFeedback(booking.id, "Información copiada.");
+    addFeedback(booking.id, "InformaciÃ³n copiada.");
   };
 
   const handlePrintDetails = (booking: SupplierBookingSummary) => {
@@ -361,7 +363,7 @@ export function SupplierBookingList({ bookings }: Props) {
     `;
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
-      addFeedback(booking.id, "No se pudo abrir la ventana de impresión.");
+      addFeedback(booking.id, "No se pudo abrir la ventana de impresiÃ³n.");
       return;
     }
     printWindow.document.write(content);
@@ -374,7 +376,7 @@ export function SupplierBookingList({ bookings }: Props) {
     if (typeof window === "undefined") return;
     const phone = booking.whatsappNumber?.replace(/\D/g, "") ?? "18093949877";
     const message = encodeURIComponent(
-      `Pickup: ${booking.hotel ?? booking.pickup ?? "Pendiente"} · ${booking.startTime ?? "Hora por confirmar"} · ${booking.customerName ?? "Cliente"}`
+      `Pickup: ${booking.hotel ?? booking.pickup ?? "Pendiente"} Â· ${booking.startTime ?? "Hora por confirmar"} Â· ${booking.customerName ?? "Cliente"}`
     );
     window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
     addFeedback(booking.id, "Mensaje enviado al chofer.");
@@ -396,9 +398,9 @@ export function SupplierBookingList({ bookings }: Props) {
     if (!target) return;
     try {
       await sendSupplierAction(target.id, { action: "confirmTime" });
-      addFeedback(target.id, "Correo de confirmación enviado.");
+      addFeedback(target.id, "Correo de confirmaciÃ³n enviado.");
       if (!booking) {
-        setModalStatus("Correo de confirmación enviado.");
+        setModalStatus("Correo de confirmaciÃ³n enviado.");
       }
     } catch (error) {
       const errorMessage = (error as Error).message;
@@ -436,7 +438,7 @@ export function SupplierBookingList({ bookings }: Props) {
       selectedBooking
         ? [
             `Reserva creada el ${new Date(selectedBooking.createdAt).toLocaleDateString("es-ES")}`,
-            `Última actualización ${new Date(selectedBooking.updatedAt).toLocaleString("es-ES")}`
+            `Ãšltima actualizaciÃ³n ${new Date(selectedBooking.updatedAt).toLocaleString("es-ES")}`
           ]
         : null,
     [selectedBooking]
@@ -468,10 +470,10 @@ export function SupplierBookingList({ bookings }: Props) {
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-700">Última reserva</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-700">Ãšltima reserva</p>
                 <p className="text-lg font-semibold text-slate-900">{latestBooking.tourTitle}</p>
                 <p className="text-sm text-slate-600">
-                  {latestBooking.customerName ?? "Cliente"} · {latestBooking.bookingCode}
+                  {latestBooking.customerName ?? "Cliente"} Â· {latestBooking.bookingCode}
                 </p>
               </div>
               <button
@@ -504,7 +506,7 @@ export function SupplierBookingList({ bookings }: Props) {
             <p className="text-3xl font-semibold text-slate-900">{summary.totalPaxHoy}</p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Próxima salida</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">PrÃ³xima salida</p>
             <p className="text-3xl font-semibold text-slate-900">
               {summary.nextDepartureMinutes !== null
                 ? `en ${summary.nextDepartureMinutes} min`
@@ -512,7 +514,7 @@ export function SupplierBookingList({ bookings }: Props) {
             </p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Total día</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Total dÃ­a</p>
             <p className="text-3xl font-semibold text-slate-900">
               ${summary.totalDelDia.toFixed(2)}
             </p>
@@ -532,7 +534,7 @@ export function SupplierBookingList({ bookings }: Props) {
                 className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               >
                 <option value="today">Hoy</option>
-                <option value="tomorrow">Mañana</option>
+                <option value="tomorrow">MaÃ±ana</option>
                 <option value="week">Semana</option>
                 <option value="range">Rango</option>
               </select>
@@ -634,7 +636,7 @@ export function SupplierBookingList({ bookings }: Props) {
                 }}
                 className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               >
-                <option value="created">Últimas creadas</option>
+                <option value="created">Ãšltimas creadas</option>
                 <option value="travel">Fecha de salida</option>
               </select>
             </div>
@@ -677,8 +679,22 @@ export function SupplierBookingList({ bookings }: Props) {
         </div>
 
         <div className="space-y-4">
-          {pageBookings.map((booking) => (
-            <article
+          {pageBookings.map((booking) => {
+            const presentation = buildBookingPresentation({
+              flowType: booking.flowType,
+              tripType: booking.tripType,
+              originAirport: booking.originAirport,
+              flightNumber: booking.flightNumber,
+              hotel: booking.hotel,
+              pickup: booking.pickup,
+              pickupNotes: booking.pickupNotes,
+              returnTravelDate: booking.returnTravelDate,
+              returnStartTime: booking.returnStartTime,
+              startTime: booking.startTime
+            });
+
+            return (
+              <article
               key={booking.id}
               className={`rounded-2xl border bg-white p-5 shadow-sm ${
                 latestBooking?.id === booking.id ? "border-emerald-300 ring-2 ring-emerald-100" : "border-slate-200"
@@ -692,7 +708,7 @@ export function SupplierBookingList({ bookings }: Props) {
                   </p>
                   <h2 className="text-xl font-semibold text-slate-900">{booking.tourTitle}</h2>
                   <p className="text-sm text-slate-500">
-                    {booking.startTime ?? "Hora por confirmar"} · {new Date(booking.travelDateValue).toLocaleDateString("es-ES")}
+                    {booking.startTime ?? "Hora por confirmar"} Â· {new Date(booking.travelDateValue).toLocaleDateString("es-ES")}
                   </p>
                 </div>
                 <span
@@ -711,7 +727,7 @@ export function SupplierBookingList({ bookings }: Props) {
                   {booking.agencyName && (
                     <p className="text-xs text-slate-500">
                       Agencia: {booking.agencyName}
-                      {booking.agencyPhone ? ` · ${booking.agencyPhone}` : ""}
+                      {booking.agencyPhone ? ` Â· ${booking.agencyPhone}` : ""}
                     </p>
                   )}
                 </div>
@@ -720,14 +736,9 @@ export function SupplierBookingList({ bookings }: Props) {
                   <p className="text-lg font-semibold text-slate-900">{booking.pax}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pickup</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.routeLabel}</p>
                   <p className="text-sm font-semibold text-slate-900">{booking.hotel ?? booking.pickup ?? "Pendiente"}</p>
-                  <p className="text-xs text-slate-500">
-                    {booking.tripType === "round-trip" ? "Ida y vuelta" : "Directa"}
-                    {booking.returnTravelDate
-                      ? ` · Regreso ${new Date(booking.returnTravelDate).toLocaleDateString("es-ES")} ${booking.returnStartTime ?? ""}`
-                      : ""}
-                  </p>
+                  <p className="text-xs text-slate-500">{presentation.logisticsValue || "Operación pendiente"}</p>
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pago</p>
@@ -757,7 +768,7 @@ export function SupplierBookingList({ bookings }: Props) {
                   className="flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-700"
                 >
                   <Slack className="h-4 w-4" />
-                  Solicitar cancelación
+                  Solicitar cancelaciÃ³n
                 </button>
                 <button
                   type="button"
@@ -806,8 +817,9 @@ export function SupplierBookingList({ bookings }: Props) {
                   {actionFeedbacks[booking.id]}
                 </p>
               )}
-            </article>
-          ))}
+              </article>
+            );
+          })}
           {!pageBookings.length && (
             <p className="text-sm text-slate-500">No hay reservas que coincidan con los filtros seleccionados.</p>
           )}
@@ -815,7 +827,7 @@ export function SupplierBookingList({ bookings }: Props) {
         {orderedBookings.length > PAGE_SIZE && (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
             <span>
-              Página {currentPage} de {totalPages}
+              PÃ¡gina {currentPage} de {totalPages}
             </span>
             <div className="flex gap-2">
               <button
@@ -861,7 +873,7 @@ export function SupplierBookingList({ bookings }: Props) {
               </div>
               <div className="space-y-1 text-sm text-slate-600">
                 <p>
-                  <span className="text-xs uppercase text-slate-500">Logística</span>
+                  <span className="text-xs uppercase text-slate-500">LogÃ­stica</span>
                   <br />
                   Pickup {selectedBooking.hotel ?? selectedBooking.pickup ?? "Pendiente"}, hora{" "}
                   {selectedBooking.startTime ?? "Pendiente"}
@@ -870,13 +882,13 @@ export function SupplierBookingList({ bookings }: Props) {
                   <span className="text-xs uppercase text-slate-500">Vuelo</span>
                   <br />
                   {selectedBooking.originAirport ?? "Origen pendiente"}
-                  {selectedBooking.flightNumber ? ` · ${selectedBooking.flightNumber}` : ""}
+                  {selectedBooking.flightNumber ? ` Â· ${selectedBooking.flightNumber}` : ""}
                 </p>
                 <p>
                   <span className="text-xs uppercase text-slate-500">Canal</span>
                   <br />
                   {selectedBooking.agencyName ?? "Reserva directa"}
-                  {selectedBooking.agencyPhone ? ` · ${selectedBooking.agencyPhone}` : ""}
+                  {selectedBooking.agencyPhone ? ` Â· ${selectedBooking.agencyPhone}` : ""}
                 </p>
               </div>
             </div>
@@ -887,7 +899,7 @@ export function SupplierBookingList({ bookings }: Props) {
                 ${selectedBooking.totalAmount.toFixed(2)}
               </p>
               <p>
-                <span className="text-xs uppercase text-slate-500">Comisión plataforma</span>
+                <span className="text-xs uppercase text-slate-500">ComisiÃ³n plataforma</span>
                 <br />
                 ${selectedBooking.platformFee?.toFixed(2) ?? "0.00"}
               </p>
@@ -935,13 +947,13 @@ export function SupplierBookingList({ bookings }: Props) {
                 selectedBooking.notes.map((note) => (
                   <article key={`${selectedBooking.id}-${note.timestamp}-${note.author}`} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
                     <p className="text-[11px] text-slate-500">
-                      {new Date(note.timestamp).toLocaleString("es-ES")} · {note.author}
+                      {new Date(note.timestamp).toLocaleString("es-ES")} Â· {note.author}
                     </p>
                     <p className="text-sm text-slate-700">{note.message}</p>
                   </article>
                 ))
               ) : (
-                <p className="text-xs text-slate-500">No hay notas internas todavía.</p>
+                <p className="text-xs text-slate-500">No hay notas internas todavÃ­a.</p>
               )}
             </div>
           </div>
@@ -1021,3 +1033,4 @@ function ChatNoteInput({ onSend }: ChatNoteInputProps) {
     </form>
   );
 }
+
