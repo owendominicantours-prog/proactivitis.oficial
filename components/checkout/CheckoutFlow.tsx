@@ -564,6 +564,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
 
   const [currentSession, setCurrentSession] = useState<CheckoutSessionInfo | null>(null);
+  const [sessionRole, setSessionRole] = useState<string | null>(null);
 
   const router = useRouter();
   const successRedirectBase = useMemo(() => {
@@ -598,6 +599,24 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
       .catch(() => {
         if (!isActive) return;
         setSavedPayment(null);
+      });
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+    fetch("/api/auth/session", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!isActive) return;
+        const role = data?.user?.role;
+        setSessionRole(typeof role === "string" ? role : null);
+      })
+      .catch(() => {
+        if (!isActive) return;
+        setSessionRole(null);
       });
     return () => {
       isActive = false;
@@ -734,6 +753,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
         minute: "2-digit"
       })
     : null;
+  const isAgencyCheckout = sessionRole === "AGENCY" || Boolean(summary.agencyLink);
 
 
 
@@ -1045,8 +1065,6 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
       if (!contact.email.trim()) nextErrors.email = t("checkout.validation.emailRequired");
 
-      if (!contact.phone.trim()) nextErrors.phone = t("checkout.validation.phoneRequired");
-
     }
 
 
@@ -1193,6 +1211,12 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                       <p className="text-lg font-semibold text-slate-900">{t("checkout.section.contact.heading")}</p>
 
+                      <p className="mt-1 text-sm text-slate-500">
+                        {isAgencyCheckout
+                          ? "Completa aqui los datos del cliente final. El telefono del cliente es opcional."
+                          : "Usa los datos del viajero principal o de la persona responsable de la reserva."}
+                      </p>
+
                       {contactSummary && <p className="text-sm text-slate-500">{contactSummary}</p>}
 
                     </div>
@@ -1262,7 +1286,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                     <label className="text-xs uppercase tracking-[0.3em] text-slate-500" htmlFor="phone">
 
-                      {t("checkout.contact.phone.label")}
+                      {t("checkout.contact.phone.label")} <span className="normal-case tracking-normal text-slate-400">(opcional)</span>
 
                     </label>
 
@@ -1319,6 +1343,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                     </div>
 
                     {errors.phone && <p className="text-xs text-rose-500">{errors.phone}</p>}
+                    {!errors.phone && (
+                      <p className="text-xs text-slate-500">
+                        {isAgencyCheckout
+                          ? "Si la agencia no tiene el telefono del cliente en este momento, puede continuar sin completarlo."
+                          : "Puedes dejar este campo vacio y completar el telefono mas adelante si hace falta."}
+                      </p>
+                    )}
 
                   </div>
 
