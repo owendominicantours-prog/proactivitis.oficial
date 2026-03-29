@@ -8,6 +8,7 @@ import { SupportTicketButton } from "@/components/dashboard/SupportTicketButton"
 const agencyNav = [
   { label: "Dashboard", href: "/agency" },
   { label: "Tours / Catalogo", href: "/agency/tours" },
+  { label: "Traslados", href: "/agency/transfers" },
   { label: "Reservas", href: "/agency/bookings" },
   { label: "Calendario", href: "/agency/calendar" },
   { label: "Comisiones", href: "/agency/commissions" },
