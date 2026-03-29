@@ -1358,7 +1358,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const isSosuaPartyBoatTour =
     tour.slug === "party-boat-sosua" ||
     tour.slug === "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua";
-  const commercialIntentLinks = buildCommercialIntentLinks(locale, tour.slug);
+  const commercialIntentLinks = agencyMode ? [] : buildCommercialIntentLinks(locale, tour.slug);
   const practicalInfo = buildPracticalInfo(locale, tour.slug);
   const mapQuery = encodeURIComponent(`${heroTitle} ${tour.location ?? "Punta Cana"}`);
   const mapEmbedUrl = `https://www.google.com/maps?q=${mapQuery}&output=embed`;
@@ -1480,7 +1480,9 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     .map((image) => (image.startsWith("http") ? image : `${PROACTIVITIS_URL}${image}`))
     .filter((image) => image && image !== heroImageAbsolute);
   const schemaImages = [heroImageAbsolute, ...galleryImagesAbsolute].slice(0, 5);
-  const tourUrl = `${PROACTIVITIS_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`;
+  const tourUrl = agencyMode
+    ? `${PROACTIVITIS_URL}/agency-pro/${agencyLinkFromQuery}`
+    : `${PROACTIVITIS_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`;
   const toursHubUrl = `${PROACTIVITIS_URL}${locale === "es" ? "/tours" : `/${locale}/tours`}`;
   const schemaImageObjects = schemaImages.map((image, index) => ({
     "@type": "ImageObject",
@@ -1795,31 +1797,64 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
       {relatedToursSchema ? <StructuredData data={relatedToursSchema} /> : null}
 
       <section className="mx-auto max-w-[1240px] px-4 pt-8 sm:pt-10">
+        {agencyMode ? (
+          <div className="mb-4 rounded-[24px] border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-sky-50 px-5 py-4 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.35em] text-emerald-700">
+                  {localeLabel(locale, "Reserva por agencia", "Agency booking", "Reservation agence")}
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {localeLabel(
+                    locale,
+                    `Oferta privada gestionada por ${agencyDisplayName ?? "tu agencia"}.`,
+                    `Private offer managed by ${agencyDisplayName ?? "your agency"}.`,
+                    `Offre privee geree par ${agencyDisplayName ?? "votre agence"}.`
+                  )}
+                </p>
+              </div>
+              <div className="rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-semibold text-emerald-700">
+                {localeLabel(locale, "Tarifa acordada", "Agreed rate", "Tarif convenu")} · {priceLabel}
+              </div>
+            </div>
+          </div>
+        ) : null}
         <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">
           <div className="flex flex-col justify-center gap-6 p-6 sm:p-8 lg:p-16">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
-              <svg
-                aria-hidden
-                className="h-3 w-3 text-indigo-600"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 12.5 7 12.5s7-7.25 7-12.5c0-3.866-3.134-7-7-7zm0 4a3 3 0 100-6 3 3 0 000 6z"
-                />
-                <circle cx="12" cy="8.4" r="2.4" />
-              </svg>
-              <span>{tour.location ?? "Punta Cana"}</span>
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
+                <svg
+                  aria-hidden
+                  className="h-3 w-3 text-indigo-600"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 12.5 7 12.5s7-7.25 7-12.5c0-3.866-3.134-7-7-7zm0 4a3 3 0 100-6 3 3 0 000 6z"
+                  />
+                  <circle cx="12" cy="8.4" r="2.4" />
+                </svg>
+                <span>{tour.location ?? "Punta Cana"}</span>
+              </div>
+              {agencyMode ? (
+                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">
+                  <span>{agencyDisplayName ?? localeLabel(locale, "Agencia", "Agency", "Agence")}</span>
+                </div>
+              ) : null}
             </div>
             <h1 className="text-3xl font-black text-slate-900 sm:text-4xl lg:text-5xl">{heroTitle}</h1>
             <div className="flex flex-col gap-4">
               <div className="flex items-end gap-8">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{heroPriceLabel}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    {agencyMode
+                      ? localeLabel(locale, "Tarifa de agencia", "Agency rate", "Tarif agence")
+                      : heroPriceLabel}
+                  </p>
                   <p className={`text-4xl font-black ${hasActiveDiscount ? "text-red-600" : "text-indigo-600"}`}>{priceLabel}</p>
                   {hasActiveDiscount ? (
                     <div className="mt-1 space-y-1">
@@ -1863,7 +1898,9 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                       href="#booking"
                       className="rounded-3xl bg-indigo-600 px-10 py-4 text-base font-bold text-white shadow-xl shadow-indigo-100 transition-transform hover:scale-105 active:scale-95"
                     >
-                      {heroReserveCta}
+                      {agencyMode
+                        ? localeLabel(locale, "Continuar con esta tarifa", "Continue with this rate", "Continuer avec ce tarif")
+                        : heroReserveCta}
                     </Link>
                     <GalleryLightbox
                       images={gallery}
@@ -2249,6 +2286,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
             </div>
           </section>
 
+          {!agencyMode ? (
           <section className="space-y-4">
             <div>
               <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
@@ -2276,8 +2314,9 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
               ))}
             </div>
           </section>
+          ) : null}
 
-          {relatedTourCards.length ? (
+          {!agencyMode && relatedTourCards.length ? (
             <section className="space-y-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
