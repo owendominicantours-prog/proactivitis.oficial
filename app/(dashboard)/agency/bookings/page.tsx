@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import type { ReactNode } from "react";
 import { getServerSession } from "next-auth";
 
-import { PanelShell } from "@/components/dashboard/PanelShell";
 import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
 import { authOptions } from "@/lib/auth";
 import { formatTimeUntil, requiresCancellationRequest } from "@/lib/bookings";
@@ -121,7 +120,6 @@ export default async function AgencyBookingsPage({ searchParams }: PageProps) {
   const latestBooking = normalizedBookings[0]?.booking ?? null;
 
   return (
-    <PanelShell roleLabel="Agency" title="Reservas" navItems={[{ label: "Reservas", href: "/agency/bookings" }]}>
       <section className="space-y-5">
         <div className="rounded-[32px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a,#1e293b)] px-6 py-6 text-white shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -352,7 +350,6 @@ export default async function AgencyBookingsPage({ searchParams }: PageProps) {
           )}
         </div>
       </section>
-    </PanelShell>
   );
 }
 

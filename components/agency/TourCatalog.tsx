@@ -19,6 +19,7 @@ export type AgencyTourSummary = {
 };
 
 type SortMode = "title" | "publicPrice" | "netPrice";
+type ViewMode = "cards" | "list";
 
 const formatMoney = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -32,6 +33,7 @@ export const TourCatalog = ({ tours }: { tours: AgencyTourSummary[] }) => {
   const [destinationFilter, setDestinationFilter] = useState("");
   const [supplierFilter, setSupplierFilter] = useState("");
   const [sortBy, setSortBy] = useState<SortMode>("title");
+  const [viewMode, setViewMode] = useState<ViewMode>("cards");
 
   const destinations = useMemo(() => Array.from(new Set(tours.map((tour) => tour.location))).sort(), [tours]);
   const suppliers = useMemo(() => Array.from(new Set(tours.map((tour) => tour.supplier))).sort(), [tours]);
@@ -158,10 +160,32 @@ export const TourCatalog = ({ tours }: { tours: AgencyTourSummary[] }) => {
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+          <div className="flex flex-wrap items-center gap-3">
           <span>{filtered.length} resultados visibles</span>
           <span>Total publico: {formatMoney(totalPublicInventory)}</span>
           <span>Total neto estimado: {formatMoney(totalNetInventory)}</span>
+          </div>
+          <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 p-1">
+            <button
+              type="button"
+              onClick={() => setViewMode("cards")}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                viewMode === "cards" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+              }`}
+            >
+              Cards
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                viewMode === "list" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+              }`}
+            >
+              Lista
+            </button>
+          </div>
         </div>
       </section>
 
@@ -169,14 +193,17 @@ export const TourCatalog = ({ tours }: { tours: AgencyTourSummary[] }) => {
         {filtered.map((tour) => {
           const commissionValue = tour.price * (tour.commissionPercent / 100);
           const netAgencyPrice = tour.price - commissionValue;
+          const durationLabel = formatDurationLabel(tour.duration);
 
           return (
             <article
               key={tour.id}
               className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md"
             >
-              <div className="grid gap-4 xl:grid-cols-[220px,1.4fr,0.9fr,0.9fr] xl:items-center">
-                <div className="overflow-hidden rounded-2xl bg-slate-100">
+              <div
+                className={`gap-4 ${viewMode === "cards" ? "grid xl:grid-cols-[220px,1.4fr,0.9fr,0.9fr] xl:items-center" : "grid lg:grid-cols-[180px,1.5fr,0.8fr,0.8fr] lg:items-center"}`}
+              >
+                <div className={`overflow-hidden rounded-2xl bg-slate-100 ${viewMode === "list" ? "hidden lg:block" : ""}`}>
                   <div className="relative h-40 w-full">
                     <DynamicImage
                       src={tour.heroImage ?? "/fototours/fototour.jpeg"}
@@ -195,7 +222,7 @@ export const TourCatalog = ({ tours }: { tours: AgencyTourSummary[] }) => {
                   <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
                     <Tag>{tour.location}</Tag>
                     <Tag>{tour.supplier}</Tag>
-                    {tour.duration ? <Tag>{tour.duration}</Tag> : null}
+                    {durationLabel ? <Tag>{durationLabel}</Tag> : null}
                     <Tag>Slug: {tour.slug}</Tag>
                   </div>
 
@@ -277,4 +304,28 @@ const InfoLine = ({
       <p className={`text-base font-semibold ${valueClass}`}>{value}</p>
     </div>
   );
+};
+
+const formatDurationLabel = (value?: string | null) => {
+  if (!value) return "";
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return "";
+
+    if (trimmed.startsWith("{") && trimmed.includes("\"value\"")) {
+      try {
+        const parsed = JSON.parse(trimmed) as { value?: string | number; unit?: string };
+        if (parsed?.value && parsed?.unit) {
+          return `${parsed.value} ${parsed.unit}`;
+        }
+      } catch {
+        return trimmed;
+      }
+    }
+
+    return trimmed;
+  }
+
+  return String(value);
 };
