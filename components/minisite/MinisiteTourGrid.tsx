@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { formatDurationDisplay } from "@/lib/formatDuration";
 
 type Tour = {
   title: string;
@@ -53,7 +54,7 @@ export function MinisiteTourGrid({ minisiteSlug, theme, tours }: Props) {
             )}
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-semibold">{tour.title}</h3>
-              <span className="text-sm text-slate-500">{tour.duration}</span>
+              <span className="text-sm text-slate-500">{formatDurationDisplay(tour.duration)}</span>
             </div>
             <p className="text-sm font-semibold text-slate-900">{formatCurrency(tour.price)} desde</p>
           </div>

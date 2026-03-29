@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { formatDurationDisplay } from "@/lib/formatDuration";
 
 import { DynamicImage } from "@/components/shared/DynamicImage";
 import {
@@ -176,7 +177,7 @@ export const TourModerationConsole = ({ tours }: Props) => {
                   </div>
                   <p className="mt-1 text-xs text-slate-500">{tour.supplier.name} · {tour.country ?? tour.location}</p>
                   <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                    <span>Duración: {tour.duration}</span>
+                    <span>Duración: {formatDurationDisplay(tour.duration)}</span>
                     <span>Precio: USD {tour.price.toFixed(0)}</span>
                     <span>Actualizado: {new Date(tour.updatedAt).toLocaleDateString("es-DO")}</span>
                   </div>
@@ -239,7 +240,7 @@ const TourDetailPanel = ({ tour }: { tour: SimpleTourRecord }) => {
       <div className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
         <p><span className="font-semibold text-slate-900">Slug:</span> {tour.slug}</p>
         <p><span className="font-semibold text-slate-900">Precio:</span> USD {tour.price.toFixed(0)}</p>
-        <p><span className="font-semibold text-slate-900">Duración:</span> {tour.duration}</p>
+        <p><span className="font-semibold text-slate-900">Duración:</span> {formatDurationDisplay(tour.duration)}</p>
         <p><span className="font-semibold text-slate-900">Idiomas:</span> {tour.language}</p>
         <p><span className="font-semibold text-slate-900">Creado:</span> {new Date(tour.createdAt).toLocaleString("es-DO")}</p>
         <p><span className="font-semibold text-slate-900">Actualizado:</span> {new Date(tour.updatedAt).toLocaleString("es-DO")}</p>

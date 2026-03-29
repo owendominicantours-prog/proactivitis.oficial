@@ -5,6 +5,7 @@ import { MouseEvent, useEffect, useMemo, useState } from "react";
 import Papa from "papaparse";
 
 import { DynamicImage } from "@/components/shared/DynamicImage";
+import { formatDurationDisplay } from "@/lib/formatDuration";
 import { deleteSupplierTourAction, duplicateTourAction } from "@/app/(dashboard)/supplier/tours/actions";
 import { sendToReview, togglePauseTour } from "@/lib/actions/tourModeration";
 
@@ -427,7 +428,10 @@ const getProactiveMessage = (value: number) => {
                 <p className="text-sm font-semibold text-slate-900">{tour.title}</p>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{tour.location}</p>
                 <p className="text-[0.6rem] uppercase tracking-[0.3em] text-slate-400">ID del producto: {tour.productId}</p>
-                <div className="mt-1 text-xs text-slate-500">Rating {tour.rating.toFixed(1)} · Estado {tour.status}</div>
+                <div className="mt-1 text-xs text-slate-500">
+                  Rating {tour.rating.toFixed(1)} · Estado {tour.status}
+                  {tour.duration ? ` · ${formatDurationDisplay(tour.duration)}` : ""}
+                </div>
               </div>
             </div>
             <div className="flex flex-1 flex-wrap items-center gap-3 text-sm text-slate-600">

@@ -1,4 +1,5 @@
 import { getAllTours } from "@/lib/destinations";
+import { formatDurationDisplay } from "@/lib/formatDuration";
 
 export const metadata = {
   robots: { index: false, follow: false }
@@ -28,7 +29,7 @@ export default async function SearchPage() {
               </span>
             </div>
             <div className="mt-3 flex flex-wrap gap-3 text-xs uppercase tracking-[0.3em] text-slate-500">
-              <span>{tour.duration}</span>
+              <span>{formatDurationDisplay(tour.duration)}</span>
               <span>{tour.location}</span>
             </div>
             {tour.departureDestination?.name ? (

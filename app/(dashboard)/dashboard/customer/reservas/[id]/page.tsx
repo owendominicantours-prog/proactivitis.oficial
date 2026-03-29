@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 import { DynamicImage } from "@/components/shared/DynamicImage";
 import type { BookingStatus } from "@/lib/types/booking";
 import { buildBookingPresentation } from "@/lib/bookingPresentation";
+import { formatDurationDisplay } from "@/lib/formatDuration";
 
 export default async function CustomerBookingDetailPage({ params }: { params: Promise<{ id?: string }> }) {
   const resolved = await params;
@@ -179,7 +180,9 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
         <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.primaryDetailsLabel}</p>
           <p className="text-sm text-slate-700">{presentation.primaryDetailsValue}</p>
-          {presentation.kind === "activity" && <p className="text-sm text-slate-700">{booking.Tour?.duration}</p>}
+          {presentation.kind === "activity" && (
+            <p className="text-sm text-slate-700">{formatDurationDisplay(booking.Tour?.duration)}</p>
+          )}
           {presentation.kind === "activity" && <p className="text-sm text-slate-700">{booking.Tour?.language}</p>}
         </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">

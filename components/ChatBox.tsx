@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
+import { formatDurationDisplay } from "@/lib/formatDuration";
 
 type Props = {
   conversationId?: string;
@@ -67,19 +68,6 @@ const parseVisitorContext = (content: string): VisitorContextPayload | null => {
   } catch {
     return null;
   }
-};
-
-const formatDuration = (value: string | null) => {
-  if (!value) return "Duracion variable";
-  const raw = value.trim();
-  if (!raw) return "Duracion variable";
-  try {
-    const parsed = JSON.parse(raw) as { value?: string | number; unit?: string };
-    if (parsed && (parsed.value || parsed.unit)) return `${parsed.value ?? ""} ${parsed.unit ?? "horas"}`.trim();
-  } catch {
-    // use raw
-  }
-  return raw;
 };
 
 export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
@@ -216,7 +204,9 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
                   )}
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-slate-900">{tourCard.title}</p>
-                    <p className="text-xs text-slate-600">USD {tourCard.price} · {formatDuration(tourCard.duration)}</p>
+                    <p className="text-xs text-slate-600">
+                      USD {tourCard.price} · {formatDurationDisplay(tourCard.duration, "Duración variable")}
+                    </p>
                     <a
                       href={tourCard.url}
                       target="_blank"

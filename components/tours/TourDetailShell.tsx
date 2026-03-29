@@ -1,5 +1,6 @@
 import type { Tour } from "@prisma/client";
 import { ReactNode } from "react";
+import { formatDurationDisplay } from "@/lib/formatDuration";
 
 export type TourWithSupplier = Tour & {
   heroImage?: string | null;
@@ -70,7 +71,7 @@ export const TourDetailShell = ({ tour, bookingForm }: { tour: TourWithSupplier;
             <div className="grid gap-4 md:grid-cols-2">
               <article>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Duración</p>
-                <p className="text-lg font-semibold text-slate-900">{tour.duration}</p>
+                <p className="text-lg font-semibold text-slate-900">{formatDurationDisplay(tour.duration)}</p>
               </article>
               <article>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Idiomas</p>

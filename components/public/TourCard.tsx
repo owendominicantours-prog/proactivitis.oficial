@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { formatReviewCountShort } from "@/lib/reviewCounts";
+import { formatDurationDisplay } from "@/lib/formatDuration";
 
 type TourCardProps = {
   slug: string;
@@ -72,6 +73,7 @@ export function TourCard({
   const tagList = tags && tags.length ? tags : ["Top Experience"];
   const locationText = zone || location?.split(",")[0] || "Punta Cana";
   const audienceLabel = maxPax && maxPax <= 8 ? "Small group" : "Top seller";
+  const durationLabel = formatDurationDisplay(duration, "4 hours");
 
   const percentDiscountPrice = discountPercent > 0 ? price * (1 - discountPercent / 100) : price;
   const bestDiscountedPrice =
@@ -130,7 +132,7 @@ export function TourCard({
           <div className={`flex flex-wrap items-center gap-2 border-y border-slate-50 text-[11px] text-slate-500 ${compact ? "py-1.5" : "py-2"}`}>
             <span className="flex items-center gap-1">
               <IconClock />
-              {duration ?? "4 hours"}
+              {durationLabel}
             </span>
             <span className="flex items-center gap-1">
               <IconUsers />
