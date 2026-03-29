@@ -49,6 +49,8 @@ export type SupplierBookingSummary = {
   flightNumber?: string | null;
   originAirport?: string | null;
   pickupNotes?: string | null;
+  transferVehicleName?: string | null;
+  transferVehicleCategory?: string | null;
   agencyName?: string | null;
   agencyPhone?: string | null;
   createdAt: string;
@@ -739,6 +741,12 @@ export function SupplierBookingList({ bookings }: Props) {
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.routeLabel}</p>
                   <p className="text-sm font-semibold text-slate-900">{booking.hotel ?? booking.pickup ?? "Pendiente"}</p>
                   <p className="text-xs text-slate-500">{presentation.logisticsValue || "Operación pendiente"}</p>
+                  {booking.transferVehicleName && (
+                    <p className="text-xs text-slate-500">
+                      Vehículo: {booking.transferVehicleName}
+                      {booking.transferVehicleCategory ? ` · ${booking.transferVehicleCategory}` : ""}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pago</p>

@@ -72,6 +72,9 @@ export type CheckoutPageParams = {
   originHotelName?: string;
   origin?: string;
   originLabel?: string;
+  vehicleId?: string;
+  vehicleName?: string;
+  vehicleCategory?: string;
   flowType?: "tour" | "transfer";
   tripType?: "one-way" | "round-trip";
   returnDatetime?: string;
@@ -445,6 +448,9 @@ const buildSummary = (params: CheckoutPageParams, transferDefaults: TransferDefa
     origin: params.origin,
 
     originLabel: params.originLabel,
+    vehicleId: params.vehicleId,
+    vehicleName: params.vehicleName,
+    vehicleCategory: params.vehicleCategory,
     tripType: params.tripType ?? "one-way",
     returnDatetime: params.returnDatetime,
     agencyLink: params.agencyLink
@@ -940,6 +946,9 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
         bookingCode: summary.bookingCode,
 
         originHotelName: summary.originHotelName,
+        vehicleId: summary.vehicleId,
+        vehicleName: summary.vehicleName,
+        vehicleCategory: summary.vehicleCategory,
         tourOptionId: summary.tourOptionId,
         tourOptionName: summary.tourOptionName,
         tourOptionType: summary.tourOptionType,

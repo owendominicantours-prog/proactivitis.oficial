@@ -192,6 +192,12 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
         <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.logisticsLabel}</p>
           <p className="text-sm text-slate-700">{presentation.logisticsValue || "Operación pendiente"}</p>
+          {booking.transferVehicleName && (
+            <p className="text-sm text-slate-700">
+              Vehículo: {booking.transferVehicleName}
+              {booking.transferVehicleCategory ? ` · ${booking.transferVehicleCategory}` : ""}
+            </p>
+          )}
           {presentation.kind === "transfer" && <p className="text-sm text-slate-700">Origen: {booking.originAirport ?? "Pendiente"}</p>}
           {presentation.kind === "transfer" && <p className="text-sm text-slate-700">Vuelo: {booking.flightNumber ?? "Pendiente"}</p>}
         </article>

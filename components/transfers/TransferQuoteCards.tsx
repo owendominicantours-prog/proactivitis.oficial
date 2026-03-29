@@ -64,6 +64,8 @@ const transferTourImage =
 
 const buildCheckoutHref = ({
   vehicleId,
+  vehicleName,
+  vehicleCategory,
   price,
   passengers,
   originSlug,
@@ -75,6 +77,8 @@ const buildCheckoutHref = ({
   returnDatetime
 }: {
   vehicleId: string;
+  vehicleName: string;
+  vehicleCategory: string;
   price: number;
   passengers: number;
   originSlug: string;
@@ -97,6 +101,8 @@ const buildCheckoutHref = ({
   params.set("tourTitle", transferTourTitle);
   params.set("tourImage", transferTourImage);
   params.set("vehicleId", vehicleId);
+  params.set("vehicleName", vehicleName);
+  params.set("vehicleCategory", vehicleCategory);
   params.set("price", price.toFixed(2));
   params.set("passengers", String(passengers));
   params.set("adults", String(passengers));
@@ -278,6 +284,8 @@ export default function TransferQuoteCards({
             const displayPrice = tripType === "round-trip" ? roundTripPrice : oneWayPrice;
             const reserveUrl = buildCheckoutHref({
               vehicleId: vehicle.id,
+              vehicleName: vehicle.name,
+              vehicleCategory: vehicle.category,
               price: displayPrice,
               passengers,
               originSlug,

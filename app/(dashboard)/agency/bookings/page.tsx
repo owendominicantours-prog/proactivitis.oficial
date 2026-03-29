@@ -172,6 +172,12 @@ export default async function AgencyBookingsPage() {
                       <p className="mt-2 text-sm font-semibold text-slate-900">
                         {presentation.logisticsValue || "Operación pendiente"}
                       </p>
+                      {booking.transferVehicleName && (
+                        <p className="text-xs text-slate-500">
+                          Vehículo: {booking.transferVehicleName}
+                          {booking.transferVehicleCategory ? ` · ${booking.transferVehicleCategory}` : ""}
+                        </p>
+                      )}
                       <p className="text-xs text-slate-500">Vuelo: {booking.flightNumber ?? "Pendiente"}</p>
                       <p className="text-xs text-slate-500">{formatTimeUntil(booking.travelDate)}</p>
                     </article>

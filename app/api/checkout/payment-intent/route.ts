@@ -47,6 +47,9 @@ type PaymentIntentPayload = {
   bookingCode?: string;
   originHotelName?: string;
   origin?: string;
+  vehicleId?: string;
+  vehicleName?: string;
+  vehicleCategory?: string;
   totalPrice?: number | string;
 };
 
@@ -313,6 +316,13 @@ export async function POST(request: NextRequest) {
         }
       })
     : null;
+  const transferVehicle =
+    payload.flowType === "transfer" && payload.vehicleId
+      ? await prisma.transferVehicle.findUnique({
+          where: { id: payload.vehicleId },
+          select: { id: true, name: true, category: true }
+        })
+      : null;
   const bookingSource =
     agencyProLink || sessionUser?.role === BookingSourceEnum.AGENCY
       ? BookingSourceEnum.AGENCY
@@ -391,6 +401,10 @@ export async function POST(request: NextRequest) {
       userId,
       flightNumber: normalizeString(payload.flightNumber),
       flowType: payload.flowType ?? "tour",
+      transferVehicleId: transferVehicle?.id ?? normalizeString(payload.vehicleId) ?? undefined,
+      transferVehicleName: transferVehicle?.name ?? normalizeString(payload.vehicleName) ?? undefined,
+      transferVehicleCategory:
+        transferVehicle?.category ?? normalizeString(payload.vehicleCategory) ?? undefined,
       status: BookingStatusEnum.PAYMENT_PENDING,
       source: bookingSource,
       agencyProLinkId: agencyProLink?.id,

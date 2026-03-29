@@ -86,6 +86,9 @@ model Booking {
   returnStartTime       String?
   flightNumber          String?
   flowType              String?        @default("tour")
+  transferVehicleId     String?
+  transferVehicleName   String?
+  transferVehicleCategory String?
   cancellationReason    String?
   cancellationByRole    String?
   cancellationAt        DateTime?

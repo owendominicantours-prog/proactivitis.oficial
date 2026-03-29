@@ -534,6 +534,8 @@ export default function TrasladoSearch({
       params.delete("tourPrice");
     }
     params.set("vehicleId", vehicle.id);
+    params.set("vehicleName", vehicleLabel);
+    params.set("vehicleCategory", String(vehicleCategoryMap[vehicle.id] ?? "SEDAN"));
     params.set("passengers", String(passengers));
     if (!transferTourId) {
       params.delete("tourId");

@@ -57,6 +57,8 @@ type AdminBookingView = {
   tourDuration: string | null;
   tourLanguage: string | null;
   meetingPoint: string | null;
+  transferVehicleName: string | null;
+  transferVehicleCategory: string | null;
   cancellationReason: string | null;
   cancellationByRole: string | null;
   cancellationAt: string | null;
@@ -270,6 +272,8 @@ export default async function AdminBookingsPage({ searchParams }: any) {
       tourDuration: booking.Tour?.duration ?? null,
       tourLanguage: booking.Tour?.language ?? null,
       meetingPoint: booking.Tour?.meetingPoint ?? null,
+      transferVehicleName: booking.transferVehicleName,
+      transferVehicleCategory: booking.transferVehicleCategory,
       cancellationReason: booking.cancellationReason,
       cancellationByRole: booking.cancellationByRole,
       cancellationAt: booking.cancellationAt?.toISOString() ?? null,
@@ -738,6 +742,13 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                           <span className="font-semibold text-slate-900">{presentation.primaryDetailsLabel}:</span>{" "}
                           {presentation.primaryDetailsValue}
                         </div>
+                        {booking.transferVehicleName && (
+                          <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                            <span className="font-semibold text-slate-900">Vehículo:</span>{" "}
+                            {booking.transferVehicleName}
+                            {booking.transferVehicleCategory ? ` · ${booking.transferVehicleCategory}` : ""}
+                          </div>
+                        )}
                       </div>
                     </section>
 

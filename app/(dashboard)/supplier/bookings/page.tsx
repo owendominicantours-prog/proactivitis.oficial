@@ -218,6 +218,8 @@ export default async function SupplierBookingsPage() {
       flightNumber: booking.flightNumber,
       originAirport: booking.originAirport,
       pickupNotes: booking.pickupNotes,
+      transferVehicleName: booking.transferVehicleName ?? null,
+      transferVehicleCategory: booking.transferVehicleCategory ?? null,
       agencyName:
         agencyUser
           ? agencyUser.AgencyProfile?.companyName ?? agencyApplication?.companyName ?? agencyUser.name ?? "Agencia"
