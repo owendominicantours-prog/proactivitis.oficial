@@ -30,6 +30,7 @@ type TourBookingWidgetProps = {
   originHotelName?: string;
   initialOptionId?: string;
   discountPercent?: number;
+  agencyLink?: string;
 };
 
 type TourOption = {
@@ -104,7 +105,8 @@ export function TourBookingWidget({
   bookingCode,
   originHotelName,
   initialOptionId,
-  discountPercent = 0
+  discountPercent = 0,
+  agencyLink
 }: TourBookingWidgetProps) {
   const router = useRouter();
   const [date, setDate] = useState("");
@@ -209,6 +211,7 @@ export function TourBookingWidget({
     if (hotelSlug) params.set("hotelSlug", hotelSlug);
     if (bookingCode) params.set("bookingCode", bookingCode);
     if (originHotelName) params.set("originHotelName", originHotelName);
+    if (agencyLink) params.set("agencyLink", agencyLink);
     router.push(`/checkout?${params.toString()}`);
   };
 

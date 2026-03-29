@@ -41,8 +41,14 @@ export type SupplierBookingSummary = {
   totalAmount: number;
   platformFee?: number | null;
   supplierAmount?: number | null;
+  tripType?: string | null;
+  returnTravelDate?: string | null;
+  returnStartTime?: string | null;
   flightNumber?: string | null;
+  originAirport?: string | null;
   pickupNotes?: string | null;
+  agencyName?: string | null;
+  agencyPhone?: string | null;
   createdAt: string;
   updatedAt: string;
   whatsappNumber?: string | null;
@@ -702,6 +708,12 @@ export function SupplierBookingList({ bookings }: Props) {
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Cliente</p>
                   <p className="text-sm font-semibold text-slate-900">{booking.customerName ?? "Invitado"}</p>
                   <p className="text-xs text-slate-500">{booking.customerEmail}</p>
+                  {booking.agencyName && (
+                    <p className="text-xs text-slate-500">
+                      Agencia: {booking.agencyName}
+                      {booking.agencyPhone ? ` · ${booking.agencyPhone}` : ""}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pax</p>
@@ -710,6 +722,12 @@ export function SupplierBookingList({ bookings }: Props) {
                 <div>
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pickup</p>
                   <p className="text-sm font-semibold text-slate-900">{booking.hotel ?? booking.pickup ?? "Pendiente"}</p>
+                  <p className="text-xs text-slate-500">
+                    {booking.tripType === "round-trip" ? "Ida y vuelta" : "Directa"}
+                    {booking.returnTravelDate
+                      ? ` · Regreso ${new Date(booking.returnTravelDate).toLocaleDateString("es-ES")} ${booking.returnStartTime ?? ""}`
+                      : ""}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pago</p>
@@ -851,7 +869,14 @@ export function SupplierBookingList({ bookings }: Props) {
                 <p>
                   <span className="text-xs uppercase text-slate-500">Vuelo</span>
                   <br />
-                  {selectedBooking.flightNumber ?? "No registrado"}
+                  {selectedBooking.originAirport ?? "Origen pendiente"}
+                  {selectedBooking.flightNumber ? ` · ${selectedBooking.flightNumber}` : ""}
+                </p>
+                <p>
+                  <span className="text-xs uppercase text-slate-500">Canal</span>
+                  <br />
+                  {selectedBooking.agencyName ?? "Reserva directa"}
+                  {selectedBooking.agencyPhone ? ` · ${selectedBooking.agencyPhone}` : ""}
                 </p>
               </div>
             </div>

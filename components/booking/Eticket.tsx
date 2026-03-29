@@ -6,6 +6,9 @@ type BookingSummary = {
   id: string;
   travelDate: Date;
   startTime?: string | null;
+  tripType?: string | null;
+  returnTravelDate?: Date | null;
+  returnStartTime?: string | null;
   totalAmount: number;
   paxAdults: number;
   paxChildren: number;
@@ -13,6 +16,10 @@ type BookingSummary = {
   customerEmail: string;
   pickupNotes?: string | null;
   hotel?: string | null;
+  originAirport?: string | null;
+  flightNumber?: string | null;
+  agencyName?: string | null;
+  agencyPhone?: string | null;
 };
 
 type TourSummary = {
@@ -44,6 +51,9 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
   const meetingPoint = tour.meetingPoint ?? "Punto aún por coordinar";
   const pickupTime = booking.startTime ?? "Hora por confirmar";
   const arrivalDate = new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(booking.travelDate);
+  const returnDateLabel = booking.returnTravelDate
+    ? new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(new Date(booking.returnTravelDate))
+    : null;
   const meetingLabel = variant === "full" ? "Punto de encuentro" : "Encuentro";
   const containerClass =
     variant === "full"
@@ -161,6 +171,37 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
           </ul>
         </div>
       </div>
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <div className="space-y-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Origen / vuelo</p>
+          <p className="text-sm font-semibold text-slate-900">
+            {booking.originAirport ?? "Origen pendiente"}
+            {booking.flightNumber ? ` · ${booking.flightNumber}` : ""}
+          </p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Canal</p>
+          <p className="text-sm font-semibold text-slate-900">
+            {booking.agencyName ? `Agencia · ${booking.agencyName}` : "Reserva directa"}
+          </p>
+          {booking.agencyPhone && <p className="text-xs text-slate-500">{booking.agencyPhone}</p>}
+        </div>
+        <div className="space-y-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Tipo</p>
+          <p className="text-sm font-semibold text-slate-900">
+            {booking.tripType === "round-trip" ? "Ida y vuelta" : "Servicio principal"}
+          </p>
+        </div>
+      </div>
+      {booking.tripType === "round-trip" && (
+        <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+          <p className="text-[10px] uppercase tracking-[0.4em] text-emerald-700">Datos del regreso</p>
+          <div className="mt-2 grid gap-3 md:grid-cols-2">
+            <p className="text-sm font-semibold text-slate-900">{returnDateLabel ?? "Fecha pendiente"}</p>
+            <p className="text-sm font-semibold text-slate-900">{booking.returnStartTime ?? "Hora pendiente"}</p>
+          </div>
+        </div>
+      )}
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Código QR</p>

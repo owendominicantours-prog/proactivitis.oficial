@@ -20,6 +20,7 @@ export type BookingConfirmationData = {
   booking: any;
   tour: any;
   supplier: { id: string; name: string } | null;
+  agency: { name: string; phone: string | null; contactName: string | null } | null;
   recommendedTours: RecommendedTour[];
   timelineStops: TimelineStop[];
   whatsappLink: string;
@@ -38,6 +39,28 @@ export async function getBookingConfirmationData(
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: {
+      User: {
+        include: {
+          AgencyProfile: true,
+          PartnerApplication: {
+            orderBy: { updatedAt: "desc" },
+            take: 1
+          }
+        }
+      },
+      AgencyProLink: {
+        include: {
+          AgencyUser: {
+            include: {
+              AgencyProfile: true,
+              PartnerApplication: {
+                orderBy: { updatedAt: "desc" },
+                take: 1
+              }
+            }
+          }
+        }
+      },
       Tour: {
         include: {
           departureDestination: {
@@ -69,6 +92,20 @@ export async function getBookingConfirmationData(
         name: tour.SupplierProfile.User.name ?? "Proactivitis"
       }
     : null;
+  const agencyUser = booking.AgencyProLink?.AgencyUser ?? (booking.source === "AGENCY" ? booking.User : null);
+  const agencyApplication = agencyUser?.PartnerApplication?.[0] ?? null;
+  const agency =
+    agencyUser
+      ? {
+          name:
+            agencyUser.AgencyProfile?.companyName ??
+            agencyApplication?.companyName ??
+            agencyUser.name ??
+            "Agencia asociada",
+          phone: agencyApplication?.phone ?? null,
+          contactName: agencyApplication?.contactName ?? null
+        }
+      : null;
 
   const summary = `${tour.title} · ${booking.paxAdults + booking.paxChildren} pax · ${new Date(
     booking.travelDate
@@ -149,6 +186,7 @@ export async function getBookingConfirmationData(
     booking,
     tour,
     supplier,
+    agency,
     recommendedTours,
     timelineStops,
     whatsappLink,

@@ -39,6 +39,9 @@ export default function CheckoutContent() {
       origin: get("origin"),
       originLabel: get("originLabel"),
       flowType: get("type") === "transfer" ? "transfer" : undefined,
+      tripType: get("tripType") === "round-trip" ? "round-trip" : get("tripType") === "one-way" ? "one-way" : undefined,
+      returnDatetime: get("returnDatetime"),
+      agencyLink: get("agencyLink"),
       flightNumber: get("flightNumber"),
       totalPrice: get("totalPrice")
     };

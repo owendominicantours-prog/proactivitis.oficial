@@ -73,6 +73,9 @@ export type CheckoutPageParams = {
   origin?: string;
   originLabel?: string;
   flowType?: "tour" | "transfer";
+  tripType?: "one-way" | "round-trip";
+  returnDatetime?: string;
+  agencyLink?: string;
   flightNumber?: string;
   totalPrice?: string;
 };
@@ -441,7 +444,10 @@ const buildSummary = (params: CheckoutPageParams, transferDefaults: TransferDefa
 
     origin: params.origin,
 
-    originLabel: params.originLabel
+    originLabel: params.originLabel,
+    tripType: params.tripType ?? "one-way",
+    returnDatetime: params.returnDatetime,
+    agencyLink: params.agencyLink
 
   };
 
@@ -711,6 +717,24 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
     : t("checkout.summary.pricePerTravelerFallback");
 
+  const parsedReturnDatetime =
+    summary.returnDatetime && !Number.isNaN(new Date(summary.returnDatetime).getTime())
+      ? new Date(summary.returnDatetime)
+      : null;
+  const returnDateLabel = parsedReturnDatetime
+    ? parsedReturnDatetime.toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      })
+    : null;
+  const returnTimeLabel = parsedReturnDatetime
+    ? parsedReturnDatetime.toLocaleTimeString("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    : null;
+
 
 
   const contactSummary = useMemo(() => {
@@ -925,6 +949,9 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
         specialRequirements: specialRequirements.trim(),
 
         flowType: isTransferFlow ? "transfer" : "tour",
+        tripType: isTransferFlow ? summary.tripType : undefined,
+        returnDatetime: isTransferFlow ? summary.returnDatetime : undefined,
+        agencyLink: summary.agencyLink,
 
         flightNumber: flightNumber.trim() || undefined,
 
@@ -1841,6 +1868,12 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                   <>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-2">
+                        <Clock3 className="h-5 w-5 text-slate-400" /> Trayecto
+                      </span>
+                      <strong>{summary.tripType === "round-trip" ? "Ida y vuelta" : "Solo ida"}</strong>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-2">
                         <MapPin className="h-5 w-5 text-slate-400" /> {t("checkout.summary.origin")}
                       </span>
                         <strong>
@@ -1853,6 +1886,22 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                         </span>
                         <strong>{summary.originHotelName ?? t("checkout.summary.defaultHotel")}</strong>
                     </div>
+                    {summary.tripType === "round-trip" && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-2">
+                            <CalendarCheck className="h-5 w-5 text-slate-400" /> Regreso
+                          </span>
+                          <strong>{returnDateLabel ?? "Pendiente"}</strong>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-2">
+                            <Clock3 className="h-5 w-5 text-slate-400" /> Hora regreso
+                          </span>
+                          <strong>{returnTimeLabel ?? "Pendiente"}</strong>
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
 

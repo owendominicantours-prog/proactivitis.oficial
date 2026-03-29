@@ -27,6 +27,28 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
   const booking = await prisma.booking.findUnique({
     where: { id: resolved.id },
     include: {
+      User: {
+        include: {
+          AgencyProfile: true,
+          PartnerApplication: {
+            orderBy: { updatedAt: "desc" },
+            take: 1
+          }
+        }
+      },
+      AgencyProLink: {
+        include: {
+          AgencyUser: {
+            include: {
+              AgencyProfile: true,
+              PartnerApplication: {
+                orderBy: { updatedAt: "desc" },
+                take: 1
+              }
+            }
+          }
+        }
+      },
       Tour: {
         include: {
           SupplierProfile: true
@@ -54,6 +76,23 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
     hour: "2-digit",
     minute: "2-digit"
   });
+  const agencyUser = booking.AgencyProLink?.AgencyUser ?? (booking.source === "AGENCY" ? booking.User : null);
+  const agencyApplication = agencyUser?.PartnerApplication?.[0] ?? null;
+  const agencyLabel =
+    agencyUser
+      ? agencyUser.AgencyProfile?.companyName ?? agencyApplication?.companyName ?? agencyUser.name ?? "Agencia"
+      : null;
+  const agencyPhone = agencyApplication?.phone ?? null;
+  const bookingTripType = (booking as any).tripType as string | null | undefined;
+  const bookingReturnTravelDate = (booking as any).returnTravelDate as Date | null | undefined;
+  const bookingReturnStartTime = (booking as any).returnStartTime as string | null | undefined;
+  const returnDateLabel = bookingReturnTravelDate
+    ? bookingReturnTravelDate.toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      })
+    : null;
 
   const statusMessages: Record<string, string> = {
     CONFIRMED: "Tu reserva está confirmada.",
@@ -128,6 +167,25 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
         <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Notas de recogida</p>
           <p>{booking.pickupNotes ?? "Sin instrucciones adicionales"}</p>
+        </article>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">LogÃ­stica</p>
+          <p className="text-sm text-slate-700">Origen: {booking.originAirport ?? "Pendiente"}</p>
+          <p className="text-sm text-slate-700">Vuelo: {booking.flightNumber ?? "Pendiente"}</p>
+          <p className="text-sm text-slate-700">Tipo: {bookingTripType === "round-trip" ? "Ida y vuelta" : "Servicio principal"}</p>
+        </article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Regreso</p>
+          <p className="text-sm text-slate-700">{returnDateLabel ?? "No aplica"}</p>
+          <p className="text-sm text-slate-700">{bookingReturnStartTime ?? "Hora no registrada"}</p>
+        </article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Agencia</p>
+          <p className="text-sm text-slate-700">{agencyLabel ?? "Reserva directa"}</p>
+          <p className="text-sm text-slate-700">{agencyPhone ?? "Sin telÃ©fono registrado"}</p>
         </article>
       </div>
 

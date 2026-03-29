@@ -33,7 +33,31 @@ export default async function SupplierBookingsPage() {
         supplierId: supplier.id
       }
     },
-    include: { Tour: true },
+    include: {
+      Tour: true,
+      User: {
+        include: {
+          AgencyProfile: true,
+          PartnerApplication: {
+            orderBy: { updatedAt: "desc" },
+            take: 1
+          }
+        }
+      },
+      AgencyProLink: {
+        include: {
+          AgencyUser: {
+            include: {
+              AgencyProfile: true,
+              PartnerApplication: {
+                orderBy: { updatedAt: "desc" },
+                take: 1
+              }
+            }
+          }
+        }
+      }
+    },
     orderBy: { travelDate: "asc" }
   });
   const bookingIds = bookings.map((booking) => booking.id);
@@ -71,6 +95,11 @@ export default async function SupplierBookingsPage() {
   });
 
   const summaries = bookings.map<SupplierBookingSummary>((booking) => {
+    const agencyUser = booking.AgencyProLink?.AgencyUser ?? (booking.source === "AGENCY" ? booking.User : null);
+    const agencyApplication = agencyUser?.PartnerApplication?.[0] ?? null;
+    const bookingTripType = (booking as any).tripType as string | null | undefined;
+    const bookingReturnTravelDate = (booking as any).returnTravelDate as Date | null | undefined;
+    const bookingReturnStartTime = (booking as any).returnStartTime as string | null | undefined;
     const notificationEvents = timelineMap[booking.id] ?? [];
     const baseTimeline: SupplierTimelineEntry[] = [
       {
@@ -117,8 +146,17 @@ export default async function SupplierBookingsPage() {
       totalAmount: booking.totalAmount,
       platformFee: booking.platformFee,
       supplierAmount: booking.supplierAmount,
+      tripType: bookingTripType ?? null,
+      returnTravelDate: bookingReturnTravelDate?.toISOString() ?? null,
+      returnStartTime: bookingReturnStartTime ?? null,
       flightNumber: booking.flightNumber,
+      originAirport: booking.originAirport,
       pickupNotes: booking.pickupNotes,
+      agencyName:
+        agencyUser
+          ? agencyUser.AgencyProfile?.companyName ?? agencyApplication?.companyName ?? agencyUser.name ?? "Agencia"
+          : null,
+      agencyPhone: agencyApplication?.phone ?? null,
       createdAt: booking.createdAt.toISOString(),
       updatedAt: booking.updatedAt?.toISOString() ?? booking.createdAt.toISOString(),
       whatsappNumber: booking.customerPhone,

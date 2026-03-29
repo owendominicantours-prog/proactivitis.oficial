@@ -43,8 +43,13 @@ type AdminBookingView = {
   hotel: string | null;
   pickup: string | null;
   startTime: string | null;
+  tripType: string | null;
+  returnTravelDate: string | null;
+  returnStartTime: string | null;
   flightNumber: string | null;
   originAirport: string | null;
+  agencyName: string | null;
+  agencyPhone: string | null;
   pickupNotes: string | null;
   cancellationReason: string | null;
   cancellationByRole: string | null;
@@ -75,7 +80,31 @@ const statusOptions = [
 
 export default async function AdminBookingsPage({ searchParams }: any) {
   const bookings = await prisma.booking.findMany({
-    include: { Tour: true },
+    include: {
+      Tour: true,
+      User: {
+        include: {
+          AgencyProfile: true,
+          PartnerApplication: {
+            orderBy: { updatedAt: "desc" },
+            take: 1
+          }
+        }
+      },
+      AgencyProLink: {
+        include: {
+          AgencyUser: {
+            include: {
+              AgencyProfile: true,
+              PartnerApplication: {
+                orderBy: { updatedAt: "desc" },
+                take: 1
+              }
+            }
+          }
+        }
+      }
+    },
     orderBy: { createdAt: "desc" }
   });
   const bookingIds = bookings.map((booking) => booking.id);
@@ -119,6 +148,11 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     }
   });
   const rows: AdminBookingView[] = bookings.map((booking) => {
+    const agencyUser = booking.AgencyProLink?.AgencyUser ?? (booking.source === "AGENCY" ? booking.User : null);
+    const agencyApplication = agencyUser?.PartnerApplication?.[0] ?? null;
+    const bookingTripType = (booking as any).tripType as string | null | undefined;
+    const bookingReturnTravelDate = (booking as any).returnTravelDate as Date | null | undefined;
+    const bookingReturnStartTime = (booking as any).returnStartTime as string | null | undefined;
     const notificationEvents = timelineMap[booking.id] ?? [];
     const baseTimeline: TimelineEntry[] = [
       {
@@ -165,8 +199,16 @@ export default async function AdminBookingsPage({ searchParams }: any) {
       hotel: booking.hotel,
       pickup: booking.pickup,
       startTime: booking.startTime,
+      tripType: bookingTripType ?? null,
+      returnTravelDate: bookingReturnTravelDate?.toISOString() ?? null,
+      returnStartTime: bookingReturnStartTime ?? null,
       flightNumber: booking.flightNumber,
       originAirport: booking.originAirport,
+      agencyName:
+        agencyUser
+          ? agencyUser.AgencyProfile?.companyName ?? agencyApplication?.companyName ?? agencyUser.name ?? "Agencia"
+          : null,
+      agencyPhone: agencyApplication?.phone ?? null,
       pickupNotes: booking.pickupNotes,
       cancellationReason: booking.cancellationReason,
       cancellationByRole: booking.cancellationByRole,
@@ -558,6 +600,12 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                         Vuelo: {booking.flightNumber ?? "Pendiente"} · Room: {booking.pickupNotes ?? "N/D"}
                       </p>
                       <p className="text-xs text-slate-500">
+                        Tipo: {booking.tripType === "round-trip" ? "Ida y vuelta" : "Directa"}
+                        {booking.returnTravelDate
+                          ? ` Â· Regreso: ${new Date(booking.returnTravelDate).toLocaleDateString("es-ES")} ${booking.returnStartTime ?? ""}`
+                          : ""}
+                      </p>
+                      <p className="text-xs text-slate-500">
                         Creada: {new Date(booking.createdAtValue).toLocaleString("es-ES")}
                         {booking.updatedAtValue && ` · Actualizada: ${new Date(booking.updatedAtValue).toLocaleString("es-ES")}`}
                       </p>
@@ -582,6 +630,12 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                     <div>
                       <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Origen</p>
                       <p className="text-sm text-slate-600">{booking.source}</p>
+                      {booking.agencyName && (
+                        <p className="text-xs text-slate-500">
+                          {booking.agencyName}
+                          {booking.agencyPhone ? ` Â· ${booking.agencyPhone}` : ""}
+                        </p>
+                      )}
                       <p className="text-xs text-slate-500">
                         {formatTimeUntil(new Date(booking.travelDateValue))}
                       </p>

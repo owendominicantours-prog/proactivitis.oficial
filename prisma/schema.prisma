@@ -81,6 +81,9 @@ model Booking {
   platformFee           Float?
   agencyFee             Float?
   startTime             String?
+  tripType              String?        @default("one-way")
+  returnTravelDate      DateTime?
+  returnStartTime       String?
   flightNumber          String?
   flowType              String?        @default("tour")
   cancellationReason    String?

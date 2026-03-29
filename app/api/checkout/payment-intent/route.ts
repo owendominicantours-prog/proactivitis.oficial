@@ -38,6 +38,9 @@ type PaymentIntentPayload = {
   language?: string;
   specialRequirements?: string;
   flowType?: "tour" | "transfer";
+  tripType?: "one-way" | "round-trip";
+  returnDatetime?: string;
+  agencyLink?: string;
   flightNumber?: string;
   paymentOption?: "now" | "later";
   hotelSlug?: string;
@@ -62,6 +65,21 @@ const parseTravelDate = (value?: string) => {
   if (!value) return null;
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const parseDateTimeParts = (value?: string) => {
+  if (!value) {
+    return {
+      travelDate: null as Date | null,
+      startTime: null as string | null
+    };
+  }
+
+  const [datePart, timePart] = value.split("T");
+  return {
+    travelDate: parseTravelDate(datePart),
+    startTime: normalizeString(timePart?.slice(0, 5) ?? timePart)
+  };
 };
 
 const normalizeString = (value: string | undefined) => (value ? value.trim() : null);
@@ -198,6 +216,8 @@ const ensureCustomerSession = async (name: string, email: string) => {
 export async function POST(request: NextRequest) {
   try {
     const payload = (await request.json().catch(() => ({}))) as PaymentIntentPayload;
+    const session = await getServerSession(authOptions);
+    const sessionUser = (session?.user as { id?: string; role?: string } | null) ?? null;
     const tourId = payload.tourId;
 
     const transferTourFallback = process.env.TRANSFER_TOUR_ID ?? process.env.NEXT_PUBLIC_TRANSFER_TOUR_ID;
@@ -278,6 +298,28 @@ export async function POST(request: NextRequest) {
     .filter(Boolean)
     .join(" · ");
 
+  const tripType = payload.tripType === "round-trip" ? "round-trip" : "one-way";
+  const returnTrip =
+    tripType === "round-trip"
+      ? parseDateTimeParts(payload.returnDatetime)
+      : { travelDate: null as Date | null, startTime: null as string | null };
+  const agencyProLink = payload.agencyLink
+    ? await prisma.agencyProLink.findUnique({
+        where: { slug: payload.agencyLink },
+        select: {
+          id: true,
+          tourId: true,
+          markup: true
+        }
+      })
+    : null;
+  const bookingSource =
+    agencyProLink || sessionUser?.role === BookingSourceEnum.AGENCY
+      ? BookingSourceEnum.AGENCY
+      : BookingSourceEnum.WEB;
+  if (agencyProLink && agencyProLink.tourId !== resolvedTourId) {
+    return NextResponse.json({ error: "El enlace de agencia no coincide con este producto." }, { status: 400 });
+  }
   const startTime = normalizeString(payload.time) ?? null;
   const summary = buildBookingSummary(
     payload.tourTitle ?? tour.title,
@@ -335,6 +377,9 @@ export async function POST(request: NextRequest) {
       originAirport: payload.origin ?? payload.originHotelName ?? undefined,
       pickupNotes: pickupNotes || undefined,
       startTime,
+      tripType,
+      returnTravelDate: returnTrip.travelDate ?? undefined,
+      returnStartTime: returnTrip.startTime ?? undefined,
       totalAmount: finalTotalAmount,
       discountPercent: discountPercent || undefined,
       discountAmount: discountAmount || undefined,
@@ -347,9 +392,12 @@ export async function POST(request: NextRequest) {
       flightNumber: normalizeString(payload.flightNumber),
       flowType: payload.flowType ?? "tour",
       status: BookingStatusEnum.PAYMENT_PENDING,
-      source: BookingSourceEnum.WEB,
+      source: bookingSource,
+      agencyProLinkId: agencyProLink?.id,
+      agencyMarkupAmount: agencyProLink?.markup ?? undefined,
+      agencyPricingMode: Boolean(agencyProLink),
       paymentMethod: payload.paymentOption === "later" ? "PAY_LATER" : "CARD"
-    }
+    } as any
   });
 
   const stripeClient = getStripe();
@@ -375,8 +423,11 @@ export async function POST(request: NextRequest) {
       tourId: tour.id,
       pax: passengerCount.toString(),
       startTime: startTime ?? "",
+      tripType,
+      returnDatetime: payload.returnDatetime ?? "",
       paymentOption: payload.paymentOption ?? "now",
       pickupPreference,
+      agencyLink: payload.agencyLink ?? "",
       supplierAccountId: supplierAccountId ?? "not-configured",
       platformSharePercent: platformSharePercent.toString(),
       discountPercent: discountPercent ? discountPercent.toString() : "",

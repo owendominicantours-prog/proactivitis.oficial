@@ -2,6 +2,9 @@ type BookingData = {
   id: string;
   travelDate: Date;
   startTime?: string | null;
+  tripType?: string | null;
+  returnTravelDate?: Date | null;
+  returnStartTime?: string | null;
   totalAmount: number;
   paxAdults: number;
   paxChildren: number;
@@ -13,6 +16,8 @@ type BookingData = {
   originAirport?: string | null;
   flightNumber?: string | null;
   flowType?: string | null;
+  agencyName?: string | null;
+  agencyPhone?: string | null;
 };
 
 type TourData = {

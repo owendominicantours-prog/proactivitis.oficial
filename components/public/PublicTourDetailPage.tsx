@@ -842,6 +842,7 @@ const NORTH_COAST_SCHEMA_KEYWORDS: Record<Locale, string[]> = {
 export type TourDetailSearchParams = {
   hotelSlug?: string;
   bookingCode?: string;
+  agencyLink?: string;
 };
 
 type TourDetailProps = {
@@ -1070,6 +1071,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const hotelSlugFromQuery = resolvedSearchParams?.hotelSlug;
   const bookingCodeFromQuery = resolvedSearchParams?.bookingCode;
+  const agencyLinkFromQuery = resolvedSearchParams?.agencyLink;
   const originHotel =
     hotelSlugFromQuery !== undefined
       ? await prisma.location.findUnique({
@@ -1687,7 +1689,8 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     hotelSlug: hotelSlugFromQuery ?? undefined,
     bookingCode: bookingCodeFromQuery ?? undefined,
     originHotelName: originHotel?.name ?? undefined,
-    discountPercent
+    discountPercent,
+    agencyLink: agencyLinkFromQuery ?? undefined
   };
   const relatedToursSchema = relatedTourCards.length
     ? {

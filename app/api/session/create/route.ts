@@ -43,7 +43,28 @@ export async function POST(request: NextRequest) {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: {
-      User: true,
+      User: {
+        include: {
+          AgencyProfile: true,
+          PartnerApplication: {
+            orderBy: { updatedAt: "desc" },
+            take: 1
+          }
+        }
+      },
+      AgencyProLink: {
+        include: {
+          AgencyUser: {
+            include: {
+              AgencyProfile: true,
+              PartnerApplication: {
+                orderBy: { updatedAt: "desc" },
+                take: 1
+              }
+            }
+          }
+        }
+      },
       Tour: {
         include: {
           SupplierProfile: {
@@ -141,11 +162,19 @@ export async function POST(request: NextRequest) {
     heroImage: tour.heroImage,
     meetingPoint: tour.meetingPoint
   };
+  const agencyUser = booking.AgencyProLink?.AgencyUser ?? (booking.source === "AGENCY" ? booking.User : null);
+  const agencyApplication = agencyUser?.PartnerApplication?.[0] ?? null;
+  const bookingTripType = (booking as any).tripType as string | null | undefined;
+  const bookingReturnTravelDate = (booking as any).returnTravelDate as Date | null | undefined;
+  const bookingReturnStartTime = (booking as any).returnStartTime as string | null | undefined;
 
   const bookingDetails = {
     id: booking.id,
     travelDate: booking.travelDate,
     startTime: booking.startTime,
+    tripType: bookingTripType ?? null,
+    returnTravelDate: bookingReturnTravelDate ?? null,
+    returnStartTime: bookingReturnStartTime ?? null,
     totalAmount: booking.totalAmount,
     paxAdults: booking.paxAdults,
     paxChildren: booking.paxChildren,
@@ -156,7 +185,14 @@ export async function POST(request: NextRequest) {
     hotel: booking.hotel,
     originAirport: booking.originAirport,
     flightNumber: booking.flightNumber,
-    flowType: booking.flowType ?? "tour"
+    flowType: booking.flowType ?? "tour",
+    agencyName: agencyUser
+      ? ((agencyUser as any).AgencyProfile?.companyName ??
+          agencyApplication?.companyName ??
+          agencyUser.name ??
+          "Agencia")
+      : null,
+    agencyPhone: agencyApplication?.phone ?? null
   };
 
   const customerHtml = buildCustomerEticketEmail({

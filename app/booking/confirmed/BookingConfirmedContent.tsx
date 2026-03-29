@@ -19,6 +19,7 @@ export function BookingConfirmedContent({
   booking,
   tour,
   supplier,
+  agency,
   recommendedTours,
   timelineStops,
   whatsappLink,
@@ -66,6 +67,10 @@ export function BookingConfirmedContent({
   const itineraryStart = tour.meetingPoint
     ? t("booking.confirmation.itinerary.start", { meetingPoint: tour.meetingPoint })
     : undefined;
+  const returnDateLabel =
+    booking.returnTravelDate
+      ? new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(new Date(booking.returnTravelDate))
+      : null;
   return (
     <div className="bg-slate-50 min-h-screen">
       <BookingEmailDispatcher bookingId={booking.id} />
@@ -141,6 +146,25 @@ export function BookingConfirmedContent({
                 <InfoRow label={pickupLabel} value={pickupValue} />
                 <InfoRow label={totalLabel} value={totalValue} />
               </div>
+              {isTransfer && booking.tripType === "round-trip" && (
+                <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
+                  <p className="text-xs uppercase tracking-[0.3em] text-emerald-700">Regreso confirmado</p>
+                  <div className="mt-3 grid gap-4 md:grid-cols-2">
+                    <InfoRow label="Fecha de regreso" value={returnDateLabel ?? "Pendiente"} />
+                    <InfoRow label="Hora de regreso" value={booking.returnStartTime ?? "Pendiente"} />
+                  </div>
+                </div>
+              )}
+              {agency && (
+                <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva gestionada por agencia</p>
+                  <div className="mt-3 grid gap-4 md:grid-cols-3">
+                    <InfoRow label="Agencia" value={agency.name} />
+                    <InfoRow label="Teléfono" value={agency.phone ?? "No registrado"} />
+                    <InfoRow label="Contacto" value={agency.contactName ?? "Sin contacto"} />
+                  </div>
+                </div>
+              )}
             </div>
 
             <ItineraryTimeline
@@ -175,6 +199,7 @@ export function BookingConfirmedContent({
                 <p>
                   {t("booking.confirmation.labels.zone")}: {tour.departureDestination?.name ?? t("booking.confirmation.values.destinationFallback")} - {tour.departureDestination?.country?.name ?? t("booking.confirmation.values.countryFallback")}
                 </p>
+                {agency && <p>Agencia: {agency.name}</p>}
               </div>
               <Link href="/dashboard/customer" className="block">
                 <button className="mt-4 w-full rounded-full bg-emerald-600 px-4 py-2 text-white font-semibold hover:bg-emerald-700 transition">
@@ -221,7 +246,14 @@ export function BookingConfirmedContent({
               customerName: booking.customerName,
               customerEmail: booking.customerEmail,
               pickupNotes: booking.pickupNotes,
-              hotel: booking.hotel
+              hotel: booking.hotel,
+              originAirport: booking.originAirport,
+              flightNumber: booking.flightNumber,
+              tripType: booking.tripType,
+              returnTravelDate: booking.returnTravelDate,
+              returnStartTime: booking.returnStartTime,
+              agencyName: agency?.name ?? null,
+              agencyPhone: agency?.phone ?? null
             }}
             tour={{
               id: tour.id,
