@@ -1023,11 +1023,13 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                     </div>
                   </div>
                   <div className="px-6 pb-5">
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
-                    <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
-                      Centro de evidencia
-                    </p>
-                    <div className="mt-3 space-y-3">
+                  <details className="group rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                    <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold uppercase tracking-[0.3em] text-slate-600">
+                      <span className="group-open:hidden">Centro de evidencia</span>
+                      <span className="hidden group-open:inline">Ocultar evidencia</span>
+                      <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
+                    </summary>
+                    <div className="mt-4 space-y-3">
                       {booking.timeline.length ? (
                         booking.timeline.slice(0, 4).map((event) => (
                           <div key={`${booking.id}-${event.timestamp}-${event.title}`} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -1042,7 +1044,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                         <p className="text-xs text-slate-500">Aún no hay actividad registrada.</p>
                       )}
                     </div>
-                  </div>
+                  </details>
                   <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
