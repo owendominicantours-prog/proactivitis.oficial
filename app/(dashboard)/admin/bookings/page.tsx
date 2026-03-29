@@ -10,7 +10,7 @@ import {
 import { formatTimeUntil } from "@/lib/bookings";
 import { buildBookingPresentation } from "@/lib/bookingPresentation";
 import { updateBookingStatus } from "@/lib/actions/bookingStatus";
-import { addAdminBookingNote } from "@/app/(dashboard)/admin/bookings/actions";
+import { addAdminBookingNote, updateAdminTransferLogistics } from "@/app/(dashboard)/admin/bookings/actions";
 
 type TimelineEntry = {
   title: string;
@@ -696,10 +696,12 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de ida</p>
                         <p className="text-sm font-semibold text-slate-900">{departureLabel}</p>
                       </div>
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de regreso</p>
-                        <p className="text-sm font-semibold text-slate-900">{returnLabel}</p>
-                      </div>
+                      {booking.flowType === "transfer" && booking.tripType === "round-trip" ? (
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de regreso</p>
+                          <p className="text-sm font-semibold text-slate-900">{returnLabel}</p>
+                        </div>
+                      ) : null}
                       <div>
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.routeLabel}</p>
                         <p className="text-sm font-semibold text-slate-900">{presentation.routeValue}</p>
@@ -738,7 +740,11 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                           <p className="text-sm text-slate-600">{booking.customerPhone || "Teléfono pendiente"}</p>
                         </div>
                         <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                          <span className="font-semibold text-slate-900">Recogida:</span>{" "}
+                          <span className="font-semibold text-slate-900">
+                            {booking.flowType === "transfer" && booking.tripType === "round-trip"
+                              ? "Pickup ida / pickup regreso:"
+                              : "Recogida:"}
+                          </span>{" "}
                           {booking.pickup ?? "Sin punto definido"}
                           {booking.hotel ? ` · ${booking.hotel}` : ""}
                         </div>
@@ -868,6 +874,120 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                         </form>
                       </div>
                     </details>
+                    {booking.flowType === "transfer" && (
+                      <details className="relative">
+                        <summary className="rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-sky-700">
+                          Editar logística
+                        </summary>
+                        <div className="absolute right-0 top-full z-20 mt-2 w-[360px] rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
+                          <form action={updateAdminTransferLogistics} method="post" className="space-y-3">
+                            <input type="hidden" name="bookingId" value={booking.id} />
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                                Pickup ida
+                              </label>
+                              <input
+                                name="pickup"
+                                defaultValue={booking.pickup ?? ""}
+                                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                                Hotel / pickup regreso
+                              </label>
+                              <input
+                                name="hotel"
+                                defaultValue={booking.hotel ?? ""}
+                                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700"
+                              />
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                                  Ruta origen
+                                </label>
+                                <input
+                                  name="originAirport"
+                                  defaultValue={booking.originAirport ?? ""}
+                                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                                  Vuelo
+                                </label>
+                                <input
+                                  name="flightNumber"
+                                  defaultValue={booking.flightNumber ?? ""}
+                                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700"
+                                />
+                              </div>
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                                  Hora salida
+                                </label>
+                                <input
+                                  type="time"
+                                  name="startTime"
+                                  defaultValue={booking.startTime ?? ""}
+                                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700"
+                                />
+                              </div>
+                              {booking.tripType === "round-trip" ? (
+                                <>
+                                  <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                                      Fecha regreso
+                                    </label>
+                                    <input
+                                      type="date"
+                                      name="returnTravelDate"
+                                      defaultValue={
+                                        booking.returnTravelDate
+                                          ? new Date(booking.returnTravelDate).toISOString().slice(0, 10)
+                                          : ""
+                                      }
+                                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                                      Hora regreso
+                                    </label>
+                                    <input
+                                      type="time"
+                                      name="returnStartTime"
+                                      defaultValue={booking.returnStartTime ?? ""}
+                                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700"
+                                    />
+                                  </div>
+                                </>
+                              ) : null}
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                                Notas operativas
+                              </label>
+                              <textarea
+                                name="pickupNotes"
+                                defaultValue={booking.pickupNotes ?? ""}
+                                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700"
+                                rows={3}
+                              />
+                            </div>
+                            <button
+                              type="submit"
+                              className="w-full rounded-full bg-sky-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-sky-500"
+                            >
+                              Guardar cambios
+                            </button>
+                          </form>
+                        </div>
+                      </details>
+                    )}
                   </div>
                   <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
                     <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
