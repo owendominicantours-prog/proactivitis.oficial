@@ -5,6 +5,7 @@ import { NotificationRole, NotificationType } from "@/lib/types/notificationType
 import { sendEmail } from "@/lib/email";
 import { randomUUID } from "crypto";
 import { ensureSupplierProfile } from "@/lib/supplierProfiles";
+import { ensureAgencyProfile } from "@/lib/agencyProfiles";
 
 const ensureStatusMessage = (status: "APPROVED" | "REJECTED") =>
   status === "APPROVED"
@@ -83,6 +84,9 @@ async function updateApplicationStatus(formData: FormData, status: "APPROVED" | 
     }
     if (status === "APPROVED" && application.role === "SUPPLIER") {
       await ensureSupplierProfile(application.userId, application.companyName ?? "Proveedor");
+    }
+    if (status === "APPROVED" && application.role === "AGENCY") {
+      await ensureAgencyProfile(application.userId, application.companyName ?? "Agencia");
     }
     if (status === "APPROVED" && application.User?.email) {
       await sendPartnerWelcome(application.User, application.role);
