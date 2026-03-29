@@ -209,6 +209,7 @@ export default async function SupplierBookingsPage() {
       pickup: booking.pickup,
       hotel: booking.hotel,
       status: booking.status,
+      statusLabel: formatStatusLabel(booking.status),
       totalAmount: booking.totalAmount,
       platformFee: booking.platformFee,
       supplierAmount: booking.supplierAmount,
@@ -225,6 +226,7 @@ export default async function SupplierBookingsPage() {
           ? agencyUser.AgencyProfile?.companyName ?? agencyApplication?.companyName ?? agencyUser.name ?? "Agencia"
           : null,
       agencyPhone: agencyApplication?.phone ?? null,
+      sourceLabel: formatSourceLabel(booking.source),
       createdAt: booking.createdAt.toISOString(),
       updatedAt: booking.updatedAt?.toISOString() ?? booking.createdAt.toISOString(),
       whatsappNumber: booking.customerPhone,
