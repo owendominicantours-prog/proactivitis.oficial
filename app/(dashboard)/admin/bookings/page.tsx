@@ -632,6 +632,56 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                     <BookingStatusBadge status={booking.status} />
                   </div>
 
+                  <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resumen operativo</p>
+                    <div className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pasajero principal</p>
+                        <p className="text-sm font-semibold text-slate-900">{booking.customerName}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de ida</p>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {new Date(booking.travelDateValue).toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })}
+                          {booking.startTime ? ` · ${booking.startTime}` : ""}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de regreso</p>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {booking.returnTravelDate
+                            ? `${new Date(booking.returnTravelDate).toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })}${booking.returnStartTime ? ` · ${booking.returnStartTime}` : ""}`
+                            : "No aplica"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Origen / destino</p>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {(booking.originAirport ?? "Pendiente")} / {(booking.hotel ?? booking.pickup ?? "Pendiente")}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Agencia / canal</p>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {booking.agencyName ?? formatSourceLabel(booking.source)}
+                          {booking.agencyPhone ? ` · ${booking.agencyPhone}` : ""}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Códigos internos</p>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {booking.bookingCode} · {booking.id.slice(0, 8).toUpperCase()}
+                        </p>
+                      </div>
+                      <div className="md:col-span-2">
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Servicios incluidos</p>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {booking.pickupNotes ?? "Servicio confirmado con coordinación operativa y soporte."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="mt-4 grid gap-3 md:grid-cols-2">
                     <div className="space-y-1">
                       <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">Recogida</p>
@@ -678,7 +728,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Origen</p>
-                      <p className="text-sm text-slate-600">{booking.source}</p>
+                      <p className="text-sm text-slate-600">{formatSourceLabel(booking.source)}</p>
                       {booking.agencyName && (
                         <p className="text-xs text-slate-500">
                           {booking.agencyName}
