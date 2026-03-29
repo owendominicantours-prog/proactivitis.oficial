@@ -1,5 +1,6 @@
 ﻿export const dynamic = "force-dynamic"; // Needs fresh reservation & cancellation data in every render.
 
+import { CalendarDays, ChevronDown } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import type { BookingStatus } from "@/lib/types/booking";
 import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
@@ -693,74 +694,70 @@ export default async function AdminBookingsPage({ searchParams }: any) {
               ]
                 .filter(Boolean)
                 .join(" · ");
+              const headerDate = new Date(booking.travelDateValue).toLocaleDateString("es-ES", {
+                weekday: "short",
+                day: "numeric",
+                month: "short",
+                year: "numeric"
+              });
+              const sentLabel = new Date(booking.createdAtValue).toLocaleString("es-ES", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+              });
+              const subtitle =
+                booking.flowType === "transfer"
+                  ? `${presentation.routeValue} · ${departureLabel}`
+                  : `${booking.tourTitle} ${booking.startTime ?? ""}`.trim();
 
               return (
                 <article
                   key={booking.id}
-                  className={`overflow-hidden rounded-2xl border bg-white p-6 shadow-sm ${
+                  className={`overflow-hidden rounded-[28px] border bg-white shadow-sm ${
                     latestBooking?.id === booking.id ? "border-emerald-300 ring-2 ring-emerald-100" : "border-slate-200"
                   }`}
                   aria-label={`Reserva ${booking.bookingCode} para ${booking.customerName}`}
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
-                        {booking.bookingCode}
-                      </p>
-                      <h3 className="text-xl font-semibold text-slate-900">{booking.tourTitle}</h3>
-                      <p className="text-sm text-slate-500">
-                        {booking.travelDate} · {booking.startTime ?? "Hora pendiente"} · {booking.pax} pax
-                      </p>
+                  <div className="px-6 py-5">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <CalendarDays className="h-4 w-4 text-slate-400" />
+                        <span>{headerDate}</span>
+                      </div>
+                      <BookingStatusBadge status={booking.status} />
                     </div>
-                    <BookingStatusBadge status={booking.status} />
-                  </div>
 
-                  <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resumen operativo</p>
-                    <div className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pasajero principal</p>
-                        <p className="text-sm font-semibold text-slate-900">{booking.customerName}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de ida</p>
-                        <p className="text-sm font-semibold text-slate-900">{departureLabel}</p>
-                      </div>
-                      {booking.flowType === "transfer" && booking.tripType === "round-trip" ? (
-                        <div>
-                          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de regreso</p>
-                          <p className="text-sm font-semibold text-slate-900">{returnLabel}</p>
+                    <div className="mt-4 max-w-4xl">
+                      <h3 className="text-3xl font-semibold leading-tight text-slate-900">{booking.tourTitle}</h3>
+                      <p className="mt-3 text-[1.02rem] text-slate-500">{subtitle}</p>
+                    </div>
+
+                    <div className="mt-5 border-t border-slate-200 pt-5">
+                      <div className="grid gap-6 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <p className="text-[1rem] text-slate-700">
+                            <span className="font-semibold text-slate-950">Viajero principal:</span> {booking.customerName}
+                          </p>
+                          <p className="text-lg text-slate-700">
+                            {booking.pax} {booking.pax === 1 ? "adulto" : "adultos"}
+                          </p>
                         </div>
-                      ) : null}
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.routeLabel}</p>
-                        <p className="text-sm font-semibold text-slate-900">{presentation.routeValue}</p>
+                        <div className="space-y-2 md:text-right">
+                          <p className="text-[1.05rem] font-semibold text-slate-950">{booking.bookingCode}</p>
+                          <p className="text-lg text-slate-700">Enviada {sentLabel}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Agencia / canal</p>
-                        <p className="text-sm font-semibold text-slate-900">
-                          {booking.agencyName ?? formatSourceLabel(booking.source)}
-                          {booking.agencyPhone ? ` · ${booking.agencyPhone}` : ""}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Códigos internos</p>
-                        <p className="text-sm font-semibold text-slate-900">
-                          {booking.bookingCode} · {booking.id.slice(0, 8).toUpperCase()}
-                        </p>
-                      </div>
-                      <div className="md:col-span-2">
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.notesLabel}</p>
-                        <p className="text-sm font-semibold text-slate-900">{serviceNotes}</p>
-                      </div>
-                    </div>
-                  </div>
 
-                  <details className="mt-4 group rounded-2xl border border-slate-200 bg-slate-50/70 p-3">
-                    <summary className="cursor-pointer list-none text-xs font-semibold uppercase tracking-[0.3em] text-slate-700">
-                      Mostrar detalles
-                    </summary>
-                    <div className="mt-4 grid gap-3 xl:grid-cols-[1.2fr_1.1fr_0.9fr]">
+                      <details className="group mt-5">
+                        <summary className="flex cursor-pointer list-none items-center gap-2 text-lg font-medium text-teal-700">
+                          <span className="group-open:hidden">Mostrar detalles</span>
+                          <span className="hidden group-open:inline">Ocultar detalles</span>
+                          <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
+                        </summary>
+                        <div className="mt-5 border-t border-slate-200 pt-5">
+                    <div className="grid gap-3 xl:grid-cols-[1.2fr_1.1fr_0.9fr]">
                     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Cliente y contacto</p>
                       <div className="mt-3 space-y-2">
@@ -846,8 +843,13 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                       </div>
                     </section>
                   </div>
+                        </div>
+                      </details>
+                    </div>
+                  </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-6 py-4">
+                    <div className="flex flex-wrap gap-2">
                     {whatsappLink && (
                       <a
                         href={whatsappLink}
@@ -1018,8 +1020,10 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                         </div>
                       </details>
                     )}
+                    </div>
                   </div>
-                  <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                  <div className="px-6 pb-5">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
                     <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
                       Centro de evidencia
                     </p>
@@ -1079,7 +1083,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                       </button>
                     </form>
                   </div>
-                  </details>
+                  </div>
                 </article>
               );
             })}

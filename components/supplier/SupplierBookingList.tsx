@@ -2,7 +2,9 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import {
+  CalendarDays,
   Check,
+  ChevronDown,
   Clipboard,
   ClipboardCheck,
   MessageCircle,
@@ -750,102 +752,146 @@ export function SupplierBookingList({ bookings }: Props) {
               startTime: booking.startTime
             });
 
+            const headerDate = new Date(booking.travelDateValue).toLocaleDateString("es-ES", {
+              weekday: "short",
+              day: "numeric",
+              month: "short",
+              year: "numeric"
+            });
+            const totalPassengersLabel = `${booking.pax} ${booking.pax === 1 ? "adulto" : "adultos"}`;
+            const sentLabel = new Date(booking.createdAt).toLocaleString("es-ES", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit"
+            });
+            const subtitle =
+              booking.flowType === "transfer"
+                ? `${presentation.routeValue} · ${new Date(booking.travelDateValue).toLocaleDateString("es-ES", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric"
+                  })}${booking.startTime ? ` · ${booking.startTime}` : ""}`
+                : `${booking.tourTitle} ${booking.startTime ?? ""}`.trim();
+
             return (
               <article
-              key={booking.id}
-              className={`rounded-2xl border bg-white p-5 shadow-sm ${
-                latestBooking?.id === booking.id ? "border-emerald-300 ring-2 ring-emerald-100" : "border-slate-200"
-              }`}
-              aria-label={`Reserva ${booking.bookingCode} para ${booking.customerName ?? "Cliente"}`}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                    ID {booking.bookingCode.slice(-6).toUpperCase()}
-                  </p>
-                  <h2 className="text-xl font-semibold text-slate-900">{booking.tourTitle}</h2>
-                  <p className="text-sm text-slate-500">
-                    {booking.startTime ?? "Hora por confirmar"} · {new Date(booking.travelDateValue).toLocaleDateString("es-ES")}
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1">
-                      {booking.flowType === "transfer" ? "Traslado" : "Actividad"}
+                key={booking.id}
+                className={`overflow-hidden rounded-[28px] border bg-white shadow-sm ${
+                  latestBooking?.id === booking.id ? "border-emerald-300 ring-2 ring-emerald-100" : "border-slate-200"
+                }`}
+                aria-label={`Reserva ${booking.bookingCode} para ${booking.customerName ?? "Cliente"}`}
+              >
+                <div className="px-6 py-5">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <CalendarDays className="h-4 w-4 text-slate-400" />
+                      <span>{headerDate}</span>
+                    </div>
+                    <span
+                      className={`rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] ${
+                        statusColors[booking.status] ?? "bg-slate-100 text-slate-700 border-slate-200"
+                      }`}
+                    >
+                      {booking.statusLabel ?? booking.status}
                     </span>
-                    {booking.flowType === "transfer" && booking.tripType === "round-trip" ? (
-                      <span className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-sky-700">
-                        Ida y vuelta
-                      </span>
-                    ) : null}
-                    {booking.sourceLabel ? (
-                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700">
-                        {booking.sourceLabel}
-                      </span>
-                    ) : null}
+                  </div>
+
+                  <div className="mt-4">
+                    <h2 className="text-3xl font-semibold leading-tight text-slate-900">{booking.tourTitle}</h2>
+                    <p className="mt-3 text-[1.02rem] text-slate-500">{subtitle}</p>
+                  </div>
+
+                  <div className="mt-5 border-t border-slate-200 pt-5">
+                    <div className="grid gap-6 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <p className="text-[1rem] text-slate-700">
+                          <span className="font-semibold text-slate-950">Viajero principal:</span> {booking.customerName ?? "Invitado"}
+                        </p>
+                        <p className="text-lg text-slate-700">{totalPassengersLabel}</p>
+                      </div>
+
+                      <div className="space-y-2 md:text-right">
+                        <p className="text-[1.05rem] font-semibold text-slate-950">{booking.bookingCode}</p>
+                        <p className="text-lg text-slate-700">Enviada {sentLabel}</p>
+                      </div>
+                    </div>
+
+                    <details className="group mt-5">
+                      <summary className="flex cursor-pointer list-none items-center gap-2 text-lg font-medium text-teal-700">
+                        <span className="group-open:hidden">Mostrar detalles</span>
+                        <span className="hidden group-open:inline">Ocultar detalles</span>
+                        <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
+                      </summary>
+
+                      <div className="mt-5 border-t border-slate-200 pt-5">
+                        <div className="grid gap-8 md:grid-cols-2">
+                          <div className="space-y-6">
+                            <div className="space-y-3">
+                              <p className="text-lg font-semibold uppercase tracking-[0.03em] text-slate-700">Cliente y servicio</p>
+                              <p className="text-[1rem] leading-7 text-slate-700">
+                                <span className="font-semibold text-slate-950">Correo:</span> {booking.customerEmail}
+                              </p>
+                              <p className="text-[1rem] leading-7 text-slate-700">
+                                <span className="font-semibold text-slate-950">Teléfono:</span> {booking.customerPhone ?? "No registrado"}
+                              </p>
+                              {booking.agencyName ? (
+                                <p className="text-[1rem] leading-7 text-slate-700">
+                                  <span className="font-semibold text-slate-950">Agencia:</span> {booking.agencyName}
+                                  {booking.agencyPhone ? ` · ${booking.agencyPhone}` : ""}
+                                </p>
+                              ) : null}
+                              <p className="text-[1rem] leading-7 text-slate-700">
+                                <span className="font-semibold text-slate-950">{presentation.primaryDetailsLabel}:</span> {presentation.primaryDetailsValue}
+                              </p>
+                              <p className="text-[1rem] leading-7 text-slate-700">
+                                <span className="font-semibold text-slate-950">{presentation.notesLabel}:</span> {presentation.notesValue}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-6">
+                            <div className="space-y-3">
+                              <p className="text-lg font-semibold uppercase tracking-[0.03em] text-slate-700">Operación</p>
+                              <p className="text-[1rem] leading-7 text-slate-700">
+                                <span className="font-semibold text-slate-950">{presentation.routeLabel}:</span> {presentation.routeValue}
+                              </p>
+                              <p className="text-[1rem] leading-7 text-slate-700">
+                                <span className="font-semibold text-slate-950">{presentation.logisticsLabel}:</span> {presentation.logisticsValue || "Operación pendiente"}
+                              </p>
+                              {booking.flowType === "transfer" && booking.tripType === "round-trip" ? (
+                                <p className="text-[1rem] leading-7 text-slate-700">
+                                  <span className="font-semibold text-slate-950">Regreso:</span> {booking.hotel ?? "Pendiente"} ·{" "}
+                                  {booking.returnTravelDate
+                                    ? new Date(booking.returnTravelDate).toLocaleDateString("es-ES", {
+                                        day: "2-digit",
+                                        month: "long",
+                                        year: "numeric"
+                                      })
+                                    : "Fecha pendiente"}
+                                  {booking.returnStartTime ? ` · ${booking.returnStartTime}` : ""}
+                                </p>
+                              ) : null}
+                              {booking.transferVehicleName ? (
+                                <p className="text-[1rem] leading-7 text-slate-700">
+                                  <span className="font-semibold text-slate-950">Vehículo:</span> {booking.transferVehicleName}
+                                  {booking.transferVehicleCategory ? ` · ${booking.transferVehicleCategory}` : ""}
+                                </p>
+                              ) : null}
+                              <p className="text-[1rem] leading-7 text-slate-700">
+                                <span className="font-semibold text-slate-950">Total:</span> ${booking.totalAmount.toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </details>
                   </div>
                 </div>
-                <span
-                  className={`rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] ${
-                    statusColors[booking.status] ?? "bg-slate-100 text-slate-700 border-slate-200"
-                  }`}
-                >
-                  {booking.statusLabel ?? booking.status}
-                </span>
-              </div>
-              <div className="mt-4 grid gap-4 md:grid-cols-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Cliente</p>
-                  <p className="text-sm font-semibold text-slate-900">{booking.customerName ?? "Invitado"}</p>
-                  <p className="text-xs text-slate-500">{booking.customerEmail}</p>
-                  {booking.agencyName && (
-                    <p className="text-xs text-slate-500">
-                      Agencia: {booking.agencyName}
-                      {booking.agencyPhone ? ` · ${booking.agencyPhone}` : ""}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pax</p>
-                  <p className="text-lg font-semibold text-slate-900">{booking.pax}</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.routeLabel}</p>
-                  {booking.flowType === "transfer" ? (
-                    <div className="space-y-1">
-                      <p className="text-sm font-semibold text-slate-900">Ida: {booking.pickup ?? "Pendiente"}</p>
-                      {booking.tripType === "round-trip" ? (
-                        <>
-                          <p className="text-sm font-semibold text-slate-900">Regreso: {booking.hotel ?? "Pendiente"}</p>
-                          <p className="text-xs text-slate-500">
-                            Retorno:{" "}
-                            {booking.returnTravelDate
-                              ? new Date(booking.returnTravelDate).toLocaleDateString("es-ES")
-                              : "Pendiente"}
-                            {booking.returnStartTime ? ` · ${booking.returnStartTime}` : ""}
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-xs text-slate-500">{presentation.logisticsValue || "Operación pendiente"}</p>
-                      )}
-                    </div>
-                  ) : (
-                    <>
-                      <p className="text-sm font-semibold text-slate-900">{booking.hotel ?? booking.pickup ?? "Pendiente"}</p>
-                      <p className="text-xs text-slate-500">{presentation.logisticsValue || "Operación pendiente"}</p>
-                    </>
-                  )}
-                  {booking.transferVehicleName && (
-                    <p className="text-xs text-slate-500">
-                      Vehículo: {booking.transferVehicleName}
-                      {booking.transferVehicleCategory ? ` · ${booking.transferVehicleCategory}` : ""}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pago</p>
-                  <p className="text-sm font-semibold text-slate-900">${booking.totalAmount.toFixed(2)}</p>
-                </div>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
+
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-6 py-4">
+                  <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => handleConfirmTime(booking)}
@@ -906,17 +952,18 @@ export function SupplierBookingList({ bookings }: Props) {
                 <button
                   type="button"
                   onClick={() => openModal(booking)}
-                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700"
+                  className="flex items-center gap-2 rounded border border-teal-700 px-5 py-3 text-sm font-medium text-teal-700 transition hover:bg-teal-50"
                 >
                   <MessageCircle className="h-4 w-4" />
-                  Ver detalles
+                  Abrir ficha
                 </button>
-              </div>
-              {actionFeedbacks[booking.id] && (
-                <p className="mt-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                  {actionFeedbacks[booking.id]}
-                </p>
-              )}
+                  </div>
+                  {actionFeedbacks[booking.id] ? (
+                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                      {actionFeedbacks[booking.id]}
+                    </p>
+                  ) : null}
+                </div>
               </article>
             );
           })}
