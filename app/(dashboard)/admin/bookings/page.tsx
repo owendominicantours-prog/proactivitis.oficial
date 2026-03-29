@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"; // Needs fresh reservation & cancellation data in every render.
+﻿export const dynamic = "force-dynamic"; // Needs fresh reservation & cancellation data in every render.
 
 import { prisma } from "@/lib/prisma";
 import type { BookingStatus } from "@/lib/types/booking";
@@ -51,6 +51,7 @@ type AdminBookingView = {
   agencyName: string | null;
   agencyPhone: string | null;
   pickupNotes: string | null;
+  tourIncludes: string | null;
   cancellationReason: string | null;
   cancellationByRole: string | null;
   cancellationAt: string | null;
@@ -62,7 +63,7 @@ const statusLabelMap: Record<string, string> = {
   PENDING: "Pendiente",
   CONFIRMED: "Confirmada",
   PAYMENT_PENDING: "Pago pendiente",
-  CANCELLATION_REQUESTED: "Cancelación solicitada",
+  CANCELLATION_REQUESTED: "CancelaciÃ³n solicitada",
   CANCELLED: "Cancelada",
   COMPLETED: "Completada"
 };
@@ -75,9 +76,9 @@ const sourceLabelMap: Record<string, string> = {
 };
 
 const paymentStatusLabelMap: Record<string, string> = {
-  requires_payment_method: "Falta método de pago",
-  requires_confirmation: "Pendiente de confirmación",
-  requires_action: "Requiere acción del cliente",
+  requires_payment_method: "Falta mÃ©todo de pago",
+  requires_confirmation: "Pendiente de confirmaciÃ³n",
+  requires_action: "Requiere acciÃ³n del cliente",
   processing: "Pago en proceso",
   succeeded: "Pago confirmado",
   canceled: "Pago cancelado"
@@ -103,8 +104,8 @@ const PAGE_SIZE = 20;
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: "today", label: "Hoy" },
-  { key: "tomorrow", label: "Mañana" },
-  { key: "upcoming", label: "Próximos" },
+  { key: "tomorrow", label: "MaÃ±ana" },
+  { key: "upcoming", label: "PrÃ³ximos" },
   { key: "past", label: "Pasados" },
   { key: "payment", label: "Pendientes de pago" }
 ];
@@ -175,14 +176,14 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     const notificationStatus =
       typeof metadata?.status === "string" ? formatStatusLabel(metadata.status) : null;
     const entry: TimelineEntry = {
-      title: notification.title ?? "Actualización",
+      title: notification.title ?? "ActualizaciÃ³n",
       description: notification.message ?? notification.body ?? "Sin detalle adicional",
       timestamp: notification.createdAt.toISOString()
     };
     if (notification.type === "ADMIN_BOOKING_MODIFIED") {
       entry.title = "Estado de la reserva";
       entry.description = notificationStatus
-        ? `La reserva pasó a ${notificationStatus}.`
+        ? `La reserva pasÃ³ a ${notificationStatus}.`
         : entry.description;
     }
     timelineMap[notification.bookingId] = timelineMap[notification.bookingId] ?? [];
@@ -219,7 +220,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     }
     if (booking.cancellationReason) {
       baseTimeline.push({
-        title: "Solicitud de cancelación",
+        title: "Solicitud de cancelaciÃ³n",
         description: booking.cancellationReason,
         timestamp: booking.cancellationAt?.toISOString() ?? booking.updatedAt?.toISOString() ?? booking.createdAt.toISOString()
       });
@@ -259,6 +260,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
           : null,
       agencyPhone: agencyApplication?.phone ?? null,
       pickupNotes: booking.pickupNotes,
+      tourIncludes: booking.Tour?.includes ?? null,
       cancellationReason: booking.cancellationReason,
       cancellationByRole: booking.cancellationByRole,
       cancellationAt: booking.cancellationAt?.toISOString() ?? null,
@@ -292,7 +294,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   const orderParam = (getParam("order") as "created" | "travel") ?? "created";
 
   const uniqueTours = Array.from(
-    new Set(bookings.map((booking) => booking.Tour?.title ?? "Tour sin título"))
+    new Set(bookings.map((booking) => booking.Tour?.title ?? "Tour sin tÃ­tulo"))
   ).sort();
 
   const now = new Date();
@@ -420,10 +422,10 @@ export default async function AdminBookingsPage({ searchParams }: any) {
         <section className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-700">Última reserva</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-700">Ãšltima reserva</p>
               <p className="text-lg font-semibold text-slate-900">{latestBooking.tourTitle}</p>
               <p className="text-sm text-slate-600">
-                {latestBooking.customerName} · {latestBooking.bookingCode}
+                {latestBooking.customerName} Â· {latestBooking.bookingCode}
               </p>
             </div>
             <a
@@ -440,10 +442,10 @@ export default async function AdminBookingsPage({ searchParams }: any) {
         <DashboardMetric label="Pendientes de pago" value={summary.pendientesPago} />
         <DashboardMetric label="Total pax hoy" value={summary.totalPaxHoy} />
         <DashboardMetric
-          label="Próxima salida"
+          label="PrÃ³xima salida"
           value={summary.nextDepartureMinutes !== null ? `en ${summary.nextDepartureMinutes} min` : "sin salidas"}
         />
-        <DashboardMetric label="Total día" value={`$${summary.totalDelDia.toFixed(2)}`} />
+        <DashboardMetric label="Total dÃ­a" value={`$${summary.totalDelDia.toFixed(2)}`} />
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -457,7 +459,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
               className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
             >
               <option value="today">Hoy</option>
-              <option value="tomorrow">Mañana</option>
+              <option value="tomorrow">MaÃ±ana</option>
               <option value="week">Semana</option>
               <option value="range">Rango</option>
             </select>
@@ -549,7 +551,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
               defaultValue={orderParam}
               className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
             >
-              <option value="created">Últimas creadas</option>
+              <option value="created">Ãšltimas creadas</option>
               <option value="travel">Fecha de salida</option>
             </select>
           </div>
@@ -610,6 +612,28 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                       `Hola ${booking.customerName}, te confirmamos tu reserva ${booking.bookingCode}.`
                     )}`
                   : null;
+              const departureLabel = `${new Date(booking.travelDateValue).toLocaleDateString("es-ES", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric"
+              })}${booking.startTime ? ` Â· ${booking.startTime}` : ""}`;
+              const returnLabel = booking.returnTravelDate
+                ? `${new Date(booking.returnTravelDate).toLocaleDateString("es-ES", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric"
+                  })}${booking.returnStartTime ? ` Â· ${booking.returnStartTime}` : ""}`
+                : "No aplica";
+              const routeOrigin = booking.originAirport ?? booking.pickup ?? booking.hotel ?? "Pendiente";
+              const routeDestination = booking.hotel ?? booking.pickup ?? booking.tourTitle;
+              const serviceNotes = booking.tourIncludes ?? booking.pickupNotes ?? "Servicio confirmado con coordinaciÃ³n operativa y soporte.";
+              const logisticsSummary = [
+                booking.tripType === "round-trip" ? "Ida y vuelta" : "Servicio principal",
+                booking.flightNumber ? `Vuelo ${booking.flightNumber}` : null,
+                formatTimeUntil(new Date(booking.travelDateValue))
+              ]
+                .filter(Boolean)
+                .join(" Â· ");
 
               return (
                 <article
@@ -626,7 +650,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                       </p>
                       <h3 className="text-xl font-semibold text-slate-900">{booking.tourTitle}</h3>
                       <p className="text-sm text-slate-500">
-                        {booking.travelDate} · {booking.startTime ?? "Hora pendiente"} · {booking.pax} pax
+                        {booking.travelDate} Â· {booking.startTime ?? "Hora pendiente"} Â· {booking.pax} pax
                       </p>
                     </div>
                     <BookingStatusBadge status={booking.status} />
@@ -641,104 +665,112 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de ida</p>
-                        <p className="text-sm font-semibold text-slate-900">
-                          {new Date(booking.travelDateValue).toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })}
-                          {booking.startTime ? ` · ${booking.startTime}` : ""}
-                        </p>
+                        <p className="text-sm font-semibold text-slate-900">{departureLabel}</p>
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de regreso</p>
-                        <p className="text-sm font-semibold text-slate-900">
-                          {booking.returnTravelDate
-                            ? `${new Date(booking.returnTravelDate).toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })}${booking.returnStartTime ? ` · ${booking.returnStartTime}` : ""}`
-                            : "No aplica"}
-                        </p>
+                        <p className="text-sm font-semibold text-slate-900">{returnLabel}</p>
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Origen / destino</p>
-                        <p className="text-sm font-semibold text-slate-900">
-                          {(booking.originAirport ?? "Pendiente")} / {(booking.hotel ?? booking.pickup ?? "Pendiente")}
-                        </p>
+                        <p className="text-sm font-semibold text-slate-900">{routeOrigin} / {routeDestination}</p>
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Agencia / canal</p>
                         <p className="text-sm font-semibold text-slate-900">
                           {booking.agencyName ?? formatSourceLabel(booking.source)}
-                          {booking.agencyPhone ? ` · ${booking.agencyPhone}` : ""}
+                          {booking.agencyPhone ? ` Â· ${booking.agencyPhone}` : ""}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Códigos internos</p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">CÃ³digos internos</p>
                         <p className="text-sm font-semibold text-slate-900">
-                          {booking.bookingCode} · {booking.id.slice(0, 8).toUpperCase()}
+                          {booking.bookingCode} Â· {booking.id.slice(0, 8).toUpperCase()}
                         </p>
                       </div>
                       <div className="md:col-span-2">
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Servicios incluidos</p>
-                        <p className="text-sm font-semibold text-slate-900">
-                          {booking.pickupNotes ?? "Servicio confirmado con coordinación operativa y soporte."}
-                        </p>
+                        <p className="text-sm font-semibold text-slate-900">{serviceNotes}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-4 grid gap-3 md:grid-cols-2">
-                    <div className="space-y-1">
-                      <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">Recogida</p>
-                      <p className="text-sm text-slate-600">
-                        {booking.pickup ?? "Sin punto definido"} &middot; {booking.hotel ?? "Hotel no especificado"}
-                      </p>
-                      <p className="text-xs text-slate-500">{booking.originAirport ?? "Origen no confirmado"}</p>
-                      {booking.pickupNotes && (
-                        <p className="text-xs text-slate-500">Notas: {booking.pickupNotes}</p>
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">Logística</p>
-                      <p className="text-sm text-slate-600">
-                        Vuelo: {booking.flightNumber ?? "Pendiente"} · Room: {booking.pickupNotes ?? "N/D"}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        Tipo: {booking.tripType === "round-trip" ? "Ida y vuelta" : "Directa"}
-                        {booking.returnTravelDate
-                          ? ` Â· Regreso: ${new Date(booking.returnTravelDate).toLocaleDateString("es-ES")} ${booking.returnStartTime ?? ""}`
-                          : ""}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        Creada: {new Date(booking.createdAtValue).toLocaleString("es-ES")}
-                        {booking.updatedAtValue && ` · Actualizada: ${new Date(booking.updatedAtValue).toLocaleString("es-ES")}`}
-                      </p>
-                    </div>
-                  </div>
+                  <div className="mt-4 grid gap-3 xl:grid-cols-[1.2fr_1.1fr_0.9fr]">
+                    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Cliente y contacto</p>
+                      <div className="mt-3 space-y-2">
+                        <div>
+                          <p className="text-base font-semibold text-slate-900">{booking.customerName}</p>
+                          <p className="text-sm text-slate-600">{booking.customerEmail}</p>
+                          <p className="text-sm text-slate-600">{booking.customerPhone || "Teléfono pendiente"}</p>
+                        </div>
+                        <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                          <span className="font-semibold text-slate-900">Recogida:</span>{" "}
+                          {booking.pickup ?? "Sin punto definido"}
+                          {booking.hotel ? ` · ${booking.hotel}` : ""}
+                        </div>
+                        <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                          <span className="font-semibold text-slate-900">Idioma / notas:</span>{" "}
+                          {booking.pickupNotes ?? "Sin notas especiales"}
+                        </div>
+                      </div>
+                    </section>
 
-                  <div className="mt-4 grid gap-3 md:grid-cols-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Contacto</p>
-                      <p className="text-sm text-slate-600">{booking.customerName}</p>
-                      <p className="text-xs text-slate-500">{booking.customerEmail}</p>
-                      {booking.customerPhone && (
-                        <p className="text-xs text-slate-500">Tel: {booking.customerPhone}</p>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Finanzas</p>
-                      <p className="text-sm text-slate-600">${booking.totalAmount.toFixed(2)}</p>
-                      <p className="text-xs text-slate-500">Comisión: ${booking.platformFee.toFixed(2)}</p>
-                      <p className="text-xs text-slate-500">Neto: ${booking.supplierAmount.toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Origen</p>
-                      <p className="text-sm text-slate-600">{formatSourceLabel(booking.source)}</p>
-                      {booking.agencyName && (
-                        <p className="text-xs text-slate-500">
-                          {booking.agencyName}
-                          {booking.agencyPhone ? ` Â· ${booking.agencyPhone}` : ""}
-                        </p>
-                      )}
-                      <p className="text-xs text-slate-500">
-                        {formatTimeUntil(new Date(booking.travelDateValue))}
-                      </p>
-                    </div>
+                    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Operación del servicio</p>
+                      <div className="mt-3 space-y-3 text-sm text-slate-600">
+                        <div className="rounded-xl bg-slate-50 px-3 py-2">
+                          <p className="font-semibold text-slate-900">Ruta confirmada</p>
+                          <p>{routeOrigin}</p>
+                          <p className="text-slate-400">hacia</p>
+                          <p>{routeDestination}</p>
+                        </div>
+                        <div className="grid gap-2 md:grid-cols-2">
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <p className="font-semibold text-slate-900">Logística</p>
+                            <p>{logisticsSummary}</p>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <p className="font-semibold text-slate-900">Códigos</p>
+                            <p>{booking.bookingCode}</p>
+                            <p>{booking.id.slice(0, 8).toUpperCase()}</p>
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-slate-50 px-3 py-2">
+                          <p className="font-semibold text-slate-900">Control interno</p>
+                          <p>Creada: {new Date(booking.createdAtValue).toLocaleString("es-ES")}</p>
+                          <p>
+                            Actualizada:{" "}
+                            {booking.updatedAtValue ? new Date(booking.updatedAtValue).toLocaleString("es-ES") : "Sin cambios"}
+                          </p>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Finanzas y canal</p>
+                      <div className="mt-3 space-y-3">
+                        <div>
+                          <p className="text-2xl font-semibold text-slate-900">${booking.totalAmount.toFixed(2)}</p>
+                          <p className="text-sm text-slate-500">Total cobrado al cliente</p>
+                        </div>
+                        <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                          <p><span className="font-semibold text-slate-900">Comisión:</span> ${booking.platformFee.toFixed(2)}</p>
+                          <p><span className="font-semibold text-slate-900">Neto suplidor:</span> ${booking.supplierAmount.toFixed(2)}</p>
+                        </div>
+                        <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                          <p><span className="font-semibold text-slate-900">Canal:</span> {formatSourceLabel(booking.source)}</p>
+                          <p>
+                            <span className="font-semibold text-slate-900">Agencia:</span>{" "}
+                            {booking.agencyName ?? "Reserva directa"}
+                          </p>
+                          {booking.agencyPhone && (
+                            <p><span className="font-semibold text-slate-900">Tel agencia:</span> {booking.agencyPhone}</p>
+                          )}
+                          <p><span className="font-semibold text-slate-900">Ventana:</span> {formatTimeUntil(new Date(booking.travelDateValue))}</p>
+                        </div>
+                      </div>
+                    </section>
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2">
@@ -793,7 +825,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                             type="submit"
                             className="w-full rounded-md bg-rose-600 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
                           >
-                            Confirmar cancelación
+                            Confirmar cancelaciÃ³n
                           </button>
                         </form>
                       </div>
@@ -815,7 +847,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                           </div>
                         ))
                       ) : (
-                        <p className="text-xs text-slate-500">Aún no hay actividad registrada.</p>
+                        <p className="text-xs text-slate-500">AÃºn no hay actividad registrada.</p>
                       )}
                     </div>
                   </div>
@@ -833,7 +865,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                         booking.notes.map((note) => (
                           <article key={`${booking.id}-${note.timestamp}-${note.author}`} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
                             <p className="text-[11px] text-slate-500">
-                              {new Date(note.timestamp).toLocaleString("es-ES")} · {note.author}
+                              {new Date(note.timestamp).toLocaleString("es-ES")} Â· {note.author}
                             </p>
                             <p className="text-sm text-slate-700">{note.message}</p>
                           </article>
@@ -871,7 +903,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
         {sortedRows.length > PAGE_SIZE && (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
             <span>
-              Página {currentPage} de {totalPages}
+              PÃ¡gina {currentPage} de {totalPages}
             </span>
             <div className="flex gap-2">
               <a
@@ -906,7 +938,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
       <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Solicitudes de cancelación</h2>
+            <h2 className="text-lg font-semibold text-slate-900">Solicitudes de cancelaciÃ³n</h2>
             <p className="text-sm text-slate-500">Revisa lo que solicitaron las agencias o proveedores.</p>
           </div>
           <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Pendientes</span>
@@ -919,13 +951,13 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                   <div>
                     <p className="text-base font-semibold text-slate-900">{booking.tourTitle}</p>
                     <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                      {booking.travelDate} · {formatTimeUntil(new Date(booking.travelDateValue))}
+                      {booking.travelDate} Â· {formatTimeUntil(new Date(booking.travelDateValue))}
                     </p>
                   </div>
                   <BookingStatusBadge status="CANCELLATION_REQUESTED" />
                 </div>
                 <p className="text-xs text-slate-500">
-                  Solicitado por {booking.cancellationByRole ?? "Proveedor"} · Motivo: {booking.cancellationReason ?? "Sin motivo"}
+                  Solicitado por {booking.cancellationByRole ?? "Proveedor"} Â· Motivo: {booking.cancellationReason ?? "Sin motivo"}
                 </p>
                 <div className="flex flex-wrap gap-2 text-xs">
                   <form action={adminApproveCancellation} method="post" className="flex">
@@ -934,7 +966,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                       type="submit"
                       className="rounded-md bg-emerald-500 px-3 py-1 text-white hover:bg-emerald-600"
                     >
-                      Aprobar cancelación
+                      Aprobar cancelaciÃ³n
                     </button>
                   </form>
                   <form action={adminCancelBooking} method="post" className="flex">
@@ -974,3 +1006,4 @@ function DashboardMetric({ label, value }: { label: string; value: string | numb
     </article>
   );
 }
+
