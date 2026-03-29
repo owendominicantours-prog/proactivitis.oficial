@@ -15,6 +15,8 @@ import type { BookingStatus } from "@/lib/types/booking";
 type PageProps = {
   searchParams?: Promise<{
     query?: string;
+    code?: string;
+    date?: string;
     status?: string;
     channel?: string;
   }>;
@@ -45,6 +47,8 @@ export default async function AgencyBookingsPage({ searchParams }: PageProps) {
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const query = resolvedSearchParams?.query?.trim().toLowerCase() ?? "";
+  const codeFilter = resolvedSearchParams?.code?.trim().toLowerCase() ?? "";
+  const dateFilter = resolvedSearchParams?.date?.trim() ?? "";
   const statusFilter = resolvedSearchParams?.status?.trim().toLowerCase() ?? "";
   const channelFilter = resolvedSearchParams?.channel?.trim().toLowerCase() ?? "";
 
@@ -108,9 +112,15 @@ export default async function AgencyBookingsPage({ searchParams }: PageProps) {
 
   const filtered = normalizedBookings.filter(({ booking, channel, searchText }) => {
     const matchesQuery = query ? searchText.includes(query) : true;
+    const matchesCode = codeFilter
+      ? (booking.bookingCode ?? booking.id).toLowerCase().includes(codeFilter)
+      : true;
+    const matchesDate = dateFilter
+      ? booking.travelDate.toISOString().slice(0, 10) === dateFilter
+      : true;
     const matchesStatus = statusFilter ? booking.status.toLowerCase() === statusFilter : true;
     const matchesChannel = channelFilter ? channel === channelFilter : true;
-    return matchesQuery && matchesStatus && matchesChannel;
+    return matchesQuery && matchesCode && matchesDate && matchesStatus && matchesChannel;
   });
 
   const monthStart = new Date();
@@ -159,13 +169,23 @@ export default async function AgencyBookingsPage({ searchParams }: PageProps) {
 
       <div className="grid gap-4 xl:grid-cols-[1.4fr,1fr]">
         <form className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm" method="get">
-          <div className="grid gap-3 md:grid-cols-[1.4fr,1fr,1fr,auto]">
+          <div className="grid gap-3 md:grid-cols-[1.3fr,1fr,1fr,1fr,auto]">
             <label className="space-y-2">
               <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Buscar</span>
               <input
                 name="query"
                 defaultValue={resolvedSearchParams?.query ?? ""}
                 placeholder="Cliente, código, tour, hotel o vehículo"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white"
+              />
+            </label>
+
+            <label className="space-y-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Código</span>
+              <input
+                name="code"
+                defaultValue={resolvedSearchParams?.code ?? ""}
+                placeholder="PRO-XXXX"
                 className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white"
               />
             </label>
@@ -183,6 +203,16 @@ export default async function AgencyBookingsPage({ searchParams }: PageProps) {
                 <option value="cancelled">Canceladas</option>
                 <option value="completed">Completadas</option>
               </select>
+            </label>
+
+            <label className="space-y-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Fecha</span>
+              <input
+                type="date"
+                name="date"
+                defaultValue={resolvedSearchParams?.date ?? ""}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-sky-400 focus:bg-white"
+              />
             </label>
 
             <label className="space-y-2">

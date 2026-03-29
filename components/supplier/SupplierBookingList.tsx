@@ -130,8 +130,10 @@ export function SupplierBookingList({ bookings }: Props) {
   const [customEnd, setCustomEnd] = useState("");
   const [statusFilters, setStatusFilters] = useState<string[]>(["CONFIRMED", "PENDING", "PAYMENT_PENDING"]);
   const [selectedTour, setSelectedTour] = useState("all");
+  const [bookingCodeFilter, setBookingCodeFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [pickupFilter, setPickupFilter] = useState("");
+  const [exactDateFilter, setExactDateFilter] = useState("");
   const [activeTab, setActiveTab] = useState<TabKey>("today");
   const [orderBy, setOrderBy] = useState<"created" | "travel">("created");
   const [page, setPage] = useState(1);
@@ -212,6 +214,10 @@ export function SupplierBookingList({ bookings }: Props) {
       .filter((booking) => (statusFilters.length ? statusFilters.includes(booking.status) : true))
       .filter((booking) => (selectedTour === "all" ? true : booking.tourTitle === selectedTour))
       .filter((booking) => {
+        if (!bookingCodeFilter.trim()) return true;
+        return booking.bookingCode.toLowerCase().includes(bookingCodeFilter.trim().toLowerCase());
+      })
+      .filter((booking) => {
         if (!searchQuery.trim()) return true;
         const query = searchQuery.trim().toLowerCase();
         return (
@@ -226,6 +232,10 @@ export function SupplierBookingList({ bookings }: Props) {
         const pickupText = `${booking.hotel ?? ""} ${booking.pickup ?? ""}`.toLowerCase();
         return pickupText.includes(target);
       })
+      .filter((booking) => {
+        if (!exactDateFilter) return true;
+        return booking.travelDateValue.slice(0, 10) === exactDateFilter;
+      })
       .filter(tabPredicate);
   }, [
     enrichedBookings,
@@ -234,8 +244,10 @@ export function SupplierBookingList({ bookings }: Props) {
     customEnd,
     statusFilters,
     selectedTour,
+    bookingCodeFilter,
     searchQuery,
     pickupFilter,
+    exactDateFilter,
     activeTab,
     shouldApplyDateFilter
   ]);
@@ -475,8 +487,10 @@ export function SupplierBookingList({ bookings }: Props) {
     setCustomEnd("");
     setStatusFilters(["CONFIRMED", "PENDING", "PAYMENT_PENDING"]);
     setSelectedTour("all");
+    setBookingCodeFilter("");
     setSearchQuery("");
     setPickupFilter("");
+    setExactDateFilter("");
     setOrderBy("created");
     setPage(1);
   };
@@ -540,7 +554,7 @@ export function SupplierBookingList({ bookings }: Props) {
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="grid gap-4 lg:grid-cols-6">
+          <div className="grid gap-4 lg:grid-cols-7">
             <div>
               <label className="text-xs uppercase text-slate-500">Fecha</label>
               <select
@@ -628,7 +642,19 @@ export function SupplierBookingList({ bookings }: Props) {
                   setSearchQuery(event.target.value);
                   setPage(1);
                 }}
-                placeholder="Cliente o ID"
+                placeholder="Cliente o correo"
+                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs uppercase text-slate-500">Código</label>
+              <input
+                value={bookingCodeFilter}
+                onChange={(event) => {
+                  setBookingCodeFilter(event.target.value);
+                  setPage(1);
+                }}
+                placeholder="PRO-XXXX"
                 className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               />
             </div>
@@ -641,6 +667,18 @@ export function SupplierBookingList({ bookings }: Props) {
                   setPage(1);
                 }}
                 placeholder="Hotel o zona"
+                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs uppercase text-slate-500">Fecha exacta</label>
+              <input
+                type="date"
+                value={exactDateFilter}
+                onChange={(event) => {
+                  setExactDateFilter(event.target.value);
+                  setPage(1);
+                }}
                 className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               />
             </div>

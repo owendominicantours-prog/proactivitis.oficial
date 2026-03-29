@@ -303,7 +303,9 @@ export default async function AdminBookingsPage({ searchParams }: any) {
 
   const selectedTour = getParam("tour") ?? "all";
   const searchQuery = getParam("query") ?? "";
+  const codeQuery = getParam("code") ?? "";
   const pickupSearch = getParam("pickup") ?? "";
+  const exactTravelDate = getParam("travelDate") ?? "";
   const orderParam = (getParam("order") as "created" | "travel") ?? "created";
 
   const uniqueTours = Array.from(
@@ -369,8 +371,16 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   const shouldApplyDateFilter = tab === "today" || tab === "tomorrow" || dateMode === "range";
   const filteredRows = rows
     .filter((booking) => (shouldApplyDateFilter ? withinDateMode(booking) : true))
+    .filter((booking) => {
+      if (!exactTravelDate) return true;
+      return new Date(booking.travelDateValue).toISOString().slice(0, 10) === exactTravelDate;
+    })
     .filter((booking) => (selectedStatus.length ? selectedStatus.includes(booking.status) : true))
     .filter((booking) => (selectedTour === "all" ? true : booking.tourTitle === selectedTour))
+    .filter((booking) => {
+      if (!codeQuery.trim()) return true;
+      return (booking.bookingCode ?? booking.id).toLowerCase().includes(codeQuery.trim().toLowerCase());
+    })
     .filter((booking) => {
       if (!searchQuery.trim()) return true;
       const query = searchQuery.trim().toLowerCase();
@@ -462,7 +472,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="grid gap-4 lg:grid-cols-6">
+        <div className="grid gap-4 lg:grid-cols-7">
           <div>
             <label className="text-xs uppercase text-slate-500">Fecha</label>
             <select
@@ -537,12 +547,22 @@ export default async function AdminBookingsPage({ searchParams }: any) {
             </select>
           </div>
           <div>
+            <label className="text-xs uppercase text-slate-500">Código</label>
+            <input
+              name="code"
+              form="filters-form"
+              defaultValue={codeQuery}
+              placeholder="PRO-XXXX"
+              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
             <label className="text-xs uppercase text-slate-500">Buscar</label>
             <input
               name="query"
               form="filters-form"
               defaultValue={searchQuery}
-              placeholder="Cliente o ID"
+              placeholder="Cliente o correo"
               className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
             />
           </div>
@@ -553,6 +573,16 @@ export default async function AdminBookingsPage({ searchParams }: any) {
               form="filters-form"
               defaultValue={pickupSearch}
               placeholder="Hotel o zona"
+              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs uppercase text-slate-500">Fecha exacta</label>
+            <input
+              type="date"
+              name="travelDate"
+              form="filters-form"
+              defaultValue={exactTravelDate}
               className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
             />
           </div>
@@ -592,9 +622,9 @@ export default async function AdminBookingsPage({ searchParams }: any) {
             key={item.key}
             href={`?tab=${item.key}&date=${dateMode}&tour=${encodeURIComponent(
               selectedTour
-            )}&query=${encodeURIComponent(searchQuery)}&pickup=${encodeURIComponent(
+            )}&code=${encodeURIComponent(codeQuery)}&query=${encodeURIComponent(searchQuery)}&pickup=${encodeURIComponent(
               pickupSearch
-            )}&order=${orderParam}${selectedStatus
+            )}&travelDate=${encodeURIComponent(exactTravelDate)}&order=${orderParam}${selectedStatus
               .map((status) => `&status=${encodeURIComponent(status)}`)
               .join("")}`}
             className={`rounded-full px-4 py-2 transition ${
