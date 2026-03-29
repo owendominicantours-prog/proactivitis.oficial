@@ -321,6 +321,17 @@ export async function POST(request: NextRequest) {
         }
       })
     : null;
+  const agencyTransferLink =
+    payload.agencyLink && payload.flowType === "transfer"
+      ? await prisma.agencyTransferLink.findUnique({
+          where: { slug: payload.agencyLink },
+          select: {
+            id: true,
+            price: true,
+            markup: true
+          }
+        })
+      : null;
   const agencyProfile =
     sessionUser?.role === BookingSourceEnum.AGENCY && sessionUser.id
       ? await prisma.agencyProfile.findUnique({
@@ -336,11 +347,14 @@ export async function POST(request: NextRequest) {
         })
       : null;
   const bookingSource =
-    agencyProLink || sessionUser?.role === BookingSourceEnum.AGENCY
+    agencyProLink || agencyTransferLink || sessionUser?.role === BookingSourceEnum.AGENCY
       ? BookingSourceEnum.AGENCY
       : BookingSourceEnum.WEB;
   if (agencyProLink && agencyProLink.tourId !== resolvedTourId) {
     return NextResponse.json({ error: "El enlace de agencia no coincide con este producto." }, { status: 400 });
+  }
+  if (agencyTransferLink && payload.flowType !== "transfer") {
+    return NextResponse.json({ error: "El enlace de traslado solo aplica a reservas de transfer." }, { status: 400 });
   }
   const startTime = normalizeString(payload.time) ?? null;
   const summary = buildBookingSummary(
@@ -378,7 +392,7 @@ export async function POST(request: NextRequest) {
     where: { userId },
     select: { discountEligible: true, discountRedeemedAt: true, completedAt: true }
   });
-  const directAgencyBooking = !agencyProLink && sessionUser?.role === BookingSourceEnum.AGENCY;
+  const directAgencyBooking = !agencyProLink && !agencyTransferLink && sessionUser?.role === BookingSourceEnum.AGENCY;
   const agencyCommissionPercent = Math.min(Math.max(agencyProfile?.commissionPercent ?? 20, 0), 100);
   const discountPercent =
     !directAgencyBooking &&
@@ -431,9 +445,10 @@ export async function POST(request: NextRequest) {
       status: BookingStatusEnum.PAYMENT_PENDING,
       source: bookingSource,
       agencyProLinkId: agencyProLink?.id,
+      agencyTransferLinkId: agencyTransferLink?.id,
       agencyFee: directAgencyBooking ? agencyDirectDiscountAmount : undefined,
-      agencyMarkupAmount: agencyProLink?.markup ?? undefined,
-      agencyPricingMode: Boolean(agencyProLink),
+      agencyMarkupAmount: agencyProLink?.markup ?? agencyTransferLink?.markup ?? undefined,
+      agencyPricingMode: Boolean(agencyProLink || agencyTransferLink),
       paymentMethod: payload.paymentOption === "later" ? "PAY_LATER" : "CARD"
     } as any
   });
@@ -469,7 +484,13 @@ export async function POST(request: NextRequest) {
       supplierAccountId: supplierAccountId ?? "not-configured",
       platformSharePercent: platformSharePercent.toString(),
       agencyCommissionPercent: directAgencyBooking ? agencyCommissionPercent.toString() : "",
-      agencyModel: agencyProLink ? "agency-pro" : directAgencyBooking ? "direct-agency" : "web",
+      agencyModel: agencyProLink
+        ? "agency-pro"
+        : agencyTransferLink
+          ? "agency-transfer-pro"
+          : directAgencyBooking
+            ? "direct-agency"
+            : "web",
       discountPercent: discountPercent ? discountPercent.toString() : "",
       discountAmount: discountAmount ? discountAmount.toString() : "",
       hotelSlug: payload.hotelSlug ?? "unknown",

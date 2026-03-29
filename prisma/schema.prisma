@@ -100,6 +100,8 @@ model Booking {
   TourOption            TourOption?    @relation(fields: [tourOptionId], references: [id], onDelete: SetNull)
   AgencyProLink         AgencyProLink? @relation("AgencyProBookings", fields: [agencyProLinkId], references: [id])
   agencyProLinkId       String?
+  AgencyTransferLink    AgencyTransferLink? @relation("AgencyTransferBookings", fields: [agencyTransferLinkId], references: [id])
+  agencyTransferLinkId  String?
   agencyMarkupAmount    Float?
   agencyPricingMode     Boolean        @default(false)
   Conversation          Conversation?
@@ -429,6 +431,8 @@ model TransferLocation {
   country               Country                         @relation(fields: [countryCode], references: [code])
   originOverrides       TransferRoutePriceOverride[]    @relation("OriginOverrides")
   destinationOverrides  TransferRoutePriceOverride[]    @relation("DestinationOverrides")
+  originAgencyTransferLinks AgencyTransferLink[]        @relation("AgencyTransferOrigin")
+  destinationAgencyTransferLinks AgencyTransferLink[]   @relation("AgencyTransferDestination")
 }
 
 model TransferVehicle {
@@ -445,6 +449,7 @@ model TransferVehicle {
 
   routePrices TransferRoutePrice[]
   overrides   TransferRoutePriceOverride[]
+  agencyTransferLinks AgencyTransferLink[]
 }
 
 model TransferRoute {
@@ -581,6 +586,33 @@ model AgencyProLink {
   Tour         Tour      @relation(fields: [tourId], references: [id])
   AgencyUser   User      @relation(fields: [agencyUserId], references: [id])
   Booking      Booking[] @relation("AgencyProBookings")
+}
+
+model AgencyTransferLink {
+  id                    String           @id @default(cuid())
+  slug                  String           @unique
+  agencyUserId          String
+  originLocationId      String
+  destinationLocationId String
+  vehicleId             String
+  passengers            Int
+  tripType              String           @default("one-way")
+  price                 Float
+  basePrice             Float
+  markup                Float
+  note                  String?
+  active                Boolean          @default(true)
+  expiresAt             DateTime?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  AgencyUser            User             @relation(fields: [agencyUserId], references: [id])
+  originLocation        TransferLocation @relation("AgencyTransferOrigin", fields: [originLocationId], references: [id])
+  destinationLocation   TransferLocation @relation("AgencyTransferDestination", fields: [destinationLocationId], references: [id])
+  vehicle               TransferVehicle  @relation(fields: [vehicleId], references: [id])
+  Booking               Booking[]        @relation("AgencyTransferBookings")
+
+  @@index([agencyUserId, active])
+  @@index([originLocationId, destinationLocationId])
 }
 
 enum TourTranslationStatus {
@@ -785,6 +817,7 @@ model User {
   CustomerPayment         CustomerPayment?
   CustomerPreference     CustomerPreference?
   AgencyProLinks          AgencyProLink[]
+  AgencyTransferLinks     AgencyTransferLink[]
   BlogPosts               BlogPost[]
   TourReviews             TourReview[]
   TransferReviews         TransferReview[]

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AgencyTransferProBuilder } from "@/components/agency/AgencyTransferProBuilder";
 
 type LocationSummary = {
   id: string;
@@ -618,6 +619,17 @@ export function AgencyTransferWorkspace({
                     >
                       Vender y crear reserva
                     </Link>
+                    <AgencyTransferProBuilder
+                      originLocationId={selectedOrigin?.id ?? ""}
+                      destinationLocationId={selectedDestination?.id ?? ""}
+                      originLabel={selectedOrigin?.name ?? "Origen"}
+                      destinationLabel={selectedDestination?.name ?? "Destino"}
+                      vehicleId={vehicle.id}
+                      vehicleName={vehicle.name}
+                      passengers={passengers}
+                      tripType={tripType}
+                      basePrice={publicPrice}
+                    />
                     <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-3 text-xs leading-relaxed text-slate-500">
                       El checkout mostrara el neto de agencia y guardara la reserva como venta directa desde cuenta de agencia.
                     </div>

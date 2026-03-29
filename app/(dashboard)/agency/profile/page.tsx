@@ -43,7 +43,7 @@ export default async function AgencyProfilePage() {
     return <div className="py-10 text-center text-sm text-slate-600">No encontramos tu cuenta de agencia.</div>;
   }
 
-  const [links, bookings] = await Promise.all([
+  const [links, transferLinks, bookings] = await Promise.all([
     prisma.agencyProLink.findMany({
       where: { agencyUserId: userId },
       include: {
@@ -52,14 +52,29 @@ export default async function AgencyProfilePage() {
       },
       orderBy: { createdAt: "desc" }
     }),
+    prisma.agencyTransferLink.findMany({
+      where: { agencyUserId: userId },
+      include: {
+        originLocation: { select: { name: true } },
+        destinationLocation: { select: { name: true } },
+        Booking: { select: { id: true } }
+      },
+      orderBy: { createdAt: "desc" }
+    }),
     prisma.booking.findMany({
       where: {
         source: "AGENCY",
-        OR: [{ userId }, { AgencyProLink: { agencyUserId: userId } }]
+        OR: [{ userId }, { AgencyProLink: { agencyUserId: userId } }, { AgencyTransferLink: { agencyUserId: userId } }]
       },
       include: {
         Tour: { select: { title: true } },
         AgencyProLink: {
+          select: {
+            slug: true,
+            markup: true
+          }
+        },
+        AgencyTransferLink: {
           select: {
             slug: true,
             markup: true
@@ -84,10 +99,11 @@ export default async function AgencyProfilePage() {
   const totalAgencyRevenue = bookings.reduce((sum, booking) => {
     return sum + (booking.agencyMarkupAmount ?? booking.agencyFee ?? 0);
   }, 0);
-  const directBookings = bookings.filter((booking) => !booking.agencyProLinkId).length;
-  const agencyProBookings = bookings.filter((booking) => Boolean(booking.agencyProLinkId)).length;
+  const directBookings = bookings.filter((booking) => !booking.agencyProLinkId && !booking.agencyTransferLinkId).length;
+  const agencyProBookings = bookings.filter((booking) => Boolean(booking.agencyProLinkId || booking.agencyTransferLinkId)).length;
   const lastBookingDate = bookings[0]?.createdAt ?? null;
   const latestLink = links[0] ?? null;
+  const latestTransferLink = transferLinks[0] ?? null;
 
   return (
     <div className="space-y-6">
@@ -98,7 +114,7 @@ export default async function AgencyProfilePage() {
             <h1 className="mt-3 text-3xl font-semibold">{companyName}</h1>
             <p className="mt-3 text-sm leading-relaxed text-slate-200">
               Revisa el estado de tu cuenta, la comision directa, tu actividad comercial y el rendimiento de tus links
-              AgencyPro.
+              de tours y traslados.
             </p>
           </div>
 
@@ -114,7 +130,7 @@ export default async function AgencyProfilePage() {
         <MetricCard label="Reservas totales" value={String(bookings.length)} helper="Operaciones asociadas a tu cuenta" />
         <MetricCard label="Ventas brutas" value={formatCurrency(totalSales)} helper="Total vendido en esta cuenta" />
         <MetricCard label="Ingreso agencia" value={formatCurrency(totalAgencyRevenue)} helper="Markup AgencyPro o comision directa" />
-        <MetricCard label="Links AgencyPro" value={String(links.length)} helper="Enlaces listos para compartir" />
+        <MetricCard label="Links AgencyPro" value={String(links.length + transferLinks.length)} helper="Tours y traslados listos para compartir" />
         <MetricCard label="Ultima reserva" value={formatDate(lastBookingDate)} helper="Fecha de la actividad mas reciente" />
       </section>
 
@@ -151,8 +167,7 @@ export default async function AgencyProfilePage() {
           <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">Lectura rapida</p>
             <p className="mt-2 text-sm leading-relaxed text-slate-700">
-              La comision directa se aplica cuando reservas desde tu cuenta. Los links AgencyPro trabajan con tu propio
-              margen y no con este porcentaje.
+              La comision directa se aplica cuando reservas desde tu cuenta. Los links AgencyPro de tours y traslados trabajan con tu propio margen y no con este porcentaje.
             </p>
           </div>
         </article>
@@ -170,7 +185,11 @@ export default async function AgencyProfilePage() {
 
           <div className="mt-4 space-y-3">
             {bookings.slice(0, 8).map((booking) => {
-              const channelLabel = booking.AgencyProLink ? "AgencyPro" : "Cuenta de agencia";
+              const channelLabel = booking.AgencyProLink
+                ? "AgencyPro Tour"
+                : booking.AgencyTransferLink
+                  ? "AgencyPro Transfer"
+                  : "Cuenta de agencia";
               const agencyRevenue = booking.agencyMarkupAmount ?? booking.agencyFee ?? 0;
 
               return (
@@ -202,7 +221,7 @@ export default async function AgencyProfilePage() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500">AgencyPro</p>
               <h2 className="mt-2 text-xl font-semibold text-slate-900">Links comerciales</h2>
             </div>
-            <span className="text-xs text-slate-500">{links.length} total</span>
+            <span className="text-xs text-slate-500">{links.length + transferLinks.length} total</span>
           </div>
 
           <div className="mt-4 space-y-3">
@@ -217,21 +236,43 @@ export default async function AgencyProfilePage() {
                 </div>
               </div>
             ))}
+            {transferLinks.slice(0, 8).map((link) => (
+              <div key={link.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <p className="font-semibold text-slate-900">{link.originLocation.name} → {link.destinationLocation.name}</p>
+                <p className="mt-1 text-sm text-slate-600">/agency-transfer/{link.slug}</p>
+                <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
+                  <span>Precio final: {formatCurrency(link.price)}</span>
+                  <span>Markup: {formatCurrency(link.markup)}</span>
+                  <span>Reservas: {link.Booking.length}</span>
+                </div>
+              </div>
+            ))}
 
-            {!links.length && (
+            {!links.length && !transferLinks.length && (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-500">
                 Todavia no has creado links AgencyPro.
               </div>
             )}
           </div>
 
-          {latestLink ? (
+          {latestLink || latestTransferLink ? (
             <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-emerald-700">Ultimo link creado</p>
-              <p className="mt-2 text-sm font-semibold text-slate-900">/agency-pro/{latestLink.slug}</p>
-              <p className="mt-1 text-sm text-slate-600">
-                {latestLink.Tour?.title ?? "Tour"} · {formatCurrency(latestLink.price)}
-              </p>
+              {latestTransferLink && (!latestLink || latestTransferLink.createdAt > latestLink.createdAt) ? (
+                <>
+                  <p className="mt-2 text-sm font-semibold text-slate-900">/agency-transfer/{latestTransferLink.slug}</p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    {latestTransferLink.originLocation.name} → {latestTransferLink.destinationLocation.name} · {formatCurrency(latestTransferLink.price)}
+                  </p>
+                </>
+              ) : latestLink ? (
+                <>
+                  <p className="mt-2 text-sm font-semibold text-slate-900">/agency-pro/{latestLink.slug}</p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    {latestLink.Tour?.title ?? "Tour"} · {formatCurrency(latestLink.price)}
+                  </p>
+                </>
+              ) : null}
             </div>
           ) : null}
         </article>
