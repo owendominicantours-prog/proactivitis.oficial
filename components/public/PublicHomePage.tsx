@@ -482,11 +482,141 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     ]
   };
 
+  const stats = [
+    {
+      value: `${uniquePublishedTours.length}+`,
+      label:
+        locale === "es"
+          ? "experiencias publicadas"
+          : locale === "fr"
+            ? "experiences publiees"
+            : "published experiences"
+    },
+    {
+      value: `${uniqueTransferLandings.length}+`,
+      label:
+        locale === "es"
+          ? "rutas de traslado"
+          : locale === "fr"
+            ? "routes de transfert"
+            : "transfer routes"
+    },
+    {
+      value: "USD",
+      label:
+        locale === "es"
+          ? "precios claros y directos"
+          : locale === "fr"
+            ? "prix clairs en USD"
+            : "clear USD pricing"
+    },
+    {
+      value: "B2B",
+      label:
+        locale === "es"
+          ? "agencias y suppliers conectados"
+          : locale === "fr"
+            ? "agences et suppliers connectes"
+            : "agencies and suppliers connected"
+    }
+  ];
+
+  const marketplaceHighlights = [
+    {
+      title:
+        locale === "es"
+          ? "Reserva tours y traslados desde una sola plataforma"
+          : locale === "fr"
+            ? "Reservez excursions et transferts depuis une seule plateforme"
+            : "Book tours and transfers from one platform",
+      body:
+        locale === "es"
+          ? "El usuario no tiene que saltar entre formularios distintos. Puede descubrir experiencias, cotizar traslados y avanzar a la reserva con una lógica más clara."
+          : locale === "fr"
+            ? "Le voyageur n'a pas besoin de passer d'un formulaire a l'autre. Il peut decouvrir, comparer et reserver avec plus de clarte."
+            : "Travelers can discover experiences, quote transfers, and continue to booking without jumping between disconnected flows."
+    },
+    {
+      title:
+        locale === "es"
+          ? "Operación real para agencias y proveedores"
+          : locale === "fr"
+            ? "Operation reelle pour agences et fournisseurs"
+            : "Real operating stack for agencies and suppliers",
+      body:
+        locale === "es"
+          ? "No es solo una vitrina. Proactivitis ya integra reservas, AgencyPro, paneles operativos y control comercial para crecer con estructura."
+          : locale === "fr"
+            ? "Ce n'est pas seulement une vitrine. Proactivitis integre deja reservations, AgencyPro et controles operationnels."
+            : "This is not just a brochure site. Proactivitis already runs bookings, AgencyPro, supplier tools, and agency workflows."
+    },
+    {
+      title:
+        locale === "es"
+          ? "Diseñado para vender mejor, no solo para informar"
+          : locale === "fr"
+            ? "Concu pour mieux vendre, pas seulement pour informer"
+            : "Built to sell better, not just to inform",
+      body:
+        locale === "es"
+          ? "La home ahora debe llevar al usuario rápido a buscar, comparar y reservar. Todo lo demás debe reforzar confianza y decisión."
+          : locale === "fr"
+            ? "La page d'accueil doit mener rapidement le voyageur a chercher, comparer et reserver."
+            : "The homepage should move users quickly into search, comparison, and reservation while reinforcing trust."
+    }
+  ];
+
   return (
     <div className="bg-slate-50 text-slate-900 overflow-x-hidden">
       <HomeHeroCarousel>
         <HomeHeroContent locale={locale} overrides={homeOverrides.hero} />
       </HomeHeroCarousel>
+
+      <section className="-mt-10 relative z-10">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="grid gap-4 rounded-[32px] border border-slate-200 bg-white/95 p-5 shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur md:grid-cols-4 md:p-6">
+            {stats.map((item) => (
+              <article key={item.label} className="rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-4">
+                <p className="text-2xl font-semibold text-slate-950">{item.value}</p>
+                <p className="mt-1 text-sm text-slate-600">{item.label}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="travel-surface">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+          <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+            <div className="rounded-[32px] border border-slate-100 bg-white p-8 shadow-sm">
+              <HomeRecommendedHeader locale={locale} overrides={homeOverrides.recommended} />
+              <div className="mt-5">
+                <HomeTourSearchSection locale={locale} />
+              </div>
+            </div>
+            <div className="rounded-[32px] border border-slate-100 bg-[linear-gradient(135deg,#0f172a,#1e293b)] p-8 text-white shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-200">
+                {locale === "es" ? "Marketplace de viajes" : locale === "fr" ? "Marketplace de voyage" : "Travel marketplace"}
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold leading-tight">
+                {locale === "es"
+                  ? "Busca, cotiza y reserva con una navegación más clara"
+                  : locale === "fr"
+                    ? "Cherchez, comparez et reservez avec une navigation plus claire"
+                    : "Search, quote, and book with a clearer booking flow"}
+              </h2>
+              <div className="mt-5 space-y-4">
+                {marketplaceHighlights.map((item) => (
+                  <div key={item.title} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <p className="text-sm font-semibold text-white">{item.title}</p>
+                    <p className="mt-2 text-sm text-slate-200">{item.body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="border-y border-slate-100 bg-white">
         <div className="mx-auto max-w-6xl space-y-6 px-4 py-12 sm:px-6">
@@ -496,10 +626,27 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
 
       <section className="travel-surface">
         <div className="mx-auto max-w-6xl space-y-4 px-4 py-12 sm:px-6">
-          <HomeRecommendedHeader locale={locale} overrides={homeOverrides.recommended} />
-          <HomeTourSearchSection locale={locale} />
           <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                  {locale === "es" ? "Descubre primero" : locale === "fr" ? "Decouvrez d'abord" : "Discover first"}
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+                  {locale === "es"
+                    ? "Experiencias destacadas con intención real de reserva"
+                    : locale === "fr"
+                      ? "Experiences vedettes avec intention reelle de reservation"
+                      : "Featured experiences built for real booking intent"}
+                </h2>
+              </div>
+              <Link href={locale === "es" ? "/tours" : `/${locale}/tours`} className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                {locale === "es" ? "Ver todos los tours" : locale === "fr" ? "Voir toutes les excursions" : "Browse all tours"}
+              </Link>
+            </div>
+            <div className="mt-6">
             <FeaturedToursSection locale={locale} />
+            </div>
           </div>
           <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
@@ -637,6 +784,39 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           </div>
           <div className="space-y-4">
             <HomeAboutContent locale={locale} overrides={homeOverrides.about} />
+            <div className="rounded-3xl border border-slate-100 bg-slate-50 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                {locale === "es" ? "Canal profesional" : locale === "fr" ? "Canal professionnel" : "Professional channel"}
+              </p>
+              <h3 className="mt-2 text-xl font-semibold text-slate-900">
+                {locale === "es"
+                  ? "También operamos con agencias y proveedores"
+                  : locale === "fr"
+                    ? "Nous operons aussi avec agences et fournisseurs"
+                    : "We also operate with agencies and suppliers"}
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">
+                {locale === "es"
+                  ? "Si buscas una plataforma que además de vender opere con estructura B2B, AgencyPro, reservas directas y control operativo ya están integrados."
+                  : locale === "fr"
+                    ? "Si vous cherchez une plateforme qui combine ventes, B2B, AgencyPro et controle operationnel, elle existe deja."
+                    : "If you need more than a brochure site, Proactivitis already supports AgencyPro, direct bookings, supplier workflows, and B2B operations."}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link
+                  href={locale === "es" ? "/agency-partners" : `/${locale}/agency-partners`}
+                  className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+                >
+                  {locale === "es" ? "Programa para agencias" : locale === "fr" ? "Programme agences" : "Agency program"}
+                </Link>
+                <Link
+                  href={locale === "es" ? "/become-a-supplier" : `/${locale}/become-a-supplier`}
+                  className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700"
+                >
+                  {locale === "es" ? "Ser supplier" : locale === "fr" ? "Devenir supplier" : "Become a supplier"}
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>

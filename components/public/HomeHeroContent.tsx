@@ -10,6 +10,8 @@ type HomeHeroContentProps = {
 export function HomeHeroContent({ locale, overrides }: HomeHeroContentProps) {
   const t = (key: TranslationKey, replacements?: Record<string, string | number>) =>
     translate(locale, key, replacements);
+  const toursHref = locale === "es" ? "/tours" : `/${locale}/tours`;
+  const transferHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
 
   return (
     <div className="max-w-4xl space-y-6 text-center text-white md:text-left">
@@ -21,10 +23,10 @@ export function HomeHeroContent({ locale, overrides }: HomeHeroContentProps) {
       </h1>
       <p className="text-lg text-white/90">{overrides?.description ?? t("home.hero.description")}</p>
       <div className="botones-banner">
-        <Link href="/tours" className="boton-verde">
+        <Link href={toursHref} className="boton-verde">
           {overrides?.ctaPrimary ?? t("home.hero.cta.primary")}
         </Link>
-        <Link href="/tours" className="boton-naranja">
+        <Link href={transferHref} className="boton-naranja">
           {overrides?.ctaSecondary ?? t("home.hero.cta.secondary")}
         </Link>
       </div>
