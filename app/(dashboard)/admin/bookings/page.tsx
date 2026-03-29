@@ -757,89 +757,85 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                           <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
                         </summary>
                         <div className="mt-5 border-t border-slate-200 pt-5">
-                    <div className="grid gap-3 xl:grid-cols-[1.2fr_1.1fr_0.9fr]">
-                    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Cliente y contacto</p>
-                      <div className="mt-3 space-y-2">
-                        <div>
-                          <p className="text-base font-semibold text-slate-900">{booking.customerName}</p>
-                          <p className="text-sm text-slate-600">{booking.customerEmail}</p>
-                          <p className="text-sm text-slate-600">{booking.customerPhone || "Teléfono pendiente"}</p>
-                        </div>
-                        <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                          <span className="font-semibold text-slate-900">
+                    <div className="grid gap-8 md:grid-cols-2">
+                    <section className="space-y-4">
+                      <p className="text-lg font-semibold uppercase tracking-[0.03em] text-slate-700">Cliente y servicio</p>
+                      <div className="space-y-2">
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">Cliente:</span> {booking.customerName}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">Correo:</span> {booking.customerEmail}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">Teléfono:</span> {booking.customerPhone || "Teléfono pendiente"}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">
                             {booking.flowType === "transfer" && booking.tripType === "round-trip"
-                              ? "Pickup ida / pickup regreso:"
+                              ? "Pickup ida / regreso:"
                               : "Recogida:"}
                           </span>{" "}
                           {booking.pickup ?? "Sin punto definido"}
                           {booking.hotel ? ` · ${booking.hotel}` : ""}
-                        </div>
-                        <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                          <span className="font-semibold text-slate-900">{presentation.primaryDetailsLabel}:</span>{" "}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">{presentation.primaryDetailsLabel}:</span>{" "}
                           {presentation.primaryDetailsValue}
-                        </div>
-                        {booking.transferVehicleName && (
-                          <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                            <span className="font-semibold text-slate-900">Vehículo:</span>{" "}
-                            {booking.transferVehicleName}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">{presentation.notesLabel}:</span> {serviceNotes}
+                        </p>
+                        {booking.transferVehicleName ? (
+                          <p className="text-[1rem] leading-7 text-slate-700">
+                            <span className="font-semibold text-slate-950">Vehículo:</span> {booking.transferVehicleName}
                             {booking.transferVehicleCategory ? ` · ${booking.transferVehicleCategory}` : ""}
-                          </div>
-                        )}
+                          </p>
+                        ) : null}
                       </div>
                     </section>
 
-                    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Operación del servicio</p>
-                      <div className="mt-3 space-y-3 text-sm text-slate-600">
-                        <div className="rounded-xl bg-slate-50 px-3 py-2">
-                          <p className="font-semibold text-slate-900">{presentation.routeLabel}</p>
-                          <p>{presentation.routeValue}</p>
-                        </div>
-                        <div className="grid gap-2 md:grid-cols-2">
-                          <div className="rounded-xl bg-slate-50 px-3 py-2">
-                            <p className="font-semibold text-slate-900">{presentation.logisticsLabel}</p>
-                            <p>{logisticsSummary || "Operación pendiente de confirmación"}</p>
-                          </div>
-                          <div className="rounded-xl bg-slate-50 px-3 py-2">
-                            <p className="font-semibold text-slate-900">Códigos</p>
-                            <p>{booking.bookingCode}</p>
-                            <p>{booking.id.slice(0, 8).toUpperCase()}</p>
-                          </div>
-                        </div>
-                        <div className="rounded-xl bg-slate-50 px-3 py-2">
-                          <p className="font-semibold text-slate-900">Control interno</p>
-                          <p>Creada: {new Date(booking.createdAtValue).toLocaleString("es-ES")}</p>
-                          <p>
-                            Actualizada:{" "}
-                            {booking.updatedAtValue ? new Date(booking.updatedAtValue).toLocaleString("es-ES") : "Sin cambios"}
-                          </p>
-                        </div>
-                      </div>
-                    </section>
-
-                    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Finanzas y canal</p>
-                      <div className="mt-3 space-y-3">
-                        <div>
-                          <p className="text-2xl font-semibold text-slate-900">${booking.totalAmount.toFixed(2)}</p>
-                          <p className="text-sm text-slate-500">Total cobrado al cliente</p>
-                        </div>
-                        <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                          <p><span className="font-semibold text-slate-900">Comisión:</span> ${booking.platformFee.toFixed(2)}</p>
-                          <p><span className="font-semibold text-slate-900">Neto suplidor:</span> ${booking.supplierAmount.toFixed(2)}</p>
-                        </div>
-                        <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                          <p><span className="font-semibold text-slate-900">Canal:</span> {formatSourceLabel(booking.source)}</p>
-                          <p>
-                            <span className="font-semibold text-slate-900">Agencia:</span>{" "}
-                            {booking.agencyName ?? "Reserva directa"}
-                          </p>
-                          {booking.agencyPhone && (
-                            <p><span className="font-semibold text-slate-900">Tel agencia:</span> {booking.agencyPhone}</p>
-                          )}
-                          <p><span className="font-semibold text-slate-900">Ventana:</span> {formatTimeUntil(new Date(booking.travelDateValue))}</p>
-                        </div>
+                    <section className="space-y-4">
+                      <p className="text-lg font-semibold uppercase tracking-[0.03em] text-slate-700">Operación y finanzas</p>
+                      <div className="space-y-2">
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">{presentation.routeLabel}:</span> {presentation.routeValue}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">{presentation.logisticsLabel}:</span>{" "}
+                          {logisticsSummary || "Operación pendiente de confirmación"}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">Códigos:</span> {booking.bookingCode} ·{" "}
+                          {booking.id.slice(0, 8).toUpperCase()}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">Canal:</span> {formatSourceLabel(booking.source)}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">Agencia:</span> {booking.agencyName ?? "Reserva directa"}
+                          {booking.agencyPhone ? ` · ${booking.agencyPhone}` : ""}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">Total cobrado:</span> ${booking.totalAmount.toFixed(2)}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">Comisión:</span> ${booking.platformFee.toFixed(2)}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">Neto suplidor:</span> ${booking.supplierAmount.toFixed(2)}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">Creada:</span>{" "}
+                          {new Date(booking.createdAtValue).toLocaleString("es-ES")}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">Actualizada:</span>{" "}
+                          {booking.updatedAtValue ? new Date(booking.updatedAtValue).toLocaleString("es-ES") : "Sin cambios"}
+                        </p>
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">Ventana:</span> {formatTimeUntil(new Date(booking.travelDateValue))}
+                        </p>
                       </div>
                     </section>
                   </div>
