@@ -3,17 +3,17 @@ import type { HomeContentOverrides } from "@/lib/siteContent";
 
 const benefits = [
   {
-    icon: "24",
+    icon: "V",
     titleKey: "home.benefits.support.title",
     descriptionKey: "home.benefits.support.description"
   },
   {
-    icon: "B2B",
+    icon: "?",
     titleKey: "home.benefits.allies.title",
     descriptionKey: "home.benefits.allies.description"
   },
   {
-    icon: "USD",
+    icon: "?",
     titleKey: "home.benefits.flexible.title",
     descriptionKey: "home.benefits.flexible.description"
   }
@@ -44,10 +44,10 @@ export function HomeBenefitsContent({ locale, overrides }: HomeBenefitsContentPr
         {benefits.map((benefit, index) => (
           <article
             key={benefit.titleKey}
-            className="space-y-3 rounded-3xl border border-slate-100 bg-white px-6 py-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            className="space-y-3 rounded-3xl border border-slate-100 bg-white px-6 py-5 shadow-sm"
           >
             <div className="flex items-center gap-3 text-emerald-600">
-              <span className="flex h-11 min-w-[44px] items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 px-2 text-xs font-semibold uppercase tracking-[0.18em]">
+              <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-xl">
                 {benefit.icon}
               </span>
               <h3 className="text-lg font-semibold text-slate-900">
