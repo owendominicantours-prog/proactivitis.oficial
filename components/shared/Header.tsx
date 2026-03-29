@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -39,7 +39,7 @@ export const Header = ({
               alt="Proactivitis"
               width={200}
               height={60}
-              className="h-14 max-w-[190px] w-auto object-contain origin-left scale-100 transition-transform md:h-12 md:max-w-none md:scale-[var(--logo-scale)]"
+              className="h-14 max-w-[190px] w-auto origin-left object-contain transition-transform md:h-12 md:max-w-none md:scale-[var(--logo-scale)]"
               style={{ "--logo-scale": logoScale } as CSSProperties}
             />
           </Link>
@@ -79,7 +79,7 @@ export const Header = ({
                           key={item.label}
                           href={item.href}
                           onClick={() => setDropdownOpen(false)}
-                          className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                          className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                         >
                           {item.label}
                         </Link>
@@ -111,7 +111,7 @@ export const Header = ({
                       key={item.label}
                       href={item.href}
                       onClick={() => setDropdownOpen(false)}
-                      className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                      className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                     >
                       {item.label}
                     </Link>
@@ -136,10 +136,10 @@ export const Header = ({
       </div>
 
       <div
-        className={`md:hidden ${mobileOpen ? "block" : "hidden"} bg-white border-t border-slate-100`}
+        className={`border-t border-slate-100 bg-white md:hidden ${mobileOpen ? "block" : "hidden"}`}
         aria-expanded={mobileOpen}
       >
-        <div className="flex flex-col px-6 py-4 gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
+        <div className="flex flex-col gap-2 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
           {navItems.map((item) => (
             <Link
               key={item.href}

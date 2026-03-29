@@ -46,6 +46,7 @@ export default async function AgencyDashboardLayout({ children }: { children: Re
         roleLabel="Agency"
         title="Panel Agency"
         navItems={agencyNav}
+        navDisplay="dropdown"
         notifications={notifications}
         unreadCount={unreadCount}
         notificationLink="/agency/notifications"
