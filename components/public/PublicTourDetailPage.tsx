@@ -843,6 +843,7 @@ export type TourDetailSearchParams = {
   hotelSlug?: string;
   bookingCode?: string;
   agencyLink?: string;
+  from?: string;
 };
 
 type TourDetailProps = {
@@ -1098,6 +1099,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   }
   const session = await getServerSession(authOptions);
   const sessionUserId = (session?.user as { id?: string } | null)?.id ?? null;
+  const sessionUserRole = (session?.user as { role?: string } | null)?.role ?? null;
   const preference = sessionUserId
     ? await prisma.customerPreference.findUnique({
         where: { userId: sessionUserId },
@@ -1202,8 +1204,20 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   }
 
   const agencyMode = Boolean(agencyProLink);
+  const agencyProfile =
+    sessionUserRole === "AGENCY" && sessionUserId
+      ? await prisma.agencyProfile.findUnique({
+          where: { userId: sessionUserId },
+          select: { commissionPercent: true, companyName: true }
+        })
+      : null;
+  const directAgencyMode = sessionUserRole === "AGENCY" && resolvedSearchParams?.from === "agency" && !agencyMode;
+  const agencyDirectDiscountPercent = directAgencyMode
+    ? Math.min(Math.max(agencyProfile?.commissionPercent ?? 20, 0), 100)
+    : 0;
   const agencyDisplayName =
     agencyProLink?.AgencyUser.AgencyProfile?.companyName ??
+    agencyProfile?.companyName ??
     agencyProLink?.AgencyUser.name ??
     null;
 
@@ -1735,7 +1749,8 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
     bookingCode: bookingCodeFromQuery ?? undefined,
     originHotelName: originHotel?.name ?? undefined,
     discountPercent,
-    agencyLink: agencyLinkFromQuery ?? undefined
+    agencyLink: agencyLinkFromQuery ?? undefined,
+    agencyDirectDiscountPercent
   };
   const relatedToursSchema = relatedTourCards.length
     ? {
@@ -1780,6 +1795,13 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                 "Booking managed by your agency with agreed pricing.",
                 "Reservation geree par votre agence avec tarif convenu."
               )
+            : directAgencyMode
+              ? localeLabel(
+                  locale,
+                  "Estas reservando como agencia con tu tarifa neta aplicada en checkout.",
+                  "You are booking as an agency with your net rate applied at checkout.",
+                  "Vous reservez en tant qu agence avec votre tarif net applique au checkout."
+                )
             : translate(locale, "tour.booking.panel.supplier")}
         </p>
         {agencyMode && agencyProLink?.note ? <p className="mt-2 text-xs text-slate-500">{agencyProLink.note}</p> : null}

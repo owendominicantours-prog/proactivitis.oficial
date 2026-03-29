@@ -81,6 +81,10 @@ export type CheckoutPageParams = {
   agencyLink?: string;
   flightNumber?: string;
   totalPrice?: string;
+  displayTourPrice?: string;
+  displayTotalPrice?: string;
+  agencyDirectPercent?: string;
+  pricingMode?: string;
 };
 
 
@@ -393,8 +397,10 @@ const buildSummary = (params: CheckoutPageParams, transferDefaults: TransferDefa
   const isTransferFlow = params.flowType === "transfer";
 
   const overrideTotalPrice = parsePriceValue(params.totalPrice);
+  const displayOverrideTotalPrice = parsePriceValue(params.displayTotalPrice);
 
   const basePricePerPerson = parsePriceValue(params.tourPrice, recommendedReservation.price);
+  const displayPricePerPerson = parsePriceValue(params.displayTourPrice, basePricePerPerson);
 
   const totalTravelers = Math.max(1, adults + youth + children);
 
@@ -403,6 +409,10 @@ const buildSummary = (params: CheckoutPageParams, transferDefaults: TransferDefa
 
   const pricePerPerson =
     overrideTotalPrice > 0 ? totalPrice / totalTravelers : basePricePerPerson;
+  const displayTotalPrice =
+    displayOverrideTotalPrice > 0 ? displayOverrideTotalPrice : totalPrice;
+  const resolvedDisplayPricePerPerson =
+    displayOverrideTotalPrice > 0 ? displayTotalPrice / totalTravelers : displayPricePerPerson;
 
 
 
@@ -417,6 +427,7 @@ const buildSummary = (params: CheckoutPageParams, transferDefaults: TransferDefa
       params.tourImage || (isTransferFlow ? transferDefaults.imageUrl : recommendedReservation.imageUrl),
 
     tourPrice: pricePerPerson,
+    displayTourPrice: resolvedDisplayPricePerPerson,
     tourOptionId: params.tourOptionId,
     tourOptionName: params.tourOptionName,
     tourOptionType: params.tourOptionType,
@@ -438,6 +449,7 @@ const buildSummary = (params: CheckoutPageParams, transferDefaults: TransferDefa
     totalTravelers,
 
     totalPrice,
+    displayTotalPrice,
 
     hotelSlug: params.hotelSlug,
 
@@ -453,7 +465,9 @@ const buildSummary = (params: CheckoutPageParams, transferDefaults: TransferDefa
     vehicleCategory: params.vehicleCategory,
     tripType: params.tripType ?? "one-way",
     returnDatetime: params.returnDatetime,
-    agencyLink: params.agencyLink
+    agencyLink: params.agencyLink,
+    agencyDirectPercent: parsePriceValue(params.agencyDirectPercent),
+    pricingMode: params.pricingMode
 
   };
 
@@ -730,15 +744,15 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
 
 
-  const displayAmount = Number.isFinite(summary.totalPrice)
+  const displayAmount = Number.isFinite(summary.displayTotalPrice)
 
-    ? `$${summary.totalPrice.toFixed(2)} USD`
+    ? `$${summary.displayTotalPrice.toFixed(2)} USD`
 
     : t("checkout.summary.priceOnRequest");
 
-  const perPersonLabel = Number.isFinite(summary.tourPrice)
+  const perPersonLabel = Number.isFinite(summary.displayTourPrice)
 
-    ? t("checkout.summary.perTraveler", { amount: summary.tourPrice.toFixed(2) })
+    ? t("checkout.summary.perTraveler", { amount: summary.displayTourPrice.toFixed(2) })
 
     : t("checkout.summary.pricePerTravelerFallback");
 
@@ -930,6 +944,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
         tourImage: summary.tourImage,
 
         tourPrice: summary.tourPrice,
+        totalPrice: summary.totalPrice,
 
         date: summary.date,
 
@@ -1966,6 +1981,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                 <p className="text-3xl font-semibold text-slate-900">{displayAmount}</p>
 
                 <p className="mt-1 text-[13px] text-slate-500">{perPersonLabel}</p>
+                {isAgencyCheckout && !summary.agencyLink && summary.agencyDirectPercent > 0 ? (
+                  <p className="mt-2 text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+                    Tarifa neta agencia aplicada: {summary.agencyDirectPercent}%
+                  </p>
+                ) : null}
 
               </div>
 

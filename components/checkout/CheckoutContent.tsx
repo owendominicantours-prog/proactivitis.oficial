@@ -46,7 +46,11 @@ export default function CheckoutContent() {
       returnDatetime: get("returnDatetime"),
       agencyLink: get("agencyLink"),
       flightNumber: get("flightNumber"),
-      totalPrice: get("totalPrice")
+      totalPrice: get("totalPrice"),
+      displayTourPrice: get("displayTourPrice"),
+      displayTotalPrice: get("displayTotalPrice"),
+      agencyDirectPercent: get("agencyDirectPercent"),
+      pricingMode: get("pricingMode")
     };
   }, [searchParams]);
 

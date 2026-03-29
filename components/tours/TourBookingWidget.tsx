@@ -31,6 +31,7 @@ type TourBookingWidgetProps = {
   initialOptionId?: string;
   discountPercent?: number;
   agencyLink?: string;
+  agencyDirectDiscountPercent?: number;
 };
 
 type TourOption = {
@@ -106,7 +107,8 @@ export function TourBookingWidget({
   originHotelName,
   initialOptionId,
   discountPercent = 0,
-  agencyLink
+  agencyLink,
+  agencyDirectDiscountPercent = 0
 }: TourBookingWidgetProps) {
   const router = useRouter();
   const [date, setDate] = useState("");
@@ -141,14 +143,18 @@ export function TourBookingWidget({
   const discountMultiplier = discountPercent > 0 ? 1 - discountPercent / 100 : 1;
   const discountedTotal = Math.round(pricing.totalPrice * discountMultiplier * 100) / 100;
   const discountedPerPerson = Math.round(pricing.pricePerPerson * discountMultiplier * 100) / 100;
-  const estimatedTotal = discountedTotal;
+  const agencyDirectMultiplier =
+    agencyDirectDiscountPercent > 0 ? 1 - agencyDirectDiscountPercent / 100 : 1;
+  const displayTotal = Math.round(discountedTotal * agencyDirectMultiplier * 100) / 100;
+  const displayPerPerson = Math.round(discountedPerPerson * agencyDirectMultiplier * 100) / 100;
+  const estimatedTotal = displayTotal;
   const bookingLabel = originHotelName
     ? `Reservar Buggy con recogida en ${originHotelName}`
     : "Reservar Ahora";
   const baseCapacityLabel = selectedOption?.baseCapacity
     ? `1-${selectedOption.baseCapacity} pax`
     : "grupo base";
-  const priceHeaderValue = selectedOption?.basePrice ? discountedTotal : discountedPerPerson;
+  const priceHeaderValue = selectedOption?.basePrice ? displayTotal : displayPerPerson;
   const priceHeaderNote = selectedOption?.basePrice
     ? `Total (${baseCapacityLabel})`
     : "Por persona";
@@ -208,6 +214,12 @@ export function TourBookingWidget({
     }
     params.set("tourPrice", discountedPerPerson.toString());
     params.set("totalPrice", discountedTotal.toString());
+    if (agencyDirectDiscountPercent > 0) {
+      params.set("displayTourPrice", displayPerPerson.toString());
+      params.set("displayTotalPrice", displayTotal.toString());
+      params.set("agencyDirectPercent", agencyDirectDiscountPercent.toString());
+      params.set("pricingMode", "direct-agency");
+    }
     if (hotelSlug) params.set("hotelSlug", hotelSlug);
     if (bookingCode) params.set("bookingCode", bookingCode);
     if (originHotelName) params.set("originHotelName", originHotelName);
@@ -320,6 +332,13 @@ export function TourBookingWidget({
         <span className="font-semibold">Estimated total:</span> ${estimatedTotal.toFixed(2)} for {totalTravelers} traveler
         {totalTravelers > 1 ? "s" : ""}
       </div>
+
+      {agencyDirectDiscountPercent > 0 && (
+        <div className="rounded-xl border border-sky-100 bg-sky-50 px-3 py-2 text-xs text-sky-800">
+          <span className="font-semibold">Tarifa neta de agencia:</span> esta reserva aplica tu descuento directo del{" "}
+          {agencyDirectDiscountPercent}%.
+        </div>
+      )}
 
       {/* DATE + TRAVELERS + START TIME */}
       <div className="rounded-xl border border-slate-200">
