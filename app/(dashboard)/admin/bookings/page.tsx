@@ -58,6 +58,46 @@ type AdminBookingView = {
   notes: AdminNote[];
 };
 
+const statusLabelMap: Record<string, string> = {
+  PENDING: "Pendiente",
+  CONFIRMED: "Confirmada",
+  PAYMENT_PENDING: "Pago pendiente",
+  CANCELLATION_REQUESTED: "Cancelación solicitada",
+  CANCELLED: "Cancelada",
+  COMPLETED: "Completada"
+};
+
+const sourceLabelMap: Record<string, string> = {
+  WEB: "Web directa",
+  AGENCY: "Agencia",
+  SUPPLIER: "Supplier",
+  CUSTOMER: "Cliente"
+};
+
+const paymentStatusLabelMap: Record<string, string> = {
+  requires_payment_method: "Falta método de pago",
+  requires_confirmation: "Pendiente de confirmación",
+  requires_action: "Requiere acción del cliente",
+  processing: "Pago en proceso",
+  succeeded: "Pago confirmado",
+  canceled: "Pago cancelado"
+};
+
+const formatStatusLabel = (value?: string | null) => {
+  if (!value) return "Sin estado";
+  return statusLabelMap[value] ?? value.toLowerCase().replace(/_/g, " ");
+};
+
+const formatSourceLabel = (value?: string | null) => {
+  if (!value) return "No definido";
+  return sourceLabelMap[value] ?? value;
+};
+
+const formatPaymentStatusLabel = (value?: string | null) => {
+  if (!value) return "Sin pago registrado";
+  return paymentStatusLabelMap[value] ?? value;
+};
+
 type TabKey = "today" | "tomorrow" | "upcoming" | "past" | "payment";
 const PAGE_SIZE = 20;
 
@@ -120,6 +160,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   const notesMap: Record<string, AdminNote[]> = {};
   notifications.forEach((notification) => {
     if (!notification.bookingId) return;
+    if (notification.role !== "ADMIN" && notification.type !== "ADMIN_BOOKING_NOTE") return;
     let metadata: Record<string, unknown> | null = null;
     if (notification.metadata) {
       try {
@@ -131,11 +172,19 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     const author = metadata?.author
       ? String(metadata.author)
       : "Admin";
+    const notificationStatus =
+      typeof metadata?.status === "string" ? formatStatusLabel(metadata.status) : null;
     const entry: TimelineEntry = {
       title: notification.title ?? "Actualización",
       description: notification.message ?? notification.body ?? "Sin detalle adicional",
       timestamp: notification.createdAt.toISOString()
     };
+    if (notification.type === "ADMIN_BOOKING_MODIFIED") {
+      entry.title = "Estado de la reserva";
+      entry.description = notificationStatus
+        ? `La reserva pasó a ${notificationStatus}.`
+        : entry.description;
+    }
     timelineMap[notification.bookingId] = timelineMap[notification.bookingId] ?? [];
     timelineMap[notification.bookingId].push(entry);
     if (notification.type === "ADMIN_BOOKING_NOTE") {
@@ -157,14 +206,14 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     const baseTimeline: TimelineEntry[] = [
       {
         title: "Reserva creada",
-        description: `Origen: ${booking.source}`,
+        description: `Canal de entrada: ${formatSourceLabel(booking.source)}`,
         timestamp: booking.createdAt.toISOString()
       }
     ];
     if (booking.paymentStatus) {
       baseTimeline.push({
-        title: "Pago",
-        description: `Estado Stripe: ${booking.paymentStatus}`,
+        title: "Estado de pago",
+        description: formatPaymentStatusLabel(booking.paymentStatus),
         timestamp: booking.updatedAt?.toISOString() ?? booking.createdAt.toISOString()
       });
     }
