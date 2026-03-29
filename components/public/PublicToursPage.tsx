@@ -201,6 +201,7 @@ type TourWithDeparture = Prisma.TourGetPayload<{
 export default async function PublicToursPage({ searchParams, locale }: Props) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const params = resolvedSearchParams ?? {};
+  const sort = (params.sort ?? "popular").trim();
   const puntaCanaHubHref = locale === "es" ? "/punta-cana/tours" : `/${locale}/punta-cana/tours`;
   const transfersHubHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
   const hotelsHubHref = locale === "es" ? "/hoteles" : `/${locale}/hotels`;
@@ -356,6 +357,9 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   const toursSorted = tours
     .map((tour, index) => ({ tour, index }))
     .sort((a, b) => {
+      if (sort === "price-low") return a.tour.price - b.tour.price || a.index - b.index;
+      if (sort === "price-high") return b.tour.price - a.tour.price || a.index - b.index;
+      if (sort === "newest") return b.index - a.index;
       const countA = reviewSummary[a.tour.id]?.count ?? 0;
       const countB = reviewSummary[b.tour.id]?.count ?? 0;
       if (countA !== countB) return countB - countA;
@@ -468,69 +472,6 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
             </div>
           </aside>
           <section className="space-y-4">
-            <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 text-sm text-slate-600 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
-                {t("puntaCana.links.subtitle")}
-              </p>
-              <h2 className="mt-2 text-2xl font-bold text-slate-900">
-                {t("puntaCana.links.title")}
-              </h2>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {PUNTA_CANA_LINKS.map((item) => (
-                  <Link
-                    key={item.slug}
-                    href={tourHref(item.slug)}
-                    className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
-                  >
-                    {t(item.labelKey)}
-                  </Link>
-                ))}
-              </div>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 text-sm text-slate-600 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
-                {t("tours.seo.label")}
-              </p>
-              <h2 className="mt-2 text-2xl font-bold text-slate-900">{t("tours.seo.title")}</h2>
-              <div className="mt-3 space-y-3">
-                <p>{t("tours.seo.body1")}</p>
-                <p>{t("tours.seo.body2")}</p>
-                <p>{t("tours.seo.body3")}</p>
-                <p>{t("tours.seo.body4")}</p>
-                <p>{t("tours.seo.body5")}</p>
-              </div>
-              <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/80 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
-                  {t("tours.seo.list.label")}
-                </p>
-                <ul className="mt-2 list-disc space-y-1 pl-4">
-                  <li>{t("tours.seo.list.item1")}</li>
-                  <li>{t("tours.seo.list.item2")}</li>
-                  <li>{t("tours.seo.list.item3")}</li>
-                  <li>{t("tours.seo.list.item4")}</li>
-                </ul>
-              </div>
-              <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700">
-                  {locale === "es"
-                    ? "Recomendado en costa norte"
-                    : locale === "en"
-                      ? "North coast top pick"
-                      : "Choix top cote nord"}
-                </p>
-                <Link
-                  href={sosuaPartyBoatHref}
-                  className="mt-2 inline-block text-sm font-semibold text-emerald-800 underline underline-offset-2"
-                >
-                  {locale === "es"
-                    ? "Sosua Party Boat: precios, open bar y opcion privada"
-                    : locale === "en"
-                      ? "Sosua Party Boat: prices, open bar, and private option"
-                      : "Sosua Party Boat : prix, open bar et option privee"}
-                </Link>
-              </div>
-            </div>
-
             <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 text-sm font-medium text-slate-700 shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-2 text-slate-600">
                 {featureKeys.map((key) => (
@@ -542,17 +483,62 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
               </div>
             </div>
 
-            {activeFilters.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {activeFilters.map((label) => (
-                  <span key={label} className="rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold text-slate-600">
-                    {label}
-                  </span>
-                ))}
-              </div>
-            )}
+            <div className="rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
+                    {locale === "es" ? "Resultados disponibles" : locale === "fr" ? "Resultats disponibles" : "Available results"}
+                  </p>
+                  <p className="text-lg font-semibold text-slate-900">{resultsLabel}</p>
+                  {activeFilters.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {activeFilters.map((label) => (
+                        <span key={label} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-500">
+                      {locale === "es"
+                        ? "Usa los filtros para comparar destinos, precios, idiomas y duraciones."
+                        : locale === "fr"
+                          ? "Utilisez les filtres pour comparer destinations, prix, langues et durees."
+                          : "Use filters to compare destinations, pricing, languages, and durations."}
+                    </p>
+                  )}
+                </div>
 
-            <p className="text-xs text-slate-500">{resultsLabel}</p>
+                <form className="flex flex-wrap items-center gap-3" method="get">
+                  {params.country ? <input type="hidden" name="country" value={params.country} /> : null}
+                  {params.destination ? <input type="hidden" name="destination" value={params.destination} /> : null}
+                  {params.language ? <input type="hidden" name="language" value={params.language} /> : null}
+                  {params.duration ? <input type="hidden" name="duration" value={params.duration} /> : null}
+                  {params.minPrice ? <input type="hidden" name="minPrice" value={params.minPrice} /> : null}
+                  {params.maxPrice ? <input type="hidden" name="maxPrice" value={params.maxPrice} /> : null}
+                  <label className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+                    {locale === "es" ? "Orden" : locale === "fr" ? "Tri" : "Sort"}
+                  </label>
+                  <select
+                    name="sort"
+                    defaultValue={sort}
+                    className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-sky-400 focus:bg-white"
+                  >
+                    <option value="popular">{locale === "es" ? "Más reservados" : locale === "fr" ? "Plus reserves" : "Most booked"}</option>
+                    <option value="price-low">{locale === "es" ? "Precio más bajo" : locale === "fr" ? "Prix le plus bas" : "Lowest price"}</option>
+                    <option value="price-high">{locale === "es" ? "Precio más alto" : locale === "fr" ? "Prix le plus eleve" : "Highest price"}</option>
+                    <option value="newest">{locale === "es" ? "Más nuevos" : locale === "fr" ? "Plus recents" : "Newest"}</option>
+                  </select>
+                  <button
+                    type="submit"
+                    className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+                  >
+                    {locale === "es" ? "Aplicar" : locale === "fr" ? "Appliquer" : "Apply"}
+                  </button>
+                </form>
+              </div>
+            </div>
+
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {toursSorted.map((tour) => {
                 const translation = tour.translations?.[0];
@@ -641,6 +627,74 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                 {t("tours.no-results")}
               </div>
             )}
+
+            <details className="rounded-2xl border border-slate-200 bg-white/90 p-6 text-sm text-slate-600 shadow-sm">
+              <summary className="cursor-pointer list-none text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
+                {locale === "es" ? "Guía y enlaces de búsqueda" : locale === "fr" ? "Guide et liens de recherche" : "Search guide and destination links"}
+              </summary>
+              <div className="mt-5 space-y-5">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
+                    {t("puntaCana.links.subtitle")}
+                  </p>
+                  <h2 className="mt-2 text-2xl font-bold text-slate-900">{t("puntaCana.links.title")}</h2>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {PUNTA_CANA_LINKS.map((item) => (
+                      <Link
+                        key={item.slug}
+                        href={tourHref(item.slug)}
+                        className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
+                      >
+                        {t(item.labelKey)}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
+                    {t("tours.seo.label")}
+                  </p>
+                  <h2 className="mt-2 text-2xl font-bold text-slate-900">{t("tours.seo.title")}</h2>
+                  <div className="mt-3 space-y-3">
+                    <p>{t("tours.seo.body1")}</p>
+                    <p>{t("tours.seo.body2")}</p>
+                    <p>{t("tours.seo.body3")}</p>
+                    <p>{t("tours.seo.body4")}</p>
+                    <p>{t("tours.seo.body5")}</p>
+                  </div>
+                  <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/80 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
+                      {t("tours.seo.list.label")}
+                    </p>
+                    <ul className="mt-2 list-disc space-y-1 pl-4">
+                      <li>{t("tours.seo.list.item1")}</li>
+                      <li>{t("tours.seo.list.item2")}</li>
+                      <li>{t("tours.seo.list.item3")}</li>
+                      <li>{t("tours.seo.list.item4")}</li>
+                    </ul>
+                  </div>
+                  <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700">
+                      {locale === "es"
+                        ? "Recomendado en costa norte"
+                        : locale === "en"
+                          ? "North coast top pick"
+                          : "Choix top cote nord"}
+                    </p>
+                    <Link
+                      href={sosuaPartyBoatHref}
+                      className="mt-2 inline-block text-sm font-semibold text-emerald-800 underline underline-offset-2"
+                    >
+                      {locale === "es"
+                        ? "Sosua Party Boat: precios, open bar y opcion privada"
+                        : locale === "en"
+                          ? "Sosua Party Boat: prices, open bar, and private option"
+                          : "Sosua Party Boat : prix, open bar et option privee"}
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </details>
           </section>
         </div>
       </main>

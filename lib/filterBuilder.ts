@@ -5,6 +5,7 @@ export type TourSearchParams = {
   maxPrice?: string;
   language?: string;
   duration?: string;
+  sort?: string;
 };
 
 const normalizeToSlug = (value: string | undefined) => {
