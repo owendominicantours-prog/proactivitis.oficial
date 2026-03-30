@@ -56,6 +56,12 @@ export default function LoginPage() {
     return (
       <div className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-4 py-10">
         <div className="w-full max-w-md rounded-[32px] bg-white p-8 text-center shadow-card">
+          <Link
+            href="/"
+            className="mb-6 inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+          >
+            Volver a inicio
+          </Link>
           <h1 className="text-2xl font-semibold text-slate-900">Acceso restringido</h1>
           <p className="mt-4 text-sm text-slate-600">
             El inicio de sesion esta temporalmente cerrado al publico por razones de seguridad. Si perteneces al
@@ -72,8 +78,20 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-4 py-10">
-      <div className="w-full max-w-md rounded-[32px] bg-white p-8 shadow-card">
+      <div className="w-full max-w-md overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-card">
+        <div className="border-b border-slate-100 bg-slate-50 px-8 py-5">
+          <Link
+            href="/"
+            className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+          >
+            Volver a inicio
+          </Link>
+        </div>
+        <div className="p-8">
         <h1 className="text-2xl font-semibold text-slate-900">Iniciar sesion</h1>
+        <p className="mt-2 text-sm leading-6 text-slate-600">
+          Accede a tu cuenta para revisar reservas, pagos, notificaciones y herramientas segun tu perfil dentro de Proactivitis.
+        </p>
         <div className="mt-6 space-y-3">
           <GoogleAuthButton label="Entrar con Google" callbackUrl="/portal" />
           <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-slate-400">
@@ -127,6 +145,20 @@ export default function LoginPage() {
           >
             Crear cuenta de cliente
           </Link>
+        </div>
+        </div>
+        <div className="border-t border-slate-200 bg-slate-50 px-8 py-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500">
+            Acceso oficial de plataforma
+          </p>
+          <p className="mt-2 text-xs leading-6 text-slate-600">
+            Este formulario pertenece al sistema oficial de acceso de Proactivitis. Utiliza una conexion segura para la autenticacion
+            de clientes, agencias, suppliers y personal autorizado. No compartas tus credenciales con terceros.
+          </p>
+          <p className="mt-3 text-[11px] leading-6 text-slate-500">
+            Si recibiste un enlace para iniciar sesion o restablecer tu contrasena, verifica siempre que el dominio visible sea
+            <span className="font-semibold text-slate-700"> proactivitis.com</span>.
+          </p>
         </div>
       </div>
     </div>
