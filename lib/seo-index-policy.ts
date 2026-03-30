@@ -3,7 +3,12 @@ const INDEXABLE_TRANSFER_VARIANT_IDS = new Set([
   "luxury-vip-transfer",
   "round-trip-transfer",
   "family-transfer",
-  "last-minute-transfer"
+  "last-minute-transfer",
+  "suv-transfer",
+  "executive-transfer",
+  "group-transfer",
+  "hotel-concierge-transfer",
+  "direct-nonstop-transfer"
 ]);
 
 const INDEXABLE_TOUR_MARKET_INTENT_IDS = new Set([
