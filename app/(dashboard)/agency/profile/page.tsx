@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import CustomerPaymentMethod from "@/components/customer/CustomerPaymentMethod";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,7 @@ export default async function AgencyProfilePage() {
     return <div className="py-10 text-center text-sm text-slate-600">No encontramos tu cuenta de agencia.</div>;
   }
 
-  const [links, transferLinks, bookings] = await Promise.all([
+  const [links, transferLinks, bookings, payment] = await Promise.all([
     prisma.agencyProLink.findMany({
       where: { agencyUserId: userId },
       include: {
@@ -82,6 +83,10 @@ export default async function AgencyProfilePage() {
         }
       },
       orderBy: { createdAt: "desc" }
+    }),
+    prisma.customerPayment.findUnique({
+      where: { userId },
+      select: { method: true, brand: true, last4: true, updatedAt: true, stripePaymentMethodId: true }
     })
   ]);
 
@@ -104,6 +109,15 @@ export default async function AgencyProfilePage() {
   const lastBookingDate = bookings[0]?.createdAt ?? null;
   const latestLink = links[0] ?? null;
   const latestTransferLink = transferLinks[0] ?? null;
+  const paymentSummary = payment
+    ? {
+        method: payment.method,
+        brand: payment.brand,
+        last4: payment.last4,
+        updatedAt: payment.updatedAt?.toISOString(),
+        isStripe: Boolean(payment.stripePaymentMethodId)
+      }
+    : null;
 
   return (
     <div className="space-y-6">
@@ -171,6 +185,17 @@ export default async function AgencyProfilePage() {
             </p>
           </div>
         </article>
+      </section>
+
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="mb-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500">Pago guardado</p>
+          <h2 className="mt-2 text-xl font-semibold text-slate-900">Método de pago de la agencia</h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Guarda la tarjeta de tu agencia en Stripe para no tener que introducirla en cada reserva directa.
+          </p>
+        </div>
+        <CustomerPaymentMethod initialPayment={paymentSummary} title="Tarjeta guardada para reservas de agencia" />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">

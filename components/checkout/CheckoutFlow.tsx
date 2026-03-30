@@ -1785,6 +1785,8 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                           paymentMethods={paymentMethods}
                           bookingId={bookingId}
+                          savedPaymentMethodId={savedPayment?.stripePaymentMethodId ?? null}
+                          clientSecret={clientSecret}
 
                           returnUrl={successRedirectBase}
 
@@ -2310,8 +2312,16 @@ const PaymentForm = memo(function PaymentForm({
                   {method.id === "card" ? (
 
                     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-
-                      <PaymentElement id="payment-element" />
+                      {useSavedMethod && savedPaymentMethodId ? (
+                        <div className="space-y-2 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm text-slate-700">
+                          <p className="font-semibold text-slate-900">Usaremos tu método guardado en Stripe.</p>
+                          <p className="text-xs text-slate-500">
+                            No necesitas volver a escribir la tarjeta para esta reserva.
+                          </p>
+                        </div>
+                      ) : (
+                        <PaymentElement id="payment-element" />
+                      )}
 
                     </div>
 
