@@ -64,7 +64,8 @@ export default async function CustomerPortal() {
         brand: payment.brand,
         last4: payment.last4,
         updatedAt: payment.updatedAt.toISOString(),
-        isStripe: Boolean(payment.stripePaymentMethodId)
+        isStripe: Boolean(payment.stripePaymentMethodId),
+        stripePaymentMethodId: payment.stripePaymentMethodId
       }
     : null;
 

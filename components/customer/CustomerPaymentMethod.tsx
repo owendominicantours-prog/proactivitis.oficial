@@ -10,6 +10,7 @@ export type CustomerPaymentSummary = {
   last4?: string | null;
   updatedAt?: string | null;
   isStripe?: boolean;
+  stripePaymentMethodId?: string | null;
 };
 
 type CustomerPaymentMethodProps = {
@@ -25,6 +26,8 @@ export default function CustomerPaymentMethod({ initialPayment, title = "Metodo 
   const [savedPayment, setSavedPayment] = useState<CustomerPaymentSummary | null>(initialPayment ?? null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [editing, setEditing] = useState(!(initialPayment?.stripePaymentMethodId ?? false));
+  const [removing, setRemoving] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   useEffect(() => {
@@ -62,9 +65,43 @@ export default function CustomerPaymentMethod({ initialPayment, title = "Metodo 
       {savedPayment ? (
         <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm text-slate-700">
           <p className="text-sm font-semibold text-slate-900">
-            {savedPayment.brand ?? "Metodo"} ? **** {savedPayment.last4 ?? "0000"}
+            {savedPayment.brand ?? "Metodo"} • •••• {savedPayment.last4 ?? "0000"}
           </p>
           <p className="text-xs text-slate-500">Guardado en Stripe. No almacenamos el numero completo.</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setEditing((current) => !current);
+                setFeedback(null);
+              }}
+              className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700"
+            >
+              {editing ? "Ocultar formulario" : "Cambiar tarjeta"}
+            </button>
+            <button
+              type="button"
+              disabled={removing}
+              onClick={async () => {
+                setRemoving(true);
+                setFeedback(null);
+                const response = await fetch("/api/customer/payment", { method: "DELETE" });
+                const data = (await response.json().catch(() => ({}))) as { error?: string };
+                if (!response.ok) {
+                  setFeedback(data.error ?? "No pudimos eliminar la tarjeta guardada.");
+                  setRemoving(false);
+                  return;
+                }
+                setSavedPayment(null);
+                setEditing(true);
+                setRemoving(false);
+                setFeedback("Tarjeta eliminada correctamente.");
+              }}
+              className="rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-700 disabled:opacity-60"
+            >
+              {removing ? "Eliminando..." : "Eliminar tarjeta"}
+            </button>
+          </div>
         </div>
       ) : (
         <p className="text-sm text-slate-600">Aun no tienes un metodo de pago guardado.</p>
@@ -76,11 +113,12 @@ export default function CustomerPaymentMethod({ initialPayment, title = "Metodo 
 
       {loading && <p className="text-sm text-slate-500">Cargando formulario de pago...</p>}
 
-      {clientSecret && stripePromise && (
+      {clientSecret && stripePromise && editing && (
         <Elements stripe={stripePromise} options={{ clientSecret }}>
           <StripePaymentSetupForm
             onSaved={(payment) => {
               setSavedPayment(payment);
+              setEditing(false);
               setFeedback("Metodo guardado correctamente.");
             }}
             onError={(message) => setFeedback(message)}

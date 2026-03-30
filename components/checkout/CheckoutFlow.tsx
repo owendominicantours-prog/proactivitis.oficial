@@ -1742,7 +1742,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                         Metodo guardado
                       </p>
                       <p className="mt-2 text-sm font-semibold text-slate-900">
-                        {savedPayment.brand ?? "Metodo"} • **** {savedPayment.last4 ?? "0000"}
+                        {savedPayment.brand ?? "Metodo"} • •••• {savedPayment.last4 ?? "0000"}
                       </p>
                       <p className="text-xs text-slate-500">
                         Tu metodo esta listo para usar en esta reserva.
@@ -2314,7 +2314,10 @@ const PaymentForm = memo(function PaymentForm({
                     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       {useSavedMethod && savedPaymentMethodId ? (
                         <div className="space-y-2 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm text-slate-700">
-                          <p className="font-semibold text-slate-900">Usaremos tu método guardado en Stripe.</p>
+                          <p className="font-semibold text-slate-900">Usaremos tu tarjeta guardada en Stripe.</p>
+                          <p className="text-sm font-semibold text-slate-900">
+                            Confirmarás con la tarjeta guardada sin volver a escribir los datos.
+                          </p>
                           <p className="text-xs text-slate-500">
                             No necesitas volver a escribir la tarjeta para esta reserva.
                           </p>
