@@ -20,6 +20,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { ensureLeadingCapital } from "@/lib/text-format";
 import { getActiveOfferPriceMapForTours } from "@/lib/offerPricing";
+import { formatDurationDisplay } from "@/lib/formatDuration";
 
 const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
 
@@ -964,7 +965,14 @@ const parseDuration = (value?: string | null) => {
   if (match) {
     return { value: match[1], unit: match[2].trim() };
   }
-  return { value: trimmed || "4", unit: "hour" };
+
+  const normalizedLabel = formatDurationDisplay(trimmed, "4 hours");
+  const normalizedMatch = normalizedLabel.match(/^(\d+(?:[.,]\d+)?)\s*(.+)$/);
+  if (normalizedMatch) {
+    return { value: normalizedMatch[1], unit: normalizedMatch[2].trim() };
+  }
+
+  return { value: "4", unit: "hour" };
 };
 
 const fetchTourTranslations = async (tourId: string) => {

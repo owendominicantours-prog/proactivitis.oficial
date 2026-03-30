@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import PublicTourDetailPage, { type TourDetailSearchParams } from "@/components/public/PublicTourDetailPage";
 import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import { prisma } from "@/lib/prisma";
+import { buildProDiscoveryTourMetadata, buildProDiscoveryTourNotFoundMetadata } from "@/lib/prodiscoverySeo";
 import { fr } from "@/lib/translations";
-import { PROACTIVITIS_URL } from "@/lib/seo";
 
 export async function generateMetadata({
   params
@@ -15,23 +15,14 @@ export async function generateMetadata({
     where: { slug, status: { in: ["published", "seo_only"] } },
     select: { title: true, shortDescription: true, description: true }
   });
-  if (!tour) return { title: "ProDiscovery | Tour introuvable" };
-  const title = `${tour.title} | ProDiscovery`;
-  const description = tour.shortDescription || tour.description.slice(0, 155);
-  const canonical = `${PROACTIVITIS_URL}/fr/prodiscovery/tour/${slug}`;
-  return {
-    title,
-    description,
-    alternates: {
-      canonical,
-      languages: {
-        es: `/prodiscovery/tour/${slug}`,
-        en: `/en/prodiscovery/tour/${slug}`,
-        fr: `/fr/prodiscovery/tour/${slug}`,
-        "x-default": `/prodiscovery/tour/${slug}`
-      }
-    }
-  };
+  if (!tour) return buildProDiscoveryTourNotFoundMetadata(fr);
+  return buildProDiscoveryTourMetadata({
+    slug,
+    locale: fr,
+    title: tour.title,
+    shortDescription: tour.shortDescription,
+    description: tour.description
+  });
 }
 
 export default async function ProDiscoveryTourPageFr({
