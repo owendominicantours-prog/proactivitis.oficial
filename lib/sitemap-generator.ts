@@ -217,6 +217,9 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
 
   const baseEntries: RouteEntry[] = [
     { url: `${BASE_URL}/`, priority: 1.0 },
+    { url: `${BASE_URL}/prodiscovery`, priority: 0.9 },
+    { url: `${BASE_URL}/en/prodiscovery`, priority: 0.9 },
+    { url: `${BASE_URL}/fr/prodiscovery`, priority: 0.9 },
     { url: `${BASE_URL}/tours`, priority: 0.9 },
     { url: `${BASE_URL}/traslado`, priority: 0.9 },
     { url: `${BASE_URL}/hoteles`, priority: 0.85 },

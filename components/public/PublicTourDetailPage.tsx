@@ -1810,7 +1810,7 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   );
 
   return (
-  <div className="min-h-screen bg-[#FDFDFD] text-slate-950 pb-24 overflow-x-hidden">
+  <div className="travel-surface min-h-screen pb-24 overflow-x-hidden text-slate-950">
       <StructuredData data={tourSchema} />
       <StructuredData data={touristTripSchema} />
       <StructuredData data={mediaGallerySchema} />

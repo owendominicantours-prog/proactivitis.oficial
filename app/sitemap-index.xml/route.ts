@@ -20,9 +20,8 @@ const SITEMAPS = [
   "/sitemap-images.xml",
   "/sitemap-seo-only-tours.xml",
   "/sitemap-transfer-seo-only.xml",
-  "/sitemap-blog.xml",
-  "/sitemap-admin-landings-extra.xml",
-  "/sitemap-urgent-discovered.xml"
+  "/sitemap-urgent-discovered.xml",
+  "/sitemap-prodiscovery.xml"
 ] as const;
 
 export async function GET() {

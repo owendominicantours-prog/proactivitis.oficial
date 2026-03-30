@@ -251,6 +251,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     { path: "/", name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home" },
     { path: "/tours", name: locale === "es" ? "Tours" : locale === "fr" ? "Excursions" : "Tours" },
     { path: "/traslado", name: locale === "es" ? "Traslados" : locale === "fr" ? "Transferts" : "Transfers" },
+    { path: "/prodiscovery", name: "ProDiscovery" },
     { path: "/news", name: locale === "es" ? "Noticias" : locale === "fr" ? "Actualites" : "News" },
     {
       path: locale === "es" ? "/hoteles" : "/hotels",
@@ -483,12 +484,12 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   };
 
   return (
-    <div className="overflow-x-hidden bg-transparent text-slate-900">
+    <div className="bg-slate-50 text-slate-900 overflow-x-hidden">
       <HomeHeroCarousel>
         <HomeHeroContent locale={locale} overrides={homeOverrides.hero} />
       </HomeHeroCarousel>
 
-      <section className="border-y border-slate-200/50 bg-[rgba(247,250,251,0.72)]">
+      <section className="border-y border-slate-100 bg-white">
         <div className="mx-auto max-w-6xl space-y-6 px-4 py-12 sm:px-6">
           <HomeBenefitsContent locale={locale} overrides={homeOverrides.benefits} />
         </div>
@@ -498,10 +499,10 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         <div className="mx-auto max-w-6xl space-y-4 px-4 py-12 sm:px-6">
           <HomeRecommendedHeader locale={locale} overrides={homeOverrides.recommended} />
           <HomeTourSearchSection locale={locale} />
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-8 shadow-sm">
+          <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
             <FeaturedToursSection locale={locale} />
           </div>
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-8 shadow-sm">
+          <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
               {homeOverrides.puntaCana?.subtitle ?? t("puntaCana.links.subtitle")}
             </p>
@@ -513,14 +514,14 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
                 <Link
                   key={item.slug}
                   href={tourHref(item.slug)}
-                className="rounded-2xl border border-slate-200/80 bg-[rgba(247,250,251,0.88)] px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
+                  className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
                 >
                   {t(item.labelKey)}
                 </Link>
               ))}
             </div>
           </div>
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-8 shadow-sm">
+          <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
               Sosua Party Boat
             </p>
@@ -536,7 +537,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
                 <Link
                   key={item.slug}
                   href={tourHref(item.slug)}
-                  className="rounded-2xl border border-slate-200/80 bg-[rgba(247,250,251,0.88)] px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
+                  className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
                 >
                   {locale === "es" ? item.es : locale === "en" ? item.en : item.fr}
                 </Link>
@@ -546,9 +547,9 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         </div>
       </section>
 
-      <section className="border-y border-slate-200/50 bg-[rgba(245,250,250,0.78)]">
+      <section className="border-y border-slate-100 bg-white">
         <div className="mx-auto max-w-6xl space-y-5 px-4 py-12 sm:px-6">
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-8 shadow-sm">
+          <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
               {homeOverrides.longform?.eyebrow ?? t("home.longform.eyebrow")}
             </p>
@@ -577,7 +578,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
                   }
                 ] as const
               ).map((item, index) => (
-                <div key={item.titleKey} className="rounded-2xl border border-slate-200/80 bg-[rgba(247,250,251,0.9)] p-4">
+                <div key={item.titleKey} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
                     {homeOverrides.longform?.points?.[index]?.title ?? t(item.titleKey)}
                   </p>
