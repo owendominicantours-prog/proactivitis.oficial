@@ -9,7 +9,7 @@ export default async function SearchPage() {
   const tours = await getAllTours();
 
   return (
-    <div className="space-y-10 bg-slate-50 pb-16 pt-8">
+    <div className="travel-surface space-y-10 pb-16 pt-8">
       <div className="mx-auto max-w-6xl px-6">
         <h1 className="text-3xl font-semibold text-slate-900">Buscador inteligente</h1>
         <p className="mt-2 max-w-2xl text-sm text-slate-600">

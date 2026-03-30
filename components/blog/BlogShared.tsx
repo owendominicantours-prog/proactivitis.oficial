@@ -1084,7 +1084,7 @@ export async function renderBlogList(locale: "es" | "en" | "fr") {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="travel-surface min-h-screen">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }}
@@ -1223,7 +1223,7 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
     });
 
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="travel-surface min-h-screen">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(staticBlogSchema) }}
@@ -1442,7 +1442,7 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
     : relatedTours;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="travel-surface min-h-screen">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(dynamicBlogSchema) }}

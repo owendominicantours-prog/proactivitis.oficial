@@ -10,7 +10,7 @@ export default async function CustomerProfilePage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 py-16">
+      <div className="travel-surface min-h-screen flex items-center justify-center py-16">
         <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center">
           <p className="text-lg font-semibold text-slate-900">Debes iniciar sesión</p>
           <p className="mt-2 text-sm text-slate-600">Accede para ver y editar tu perfil.</p>
@@ -48,7 +48,7 @@ export default async function CustomerProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 py-16">
+      <div className="travel-surface min-h-screen flex items-center justify-center py-16">
         <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center">
           <p className="text-lg font-semibold text-slate-900">Usuario no encontrado</p>
           <p className="mt-2 text-sm text-slate-600">Contacta soporte para reactivar tu cuenta.</p>
@@ -61,7 +61,7 @@ export default async function CustomerProfilePage() {
   const upcoming = user.Booking.filter((booking) => booking.status === "CONFIRMED").length;
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10">
+    <div className="travel-surface min-h-screen px-4 py-10">
       <div className="mx-auto max-w-5xl space-y-6">
         <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h1 className="text-3xl font-semibold text-slate-900">Mi perfil</h1>

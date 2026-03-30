@@ -1877,12 +1877,12 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                       ? localeLabel(locale, "Tarifa de agencia", "Agency rate", "Tarif agence")
                       : heroPriceLabel}
                   </p>
-                  <p className={`text-4xl font-black ${hasActiveDiscount ? "text-red-600" : "text-indigo-600"}`}>{priceLabel}</p>
+                  <p className={`text-4xl font-black ${hasActiveDiscount ? "text-emerald-600" : "text-indigo-600"}`}>{priceLabel}</p>
                   {hasActiveDiscount ? (
                     <div className="mt-1 space-y-1">
                       <p className="text-xs text-slate-400 line-through">${tour.price.toFixed(0)} USD</p>
                       {discountTag ? (
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-red-600">{discountTag}</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-600">{discountTag}</p>
                       ) : null}
                     </div>
                   ) : null}

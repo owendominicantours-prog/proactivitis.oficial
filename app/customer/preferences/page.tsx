@@ -8,7 +8,7 @@ export default async function CustomerPreferencesPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
+      <div className="travel-surface min-h-screen flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center">
           <p className="text-lg font-semibold text-slate-900">Debes iniciar sesion</p>
           <p className="mt-2 text-sm text-slate-600">Accede para personalizar tus preferencias.</p>
@@ -30,7 +30,7 @@ export default async function CustomerPreferencesPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
+      <div className="travel-surface min-h-screen flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center">
           <p className="text-lg font-semibold text-slate-900">Usuario no encontrado</p>
           <p className="mt-2 text-sm text-slate-600">Contacta soporte para reactivar tu cuenta.</p>
@@ -61,7 +61,7 @@ export default async function CustomerPreferencesPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10">
+    <div className="travel-surface min-h-screen px-4 py-10">
       <div className="mx-auto max-w-4xl space-y-6">
         <header className="rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Preferencias</p>

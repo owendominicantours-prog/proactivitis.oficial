@@ -62,7 +62,7 @@ export const PanelShell = ({
   );
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen bg-transparent text-slate-900">
       <Header navItems={navItems} rightSlot={rightSlot} navDisplay={navDisplay} />
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:py-10">{children}</main>
     </div>

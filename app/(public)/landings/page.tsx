@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function LandingIndexPage() {
   return (
-    <div className="bg-slate-50 py-12">
+    <div className="travel-surface py-12">
       <div className="mx-auto max-w-6xl space-y-6 px-6">
         <header className="rounded-[32px] bg-white p-8 shadow-card">
           <h1 className="text-3xl font-semibold text-slate-900">Landings</h1>

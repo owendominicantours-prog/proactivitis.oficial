@@ -539,7 +539,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
   ].slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="travel-surface min-h-screen">
       <StructuredData data={landingSchema} />
       <StructuredData data={breadcrumbSchema} />
       <section className="relative flex min-h-[360px] items-center overflow-hidden border-b border-slate-200">

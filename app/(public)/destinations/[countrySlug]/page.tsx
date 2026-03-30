@@ -70,7 +70,7 @@ export default async function CountryPage({ params }: Props) {
   }));
 
   return (
-    <div className="bg-slate-50 pb-16">
+    <div className="travel-surface pb-16">
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8">
           <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Destinos  {country.name}</p>

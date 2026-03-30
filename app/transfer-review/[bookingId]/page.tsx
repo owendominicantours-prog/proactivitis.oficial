@@ -41,7 +41,7 @@ export default async function TransferReviewPage({ params }: PageProps) {
   }).format(booking.travelDate);
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10">
+    <main className="travel-surface min-h-screen py-10">
       <div className="mx-auto w-full max-w-3xl space-y-6 px-4">
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resena de traslado</p>

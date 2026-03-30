@@ -158,7 +158,7 @@ export default async function SupplierMinisitePublicPage({ params, searchParams 
   const showMarketing = !eligible && !allowPreview;
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main className="travel-surface min-h-screen text-slate-900">
       <div className={`${theme.hero} text-white`}>
         <div className="mx-auto max-w-6xl space-y-6 px-6 py-16">
           <div className="flex items-center gap-4">

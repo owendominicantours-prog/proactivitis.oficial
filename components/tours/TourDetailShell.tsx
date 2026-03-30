@@ -36,7 +36,7 @@ export const TourDetailShell = ({ tour, bookingForm }: { tour: TourWithSupplier;
   }
 
   return (
-    <main className="bg-slate-50 text-slate-900">
+    <main className="travel-surface text-slate-900">
       <section
         className="relative overflow-hidden rounded-b-[60px] bg-cover bg-center text-white"
         style={{ backgroundImage: `url(${coverImage})` }}

@@ -155,7 +155,7 @@ export default async function HotelTrasladoPage({ params }: TrasladoPageProps) {
   const defaultDateTime = getDefaultDateTime();
 
   return (
-    <div className="bg-slate-50">
+    <div className="travel-surface">
       <section className="bg-gradient-to-br from-white via-slate-50 to-slate-100 border-b border-slate-200">
         <div className="mx-auto max-w-6xl px-4 py-12">
           <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Programmatic SEO - Traslado</p>

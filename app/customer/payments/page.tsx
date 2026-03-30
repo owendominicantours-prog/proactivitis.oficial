@@ -9,7 +9,7 @@ export default async function CustomerPaymentsPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 py-16">
+      <div className="travel-surface min-h-screen flex items-center justify-center py-16">
         <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center">
           <p className="text-lg font-semibold text-slate-900">Debes iniciar sesión</p>
           <p className="mt-2 text-sm text-slate-600">Accede para ver tus pagos.</p>
@@ -48,7 +48,7 @@ export default async function CustomerPaymentsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10">
+    <div className="travel-surface min-h-screen px-4 py-10">
       <div className="mx-auto max-w-5xl space-y-6">
         <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h1 className="text-3xl font-semibold text-slate-900">Pagos</h1>

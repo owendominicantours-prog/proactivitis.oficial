@@ -22,7 +22,7 @@ export default async function CustomerPublicReservationsPage() {
 
   if (!session?.user?.email) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 py-16">
+      <div className="travel-surface flex min-h-screen items-center justify-center py-16">
         <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center">
           <p className="text-lg font-semibold text-slate-900">Debes iniciar sesión</p>
           <p className="mt-2 text-sm text-slate-600">Accede para ver tus reservas recientes.</p>
@@ -84,7 +84,7 @@ export default async function CustomerPublicReservationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10">
+    <div className="travel-surface min-h-screen px-4 py-10">
       <div className="mx-auto max-w-6xl space-y-6">
         <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h1 className="text-3xl font-semibold text-slate-900">Mis reservas</h1>

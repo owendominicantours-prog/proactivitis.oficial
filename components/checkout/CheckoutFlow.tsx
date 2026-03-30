@@ -1156,7 +1156,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
   return (
 
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-10 overflow-x-hidden">
+    <div className="travel-surface min-h-screen py-10 px-4 sm:px-6 lg:px-10 overflow-x-hidden">
 
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[2.2fr_1fr]">
 

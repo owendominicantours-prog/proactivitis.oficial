@@ -177,7 +177,7 @@ export default async function LandingPage({ params }: Params) {
 
   if (!isCountryLanding && !isKeywordSalesLanding) {
     return (
-      <div className="bg-slate-50 py-12">
+      <div className="travel-surface py-12">
         <LandingViewTracker landingSlug={landing.slug} />
         <div className="mx-auto max-w-6xl space-y-6 rounded-[36px] bg-white p-8 shadow-card">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400">White Label</p>
@@ -229,7 +229,7 @@ export default async function LandingPage({ params }: Params) {
   const profile = getCountryProfile(landing.country ?? "international");
 
   return (
-    <div className="bg-slate-50 py-10">
+    <div className="travel-surface py-10">
       <LandingViewTracker landingSlug={landing.slug} />
       <StructuredData data={schema} />
       <div className="mx-auto max-w-7xl space-y-8 px-4">

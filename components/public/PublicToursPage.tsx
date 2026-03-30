@@ -589,11 +589,11 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="text-sm font-semibold text-slate-900">
                           {fromLabel}{" "}
-                          <span className={`text-base font-black ${hasDiscount ? "text-red-600" : "text-indigo-600"}`}>
+                          <span className={`text-base font-black ${hasDiscount ? "text-emerald-600" : "text-indigo-600"}`}>
                             ${effectivePrice.toFixed(0)}
                           </span>
                           {hasDiscount && (
-                            <span className="ml-2 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-red-700">
+                            <span className="ml-2 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
                               {discountLabel}
                             </span>
                           )}

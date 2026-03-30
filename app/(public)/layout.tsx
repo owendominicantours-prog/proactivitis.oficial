@@ -157,7 +157,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
           gtag('config', 'AW-17889405007');
         `}
       </Script>
-      <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900">
+      <div className="flex min-h-screen flex-col bg-transparent text-slate-900">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

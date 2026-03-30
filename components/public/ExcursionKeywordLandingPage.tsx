@@ -330,10 +330,10 @@ export async function ExcursionKeywordLandingPage({ landingSlug, locale }: { lan
   };
 
   return (
-    <main className="bg-white">
+    <main className="travel-surface">
       <StructuredData data={breadcrumbSchema} />
       <StructuredData data={itemListSchema} />
-      <section className="bg-gradient-to-br from-emerald-50 to-white">
+      <section className="bg-gradient-to-br from-[rgba(247,250,251,0.86)] to-[rgba(245,250,250,0.72)]">
         <div className="mx-auto max-w-6xl px-4 py-12">
           <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Proactivitis Tours</p>
           <h1 className="mt-4 text-4xl font-black text-slate-900 md:text-5xl">{normalizedLanding.titles[locale]}</h1>

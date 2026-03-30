@@ -217,7 +217,7 @@ export function TourCard({
             <div>
               <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400">From</p>
               <div className="flex items-baseline gap-1">
-                <span className={`${compact ? "text-2xl" : "text-3xl"} font-black ${hasDiscount ? "text-red-600" : "text-brand"}`}>
+                <span className={`${compact ? "text-2xl" : "text-3xl"} font-black ${hasDiscount ? "text-emerald-600" : "text-brand"}`}>
                   ${bestDiscountedPrice.toFixed(0)}
                 </span>
                 <span className="text-sm font-semibold text-slate-500">USD</span>
@@ -225,7 +225,7 @@ export function TourCard({
               {hasDiscount ? (
                 <div className="space-y-1">
                   <p className="text-xs text-slate-400 line-through">${price.toFixed(0)} USD</p>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-red-600">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-600">
                     {discountLabel || `-${computedDiscountPercent}%`}
                   </p>
                 </div>
