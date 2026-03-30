@@ -5,23 +5,27 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
+import { buildEmailShell } from "@/lib/emailTemplates";
 import { notifyAdminNewUser } from "@/lib/mailers/adminNotifications";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 
 const SALT_ROUNDS = 12;
 
-// Puedes definir esto en tu .env
-// NEXT_PUBLIC_APP_URL=https://proactivitis.com
 const APP_BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") || "https://proactivitis.com";
-
-const EMAIL_LOGO_URL = `${APP_BASE_URL}/logo.png`;
 
 type RegisterBody = {
   email?: string;
   password?: string;
   name?: string;
 };
+
+const benefitList = [
+  "Proveedores verificados",
+  "Confirmacion rapida",
+  "Soporte real por WhatsApp",
+  "Reservas y vouchers en un solo lugar"
+];
 
 export async function POST(request: Request) {
   try {
@@ -31,22 +35,16 @@ export async function POST(request: Request) {
     const rawName = body.name?.toString().trim() ?? "";
 
     if (!rawEmail || !rawPassword) {
-      return NextResponse.json(
-        { error: "Email y contraseña son requeridos" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Email y contrasena son requeridos" }, { status: 400 });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(rawEmail)) {
-      return NextResponse.json({ error: "El correo no parece válido" }, { status: 400 });
+      return NextResponse.json({ error: "El correo no parece valido" }, { status: 400 });
     }
 
     if (rawPassword.length < 8) {
-      return NextResponse.json(
-        { error: "La contraseña debe tener al menos 8 caracteres" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "La contrasena debe tener al menos 8 caracteres" }, { status: 400 });
     }
 
     const normalizedEmail = rawEmail.toLowerCase();
@@ -55,10 +53,7 @@ export async function POST(request: Request) {
       where: { email: normalizedEmail }
     });
     if (existing) {
-      return NextResponse.json(
-        { error: "Ese correo ya tiene una cuenta registrada" },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: "Ese correo ya tiene una cuenta registrada" }, { status: 409 });
     }
 
     const hashed = await bcrypt.hash(rawPassword, SALT_ROUNDS);
@@ -87,138 +82,66 @@ export async function POST(request: Request) {
       }
     });
 
-    const tourHtml = recommendedTours
-      .map(
-        (tour) => `
-          <tr>
-            <td style="padding: 8px 0;">
-              <a href="${APP_BASE_URL}/tours/${tour.slug}" style="font-weight:600; color:#0ea5e9; text-decoration:none;">
-                ${tour.title}
-              </a>
-              <p style="margin:4px 0 0;font-size:13px;color:#475569;">
-                ${tour.location} · USD ${tour.price.toFixed(0)}
-              </p>
-            </td>
-          </tr>
-        `
-      )
-      .join("");
-
-    const benefitsHtml = [
-      { icon: "🔒", label: "Proveedores verificados" },
-      { icon: "⚡", label: "Confirmación instantánea" },
-      { icon: "🎧", label: "Soporte 24/7 en tu idioma" },
-      { icon: "💰", label: "Mejor precio garantizado" }
-    ]
+    const benefitItems = benefitList
       .map(
         (item) => `
-          <tr>
-            <td style="padding:6px 10px;">
-              <span style="font-size:18px;margin-right:6px;">${item.icon}</span>
-              <span style="font-size:14px;font-weight:600;color:#0f172a;">${item.label}</span>
-            </td>
-          </tr>
+          <li style="margin-bottom:8px;color:#475569;">${item}</li>
         `
       )
       .join("");
 
-    const htmlBody = `
-      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;color:#0f172a;background:#ecf2ff;padding:32px;">
-        <div style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:30px;overflow:hidden;box-shadow:0 30px 90px rgba(2,6,23,0.15);">
-          
-          <!-- HEADER -->
-          <div
-            style="background:linear-gradient(135deg,#0096ff,#0074d9);padding:28px 28px 34px;display:flex;flex-direction:column;align-items:center;gap:12px;"
-          >
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:28px;">🐬</span>
-              <div style="color:#f8fbff;font-weight:600;letter-spacing:0.08em;font-size:12px;text-transform:uppercase;">
-                Bienvenido a Proactivitis
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;">
-              <img
-                src="${EMAIL_LOGO_URL}"
-                alt="Proactivitis"
-                width="320"
-                height="120"
-                style="display:block;height:auto;filter:brightness(0) invert(1);"
-              />
-            </div>
-          </div>
-
-          <!-- BODY -->
-          <div style="padding:32px 40px 28px;line-height:1.7;">
-            <p style="margin:0 0 4px;font-size:16px;">Hola ${rawName || "viajero"},</p>
-            <h1 style="font-size:26px;margin:8px 0 16px;font-weight:600;color:#0f172a;">
-              Tu espacio de viajes ya está listo
-            </h1>
-            <p style="margin:0;font-size:16px;color:#475569;">
-              Acabas de activar un canal directo con operadores verificados, confirmaciones en minutos y soporte 24/7 en español.
-            </p>
-            <p style="margin:12px 0 24px;font-size:15px;color:#475569;">
-              ✨Tu próxima propuesta personalizada se está preparando; mientras tanto puedes explorar las rutas más populares.
-            </p>
-
-            <!-- BENEFICIOS -->
-            <table
-              role="presentation"
-              cellpadding="0"
-              cellspacing="0"
-              style="width:100%;margin-bottom:28px;background:#f8fafc;border-radius:20px;padding:16px 12px;"
-            >
-              ${benefitsHtml}
-            </table>
-
-            <!-- RECOMENDACIONES -->
-            <div style="background:#f0f9ff;padding:20px 22px;border-radius:20px;margin-bottom:28px;">
-            <p style="margin:0 0 8px;font-weight:600;color:#0f172a;">Sugerencias que puedes revisar</p>
-            <p style="margin:0 0 12px;font-size:14px;color:#475569;">
-              ${recommendedTours.length ? "Descubre algunas salidas que ya están confirmadas para ti:" : "No hay sugerencias todavía, pero muy pronto te mostraremos novedades exclusivas."}
-            </p>
-              <table style="width:100%;border-collapse:collapse;">
-                ${
-                  tourHtml ||
-                  `<tr><td style="font-size:13px;color:#64748b;padding-top:4px;">
-                    Aún no hay tours publicados, pero pronto tendrás recomendaciones exclusivas.
-                  </td></tr>`
-                }
-              </table>
-            </div>
-
-            <!-- CTA -->
-            <a
-              href="${APP_BASE_URL}/tours"
-              style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:#006bff;color:#ffffff;border-radius:16px;font-weight:600;font-size:15px;text-decoration:none;box-shadow:0 10px 30px rgba(0,107,255,0.25);"
-            >
-              Descubre tu próxima aventura
+    const tourCards = recommendedTours
+      .map(
+        (tour) => `
+          <div style="padding:16px;border-radius:16px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);margin-bottom:12px;">
+            <p style="margin:0;font-size:16px;font-weight:600;color:#0f172a;">${tour.title}</p>
+            <p style="margin:6px 0 0;font-size:14px;color:#475569;">${tour.location} - USD ${tour.price.toFixed(0)}</p>
+            <a href="${APP_BASE_URL}/tours/${tour.slug}" style="display:inline-block;margin-top:10px;color:#0ea5e9;font-weight:700;text-decoration:none;">
+              Ver experiencia
             </a>
           </div>
+        `
+      )
+      .join("");
 
-          <!-- FOOTER -->
-          <div style="padding:20px 40px 26px;font-size:12px;color:#94a3b8;background:#f8fafc;text-align:center;">
-            <p style="margin:0 0 6px;">Proactivitis LLC · Miami, FL · support@proactivitis.com</p>
-            <p style="margin:0;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">
-              Gestión de privacidad · Cancelar notificaciones
-            </p>
-            <p style="margin:8px 0 0;">
-              ID de cuenta: <strong>${user.id}</strong>
-            </p>
-          </div>
+    const htmlBody = buildEmailShell({
+      eyebrow: "Bienvenido",
+      title: "Tu cuenta ya esta lista",
+      intro: `Hola ${rawName || "viajero"}, ya puedes explorar tours, traslados y reservas dentro de Proactivitis.`,
+      baseUrl: APP_BASE_URL,
+      tone: "primary",
+      disclaimer:
+        "Este correo confirma la creacion de tu cuenta en Proactivitis y contiene accesos directos a tu experiencia inicial dentro de la plataforma.",
+      footerNote: `ID de cuenta: ${user.id}. Usa este identificador si necesitas ayuda con tu perfil.`,
+      contentHtml: `
+        <div style="padding:20px;border-radius:18px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);">
+          <p style="margin:0;font-size:12px;letter-spacing:0.25em;text-transform:uppercase;color:#94a3b8;">Que puedes hacer</p>
+          <ul style="margin:14px 0 0;padding-left:20px;font-size:14px;line-height:1.7;">
+            ${benefitItems}
+          </ul>
         </div>
-      </div>
-    `;
+        <div style="margin-top:24px;">
+          <p style="margin:0 0 12px;font-size:16px;font-weight:600;color:#0f172a;">Sugerencias para empezar</p>
+          ${
+            tourCards ||
+            `<p style="margin:0;font-size:14px;color:#475569;">Pronto te mostraremos nuevas experiencias destacadas para tu cuenta.</p>`
+          }
+        </div>
+        <a
+          href="${APP_BASE_URL}/tours"
+          style="display:inline-block;margin-top:24px;padding:14px 24px;background:#006bff;color:#ffffff;border-radius:16px;font-weight:700;text-decoration:none;"
+        >
+          Explorar experiencias
+        </a>
+      `
+    });
 
     await sendEmail({
       to: normalizedEmail,
-      subject: "Bienvenido a Proactivitis — tu panel de viajes",
+      subject: "Bienvenido a Proactivitis",
       html: htmlBody
     }).catch((err) => {
-      console.warn(
-        "No se pudo enviar el email de bienvenida a",
-        normalizedEmail,
-        err?.message ?? err
-      );
+      console.warn("No se pudo enviar el email de bienvenida a", normalizedEmail, err?.message ?? err);
     });
 
     void notifyAdminNewUser({
@@ -231,10 +154,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, userId: user.id }, { status: 201 });
   } catch (error) {
     console.error("Register error", error);
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Error interno creando la cuenta";
+    const message = error instanceof Error ? error.message : "Error interno creando la cuenta";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

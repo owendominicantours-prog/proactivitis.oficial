@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
+import { buildEmailShell } from "@/lib/emailTemplates";
 import { createPartnerApplicationNotification } from "@/lib/notificationService";
 import { notifyAdminPartnerApplication } from "@/lib/mailers/adminNotifications";
 
@@ -53,11 +54,11 @@ export async function POST(request: NextRequest) {
   const confirmPassword = String(body.confirmPassword ?? "").trim();
 
   if (password.length < 8) {
-    return NextResponse.json({ error: "La contraseña debe tener al menos 8 caracteres." }, { status: 400 });
+    return NextResponse.json({ error: "La contrasena debe tener al menos 8 caracteres." }, { status: 400 });
   }
 
   if (confirmPassword && password !== confirmPassword) {
-    return NextResponse.json({ error: "Las contraseñas no coinciden." }, { status: 400 });
+    return NextResponse.json({ error: "Las contrasenas no coinciden." }, { status: 400 });
   }
 
   const saltRounds = 12;
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
     supplierApproved: role === "SUPPLIER" ? false : existingUser?.supplierApproved ?? false,
     agencyApproved: role === "AGENCY" ? false : existingUser?.agencyApproved ?? false,
     accountStatus: "PENDING",
-    statusMessage: "Tu solicitud está siendo revisada por nuestro equipo."
+    statusMessage: "Tu solicitud esta siendo revisada por nuestro equipo."
   };
 
   const user =
@@ -129,17 +130,27 @@ export async function POST(request: NextRequest) {
   await createPartnerApplicationNotification({ applicationId: application.id, companyName: application.companyName });
   void notifyAdminPartnerApplication({ application });
 
-  const applicantHtml = `
-    <div style="font-family:'Inter',system-ui,sans-serif;background:#f8fafc;padding:32px;">
-      <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:24px;padding:28px;box-shadow:0 20px 60px rgba(15,23,42,0.15);">
-        <h1 style="margin:0 0 16px;font-size:20px;color:#0f172a;">Solicitud recibida</h1>
-        <p style="margin:0 0 12px;font-size:15px;color:#475569;">
-          Hola ${application.contactName ?? "aliado"}, gracias por registrarte en Proactivitis. Tu solicitud fue enviada al equipo y la revisaremos en breve.
-        </p>
-        <p style="margin:0;font-size:14px;color:#64748b;">Puedes seguir el estatus desde tu correo o ingresando a <a href="${APP_BASE_URL}" style="color:#0ea5e9;">${APP_BASE_URL}</a>.</p>
+  const applicantHtml = buildEmailShell({
+    eyebrow: "Solicitud recibida",
+    title: "Gracias por aplicar a Proactivitis",
+    intro: `Hola ${application.contactName ?? "aliado"}, ya recibimos tu solicitud como ${role === "SUPPLIER" ? "supplier" : "agencia"}.`,
+    baseUrl: APP_BASE_URL,
+    tone: "primary",
+    disclaimer:
+      "Este correo confirma que tu solicitud comercial fue recibida por Proactivitis y se encuentra en revision interna.",
+    footerNote: "Nuestro equipo revisara la informacion y te contactara con la respuesta o con pasos adicionales si fueran necesarios.",
+    contentHtml: `
+      <div style="padding:20px;border-radius:18px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);">
+        <p style="margin:0;font-size:12px;letter-spacing:0.25em;text-transform:uppercase;color:#94a3b8;">Solicitud</p>
+        <p style="margin:10px 0 0;font-size:18px;font-weight:600;color:#0f172a;">${application.companyName}</p>
+        <p style="margin:6px 0 0;font-size:14px;color:#475569;">Contacto principal: ${application.contactName} (${application.contactRole})</p>
+        <p style="margin:6px 0 0;font-size:14px;color:#475569;">Servicios: ${application.serviceTypes}</p>
       </div>
-    </div>
-  `;
+      <p style="margin:24px 0 0;font-size:14px;color:#475569;">
+        Mientras validamos tu cuenta, puedes conservar este correo como comprobante de que la solicitud fue enviada correctamente.
+      </p>
+    `
+  });
 
   void sendEmail({
     to: application.email,

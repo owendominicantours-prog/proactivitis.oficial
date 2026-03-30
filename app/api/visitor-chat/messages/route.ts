@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
+import { buildEmailShell } from "@/lib/emailTemplates";
 import { resolveNotificationRecipients } from "@/lib/notificationEmailSettings";
 import { ensureVisitorChatSession, VISITOR_CHAT_COOKIE } from "@/lib/visitorChatSession";
 import { buildVisitorContextFromRequest, encodeVisitorContext } from "@/lib/visitorChatContext";
@@ -106,18 +107,28 @@ export async function POST(request: NextRequest) {
     });
 
     const adminChatUrl = "https://proactivitis.com/admin/chat";
-    const html = `
-      <div style="font-family:Arial,sans-serif;line-height:1.5;color:#0f172a;">
-        <h2 style="margin:0 0 12px;">Nuevo mensaje de visitante en chat</h2>
-        <p style="margin:0 0 8px;"><strong>Conversacion:</strong> ${session.conversationId}</p>
-        <p style="margin:0 0 8px;"><strong>Pagina:</strong> ${body.pageTitle ?? body.pagePath ?? "N/D"}</p>
-        <p style="margin:0 0 8px;"><strong>Pais:</strong> ${contextPayload.country ?? "N/D"} ${contextPayload.city ? `(${contextPayload.city})` : ""}</p>
-        <p style="margin:0 0 12px;"><strong>Mensaje:</strong> ${content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
-        <p style="margin:0 0 8px;">
-          <a href="${adminChatUrl}" style="color:#0ea5e9;font-weight:700;">Abrir chat en admin</a>
-        </p>
-      </div>
-    `;
+    const safeMessage = content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const html = buildEmailShell({
+      eyebrow: "Chat web",
+      title: "Nuevo mensaje de visitante",
+      intro: "Un visitante envio un mensaje desde el chat publico y requiere seguimiento del equipo.",
+      baseUrl: "https://proactivitis.com",
+      tone: "dark",
+      disclaimer:
+        "Este correo fue enviado por Proactivitis para avisar de una nueva conversacion iniciada en el chat de visitantes.",
+      footerNote: `Conversacion: ${session.conversationId}`,
+      contentHtml: `
+        <div style="padding:20px;border-radius:18px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);">
+          <p style="margin:0;font-size:12px;letter-spacing:0.25em;text-transform:uppercase;color:#94a3b8;">Origen</p>
+          <p style="margin:10px 0 0;font-size:14px;color:#475569;">Pagina: <strong>${body.pageTitle ?? body.pagePath ?? "N/D"}</strong></p>
+          <p style="margin:6px 0 0;font-size:14px;color:#475569;">Pais: <strong>${contextPayload.country ?? "N/D"}${contextPayload.city ? ` (${contextPayload.city})` : ""}</strong></p>
+          <p style="margin:14px 0 0;font-size:14px;line-height:1.7;color:#0f172a;">${safeMessage}</p>
+        </div>
+        <a href="${adminChatUrl}" style="display:inline-block;margin-top:24px;color:#0ea5e9;font-weight:700;text-decoration:none;">
+          Abrir chat en admin
+        </a>
+      `
+    });
 
     const recipients = await resolveNotificationRecipients("ADMIN_CONTACT_REQUEST");
     void sendEmail({

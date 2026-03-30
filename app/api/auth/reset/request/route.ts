@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
+import { buildEmailShell } from "@/lib/emailTemplates";
 import { createPasswordResetToken } from "@/lib/passwordReset";
 
 const APP_BASE_URL =
@@ -26,24 +27,27 @@ export async function POST(request: NextRequest) {
     const token = createPasswordResetToken(user.email);
     const resetUrl = `${APP_BASE_URL}/auth/reset?token=${encodeURIComponent(token)}`;
 
-    const html = `
-      <div style="font-family:Inter,system-ui,sans-serif;background:#f8fafc;padding:32px;">
-        <div style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:24px;padding:32px;box-shadow:0 20px 60px rgba(15,23,42,0.12);">
-          <p style="margin:0 0 12px;font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#64748b;">Proactivitis</p>
-          <h1 style="margin:0 0 16px;font-size:24px;color:#0f172a;">Restablece tu contrasena</h1>
-          <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#475569;">
-            Recibimos una solicitud para cambiar la contrasena de tu cuenta. Si fuiste tu, usa el siguiente boton.
-          </p>
-          <a href="${resetUrl}" style="display:inline-block;padding:14px 20px;border-radius:16px;background:#0f172a;color:#ffffff;text-decoration:none;font-weight:700;">
-            Crear nueva contrasena
-          </a>
-          <p style="margin:18px 0 8px;font-size:13px;line-height:1.7;color:#64748b;">
-            Este enlace expira en 1 hora. Si no solicitaste este cambio, puedes ignorar este mensaje.
-          </p>
-          <p style="margin:0;font-size:12px;word-break:break-all;color:#94a3b8;">${resetUrl}</p>
-        </div>
-      </div>
-    `;
+    const html = buildEmailShell({
+      title: "Restablece tu contrasena",
+      intro: "Recibimos una solicitud para cambiar la contrasena de tu cuenta en Proactivitis.",
+      baseUrl: APP_BASE_URL,
+      tone: "warning",
+      disclaimer:
+        "Este correo fue enviado para ayudarte a restablecer el acceso a tu cuenta. Si no solicitaste este cambio, puedes ignorarlo con seguridad.",
+      footerNote: "El enlace expira en 1 hora por motivos de seguridad.",
+      contentHtml: `
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#475569;">
+          Si fuiste tu quien inicio el proceso, usa el siguiente boton para crear una nueva contrasena segura.
+        </p>
+        <a href="${resetUrl}" style="display:inline-block;padding:14px 20px;border-radius:16px;background:#0f172a;color:#ffffff;text-decoration:none;font-weight:700;">
+          Crear nueva contrasena
+        </a>
+        <p style="margin:18px 0 8px;font-size:13px;line-height:1.7;color:#64748b;">
+          Si el boton no funciona, copia y pega esta URL en tu navegador.
+        </p>
+        <p style="margin:0;font-size:12px;word-break:break-all;color:#94a3b8;">${resetUrl}</p>
+      `
+    });
 
     await sendEmail({
       to: user.email,

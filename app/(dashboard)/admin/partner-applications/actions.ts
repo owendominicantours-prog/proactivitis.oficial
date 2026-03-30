@@ -1,16 +1,17 @@
 import { revalidatePath } from "next/cache";
+import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { createAccountStatusNotification } from "@/lib/notificationService";
 import { NotificationRole, NotificationType } from "@/lib/types/notificationTypes";
 import { sendEmail } from "@/lib/email";
-import { randomUUID } from "crypto";
+import { buildEmailShell } from "@/lib/emailTemplates";
 import { ensureSupplierProfile } from "@/lib/supplierProfiles";
 import { ensureAgencyProfile } from "@/lib/agencyProfiles";
 
 const ensureStatusMessage = (status: "APPROVED" | "REJECTED") =>
   status === "APPROVED"
-    ? "Tu cuenta ha sido aprobada. Ya puedes acceder al panel según tu rol."
-    : "Tu cuenta ha sido rechazada. Esta cuenta se borrará en 48 horas. Gracias por el interés.";
+    ? "Tu cuenta ha sido aprobada. Ya puedes acceder al panel segun tu rol."
+    : "Tu cuenta ha sido rechazada. Esta cuenta se borrara en 48 horas. Gracias por el interes.";
 
 async function updateApplicationStatus(formData: FormData, status: "APPROVED" | "REJECTED") {
   "use server";
@@ -35,6 +36,7 @@ async function updateApplicationStatus(formData: FormData, status: "APPROVED" | 
     revalidatePath("/dashboard/agency");
     return;
   }
+
   await prisma.partnerApplication.update({
     where: { id },
     data: { status }
@@ -82,6 +84,7 @@ async function updateApplicationStatus(formData: FormData, status: "APPROVED" | 
         metadata: { ...metadata, messageKey }
       });
     }
+
     if (status === "APPROVED" && application.role === "SUPPLIER") {
       await ensureSupplierProfile(application.userId, application.companyName ?? "Proveedor");
     }
@@ -103,42 +106,40 @@ const APP_BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") || "https://proactivitis.com";
 
 const welcomeTitles: Record<string, string> = {
-  SUPPLIER: "Tu cuenta de proveedor está activa",
-  AGENCY: "Tu cuenta de agencia está activa"
+  SUPPLIER: "Tu cuenta de proveedor esta activa",
+  AGENCY: "Tu cuenta de agencia esta activa"
 };
 
 async function sendPartnerWelcome(user: { id: string; email: string | null; name?: string | null }, role: string) {
   if (!user.email) return;
-  const subject = welcomeTitles[role] ?? "Tu cuenta en Proactivitis está activa";
-  const html = `
-    <div style="font-family:system-ui,sans-serif;background:#f4f5fb;color:#0f172a;padding:32px;">
-      <div style="max-width:640px;margin:0 auto;background:#fff;border-radius:28px;overflow:hidden;box-shadow:0 30px 60px rgba(15,23,42,0.15);">
-        <div style="background:linear-gradient(135deg,#0f172a,#0ea5e9);padding:28px 32px;color:#f8fafc;">
-          <h1 style="margin:0;font-size:24px;font-weight:600;">${subject}</h1>
-          <p style="margin:8px 0 0;font-size:14px;letter-spacing:0.15em;text-transform:uppercase;">ID de cuenta: ${user.id}</p>
-        </div>
-        <div style="padding:32px;line-height:1.6;">
-          <p style="margin:0 0 8px;">Hola ${user.name ?? "Aliado"},</p>
-          <p style="margin:0 0 12px;">
-            Tu acceso fue aprobado. Ya puedes iniciar sesión en el portal de ${role.toLowerCase()} y empezar a trabajar con viajeros
-            reales utilizando herramientas de reservas, pagos y soporte en tiempo real.
-          </p>
-          <p style="margin:0 0 20px;font-size:14px;color:#475569;">
-            Recuerda usar el ID de cuenta arriba como referencia cuando hables con soporte o consultes tu perfil.
-          </p>
-          <a
-            href="${APP_BASE_URL}/auth/login"
-            style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#0ea5e9;color:#fff;border-radius:14px;font-weight:600;text-decoration:none;"
-          >
-            Ir al panel
-          </a>
-        </div>
-        <div style="padding:16px 32px 28px;font-size:12px;color:#94a3b8;background:#f8fafc;text-align:center;">
-          Gracias por confiar en Proactivitis. Estamos aquí para coordinar cada detalle contigo.
-        </div>
+  const subject = welcomeTitles[role] ?? "Tu cuenta en Proactivitis esta activa";
+  const portalPath = role === "SUPPLIER" ? "/supplier" : "/agency";
+  const html = buildEmailShell({
+    eyebrow: "Cuenta aprobada",
+    title: subject,
+    intro: `Hola ${user.name ?? "aliado"}, tu acceso fue aprobado y ya puedes comenzar a trabajar dentro del portal de ${role.toLowerCase()}.`,
+    baseUrl: APP_BASE_URL,
+    tone: "success",
+    disclaimer:
+      "Este correo confirma la activacion de una cuenta comercial dentro de Proactivitis. Guardalo como referencia de aprobacion.",
+    footerNote: `ID de cuenta: ${user.id}. Usa este identificador cuando hables con soporte o necesites validar tu perfil.`,
+    contentHtml: `
+      <div style="padding:20px;border-radius:18px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);">
+        <p style="margin:0;font-size:12px;letter-spacing:0.25em;text-transform:uppercase;color:#94a3b8;">Siguientes pasos</p>
+        <ul style="margin:14px 0 0;padding-left:20px;color:#475569;font-size:14px;line-height:1.7;">
+          <li>Inicia sesion en tu panel comercial.</li>
+          <li>Revisa reservas, herramientas y configuracion inicial.</li>
+          <li>Completa cualquier dato operativo pendiente antes de vender.</li>
+        </ul>
       </div>
-    </div>
-  `;
+      <a
+        href="${APP_BASE_URL}${portalPath}"
+        style="display:inline-block;margin-top:24px;padding:12px 22px;border-radius:14px;background:#0f172a;color:#ffffff;text-decoration:none;font-weight:700;"
+      >
+        Abrir mi panel
+      </a>
+    `
+  });
   await sendEmail({
     to: user.email,
     subject,
@@ -157,7 +158,7 @@ export async function ensureSupplierProfileAction(formData: FormData) {
     include: { User: true }
   });
   if (!application?.userId) {
-    throw new Error("Solicitud o usuario inválido.");
+    throw new Error("Solicitud o usuario invalido.");
   }
   await ensureSupplierProfile(application.userId, application.companyName);
   revalidatePath("/admin/partner-applications");

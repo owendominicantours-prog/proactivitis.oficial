@@ -1,4 +1,5 @@
 import { sendEmail } from "@/lib/email";
+import { buildEmailShell } from "@/lib/emailTemplates";
 
 const APP_BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") ??
@@ -33,34 +34,33 @@ export async function sendTransferReviewReminder(payload: TransferReviewReminder
     timeZone: "America/Santo_Domingo"
   }).format(payload.travelDate);
 
-  const subject = `¿Como te fue en tu traslado de ${payload.tourTitle}?`;
-  const html = `
-    <div style="font-family:Arial,sans-serif;background:#f8fafc;padding:24px;color:#0f172a;">
-      <div style="max-width:640px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:20px;overflow:hidden;">
-        <div style="padding:24px;background:#0f172a;color:#fff;">
-          <h1 style="margin:0;font-size:22px;">Tu opinion nos ayuda a mejorar</h1>
-          <p style="margin:8px 0 0;font-size:14px;color:#cbd5e1;">
-            Traslado: ${escapeHtml(payload.tourTitle)} · Fecha: ${escapeHtml(travelDateLabel)}
-          </p>
-        </div>
-        <div style="padding:24px;">
-          <p style="margin:0 0 12px;">Hola ${escapeHtml(payload.customerName || "viajero")},</p>
-          <p style="margin:0 0 16px;">
-            Ya paso la fecha de tu traslado. Queremos conocer tu experiencia para seguir mejorando nuestro servicio.
-          </p>
-          <p style="margin:0 0 20px;">
-            Dejar tu resena toma menos de 1 minuto.
-          </p>
-          <a href="${reviewUrl}" style="display:inline-block;background:#0f172a;color:#fff;text-decoration:none;padding:12px 18px;border-radius:9999px;font-weight:600;">
-            Dejar resena
-          </a>
-          <p style="margin:20px 0 0;font-size:12px;color:#64748b;">
-            Si ya enviaste tu resena, puedes ignorar este correo.
-          </p>
-        </div>
+  const subject = `Como te fue en tu traslado de ${payload.tourTitle}?`;
+  const html = buildEmailShell({
+    eyebrow: "Tu opinion cuenta",
+    title: "Ayudanos con tu resena",
+    intro: `Hola ${payload.customerName || "viajero"}, queremos saber como fue tu experiencia en el traslado ${payload.tourTitle}.`,
+    baseUrl: APP_BASE_URL,
+    tone: "primary",
+    disclaimer:
+      "Este correo fue enviado para invitarte a dejar una opinion sobre un traslado realizado con Proactivitis.",
+    footerNote: "Responder toma menos de un minuto y nos ayuda a mejorar el servicio para futuros viajeros.",
+    contentHtml: `
+      <div style="padding:20px;border-radius:18px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);">
+        <p style="margin:0;font-size:12px;letter-spacing:0.25em;text-transform:uppercase;color:#94a3b8;">Servicio completado</p>
+        <p style="margin:10px 0 0;font-size:18px;font-weight:600;color:#0f172a;">${escapeHtml(payload.tourTitle)}</p>
+        <p style="margin:8px 0 0;font-size:14px;color:#475569;">Fecha del servicio: ${escapeHtml(travelDateLabel)}</p>
       </div>
-    </div>
-  `;
+      <p style="margin:24px 0 0;font-size:14px;line-height:1.7;color:#475569;">
+        Tu opinion ayuda a otros viajeros a reservar con mas confianza y nos permite mejorar la operacion diaria.
+      </p>
+      <a
+        href="${reviewUrl}"
+        style="display:inline-block;margin-top:20px;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:14px;font-weight:700;"
+      >
+        Dejar mi resena
+      </a>
+    `
+  });
 
   return sendEmail({
     to: payload.to,

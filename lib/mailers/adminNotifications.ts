@@ -1,5 +1,6 @@
 import { PartnerApplication } from "@prisma/client";
 import { sendEmail } from "@/lib/email";
+import { buildEmailShell } from "@/lib/emailTemplates";
 import { resolveNotificationRecipients, type NotificationEmailKey } from "@/lib/notificationEmailSettings";
 
 const DEFAULT_ADMIN_EMAIL =
@@ -27,36 +28,48 @@ const escapeHtml = (value: string | number | null | undefined) => {
     .replace(/'/g, "&#39;");
 };
 
-const formatDetailList = (items: AdminDetail[]) =>
+const formatDetailRows = (items: AdminDetail[]) =>
   items
     .filter((item) => item.value !== undefined && item.value !== null && item.value !== "")
     .map(
-      (item) =>
-        `<li style="margin-bottom:6px;"><strong style="display:inline-block;width:120px;color:#0f172a;">${escapeHtml(
-          item.label
-        )}:</strong> ${escapeHtml(item.value)}</li>`
+      (item) => `
+        <tr>
+          <td style="padding:10px 0;vertical-align:top;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#94a3b8;width:165px;">
+            ${escapeHtml(item.label)}
+          </td>
+          <td style="padding:10px 0;font-size:14px;line-height:1.65;color:#0f172a;font-weight:600;">
+            ${escapeHtml(item.value)}
+          </td>
+        </tr>
+      `
     )
     .join("");
 
 const buildAdminHtml = (subject: string, summary: string, details: AdminDetail[], footer?: string) => {
-  const detailsHtml = formatDetailList(details);
+  const detailsHtml = formatDetailRows(details);
   const now = new Date().toLocaleString("es-ES", { timeZone: "America/Santo_Domingo" });
-  return `
-    <div style="font-family:'Inter',sans-serif;background:#0f172a;color:#fff;padding:24px;">
-      <div style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 20px 60px rgba(2,6,23,0.2);">
-        <div style="background:linear-gradient(135deg,#0ea5e9,#0b67d0);padding:28px 32px;">
-          <h1 style="margin:0;font-size:22px;color:#f8fbff;">${escapeHtml(subject)}</h1>
-          <p style="margin:8px 0 0;font-size:14px;color:#e2f0ff;">${escapeHtml(summary)}</p>
-        </div>
-        <div style="background:#f8fafc;padding:28px;color:#0f172a;">
-          <ul style="list-style:none;margin:0;padding:0;">${detailsHtml}</ul>
-          ${footer ? `<p style="margin-top:16px;font-size:13px;color:#475569;">${escapeHtml(footer)}</p>` : ""}
-          <p style="margin-top:18px;font-size:11px;color:#64748b;">Dashboard admin: <a href="${APP_BASE_URL}/admin" style="color:#0ea5e9;">${APP_BASE_URL}/admin</a></p>
-          <p style="margin-top:4px;font-size:11px;color:#a1a6b7;">Notificación generada ${escapeHtml(now)}</p>
-        </div>
+
+  return buildEmailShell({
+    eyebrow: "Notificacion interna",
+    title: subject,
+    intro: summary,
+    baseUrl: APP_BASE_URL,
+    tone: "dark",
+    disclaimer:
+      "Este correo fue enviado por Proactivitis para informar un evento interno del panel administrativo. Compartelo solo con el equipo autorizado.",
+    footerNote: footer ?? `Generado automaticamente el ${now}.`,
+    contentHtml: `
+      <table role="presentation" style="width:100%;border-collapse:collapse;">
+        ${detailsHtml}
+      </table>
+      <div style="margin-top:24px;padding:18px;border-radius:16px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);">
+        <p style="margin:0;font-size:12px;letter-spacing:0.28em;text-transform:uppercase;color:#94a3b8;">Panel admin</p>
+        <a href="${APP_BASE_URL}/admin" style="display:inline-block;margin-top:10px;color:#0ea5e9;font-weight:700;text-decoration:none;">
+          Abrir panel administrativo
+        </a>
       </div>
-    </div>
-  `;
+    `
+  });
 };
 
 const sendAdminEmail = async (
@@ -69,7 +82,7 @@ const sendAdminEmail = async (
   const html = buildAdminHtml(subject, summary, details, footer);
   const recipients = await resolveNotificationRecipients(key);
   if (!recipients) {
-    console.warn("No se configuró lista de correos para", key);
+    console.warn("No se configuro lista de correos para", key);
     return;
   }
   try {
@@ -114,17 +127,17 @@ export async function notifyAdminPartnerApplication({ application }: NotifyPartn
   await sendAdminEmail(
     "ADMIN_PARTNER_APPLICATION",
     `Nueva solicitud de ${application.role?.toLowerCase() ?? "partner"}`,
-    "Revisa la solicitud para aprobarla o solicitar más información.",
+    "Revisa la solicitud para aprobarla o solicitar mas informacion.",
     [
       { label: "Empresa", value: application.companyName },
       { label: "Contacto", value: `${application.contactName} (${application.contactRole})` },
       { label: "Correo", value: application.email },
-      { label: "Teléfono", value: application.phone },
-      { label: "País", value: application.country },
+      { label: "Telefono", value: application.phone },
+      { label: "Pais", value: application.country },
       { label: "Servicios", value: application.serviceTypes },
-      { label: "Descripción", value: application.description }
+      { label: "Descripcion", value: application.description }
     ],
-    `Revisa la documentación aquí: ${APP_BASE_URL}/admin/partner-applications`
+    `Revisa la documentacion aqui: ${APP_BASE_URL}/admin/partner-applications`
   );
 }
 
@@ -140,15 +153,15 @@ export async function notifyAdminContactRequest({ name, email, topic, message, b
   await sendAdminEmail(
     "ADMIN_CONTACT_REQUEST",
     "Nueva solicitud desde el formulario de contacto",
-    "Un visitante dejó un mensaje para el equipo.",
+    "Un visitante dejo un mensaje para el equipo.",
     [
       { label: "Nombre", value: name },
       { label: "Correo", value: email },
       { label: "Tema", value: topic },
-      { label: "Reserva asociada", value: bookingCode ?? "Sin código" },
+      { label: "Reserva asociada", value: bookingCode ?? "Sin codigo" },
       { label: "Mensaje", value: message }
     ],
-    `Agrégalo como ticket en Zoho: ${APP_BASE_URL}/admin/crm`
+    `Agregalo como ticket en Zoho: ${APP_BASE_URL}/admin/crm`
   );
 }
 
@@ -209,15 +222,15 @@ export async function notifyAdminBookingConfirmed(payload: NotifyBookingPayload)
   await sendAdminEmail(
     "ADMIN_BOOKING_CONFIRMED",
     `Reserva confirmada ${payload.orderCode}`,
-    "La reserva ya tiene pago confirmado y se generó el voucher.",
+    "La reserva ya tiene pago confirmado y se genero el voucher.",
     [
-      { label: "Código interno", value: payload.orderCode },
+      { label: "Codigo interno", value: payload.orderCode },
       { label: "ID de reserva", value: payload.bookingId },
       { label: "Cliente", value: payload.customerName ?? "Sin nombre" },
-      { label: "Tour", value: payload.tourTitle },
+      { label: "Servicio", value: payload.tourTitle },
       { label: "Fecha", value: payload.travelDate.toLocaleDateString("es-ES") },
       { label: "Hora", value: payload.startTime ?? "Pendiente" },
-      { label: "Flow", value: payload.flowType ?? "tour" },
+      { label: "Flujo", value: payload.flowType ?? "tour" },
       { label: "Total", value: `$ ${payload.totalAmount.toFixed(2)} USD` },
       { label: "Email cliente", value: payload.customerEmail },
       { label: "Link tour", value: `${APP_BASE_URL}/tours/${payload.tourSlug}` }
@@ -238,25 +251,22 @@ type NotifyTourModerationPayload = {
   reason?: string | null;
 };
 
-const actionLabelMap: Record<
-  TourModerationAction,
-  { subject: string; summary: string }
-> = {
+const actionLabelMap: Record<TourModerationAction, { subject: string; summary: string }> = {
   approved: {
     subject: "Tour aprobado y publicado",
-    summary: "El equipo publicó un tour aprobado."
+    summary: "El equipo publico un tour aprobado."
   },
   changes_requested: {
     subject: "Tour necesita cambios",
     summary: "Se solicitaron modificaciones antes de publicar."
   },
   sent_to_review: {
-    subject: "Tour enviado a revisión",
-    summary: "Un proveedor envió un tour para revisión."
+    subject: "Tour enviado a revision",
+    summary: "Un proveedor envio un tour para revision."
   },
   deleted: {
     subject: "Tour eliminado",
-    summary: "Un tour fue eliminado y se notificó al proveedor."
+    summary: "Un tour fue eliminado y se notifico al proveedor."
   }
 };
 
@@ -272,9 +282,9 @@ export async function notifyAdminTourModeration(payload: NotifyTourModerationPay
       { label: "Slug", value: payload.tourSlug },
       { label: "Proveedor", value: payload.supplierName ?? "Proveedor no asignado" },
       ...(payload.note ? [{ label: "Nota admin", value: payload.note }] : []),
-      ...(payload.reason ? [{ label: "Motivo eliminación", value: payload.reason }] : [])
+      ...(payload.reason ? [{ label: "Motivo eliminacion", value: payload.reason }] : [])
     ],
-    `Ver en moderación: ${APP_BASE_URL}/admin/tours`
+    `Ver en moderacion: ${APP_BASE_URL}/admin/tours`
   );
 }
 
@@ -287,25 +297,22 @@ type NotifySupplierTourPayload = {
   reason?: string | null;
 };
 
-const supplierActionCopy: Record<
-  TourModerationAction,
-  { subject: string; summary: string }
-> = {
+const supplierActionCopy: Record<TourModerationAction, { subject: string; summary: string }> = {
   approved: {
     subject: "Tu tour fue aprobado",
-    summary: "Ya está publicado y visible para los clientes."
+    summary: "Ya esta publicado y visible para los clientes."
   },
   changes_requested: {
     subject: "Cambios solicitados en tu tour",
     summary: "Revisa las observaciones y vuelve a enviar tu tour."
   },
   sent_to_review: {
-    subject: "Tu tour está en revisión",
-    summary: "Nuestro equipo revisará tu tour pronto."
+    subject: "Tu tour esta en revision",
+    summary: "Nuestro equipo revisara tu tour pronto."
   },
   deleted: {
     subject: "Tu tour fue eliminado",
-    summary: "El equipo eliminó el tour tras la revisión."
+    summary: "El equipo elimino el tour tras la revision."
   }
 };
 
@@ -319,17 +326,31 @@ export async function notifySupplierTourModeration({
 }: NotifySupplierTourPayload) {
   if (!to) return;
   const actionInfo = supplierActionCopy[action];
-  const html = buildAdminHtml(
-    actionInfo.subject,
-    actionInfo.summary,
-    [
-      { label: "Tour", value: tourTitle },
-      { label: "Slug", value: tourSlug },
-      ...(note ? [{ label: "Nota", value: note }] : []),
-      ...(reason ? [{ label: "Motivo", value: reason }] : [])
-    ],
-    `Ver tour: ${APP_BASE_URL}/tours/${tourSlug}`
-  );
+  const html = buildEmailShell({
+    eyebrow: "Moderacion de tours",
+    title: actionInfo.subject,
+    intro: actionInfo.summary,
+    baseUrl: APP_BASE_URL,
+    tone: action === "approved" ? "success" : action === "deleted" ? "warning" : "dark",
+    disclaimer:
+      "Este correo fue enviado por Proactivitis para informarte el estado actual de un tour dentro del flujo de moderacion y publicacion.",
+    footerNote: "Puedes entrar al panel supplier para revisar el historial completo del tour y responder cualquier observacion pendiente.",
+    contentHtml: `
+      <table role="presentation" style="width:100%;border-collapse:collapse;">
+        ${formatDetailRows([
+          { label: "Tour", value: tourTitle },
+          { label: "Slug", value: tourSlug },
+          ...(note ? [{ label: "Nota", value: note }] : []),
+          ...(reason ? [{ label: "Motivo", value: reason }] : [])
+        ])}
+      </table>
+      <div style="margin-top:24px;padding:18px;border-radius:16px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);">
+        <a href="${APP_BASE_URL}/supplier/tours" style="display:inline-block;color:#0ea5e9;font-weight:700;text-decoration:none;">
+          Abrir panel de tours
+        </a>
+      </div>
+    `
+  });
   try {
     await sendEmail({
       to,
@@ -341,4 +362,3 @@ export async function notifySupplierTourModeration({
     console.error("Error enviando correo al proveedor:", error);
   }
 }
-

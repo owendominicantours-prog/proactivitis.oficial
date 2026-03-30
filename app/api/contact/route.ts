@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createNotification } from "@/lib/notificationService";
 import { sendEmail } from "@/lib/email";
+import { buildEmailShell } from "@/lib/emailTemplates";
 import { notifyAdminContactRequest } from "@/lib/mailers/adminNotifications";
 
 const sanitizeField = (value: FormDataEntryValue | null): string => {
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Completa todos los campos obligatorios." }, { status: 400 });
   }
 
-  const summary = `${name} • ${email}${bookingCode ? ` • Reserva ${bookingCode}` : ""}`;
+  const summary = `${name} - ${email}${bookingCode ? ` - Reserva ${bookingCode}` : ""}`;
   await createNotification({
     type: "ADMIN_CONTACT_REQUEST",
     role: "ADMIN",
@@ -42,19 +43,27 @@ export async function POST(request: NextRequest) {
 
   void notifyAdminContactRequest({ name, email, topic, message, bookingCode: bookingCode || null });
 
-  const ackHtml = `
-    <div style="font-family:'Inter',sans-serif;background:#f8fafc;padding:32px;">
-      <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:20px;padding:24px;box-shadow:0 20px 60px rgba(15,23,42,0.1);">
-        <h1 style="margin:0 0 12px;font-size:18px;color:#0f172a;">Gracias por escribirnos</h1>
-        <p style="margin:0 0 8px;font-size:15px;color:#475569;">
-          Hola ${name || "viajero"}, recibimos tu mensaje sobre "${topic}". Nuestro equipo te contestará dentro de las próximas 24 horas.
-        </p>
-        <p style="margin:0;font-size:13px;color:#64748b;">
-          Si quieres revisar tus solicitudes puedes visitar <a href="${APP_BASE_URL}" style="color:#0ea5e9;">${APP_BASE_URL}</a>.
-        </p>
+  const ackHtml = buildEmailShell({
+    eyebrow: "Contacto Proactivitis",
+    title: "Recibimos tu mensaje",
+    intro: `Hola ${name || "viajero"}, gracias por escribirnos. Nuestro equipo revisara tu caso y respondera lo antes posible.`,
+    baseUrl: APP_BASE_URL,
+    tone: "primary",
+    disclaimer:
+      "Este correo confirma que recibimos tu solicitud de contacto. Si no reconoces este mensaje, puedes ignorarlo.",
+    footerNote: "Tiempo estimado de respuesta: dentro de las proximas 24 horas laborables.",
+    contentHtml: `
+      <div style="padding:20px;border-radius:18px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);">
+        <p style="margin:0;font-size:12px;letter-spacing:0.25em;text-transform:uppercase;color:#94a3b8;">Resumen</p>
+        <p style="margin:10px 0 0;font-size:16px;font-weight:600;color:#0f172a;">${topic}</p>
+        ${bookingCode ? `<p style="margin:8px 0 0;font-size:14px;color:#475569;">Reserva asociada: <strong>${bookingCode}</strong></p>` : ""}
+        <p style="margin:12px 0 0;font-size:14px;line-height:1.7;color:#475569;">${message}</p>
       </div>
-    </div>
-  `;
+      <p style="margin:24px 0 0;font-size:14px;color:#475569;">
+        Si necesitas agregar datos antes de nuestra respuesta, puedes escribir nuevamente desde el formulario de contacto oficial.
+      </p>
+    `
+  });
 
   void sendEmail({
     to: email,
@@ -62,7 +71,7 @@ export async function POST(request: NextRequest) {
     html: ackHtml,
     from: NOTIFY_FROM_EMAIL
   }).catch((error) => {
-    console.warn("No se pudo enviar la confirmación al contacto", error);
+    console.warn("No se pudo enviar la confirmacion al contacto", error);
   });
 
   return NextResponse.json({ success: true });
