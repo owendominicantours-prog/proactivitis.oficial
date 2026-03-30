@@ -64,8 +64,11 @@ const buildRequestInfoHtml = ({
     `
   });
 
-export async function POST(request: NextRequest, context: { params?: { bookingId?: string } }) {
-  const { params } = context;
+export async function POST(
+  request: NextRequest,
+  context: { params: Promise<{ bookingId: string }> }
+) {
+  const params = await context.params;
   const bookingId = params?.bookingId;
   if (!bookingId) {
     return NextResponse.json({ error: "ID de reserva faltante." }, { status: 400 });
