@@ -88,10 +88,12 @@ export default function LoginPage() {
           </Link>
         </div>
         <div className="p-8">
-        <h1 className="text-2xl font-semibold text-slate-900">Iniciar sesion</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-600">
-          Accede a tu cuenta para revisar reservas, pagos, notificaciones y herramientas segun tu perfil dentro de Proactivitis.
-        </p>
+        <div className="text-center">
+          <h1 className="text-2xl font-semibold text-slate-900">Iniciar sesion</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Accede a tu cuenta para revisar reservas, pagos, notificaciones y herramientas segun tu perfil dentro de Proactivitis.
+          </p>
+        </div>
         <div className="mt-6 space-y-3">
           <GoogleAuthButton label="Entrar con Google" callbackUrl="/portal" />
           <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-slate-400">
