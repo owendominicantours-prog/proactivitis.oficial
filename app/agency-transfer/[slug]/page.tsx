@@ -68,7 +68,7 @@ export default async function AgencyTransferLandingPage({
   }
 
   return (
-    <div className="travel-surface min-h-screen bg-gradient-to-b from-[#E2FFF8] via-white to-[#F8FAFC]">
+    <div className="travel-surface min-h-screen">
       <div className="mx-auto max-w-5xl px-4 py-10">
         <section className="rounded-[36px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a,#1e293b)] px-6 py-8 text-white shadow-sm">
           <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-sky-200">AgencyPro Transfer</p>

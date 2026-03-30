@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DynamicImage } from "@/components/shared/DynamicImage";
+import { formatDurationDisplay } from "@/lib/formatDuration";
 import type { Locale } from "@/lib/translations";
 import type { TourMarketIntent } from "@/lib/tourMarketVariants";
 import { buildTourMarketIntentCards, buildTourMarketIntentFaqs } from "@/lib/tourMarketVariants";
@@ -43,6 +44,10 @@ export default function TourMarketVariantLanding({ locale, tour, intent, transfe
 
   const subtitle = intent.angle[locale];
   const description = tour.shortDescription || tour.description;
+  const durationLabel = formatDurationDisplay(
+    tour.duration,
+    locale === "es" ? "Duración variable" : locale === "fr" ? "Duree variable" : "Flexible duration"
+  );
   const intentCards = buildTourMarketIntentCards(intent, locale, tour.title, allHotels.length);
   const intentFaqs = buildTourMarketIntentFaqs(intent, locale, tour.title);
 
@@ -57,7 +62,7 @@ export default function TourMarketVariantLanding({ locale, tour, intent, transfe
             <p className="text-sm text-slate-500">{description}</p>
             <div className="flex flex-wrap gap-3">
               <span className="rounded-full border border-slate-200 bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700">
-                {locale === "es" ? "Duracion" : locale === "fr" ? "Duree" : "Duration"}: {tour.duration}
+                {locale === "es" ? "Duracion" : locale === "fr" ? "Duree" : "Duration"}: {durationLabel}
               </span>
               <span className="rounded-full border border-emerald-300 bg-emerald-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
                 {locale === "es" ? "Desde" : locale === "fr" ? "A partir de" : "From"} USD {Math.round(tour.price)}

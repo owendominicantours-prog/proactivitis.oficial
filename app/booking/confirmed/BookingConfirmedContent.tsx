@@ -5,6 +5,7 @@ import ContactoProveedor from "@/components/booking/ContactoProveedor";
 import Eticket from "@/components/booking/Eticket";
 import BookingEmailDispatcher from "@/components/booking/BookingEmailDispatcher";
 import { ItineraryTimeline } from "@/components/itinerary/ItineraryTimeline";
+import { formatDurationDisplay } from "@/lib/formatDuration";
 import { BookingConfirmationData } from "./helpers";
 import { useTranslation } from "../../../context/LanguageProvider";
 
@@ -57,7 +58,7 @@ export function BookingConfirmedContent({
     : t("booking.confirmation.labels.duration");
   const serviceValue = isTransfer
     ? t("booking.confirmation.values.transferService")
-    : tour.duration || t("booking.confirmation.values.durationPending");
+    : formatDurationDisplay(tour.duration, t("booking.confirmation.values.durationPending"));
   const pickupLabel = t("booking.confirmation.labels.meetingPoint");
   const pickupValue = isTransfer
     ? booking.pickup ?? t("booking.confirmation.values.defaultPickup")

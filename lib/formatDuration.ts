@@ -34,14 +34,26 @@ export function formatDurationDisplay(value?: string | null, fallback = "Duraci�
         return String(durationValue);
       }
     } catch {
-      return raw;
+      return sanitizeDurationText(raw);
     }
   }
 
-  return raw;
+  return sanitizeDurationText(raw);
 }
 
 function normalizeUnit(value: string) {
-  const normalized = value.trim().toLowerCase();
+  const normalized = sanitizeDurationText(value).toLowerCase();
   return UNIT_LABELS[normalized] ?? value.trim();
+}
+
+function sanitizeDurationText(value: string) {
+  return value
+    .replaceAll("DuraciÃ³n", "Duración")
+    .replaceAll("duraciÃ³n", "duración")
+    .replaceAll("dÃ­a", "día")
+    .replaceAll("dÃ­as", "días")
+    .replaceAll("Ã­", "í")
+    .replaceAll("Ã³", "ó")
+    .replaceAll("Ã¡", "á")
+    .trim();
 }

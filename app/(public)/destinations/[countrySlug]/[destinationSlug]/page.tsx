@@ -7,6 +7,7 @@ import { TourFilters } from "@/components/public/TourFilters";
 import type { DurationOption } from "@/components/public/TourFilters";
 import { buildTourFilter, type TourSearchParams } from "@/lib/filterBuilder";
 import { getZoneInfo } from "@/lib/destinationInfo";
+import { formatDurationDisplay } from "@/lib/formatDuration";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -100,7 +101,7 @@ export default async function DestinationPage({
     new Set(tours.map((t) => t.duration).filter(Boolean))
   ).map((duration) => ({
     value: duration,
-    label: duration
+    label: formatDurationDisplay(duration)
   }));
 
   const zoneInfo = getZoneInfo(resolvedParams.countrySlug, resolvedParams.destinationSlug);
@@ -215,7 +216,7 @@ export default async function DestinationPage({
               >
                 <h3 className="text-lg font-semibold text-slate-900">{tour.title}</h3>
                 <p className="text-xs text-slate-500">
-                  Desde ${tour.price.toFixed(0)}  {tour.duration ?? "Duracion pendiente"}
+                  Desde ${tour.price.toFixed(0)} · {formatDurationDisplay(tour.duration, "Duración pendiente")}
                 </p>
               </Link>
             ))}

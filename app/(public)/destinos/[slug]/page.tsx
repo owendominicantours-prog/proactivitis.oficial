@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getDestinationBySlug, getAllDestinationSlugs, getToursByDestinationSlug } from "@/lib/destinations";
+import { formatDurationDisplay } from "@/lib/formatDuration";
 
 type Params = {
   params: Promise<{ slug: string }>;
@@ -139,7 +140,7 @@ export default async function DestinationPage({ params }: Params) {
                   </div>
                   <h3 className="text-2xl font-semibold text-slate-900">{tour.title}</h3>
                   <div className="text-sm text-slate-500">
-                    {tour.duration}
+                    {formatDurationDisplay(tour.duration)}
                   </div>
                   {tour.departureDestination?.name ? (
                     <p className="text-sm font-semibold text-slate-900">
