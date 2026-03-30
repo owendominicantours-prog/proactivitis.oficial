@@ -11,6 +11,69 @@ type QuoteVehicle = {
   imageUrl?: string | null;
 };
 
+const ZONE_ROUTE_FALLBACKS: Record<string, string[]> = {
+  bayahibe: ["la-romana"]
+};
+
+async function findRouteWithFallback(originZoneId: string, destinationZoneId: string, originZoneSlug?: string, destinationZoneSlug?: string) {
+  const exactZoneIds = [originZoneId, destinationZoneId].sort((a, b) => a.localeCompare(b));
+  const exactRoute = await prisma.transferRoute.findFirst({
+    where: {
+      OR: [{ zoneAId: exactZoneIds[0], zoneBId: exactZoneIds[1] }, { zoneAId: exactZoneIds[1], zoneBId: exactZoneIds[0] }]
+    },
+    include: {
+      prices: { include: { vehicle: true } },
+      overrides: true
+    }
+  });
+
+  if (exactRoute?.prices?.length) return exactRoute;
+
+  const originFallbackSlugs = [originZoneSlug, ...(originZoneSlug ? ZONE_ROUTE_FALLBACKS[originZoneSlug] ?? [] : [])].filter(Boolean) as string[];
+  const destinationFallbackSlugs = [destinationZoneSlug, ...(destinationZoneSlug ? ZONE_ROUTE_FALLBACKS[destinationZoneSlug] ?? [] : [])].filter(Boolean) as string[];
+
+  if (originFallbackSlugs.length === 0 || destinationFallbackSlugs.length === 0) {
+    return null;
+  }
+
+  const candidateZones = await prisma.transferZoneV2.findMany({
+    where: {
+      slug: {
+        in: Array.from(new Set([...originFallbackSlugs, ...destinationFallbackSlugs]))
+      }
+    },
+    select: { id: true, slug: true }
+  });
+  const zoneIdBySlug = new Map(candidateZones.map((zone) => [zone.slug, zone.id]));
+
+  for (const originSlugCandidate of originFallbackSlugs) {
+    for (const destinationSlugCandidate of destinationFallbackSlugs) {
+      const candidateOriginId =
+        originSlugCandidate === originZoneSlug ? originZoneId : zoneIdBySlug.get(originSlugCandidate);
+      const candidateDestinationId =
+        destinationSlugCandidate === destinationZoneSlug ? destinationZoneId : zoneIdBySlug.get(destinationSlugCandidate);
+
+      if (!candidateOriginId || !candidateDestinationId || candidateOriginId === candidateDestinationId) {
+        continue;
+      }
+
+      const pair = [candidateOriginId, candidateDestinationId].sort((a, b) => a.localeCompare(b));
+      const route = await prisma.transferRoute.findFirst({
+        where: {
+          OR: [{ zoneAId: pair[0], zoneBId: pair[1] }, { zoneAId: pair[1], zoneBId: pair[0] }]
+        },
+        include: {
+          prices: { include: { vehicle: true } },
+          overrides: true
+        }
+      });
+      if (route?.prices?.length) return route;
+    }
+  }
+
+  return null;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const payload = await request.json();
@@ -35,15 +98,13 @@ export async function POST(request: NextRequest) {
     }
 
     const [zoneAId, zoneBId] = [origin.zoneId, destination.zoneId].sort((a, b) => a.localeCompare(b));
-    const route = await prisma.transferRoute.findFirst({
-      where: {
-        OR: [{ zoneAId, zoneBId }, { zoneAId: zoneBId, zoneBId: zoneAId }]
-      },
-      include: {
-        prices: { include: { vehicle: true } },
-        overrides: true
-      }
-    });
+    const route =
+      (await findRouteWithFallback(
+        zoneAId,
+        zoneBId,
+        origin.zone?.slug ?? undefined,
+        destination.zone?.slug ?? undefined
+      ));
 
     if (!route || !route.prices.length) {
       return NextResponse.json({ error: "No encontramos una ruta disponible para ese par." }, { status: 404 });
