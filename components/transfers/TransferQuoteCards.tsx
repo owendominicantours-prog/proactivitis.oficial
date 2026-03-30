@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Locale, translate } from "@/lib/translations";
 
 type QuoteVehicle = {
@@ -139,8 +139,11 @@ export default function TransferQuoteCards({
   priceFrom,
   locale = "es"
 }: TransferQuoteCardsProps) {
-  const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string | number>) =>
-    translate(locale, key, replacements);
+  const t = useCallback(
+    (key: Parameters<typeof translate>[1], replacements?: Record<string, string | number>) =>
+      translate(locale, key, replacements),
+    [locale]
+  );
   const [passengers, setPassengers] = useState(defaultPassengers);
   const [departureDate, setDepartureDate] = useState(defaultDeparture.slice(0, 10));
   const [departureTime, setDepartureTime] = useState(defaultDeparture.slice(11, 16));
