@@ -19,9 +19,10 @@ export const notificationGroupLabel = (value: Date) => {
 
 export const sanitizeNotificationText = (value: string) =>
   value
-    .replace(/\u0416\u042C/g, "\u00B7")
+    .replace(/Â·|â€¢|Ð–Ñš/g, " - ")
+    .replace(/\u0416\u042C/g, " - ")
     .replace(/[\u200B-\u200D\uFEFF]/g, "")
-    .replace(/[^\w0-9\u00B7.,:;!?()\s-]/g, "")
+    .replace(/[^\p{L}\p{N}.,:;!?()/%\s-]/gu, "")
     .replace(/\s+/g, " ")
     .trim();
 

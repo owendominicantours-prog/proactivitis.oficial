@@ -1,14 +1,13 @@
-export const dynamic = "force-dynamic"; // Mostrar alertas vivas del supplier.
+export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { getServerSession } from "next-auth";
-import { getNotificationsForRecipient, parseNotificationMetadata } from "@/lib/notificationService";
-import { markNotificationReadAction } from "@/app/(dashboard)/notifications/actions";
-import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
-import type { NotificationType } from "@/lib/types/notificationTypes";
-import { prisma } from "@/lib/prisma";
-import { buildBookingDetailRoute } from "@/lib/bookingRoutes";
 import { authOptions } from "@/lib/auth";
+import { buildBookingDetailRoute } from "@/lib/bookingRoutes";
+import { markNotificationReadAction } from "@/app/(dashboard)/notifications/actions";
+import { prisma } from "@/lib/prisma";
+import { getNotificationDisplayProps, type NotificationType } from "@/lib/types/notificationTypes";
+import { getNotificationsForRecipient, parseNotificationMetadata } from "@/lib/notificationService";
 
 const formatDate = (value: Date) =>
   new Intl.DateTimeFormat("es-ES", {
@@ -86,6 +85,7 @@ export default async function SupplierNotificationsPage() {
                 const travelDateLabel = new Intl.DateTimeFormat("es-ES", {
                   dateStyle: "medium"
                 }).format(booking.travelDate);
+
                 return (
                   <div className="mt-3 space-y-1 px-3 text-xs text-slate-600">
                     <p className="font-semibold text-slate-800">{booking.Tour?.title ?? "Tour sin título"}</p>
@@ -146,7 +146,7 @@ export default async function SupplierNotificationsPage() {
                         </button>
                       </form>
                     ) : (
-                      <span className="text-emerald-500">Leída</span>
+                      <span className="text-emerald-600">Leída</span>
                     )}
                   </div>
                 </div>

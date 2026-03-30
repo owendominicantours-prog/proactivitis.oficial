@@ -1,10 +1,10 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { prisma } from "@/lib/prisma";
 import { requiresCancellationRequest } from "@/lib/bookings";
-import { BookingStatus, BookingStatusEnum, BookingSourceEnum } from "@/lib/types/booking";
 import { createNotification } from "@/lib/notificationService";
+import { BookingStatus, BookingStatusEnum, BookingSourceEnum } from "@/lib/types/booking";
 
 const revalidate = () => {
   revalidatePath("/admin/bookings");
@@ -21,7 +21,7 @@ const formatDateLabel = (value?: Date | null) => {
 };
 
 const buildBookingSummary = (title: string, travelDate: Date, pax: number) =>
-  `${title} · ${pax} pax · ${formatDateLabel(travelDate)}`;
+  `${title} - ${pax} pax - ${formatDateLabel(travelDate)}`;
 
 const getRoleLabel = (role: string) => {
   switch (role) {
@@ -36,7 +36,6 @@ const getRoleLabel = (role: string) => {
   }
 };
 
-// Notificaciones: ADMIN_BOOKING_CANCELLED, SUPPLIER_BOOKING_CANCELLED, AGENCY_BOOKING_CANCELLED
 const notifyCancellation = async (bookingId: string, role: string, reason?: string) => {
   const current = await prisma.booking.findUnique({
     where: { id: bookingId },
@@ -56,20 +55,24 @@ const notifyCancellation = async (bookingId: string, role: string, reason?: stri
       }
     }
   });
+
   if (!current || !current.Tour) {
     return;
   }
-  const tourTitle = current.Tour.title;
-  const summary = buildBookingSummary(tourTitle, current.travelDate, (current.paxAdults ?? 0) + (current.paxChildren ?? 0));
-  const reasonLabel = reason ? ` • Motivo: ${reason}` : "";
 
-  const adminMessage = `Reserva ${summary} cancelada por ${getRoleLabel(role)}${reasonLabel}.`;
+  const tourTitle = current.Tour.title;
+  const summary = buildBookingSummary(
+    tourTitle,
+    current.travelDate,
+    (current.paxAdults ?? 0) + (current.paxChildren ?? 0)
+  );
+  const reasonLabel = reason ? ` - Motivo: ${reason}` : "";
 
   await createNotification({
     type: "ADMIN_BOOKING_CANCELLED",
     role: "ADMIN",
     title: "Reserva cancelada",
-    message: adminMessage,
+    message: `Reserva ${summary} cancelada por ${getRoleLabel(role)}${reasonLabel}.`,
     bookingId,
     metadata: {
       tourId: current.Tour.id,
@@ -91,7 +94,7 @@ const notifyCancellation = async (bookingId: string, role: string, reason?: stri
     });
   }
 
-  if (current.source === BookingSourceEnum.AGENCY || role === "AGENCY") {
+  if ((current.source === BookingSourceEnum.AGENCY || role === "AGENCY") && current.userId) {
     await createNotification({
       type: "AGENCY_BOOKING_CANCELLED",
       role: "AGENCY",
@@ -100,7 +103,8 @@ const notifyCancellation = async (bookingId: string, role: string, reason?: stri
       bookingId,
       metadata: {
         tourId: current.Tour.id
-      }
+      },
+      recipientUserId: current.userId
     });
   }
 };
@@ -110,23 +114,28 @@ const updateCancellation = async (bookingId: string, status: BookingStatus, role
   if (!booking) {
     throw new Error("Reserva no encontrada.");
   }
-  const payload: Record<string, any> = {
+
+  const payload: Record<string, unknown> = {
     status,
     cancellationByRole: role,
     cancellationAt: new Date()
   };
+
   if (reason) {
     payload.cancellationReason = reason;
   } else {
     payload.cancellationReason = booking.cancellationReason ?? null;
   }
+
   await prisma.booking.update({
     where: { id: bookingId },
     data: payload
   });
+
   if (status === BookingStatusEnum.CANCELLED) {
     await notifyCancellation(bookingId, role, reason ?? booking.cancellationReason ?? undefined);
   }
+
   revalidate();
 };
 

@@ -45,32 +45,32 @@ const toneTextClass: Record<NotificationDisplayTone, string> = {
 };
 
 const toneIcon: Record<NotificationDisplayTone, ReactNode> = {
-  primary: createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-sky-500" }, "✱"),
-  success: createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-emerald-500" }, "✔"),
-  warning: createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-amber-500" }, "⚠"),
-  danger: createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-rose-500" }, "✖"),
-  info: createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-slate-500" }, "ℹ")
+  primary: createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-sky-500" }, "*"),
+  success: createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-emerald-500" }, "+"),
+  warning: createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-amber-500" }, "!"),
+  danger: createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-rose-500" }, "x"),
+  info: createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-slate-500" }, "i")
 };
 
 const createConfig = (label: string, tone: NotificationDisplayTone, icon?: ReactNode): NotificationDisplayConfig => ({
   icon: icon ?? toneIcon[tone],
   label,
   textClass: toneTextClass[tone],
-  badgeClass: `border-slate-200 bg-slate-50 text-slate-600`
+  badgeClass: "border-slate-200 bg-slate-50 text-slate-600"
 });
 
 const defaultDisplay: NotificationDisplayConfig = {
   icon: toneIcon.primary,
   label: "Notificación",
   textClass: toneTextClass.primary,
-  badgeClass: `border-slate-200 bg-slate-50 text-slate-600`
+  badgeClass: "border-slate-200 bg-slate-50 text-slate-600"
 };
 
 export const notificationTypeConfig: Record<NotificationType, NotificationDisplayConfig> = {
   ADMIN_BOOKING_CREATED: createConfig(
     "Nueva reserva",
     "primary",
-    createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-sky-500" }, "🎫")
+    createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-sky-500" }, "R")
   ),
   ADMIN_BOOKING_CANCELLED: createConfig("Reserva cancelada", "danger"),
   ADMIN_BOOKING_MODIFIED: createConfig("Reserva modificada", "info"),
@@ -78,7 +78,7 @@ export const notificationTypeConfig: Record<NotificationType, NotificationDispla
   ADMIN_SUPPLIER_PAYOUT_SENT: createConfig(
     "Pago al proveedor",
     "success",
-    createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-emerald-500" }, "💰")
+    createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-emerald-500" }, "$")
   ),
   ADMIN_PAYMENT_FAILED: createConfig("Pago fallido", "warning"),
   ADMIN_SUPPLIER_LOW_AVAILABILITY: createConfig("Baja disponibilidad", "warning"),
@@ -88,7 +88,7 @@ export const notificationTypeConfig: Record<NotificationType, NotificationDispla
   SUPPLIER_BOOKING_CREATED: createConfig(
     "Nueva reserva",
     "primary",
-    createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-sky-500" }, "🎫")
+    createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-sky-500" }, "R")
   ),
   SUPPLIER_BOOKING_CANCELLED: createConfig("Reserva cancelada", "danger"),
   SUPPLIER_BOOKING_MODIFIED: createConfig("Reserva actualizada", "info"),
@@ -97,13 +97,13 @@ export const notificationTypeConfig: Record<NotificationType, NotificationDispla
   SUPPLIER_ACCOUNT_STATUS: createConfig(
     "Estado de cuenta",
     "success",
-    createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-slate-500" }, "💼")
+    createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-slate-500" }, "C")
   ),
   SUPPLIER_TOUR_REMOVED: createConfig("Tour eliminado", "danger"),
   AGENCY_BOOKING_CREATED: createConfig(
     "Reserva creada",
     "primary",
-    createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-sky-500" }, "🎫")
+    createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-sky-500" }, "R")
   ),
   AGENCY_BOOKING_CANCELLED: createConfig("Reserva cancelada", "danger"),
   AGENCY_BOOKING_MODIFIED: createConfig("Reserva modificada", "info"),

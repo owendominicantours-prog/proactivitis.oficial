@@ -1,12 +1,11 @@
-export const dynamic = "force-dynamic"; // Actualizar alertas de la agency.
+export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { getServerSession } from "next-auth";
-import { getNotificationsForRecipient, parseNotificationMetadata } from "@/lib/notificationService";
-import { markNotificationReadAction } from "@/app/(dashboard)/notifications/actions";
-import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
-import type { NotificationType } from "@/lib/types/notificationTypes";
 import { authOptions } from "@/lib/auth";
+import { markNotificationReadAction } from "@/app/(dashboard)/notifications/actions";
+import { getNotificationDisplayProps, type NotificationType } from "@/lib/types/notificationTypes";
+import { getNotificationsForRecipient, parseNotificationMetadata } from "@/lib/notificationService";
 
 const formatDate = (value: Date) =>
   new Intl.DateTimeFormat("es-ES", {
@@ -27,12 +26,15 @@ export default async function AgencyNotificationsPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Notificaciones</p>
             <h1 className="text-2xl font-semibold text-slate-900">Alertas para agencias</h1>
           </div>
-          <Link href="/agency/bookings" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300">
+          <Link
+            href="/agency/bookings"
+            className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300"
+          >
             Ver reservas
           </Link>
         </div>
         <p className="text-sm text-slate-500">
-          Aquí verás comisiones, promociones y alertas financieras relacionadas con el equipo de agencia.
+          Aquí verás comisiones, promociones y alertas operativas relacionadas con tu cuenta de agencia.
         </p>
       </section>
 
@@ -44,6 +46,7 @@ export default async function AgencyNotificationsPage() {
             const notificationType = notification.type as NotificationType | undefined;
             const display = getNotificationDisplayProps(notificationType);
             const message = notification.message ?? notification.body ?? "";
+
             return (
               <article key={notification.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
@@ -75,12 +78,15 @@ export default async function AgencyNotificationsPage() {
                     <form action={markNotificationReadAction} method="post" className="flex items-center gap-2">
                       <input type="hidden" name="notificationId" value={notification.id} />
                       <input type="hidden" name="redirectTo" value={redirectUrl} />
-                      <button type="submit" className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-slate-400">
+                      <button
+                        type="submit"
+                        className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-slate-400"
+                      >
                         Marcar como leída
                       </button>
                     </form>
                   ) : (
-                    <span className="text-emerald-500">Leída</span>
+                    <span className="text-emerald-600">Leída</span>
                   )}
                 </div>
               </article>

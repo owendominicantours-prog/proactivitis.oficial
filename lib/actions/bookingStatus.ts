@@ -1,9 +1,9 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { BookingSourceEnum, BookingStatus, BookingStatusEnum } from "@/lib/types/booking";
+import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/notificationService";
+import { BookingSourceEnum, BookingStatus, BookingStatusEnum } from "@/lib/types/booking";
 
 const allowedStatuses = [
   BookingStatusEnum.CONFIRMED,
@@ -11,6 +11,7 @@ const allowedStatuses = [
   BookingStatusEnum.CANCELLED,
   BookingStatusEnum.COMPLETED
 ] as const;
+
 type AllowedBookingStatus = (typeof allowedStatuses)[number];
 
 const formatDateLabel = (value?: Date | null) => {
@@ -21,7 +22,7 @@ const formatDateLabel = (value?: Date | null) => {
 };
 
 const buildBookingSummary = (title: string, travelDate: Date, pax: number) =>
-  `${title} · ${pax} pax · ${formatDateLabel(travelDate)}`;
+  `${title} - ${pax} pax - ${formatDateLabel(travelDate)}`;
 
 const notifyModification = async (bookingId: string, status: BookingStatus) => {
   const current = await prisma.booking.findUnique({
@@ -42,10 +43,16 @@ const notifyModification = async (bookingId: string, status: BookingStatus) => {
       }
     }
   });
+
   if (!current || !current.Tour) {
     return;
   }
-  const summary = buildBookingSummary(current.Tour.title, current.travelDate, (current.paxAdults ?? 0) + (current.paxChildren ?? 0));
+
+  const summary = buildBookingSummary(
+    current.Tour.title,
+    current.travelDate,
+    (current.paxAdults ?? 0) + (current.paxChildren ?? 0)
+  );
   const statusLabel = status.replace("_", " ").toLowerCase();
 
   await createNotification({
@@ -75,7 +82,7 @@ const notifyModification = async (bookingId: string, status: BookingStatus) => {
     });
   }
 
-  if (current.source === BookingSourceEnum.AGENCY) {
+  if (current.source === BookingSourceEnum.AGENCY && current.userId) {
     await createNotification({
       type: "AGENCY_BOOKING_MODIFIED",
       role: "AGENCY",
@@ -85,12 +92,12 @@ const notifyModification = async (bookingId: string, status: BookingStatus) => {
       metadata: {
         tourId: current.Tour.id,
         status
-      }
+      },
+      recipientUserId: current.userId
     });
   }
 };
 
-// Notificaciones: ADMIN_BOOKING_MODIFIED, SUPPLIER_BOOKING_MODIFIED, AGENCY_BOOKING_MODIFIED
 export async function updateBookingStatus(formData: FormData) {
   const bookingId = formData.get("bookingId");
   const status = formData.get("status");

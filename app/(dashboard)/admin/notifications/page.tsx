@@ -56,7 +56,7 @@ export default async function AdminNotificationsPage({ searchParams }: Props) {
           </Link>
         </div>
         <p className="text-sm text-slate-500">
-          Gestiona alertas del equipo, aplica filtros y marca como leidas sin salir del panel.
+          Gestiona alertas del equipo, aplica filtros y marca como leídas sin salir del panel.
         </p>
       </section>
 
@@ -66,11 +66,11 @@ export default async function AdminNotificationsPage({ searchParams }: Props) {
           <p className="mt-2 text-3xl font-semibold text-slate-900">{notifications.length}</p>
         </article>
         <article className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-amber-700">No leidas</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-amber-700">No leídas</p>
           <p className="mt-2 text-3xl font-semibold text-amber-900">{unreadCount}</p>
         </article>
         <article className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-emerald-700">Leidas</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-emerald-700">Leídas</p>
           <p className="mt-2 text-3xl font-semibold text-emerald-900">{readCount}</p>
         </article>
       </section>
@@ -82,7 +82,7 @@ export default async function AdminNotificationsPage({ searchParams }: Props) {
             <input
               name="q"
               defaultValue={params.q ?? ""}
-              placeholder="Titulo o mensaje"
+              placeholder="Título o mensaje"
               className="mt-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
             />
           </label>
@@ -94,8 +94,8 @@ export default async function AdminNotificationsPage({ searchParams }: Props) {
               className="mt-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
             >
               <option value="all">Todas</option>
-              <option value="unread">No leidas</option>
-              <option value="read">Leidas</option>
+              <option value="unread">No leídas</option>
+              <option value="read">Leídas</option>
             </select>
           </label>
           <div className="flex items-end gap-2">
@@ -155,11 +155,11 @@ export default async function AdminNotificationsPage({ searchParams }: Props) {
                         type="submit"
                         className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-slate-400"
                       >
-                        Marcar como leida
+                        Marcar como leída
                       </button>
                     </form>
                   ) : (
-                    <span className="text-emerald-600">Leida</span>
+                    <span className="text-emerald-600">Leída</span>
                   )}
                 </div>
               </article>
