@@ -274,6 +274,121 @@ const drafts: BlogDraft[] = [
 <p>Una plataforma pensada para agencias del Caribe debe reducir friccion, mejorar la presentacion comercial y facilitar la operacion diaria.</p>
 <p><a href="/agency-program">Ver programa para agencias</a> | <a href="/traslado">Explorar traslados</a></p>
 `
+  },
+  {
+    title: "Mayorista de excursiones y traslados para agencias de Argentina que venden Punta Cana",
+    excerpt:
+      "Como puede trabajar una agencia de Argentina con un mayorista de excursiones y traslados en Punta Cana con mas control, velocidad y soporte.",
+    coverImage: COVER_IMAGES.marinarium,
+    contentHtml: `
+<h1>Mayorista de excursiones y traslados para agencias de Argentina que venden Punta Cana</h1>
+<p>Argentina sigue siendo un mercado muy activo para el Caribe. Muchas agencias venden Punta Cana todo el ano, pero no todas tienen una estructura realmente comoda para operar excursiones y traslados desde el destino.</p>
+<h2>Que valora una agencia argentina</h2>
+<ul>
+  <li>Respuesta rapida para cerrar ventas.</li>
+  <li>Reservas claras y sin exceso de pasos manuales.</li>
+  <li>Soporte cuando el cliente ya llego al destino.</li>
+  <li>Herramientas para vender por link o desde cuenta interna.</li>
+  <li>Una operacion que combine tours y traslados.</li>
+</ul>
+<h2>Por que un mayorista especializado ayuda mas</h2>
+<p>Cuando la agencia vende Punta Cana con frecuencia, no le alcanza con un simple proveedor. Necesita una estructura que ayude a reservar, vender y resolver cambios sin depender de procesos lentos.</p>
+<h2>Conclusion</h2>
+<p>Para una agencia de Argentina, trabajar con un mayorista de excursiones y traslados bien organizado puede mejorar tanto la velocidad comercial como la experiencia final del cliente.</p>
+<p><a href="/agency-program">Ver programa para agencias</a> | <a href="/agency-partners">Solicitar acceso</a></p>
+`
+  },
+  {
+    title: "Mayorista de excursiones y traslados para agencias de Chile que venden Punta Cana",
+    excerpt:
+      "Guia para agencias de Chile que necesitan vender tours y traslados de Punta Cana con una plataforma mas util y una operacion mejor conectada.",
+    coverImage: COVER_IMAGES.saona,
+    contentHtml: `
+<h1>Mayorista de excursiones y traslados para agencias de Chile que venden Punta Cana</h1>
+<p>Las agencias de Chile que venden Caribe necesitan rapidez, soporte y orden. Punta Cana es un destino muy fuerte, pero tambien exige una buena estructura operacional para trabajar excursiones, traslados y cambios en tiempo real.</p>
+<h2>Que necesita una agencia chilena</h2>
+<ul>
+  <li>Productos faciles de reservar.</li>
+  <li>Control de traslados y excursiones.</li>
+  <li>Panel con reservas, estados y fechas.</li>
+  <li>Posibilidad de compartir links con precio propio.</li>
+  <li>Soporte cuando hay ajustes de ultimo momento.</li>
+</ul>
+<h2>Una venta mas moderna</h2>
+<p>Si la agencia puede crear reservas directas y tambien vender por enlaces comerciales, gana flexibilidad. Eso es especialmente util en equipos comerciales que trabajan mucho por WhatsApp y seguimiento personalizado.</p>
+<h2>Conclusion</h2>
+<p>Para una agencia de Chile que vende Punta Cana, una plataforma con tours, traslados y herramientas comerciales puede marcar una diferencia muy concreta.</p>
+<p><a href="/agency-program">Ver programa para agencias</a> | <a href="/agency-partners">Aplicar</a></p>
+`
+  },
+  {
+    title: "Mayorista de excursiones y traslados para agencias de Peru que venden Punta Cana",
+    excerpt:
+      "Por que una agencia de Peru que vende Punta Cana necesita una plataforma con producto, soporte y herramientas comerciales reales.",
+    coverImage: COVER_IMAGES.whales,
+    contentHtml: `
+<h1>Mayorista de excursiones y traslados para agencias de Peru que venden Punta Cana</h1>
+<p>Las agencias de Peru que trabajan Caribe suelen necesitar mucha claridad comercial. Punta Cana vende bien, pero para operarla mejor hace falta una base de tours, traslados y soporte que no dependa solo de mensajes manuales.</p>
+<h2>Que resuelve un buen mayorista</h2>
+<ul>
+  <li>Ayuda a vender mas rapido.</li>
+  <li>Da mejor seguimiento a reservas y clientes.</li>
+  <li>Reduce errores de operacion.</li>
+  <li>Permite trabajar con comision o con margen.</li>
+  <li>Mejora la experiencia del cliente final.</li>
+</ul>
+<h2>Punta Cana como destino que exige coordinacion</h2>
+<p>Entre vuelos, hoteles, excursiones y traslados, el destino requiere coordinacion real. Una plataforma bien pensada le quita peso operativo a la agencia.</p>
+<h2>Conclusion</h2>
+<p>Para una agencia de Peru, contar con un mayorista de excursiones y traslados bien estructurado puede ser una ventaja fuerte para vender Punta Cana con mas consistencia.</p>
+<p><a href="/agency-program">Conocer el programa</a> | <a href="/agency-partners">Solicitar acceso</a></p>
+`
+  },
+  {
+    title: "Plataforma para agencias de Estados Unidos que venden tours y traslados en Punta Cana",
+    excerpt:
+      "Que necesita una agencia de Estados Unidos para vender Punta Cana con una plataforma agil, confiable y util para operar reservas reales.",
+    coverImage: COVER_IMAGES.santoDomingo,
+    contentHtml: `
+<h1>Plataforma para agencias de Estados Unidos que venden tours y traslados en Punta Cana</h1>
+<p>Muchas agencias de Estados Unidos venden Punta Cana de forma constante, pero eso no significa que siempre tengan una estructura comoda para operar tours y traslados desde el destino. La demanda existe; la pregunta es si la herramienta comercial esta a la altura.</p>
+<h2>Lo que una agencia de Estados Unidos suele priorizar</h2>
+<ul>
+  <li>Rapidez en la reserva.</li>
+  <li>Presentacion profesional al cliente.</li>
+  <li>Capacidad de trabajar precios y margenes.</li>
+  <li>Soporte cuando hay cambios operativos.</li>
+  <li>Control de tours y traslados dentro del mismo sistema.</li>
+</ul>
+<h2>Por que eso importa en Punta Cana</h2>
+<p>Porque el destino no se vende solo por catalogo. Tambien se opera. Y cuando una agencia puede manejar reserva directa, links comerciales y seguimiento en un solo entorno, gana mucho tiempo.</p>
+<h2>Conclusion</h2>
+<p>Si una agencia de Estados Unidos vende Punta Cana, necesita una plataforma que ayude a vender y tambien a operar. Ahi es donde una solucion especializada puede aportar mucho valor.</p>
+<p><a href="/agency-program">Ver programa para agencias</a> | <a href="/agency-partners">Apply now</a></p>
+`
+  },
+  {
+    title: "Mejor proveedor de traslados en Punta Cana para agencias de viajes",
+    excerpt:
+      "Como elegir un proveedor de traslados en Punta Cana si tu agencia necesita rutas claras, seguimiento y una operacion realmente confiable.",
+    coverImage: COVER_IMAGES.parasailing,
+    contentHtml: `
+<h1>Mejor proveedor de traslados en Punta Cana para agencias de viajes</h1>
+<p>Un traslado puede parecer simple, pero para una agencia es una parte critica de la experiencia del cliente. Si el proveedor falla, la confianza se cae aunque el tour sea bueno.</p>
+<h2>Que debe tener un buen proveedor de traslados</h2>
+<ul>
+  <li>Rutas claras entre aeropuerto y hotel.</li>
+  <li>Seguimiento de vuelo y horario.</li>
+  <li>Confirmacion de ida y vuelta cuando aplica.</li>
+  <li>Soporte para cambios de pickup.</li>
+  <li>Herramientas para reservar y visualizar la logistica.</li>
+</ul>
+<h2>Lo que mas valoran las agencias</h2>
+<p>No solo el precio. Tambien importa que el sistema permita ver fechas, regreso, vehiculo elegido y detalles del servicio sin confusiones.</p>
+<h2>Conclusion</h2>
+<p>El mejor proveedor de traslados para una agencia no es solo el que mueve pasajeros. Es el que ayuda a vender, coordinar y operar sin fricciones.</p>
+<p><a href="/traslado">Explorar traslados</a> | <a href="/agency-partners">Trabajar con Proactivitis</a></p>
+`
   }
 ];
 
