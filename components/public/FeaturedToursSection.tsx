@@ -34,6 +34,7 @@ const fetchFeaturedTours = async (
     price: true,
     shortDescription: true,
     heroImage: true,
+    gallery: true,
     location: true,
     duration: true,
     capacity: true
@@ -87,6 +88,16 @@ const formatDurationValue = (value?: string | null) => {
     // ignore
   }
   return value;
+};
+
+const parseGalleryImages = (gallery?: string | null) => {
+  if (!gallery) return [];
+  try {
+    const parsed = JSON.parse(gallery);
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string" && item.trim().length > 0) : [];
+  } catch {
+    return [];
+  }
 };
 
 const selectRotatingTours = (tours: Awaited<ReturnType<typeof fetchFeaturedTours>>) => {
@@ -156,6 +167,10 @@ export default async function FeaturedToursSection({ locale }: Props) {
           zone={tour.location ? tour.location.split(",")[0] : "Punta Cana"}
           price={tour.price}
           image={tour.heroImage ?? "/fototours/fototour.jpeg"}
+          images={[
+            tour.heroImage ?? "/fototours/fototour.jpeg",
+            ...parseGalleryImages(tour.gallery).filter((item) => item !== tour.heroImage)
+          ]}
           description={
             tour.translations?.[0]?.shortDescription ??
             tour.translations?.[0]?.description ??

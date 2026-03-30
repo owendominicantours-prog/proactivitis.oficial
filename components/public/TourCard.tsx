@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { formatReviewCountShort } from "@/lib/reviewCounts";
 import { formatDurationDisplay } from "@/lib/formatDuration";
 
@@ -15,6 +17,7 @@ type TourCardProps = {
   rating?: number;
   reviewCount?: number;
   image: string;
+  images?: string[];
   tags?: string[];
   description?: string;
   zone?: string;
@@ -46,6 +49,12 @@ const IconClock = () => (
   </svg>
 );
 
+const IconChevron = ({ direction }: { direction: "left" | "right" }) => (
+  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}>
+    {direction === "left" ? <path d="m15 18-6-6 6-6" /> : <path d="m9 18 6-6-6-6" />}
+  </svg>
+);
+
 export function TourCard({
   slug,
   title,
@@ -57,6 +66,7 @@ export function TourCard({
   rating,
   reviewCount,
   image,
+  images,
   tags,
   description,
   zone,
@@ -65,6 +75,8 @@ export function TourCard({
   pickupIncluded,
   compact = false
 }: TourCardProps) {
+  const normalizedImages = Array.from(new Set([image, ...(images ?? [])].filter(Boolean)));
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const normalizedRating = typeof rating === "number" ? rating : 0;
   const normalizedCount = reviewCount ?? 0;
   const reviewLabel = formatReviewCountShort(normalizedCount);
@@ -74,6 +86,7 @@ export function TourCard({
   const locationText = zone || location?.split(",")[0] || "Punta Cana";
   const audienceLabel = maxPax && maxPax <= 8 ? "Small group" : "Top seller";
   const durationLabel = formatDurationDisplay(duration, "4 hours");
+  const activeImage = normalizedImages[activeImageIndex] ?? image;
 
   const percentDiscountPrice = discountPercent > 0 ? price * (1 - discountPercent / 100) : price;
   const bestDiscountedPrice =
@@ -91,16 +104,50 @@ export function TourCard({
         }`}
       >
         <div className="relative">
-          <img
-            src={image}
-            alt={title}
-            className={`${compact ? "aspect-[16/10]" : "aspect-[4/3]"} w-full object-cover`}
-            loading="lazy"
-          />
+          <div className={`relative ${compact ? "aspect-[16/10]" : "aspect-[4/3]"} w-full overflow-hidden`}>
+            <Image
+              src={activeImage}
+              alt={title}
+              fill
+              className="object-cover transition duration-500 group-hover:scale-[1.03]"
+              sizes={compact ? "(max-width: 1024px) 50vw, 25vw" : "(max-width: 1024px) 100vw, 33vw"}
+            />
+          </div>
           {showBadge ? (
             <div className="absolute right-3 top-3 rounded-xl bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-slate-900 shadow-sm backdrop-blur">
               {badgeText}
             </div>
+          ) : null}
+          {normalizedImages.length > 1 ? (
+            <>
+              <button
+                type="button"
+                aria-label="Previous image"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setActiveImageIndex((current) => (current - 1 + normalizedImages.length) % normalizedImages.length);
+                }}
+                className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-white"
+              >
+                <IconChevron direction="left" />
+              </button>
+              <button
+                type="button"
+                aria-label="Next image"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setActiveImageIndex((current) => (current + 1) % normalizedImages.length);
+                }}
+                className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-white"
+              >
+                <IconChevron direction="right" />
+              </button>
+              <div className="absolute bottom-3 right-3 rounded-full bg-slate-950/70 px-2 py-1 text-[10px] font-semibold tracking-[0.12em] text-white backdrop-blur">
+                {activeImageIndex + 1}/{normalizedImages.length}
+              </div>
+            </>
           ) : null}
           <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
             <span className="rounded-full border border-white/80 bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-500 shadow">
@@ -140,11 +187,31 @@ export function TourCard({
             </span>
             <span className="flex items-center gap-1">
               <IconMap />
-              {locationText}
+              {location}
             </span>
           </div>
 
           {pickupIncluded ? <p className="text-[11px] font-semibold text-emerald-600">Hotel pickup included</p> : null}
+
+          {normalizedImages.length > 1 ? (
+            <div className="flex items-center gap-1">
+              {normalizedImages.slice(0, 5).map((photo, index) => (
+                <button
+                  key={`${photo}-${index}`}
+                  type="button"
+                  aria-label={`Show image ${index + 1}`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setActiveImageIndex(index);
+                  }}
+                  className={`h-1.5 rounded-full transition ${
+                    index === activeImageIndex ? "w-6 bg-slate-900" : "w-2.5 bg-slate-300 hover:bg-slate-400"
+                  }`}
+                />
+              ))}
+            </div>
+          ) : null}
 
           <div className={`mt-auto flex items-center justify-between border-t border-slate-100 ${compact ? "pt-2.5" : "pt-4"}`}>
             <div>
