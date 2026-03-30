@@ -107,6 +107,21 @@ const notifyCancellation = async (bookingId: string, role: string, reason?: stri
       recipientUserId: current.userId
     });
   }
+
+  if (current.userId) {
+    await createNotification({
+      type: "CUSTOMER_BOOKING_CANCELLED",
+      role: "CUSTOMER",
+      title: "Tu reserva fue cancelada",
+      message: `La reserva ${summary} fue cancelada${reason ? ` (motivo: ${reason})` : ""}.`,
+      bookingId,
+      metadata: {
+        tourId: current.Tour.id,
+        reason
+      },
+      recipientUserId: current.userId
+    });
+  }
 };
 
 const updateCancellation = async (bookingId: string, status: BookingStatus, role: string, reason?: string) => {

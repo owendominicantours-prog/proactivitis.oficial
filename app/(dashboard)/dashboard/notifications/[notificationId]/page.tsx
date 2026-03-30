@@ -33,7 +33,7 @@ const buildNotificationCenterRoute = (role?: string | null) => {
   if (normalizedRole === "ADMIN") return "/admin/notifications";
   if (normalizedRole === "SUPPLIER") return "/supplier/notifications";
   if (normalizedRole === "AGENCY") return "/agency/notifications";
-  if (normalizedRole === "CUSTOMER") return "/customer";
+  if (normalizedRole === "CUSTOMER") return "/customer/notifications";
   return "/";
 };
 

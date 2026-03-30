@@ -96,6 +96,21 @@ const notifyModification = async (bookingId: string, status: BookingStatus) => {
       recipientUserId: current.userId
     });
   }
+
+  if (current.userId) {
+    await createNotification({
+      type: "CUSTOMER_BOOKING_MODIFIED",
+      role: "CUSTOMER",
+      title: "Tu reserva fue actualizada",
+      message: `La reserva ${summary} ahora está en ${statusLabel}.`,
+      bookingId,
+      metadata: {
+        tourId: current.Tour.id,
+        status
+      },
+      recipientUserId: current.userId
+    });
+  }
 };
 
 export async function updateBookingStatus(formData: FormData) {

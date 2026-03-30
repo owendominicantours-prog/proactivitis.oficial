@@ -2,6 +2,8 @@
 import Image from "next/image";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { getNotificationsForRecipient, parseNotificationMetadata } from "@/lib/notificationService";
+import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
 import { prisma } from "@/lib/prisma";
 import CustomerPaymentMethod from "@/components/customer/CustomerPaymentMethod";
 import { CustomerPreferencesForm } from "@/components/customer/CustomerPreferencesForm";
@@ -119,16 +121,13 @@ export default async function CustomerPortal() {
   const statusLabels: Record<string, string> = {
     CONFIRMED: "Confirmada",
     PAYMENT_PENDING: "Pendiente de pago",
-    CANCELLATION_REQUESTED: "Cancelacion en revision",
+    CANCELLATION_REQUESTED: "Cancelación en revisión",
     CANCELLED: "Cancelada",
     COMPLETED: "Completada"
   };
-  const notifications = bookings.slice(0, 4).map((booking) => ({
-    id: booking.id,
-    label: statusLabels[booking.status] ?? booking.status,
-    text: booking.Tour?.title ?? "Tour",
-    date: booking.travelDate
-  }));
+  const notifications = user
+    ? await getNotificationsForRecipient({ role: "CUSTOMER", userId: user.id, limit: 4 })
+    : [];
   const whatsappBase =
     process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/18093949877?text=Hola%20Proactivitis";
   const buildWhatsappLink = (message: string) => {
@@ -197,6 +196,9 @@ export default async function CustomerPortal() {
                 </Link>
                 <Link href="/customer/payments" className="block rounded-xl border border-slate-100 px-4 py-3">
                   Metodos de pago
+                </Link>
+                <Link href="/customer/notifications" className="block rounded-xl border border-slate-100 px-4 py-3">
+                  Notificaciones
                 </Link>
                 <a
                   href={buildWhatsappLink("Necesito ayuda con mi cuenta")}
@@ -362,13 +364,29 @@ export default async function CustomerPortal() {
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Notificaciones</p>
                 <div className="mt-4 space-y-3 text-sm text-slate-600">
                   {notifications.length === 0 && <p className="text-sm text-slate-500">No tienes notificaciones nuevas.</p>}
-                  {notifications.map((item) => (
-                    <div key={item.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                      <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{item.label}</p>
-                      <p className="font-semibold text-slate-800">{item.text}</p>
-                      <p className="text-xs text-slate-500">{item.date.toLocaleDateString("es-DO")}</p>
-                    </div>
-                  ))}
+                  {notifications.map((item) => {
+                    const metadata = parseNotificationMetadata(item.metadata);
+                    const display = getNotificationDisplayProps(item.type as any);
+                    const target =
+                      metadata.referenceUrl ??
+                      (metadata.bookingId ?? item.bookingId
+                        ? `/customer/reservations/${metadata.bookingId ?? item.bookingId}`
+                        : `/dashboard/notifications/${item.id}`);
+
+                    return (
+                      <Link key={item.id} href={target} className="block rounded-2xl border border-slate-100 bg-slate-50 p-4 hover:border-slate-200">
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{display.label}</p>
+                        <p className="font-semibold text-slate-800">{item.title}</p>
+                        <p className="mt-1 text-xs text-slate-500">{item.message ?? item.body}</p>
+                        <p className="mt-2 text-xs text-slate-500">{item.createdAt.toLocaleDateString("es-DO")}</p>
+                      </Link>
+                    );
+                  })}
+                  {notifications.length > 0 ? (
+                    <Link href="/customer/notifications" className="inline-flex text-xs font-semibold uppercase tracking-[0.3em] text-emerald-600 hover:underline">
+                      Ver todas
+                    </Link>
+                  ) : null}
                 </div>
               </div>
             </section>

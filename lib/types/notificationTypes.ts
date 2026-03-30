@@ -23,7 +23,10 @@ export type NotificationType =
   | "AGENCY_BOOKING_MODIFIED"
   | "AGENCY_COMMISSION_PAID"
   | "AGENCY_PROMO_ALERT"
-  | "AGENCY_ACCOUNT_STATUS";
+  | "AGENCY_ACCOUNT_STATUS"
+  | "CUSTOMER_BOOKING_CREATED"
+  | "CUSTOMER_BOOKING_CANCELLED"
+  | "CUSTOMER_BOOKING_MODIFIED";
 
 export type NotificationRole = "ADMIN" | "SUPPLIER" | "AGENCY" | "CUSTOMER";
 
@@ -109,7 +112,14 @@ export const notificationTypeConfig: Record<NotificationType, NotificationDispla
   AGENCY_BOOKING_MODIFIED: createConfig("Reserva modificada", "info"),
   AGENCY_COMMISSION_PAID: createConfig("Comisión pagada", "success"),
   AGENCY_PROMO_ALERT: createConfig("Promoción activa", "info"),
-  AGENCY_ACCOUNT_STATUS: createConfig("Estado de cuenta", "info")
+  AGENCY_ACCOUNT_STATUS: createConfig("Estado de cuenta", "info"),
+  CUSTOMER_BOOKING_CREATED: createConfig(
+    "Reserva confirmada",
+    "success",
+    createElement("span", { className: "inline-flex h-4 w-4 items-center justify-center text-emerald-500" }, "R")
+  ),
+  CUSTOMER_BOOKING_CANCELLED: createConfig("Reserva cancelada", "danger"),
+  CUSTOMER_BOOKING_MODIFIED: createConfig("Reserva actualizada", "info")
 };
 
 export function getNotificationDisplayProps(type?: NotificationType): NotificationDisplayConfig {

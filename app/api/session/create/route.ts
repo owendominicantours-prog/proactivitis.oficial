@@ -10,6 +10,7 @@ import {
   notifyDiscordTourBookingConfirmed,
   notifyDiscordTransferBookingConfirmed
 } from "@/lib/discordNotifications";
+import { createNotification } from "@/lib/notificationService";
 
 type Body = {
   bookingId?: string;
@@ -194,6 +195,22 @@ export async function POST(request: NextRequest) {
       : null,
     agencyPhone: agencyApplication?.phone ?? null
   };
+
+  await createNotification({
+    type: "CUSTOMER_BOOKING_CREATED",
+    role: "CUSTOMER",
+    title: "Reserva confirmada",
+    message: `Tu reserva ${tour.title} quedó confirmada para ${new Intl.DateTimeFormat("es-ES", {
+      dateStyle: "long"
+    }).format(booking.travelDate)}${booking.startTime ? ` a las ${booking.startTime}` : ""}.`,
+    bookingId: booking.id,
+    metadata: {
+      bookingId: booking.id,
+      referenceUrl: `/customer/reservations/${booking.id}`,
+      orderCode
+    },
+    recipientUserId: booking.User.id
+  });
 
   const customerHtml = buildCustomerEticketEmail({
     booking: bookingDetails,
