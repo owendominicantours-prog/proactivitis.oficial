@@ -20,6 +20,7 @@ type DiscoveryItem = {
   type: ItemType;
   title: string;
   description: string;
+  searchText?: string;
   image: string;
   schemaImages?: string[];
   rating: number;
@@ -35,6 +36,7 @@ type DiscoveryCopy = {
   title: string;
   subtitle: string;
   searchPlaceholder: string;
+  transferSearchPlaceholder: string;
   filterAll: string;
   filterTours: string;
   filterTransfers: string;
@@ -63,6 +65,7 @@ type DiscoveryCopy = {
   topFiltersTitle: string;
   destinationAll: string;
   consultRate: string;
+  reserveTransfer: string;
   compareSelect: string;
   compareRemove: string;
   compareNow: string;
@@ -88,6 +91,7 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     title: "ProDiscovery",
     subtitle: "Compara tours, traslados y hoteles con resenas reales, fotos y filtros avanzados.",
     searchPlaceholder: "Buscar por tour, hotel, traslado o zona",
+    transferSearchPlaceholder: "Buscar por hotel, ruta, aeropuerto o zona",
     filterAll: "Todo",
     filterTours: "Tours",
     filterTransfers: "Traslados",
@@ -116,6 +120,7 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     topFiltersTitle: "Filtros rapidos",
     destinationAll: "Todos",
     consultRate: "Consultar tarifa",
+    reserveTransfer: "Reservar traslado",
     compareSelect: "Comparar",
     compareRemove: "Quitar",
     compareNow: "Comparar ahora",
@@ -139,6 +144,7 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     title: "ProDiscovery",
     subtitle: "Compare tours, transfers, and hotels with real reviews, photos, and smart filters.",
     searchPlaceholder: "Search by tour, hotel, transfer, or area",
+    transferSearchPlaceholder: "Search by hotel, route, airport, or area",
     filterAll: "All",
     filterTours: "Tours",
     filterTransfers: "Transfers",
@@ -167,6 +173,7 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     topFiltersTitle: "Quick filters",
     destinationAll: "All",
     consultRate: "Check rate",
+    reserveTransfer: "Book transfer",
     compareSelect: "Compare",
     compareRemove: "Remove",
     compareNow: "Compare now",
@@ -190,6 +197,7 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     title: "ProDiscovery",
     subtitle: "Comparez excursions, transferts et hotels avec de vrais avis, photos et filtres intelligents.",
     searchPlaceholder: "Rechercher tour, hotel, transfert ou zone",
+    transferSearchPlaceholder: "Rechercher hotel, trajet, aeroport ou zone",
     filterAll: "Tout",
     filterTours: "Excursions",
     filterTransfers: "Transferts",
@@ -218,6 +226,7 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     topFiltersTitle: "Filtres rapides",
     destinationAll: "Tous",
     consultRate: "Demander tarif",
+    reserveTransfer: "Reserver transfert",
     compareSelect: "Comparer",
     compareRemove: "Retirer",
     compareNow: "Comparer maintenant",
@@ -294,6 +303,7 @@ const toMapHref = (item: DiscoveryItem) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${item.title} ${item.destination.replace("-", " ")}`)}`;
 const toAbsoluteUrl = (path: string) =>
   path.startsWith("http") ? path : `${PROACTIVITIS_URL}${path.startsWith("/") ? path : `/${path}`}`;
+const humanizeTransferSlug = (value: string) => value.replace(/-/g, " ").replace(/\s+/g, " ").trim();
 
 function BubbleRating({ rating, label }: { rating: number; label: string }) {
   return (
@@ -424,11 +434,14 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
 
   const transferItems: DiscoveryItem[] = transferLandings.map((landing) => {
     const ratingData = transferBySlug.get(landing.landingSlug) ?? { rating: 0, reviews: 0 };
+    const routeLabel = humanizeTransferSlug(landing.landingSlug);
+    const detailsText = landing.priceDetails.join(" ");
     return {
       id: `transfer-${landing.landingSlug}`,
       type: "transfer",
       title: landing.heroTitle,
       description: landing.heroSubtitle || landing.metaDescription,
+      searchText: `${landing.heroTitle} ${landing.heroSubtitle || ""} ${landing.metaDescription || ""} ${landing.hotelName} ${landing.landingSlug} ${routeLabel} ${detailsText}`,
       image: landing.heroImage || "/transfer/sedan.png",
       schemaImages: buildSchemaImageCollage([landing.heroImage], TRANSFER_COLLAGE_POOL),
       rating: ratingData.rating,
@@ -485,10 +498,10 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
     const typeOk = typeFilter === "all" || item.type === typeFilter;
     const destinationOk = destinationFilter === "all" || item.destination === destinationFilter;
     const ratingOk = !Number.isFinite(minRating) || minRating <= 0 || item.rating >= minRating;
+    const searchBase = item.searchText || `${item.title} ${item.description} ${item.destination.replace("-", " ")}`;
     const qOk =
       !q ||
-      item.title.toLowerCase().includes(queryLower) ||
-      item.description.toLowerCase().includes(queryLower) ||
+      searchBase.toLowerCase().includes(queryLower) ||
       item.destination.replace("-", " ").includes(queryLower);
     return typeOk && destinationOk && ratingOk && qOk;
   });
@@ -592,6 +605,8 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
         }
       : null
   ].filter(Boolean) as Array<{ key: string; label: string; href: string }>;
+  const transferQuickSearches = ["PUJ", "Cap Cana", "Bavaro", "Uvero Alto", "Bayahibe", "Sosua"];
+  const searchPlaceholder = typeFilter === "transfer" ? t.transferSearchPlaceholder : t.searchPlaceholder;
 
   const pageUrl = `${PROACTIVITIS_URL}${makeHref()}`;
   const localeName = locale === "es" ? "es-DO" : locale === "fr" ? "fr-FR" : "en-US";
@@ -823,7 +838,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
             <input
               name="q"
               defaultValue={q}
-              placeholder={t.searchPlaceholder}
+              placeholder={searchPlaceholder}
               className="lg:col-span-5 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-emerald-200 focus:ring-2"
             />
             <select
@@ -890,6 +905,19 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                 >
                   {chip.label}
                   <span className="text-[10px] text-amber-700">{t.removeFilter}</span>
+                </Link>
+              ))}
+            </div>
+          ) : null}
+          {typeFilter === "transfer" ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {transferQuickSearches.map((term) => (
+                <Link
+                  key={term}
+                  href={makeHref(1, compareIds, { q: term, type: "transfer" })}
+                  className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-800"
+                >
+                  {term}
                 </Link>
               ))}
             </div>
@@ -1027,7 +1055,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                           href={item.href}
                           className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 group-hover:ring-2 group-hover:ring-emerald-200"
                         >
-                          {t.open}
+                          {item.type === "transfer" ? t.reserveTransfer : t.open}
                         </Link>
                       </div>
                     </div>
@@ -1124,7 +1152,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                     {selectedCompare.map((item) => (
                       <td key={`${item.id}-cta`} className="px-3 py-2">
                         <Link href={item.href} className="inline-flex rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white">
-                          {t.open}
+                          {item.type === "transfer" ? t.reserveTransfer : t.open}
                         </Link>
                       </td>
                     ))}

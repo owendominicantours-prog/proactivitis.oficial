@@ -853,6 +853,7 @@ type TourDetailProps = {
   }>;
   searchParams?: Promise<TourDetailSearchParams>;
   locale: Locale;
+  presentationMode?: "default" | "discovery";
 };
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
@@ -1075,7 +1076,12 @@ const buildTourFaq = (
   ];
 };
 
-export default async function TourDetailPage({ params, searchParams, locale }: TourDetailProps) {
+export default async function TourDetailPage({
+  params,
+  searchParams,
+  locale,
+  presentationMode = "default"
+}: TourDetailProps) {
   const { slug } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const hotelSlugFromQuery = resolvedSearchParams?.hotelSlug;
@@ -1344,6 +1350,16 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
   const hasVisualTimeline = visualTimeline.length > 0;
   const localizedTitle = ensureLeadingCapital(translation?.title ?? tour.title);
   const heroTitle = resolveTourH1(tour.slug, locale, localizedTitle);
+  const isDiscoveryMode = presentationMode === "discovery";
+  const discoveryBadgeLabel = localeLabel(locale, "Ficha ProDiscovery", "ProDiscovery listing", "Fiche ProDiscovery");
+  const visibleHeroTitle = isDiscoveryMode
+    ? localeLabel(
+        locale,
+        `${heroTitle} · Opiniones y reserva`,
+        `${heroTitle} · Reviews and booking`,
+        `${heroTitle} · Avis et reservation`
+      )
+    : heroTitle;
   const localizedSubtitle = translation?.subtitle ?? tour.subtitle ?? "";
   const localizedShortDescription = translation?.shortDescription ?? tour.shortDescription;
   const localizedDescription = translation?.description ?? tour.description;
@@ -1875,8 +1891,13 @@ export default async function TourDetailPage({ params, searchParams, locale }: T
                   <span>{agencyDisplayName ?? localeLabel(locale, "Agencia", "Agency", "Agence")}</span>
                 </div>
               ) : null}
+              {isDiscoveryMode ? (
+                <div className="inline-flex items-center gap-2 rounded-full bg-sky-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-sky-700">
+                  <span>{discoveryBadgeLabel}</span>
+                </div>
+              ) : null}
             </div>
-            <h1 className="text-3xl font-black text-slate-900 sm:text-4xl lg:text-5xl">{heroTitle}</h1>
+            <h1 className="text-3xl font-black text-slate-900 sm:text-4xl lg:text-5xl">{visibleHeroTitle}</h1>
             <div className="flex flex-col gap-4">
               <div className="flex items-end gap-8">
                 <div>

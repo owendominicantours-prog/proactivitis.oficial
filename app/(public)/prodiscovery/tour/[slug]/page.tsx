@@ -35,7 +35,7 @@ export default async function ProDiscoveryTourPage({
   return (
     <>
       <ProDiscoveryHeader locale={es} />
-      <PublicTourDetailPage params={params} searchParams={searchParams} locale={es} />
+      <PublicTourDetailPage params={params} searchParams={searchParams} locale={es} presentationMode="discovery" />
     </>
   );
 }
