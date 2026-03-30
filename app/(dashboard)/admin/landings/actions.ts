@@ -13,5 +13,6 @@ export async function refreshTransferLandingsAction() {
   });
   revalidatePath("/sitemap-transfers.xml");
   revalidatePath("/sitemap-things-to-do.xml");
+  revalidatePath("/sitemap-admin-landings-extra.xml");
   return combos.map((combo) => combo.landingSlug);
 }

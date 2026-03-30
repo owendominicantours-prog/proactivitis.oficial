@@ -25,4 +25,5 @@ Sitemap: https://proactivitis.com/sitemap-images.xml
 Sitemap: https://proactivitis.com/sitemap-seo-only-tours.xml
 Sitemap: https://proactivitis.com/sitemap-transfer-seo-only.xml
 Sitemap: https://proactivitis.com/sitemap-blog.xml
+Sitemap: https://proactivitis.com/sitemap-admin-landings-extra.xml
 Sitemap: https://proactivitis.com/sitemap-urgent-discovered.xml

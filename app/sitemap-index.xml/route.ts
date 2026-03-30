@@ -20,6 +20,8 @@ const SITEMAPS = [
   "/sitemap-images.xml",
   "/sitemap-seo-only-tours.xml",
   "/sitemap-transfer-seo-only.xml",
+  "/sitemap-blog.xml",
+  "/sitemap-admin-landings-extra.xml",
   "/sitemap-urgent-discovered.xml"
 ] as const;
 
