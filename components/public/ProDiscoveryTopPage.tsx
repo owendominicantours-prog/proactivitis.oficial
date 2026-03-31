@@ -237,20 +237,26 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
     .sort((a, b) => b.score - a.score || b.reviewCount - a.reviewCount)
     .slice(0, 15);
 
-  const topTransfers: RankedTransfer[] = transferAggRows
-    .filter((row) => row.transferLandingSlug && transferLandingMatchesDestination(row.transferLandingSlug, destination))
-    .map((row) => {
-      const landing = allLandings().find((item) => item.landingSlug === row.transferLandingSlug);
-      const rating = Number(row._avg.rating ?? 0);
-      const count = row._count.rating ?? 0;
-      const score = computeDiscoveryScore(rating, count, row._max.createdAt ?? null);
+  const transferAggMap = new Map(
+    transferAggRows
+      .filter((row) => row.transferLandingSlug)
+      .map((row) => [row.transferLandingSlug as string, row])
+  );
+
+  const topTransfers: RankedTransfer[] = allLandings()
+    .filter((landing) => transferLandingMatchesDestination(landing.landingSlug, destination))
+    .map((landing) => {
+      const agg = transferAggMap.get(landing.landingSlug);
+      const rating = Number(agg?._avg.rating ?? 0);
+      const count = agg?._count.rating ?? 0;
+      const score = computeDiscoveryScore(rating, count, agg?._max.createdAt ?? null) + (count === 0 ? 0.08 : 0);
       return {
-        slug: row.transferLandingSlug as string,
-        title: landing?.heroTitle ?? (row.transferLandingSlug as string),
-        hotelName: landing?.hotelName ?? "",
-        description: landing?.metaDescription ?? "",
-        image: landing?.heroImage ?? "",
-        priceFrom: landing?.priceFrom ?? 0,
+        slug: landing.landingSlug,
+        title: landing.heroTitle,
+        hotelName: landing.hotelName,
+        description: landing.metaDescription,
+        image: landing.heroImage,
+        priceFrom: landing.priceFrom,
         rating: round1(rating),
         reviewCount: count,
         score
