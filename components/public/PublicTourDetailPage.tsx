@@ -1433,8 +1433,16 @@ export default async function TourDetailPage({
   const heroPriceLabel = translate(locale, "tour.hero.priceLabel");
   const heroRatingLabel = translate(locale, "tour.hero.ratingLabel");
   const heroReviewsLabel = translate(locale, "tour.hero.reviewsCount", { count: detailReviewCount });
-  const heroReserveCta = translate(locale, "tour.hero.cta.reserve");
+  const heroReserveCta = isDiscoveryMode
+    ? localeLabel(locale, "Comparar y reservar", "Compare and book", "Comparer et reserver")
+    : translate(locale, "tour.hero.cta.reserve");
   const heroGalleryCta = translate(locale, "tour.hero.cta.gallery");
+  const floatingButtonLabel = isDiscoveryMode
+    ? localeLabel(locale, "Tarifa ProDiscovery", "ProDiscovery rate", "Tarif ProDiscovery")
+    : translate(locale, "tour.booking.floating.label");
+  const floatingButtonCta = isDiscoveryMode
+    ? localeLabel(locale, "Comparar y reservar", "Compare and book", "Comparer et reserver")
+    : translate(locale, "tour.booking.floating.button");
 
   const heroNavTabs: { labelKey: TranslationKey; href: string }[] = [
     { labelKey: "tour.nav.overview", href: "#overview" },
@@ -1944,10 +1952,12 @@ export default async function TourDetailPage({
                     </span>
                   ))}
                 </div>
-              <div className="flex flex-wrap gap-3">
+              <div className={`flex gap-3 ${isDiscoveryMode ? "flex-col sm:flex-row" : "flex-wrap"}`}>
                     <Link
                       href="#booking"
-                      className="rounded-3xl bg-indigo-600 px-10 py-4 text-base font-bold text-white shadow-xl shadow-indigo-100 transition-transform hover:scale-105 active:scale-95"
+                      className={`rounded-3xl bg-indigo-600 px-10 py-4 text-base font-bold text-white shadow-xl shadow-indigo-100 transition-transform hover:scale-105 active:scale-95 ${
+                        isDiscoveryMode ? "text-center sm:w-auto" : ""
+                      }`}
                     >
                       {agencyMode
                         ? localeLabel(locale, "Continuar con esta tarifa", "Continue with this rate", "Continuer avec ce tarif")
@@ -1956,14 +1966,18 @@ export default async function TourDetailPage({
                     <GalleryLightbox
                       images={gallery}
                       buttonLabel={heroGalleryCta}
-                  buttonClassName="rounded-2xl border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-50"
-                />
-                <a
-                  href="#traveler-photos"
-                  className="rounded-2xl border border-emerald-200 bg-emerald-50 px-7 py-3 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-100"
-                >
-                  {localeLabel(locale, "Ver fotos de viajeros", "View traveler photos", "Voir les photos des voyageurs")}
-                </a>
+                      buttonClassName={`rounded-2xl border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-50 ${
+                        isDiscoveryMode ? "w-full sm:w-auto text-center" : ""
+                      }`}
+                    />
+                    <a
+                      href="#traveler-photos"
+                      className={`rounded-2xl border border-emerald-200 bg-emerald-50 px-7 py-3 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 ${
+                        isDiscoveryMode ? "w-full sm:w-auto text-center" : ""
+                      }`}
+                    >
+                      {localeLabel(locale, "Ver fotos de viajeros", "View traveler photos", "Voir les photos des voyageurs")}
+                    </a>
               </div>
             </div>
           </div>
@@ -2414,8 +2428,8 @@ export default async function TourDetailPage({
       <ReserveFloatingButton
         targetId="booking"
         priceLabel={priceLabel}
-        label={translate(locale, "tour.booking.floating.label")}
-        buttonLabel={translate(locale, "tour.booking.floating.button")}
+        label={floatingButtonLabel}
+        buttonLabel={floatingButtonCta}
       />
     </div>
   );

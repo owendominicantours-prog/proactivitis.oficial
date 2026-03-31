@@ -86,6 +86,11 @@ const formatDate = (date: Date, locale: Locale) =>
   new Intl.DateTimeFormat(locale === "es" ? "es-DO" : locale === "fr" ? "fr-FR" : "en-US", { dateStyle: "medium" }).format(date);
 const round1 = (value: number) => Math.round(value * 10) / 10;
 const humanizeTransferSlug = (value: string) => value.replace(/-/g, " ").replace(/\s+/g, " ").trim();
+const localeLabel = (locale: Locale, esLabel: string, enLabel: string, frLabel: string) => {
+  if (locale === "en") return enLabel;
+  if (locale === "fr") return frLabel;
+  return esLabel;
+};
 
 function BubbleRating({ rating }: { rating: number }) {
   return (
@@ -107,6 +112,13 @@ function BubbleRating({ rating }: { rating: number }) {
 
 export default async function ProDiscoveryTransferDetailPage({ locale, landingSlug, reviewKeyword }: Props) {
   const t = COPY[locale];
+  const reserveNowLabel = localeLabel(locale, "Abrir reserva", "Open booking", "Ouvrir la reservation");
+  const plannerJumpLabel = localeLabel(locale, "Usar cotizador", "Use planner", "Utiliser le devis");
+  const trustBadges = [
+    localeLabel(locale, "Reseñas verificadas", "Verified reviews", "Avis verifies"),
+    localeLabel(locale, "Reserva segura", "Secure booking", "Reservation securisee"),
+    localeLabel(locale, "Soporte local", "Local support", "Support local")
+  ];
   const landing = allLandings().find((item) => item.landingSlug === landingSlug);
   if (!landing) return notFound();
 
@@ -270,10 +282,20 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
                 <span>({reviews.length})</span>
               </div>
               <p className="mt-4 leading-relaxed text-slate-700">{landing.metaDescription}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {trustBadges.map((badge) => (
+                  <span
+                    key={badge}
+                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-700"
+                  >
+                    {badge}
+                  </span>
+                ))}
+              </div>
             </div>
           </section>
 
-          <aside className="space-y-4">
+          <aside className="hidden space-y-4 lg:block">
             <section className="rounded-2xl border border-slate-200 bg-white p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{t.details}</p>
               <p className="mt-3 text-2xl font-black text-slate-900">
@@ -304,7 +326,43 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
           </aside>
         </div>
 
-        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
+        <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 lg:hidden">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{t.details}</p>
+              <p className="mt-2 text-2xl font-black text-slate-900">
+                {t.from} USD {Math.round(landing.priceFrom)}
+              </p>
+              <p className="mt-1 text-sm text-slate-600">{landing.hotelName}</p>
+            </div>
+            <div className="rounded-2xl bg-slate-50 px-4 py-3 text-right">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{t.reviews}</p>
+              <p className="text-xl font-black text-slate-900">{average.toFixed(1)}</p>
+              <p className="text-xs text-slate-500">{reviews.length}</p>
+            </div>
+          </div>
+          <ul className="mt-4 space-y-1 text-sm text-slate-700">
+            {landing.priceDetails.slice(0, 3).map((detail) => (
+              <li key={detail}>- {detail}</li>
+            ))}
+          </ul>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <a
+              href="#planner"
+              className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700"
+            >
+              {plannerJumpLabel}
+            </a>
+            <Link
+              href={toTransferHref(locale, landingSlug)}
+              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 hover:border-slate-400"
+            >
+              {reserveNowLabel}
+            </Link>
+          </div>
+        </section>
+
+        <section id="planner" className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
           <h2 className="text-xl font-black text-slate-900">{t.plannerTitle}</h2>
           <p className="mt-1 text-sm text-slate-600">{t.plannerBody}</p>
           <div className="mt-4">
@@ -380,6 +438,18 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
             </div>
           </aside>
         </div>
+      </div>
+      <div className="fixed inset-x-4 bottom-4 z-50 flex items-center justify-between gap-3 rounded-2xl bg-white/92 px-4 py-3 shadow-2xl shadow-slate-900/25 backdrop-blur lg:hidden">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-slate-500">{t.from}</p>
+          <p className="text-lg font-black text-slate-900">USD {Math.round(landing.priceFrom)}</p>
+        </div>
+        <a
+          href="#planner"
+          className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold uppercase text-white transition hover:bg-emerald-700"
+        >
+          {t.book}
+        </a>
       </div>
     </main>
   );
