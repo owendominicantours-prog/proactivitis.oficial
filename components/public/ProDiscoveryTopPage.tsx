@@ -51,6 +51,13 @@ type RankedTransfer = {
   score: number;
 };
 
+type FleetPreset = {
+  id: string;
+  label: string;
+  note: string;
+  multiplier: number;
+};
+
 const COPY = {
   es: {
     back: "Volver a ProDiscovery",
@@ -148,6 +155,31 @@ const formatPrice = (price: number, locale: Locale) =>
 const replaceTokens = (template: string, values: Record<string, string>) =>
   Object.entries(values).reduce((acc, [key, value]) => acc.replaceAll(`{${key}}`, value), template);
 
+const getTransferFleetPresets = (locale: Locale): FleetPreset[] => {
+  if (locale === "en") {
+    return [
+      { id: "sedan", label: "Sedan", note: "1-3 travelers", multiplier: 1 },
+      { id: "suv", label: "SUV", note: "Premium comfort", multiplier: 1.28 },
+      { id: "van", label: "Van", note: "Families and luggage", multiplier: 1.42 },
+      { id: "vip", label: "VIP", note: "Executive arrival", multiplier: 1.75 }
+    ];
+  }
+  if (locale === "fr") {
+    return [
+      { id: "sedan", label: "Sedan", note: "1-3 voyageurs", multiplier: 1 },
+      { id: "suv", label: "SUV", note: "Confort premium", multiplier: 1.28 },
+      { id: "van", label: "Van", note: "Familles et bagages", multiplier: 1.42 },
+      { id: "vip", label: "VIP", note: "Arrivee executive", multiplier: 1.75 }
+    ];
+  }
+  return [
+    { id: "sedan", label: "Sedan", note: "1-3 viajeros", multiplier: 1 },
+    { id: "suv", label: "SUV", note: "Confort premium", multiplier: 1.28 },
+    { id: "van", label: "Van", note: "Familias y equipaje", multiplier: 1.42 },
+    { id: "vip", label: "VIP", note: "Llegada ejecutiva", multiplier: 1.75 }
+  ];
+};
+
 export default async function ProDiscoveryTopPage({ locale, destination, category }: Props) {
   const t = COPY[locale];
   const destinationName = humanizeDiscoveryDestination(destination);
@@ -232,6 +264,8 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
   const intro = showTours ? t.introTours : t.introTransfers;
   const itemTitleTemplate = showTours ? t.itemTitleTours : t.itemTitleTransfers;
   const items = showTours ? topTours : topTransfers;
+  const fleetPresets = getTransferFleetPresets(locale);
+  const useFleetHotelView = !showTours && destination === "punta-cana";
 
   const schema = {
     "@context": "https://schema.org",
@@ -398,7 +432,7 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
                       <div className="space-y-4 p-6">
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
-                            {replaceTokens(itemTitleTemplate, { destination: destinationName })}
+                            {useFleetHotelView ? transfer.hotelName : replaceTokens(itemTitleTemplate, { destination: destinationName })}
                           </p>
                           <h2 className="mt-2 text-2xl font-black text-slate-900">{transfer.title}</h2>
                           <p className="mt-2 text-sm font-medium text-slate-500">{transfer.hotelName}</p>
@@ -422,6 +456,28 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
                               : "Transfer competitivo para comparar reputación, tarifa base y facilidad de reserva."}
                           </p>
                         </div>
+                        {useFleetHotelView ? (
+                          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+                              {locale === "es"
+                                ? "Opciones de flotilla para este hotel"
+                                : locale === "fr"
+                                  ? "Options de flotte pour cet hotel"
+                                  : "Fleet options for this hotel"}
+                            </p>
+                            <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                              {fleetPresets.map((preset) => (
+                                <div key={`${transfer.slug}-${preset.id}`} className="rounded-2xl border border-white bg-white px-3 py-3 shadow-sm">
+                                  <p className="text-sm font-bold text-slate-900">{preset.label}</p>
+                                  <p className="mt-1 text-xs text-slate-500">{preset.note}</p>
+                                  <p className="mt-3 text-sm font-semibold text-emerald-700">
+                                    {formatPrice(Number((transfer.priceFrom * preset.multiplier).toFixed(0)), locale)}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
                         <div className="flex flex-wrap gap-3">
                           <Link
                             href={`${basePath}/transfer/${transfer.slug}`}
