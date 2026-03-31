@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ProDiscoveryTopPage from "@/components/public/ProDiscoveryTopPage";
-import { PROACTIVITIS_URL } from "@/lib/seo";
+import { buildProDiscoveryTopMetadata } from "@/lib/prodiscoverySeo";
 import {
   isValidDiscoveryCategory,
   isValidDiscoveryDestination
@@ -16,20 +16,7 @@ export async function generateMetadata({
   if (!isValidDiscoveryDestination(destination) || !isValidDiscoveryCategory(category)) {
     return { title: "ProDiscovery" };
   }
-  const canonical = `${PROACTIVITIS_URL}/en/prodiscovery/top/${destination}/${category}`;
-  return {
-    title: `Top ${category} in ${destination} | ProDiscovery`,
-    description: `Top ${category} in ${destination} based on verified reviews, recency, and reputation.`,
-    alternates: {
-      canonical,
-      languages: {
-        es: `/prodiscovery/top/${destination}/${category}`,
-        en: `/en/prodiscovery/top/${destination}/${category}`,
-        fr: `/fr/prodiscovery/top/${destination}/${category}`,
-        "x-default": `/prodiscovery/top/${destination}/${category}`
-      }
-    }
-  };
+  return buildProDiscoveryTopMetadata({ locale: "en", destination, category });
 }
 
 export default async function ProDiscoveryTopEnPage({

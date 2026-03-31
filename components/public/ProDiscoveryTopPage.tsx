@@ -42,6 +42,8 @@ const COPY = {
     back: "Volver a ProDiscovery",
     tours: "Top tours",
     transfers: "Top traslados",
+    introTours: "Comparativa viva de tours mejor valorados para reservar con mas contexto y menos friccion.",
+    introTransfers: "Rankings de traslados con reputacion real, puntuacion y acceso directo al flujo de reserva.",
     openTour: "Ver ficha",
     openTransfer: "Ver traslado"
   },
@@ -49,6 +51,8 @@ const COPY = {
     back: "Back to ProDiscovery",
     tours: "Top tours",
     transfers: "Top transfers",
+    introTours: "Live comparison of top-rated tours with more decision context and faster booking paths.",
+    introTransfers: "Transfer rankings built from real reputation, review quality, and direct booking access.",
     openTour: "Open listing",
     openTransfer: "View transfer"
   },
@@ -56,6 +60,8 @@ const COPY = {
     back: "Retour a ProDiscovery",
     tours: "Top excursions",
     transfers: "Top transferts",
+    introTours: "Comparatif vivant des excursions les mieux notees avec plus de contexte pour reserver.",
+    introTransfers: "Classements de transferts bases sur la reputation reelle, la note et l acces direct a la reservation.",
     openTour: "Voir fiche",
     openTransfer: "Voir transfert"
   }
@@ -132,7 +138,7 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
 
   const showTours = category === "tours";
   const title = `${showTours ? t.tours : t.transfers} · ${destinationName} | ProDiscovery`;
-  const canonical = `${PROACTIVITIS_URL}${basePath}/top/${destination}/${category}`;
+  const intro = showTours ? t.introTours : t.introTransfers;
 
   const schema = {
     "@context": "https://schema.org",
@@ -158,7 +164,8 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
         </Link>
         <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-6">
           <h1 className="text-3xl font-black text-slate-900">{title}</h1>
-          <p className="mt-2 text-sm text-slate-500">{canonical}</p>
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600">{intro}</p>
+          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">{destinationName}</p>
         </div>
       </section>
 

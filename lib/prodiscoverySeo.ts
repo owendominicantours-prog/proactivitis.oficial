@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PROACTIVITIS_URL } from "@/lib/seo";
 import type { Locale } from "@/lib/translations";
+import type { ProDiscoveryCategory, ProDiscoveryDestination } from "@/lib/prodiscovery";
 
 type DiscoveryTourSeoInput = {
   slug: string;
@@ -17,10 +18,16 @@ type DiscoveryTransferSeoInput = {
   description?: string | null;
 };
 
+type DiscoveryTopSeoInput = {
+  locale: Locale;
+  destination: ProDiscoveryDestination;
+  category: ProDiscoveryCategory;
+};
+
 const TITLE_SUFFIX: Record<Locale, string> = {
-  es: "Opiniones, fotos y reserva | ProDiscovery",
-  en: "Reviews, photos and booking | ProDiscovery",
-  fr: "Avis, photos et reservation | ProDiscovery"
+  es: "Opiniones y reserva | ProDiscovery",
+  en: "Reviews and booking | ProDiscovery",
+  fr: "Avis et reservation | ProDiscovery"
 };
 
 const TOUR_NOT_FOUND_TITLE: Record<Locale, string> = {
@@ -36,9 +43,9 @@ const TRANSFER_NOT_FOUND_TITLE: Record<Locale, string> = {
 };
 
 const TOUR_DESCRIPTION_FALLBACK: Record<Locale, string> = {
-  es: "Compara este tour en ProDiscovery con fotos, opiniones verificadas y acceso directo a la reserva en Proactivitis.",
-  en: "Compare this tour on ProDiscovery with verified reviews, photos and direct booking access on Proactivitis.",
-  fr: "Comparez cette excursion sur ProDiscovery avec avis verifies, photos et acces direct a la reservation sur Proactivitis."
+  es: "Compara este tour en ProDiscovery con opiniones verificadas, contexto real y acceso directo a la reserva en Proactivitis.",
+  en: "Compare this tour on ProDiscovery with verified reviews, real context and direct booking access on Proactivitis.",
+  fr: "Comparez cette excursion sur ProDiscovery avec avis verifies, contexte reel et acces direct a la reservation sur Proactivitis."
 };
 
 const TOUR_DESCRIPTION_SUFFIX: Record<Locale, string> = {
@@ -59,6 +66,57 @@ const TRANSFER_DESCRIPTION_SUFFIX: Record<Locale, string> = {
   fr: "Consultez avis, tarif de base et reservez votre transfert depuis ProDiscovery."
 };
 
+const HOME_TITLE: Record<Locale, string> = {
+  es: "ProDiscovery | Compara tours, hoteles y traslados antes de reservar",
+  en: "ProDiscovery | Compare tours, hotels and transfers before booking",
+  fr: "ProDiscovery | Comparez excursions, hotels et transferts avant de reserver"
+};
+
+const HOME_DESCRIPTION: Record<Locale, string> = {
+  es: "Compara tours, hoteles y traslados con resenas verificadas, fotos reales, filtros inteligentes y acceso directo a la reserva en Proactivitis.",
+  en: "Compare tours, hotels, and transfers with verified reviews, real photos, smart filters, and direct booking access on Proactivitis.",
+  fr: "Comparez excursions, hotels et transferts avec avis verifies, vraies photos, filtres intelligents et acces direct a la reservation sur Proactivitis."
+};
+
+const CATEGORY_LABELS: Record<Locale, Record<ProDiscoveryCategory, string>> = {
+  es: { tours: "tours", transfers: "traslados" },
+  en: { tours: "tours", transfers: "transfers" },
+  fr: { tours: "excursions", transfers: "transferts" }
+};
+
+const DESTINATION_LABELS: Record<Locale, Record<ProDiscoveryDestination, string>> = {
+  es: {
+    "punta-cana": "Punta Cana",
+    sosua: "Sosua",
+    "puerto-plata": "Puerto Plata"
+  },
+  en: {
+    "punta-cana": "Punta Cana",
+    sosua: "Sosua",
+    "puerto-plata": "Puerto Plata"
+  },
+  fr: {
+    "punta-cana": "Punta Cana",
+    sosua: "Sosua",
+    "puerto-plata": "Puerto Plata"
+  }
+};
+
+const TOP_TITLE: Record<Locale, string> = {
+  es: "Top {category} en {destination} | Opiniones y comparativa | ProDiscovery",
+  en: "Best {category} in {destination} | Reviews and comparison | ProDiscovery",
+  fr: "Meilleurs {category} a {destination} | Avis et comparatif | ProDiscovery"
+};
+
+const TOP_DESCRIPTION: Record<Locale, string> = {
+  es: "Descubre el ranking de {category} en {destination} con resenas verificadas, reputacion, fotos y acceso directo a la reserva.",
+  en: "Explore the ranking of {category} in {destination} with verified reviews, reputation signals, photos, and direct booking access.",
+  fr: "Consultez le classement des {category} a {destination} avec avis verifies, reputation, photos et acces direct a la reservation."
+};
+
+const replaceTokens = (template: string, values: Record<string, string>) =>
+  Object.entries(values).reduce((acc, [key, value]) => acc.replaceAll(`{${key}}`, value), template);
+
 export const buildProDiscoveryTourNotFoundMetadata = (locale: Locale): Metadata => ({
   title: TOUR_NOT_FOUND_TITLE[locale]
 });
@@ -66,6 +124,83 @@ export const buildProDiscoveryTourNotFoundMetadata = (locale: Locale): Metadata 
 export const buildProDiscoveryTransferNotFoundMetadata = (locale: Locale): Metadata => ({
   title: TRANSFER_NOT_FOUND_TITLE[locale]
 });
+
+export const buildProDiscoveryHomeMetadata = (locale: Locale): Metadata => {
+  const canonicalPath = locale === "es" ? "/prodiscovery" : `/${locale}/prodiscovery`;
+  const canonical = `${PROACTIVITIS_URL}${canonicalPath}`;
+  return {
+    title: HOME_TITLE[locale],
+    description: HOME_DESCRIPTION[locale],
+    alternates: {
+      canonical,
+      languages: {
+        es: "/prodiscovery",
+        en: "/en/prodiscovery",
+        fr: "/fr/prodiscovery",
+        "x-default": "/prodiscovery"
+      }
+    },
+    openGraph: {
+      title: HOME_TITLE[locale],
+      description: HOME_DESCRIPTION[locale],
+      url: canonical,
+      type: "website"
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: HOME_TITLE[locale],
+      description: HOME_DESCRIPTION[locale]
+    },
+    robots: { index: true, follow: true }
+  };
+};
+
+export const buildProDiscoveryTopMetadata = ({
+  locale,
+  destination,
+  category
+}: DiscoveryTopSeoInput): Metadata => {
+  const destinationLabel = DESTINATION_LABELS[locale][destination];
+  const categoryLabel = CATEGORY_LABELS[locale][category];
+  const canonicalPath =
+    locale === "es"
+      ? `/prodiscovery/top/${destination}/${category}`
+      : `/${locale}/prodiscovery/top/${destination}/${category}`;
+  const canonical = `${PROACTIVITIS_URL}${canonicalPath}`;
+  const title = replaceTokens(TOP_TITLE[locale], {
+    category: categoryLabel,
+    destination: destinationLabel
+  });
+  const description = replaceTokens(TOP_DESCRIPTION[locale], {
+    category: categoryLabel,
+    destination: destinationLabel
+  });
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: {
+        es: `/prodiscovery/top/${destination}/${category}`,
+        en: `/en/prodiscovery/top/${destination}/${category}`,
+        fr: `/fr/prodiscovery/top/${destination}/${category}`,
+        "x-default": `/prodiscovery/top/${destination}/${category}`
+      }
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: "website"
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description
+    }
+  };
+};
 
 export const buildProDiscoveryTourMetadata = ({
   slug,
