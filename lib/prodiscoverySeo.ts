@@ -88,17 +88,20 @@ const DESTINATION_LABELS: Record<Locale, Record<ProDiscoveryDestination, string>
   es: {
     "punta-cana": "Punta Cana",
     sosua: "Sosua",
-    "puerto-plata": "Puerto Plata"
+    "puerto-plata": "Puerto Plata",
+    "la-romana": "La Romana"
   },
   en: {
     "punta-cana": "Punta Cana",
     sosua: "Sosua",
-    "puerto-plata": "Puerto Plata"
+    "puerto-plata": "Puerto Plata",
+    "la-romana": "La Romana"
   },
   fr: {
     "punta-cana": "Punta Cana",
     sosua: "Sosua",
-    "puerto-plata": "Puerto Plata"
+    "puerto-plata": "Puerto Plata",
+    "la-romana": "La Romana"
   }
 };
 

@@ -1,12 +1,13 @@
 import { allLandings } from "@/data/transfer-landings";
 
 export type ProDiscoveryCategory = "tours" | "transfers";
-export type ProDiscoveryDestination = "punta-cana" | "sosua" | "puerto-plata";
+export type ProDiscoveryDestination = "punta-cana" | "sosua" | "puerto-plata" | "la-romana";
 
 export const PRODISCOVERY_DESTINATIONS: ProDiscoveryDestination[] = [
   "punta-cana",
   "sosua",
-  "puerto-plata"
+  "puerto-plata",
+  "la-romana"
 ];
 
 export const PRODISCOVERY_CATEGORIES: ProDiscoveryCategory[] = ["tours", "transfers"];
@@ -14,8 +15,15 @@ export const PRODISCOVERY_CATEGORIES: ProDiscoveryCategory[] = ["tours", "transf
 const DESTINATION_MATCH: Record<ProDiscoveryDestination, string[]> = {
   "punta-cana": ["punta cana", "bavaro", "cap cana", "uvero alto", "cabeza de toro", "macao"],
   sosua: ["sosua"],
-  "puerto-plata": ["puerto plata", "amber cove", "taino bay"]
+  "puerto-plata": ["puerto plata", "amber cove", "taino bay"],
+  "la-romana": ["la romana", "bayahibe", "dominicus", "casa de campo"]
 };
+
+export const humanizeDiscoveryDestination = (destination: ProDiscoveryDestination) =>
+  destination
+    .split("-")
+    .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
+    .join(" ");
 
 export const isValidDiscoveryDestination = (value: string): value is ProDiscoveryDestination =>
   PRODISCOVERY_DESTINATIONS.includes(value as ProDiscoveryDestination);

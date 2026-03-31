@@ -16,7 +16,7 @@ type Props = {
 };
 
 type ItemType = "tour" | "transfer" | "hotel";
-type Destination = "all" | "punta-cana" | "sosua" | "puerto-plata" | "santo-domingo";
+type Destination = "all" | "punta-cana" | "sosua" | "puerto-plata" | "la-romana" | "santo-domingo";
 
 type DiscoveryItem = {
   id: string;
@@ -320,6 +320,7 @@ const detectDestination = (value: string): Destination => {
   const text = value.toLowerCase();
   if (text.includes("sosua")) return "sosua";
   if (text.includes("puerto plata")) return "puerto-plata";
+  if (text.includes("la romana") || text.includes("bayahibe") || text.includes("dominicus")) return "la-romana";
   if (text.includes("santo domingo")) return "santo-domingo";
   if (text.includes("punta cana") || text.includes("bavaro") || text.includes("cap cana")) return "punta-cana";
   return "all";
@@ -336,6 +337,7 @@ const humanizeTransferSlug = (value: string) => value.replace(/-/g, " ").replace
 const TOP_HUBS: Array<{ destination: Destination; category: "tours" | "transfers" }> = [
   { destination: "punta-cana", category: "tours" },
   { destination: "punta-cana", category: "transfers" },
+  { destination: "la-romana", category: "tours" },
   { destination: "sosua", category: "tours" },
   { destination: "puerto-plata", category: "transfers" }
 ];
@@ -994,6 +996,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
             >
               <option value="all">{t.destinationAll}</option>
               <option value="punta-cana">Punta Cana</option>
+              <option value="la-romana">La Romana</option>
               <option value="sosua">Sosua</option>
               <option value="puerto-plata">Puerto Plata</option>
               <option value="santo-domingo">Santo Domingo</option>
