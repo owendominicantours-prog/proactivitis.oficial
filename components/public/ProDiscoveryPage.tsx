@@ -93,6 +93,8 @@ type DiscoveryCopy = {
   faqA2: string;
   faqQ3: string;
   faqA3: string;
+  rankingHubTitle: string;
+  rankingHubBody: string;
 };
 
 const TRUST_BADGES: Record<Locale, string[]> = {
@@ -155,7 +157,9 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     faqQ2: "Las resenas son reales?",
     faqA2: "Mostramos resenas aprobadas de clientes verificadas por nuestro sistema interno.",
     faqQ3: "Puedo reservar en USD?",
-    faqA3: "Si, las tarifas se muestran en USD y el proceso de reserva mantiene ese formato."
+    faqA3: "Si, las tarifas se muestran en USD y el proceso de reserva mantiene ese formato.",
+    rankingHubTitle: "Rankings y hubs Discovery",
+    rankingHubBody: "Explora comparativas rapidas por destino y tipo de servicio."
   },
   en: {
     title: "ProDiscovery",
@@ -210,7 +214,9 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     faqQ2: "Are the reviews real?",
     faqA2: "We display approved reviews from verified customers through our internal moderation flow.",
     faqQ3: "Can I book in USD?",
-    faqA3: "Yes. Prices are displayed in USD and booking keeps that same currency format."
+    faqA3: "Yes. Prices are displayed in USD and booking keeps that same currency format.",
+    rankingHubTitle: "Discovery rankings and hubs",
+    rankingHubBody: "Explore quick comparison hubs by destination and service type."
   },
   fr: {
     title: "ProDiscovery",
@@ -265,7 +271,9 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     faqQ2: "Les avis sont-ils reels?",
     faqA2: "Nous affichons des avis approuves de clients verifies via notre moderation interne.",
     faqQ3: "Puis-je reserver en USD?",
-    faqA3: "Oui. Les tarifs sont affiches en USD et la reservation conserve cette meme devise."
+    faqA3: "Oui. Les tarifs sont affiches en USD et la reservation conserve cette meme devise.",
+    rankingHubTitle: "Classements et hubs Discovery",
+    rankingHubBody: "Explorez des comparatifs rapides par destination et type de service."
   }
 };
 
@@ -325,6 +333,12 @@ const toMapHref = (item: DiscoveryItem) =>
 const toAbsoluteUrl = (path: string) =>
   path.startsWith("http") ? path : `${PROACTIVITIS_URL}${path.startsWith("/") ? path : `/${path}`}`;
 const humanizeTransferSlug = (value: string) => value.replace(/-/g, " ").replace(/\s+/g, " ").trim();
+const TOP_HUBS: Array<{ destination: Destination; category: "tours" | "transfers" }> = [
+  { destination: "punta-cana", category: "tours" },
+  { destination: "punta-cana", category: "transfers" },
+  { destination: "sosua", category: "tours" },
+  { destination: "puerto-plata", category: "transfers" }
+];
 
 function BubbleRating({ rating, label }: { rating: number; label: string }) {
   return (
@@ -712,6 +726,16 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
   ].filter(Boolean) as Array<{ key: string; label: string; href: string }>;
   const transferQuickSearches = ["PUJ", "Cap Cana", "Bavaro", "Uvero Alto", "Bayahibe", "Sosua"];
   const searchPlaceholder = typeFilter === "transfer" ? t.transferSearchPlaceholder : t.searchPlaceholder;
+  const rankingLinks = TOP_HUBS.map((hub) => {
+    const href = `${localePrefix(locale)}/prodiscovery/top/${hub.destination}/${hub.category}`;
+    const label =
+      locale === "fr"
+        ? `${hub.category === "tours" ? "Top excursions" : "Top transferts"} ${hub.destination.replace("-", " ")}`
+        : locale === "en"
+          ? `${hub.category === "tours" ? "Top tours" : "Top transfers"} ${hub.destination.replace("-", " ")}`
+          : `${hub.category === "tours" ? "Top tours" : "Top traslados"} ${hub.destination.replace("-", " ")}`;
+    return { href, label };
+  });
 
   const pageUrl = `${PROACTIVITIS_URL}${makeHref()}`;
   const localeName = locale === "es" ? "es-DO" : locale === "fr" ? "fr-FR" : "en-US";
@@ -1050,6 +1074,24 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
           </div>
         </section>
       ) : null}
+
+      <section className="mx-auto mt-6 max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-xl font-black text-slate-900">{t.rankingHubTitle}</h2>
+          <p className="mt-1 text-sm text-slate-600">{t.rankingHubBody}</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {rankingLinks.map((hub) => (
+              <Link
+                key={hub.href}
+                href={hub.href}
+                className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-semibold text-slate-800 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-white"
+              >
+                {hub.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <div className="mx-auto mt-6 grid max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:px-8">
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">

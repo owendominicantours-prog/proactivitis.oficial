@@ -205,6 +205,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   const puntaCanaHubHref = locale === "es" ? "/punta-cana/tours" : `/${locale}/punta-cana/tours`;
   const transfersHubHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
   const hotelsHubHref = locale === "es" ? "/hoteles" : `/${locale}/hotels`;
+  const proDiscoveryToursHref = locale === "es" ? "/prodiscovery?type=tour" : `/${locale}/prodiscovery?type=tour`;
   const premiumTransferHref =
     locale === "es"
       ? "/punta-cana/premium-transfer-services"
@@ -439,6 +440,12 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                 className="rounded-full border border-amber-300 bg-amber-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800 transition hover:bg-amber-100"
               >
                 {locale === "es" ? "Transfer VIP" : locale === "en" ? "VIP Transfer" : "Transfert VIP"}
+              </Link>
+              <Link
+                href={proDiscoveryToursHref}
+                className="rounded-full border border-sky-300 bg-sky-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-sky-800 transition hover:bg-sky-100"
+              >
+                {locale === "es" ? "Comparar en ProDiscovery" : locale === "fr" ? "Comparer dans ProDiscovery" : "Compare on ProDiscovery"}
               </Link>
             </div>
             <TrustBadges locale={locale} compact className="pt-2" />

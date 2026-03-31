@@ -53,6 +53,7 @@ export default async function PublicTransferPage({
     locale === "es"
       ? "/punta-cana/premium-transfer-services"
       : `/${locale}/punta-cana/premium-transfer-services`;
+  const proDiscoveryTransfersHref = locale === "es" ? "/prodiscovery?type=transfer" : `/${locale}/prodiscovery?type=transfer`;
   const transferHref = (slug: string) => (locale === "es" ? `/transfer/${slug}` : `/${locale}/transfer/${slug}`);
   let options: LocationOption[] = [];
   let originPoints: TransferPointOption[] = [];
@@ -232,6 +233,12 @@ export default async function PublicTransferPage({
               className="rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800 transition hover:bg-amber-100"
             >
               {locale === "es" ? "VIP transfer" : locale === "fr" ? "Transfert VIP" : "VIP transfer"}
+            </Link>
+            <Link
+              href={proDiscoveryTransfersHref}
+              className="rounded-full border border-sky-300 bg-sky-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-sky-800 transition hover:bg-sky-100"
+            >
+              {locale === "es" ? "Ver en ProDiscovery" : locale === "fr" ? "Voir dans ProDiscovery" : "View in ProDiscovery"}
             </Link>
           </div>
         </section>
