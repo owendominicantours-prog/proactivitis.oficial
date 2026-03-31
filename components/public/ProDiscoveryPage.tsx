@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import StructuredData from "@/components/schema/StructuredData";
 import { allLandings } from "@/data/transfer-landings";
+import TrasladoSearchV2 from "@/components/traslado/TrasladoSearchV2";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_URL, getPriceValidUntil } from "@/lib/seo";
 import { getTourReviewSummaryForTours } from "@/lib/tourReviews";
@@ -53,6 +55,8 @@ type DiscoveryCopy = {
   results: string;
   noResults: string;
   noResultsBody: string;
+  transferPlannerTitle: string;
+  transferPlannerBody: string;
   from: string;
   reviewsWord: string;
   commentsTitle: string;
@@ -108,6 +112,8 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     results: "resultados",
     noResults: "No encontramos resultados con esos filtros",
     noResultsBody: "Prueba otro termino, cambia destino o baja la puntuacion minima.",
+    transferPlannerTitle: "Cotiza tu traslado ahora",
+    transferPlannerBody: "Escribe origen y destino reales para reservar el traslado sin salir de Discovery.",
     from: "Desde",
     reviewsWord: "resenas",
     commentsTitle: "Comentarios de viajeros",
@@ -161,6 +167,8 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     results: "results",
     noResults: "No matches found for these filters",
     noResultsBody: "Try another keyword, destination, or lower the minimum rating.",
+    transferPlannerTitle: "Quote your transfer now",
+    transferPlannerBody: "Pick your real origin and destination to book a transfer directly from Discovery.",
     from: "From",
     reviewsWord: "reviews",
     commentsTitle: "Traveler comments",
@@ -214,6 +222,8 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     results: "resultats",
     noResults: "Aucun resultat avec ces filtres",
     noResultsBody: "Essayez un autre mot-cle, destination, ou reduisez la note minimale.",
+    transferPlannerTitle: "Calculez votre transfert maintenant",
+    transferPlannerBody: "Choisissez votre origine et votre destination reelles pour reserver sans quitter Discovery.",
     from: "A partir de",
     reviewsWord: "avis",
     commentsTitle: "Avis voyageurs",
@@ -346,7 +356,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
 
   const priceValidUntil = getPriceValidUntil();
 
-  const [tours, transferRatings, hotels, latestTourReviews, latestTransferReviews] = await Promise.all([
+  const [tours, transferRatings, transferLocations, hotels, latestTourReviews, latestTransferReviews] = await Promise.all([
     prisma.tour.findMany({
       where: { status: { in: ["published", "seo_only"] } },
       select: {
@@ -368,6 +378,17 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
       where: { status: "APPROVED", transferLandingSlug: { not: null } },
       _avg: { rating: true },
       _count: { rating: true }
+    }),
+    prisma.transferLocation.findMany({
+      where: { active: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        type: true,
+        zone: { select: { name: true } }
+      },
+      take: 1200
     }),
     prisma.transferLocation.findMany({
       where: { active: true, type: "HOTEL" },
@@ -454,6 +475,38 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
     };
   });
 
+  const transferLocationItems: DiscoveryItem[] = transferLocations.map((location) => {
+    const zoneName = location.zone?.name ?? "";
+    const title =
+      locale === "fr"
+        ? `Transferts vers ${location.name}`
+        : locale === "en"
+          ? `Transfers to ${location.name}`
+          : `Traslados hacia ${location.name}`;
+    const description =
+      locale === "fr"
+        ? `Planifiez un transfert prive vers ${location.name}${zoneName ? `, zone ${zoneName}` : ""}. Choisissez l origine et la destination pour voir le prix final.`
+        : locale === "en"
+          ? `Plan a private transfer to ${location.name}${zoneName ? ` in ${zoneName}` : ""}. Choose origin and destination to get the final rate.`
+          : `Planifica un traslado privado hacia ${location.name}${zoneName ? `, zona ${zoneName}` : ""}. Elige origen y destino para ver la tarifa final.`;
+    return {
+      id: `transfer-location-${location.id}`,
+      type: "transfer",
+      title,
+      description,
+      searchText: `${location.name} ${location.slug} ${zoneName} ${location.type} transfer traslado airport hotel route destination origin`,
+      image: "/transfer/suv.png",
+      schemaImages: buildSchemaImageCollage(["/transfer/suv.png"], TRANSFER_COLLAGE_POOL),
+      rating: 0,
+      reviews: 0,
+      price: null,
+      destination: detectDestination(`${location.name} ${zoneName}`),
+      href: `${localePrefix(locale)}/traslado`,
+      tag: "Transfer",
+      badges: []
+    };
+  });
+
   const hotelItems: DiscoveryItem[] = hotels.map((hotel) => {
     const candidates = transferLandings.filter(
       (l) => l.hotelSlug === hotel.slug || l.landingSlug.includes(hotel.slug) || hotel.slug.includes(l.hotelSlug)
@@ -480,7 +533,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
     };
   });
 
-  const allItemsRaw = [...tourItems, ...transferItems, ...hotelItems];
+  const allItemsRaw = [...tourItems, ...transferItems, ...transferLocationItems, ...hotelItems];
   const maxReviewsAll = Math.max(1, ...allItemsRaw.map((item) => item.reviews));
   const buildBadges = (reviews: number, rating: number, price: number | null) => {
     const badges: string[] = [];
@@ -924,6 +977,20 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
           ) : null}
         </div>
       </section>
+
+      {typeFilter === "transfer" ? (
+        <section className="mx-auto mt-6 max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-4">
+              <h2 className="text-xl font-black text-slate-900">{t.transferPlannerTitle}</h2>
+              <p className="mt-1 text-sm text-slate-600">{t.transferPlannerBody}</p>
+            </div>
+            <Suspense fallback={<div className="h-24 rounded-2xl bg-slate-50" />}>
+              <TrasladoSearchV2 />
+            </Suspense>
+          </div>
+        </section>
+      ) : null}
 
       <div className="mx-auto mt-6 grid max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:px-8">
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
