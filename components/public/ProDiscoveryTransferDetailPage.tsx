@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import StructuredData from "@/components/schema/StructuredData";
+import TrasladoSearchV2 from "@/components/traslado/TrasladoSearchV2";
 import { allLandings } from "@/data/transfer-landings";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_URL, getPriceValidUntil } from "@/lib/seo";
@@ -13,47 +15,77 @@ type Props = {
   reviewKeyword?: string;
 };
 
-const COPY: Record<Locale, { back: string; reviews: string; noReviews: string; from: string; book: string; details: string; map: string; reviewFilter: string; clear: string }> = {
+type Copy = {
+  back: string;
+  reviews: string;
+  noReviews: string;
+  from: string;
+  book: string;
+  details: string;
+  map: string;
+  reviewFilter: string;
+  clear: string;
+  plannerTitle: string;
+  plannerBody: string;
+  topTransfers: string;
+  discoveryBadge: string;
+};
+
+const COPY: Record<Locale, Copy> = {
   es: {
     back: "Volver a ProDiscovery",
-    reviews: "Resenas verificadas",
-    noReviews: "Este traslado aun no tiene resenas aprobadas.",
+    reviews: "Reseñas verificadas",
+    noReviews: "Este traslado aún no tiene reseñas aprobadas.",
     from: "Desde",
-    book: "Ir a reserva",
+    book: "Cotizar y reservar",
     details: "Lo que incluye",
     map: "Ver en mapa",
     reviewFilter: "Filtrar reseñas por tema",
-    clear: "Limpiar"
+    clear: "Limpiar",
+    plannerTitle: "Reserva este traslado ahora",
+    plannerBody: "Completa origen y destino para ver tarifa final y reservar sin salir de ProDiscovery.",
+    topTransfers: "Top transfer listings",
+    discoveryBadge: "Ficha ProDiscovery"
   },
   en: {
     back: "Back to ProDiscovery",
     reviews: "Verified reviews",
     noReviews: "This transfer has no approved reviews yet.",
     from: "From",
-    book: "Go to booking",
+    book: "Quote and book",
     details: "What is included",
     map: "View map",
     reviewFilter: "Filter reviews by topic",
-    clear: "Clear"
+    clear: "Clear",
+    plannerTitle: "Book this transfer now",
+    plannerBody: "Choose origin and destination to get the final rate and book directly from ProDiscovery.",
+    topTransfers: "Top transfer listings",
+    discoveryBadge: "ProDiscovery listing"
   },
   fr: {
     back: "Retour a ProDiscovery",
     reviews: "Avis verifies",
     noReviews: "Ce transfert n a pas encore d avis approuves.",
     from: "A partir de",
-    book: "Aller a la reservation",
+    book: "Devis et reservation",
     details: "Ce qui est inclus",
     map: "Voir la carte",
     reviewFilter: "Filtrer les avis par theme",
-    clear: "Effacer"
+    clear: "Effacer",
+    plannerTitle: "Reservez ce transfert maintenant",
+    plannerBody: "Choisissez origine et destination pour voir le tarif final et reserver sans quitter ProDiscovery.",
+    topTransfers: "Top transfer listings",
+    discoveryBadge: "Fiche ProDiscovery"
   }
 };
 
 const localePrefix = (locale: Locale) => (locale === "es" ? "" : `/${locale}`);
 const toDiscoveryHref = (locale: Locale) => `${localePrefix(locale)}/prodiscovery`;
 const toTransferHref = (locale: Locale, slug: string) => `${localePrefix(locale)}/transfer/${slug}`;
-const formatDate = (date: Date, locale: Locale) => new Intl.DateTimeFormat(locale === "es" ? "es-DO" : locale === "fr" ? "fr-FR" : "en-US", { dateStyle: "medium" }).format(date);
+const formatDate = (date: Date, locale: Locale) =>
+  new Intl.DateTimeFormat(locale === "es" ? "es-DO" : locale === "fr" ? "fr-FR" : "en-US", { dateStyle: "medium" }).format(date);
 const round1 = (value: number) => Math.round(value * 10) / 10;
+const humanizeTransferSlug = (value: string) => value.replace(/-/g, " ").replace(/\s+/g, " ").trim();
 
 function BubbleRating({ rating }: { rating: number }) {
   return (
@@ -94,10 +126,12 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
       take: 6
     })
   ]);
+
   const keyword = reviewKeyword?.trim().toLowerCase() || "";
   const reviews = keyword
     ? reviewsRaw.filter((review) => review.body.toLowerCase().includes(keyword) || (review.title ?? "").toLowerCase().includes(keyword))
     : reviewsRaw;
+
   const keywordPool = reviewsRaw
     .flatMap((review) => review.body.toLowerCase().split(/[^a-zA-ZÀ-ÿ0-9]+/g))
     .filter((word) => word.length >= 5 && !["punta", "cana", "hotel", "transfer", "great", "excelente", "proactivitis", "service"].includes(word))
@@ -112,6 +146,12 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
   const average = reviews.length ? round1(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) : 0;
   const pageUrl = `${PROACTIVITIS_URL}${localePrefix(locale)}/prodiscovery/transfer/${landingSlug}`;
   const bookingUrl = `${PROACTIVITIS_URL}${toTransferHref(locale, landingSlug)}`;
+  const visibleHeroTitle =
+    locale === "es"
+      ? `${landing.heroTitle} · Opiniones y reserva`
+      : locale === "fr"
+        ? `${landing.heroTitle} · Avis et reservation`
+        : `${landing.heroTitle} · Reviews and booking`;
 
   const priceValidUntil = getPriceValidUntil();
 
@@ -140,29 +180,29 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
               "@type": "DefinedRegion",
               addressCountry: "DO"
             },
-        deliveryTime: {
-          "@type": "ShippingDeliveryTime",
-          handlingTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d"
-          },
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d"
-          }
-        }
+            deliveryTime: {
+              "@type": "ShippingDeliveryTime",
+              handlingTime: {
+                "@type": "QuantitativeValue",
+                minValue: 0,
+                maxValue: 1,
+                unitCode: "d"
+              },
+              transitTime: {
+                "@type": "QuantitativeValue",
+                minValue: 0,
+                maxValue: 1,
+                unitCode: "d"
+              }
+            }
           },
           hasMerchantReturnPolicy: {
             "@type": "MerchantReturnPolicy",
             returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
             merchantReturnDays: 2,
             applicableCountry: "DO",
-        returnMethod: "https://schema.org/ReturnByMail",
-        returnFees: "https://schema.org/FreeReturn"
+            returnMethod: "https://schema.org/ReturnByMail",
+            returnFees: "https://schema.org/FreeReturn"
           }
         },
         ...(reviews.length
@@ -203,7 +243,7 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
   };
 
   return (
-    <main className="bg-[#f5f7f9] pb-12">
+    <main className="travel-surface bg-[#f5f7f9] pb-12">
       <StructuredData data={schema} />
       <ProDiscoveryHeader locale={locale} />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -217,8 +257,13 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
               <img src={landing.heroImage} alt={landing.heroImageAlt} className="h-full w-full object-cover" />
             </div>
             <div className="p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Transfer</p>
-              <h1 className="mt-2 text-3xl font-black text-slate-900">{landing.heroTitle}</h1>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Transfer</p>
+                <span className="inline-flex rounded-full bg-sky-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-sky-700">
+                  {t.discoveryBadge}
+                </span>
+              </div>
+              <h1 className="mt-2 text-3xl font-black text-slate-900">{visibleHeroTitle}</h1>
               <div className="mt-3 flex items-center gap-2 text-sm text-slate-700">
                 <BubbleRating rating={average} />
                 <span className="font-bold">{average.toFixed(1)}</span>
@@ -249,12 +294,25 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
                   {t.map}
                 </a>
               </div>
-              <Link href={toTransferHref(locale, landingSlug)} className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
+              <Link
+                href={toTransferHref(locale, landingSlug)}
+                className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+              >
                 {t.book}
               </Link>
             </section>
           </aside>
         </div>
+
+        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 className="text-xl font-black text-slate-900">{t.plannerTitle}</h2>
+          <p className="mt-1 text-sm text-slate-600">{t.plannerBody}</p>
+          <div className="mt-4">
+            <Suspense fallback={<div className="h-24 rounded-2xl bg-slate-50" />}>
+              <TrasladoSearchV2 />
+            </Suspense>
+          </div>
+        </section>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <section className="rounded-2xl border border-slate-200 bg-white p-6">
@@ -300,7 +358,7 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
           </section>
 
           <aside className="rounded-2xl border border-slate-200 bg-white p-5">
-            <h3 className="text-lg font-bold text-slate-900">Top transfer listings</h3>
+            <h3 className="text-lg font-bold text-slate-900">{t.topTransfers}</h3>
             <div className="mt-3 space-y-3">
               {related
                 .filter((entry) => entry.transferLandingSlug && entry.transferLandingSlug !== landingSlug)
@@ -311,7 +369,9 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
                     href={`${localePrefix(locale)}/prodiscovery/transfer/${entry.transferLandingSlug as string}`}
                     className="block rounded-xl border border-slate-200 p-3 hover:border-emerald-300"
                   >
-                    <p className="line-clamp-2 text-sm font-semibold text-slate-900">{entry.transferLandingSlug}</p>
+                    <p className="line-clamp-2 text-sm font-semibold text-slate-900">
+                      {humanizeTransferSlug(entry.transferLandingSlug as string)}
+                    </p>
                     <p className="mt-1 text-xs text-slate-600">
                       {round1(Number(entry._avg.rating ?? 0))}/5 ({entry._count.rating})
                     </p>

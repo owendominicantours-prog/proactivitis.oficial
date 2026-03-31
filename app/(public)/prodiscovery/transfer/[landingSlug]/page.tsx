@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import ProDiscoveryTransferDetailPage from "@/components/public/ProDiscoveryTransferDetailPage";
 import { allLandings } from "@/data/transfer-landings";
+import {
+  buildProDiscoveryTransferMetadata,
+  buildProDiscoveryTransferNotFoundMetadata
+} from "@/lib/prodiscoverySeo";
 import { es } from "@/lib/translations";
-import { PROACTIVITIS_URL } from "@/lib/seo";
 
 export async function generateMetadata({
   params
@@ -11,21 +14,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { landingSlug } = await params;
   const landing = allLandings().find((item) => item.landingSlug === landingSlug);
-  if (!landing) return { title: "ProDiscovery | Traslado no encontrado" };
-  const canonical = `${PROACTIVITIS_URL}/prodiscovery/transfer/${landingSlug}`;
-  return {
-    title: `${landing.heroTitle} | ProDiscovery`,
-    description: landing.metaDescription,
-    alternates: {
-      canonical,
-      languages: {
-        es: `/prodiscovery/transfer/${landingSlug}`,
-        en: `/en/prodiscovery/transfer/${landingSlug}`,
-        fr: `/fr/prodiscovery/transfer/${landingSlug}`,
-        "x-default": `/prodiscovery/transfer/${landingSlug}`
-      }
-    }
-  };
+  if (!landing) return buildProDiscoveryTransferNotFoundMetadata(es);
+  return buildProDiscoveryTransferMetadata({
+    landingSlug,
+    locale: es,
+    title: landing.heroTitle,
+    description: landing.metaDescription
+  });
 }
 
 export default async function ProDiscoveryTransferPage({
