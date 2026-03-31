@@ -56,6 +56,8 @@ type FleetPreset = {
   label: string;
   note: string;
   multiplier: number;
+  image: string;
+  badge: string;
 };
 
 const COPY = {
@@ -158,25 +160,25 @@ const replaceTokens = (template: string, values: Record<string, string>) =>
 const getTransferFleetPresets = (locale: Locale): FleetPreset[] => {
   if (locale === "en") {
     return [
-      { id: "sedan", label: "Sedan", note: "1-3 travelers", multiplier: 1 },
-      { id: "suv", label: "SUV", note: "Premium comfort", multiplier: 1.28 },
-      { id: "van", label: "Van", note: "Families and luggage", multiplier: 1.42 },
-      { id: "vip", label: "VIP", note: "Executive arrival", multiplier: 1.75 }
+      { id: "sedan", label: "Sedan", note: "1-3 travelers", multiplier: 1, image: "/transfer/sedan.png", badge: "Couples" },
+      { id: "suv", label: "SUV", note: "Premium comfort", multiplier: 1.28, image: "/transfer/suv.png", badge: "Premium" },
+      { id: "van", label: "Van", note: "Families and luggage", multiplier: 1.42, image: "/transfer/mini van.png", badge: "Families" },
+      { id: "vip", label: "VIP", note: "Executive arrival", multiplier: 1.75, image: "/transfer/suv.png", badge: "VIP" }
     ];
   }
   if (locale === "fr") {
     return [
-      { id: "sedan", label: "Sedan", note: "1-3 voyageurs", multiplier: 1 },
-      { id: "suv", label: "SUV", note: "Confort premium", multiplier: 1.28 },
-      { id: "van", label: "Van", note: "Familles et bagages", multiplier: 1.42 },
-      { id: "vip", label: "VIP", note: "Arrivee executive", multiplier: 1.75 }
+      { id: "sedan", label: "Sedan", note: "1-3 voyageurs", multiplier: 1, image: "/transfer/sedan.png", badge: "Couples" },
+      { id: "suv", label: "SUV", note: "Confort premium", multiplier: 1.28, image: "/transfer/suv.png", badge: "Premium" },
+      { id: "van", label: "Van", note: "Familles et bagages", multiplier: 1.42, image: "/transfer/mini van.png", badge: "Familles" },
+      { id: "vip", label: "VIP", note: "Arrivee executive", multiplier: 1.75, image: "/transfer/suv.png", badge: "VIP" }
     ];
   }
   return [
-    { id: "sedan", label: "Sedan", note: "1-3 viajeros", multiplier: 1 },
-    { id: "suv", label: "SUV", note: "Confort premium", multiplier: 1.28 },
-    { id: "van", label: "Van", note: "Familias y equipaje", multiplier: 1.42 },
-    { id: "vip", label: "VIP", note: "Llegada ejecutiva", multiplier: 1.75 }
+    { id: "sedan", label: "Sedan", note: "1-3 viajeros", multiplier: 1, image: "/transfer/sedan.png", badge: "Parejas" },
+    { id: "suv", label: "SUV", note: "Confort premium", multiplier: 1.28, image: "/transfer/suv.png", badge: "Premium" },
+    { id: "van", label: "Van", note: "Familias y equipaje", multiplier: 1.42, image: "/transfer/mini van.png", badge: "Familias" },
+    { id: "vip", label: "VIP", note: "Llegada ejecutiva", multiplier: 1.75, image: "/transfer/suv.png", badge: "VIP" }
   ];
 };
 
@@ -467,12 +469,30 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
                             </p>
                             <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                               {fleetPresets.map((preset) => (
-                                <div key={`${transfer.slug}-${preset.id}`} className="rounded-2xl border border-white bg-white px-3 py-3 shadow-sm">
-                                  <p className="text-sm font-bold text-slate-900">{preset.label}</p>
-                                  <p className="mt-1 text-xs text-slate-500">{preset.note}</p>
-                                  <p className="mt-3 text-sm font-semibold text-emerald-700">
-                                    {formatPrice(Number((transfer.priceFrom * preset.multiplier).toFixed(0)), locale)}
-                                  </p>
+                                <div
+                                  key={`${transfer.slug}-${preset.id}`}
+                                  className="overflow-hidden rounded-2xl border border-white bg-white shadow-sm"
+                                >
+                                  <div className="relative h-24 bg-slate-100">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={preset.image} alt={preset.label} className="h-full w-full object-cover" />
+                                    <span className="absolute left-2 top-2 rounded-full bg-slate-900/80 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white">
+                                      {preset.badge}
+                                    </span>
+                                  </div>
+                                  <div className="space-y-2 px-3 py-3">
+                                    <p className="text-sm font-bold text-slate-900">{preset.label}</p>
+                                    <p className="text-xs text-slate-500">{preset.note}</p>
+                                    <p className="text-sm font-semibold text-emerald-700">
+                                      {formatPrice(Number((transfer.priceFrom * preset.multiplier).toFixed(0)), locale)}
+                                    </p>
+                                    <Link
+                                      href={`${basePath}/transfer/${transfer.slug}#planner`}
+                                      className="inline-flex w-full items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700 hover:border-emerald-300 hover:text-emerald-700"
+                                    >
+                                      {preset.label}
+                                    </Link>
+                                  </div>
                                 </div>
                               ))}
                             </div>
