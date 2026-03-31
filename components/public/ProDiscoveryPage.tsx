@@ -4,6 +4,7 @@ import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import StructuredData from "@/components/schema/StructuredData";
 import { allLandings } from "@/data/transfer-landings";
 import TrasladoSearchV2 from "@/components/traslado/TrasladoSearchV2";
+import { formatDurationDisplay } from "@/lib/formatDuration";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_URL, getPriceValidUntil } from "@/lib/seo";
 import { getTourReviewSummaryForTours } from "@/lib/tourReviews";
@@ -23,6 +24,10 @@ type DiscoveryItem = {
   title: string;
   description: string;
   searchText?: string;
+  metaLine?: string;
+  decisionHighlights?: string[];
+  bookingLabel?: string;
+  trustLabel?: string;
   image: string;
   schemaImages?: string[];
   rating: number;
@@ -88,6 +93,12 @@ type DiscoveryCopy = {
   faqA2: string;
   faqQ3: string;
   faqA3: string;
+};
+
+const TRUST_BADGES: Record<Locale, string[]> = {
+  es: ["Reseñas verificadas", "Reserva segura", "Soporte local real"],
+  en: ["Verified reviews", "Secure booking", "Real local support"],
+  fr: ["Avis verifies", "Reservation securisee", "Support local reel"]
 };
 
 const COPY: Record<Locale, DiscoveryCopy> = {
@@ -365,6 +376,9 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
         title: true,
         shortDescription: true,
         description: true,
+        duration: true,
+        language: true,
+        includes: true,
         price: true,
         location: true,
         heroImage: true,
@@ -436,11 +450,32 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
     const title = tr?.title || tour.title;
     const description = tr?.shortDescription || tr?.description || tour.shortDescription || tour.description;
     const gallery = parseGallery(tour.gallery);
+    const durationLabel = formatDurationDisplay(tour.duration, locale === "fr" ? "Duree variable" : locale === "en" ? "Flexible duration" : "Duracion variable");
+    const languageLabel = (tour.language || "").split(",").map((item) => item.trim()).filter(Boolean).slice(0, 2).join(", ");
+    const pickupIncluded = tour.includes?.toLowerCase().includes("pickup") || tour.includes?.toLowerCase().includes("recogida");
     return {
       id: `tour-${tour.id}`,
       type: "tour",
       title,
       description: (description || "").slice(0, 160),
+      metaLine: `${durationLabel}${languageLabel ? ` · ${languageLabel}` : ""}`,
+      decisionHighlights: [
+        durationLabel,
+        languageLabel || (locale === "fr" ? "Langues confirmees" : locale === "en" ? "Confirmed languages" : "Idiomas confirmados"),
+        pickupIncluded
+          ? locale === "fr"
+            ? "Pickup disponible"
+            : locale === "en"
+              ? "Pickup available"
+              : "Pickup disponible"
+          : locale === "fr"
+            ? "Confirmation rapide"
+            : locale === "en"
+              ? "Fast confirmation"
+              : "Confirmacion rapida"
+      ],
+      bookingLabel: locale === "fr" ? "Reservation directe" : locale === "en" ? "Direct booking" : "Reserva directa",
+      trustLabel: locale === "fr" ? "Operado por Proactivitis" : locale === "en" ? "Operated by Proactivitis" : "Operado por Proactivitis",
       image: firstImage(tour.heroImage, tour.gallery),
       schemaImages: buildSchemaImageCollage([tour.heroImage, ...gallery], ["/fototours/fotosimple.jpg"]),
       rating: round1(ratingData.average || 0),
@@ -463,6 +498,14 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
       title: landing.heroTitle,
       description: landing.heroSubtitle || landing.metaDescription,
       searchText: `${landing.heroTitle} ${landing.heroSubtitle || ""} ${landing.metaDescription || ""} ${landing.hotelName} ${landing.landingSlug} ${routeLabel} ${detailsText}`,
+      metaLine: `${landing.hotelName} · ${locale === "fr" ? "Service prive" : locale === "en" ? "Private service" : "Servicio privado"}`,
+      decisionHighlights: [
+        landing.hotelName,
+        locale === "fr" ? "Suivi de vol" : locale === "en" ? "Flight tracking" : "Seguimiento de vuelo",
+        locale === "fr" ? "Porte a porte" : locale === "en" ? "Door to door" : "Puerta a puerta"
+      ],
+      bookingLabel: locale === "fr" ? "Reservation immediate" : locale === "en" ? "Instant booking" : "Reserva inmediata",
+      trustLabel: locale === "fr" ? "Tarif fixe sans surprises" : locale === "en" ? "Clear fixed rate" : "Tarifa fija sin sorpresas",
       image: landing.heroImage || "/transfer/sedan.png",
       schemaImages: buildSchemaImageCollage([landing.heroImage], TRANSFER_COLLAGE_POOL),
       rating: ratingData.rating,
@@ -516,11 +559,20 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
       .sort((a, b) => (b.data?.reviews ?? 0) - (a.data?.reviews ?? 0))[0];
     const rating = bestTransfer?.data?.rating ?? 0;
     const reviews = bestTransfer?.data?.reviews ?? 0;
+    const zoneName = hotel.zone?.name ?? "";
     return {
       id: `hotel-${hotel.slug}`,
       type: "hotel",
       title: hotel.name,
       description: (hotel.description || `${hotel.name} in Punta Cana`).slice(0, 160),
+      metaLine: zoneName || (locale === "fr" ? "Zone hoteliere" : locale === "en" ? "Hotel zone" : "Zona hotelera"),
+      decisionHighlights: [
+        zoneName || "Punta Cana",
+        locale === "fr" ? "Acces aux transferts" : locale === "en" ? "Transfer access" : "Acceso a traslados",
+        locale === "fr" ? "Vendu via Proactivitis" : locale === "en" ? "Sold via Proactivitis" : "Vendido por Proactivitis"
+      ],
+      bookingLabel: locale === "fr" ? "Voir options" : locale === "en" ? "View options" : "Ver opciones",
+      trustLabel: locale === "fr" ? "Cross-sell hotel + transfert" : locale === "en" ? "Hotel + transfer cross-sell" : "Hotel + traslado",
       image: hotel.heroImage || "/fototours/fotosimple.jpg",
       schemaImages: buildSchemaImageCollage([hotel.heroImage], ["/fototours/fotosimple.jpg"]),
       rating,
@@ -887,6 +939,13 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-black tracking-tight text-slate-900">{t.title}</h1>
           <p className="mt-2 max-w-3xl text-slate-600">{t.subtitle}</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {TRUST_BADGES[locale].map((badge) => (
+              <span key={badge} className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
+                {badge}
+              </span>
+            ))}
+          </div>
           <form action={`${localePrefix(locale)}/prodiscovery`} method="get" className="mt-6 grid gap-3 lg:grid-cols-12">
             <input
               name="q"
@@ -1070,6 +1129,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                       <Link href={item.href} className="text-xl font-bold text-slate-900 hover:text-emerald-700">
                         {item.title}
                       </Link>
+                      {item.metaLine ? <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{item.metaLine}</p> : null}
                       <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-600">
                         <BubbleRating rating={item.rating} label={t.bubbleLabel} />
                         <span className="font-semibold text-slate-900">{item.rating.toFixed(1)}</span>
@@ -1079,6 +1139,18 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                         </span>
                       </div>
                       <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600">{item.description}</p>
+                      {item.decisionHighlights?.length ? (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {item.decisionHighlights.slice(0, 3).map((highlight) => (
+                            <span
+                              key={`${item.id}-${highlight}`}
+                              className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700"
+                            >
+                              {highlight}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
                       {item.badges.length > 1 ? (
                         <div className="mt-3 flex flex-wrap gap-2">
                           {item.badges.slice(1).map((badge) => (
@@ -1089,7 +1161,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                         </div>
                       ) : null}
                     </div>
-                    <div className="mt-4 flex items-center justify-between">
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-sm text-slate-600">
                         {item.price ? (
                           <>
@@ -1099,7 +1171,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                           <span className="font-semibold text-slate-900">{t.consultRate}</span>
                         )}
                       </p>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <a
                           href={toMapHref(item)}
                           target="_blank"
@@ -1126,6 +1198,20 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                         </Link>
                       </div>
                     </div>
+                    {(item.bookingLabel || item.trustLabel) ? (
+                      <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-3">
+                        {item.bookingLabel ? (
+                          <span className="rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white">
+                            {item.bookingLabel}
+                          </span>
+                        ) : null}
+                        {item.trustLabel ? (
+                          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+                            {item.trustLabel}
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </article>
@@ -1188,6 +1274,14 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                     ))}
                   </tr>
                   <tr>
+                    <td className="px-3 py-2 font-semibold text-slate-700">Contexto</td>
+                    {selectedCompare.map((item) => (
+                      <td key={`${item.id}-meta`} className="px-3 py-2 text-slate-700">
+                        {item.metaLine ?? "-"}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
                     <td className="px-3 py-2 font-semibold text-slate-700">{t.bubbleLabel}</td>
                     {selectedCompare.map((item) => (
                       <td key={`${item.id}-rating`} className="px-3 py-2">
@@ -1207,10 +1301,26 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
                     ))}
                   </tr>
                   <tr>
+                    <td className="px-3 py-2 font-semibold text-slate-700">Ideal para</td>
+                    {selectedCompare.map((item) => (
+                      <td key={`${item.id}-highlights`} className="px-3 py-2 text-slate-700">
+                        {(item.decisionHighlights ?? []).slice(0, 2).join(" · ") || "-"}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
                     <td className="px-3 py-2 font-semibold text-slate-700">{t.from}</td>
                     {selectedCompare.map((item) => (
                       <td key={`${item.id}-price`} className="px-3 py-2 text-slate-700">
                         {item.price ? `USD ${Math.round(item.price)}` : t.consultRate}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 font-semibold text-slate-700">Reserva</td>
+                    {selectedCompare.map((item) => (
+                      <td key={`${item.id}-booking`} className="px-3 py-2 text-slate-700">
+                        {item.bookingLabel ?? "-"}
                       </td>
                     ))}
                   </tr>
