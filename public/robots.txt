@@ -1,3 +1,9 @@
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: meta-externalfetcher
+Disallow: /
+
 User-agent: *
 Allow: /
 Disallow: /admin

@@ -6,6 +6,14 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
+        userAgent: "meta-externalagent",
+        disallow: "/"
+      },
+      {
+        userAgent: "meta-externalfetcher",
+        disallow: "/"
+      },
+      {
         userAgent: "*",
         allow: "/",
         disallow: ["/admin", "/dashboard", "/portal", "/customer", "/checkout", "/search", "/preview"]
