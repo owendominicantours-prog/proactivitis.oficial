@@ -45,6 +45,39 @@ export async function getGeminiSchemaReview(slug: string, locale: Locale): Promi
   }
 }
 
+export async function listGeminiSchemaReviews(): Promise<
+  Array<{ slug: string; locale: Locale; review: GeminiSchemaReview }>
+> {
+  try {
+    const record = await prisma.siteContentSetting.findUnique({ where: { key: GEMINI_REVIEW_KEY } });
+    if (!record?.content || !isObject(record.content)) return [];
+    const content = record.content as GeminiReviewStore;
+    const transfer = content.transfer ?? {};
+
+    return Object.entries(transfer)
+      .flatMap(([slug, locales]) =>
+        Object.entries(locales ?? {}).flatMap(([locale, review]) =>
+          review
+            ? [
+                {
+                  slug,
+                  locale: locale as Locale,
+                  review
+                }
+              ]
+            : []
+        )
+      )
+      .sort((a, b) => {
+        const aTime = new Date(a.review.generatedAt).getTime();
+        const bTime = new Date(b.review.generatedAt).getTime();
+        return bTime - aTime;
+      });
+  } catch {
+    return [];
+  }
+}
+
 export async function saveGeminiSchemaReview(slug: string, locale: Locale, review: GeminiSchemaReview) {
   const record = await prisma.siteContentSetting.findUnique({ where: { key: GEMINI_REVIEW_KEY } });
   const content = (record?.content as GeminiReviewStore | null) ?? {};

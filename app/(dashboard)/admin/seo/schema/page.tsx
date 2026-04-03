@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import {
   buildCanonical,
@@ -14,8 +13,9 @@ import { normalizeTextDeep } from "@/lib/text-format";
 import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL } from "@/lib/seo";
 import { TransferLocationType } from "@prisma/client";
 import type { Locale } from "@/lib/translations";
-import { getGeminiSchemaReview } from "@/lib/geminiSchemaReview";
-import { getApprovedTransferReviewsForLanding, getTransferReviewSummaryForLanding } from "@/lib/transferReviews";
+import { getGeminiSchemaReview, listGeminiSchemaReviews } from "@/lib/geminiSchemaReview";
+import { getSchemaAutopilotState } from "@/lib/schemaAutopilotState";
+import { getTransferReviewSummaryForLanding } from "@/lib/transferReviews";
 import {
   applyTransferSchemaOverride,
   getSchemaHealthScore,
@@ -74,6 +74,13 @@ const normalizeSearch = (value: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .trim();
 
+const statusTone = (status?: string) =>
+  status === "updated"
+    ? "bg-emerald-100 text-emerald-800"
+    : status === "error"
+    ? "bg-rose-100 text-rose-800"
+    : "bg-slate-100 text-slate-700";
+
 async function buildTransferSchemaPreview(slug: string, locale: Locale): Promise<PreviewData | null> {
   const landing = await resolveLanding(slug);
   if (!landing) return null;
@@ -83,11 +90,10 @@ async function buildTransferSchemaPreview(slug: string, locale: Locale): Promise
     ? landing.landingSlug.split("-to-")
     : ["puj-airport", landing.hotelSlug];
 
-  const [originLocation, destinationLocation, approvedTransferReviews, transferReviewSummary, override] =
+  const [originLocation, destinationLocation, transferReviewSummary, override] =
     await Promise.all([
       resolveLocationByAlias(originSlugRaw || "puj-airport", TransferLocationType.AIRPORT),
       resolveLocationByAlias(destinationSlugRaw || landing.hotelSlug),
-      getApprovedTransferReviewsForLanding(landing.landingSlug, 7),
       getTransferReviewSummaryForLanding(landing.landingSlug),
       getTransferSchemaOverride(landing.landingSlug, locale)
     ]);
@@ -235,7 +241,11 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
   const resolved = searchParams ? await searchParams : undefined;
   const locale = resolved?.locale ?? "es";
   const search = resolved?.search?.trim() ?? "";
-  const dynamicCombos = await getDynamicTransferLandingCombos();
+  const [dynamicCombos, allGeminiReviews, autopilotState] = await Promise.all([
+    getDynamicTransferLandingCombos(),
+    listGeminiSchemaReviews(),
+    getSchemaAutopilotState()
+  ]);
   const allAvailableSlugs = Array.from(
     new Set([
       ...allLandings().map((item) => item.landingSlug),
@@ -253,6 +263,12 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
   const warnings = getSchemaWarnings(override, preview?.graph ?? null);
   const faqDefaultValue = resolved?.faqDraft || stringifyFaqItems(override?.faqItems);
   const geminiReview = preview ? await getGeminiSchemaReview(preview.landing.landingSlug, locale) : null;
+  const filteredGeminiReviews = allGeminiReviews.filter((item) =>
+    search ? normalizeSearch(`${item.slug} ${item.locale}`).includes(normalizeSearch(search)) : true
+  );
+  const lastProcessedMap = new Map(
+    (autopilotState.lastProcessed ?? []).map((item) => [`${item.slug}:${item.locale}`, item] as const)
+  );
 
   return (
     <div className="space-y-8 pb-10">
@@ -339,6 +355,103 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
           Gemini devolvio un error: {resolved.gemini_error}
         </section>
       ) : null}
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Autopilot</p>
+            <h2 className="mt-2 text-xl font-semibold text-slate-900">Landings ya procesadas por Gemini</h2>
+            <p className="mt-2 max-w-3xl text-sm text-slate-600">
+              Esta tabla te muestra qué slug y locale ya tienen review guardado, cuándo se generó y qué pasó en el
+              último lote automático.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+            <p>
+              <span className="font-semibold text-slate-900">{allGeminiReviews.length}</span> schema reviews guardados
+            </p>
+            <p className="mt-1">
+              Ultima corrida:{" "}
+              <span className="font-semibold text-slate-900">
+                {autopilotState.lastRunAt ? new Date(autopilotState.lastRunAt).toLocaleString("es-DO") : "Aun no corre"}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Total listos</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-900">{allGeminiReviews.length}</p>
+          </article>
+          <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Filtrados ahora</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-900">{filteredGeminiReviews.length}</p>
+          </article>
+          <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Ultimo lote</p>
+            <p className="mt-2 text-sm font-semibold text-slate-900">
+              {(autopilotState.lastProcessed ?? []).length > 0
+                ? `${autopilotState.lastProcessed?.length ?? 0} items`
+                : "Sin actividad reciente"}
+            </p>
+          </article>
+        </div>
+
+        <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-200">
+          <table className="min-w-full divide-y divide-slate-200 text-sm">
+            <thead className="bg-slate-50 text-left text-slate-600">
+              <tr>
+                <th className="px-4 py-3 font-semibold">Slug</th>
+                <th className="px-4 py-3 font-semibold">Locale</th>
+                <th className="px-4 py-3 font-semibold">Generado</th>
+                <th className="px-4 py-3 font-semibold">Modelo</th>
+                <th className="px-4 py-3 font-semibold">Ultimo lote</th>
+                <th className="px-4 py-3 font-semibold">Detalle</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 bg-white">
+              {filteredGeminiReviews.length > 0 ? (
+                filteredGeminiReviews.slice(0, 250).map((item) => {
+                  const lastProcessed = lastProcessedMap.get(`${item.slug}:${item.locale}`);
+                  return (
+                    <tr key={`${item.slug}:${item.locale}`} className="align-top">
+                      <td className="px-4 py-3 font-medium text-slate-900">{item.slug}</td>
+                      <td className="px-4 py-3 text-slate-700">{item.locale}</td>
+                      <td className="px-4 py-3 text-slate-700">
+                        {new Date(item.review.generatedAt).toLocaleString("es-DO")}
+                      </td>
+                      <td className="px-4 py-3 text-slate-700">{item.review.model}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone(lastProcessed?.status)}`}>
+                          {lastProcessed?.status ?? "review guardado"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {lastProcessed?.detail ?? item.review.summary}
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                    {search
+                      ? `No hay schemas procesados por Gemini para "${search}".`
+                      : "Gemini aun no ha guardado schemas procesados."}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {filteredGeminiReviews.length > 250 ? (
+          <p className="mt-3 text-xs text-slate-500">
+            Mostrando los primeros 250 resultados. Usa el buscador para acotar la lista.
+          </p>
+        ) : null}
+      </section>
 
       {preview ? (
         <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
