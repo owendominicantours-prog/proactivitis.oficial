@@ -177,6 +177,7 @@ Rules:
 - The overrideSuggestions object is intended to populate a CMS form, so completeness matters more than brevity.
 - This page type is a travel transfer landing and its main commercial node is Service.
 - For Google Search Console safety, never place aggregateRating on a Service node for this page type.
+- For Google Search Console safety, never place review on a Service node for this page type.
 - If review data exists, you may mention that in issues/recommendations, but keep aggregateRatingValue and aggregateReviewCount empty in overrideSuggestions unless the parent type is explicitly Google-safe for review snippets.
 - Prefer removing risky properties over enriching the graph.
 - Do not add or keep shippingDetails, hasMerchantReturnPolicy, sdDatePublished, or subjectOf on this transfer schema.

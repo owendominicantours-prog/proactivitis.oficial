@@ -580,6 +580,7 @@ export function applyTransferSchemaOverride({
 
   nodes.push(stripContext(businessNode));
   delete serviceNode.aggregateRating;
+  delete serviceNode.review;
   if (override?.serviceEnabled !== false) nodes.push(stripContext(serviceNode));
   if (override?.faqEnabled !== false) nodes.push(stripContext(faqNode));
   if (override?.breadcrumbEnabled !== false) nodes.push(stripContext(breadcrumbNode));

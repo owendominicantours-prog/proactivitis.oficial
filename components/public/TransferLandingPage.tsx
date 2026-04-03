@@ -896,22 +896,6 @@ export async function TransferLandingPage({
         }
       ]
     },
-    ...(totalApprovedTransferReviews > 0
-      ? {
-          review: approvedTransferReviews.slice(0, initialVisibleTransferReviews).map((review) => ({
-            "@type": "Review",
-            author: { "@type": "Person", name: review.customerName },
-            datePublished: review.createdAt.toISOString(),
-            reviewBody: review.body,
-            ...(review.title ? { name: review.title } : {}),
-            reviewRating: {
-              "@type": "Rating",
-              ratingValue: review.rating,
-              bestRating: 5
-            }
-          }))
-        }
-      : {})
   };
 
   const businessSchema = {
