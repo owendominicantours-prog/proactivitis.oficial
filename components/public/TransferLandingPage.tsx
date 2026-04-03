@@ -24,6 +24,7 @@ import PublicTransferPage from "@/components/public/PublicTransferPage";
 import { ensureLeadingCapital, normalizeTextDeep } from "@/lib/text-format";
 import { getPriceValidUntil } from "@/lib/seo";
 import { isIndexableTransferVariant } from "@/lib/seo-index-policy";
+import { applyTransferSchemaOverride, getTransferSchemaOverride } from "@/lib/schemaManager";
 
 const DEFAULT_AIRPORT_SLUG = "puj-airport";
 const DEFAULT_AIRPORT_NAME = "Punta Cana International Airport (PUJ)";
@@ -102,7 +103,7 @@ const findBestLocation = (target: string, locations: TransferLocationLite[]) => 
   return bestScore <= 0 ? null : best;
 };
 
-const resolveLocationByAlias = async (
+export const resolveLocationByAlias = async (
   rawSlug: string,
   expectedType?: TransferLocationType
 ): Promise<TransferLocationLite | null> => {
@@ -288,7 +289,7 @@ const resolveBaseLanding = async (landingSlug: string): Promise<TransferLandingD
   });
 };
 
-const resolveLanding = async (landingSlug: string): Promise<TransferLandingData | null> => {
+export const resolveLanding = async (landingSlug: string): Promise<TransferLandingData | null> => {
   const parsed = parseTransferHotelVariantSlug(landingSlug);
   const baseLanding = await resolveBaseLanding(parsed.baseSlug);
   if (!baseLanding) return null;
@@ -297,7 +298,7 @@ const resolveLanding = async (landingSlug: string): Promise<TransferLandingData 
   return applyTransferHotelSalesVariant(baseLanding, variant);
 };
 
-const localizeLanding = async (landing: TransferLandingData, locale: Locale) => {
+export const localizeLanding = async (landing: TransferLandingData, locale: Locale) => {
   if (locale === "es") return landing;
   const target = locale;
   const [heroTitle, heroSubtitle, heroTagline, heroImageAlt, seoTitle, metaDescription] = await Promise.all([
@@ -336,10 +337,10 @@ const localizeLanding = async (landing: TransferLandingData, locale: Locale) => 
   };
 };
 
-const buildCanonical = (slug: string, locale: Locale) =>
+export const buildCanonical = (slug: string, locale: Locale) =>
   locale === "es" ? `${BASE_URL}/transfer/${slug}` : `${BASE_URL}/${locale}/transfer/${slug}`;
 
-const toAbsoluteImageUrl = (value?: string | null) => {
+export const toAbsoluteImageUrl = (value?: string | null) => {
   if (!value) return `${BASE_URL}/transfer/suv.png`;
   if (value.startsWith("http://") || value.startsWith("https://")) return value;
   return `${BASE_URL}${value.startsWith("/") ? value : `/${value}`}`;
@@ -369,7 +370,7 @@ const ensureMetaDescription = (description: string, locale: Locale, hotelName?: 
   return `${base} ${buildMetaSuffix(locale, hotelName)}`.trim();
 };
 
-const buildMarketTransferTitles = (
+export const buildMarketTransferTitles = (
   locale: Locale,
   hotelName: string,
   originName?: string
@@ -955,6 +956,14 @@ export async function TransferLandingPage({
       }
     }))
   };
+  const schemaOverride = await getTransferSchemaOverride(landing.landingSlug, locale);
+  const schemaGraph = applyTransferSchemaOverride({
+    businessSchema,
+    serviceSchema: schema,
+    faqSchema,
+    breadcrumbSchema,
+    override: schemaOverride
+  });
 
   return (
     <main className="bg-white">
@@ -1245,10 +1254,7 @@ export async function TransferLandingPage({
         </div>
       </section>
       <section className="sr-only">
-        <StructuredData data={businessSchema} />
-        <StructuredData data={schema} />
-        <StructuredData data={faqSchema} />
-        <StructuredData data={breadcrumbSchema} />
+        <StructuredData data={schemaGraph} />
       </section>
     </main>
   );

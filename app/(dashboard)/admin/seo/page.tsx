@@ -24,6 +24,14 @@ export default async function AdminSeoPage() {
         <p className="text-sm text-slate-600">
           Lectura directa desde Google. Sin guardar datos masivos en Neon y sin llenar la base de ruido.
         </p>
+        <div className="pt-2">
+          <Link
+            href="/admin/seo/schema"
+            className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+          >
+            Abrir Schema Manager
+          </Link>
+        </div>
       </header>
 
       {!overview.configured ? (
