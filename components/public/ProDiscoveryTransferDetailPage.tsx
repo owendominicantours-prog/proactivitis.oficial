@@ -201,32 +201,7 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
             availability: "https://schema.org/InStock",
             url: bookingUrl
           }
-        },
-        mainEntity: {
-          "@id": `${pageUrl}#review-list`
         }
-      },
-      {
-        "@type": "ItemList",
-        "@id": `${pageUrl}#review-list`,
-        name: locale === "es" ? "Reseñas verificadas del traslado" : locale === "fr" ? "Avis verifies du transfert" : "Verified transfer reviews",
-        numberOfItems: reviews.length,
-        itemListElement: reviews.slice(0, 20).map((review, index) => ({
-          "@type": "ListItem",
-          position: index + 1,
-          item: {
-            "@type": "Review",
-            author: { "@type": "Person", name: review.customerName },
-            datePublished: review.createdAt.toISOString(),
-            reviewBody: review.body,
-            ...(review.title ? { name: review.title } : {}),
-            reviewRating: {
-              "@type": "Rating",
-              ratingValue: review.rating,
-              bestRating: 5
-            }
-          }
-        }))
       },
       {
         "@type": "BreadcrumbList",
