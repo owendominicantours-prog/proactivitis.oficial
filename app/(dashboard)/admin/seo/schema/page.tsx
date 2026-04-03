@@ -36,6 +36,7 @@ import {
 type SearchParams = {
   slug?: string;
   locale?: Locale;
+  search?: string;
   faqDraft?: string;
   gemini?: string;
   gemini_error?: string;
@@ -65,6 +66,13 @@ const textByLocale = {
 } satisfies Record<Locale, { home: string; transfers: string }>;
 
 const currencyOptions = ["USD", "DOP", "EUR"];
+
+const normalizeSearch = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
 
 async function buildTransferSchemaPreview(slug: string, locale: Locale): Promise<PreviewData | null> {
   const landing = await resolveLanding(slug);
@@ -226,13 +234,17 @@ async function buildTransferSchemaPreview(slug: string, locale: Locale): Promise
 export default async function AdminSchemaManagerPage({ searchParams }: Props) {
   const resolved = searchParams ? await searchParams : undefined;
   const locale = resolved?.locale ?? "es";
+  const search = resolved?.search?.trim() ?? "";
   const dynamicCombos = await getDynamicTransferLandingCombos();
-  const availableSlugs = Array.from(
+  const allAvailableSlugs = Array.from(
     new Set([
       ...allLandings().map((item) => item.landingSlug),
       ...dynamicCombos.map((item) => item.landingSlug)
     ])
   ).sort((a, b) => a.localeCompare(b));
+  const availableSlugs = search
+    ? allAvailableSlugs.filter((slug) => normalizeSearch(slug).includes(normalizeSearch(search)))
+    : allAvailableSlugs;
   const selectedSlug =
     resolved?.slug && availableSlugs.includes(resolved.slug) ? resolved.slug : availableSlugs[0] ?? "";
   const preview = selectedSlug ? await buildTransferSchemaPreview(selectedSlug, locale) : null;
@@ -267,7 +279,16 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
         </div>
       </header>
 
-      <form method="GET" className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-3">
+      <form method="GET" className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-4">
+        <label className="text-sm text-slate-600 md:col-span-2">
+          Buscar landing
+          <input
+            name="search"
+            defaultValue={search}
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2"
+            placeholder="bahia, riu, puj-airport-to..."
+          />
+        </label>
         <label className="text-sm text-slate-600">
           Landing
           <select name="slug" defaultValue={selectedSlug} className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2">
@@ -292,6 +313,14 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
           Cargar schema
         </button>
       </form>
+
+      {search ? (
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
+          {availableSlugs.length > 0
+            ? `Mostrando ${availableSlugs.length} landings filtradas por "${search}".`
+            : `No encontre landings para "${search}".`}
+        </section>
+      ) : null}
 
       {resolved?.gemini === "ok" ? (
         <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 shadow-sm">
