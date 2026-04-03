@@ -35,6 +35,8 @@ type SearchParams = {
   slug?: string;
   locale?: Locale;
   faqDraft?: string;
+  gemini?: string;
+  gemini_error?: string;
 };
 
 type Props = {
@@ -302,6 +304,18 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
           Cargar schema
         </button>
       </form>
+
+      {resolved?.gemini === "ok" ? (
+        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 shadow-sm">
+          Gemini reviso el schema y guardo el diagnostico para esta landing.
+        </section>
+      ) : null}
+
+      {resolved?.gemini_error ? (
+        <section className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900 shadow-sm">
+          Gemini devolvio un error: {resolved.gemini_error}
+        </section>
+      ) : null}
 
       {preview ? (
         <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">

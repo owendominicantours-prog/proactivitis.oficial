@@ -144,14 +144,22 @@ export async function reviewTransferSchemaWithGeminiAction(formData: FormData) {
     throw new Error("El schemaGraph enviado al review no es JSON valido.");
   }
 
-  await reviewTransferSchemaWithGemini({
-    slug,
-    locale,
-    pageUrl,
-    pageTitle,
-    pageDescription,
-    schemaGraph
-  });
+  try {
+    await reviewTransferSchemaWithGemini({
+      slug,
+      locale,
+      pageUrl,
+      pageTitle,
+      pageDescription,
+      schemaGraph
+    });
 
-  revalidateTransferSchemaPaths(slug);
+    revalidateTransferSchemaPaths(slug);
+    redirect(`/admin/seo/schema?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}&gemini=ok`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Gemini review failed.";
+    redirect(
+      `/admin/seo/schema?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}&gemini_error=${encodeURIComponent(message)}`
+    );
+  }
 }
