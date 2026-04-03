@@ -111,16 +111,60 @@ const buildPlaceNode = ({
   return node;
 };
 
-export function getSchemaHealthScore(override?: TransferSchemaOverride | null) {
+const getGraphNodes = (graph?: Record<string, unknown> | null): SchemaNode[] => {
+  if (!graph) return [];
+  const nodes = graph["@graph"];
+  return Array.isArray(nodes) ? nodes.filter(isObject) as SchemaNode[] : [graph].filter(isObject) as SchemaNode[];
+};
+
+const findNodeByType = (graph: Record<string, unknown> | null | undefined, type: string) =>
+  getGraphNodes(graph).find((node) => {
+    const nodeType = node["@type"];
+    if (typeof nodeType === "string") return nodeType === type;
+    if (Array.isArray(nodeType)) return nodeType.includes(type);
+    return false;
+  });
+
+export function getSchemaHealthScore(
+  override?: TransferSchemaOverride | null,
+  graph?: Record<string, unknown> | null
+) {
+  const serviceNode = findNodeByType(graph, "Service");
+  const businessNode = findNodeByType(graph, "TravelAgency") ?? findNodeByType(graph, "LocalBusiness");
   const checks = [
-    Boolean(override?.identifier),
-    Boolean(override?.serviceName),
-    Boolean(override?.price),
-    Boolean(override?.priceCurrency),
-    Boolean(override?.aggregateRatingValue && override?.aggregateReviewCount),
-    Boolean(override?.destinationPlaceId || (override?.destinationLatitude && override?.destinationLongitude)),
-    Boolean(override?.additionalProperties && override.additionalProperties.length > 0),
-    Boolean(override?.lastVerified)
+    Boolean(override?.identifier || serviceNode?.identifier),
+    Boolean(override?.serviceName || serviceNode?.name),
+    Boolean(
+      override?.price ||
+        (isObject(serviceNode?.offers as unknown) && (serviceNode?.offers as SchemaNode).price) ||
+        (isObject(serviceNode?.hasOfferCatalog as unknown) &&
+          Array.isArray((serviceNode?.hasOfferCatalog as SchemaNode).itemListElement) &&
+          isObject(((serviceNode?.hasOfferCatalog as SchemaNode).itemListElement as unknown[])[0]) &&
+          (((serviceNode?.hasOfferCatalog as SchemaNode).itemListElement as SchemaNode[])[0].price as unknown))
+    ),
+    Boolean(
+      override?.priceCurrency ||
+        (isObject(serviceNode?.offers as unknown) && (serviceNode?.offers as SchemaNode).priceCurrency) ||
+        (isObject(serviceNode?.hasOfferCatalog as unknown) &&
+          Array.isArray((serviceNode?.hasOfferCatalog as SchemaNode).itemListElement) &&
+          isObject(((serviceNode?.hasOfferCatalog as SchemaNode).itemListElement as unknown[])[0]) &&
+          (((serviceNode?.hasOfferCatalog as SchemaNode).itemListElement as SchemaNode[])[0].priceCurrency as unknown))
+    ),
+    Boolean(
+      (override?.aggregateRatingValue && override?.aggregateReviewCount) ||
+        (isObject(serviceNode?.aggregateRating as unknown) &&
+          (serviceNode?.aggregateRating as SchemaNode).ratingValue &&
+          (serviceNode?.aggregateRating as SchemaNode).reviewCount)
+    ),
+    Boolean(
+      override?.destinationPlaceId ||
+        (override?.destinationLatitude && override?.destinationLongitude) ||
+        (Array.isArray(serviceNode?.areaServed) && serviceNode!.areaServed.length > 1)
+    ),
+    Boolean(
+      (override?.additionalProperties && override.additionalProperties.length > 0) || Array.isArray(serviceNode?.additionalProperty)
+    ),
+    Boolean(override?.lastVerified || serviceNode?.dateModified || businessNode?.priceRange)
   ];
   const completed = checks.filter(Boolean).length;
   return {
@@ -130,16 +174,50 @@ export function getSchemaHealthScore(override?: TransferSchemaOverride | null) {
   };
 }
 
-export function getSchemaWarnings(override?: TransferSchemaOverride | null) {
+export function getSchemaWarnings(
+  override?: TransferSchemaOverride | null,
+  graph?: Record<string, unknown> | null
+) {
+  const serviceNode = findNodeByType(graph, "Service");
+  const businessNode = findNodeByType(graph, "TravelAgency") ?? findNodeByType(graph, "LocalBusiness");
   const warnings: string[] = [];
-  if (!override?.identifier) warnings.push("Falta identifier estable.");
-  if (!override?.price) warnings.push("Falta price override para control manual.");
-  if (!override?.priceCurrency) warnings.push("Falta priceCurrency ISO.");
-  if (!override?.mainEntityOfPage) warnings.push("Falta mainEntityOfPage/canonical explicita.");
-  if (!override?.aggregateRatingValue || !override?.aggregateReviewCount) warnings.push("No hay aggregateRating manual.");
-  if (!override?.destinationPlaceId && !(override?.destinationLatitude && override?.destinationLongitude)) {
+  if (!override?.identifier && !serviceNode?.identifier) warnings.push("Falta identifier estable.");
+  if (!override?.price && !serviceNode?.offers && !serviceNode?.hasOfferCatalog) warnings.push("Falta estructura de precio.");
+  if (
+    !override?.priceCurrency &&
+    !(
+      isObject(serviceNode?.offers as unknown) && (serviceNode?.offers as SchemaNode).priceCurrency
+    ) &&
+    !(
+      isObject(serviceNode?.hasOfferCatalog as unknown) &&
+      Array.isArray((serviceNode?.hasOfferCatalog as SchemaNode).itemListElement)
+    )
+  ) {
+    warnings.push("Falta priceCurrency ISO.");
+  }
+  if (!override?.mainEntityOfPage && !serviceNode?.mainEntityOfPage) warnings.push("Falta mainEntityOfPage/canonical explicita.");
+  if (
+    !(
+      (override?.aggregateRatingValue && override?.aggregateReviewCount) ||
+      (isObject(serviceNode?.aggregateRating as unknown) &&
+        (serviceNode?.aggregateRating as SchemaNode).ratingValue &&
+        (serviceNode?.aggregateRating as SchemaNode).reviewCount)
+    )
+  ) {
+    warnings.push("No hay aggregateRating disponible.");
+  }
+  if (
+    !(
+      override?.destinationPlaceId ||
+      (override?.destinationLatitude && override?.destinationLongitude) ||
+      (Array.isArray(serviceNode?.areaServed) && serviceNode!.areaServed.length > 1)
+    )
+  ) {
     warnings.push("Falta destino con Place ID o coordenadas.");
   }
+  if (!businessNode?.telephone) warnings.push('Falta el campo "telephone" (opcional).');
+  if (!businessNode?.address) warnings.push('Falta el campo "address" (opcional).');
+  if (!businessNode?.priceRange) warnings.push('Falta el campo "priceRange" (opcional).');
   return warnings;
 }
 

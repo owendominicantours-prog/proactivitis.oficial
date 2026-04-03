@@ -11,7 +11,7 @@ import {
 } from "@/components/public/TransferLandingPage";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import { normalizeTextDeep } from "@/lib/text-format";
-import { getPriceValidUntil } from "@/lib/seo";
+import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL } from "@/lib/seo";
 import { TransferLocationType } from "@prisma/client";
 import type { Locale } from "@/lib/translations";
 import { getGeminiSchemaReview } from "@/lib/geminiSchemaReview";
@@ -126,10 +126,7 @@ async function buildTransferSchemaPreview(slug: string, locale: Locale): Promise
       { "@type": "Place", name: originLabel },
       { "@type": "Place", name: destinationLabel }
     ],
-    serviceLocation: {
-      "@type": "Place",
-      name: destinationLabel
-    },
+    url: canonical,
     image: [toAbsoluteImageUrl(localizedLanding.heroImage)],
     hasOfferCatalog: {
       "@type": "OfferCatalog",
@@ -173,16 +170,23 @@ async function buildTransferSchemaPreview(slug: string, locale: Locale): Promise
   const businessSchema = {
     "@context": "https://schema.org",
     "@type": "TravelAgency",
+    "@id": `${PROACTIVITIS_URL}#organization`,
     name: "Proactivitis",
     url: "https://proactivitis.com",
     logo: "https://proactivitis.com/icon.png",
     image: [toAbsoluteImageUrl(localizedLanding.heroImage)],
-    sameAs: ["https://www.instagram.com/proactivitis/", "https://www.facebook.com/proactivitis"]
+    sameAs: ["https://www.instagram.com/proactivitis/", "https://www.facebook.com/proactivitis"],
+    telephone: PROACTIVITIS_LOCALBUSINESS.telephone,
+    email: PROACTIVITIS_LOCALBUSINESS.email,
+    priceRange: "$$",
+    address: PROACTIVITIS_LOCALBUSINESS.address,
+    contactPoint: PROACTIVITIS_LOCALBUSINESS.contactPoint
   };
 
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    url: canonical,
     mainEntity: localizedLanding.faq.map((item) => ({
       "@type": "Question",
       name: item.question,
@@ -196,6 +200,7 @@ async function buildTransferSchemaPreview(slug: string, locale: Locale): Promise
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
+    url: canonical,
     itemListElement: [
       {
         "@type": "ListItem",
@@ -249,8 +254,8 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
     resolved?.slug && availableSlugs.includes(resolved.slug) ? resolved.slug : availableSlugs[0] ?? "";
   const preview = selectedSlug ? await buildTransferSchemaPreview(selectedSlug, locale) : null;
   const override = preview?.override ?? null;
-  const health = getSchemaHealthScore(override);
-  const warnings = getSchemaWarnings(override);
+  const health = getSchemaHealthScore(override, preview?.graph ?? null);
+  const warnings = getSchemaWarnings(override, preview?.graph ?? null);
   const faqDefaultValue = resolved?.faqDraft || stringifyFaqItems(override?.faqItems);
   const geminiReview = preview ? await getGeminiSchemaReview(preview.landing.landingSlug, locale) : null;
 

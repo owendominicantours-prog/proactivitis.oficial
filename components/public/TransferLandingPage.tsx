@@ -22,7 +22,7 @@ import { TransferLocationType } from "@prisma/client";
 import { findDynamicLandingBySlug, getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import PublicTransferPage from "@/components/public/PublicTransferPage";
 import { ensureLeadingCapital, normalizeTextDeep } from "@/lib/text-format";
-import { getPriceValidUntil } from "@/lib/seo";
+import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL } from "@/lib/seo";
 import { isIndexableTransferVariant } from "@/lib/seo-index-policy";
 import { applyTransferSchemaOverride, getTransferSchemaOverride } from "@/lib/schemaManager";
 
@@ -826,6 +826,10 @@ export async function TransferLandingPage({
   const schema = {
     "@context": "https://schema.org",
     "@type": "Service",
+    "@id": `${buildCanonical(landing.landingSlug, locale)}#service`,
+    identifier: landing.landingSlug,
+    mainEntityOfPage: buildCanonical(landing.landingSlug, locale),
+    url: buildCanonical(landing.landingSlug, locale),
     serviceType: t("transferLanding.schema.serviceType", { hotel: localizedLanding.hotelName }),
     provider: {
       "@type": "TravelAgency",
@@ -834,10 +838,16 @@ export async function TransferLandingPage({
       logo: `${BASE_URL}/icon.png`,
       sameAs: ["https://www.instagram.com/proactivitis/", "https://www.facebook.com/proactivitis"]
     },
-    areaServed: {
-      "@type": "Place",
-      name: t("transferLanding.schema.area")
-    },
+    areaServed: [
+      {
+        "@type": "Place",
+        name: originLabel
+      },
+      {
+        "@type": "Place",
+        name: destinationLabel
+      }
+    ],
     image: [toAbsoluteImageUrl(localizedLanding.heroImage)],
     hasOfferCatalog: {
       "@type": "OfferCatalog",
@@ -912,16 +922,23 @@ export async function TransferLandingPage({
   const businessSchema = {
     "@context": "https://schema.org",
     "@type": "TravelAgency",
+    "@id": `${PROACTIVITIS_URL}#organization`,
     name: "Proactivitis",
     url: BASE_URL,
     logo: `${BASE_URL}/icon.png`,
     image: [toAbsoluteImageUrl(localizedLanding.heroImage)],
-    sameAs: ["https://www.instagram.com/proactivitis/", "https://www.facebook.com/proactivitis"]
+    sameAs: ["https://www.instagram.com/proactivitis/", "https://www.facebook.com/proactivitis"],
+    telephone: PROACTIVITIS_LOCALBUSINESS.telephone,
+    email: PROACTIVITIS_LOCALBUSINESS.email,
+    priceRange: "$$",
+    address: PROACTIVITIS_LOCALBUSINESS.address,
+    contactPoint: PROACTIVITIS_LOCALBUSINESS.contactPoint
   };
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
+    url: buildCanonical(landing.landingSlug, locale),
     itemListElement: [
       {
         "@type": "ListItem",
@@ -947,6 +964,7 @@ export async function TransferLandingPage({
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    url: buildCanonical(landing.landingSlug, locale),
     mainEntity: localizedLanding.faq.map((item) => ({
       "@type": "Question",
       name: item.question,
