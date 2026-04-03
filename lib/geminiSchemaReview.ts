@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import type { Locale } from "@/lib/translations";
+import type { TransferSchemaOverride } from "@/lib/schemaManager";
 
 type GeminiReviewIssue = {
   severity: "high" | "medium" | "low";
@@ -14,6 +15,7 @@ export type GeminiSchemaReview = {
   summary: string;
   issues: GeminiReviewIssue[];
   recommendedChanges: string[];
+  overrideSuggestions?: Partial<TransferSchemaOverride> | null;
   correctedGraph?: Record<string, unknown> | null;
   rawText?: string;
 };
@@ -121,13 +123,49 @@ Return this exact shape:
     { "severity": "high|medium|low", "title": "short title", "detail": "specific explanation" }
   ],
   "recommendedChanges": ["change 1", "change 2"],
+  "overrideSuggestions": {
+    "identifier": "",
+    "serviceName": "",
+    "serviceType": "",
+    "description": "",
+    "mainEntityOfPage": "",
+    "providerType": "",
+    "providerName": "",
+    "providerImage": "",
+    "offerName": "",
+    "price": "",
+    "priceCurrency": "",
+    "availability": "",
+    "priceValidUntil": "",
+    "lastVerified": "",
+    "priceRange": "",
+    "imageObjectUrl": "",
+    "imageObjectCaption": "",
+    "aggregateRatingValue": "",
+    "aggregateReviewCount": "",
+    "originName": "",
+    "originPlaceId": "",
+    "originLatitude": "",
+    "originLongitude": "",
+    "destinationName": "",
+    "destinationPlaceId": "",
+    "destinationLatitude": "",
+    "destinationLongitude": "",
+    "areaServed": [],
+    "additionalProperties": [],
+    "faqItems": [],
+    "breadcrumbItems": []
+  },
   "correctedGraph": { ...full corrected JSON-LD graph... }
 }
 
 Rules:
 - Do not invent ratings, counts, prices, or coordinates unless already present in the input context.
-- If a value is missing, keep it missing and mention it in issues/recommendations.
+- Fill ALL keys in overrideSuggestions. Never omit keys. If a value cannot be safely inferred, use an empty string, empty array, or null-equivalent empty structure.
+- Prefer filling overrideSuggestions exhaustively from page context, schemaGraph, business defaults, and safe SEO conventions.
+- If a value is missing, keep it empty in overrideSuggestions and mention it in issues/recommendations.
 - Keep correctedGraph valid JSON-LD using schema.org.
+- The overrideSuggestions object is intended to populate a CMS form, so completeness matters more than brevity.
 
 Context:
 - slug: ${slug}
@@ -190,6 +228,10 @@ ${JSON.stringify(schemaGraph, null, 2)}
     recommendedChanges: Array.isArray(parsed.recommendedChanges)
       ? parsed.recommendedChanges.filter((item) => typeof item === "string")
       : [],
+    overrideSuggestions:
+      parsed.overrideSuggestions && isObject(parsed.overrideSuggestions)
+        ? (parsed.overrideSuggestions as Partial<TransferSchemaOverride>)
+        : null,
     correctedGraph:
       parsed.correctedGraph && isObject(parsed.correctedGraph)
         ? (parsed.correctedGraph as Record<string, unknown>)

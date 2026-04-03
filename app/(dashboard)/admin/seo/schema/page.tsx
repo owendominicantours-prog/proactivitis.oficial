@@ -748,6 +748,19 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
                   </div>
                 ) : null}
 
+                {geminiReview.overrideSuggestions ? (
+                  <div className="rounded-xl border border-emerald-200 bg-white p-4">
+                    <p className="text-xs uppercase tracking-[0.2em] text-emerald-700">Override suggestions</p>
+                    <p className="mt-2 text-sm text-slate-600">
+                      Gemini fue instruido para rellenar todas las claves del editor. Si alguna viene vacia, la esta
+                      marcando como no inferible de forma segura.
+                    </p>
+                    <pre className="mt-3 overflow-x-auto whitespace-pre-wrap rounded-lg bg-slate-950 p-4 text-xs leading-6 text-slate-100">
+                      {JSON.stringify(geminiReview.overrideSuggestions, null, 2)}
+                    </pre>
+                  </div>
+                ) : null}
+
                 {geminiReview.correctedGraph ? (
                   <div className="rounded-xl border border-emerald-200 bg-slate-950 p-4">
                     <p className="text-xs uppercase tracking-[0.2em] text-emerald-300">Corrected graph suggested by Gemini</p>
