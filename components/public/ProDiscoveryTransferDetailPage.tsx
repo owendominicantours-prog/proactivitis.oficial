@@ -122,12 +122,15 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
   const landing = allLandings().find((item) => item.landingSlug === landingSlug);
   if (!landing) return notFound();
 
-  const [reviewsRaw, related] = await Promise.all([
+  const [reviewsRaw, totalApprovedReviews, related] = await Promise.all([
     prisma.transferReview.findMany({
       where: { transferLandingSlug: landingSlug, status: "APPROVED" },
       orderBy: { createdAt: "desc" },
-      take: 14,
+      take: 80,
       select: { id: true, customerName: true, rating: true, title: true, body: true, createdAt: true }
+    }),
+    prisma.transferReview.count({
+      where: { transferLandingSlug: landingSlug, status: "APPROVED" }
     }),
     prisma.transferReview.groupBy({
       by: ["transferLandingSlug"],
@@ -222,7 +225,7 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
               aggregateRating: {
                 "@type": "AggregateRating",
                 ratingValue: average,
-                reviewCount: reviews.length
+                reviewCount: totalApprovedReviews
               }
             }
           : {})
@@ -279,7 +282,7 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
               <div className="mt-3 flex items-center gap-2 text-sm text-slate-700">
                 <BubbleRating rating={average} />
                 <span className="font-bold">{average.toFixed(1)}</span>
-                <span>({reviews.length})</span>
+                <span>({totalApprovedReviews})</span>
               </div>
               <p className="mt-4 leading-relaxed text-slate-700">{landing.metaDescription}</p>
               <div className="mt-4 flex flex-wrap gap-2">
@@ -338,7 +341,7 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
             <div className="rounded-2xl bg-slate-50 px-4 py-3 text-right">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{t.reviews}</p>
               <p className="text-xl font-black text-slate-900">{average.toFixed(1)}</p>
-              <p className="text-xs text-slate-500">{reviews.length}</p>
+              <p className="text-xs text-slate-500">{totalApprovedReviews}</p>
             </div>
           </div>
           <ul className="mt-4 space-y-1 text-sm text-slate-700">
@@ -399,6 +402,11 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
               <p className="mt-3 text-slate-600">{t.noReviews}</p>
             ) : (
               <div className="mt-4 space-y-3">
+                {totalApprovedReviews > reviews.length ? (
+                  <p className="text-sm text-slate-500">
+                    Showing {reviews.length} of {totalApprovedReviews} approved reviews.
+                  </p>
+                ) : null}
                 {reviews.map((review) => (
                   <article key={review.id} className="rounded-xl border border-slate-200 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
