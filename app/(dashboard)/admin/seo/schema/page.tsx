@@ -14,6 +14,7 @@ import { normalizeTextDeep } from "@/lib/text-format";
 import { getPriceValidUntil } from "@/lib/seo";
 import { TransferLocationType } from "@prisma/client";
 import type { Locale } from "@/lib/translations";
+import { getGeminiSchemaReview } from "@/lib/geminiSchemaReview";
 import {
   applyTransferSchemaOverride,
   getSchemaHealthScore,
@@ -26,6 +27,7 @@ import {
 import {
   clearTransferSchemaOverrideAction,
   generateTransferFaqDraftAction,
+  reviewTransferSchemaWithGeminiAction,
   saveTransferSchemaOverrideAction
 } from "./actions";
 
@@ -248,6 +250,7 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
   const health = getSchemaHealthScore(override);
   const warnings = getSchemaWarnings(override);
   const faqDefaultValue = resolved?.faqDraft || stringifyFaqItems(override?.faqItems);
+  const geminiReview = preview ? await getGeminiSchemaReview(preview.landing.landingSlug, locale) : null;
 
   return (
     <div className="space-y-8 pb-10">
@@ -651,6 +654,13 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
                 <button type="submit" className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
                   Guardar override
                 </button>
+                <button
+                  type="submit"
+                  formAction={reviewTransferSchemaWithGeminiAction}
+                  className="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800"
+                >
+                  Review with Gemini
+                </button>
                 <Link
                   href={`https://search.google.com/test/rich-results?url=${encodeURIComponent(preview.canonical)}`}
                   target="_blank"
@@ -659,6 +669,11 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
                   Probar en Rich Results
                 </Link>
               </div>
+
+              <input type="hidden" name="page_url" value={preview.canonical} />
+              <input type="hidden" name="page_title" value={preview.localizedLanding.heroTitle} />
+              <input type="hidden" name="page_description" value={preview.localizedLanding.metaDescription} />
+              <input type="hidden" name="schema_graph" value={JSON.stringify(preview.graph)} />
             </form>
 
             <form action={clearTransferSchemaOverrideAction} className="border-t border-slate-200 pt-5">
@@ -677,6 +692,53 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
                 </button>
               </div>
             </form>
+
+            {geminiReview ? (
+              <section className="space-y-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.25em] text-emerald-700">Gemini Review</p>
+                    <h3 className="mt-1 text-lg font-semibold text-emerald-950">{geminiReview.summary}</h3>
+                  </div>
+                  <div className="text-xs text-emerald-800">
+                    <p>Model: {geminiReview.model}</p>
+                    <p>{new Date(geminiReview.generatedAt).toLocaleString("en-US")}</p>
+                  </div>
+                </div>
+
+                {geminiReview.issues.length > 0 ? (
+                  <div className="space-y-3">
+                    {geminiReview.issues.map((issue, index) => (
+                      <article key={`${issue.title}-${index}`} className="rounded-xl border border-emerald-200 bg-white p-4">
+                        <p className="text-xs uppercase tracking-[0.2em] text-emerald-700">{issue.severity}</p>
+                        <p className="mt-1 font-semibold text-slate-900">{issue.title}</p>
+                        <p className="mt-2 text-sm text-slate-600">{issue.detail}</p>
+                      </article>
+                    ))}
+                  </div>
+                ) : null}
+
+                {geminiReview.recommendedChanges.length > 0 ? (
+                  <div className="rounded-xl border border-emerald-200 bg-white p-4">
+                    <p className="text-xs uppercase tracking-[0.2em] text-emerald-700">Recommended changes</p>
+                    <div className="mt-3 space-y-2 text-sm text-slate-700">
+                      {geminiReview.recommendedChanges.map((item) => (
+                        <p key={item}>{item}</p>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {geminiReview.correctedGraph ? (
+                  <div className="rounded-xl border border-emerald-200 bg-slate-950 p-4">
+                    <p className="text-xs uppercase tracking-[0.2em] text-emerald-300">Corrected graph suggested by Gemini</p>
+                    <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-xs leading-6 text-slate-100">
+                      {JSON.stringify(geminiReview.correctedGraph, null, 2)}
+                    </pre>
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
           </section>
         </div>
       ) : (

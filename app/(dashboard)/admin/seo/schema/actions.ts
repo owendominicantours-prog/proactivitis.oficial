@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import type { Locale } from "@/lib/translations";
+import { reviewTransferSchemaWithGemini } from "@/lib/geminiSchemaReview";
 import {
   clearTransferSchemaOverride,
   generateTransferFaqDraft,
@@ -122,4 +123,35 @@ export async function generateTransferFaqDraftAction(formData: FormData) {
   });
 
   redirect(`/admin/seo/schema?${params.toString()}`);
+}
+
+export async function reviewTransferSchemaWithGeminiAction(formData: FormData) {
+  const slug = readField(formData, "slug");
+  const locale = (readField(formData, "locale") || "es") as Locale;
+  const pageUrl = readField(formData, "page_url");
+  const pageTitle = readField(formData, "page_title");
+  const pageDescription = readField(formData, "page_description");
+  const schemaGraphRaw = readField(formData, "schema_graph");
+
+  if (!slug) {
+    throw new Error("Selecciona una landing.");
+  }
+
+  let schemaGraph: Record<string, unknown>;
+  try {
+    schemaGraph = JSON.parse(schemaGraphRaw) as Record<string, unknown>;
+  } catch {
+    throw new Error("El schemaGraph enviado al review no es JSON valido.");
+  }
+
+  await reviewTransferSchemaWithGemini({
+    slug,
+    locale,
+    pageUrl,
+    pageTitle,
+    pageDescription,
+    schemaGraph
+  });
+
+  revalidateTransferSchemaPaths(slug);
 }
