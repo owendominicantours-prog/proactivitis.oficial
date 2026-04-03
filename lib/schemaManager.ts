@@ -4,13 +4,32 @@ import type { Locale } from "@/lib/translations";
 
 type SchemaNode = Record<string, unknown>;
 
+export type SchemaAdditionalProperty = {
+  name: string;
+  value: string;
+};
+
+export type SchemaFaqItem = {
+  question: string;
+  answer: string;
+  image?: string;
+  video?: string;
+};
+
+export type SchemaBreadcrumbItem = {
+  name: string;
+  item: string;
+};
+
 export type TransferSchemaOverride = {
   serviceEnabled?: boolean;
   faqEnabled?: boolean;
   breadcrumbEnabled?: boolean;
+  identifier?: string;
   serviceName?: string;
   serviceType?: string;
   description?: string;
+  mainEntityOfPage?: string;
   providerType?: string;
   providerName?: string;
   providerImage?: string;
@@ -20,10 +39,23 @@ export type TransferSchemaOverride = {
   priceCurrency?: string;
   availability?: string;
   priceValidUntil?: string;
+  lastVerified?: string;
+  priceRange?: string;
+  imageObjectUrl?: string;
+  imageObjectCaption?: string;
   aggregateRatingValue?: string;
   aggregateReviewCount?: string;
-  faqItems?: Array<{ question: string; answer: string }>;
-  breadcrumbItems?: Array<{ name: string; item: string }>;
+  additionalProperties?: SchemaAdditionalProperty[];
+  originName?: string;
+  originPlaceId?: string;
+  originLatitude?: string;
+  originLongitude?: string;
+  destinationName?: string;
+  destinationPlaceId?: string;
+  destinationLatitude?: string;
+  destinationLongitude?: string;
+  faqItems?: SchemaFaqItem[];
+  breadcrumbItems?: SchemaBreadcrumbItem[];
   extraGraph?: SchemaNode[];
 };
 
@@ -50,6 +82,67 @@ const stripContext = (node: SchemaNode): SchemaNode => {
   return cloned;
 };
 
+const buildPlaceNode = ({
+  name,
+  placeId,
+  latitude,
+  longitude
+}: {
+  name?: string;
+  placeId?: string;
+  latitude?: string;
+  longitude?: string;
+}) => {
+  if (!name && !placeId && !latitude && !longitude) return null;
+  const node: SchemaNode = {
+    "@type": "Place"
+  };
+  if (name) node.name = name;
+  if (placeId) node.identifier = placeId;
+  const lat = toFiniteNumber(latitude);
+  const lng = toFiniteNumber(longitude);
+  if (lat !== null && lng !== null) {
+    node.geo = {
+      "@type": "GeoCoordinates",
+      latitude: lat,
+      longitude: lng
+    };
+  }
+  return node;
+};
+
+export function getSchemaHealthScore(override?: TransferSchemaOverride | null) {
+  const checks = [
+    Boolean(override?.identifier),
+    Boolean(override?.serviceName),
+    Boolean(override?.price),
+    Boolean(override?.priceCurrency),
+    Boolean(override?.aggregateRatingValue && override?.aggregateReviewCount),
+    Boolean(override?.destinationPlaceId || (override?.destinationLatitude && override?.destinationLongitude)),
+    Boolean(override?.additionalProperties && override.additionalProperties.length > 0),
+    Boolean(override?.lastVerified)
+  ];
+  const completed = checks.filter(Boolean).length;
+  return {
+    completed,
+    total: checks.length,
+    percentage: Math.round((completed / checks.length) * 100)
+  };
+}
+
+export function getSchemaWarnings(override?: TransferSchemaOverride | null) {
+  const warnings: string[] = [];
+  if (!override?.identifier) warnings.push("Falta identifier estable.");
+  if (!override?.price) warnings.push("Falta price override para control manual.");
+  if (!override?.priceCurrency) warnings.push("Falta priceCurrency ISO.");
+  if (!override?.mainEntityOfPage) warnings.push("Falta mainEntityOfPage/canonical explicita.");
+  if (!override?.aggregateRatingValue || !override?.aggregateReviewCount) warnings.push("No hay aggregateRating manual.");
+  if (!override?.destinationPlaceId && !(override?.destinationLatitude && override?.destinationLongitude)) {
+    warnings.push("Falta destino con Place ID o coordenadas.");
+  }
+  return warnings;
+}
+
 export async function getSchemaManagerStore(): Promise<SchemaManagerStore> {
   try {
     const record = await prisma.siteContentSetting.findUnique({
@@ -75,6 +168,7 @@ export async function getTransferSchemaOverride(
     ...globalOverride,
     ...localeOverride,
     areaServed: localeOverride.areaServed ?? globalOverride.areaServed,
+    additionalProperties: localeOverride.additionalProperties ?? globalOverride.additionalProperties,
     faqItems: localeOverride.faqItems ?? globalOverride.faqItems,
     breadcrumbItems: localeOverride.breadcrumbItems ?? globalOverride.breadcrumbItems,
     extraGraph: localeOverride.extraGraph ?? globalOverride.extraGraph
@@ -135,22 +229,24 @@ export function parseTextareaList(value: string): string[] {
     .filter(Boolean);
 }
 
-export function parseFaqItems(value: string): Array<{ question: string; answer: string }> {
+export function parseFaqItems(value: string): SchemaFaqItem[] {
   return value
     .split(/\r?\n/g)
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => {
-      const [question, ...rest] = line.split("|");
+      const [question, answer, image, video] = line.split("|").map((item) => item.trim());
       return {
-        question: (question ?? "").trim(),
-        answer: rest.join("|").trim()
+        question: question ?? "",
+        answer: answer ?? "",
+        image: image || undefined,
+        video: video || undefined
       };
     })
     .filter((item) => item.question && item.answer);
 }
 
-export function parseBreadcrumbItems(value: string): Array<{ name: string; item: string }> {
+export function parseBreadcrumbItems(value: string): SchemaBreadcrumbItem[] {
   return value
     .split(/\r?\n/g)
     .map((line) => line.trim())
@@ -163,6 +259,21 @@ export function parseBreadcrumbItems(value: string): Array<{ name: string; item:
       };
     })
     .filter((item) => item.name && item.item);
+}
+
+export function parseAdditionalProperties(value: string): SchemaAdditionalProperty[] {
+  return value
+    .split(/\r?\n/g)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [name, ...rest] = line.split("|");
+      return {
+        name: (name ?? "").trim(),
+        value: rest.join("|").trim()
+      };
+    })
+    .filter((item) => item.name && item.value);
 }
 
 export function parseExtraGraph(value: string): SchemaNode[] {
@@ -179,12 +290,47 @@ export function parseExtraGraph(value: string): SchemaNode[] {
   }
 }
 
-export function stringifyFaqItems(items?: Array<{ question: string; answer: string }>) {
-  return (items ?? []).map((item) => `${item.question} | ${item.answer}`).join("\n");
+export function stringifyFaqItems(items?: SchemaFaqItem[]) {
+  return (items ?? [])
+    .map((item) => [item.question, item.answer, item.image ?? "", item.video ?? ""].join(" | "))
+    .join("\n");
 }
 
-export function stringifyBreadcrumbItems(items?: Array<{ name: string; item: string }>) {
+export function stringifyBreadcrumbItems(items?: SchemaBreadcrumbItem[]) {
   return (items ?? []).map((item) => `${item.name} | ${item.item}`).join("\n");
+}
+
+export function stringifyAdditionalProperties(items?: SchemaAdditionalProperty[]) {
+  return (items ?? []).map((item) => `${item.name} | ${item.value}`).join("\n");
+}
+
+export function generateTransferFaqDraft({
+  serviceName,
+  destinationName,
+  price,
+  currency
+}: {
+  serviceName: string;
+  destinationName: string;
+  price?: string | number | null;
+  currency?: string | null;
+}): SchemaFaqItem[] {
+  const amount = String(price ?? "").trim();
+  const money = String(currency ?? "USD").trim() || "USD";
+  return [
+    {
+      question: `How much is ${serviceName}?`,
+      answer: amount ? `The current direct booking rate is ${amount} ${money}.` : `Request a live quote for the latest ${money} rate.`
+    },
+    {
+      question: `Where do I meet my driver for ${destinationName}?`,
+      answer: "Your driver waits at arrivals with a name sign and tracks your flight in real time."
+    },
+    {
+      question: "What is included in the private transfer?",
+      answer: "Private vehicle, luggage assistance, air conditioning, and direct service to the destination."
+    }
+  ];
 }
 
 export function applyTransferSchemaOverride({
@@ -201,27 +347,80 @@ export function applyTransferSchemaOverride({
   override?: TransferSchemaOverride | null;
 }) {
   const nodes: SchemaNode[] = [];
+  const businessNode = cloneNode(businessSchema);
   const serviceNode = cloneNode(serviceSchema);
   const faqNode = cloneNode(faqSchema);
   const breadcrumbNode = cloneNode(breadcrumbSchema);
 
   if (override) {
+    if (override.identifier) {
+      serviceNode.identifier = override.identifier;
+      serviceNode["@id"] = String(serviceNode["@id"] ?? override.identifier);
+    }
     if (override.serviceName) serviceNode.name = override.serviceName;
     if (override.serviceType) serviceNode.serviceType = override.serviceType;
     if (override.description) serviceNode.description = override.description;
+    if (override.mainEntityOfPage) serviceNode.mainEntityOfPage = override.mainEntityOfPage;
+    if (override.lastVerified) {
+      serviceNode.dateModified = override.lastVerified;
+      serviceNode.sdDatePublished = override.lastVerified;
+    }
 
-    if (override.providerType || override.providerName || override.providerImage) {
+    if (override.providerType || override.providerName || override.providerImage || override.priceRange) {
       const provider = isObject(serviceNode.provider) ? cloneNode(serviceNode.provider as SchemaNode) : {};
       if (override.providerType) provider["@type"] = override.providerType;
       if (override.providerName) provider.name = override.providerName;
-      if (override.providerImage) provider.image = override.providerImage;
+      if (override.providerImage) {
+        provider.image = override.providerImage;
+        provider.logo = provider.logo ?? override.providerImage;
+      }
+      if (override.priceRange) provider.priceRange = override.priceRange;
       serviceNode.provider = provider;
+      Object.assign(businessNode, provider);
     }
 
-    if (override.areaServed && override.areaServed.length > 0) {
-      serviceNode.areaServed = override.areaServed.map((name) => ({
-        "@type": "Place",
-        name
+    const originPlace = buildPlaceNode({
+      name: override.originName,
+      placeId: override.originPlaceId,
+      latitude: override.originLatitude,
+      longitude: override.originLongitude
+    });
+    const destinationPlace = buildPlaceNode({
+      name: override.destinationName,
+      placeId: override.destinationPlaceId,
+      latitude: override.destinationLatitude,
+      longitude: override.destinationLongitude
+    });
+
+    if (originPlace || destinationPlace || (override.areaServed && override.areaServed.length > 0)) {
+      const areaServed = [
+        ...(originPlace ? [originPlace] : []),
+        ...(destinationPlace ? [destinationPlace] : []),
+        ...((override.areaServed ?? []).map((name) => ({ "@type": "Place", name }) as SchemaNode))
+      ];
+      if (areaServed.length > 0) {
+        serviceNode.areaServed = areaServed;
+      }
+      if (destinationPlace) {
+        serviceNode.serviceLocation = destinationPlace;
+      }
+    }
+
+    if (override.imageObjectUrl) {
+      serviceNode.image = [
+        {
+          "@type": "ImageObject",
+          url: override.imageObjectUrl,
+          ...(override.imageObjectCaption ? { caption: override.imageObjectCaption } : {})
+        }
+      ];
+    }
+
+    if (override.additionalProperties && override.additionalProperties.length > 0) {
+      serviceNode.additionalProperty = override.additionalProperties.map((item) => ({
+        "@type": "PropertyValue",
+        name: item.name,
+        value: item.value
       }));
     }
 
@@ -236,9 +435,11 @@ export function applyTransferSchemaOverride({
         if (override.priceCurrency) firstOffer.priceCurrency = override.priceCurrency;
         if (override.availability) firstOffer.availability = override.availability;
         if (override.priceValidUntil) firstOffer.priceValidUntil = override.priceValidUntil;
+        if (override.lastVerified) firstOffer.validFrom = override.lastVerified;
         if (override.offerName && isObject(firstOffer.itemOffered)) {
           const itemOffered = cloneNode(firstOffer.itemOffered as SchemaNode);
           itemOffered.name = override.offerName;
+          if (override.identifier) itemOffered.identifier = override.identifier;
           firstOffer.itemOffered = itemOffered;
         }
         itemListElement[0] = firstOffer;
@@ -267,7 +468,9 @@ export function applyTransferSchemaOverride({
         name: item.question,
         acceptedAnswer: {
           "@type": "Answer",
-          text: item.answer
+          text: item.answer,
+          ...(item.image ? { image: item.image } : {}),
+          ...(item.video ? { subjectOf: item.video } : {})
         }
       }));
     }
@@ -282,7 +485,7 @@ export function applyTransferSchemaOverride({
     }
   }
 
-  nodes.push(stripContext(businessSchema));
+  nodes.push(stripContext(businessNode));
   if (override?.serviceEnabled !== false) nodes.push(stripContext(serviceNode));
   if (override?.faqEnabled !== false) nodes.push(stripContext(faqNode));
   if (override?.breadcrumbEnabled !== false) nodes.push(stripContext(breadcrumbNode));
