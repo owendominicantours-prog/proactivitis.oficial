@@ -3,10 +3,11 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import type { Locale } from "@/lib/translations";
-import { reviewTransferSchemaWithGemini } from "@/lib/geminiSchemaReview";
+import { getGeminiSchemaReview, reviewTransferSchemaWithGemini } from "@/lib/geminiSchemaReview";
 import {
   clearTransferSchemaOverride,
   generateTransferFaqDraft,
+  getTransferSchemaOverride,
   parseAdditionalProperties,
   parseBreadcrumbItems,
   parseExtraGraph,
@@ -45,6 +46,14 @@ const buildOverrideFromForm = (formData: FormData): TransferSchemaOverride => ({
   providerType: readField(formData, "provider_type") || undefined,
   providerName: readField(formData, "provider_name") || undefined,
   providerImage: readField(formData, "provider_image") || undefined,
+  providerTelephone: readField(formData, "provider_telephone") || undefined,
+  providerEmail: readField(formData, "provider_email") || undefined,
+  contactType: readField(formData, "contact_type") || undefined,
+  streetAddress: readField(formData, "street_address") || undefined,
+  addressLocality: readField(formData, "address_locality") || undefined,
+  addressRegion: readField(formData, "address_region") || undefined,
+  postalCode: readField(formData, "postal_code") || undefined,
+  addressCountry: readField(formData, "address_country") || undefined,
   areaServed: parseTextareaList(readField(formData, "area_served")),
   offerName: readField(formData, "offer_name") || undefined,
   price: readField(formData, "price") || undefined,
@@ -70,6 +79,27 @@ const buildOverrideFromForm = (formData: FormData): TransferSchemaOverride => ({
   breadcrumbItems: parseBreadcrumbItems(readField(formData, "breadcrumb_items")),
   extraGraph: parseExtraGraph(readField(formData, "extra_graph"))
 });
+
+const hasMeaningfulValue = (value: unknown) => {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "object") return Object.keys(value as Record<string, unknown>).length > 0;
+  return true;
+};
+
+const mergeSuggestedOverride = (
+  existing: TransferSchemaOverride | null,
+  suggestion: Partial<TransferSchemaOverride> | null | undefined
+): TransferSchemaOverride => {
+  const merged: TransferSchemaOverride = { ...(existing ?? {}) };
+  Object.entries(suggestion ?? {}).forEach(([key, value]) => {
+    if (hasMeaningfulValue(value)) {
+      (merged as Record<string, unknown>)[key] = value;
+    }
+  });
+  return merged;
+};
 
 export async function saveTransferSchemaOverrideAction(formData: FormData) {
   const slug = readField(formData, "slug");
@@ -162,4 +192,27 @@ export async function reviewTransferSchemaWithGeminiAction(formData: FormData) {
       `/admin/seo/schema?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}&gemini_error=${encodeURIComponent(message)}`
     );
   }
+}
+
+export async function applyGeminiOverrideSuggestionsAction(formData: FormData) {
+  const slug = readField(formData, "slug");
+  const locale = (readField(formData, "locale") || "es") as Locale;
+
+  if (!slug) {
+    throw new Error("Selecciona una landing.");
+  }
+
+  const review = await getGeminiSchemaReview(slug, locale);
+  if (!review?.overrideSuggestions) {
+    redirect(
+      `/admin/seo/schema?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}&gemini_error=${encodeURIComponent("Gemini aun no tiene overrideSuggestions guardadas para esta landing.")}`
+    );
+  }
+
+  const storeScope = locale;
+  const current = await getTransferSchemaOverride(slug, locale);
+  const merged = mergeSuggestedOverride(current, review.overrideSuggestions);
+  await saveTransferSchemaOverride(slug, storeScope, merged);
+  revalidateTransferSchemaPaths(slug);
+  redirect(`/admin/seo/schema?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}&gemini=applied`);
 }

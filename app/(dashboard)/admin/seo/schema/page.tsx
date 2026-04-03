@@ -25,6 +25,7 @@ import {
   stringifyFaqItems
 } from "@/lib/schemaManager";
 import {
+  applyGeminiOverrideSuggestionsAction,
   clearTransferSchemaOverrideAction,
   generateTransferFaqDraftAction,
   reviewTransferSchemaWithGeminiAction,
@@ -316,6 +317,12 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
         </section>
       ) : null}
 
+      {resolved?.gemini === "applied" ? (
+        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 shadow-sm">
+          Se aplicaron las overrideSuggestions de Gemini al editor de esta landing.
+        </section>
+      ) : null}
+
       {resolved?.gemini_error ? (
         <section className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900 shadow-sm">
           Gemini devolvio un error: {resolved.gemini_error}
@@ -454,6 +461,42 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
                   <label className="text-sm text-slate-600">
                     Provider image/logo
                     <input name="provider_image" defaultValue={override?.providerImage ?? "https://proactivitis.com/logo.png"} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
+                  </label>
+                </div>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <label className="text-sm text-slate-600">
+                    Provider telephone
+                    <input name="provider_telephone" defaultValue={override?.providerTelephone ?? "+1-809-394-9877"} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
+                  </label>
+                  <label className="text-sm text-slate-600">
+                    Provider email
+                    <input name="provider_email" defaultValue={override?.providerEmail ?? "info@proactivitis.com"} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
+                  </label>
+                  <label className="text-sm text-slate-600">
+                    Contact type
+                    <input name="contact_type" defaultValue={override?.contactType ?? "Customer Service"} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
+                  </label>
+                </div>
+                <div className="grid gap-4 md:grid-cols-5">
+                  <label className="text-sm text-slate-600">
+                    Street
+                    <input name="street_address" defaultValue={override?.streetAddress ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
+                  </label>
+                  <label className="text-sm text-slate-600">
+                    City
+                    <input name="address_locality" defaultValue={override?.addressLocality ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
+                  </label>
+                  <label className="text-sm text-slate-600">
+                    Region
+                    <input name="address_region" defaultValue={override?.addressRegion ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
+                  </label>
+                  <label className="text-sm text-slate-600">
+                    Postal code
+                    <input name="postal_code" defaultValue={override?.postalCode ?? ""} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
+                  </label>
+                  <label className="text-sm text-slate-600">
+                    Country
+                    <input name="address_country" defaultValue={override?.addressCountry ?? "DO"} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
                   </label>
                 </div>
                 <label className="text-sm text-slate-600">
@@ -758,6 +801,13 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
                     <pre className="mt-3 overflow-x-auto whitespace-pre-wrap rounded-lg bg-slate-950 p-4 text-xs leading-6 text-slate-100">
                       {JSON.stringify(geminiReview.overrideSuggestions, null, 2)}
                     </pre>
+                    <form action={applyGeminiOverrideSuggestionsAction} className="mt-4">
+                      <input type="hidden" name="slug" value={preview.landing.landingSlug} />
+                      <input type="hidden" name="locale" value={locale} />
+                      <button type="submit" className="rounded-xl border border-emerald-300 bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-900">
+                        Apply Gemini suggestions
+                      </button>
+                    </form>
                   </div>
                 ) : null}
 

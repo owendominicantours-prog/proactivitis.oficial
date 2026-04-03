@@ -33,6 +33,14 @@ export type TransferSchemaOverride = {
   providerType?: string;
   providerName?: string;
   providerImage?: string;
+  providerTelephone?: string;
+  providerEmail?: string;
+  contactType?: string;
+  streetAddress?: string;
+  addressLocality?: string;
+  addressRegion?: string;
+  postalCode?: string;
+  addressCountry?: string;
   areaServed?: string[];
   offerName?: string;
   price?: string;
@@ -444,7 +452,20 @@ export function applyTransferSchemaOverride({
       serviceNode.sdDatePublished = override.lastVerified;
     }
 
-    if (override.providerType || override.providerName || override.providerImage || override.priceRange) {
+    if (
+      override.providerType ||
+      override.providerName ||
+      override.providerImage ||
+      override.providerTelephone ||
+      override.providerEmail ||
+      override.contactType ||
+      override.streetAddress ||
+      override.addressLocality ||
+      override.addressRegion ||
+      override.postalCode ||
+      override.addressCountry ||
+      override.priceRange
+    ) {
       const provider = isObject(serviceNode.provider) ? cloneNode(serviceNode.provider as SchemaNode) : {};
       if (override.providerType) provider["@type"] = override.providerType;
       if (override.providerName) provider.name = override.providerName;
@@ -452,7 +473,33 @@ export function applyTransferSchemaOverride({
         provider.image = override.providerImage;
         provider.logo = provider.logo ?? override.providerImage;
       }
+      if (override.providerTelephone) provider.telephone = override.providerTelephone;
+      if (override.providerEmail) provider.email = override.providerEmail;
       if (override.priceRange) provider.priceRange = override.priceRange;
+      if (
+        override.streetAddress ||
+        override.addressLocality ||
+        override.addressRegion ||
+        override.postalCode ||
+        override.addressCountry
+      ) {
+        provider.address = {
+          "@type": "PostalAddress",
+          ...(override.streetAddress ? { streetAddress: override.streetAddress } : {}),
+          ...(override.addressLocality ? { addressLocality: override.addressLocality } : {}),
+          ...(override.addressRegion ? { addressRegion: override.addressRegion } : {}),
+          ...(override.postalCode ? { postalCode: override.postalCode } : {}),
+          ...(override.addressCountry ? { addressCountry: override.addressCountry } : {})
+        };
+      }
+      if (override.contactType || override.providerTelephone || override.providerEmail) {
+        provider.contactPoint = {
+          "@type": "ContactPoint",
+          ...(override.contactType ? { contactType: override.contactType } : {}),
+          ...(override.providerTelephone ? { telephone: override.providerTelephone } : {}),
+          ...(override.providerEmail ? { email: override.providerEmail } : {})
+        };
+      }
       serviceNode.provider = provider;
       Object.assign(businessNode, provider);
     }
