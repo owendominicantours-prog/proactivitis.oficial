@@ -25,6 +25,7 @@ import { ensureLeadingCapital, normalizeTextDeep } from "@/lib/text-format";
 import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL } from "@/lib/seo";
 import { isIndexableTransferVariant } from "@/lib/seo-index-policy";
 import { applyTransferSchemaOverride, getTransferSchemaOverride } from "@/lib/schemaManager";
+import { getApprovedTransferReviewsForLanding, getTransferReviewSummaryForLanding } from "@/lib/transferReviews";
 
 const DEFAULT_AIRPORT_SLUG = "puj-airport";
 const DEFAULT_AIRPORT_NAME = "Punta Cana International Airport (PUJ)";
@@ -803,25 +804,13 @@ export async function TransferLandingPage({
     orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
     take: 6
   });
-  const approvedTransferReviews = await prisma.transferReview.findMany({
-    where: {
-      status: "APPROVED",
-      transferLandingSlug: landing.landingSlug
-    },
-    orderBy: [{ approvedAt: "desc" }, { createdAt: "desc" }],
-    take: 28
-  });
-  const totalApprovedTransferReviews = await prisma.transferReview.count({
-    where: {
-      status: "APPROVED",
-      transferLandingSlug: landing.landingSlug
-    }
-  });
+  const [approvedTransferReviews, transferReviewSummary] = await Promise.all([
+    getApprovedTransferReviewsForLanding(landing.landingSlug, 28),
+    getTransferReviewSummaryForLanding(landing.landingSlug)
+  ]);
+  const totalApprovedTransferReviews = transferReviewSummary.count;
   const initialVisibleTransferReviews = 7;
-  const transferReviewAverage =
-    approvedTransferReviews.length > 0
-      ? Math.round((approvedTransferReviews.reduce((sum, review) => sum + review.rating, 0) / approvedTransferReviews.length) * 10) / 10
-      : 0;
+  const transferReviewAverage = Math.round(transferReviewSummary.average * 10) / 10;
 
   const schema = {
     "@context": "https://schema.org",

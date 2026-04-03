@@ -15,6 +15,7 @@ import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL } from
 import { TransferLocationType } from "@prisma/client";
 import type { Locale } from "@/lib/translations";
 import { getGeminiSchemaReview } from "@/lib/geminiSchemaReview";
+import { getApprovedTransferReviewsForLanding, getTransferReviewSummaryForLanding } from "@/lib/transferReviews";
 import {
   applyTransferSchemaOverride,
   getSchemaHealthScore,
@@ -74,18 +75,12 @@ async function buildTransferSchemaPreview(slug: string, locale: Locale): Promise
     ? landing.landingSlug.split("-to-")
     : ["puj-airport", landing.hotelSlug];
 
-  const [originLocation, destinationLocation, approvedTransferReviews, totalApprovedTransferReviews, override] =
+  const [originLocation, destinationLocation, approvedTransferReviews, transferReviewSummary, override] =
     await Promise.all([
       resolveLocationByAlias(originSlugRaw || "puj-airport", TransferLocationType.AIRPORT),
       resolveLocationByAlias(destinationSlugRaw || landing.hotelSlug),
-      prisma.transferReview.findMany({
-        where: { status: "APPROVED", transferLandingSlug: landing.landingSlug },
-        orderBy: [{ approvedAt: "desc" }, { createdAt: "desc" }],
-        take: 7
-      }),
-      prisma.transferReview.count({
-        where: { status: "APPROVED", transferLandingSlug: landing.landingSlug }
-      }),
+      getApprovedTransferReviewsForLanding(landing.landingSlug, 7),
+      getTransferReviewSummaryForLanding(landing.landingSlug),
       getTransferSchemaOverride(landing.landingSlug, locale)
     ]);
 
@@ -93,13 +88,8 @@ async function buildTransferSchemaPreview(slug: string, locale: Locale): Promise
   const destinationLabel = destinationLocation?.name ?? localizedLanding.hotelName;
   const canonical = buildCanonical(landing.landingSlug, locale);
   const marketTitles = buildMarketTransferTitles(locale, localizedLanding.hotelName, originLabel);
-  const transferReviewAverage =
-    approvedTransferReviews.length > 0
-      ? Math.round(
-          (approvedTransferReviews.reduce((sum, review) => sum + review.rating, 0) / approvedTransferReviews.length) *
-            10
-        ) / 10
-      : 0;
+  const totalApprovedTransferReviews = transferReviewSummary.count;
+  const transferReviewAverage = Math.round(transferReviewSummary.average * 10) / 10;
   const identifier = landing.landingSlug;
 
   const serviceSchema = {

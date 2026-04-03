@@ -8,6 +8,7 @@ import { allLandings } from "@/data/transfer-landings";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_URL, getPriceValidUntil } from "@/lib/seo";
 import type { Locale } from "@/lib/translations";
+import { buildTransferReviewWhereForLanding } from "@/lib/transferReviews";
 
 type Props = {
   locale: Locale;
@@ -125,13 +126,13 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
 
   const [reviewsRaw, totalApprovedReviews, related] = await Promise.all([
     prisma.transferReview.findMany({
-      where: { transferLandingSlug: landingSlug, status: "APPROVED" },
+      where: buildTransferReviewWhereForLanding(landingSlug),
       orderBy: { createdAt: "desc" },
       take: 80,
       select: { id: true, customerName: true, rating: true, title: true, body: true, createdAt: true }
     }),
     prisma.transferReview.count({
-      where: { transferLandingSlug: landingSlug, status: "APPROVED" }
+      where: buildTransferReviewWhereForLanding(landingSlug)
     }),
     prisma.transferReview.groupBy({
       by: ["transferLandingSlug"],
@@ -221,27 +222,6 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
             returnFees: "https://schema.org/FreeReturn"
           }
         },
-        ...(reviews.length
-          ? {
-              aggregateRating: {
-                "@type": "AggregateRating",
-                ratingValue: average,
-                reviewCount: totalApprovedReviews
-              },
-              review: reviews.slice(0, initialVisibleReviews).map((review) => ({
-                "@type": "Review",
-                author: { "@type": "Person", name: review.customerName },
-                datePublished: review.createdAt.toISOString(),
-                reviewBody: review.body,
-                ...(review.title ? { name: review.title } : {}),
-                reviewRating: {
-                  "@type": "Rating",
-                  ratingValue: review.rating,
-                  bestRating: 5
-                }
-              }))
-            }
-          : {})
       },
       {
         "@type": "BreadcrumbList",
