@@ -7,8 +7,10 @@ const user = process.env.SMTP_USER;
 const pass = process.env.SMTP_PASS;
 
 let mailAgent: ReturnType<typeof nodemailer.createTransport> | null = null;
-if (host && port && user && pass) {
-  mailAgent = nodemailer.createTransport({
+
+const createMailAgent = () => {
+  if (!host || !port || !user || !pass) return null;
+  return nodemailer.createTransport({
     host,
     port,
     secure: port === 465,
@@ -17,7 +19,20 @@ if (host && port && user && pass) {
       pass
     }
   });
-}
+};
+
+const getMailAgent = () => {
+  if (!mailAgent) {
+    mailAgent = createMailAgent();
+  }
+  return mailAgent;
+};
+
+const shouldRetryTransport = (error: unknown) => {
+  if (!(error instanceof Error)) return false;
+  const code = (error as Error & { code?: string }).code;
+  return code === "ECONNECTION" || /connection closed unexpectedly/i.test(error.message);
+};
 
 export async function sendEmail({
   to,
@@ -30,11 +45,12 @@ export async function sendEmail({
   html: string;
   from?: string;
 }) {
-  if (!mailAgent) {
+  const agent = getMailAgent();
+  if (!agent) {
     console.warn("SMTP credentials missing; email not sent", to, subject);
     return null;
   }
-  return mailAgent.sendMail({
+  const payload = {
     from: from ?? `"Proactivitis" <${user}>`,
     to,
     subject,
@@ -47,5 +63,18 @@ export async function sendEmail({
       "X-Priority": "3",
       "X-Mailer": "Proactivitis CRM"
     }
-  });
+  };
+
+  try {
+    return await agent.sendMail(payload);
+  } catch (error) {
+    if (!shouldRetryTransport(error)) {
+      throw error;
+    }
+    mailAgent = createMailAgent();
+    if (!mailAgent) {
+      throw error;
+    }
+    return mailAgent.sendMail(payload);
+  }
 }
