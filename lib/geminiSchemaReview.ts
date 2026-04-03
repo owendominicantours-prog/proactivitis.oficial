@@ -115,6 +115,7 @@ Goals:
 2. Find missing high-value structured data fields.
 3. Keep recommendations realistic and conservative.
 4. Return strict JSON only.
+5. Optimize for Google Search Console safety, not schema density.
 
 Return this exact shape:
 {
@@ -174,6 +175,12 @@ Rules:
 - If a value is missing, keep it empty in overrideSuggestions and mention it in issues/recommendations.
 - Keep correctedGraph valid JSON-LD using schema.org.
 - The overrideSuggestions object is intended to populate a CMS form, so completeness matters more than brevity.
+- This page type is a travel transfer landing and its main commercial node is Service.
+- For Google Search Console safety, never place aggregateRating on a Service node for this page type.
+- If review data exists, you may mention that in issues/recommendations, but keep aggregateRatingValue and aggregateReviewCount empty in overrideSuggestions unless the parent type is explicitly Google-safe for review snippets.
+- Prefer removing risky properties over enriching the graph.
+- Do not add or keep shippingDetails, hasMerchantReturnPolicy, sdDatePublished, or subjectOf on this transfer schema.
+- Avoid duplicate url properties on secondary nodes such as FAQPage or BreadcrumbList unless they are strictly necessary.
 
 Context:
 - slug: ${slug}
@@ -217,6 +224,14 @@ ${JSON.stringify(schemaGraph, null, 2)}
   }
 
   const parsed = parseJsonFromText(text);
+  const sanitizedOverrideSuggestions =
+    parsed.overrideSuggestions && isObject(parsed.overrideSuggestions)
+      ? ({
+          ...(parsed.overrideSuggestions as Partial<TransferSchemaOverride>),
+          aggregateRatingValue: "",
+          aggregateReviewCount: ""
+        } as Partial<TransferSchemaOverride>)
+      : null;
   const review: GeminiSchemaReview = {
     generatedAt: new Date().toISOString(),
     model: DEFAULT_GEMINI_MODEL,
@@ -236,10 +251,7 @@ ${JSON.stringify(schemaGraph, null, 2)}
     recommendedChanges: Array.isArray(parsed.recommendedChanges)
       ? parsed.recommendedChanges.filter((item) => typeof item === "string")
       : [],
-    overrideSuggestions:
-      parsed.overrideSuggestions && isObject(parsed.overrideSuggestions)
-        ? (parsed.overrideSuggestions as Partial<TransferSchemaOverride>)
-        : null,
+    overrideSuggestions: sanitizedOverrideSuggestions,
     correctedGraph:
       parsed.correctedGraph && isObject(parsed.correctedGraph)
         ? (parsed.correctedGraph as Record<string, unknown>)

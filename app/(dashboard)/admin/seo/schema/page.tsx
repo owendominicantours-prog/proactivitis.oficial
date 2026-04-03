@@ -157,15 +157,7 @@ async function buildTransferSchemaPreview(slug: string, locale: Locale): Promise
         }
       ]
     },
-    ...(totalApprovedTransferReviews > 0
-      ? {
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: transferReviewAverage,
-            reviewCount: totalApprovedTransferReviews
-          }
-        }
-      : {})
+    ...(totalApprovedTransferReviews > 0 ? {} : {})
   };
 
   const businessSchema = {

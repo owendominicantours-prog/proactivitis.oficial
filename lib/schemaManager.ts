@@ -155,14 +155,8 @@ export function getSchemaHealthScore(
         (isObject(serviceNode?.offers as unknown) && (serviceNode?.offers as SchemaNode).priceCurrency) ||
         (isObject(serviceNode?.hasOfferCatalog as unknown) &&
           Array.isArray((serviceNode?.hasOfferCatalog as SchemaNode).itemListElement) &&
-          isObject(((serviceNode?.hasOfferCatalog as SchemaNode).itemListElement as unknown[])[0]) &&
-          (((serviceNode?.hasOfferCatalog as SchemaNode).itemListElement as SchemaNode[])[0].priceCurrency as unknown))
-    ),
-    Boolean(
-      (override?.aggregateRatingValue && override?.aggregateReviewCount) ||
-        (isObject(serviceNode?.aggregateRating as unknown) &&
-          (serviceNode?.aggregateRating as SchemaNode).ratingValue &&
-          (serviceNode?.aggregateRating as SchemaNode).reviewCount)
+        isObject(((serviceNode?.hasOfferCatalog as SchemaNode).itemListElement as unknown[])[0]) &&
+        (((serviceNode?.hasOfferCatalog as SchemaNode).itemListElement as SchemaNode[])[0].priceCurrency as unknown))
     ),
     Boolean(
       override?.destinationPlaceId ||
@@ -204,16 +198,6 @@ export function getSchemaWarnings(
     warnings.push("Falta priceCurrency ISO.");
   }
   if (!override?.mainEntityOfPage && !serviceNode?.mainEntityOfPage) warnings.push("Falta mainEntityOfPage/canonical explicita.");
-  if (
-    !(
-      (override?.aggregateRatingValue && override?.aggregateReviewCount) ||
-      (isObject(serviceNode?.aggregateRating as unknown) &&
-        (serviceNode?.aggregateRating as SchemaNode).ratingValue &&
-        (serviceNode?.aggregateRating as SchemaNode).reviewCount)
-    )
-  ) {
-    warnings.push("No hay aggregateRating disponible.");
-  }
   if (
     !(
       override?.destinationPlaceId ||
@@ -449,7 +433,6 @@ export function applyTransferSchemaOverride({
     if (override.mainEntityOfPage) serviceNode.mainEntityOfPage = override.mainEntityOfPage;
     if (override.lastVerified) {
       serviceNode.dateModified = override.lastVerified;
-      serviceNode.sdDatePublished = override.lastVerified;
     }
 
     if (
@@ -526,9 +509,6 @@ export function applyTransferSchemaOverride({
       if (areaServed.length > 0) {
         serviceNode.areaServed = areaServed;
       }
-      if (destinationPlace) {
-        serviceNode.serviceLocation = destinationPlace;
-      }
     }
 
     if (override.imageObjectUrl) {
@@ -573,17 +553,7 @@ export function applyTransferSchemaOverride({
       }
     }
 
-    const ratingValue = toFiniteNumber(override.aggregateRatingValue);
-    const reviewCount = toFiniteNumber(override.aggregateReviewCount);
-    if (ratingValue && reviewCount) {
-      serviceNode.aggregateRating = {
-        "@type": "AggregateRating",
-        ratingValue,
-        reviewCount,
-        bestRating: 5,
-        worstRating: 1
-      };
-    } else if (override.aggregateRatingValue !== undefined || override.aggregateReviewCount !== undefined) {
+    if (override.aggregateRatingValue !== undefined || override.aggregateReviewCount !== undefined) {
       delete serviceNode.aggregateRating;
     }
 
@@ -593,9 +563,7 @@ export function applyTransferSchemaOverride({
         name: item.question,
         acceptedAnswer: {
           "@type": "Answer",
-          text: item.answer,
-          ...(item.image ? { image: item.image } : {}),
-          ...(item.video ? { subjectOf: item.video } : {})
+          text: item.answer
         }
       }));
     }
@@ -611,6 +579,7 @@ export function applyTransferSchemaOverride({
   }
 
   nodes.push(stripContext(businessNode));
+  delete serviceNode.aggregateRating;
   if (override?.serviceEnabled !== false) nodes.push(stripContext(serviceNode));
   if (override?.faqEnabled !== false) nodes.push(stripContext(faqNode));
   if (override?.breadcrumbEnabled !== false) nodes.push(stripContext(breadcrumbNode));

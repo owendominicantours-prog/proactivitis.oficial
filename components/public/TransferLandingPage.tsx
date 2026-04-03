@@ -898,11 +898,6 @@ export async function TransferLandingPage({
     },
     ...(totalApprovedTransferReviews > 0
       ? {
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: transferReviewAverage,
-            reviewCount: totalApprovedTransferReviews
-          },
           review: approvedTransferReviews.slice(0, initialVisibleTransferReviews).map((review) => ({
             "@type": "Review",
             author: { "@type": "Person", name: review.customerName },
