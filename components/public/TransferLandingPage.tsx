@@ -808,8 +808,19 @@ export async function TransferLandingPage({
       transferLandingSlug: landing.landingSlug
     },
     orderBy: [{ approvedAt: "desc" }, { createdAt: "desc" }],
-    take: 6
+    take: 28
   });
+  const totalApprovedTransferReviews = await prisma.transferReview.count({
+    where: {
+      status: "APPROVED",
+      transferLandingSlug: landing.landingSlug
+    }
+  });
+  const initialVisibleTransferReviews = 7;
+  const transferReviewAverage =
+    approvedTransferReviews.length > 0
+      ? Math.round((approvedTransferReviews.reduce((sum, review) => sum + review.rating, 0) / approvedTransferReviews.length) * 10) / 10
+      : 0;
 
   const schema = {
     "@context": "https://schema.org",
@@ -873,7 +884,28 @@ export async function TransferLandingPage({
           }
         }
       ]
-    }
+    },
+    ...(totalApprovedTransferReviews > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: transferReviewAverage,
+            reviewCount: totalApprovedTransferReviews
+          },
+          review: approvedTransferReviews.slice(0, initialVisibleTransferReviews).map((review) => ({
+            "@type": "Review",
+            author: { "@type": "Person", name: review.customerName },
+            datePublished: review.createdAt.toISOString(),
+            reviewBody: review.body,
+            ...(review.title ? { name: review.title } : {}),
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: review.rating,
+              bestRating: 5
+            }
+          }))
+        }
+      : {})
   };
 
   const businessSchema = {
@@ -1074,8 +1106,15 @@ export async function TransferLandingPage({
                 ? "Ce que disent les clients de ce transfert"
                 : "What clients say about this transfer"}
             </h2>
+            <p className="mt-3 text-sm text-slate-500">
+              {locale === "es"
+                ? `${totalApprovedTransferReviews} reseñas aprobadas`
+                : locale === "fr"
+                ? `${totalApprovedTransferReviews} avis approuves`
+                : `${totalApprovedTransferReviews} approved reviews`}
+            </p>
             <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {approvedTransferReviews.map((review) => (
+              {approvedTransferReviews.slice(0, initialVisibleTransferReviews).map((review) => (
                 <article key={review.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-sm font-semibold text-slate-900">{review.customerName}</p>
                   <p className="mt-1 text-xs uppercase tracking-[0.25em] text-amber-600">
@@ -1086,6 +1125,25 @@ export async function TransferLandingPage({
                 </article>
               ))}
             </div>
+            {approvedTransferReviews.length > initialVisibleTransferReviews ? (
+              <details className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <summary className="cursor-pointer list-none text-sm font-semibold text-emerald-700">
+                  {locale === "es" ? "Ver más reseñas" : locale === "fr" ? "Voir plus d avis" : "See more reviews"}
+                </summary>
+                <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {approvedTransferReviews.slice(initialVisibleTransferReviews).map((review) => (
+                    <article key={review.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <p className="text-sm font-semibold text-slate-900">{review.customerName}</p>
+                      <p className="mt-1 text-xs uppercase tracking-[0.25em] text-amber-600">
+                        {"★".repeat(Math.max(1, Math.min(5, review.rating)))} {review.rating}/5
+                      </p>
+                      {review.title ? <p className="mt-2 text-sm font-semibold text-slate-700">{review.title}</p> : null}
+                      <p className="mt-2 text-sm text-slate-600">{review.body}</p>
+                    </article>
+                  ))}
+                </div>
+              </details>
+            ) : null}
           </div>
         </section>
       ) : null}

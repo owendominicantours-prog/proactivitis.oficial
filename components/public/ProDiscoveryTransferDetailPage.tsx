@@ -111,6 +111,7 @@ function BubbleRating({ rating }: { rating: number }) {
 }
 
 export default async function ProDiscoveryTransferDetailPage({ locale, landingSlug, reviewKeyword }: Props) {
+  const initialVisibleReviews = 7;
   const t = COPY[locale];
   const reserveNowLabel = localeLabel(locale, "Abrir reserva", "Open booking", "Ouvrir la reservation");
   const plannerJumpLabel = localeLabel(locale, "Usar cotizador", "Use planner", "Utiliser le devis");
@@ -226,7 +227,19 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
                 "@type": "AggregateRating",
                 ratingValue: average,
                 reviewCount: totalApprovedReviews
-              }
+              },
+              review: reviews.slice(0, initialVisibleReviews).map((review) => ({
+                "@type": "Review",
+                author: { "@type": "Person", name: review.customerName },
+                datePublished: review.createdAt.toISOString(),
+                reviewBody: review.body,
+                ...(review.title ? { name: review.title } : {}),
+                reviewRating: {
+                  "@type": "Rating",
+                  ratingValue: review.rating,
+                  bestRating: 5
+                }
+              }))
             }
           : {})
       },
@@ -407,7 +420,7 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
                     Showing {reviews.length} of {totalApprovedReviews} approved reviews.
                   </p>
                 ) : null}
-                {reviews.map((review) => (
+                {reviews.slice(0, initialVisibleReviews).map((review) => (
                   <article key={review.id} className="rounded-xl border border-slate-200 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-slate-900">{review.customerName}</p>
@@ -419,6 +432,27 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
                     <p className="mt-2 text-sm leading-relaxed text-slate-700">{review.body}</p>
                   </article>
                 ))}
+                {reviews.length > initialVisibleReviews ? (
+                  <details className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <summary className="cursor-pointer list-none text-sm font-semibold text-emerald-700">
+                      {localeLabel(locale, "Ver más reseñas", "See more reviews", "Voir plus d avis")}
+                    </summary>
+                    <div className="mt-4 space-y-3">
+                      {reviews.slice(initialVisibleReviews).map((review) => (
+                        <article key={review.id} className="rounded-xl border border-slate-200 bg-white p-4">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-sm font-semibold text-slate-900">{review.customerName}</p>
+                            <div className="flex items-center gap-2">
+                              <BubbleRating rating={review.rating} />
+                              <span className="text-xs text-slate-500">{formatDate(review.createdAt, locale)}</span>
+                            </div>
+                          </div>
+                          <p className="mt-2 text-sm leading-relaxed text-slate-700">{review.body}</p>
+                        </article>
+                      ))}
+                    </div>
+                  </details>
+                ) : null}
               </div>
             )}
           </section>
