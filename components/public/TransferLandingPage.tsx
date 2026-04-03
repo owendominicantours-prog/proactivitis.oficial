@@ -1108,6 +1108,17 @@ export async function TransferLandingPage({
                 ? `${totalApprovedTransferReviews} avis approuves`
                 : `${totalApprovedTransferReviews} approved reviews`}
             </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+                {"★".repeat(Math.max(1, Math.min(5, Math.round(transferReviewAverage || 5))))} {transferReviewAverage.toFixed(1)}/5
+              </span>
+              <Link
+                href={locale === "es" ? `/prodiscovery/transfer/${landing.landingSlug}` : `/${locale}/prodiscovery/transfer/${landing.landingSlug}`}
+                className="inline-flex rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-800 hover:border-emerald-400 hover:text-emerald-700"
+              >
+                {locale === "es" ? "Ver pagina de reseñas" : locale === "fr" ? "Voir la page d avis" : "Open review page"}
+              </Link>
+            </div>
             <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {approvedTransferReviews.slice(0, initialVisibleTransferReviews).map((review) => (
                 <article key={review.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">

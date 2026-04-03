@@ -5,6 +5,7 @@ import {
   buildProDiscoveryTransferMetadata,
   buildProDiscoveryTransferNotFoundMetadata
 } from "@/lib/prodiscoverySeo";
+import { getTransferReviewSummaryForLanding } from "@/lib/transferReviews";
 import { en } from "@/lib/translations";
 
 export async function generateMetadata({
@@ -15,11 +16,14 @@ export async function generateMetadata({
   const { landingSlug } = await params;
   const landing = allLandings().find((item) => item.landingSlug === landingSlug);
   if (!landing) return buildProDiscoveryTransferNotFoundMetadata(en);
+  const reviewSummary = await getTransferReviewSummaryForLanding(landingSlug);
   return buildProDiscoveryTransferMetadata({
     landingSlug,
     locale: en,
     title: landing.heroTitle,
-    description: landing.metaDescription
+    description: landing.metaDescription,
+    reviewCount: reviewSummary.count,
+    reviewAverage: reviewSummary.average
   });
 }
 

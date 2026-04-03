@@ -18,6 +18,12 @@ import {
 } from "@/lib/schemaManager";
 
 const readField = (formData: FormData, key: string) => String(formData.get(key) ?? "").trim();
+const isRedirectError = (error: unknown) =>
+  typeof error === "object" &&
+  error !== null &&
+  "digest" in error &&
+  typeof (error as { digest?: unknown }).digest === "string" &&
+  (error as { digest: string }).digest.startsWith("NEXT_REDIRECT");
 
 const readToggle = (formData: FormData, key: string): boolean | undefined => {
   const value = readField(formData, key);
@@ -187,6 +193,7 @@ export async function reviewTransferSchemaWithGeminiAction(formData: FormData) {
     revalidateTransferSchemaPaths(slug);
     redirect(`/admin/seo/schema?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}&gemini=ok`);
   } catch (error) {
+    if (isRedirectError(error)) throw error;
     const message = error instanceof Error ? error.message : "Gemini review failed.";
     redirect(
       `/admin/seo/schema?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}&gemini_error=${encodeURIComponent(message)}`

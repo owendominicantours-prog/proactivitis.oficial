@@ -176,52 +176,57 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "Service",
-        "@id": `${pageUrl}#service`,
-        name: landing.heroTitle,
-        description: landing.metaDescription,
-        areaServed: "Punta Cana",
-        image: [`${PROACTIVITIS_URL}${landing.heroImage}`],
+        "@type": "CollectionPage",
+        "@id": `${pageUrl}#webpage`,
         url: pageUrl,
-        offers: {
-          "@type": "Offer",
-          price: landing.priceFrom,
-          priceCurrency: "USD",
-          priceValidUntil,
-          availability: "https://schema.org/InStock",
-          url: bookingUrl,
-          shippingDetails: {
-            "@type": "OfferShippingDetails",
-            shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USD" },
-            shippingDestination: {
-              "@type": "DefinedRegion",
-              addressCountry: "DO"
-            },
-            deliveryTime: {
-              "@type": "ShippingDeliveryTime",
-              handlingTime: {
-                "@type": "QuantitativeValue",
-                minValue: 0,
-                maxValue: 1,
-                unitCode: "d"
-              },
-              transitTime: {
-                "@type": "QuantitativeValue",
-                minValue: 0,
-                maxValue: 1,
-                unitCode: "d"
-              }
-            }
-          },
-          hasMerchantReturnPolicy: {
-            "@type": "MerchantReturnPolicy",
-            returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
-            merchantReturnDays: 2,
-            applicableCountry: "DO",
-            returnMethod: "https://schema.org/ReturnByMail",
-            returnFees: "https://schema.org/FreeReturn"
+        name: visibleHeroTitle,
+        description: landing.metaDescription,
+        isPartOf: {
+          "@type": "WebSite",
+          "@id": `${PROACTIVITIS_URL}#website`,
+          name: "Proactivitis",
+          url: PROACTIVITIS_URL
+        },
+        about: {
+          "@type": "Service",
+          name: landing.heroTitle,
+          description: landing.metaDescription,
+          areaServed: "Punta Cana",
+          image: [`${PROACTIVITIS_URL}${landing.heroImage}`],
+          offers: {
+            "@type": "Offer",
+            price: landing.priceFrom,
+            priceCurrency: "USD",
+            priceValidUntil,
+            availability: "https://schema.org/InStock",
+            url: bookingUrl
           }
         },
+        mainEntity: {
+          "@id": `${pageUrl}#review-list`
+        }
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${pageUrl}#review-list`,
+        name: locale === "es" ? "Reseñas verificadas del traslado" : locale === "fr" ? "Avis verifies du transfert" : "Verified transfer reviews",
+        numberOfItems: reviews.length,
+        itemListElement: reviews.slice(0, 20).map((review, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          item: {
+            "@type": "Review",
+            author: { "@type": "Person", name: review.customerName },
+            datePublished: review.createdAt.toISOString(),
+            reviewBody: review.body,
+            ...(review.title ? { name: review.title } : {}),
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: review.rating,
+              bestRating: 5
+            }
+          }
+        }))
       },
       {
         "@type": "BreadcrumbList",
@@ -278,15 +283,23 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
                 <span>({totalApprovedReviews})</span>
               </div>
               <p className="mt-4 leading-relaxed text-slate-700">{landing.metaDescription}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {trustBadges.map((badge) => (
-                  <span
-                    key={badge}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {trustBadges.map((badge) => (
+                <span
+                  key={badge}
                     className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-700"
                   >
                     {badge}
                   </span>
                 ))}
+              </div>
+              <div className="mt-4">
+                <Link
+                  href={toTransferHref(locale, landingSlug)}
+                  className="inline-flex rounded-full border border-emerald-300 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800"
+                >
+                  {locale === "es" ? "Ir a la landing comercial" : locale === "fr" ? "Voir la landing commerciale" : "Open commercial landing"}
+                </Link>
               </div>
             </div>
           </section>

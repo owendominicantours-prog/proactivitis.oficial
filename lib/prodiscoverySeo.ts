@@ -16,6 +16,8 @@ type DiscoveryTransferSeoInput = {
   locale: Locale;
   title: string;
   description?: string | null;
+  reviewCount?: number;
+  reviewAverage?: number;
 };
 
 type DiscoveryTopSeoInput = {
@@ -250,7 +252,9 @@ export const buildProDiscoveryTransferMetadata = ({
   landingSlug,
   locale,
   title,
-  description
+  description,
+  reviewCount,
+  reviewAverage
 }: DiscoveryTransferSeoInput): Metadata => {
   const canonicalPath =
     locale === "es" ? `/prodiscovery/transfer/${landingSlug}` : `/${locale}/prodiscovery/transfer/${landingSlug}`;
@@ -259,10 +263,26 @@ export const buildProDiscoveryTransferMetadata = ({
   const normalizedDescription = rawDescription.replace(/\s+/g, " ").trim();
   const baseDescription =
     normalizedDescription.length > 112 ? `${normalizedDescription.slice(0, 112).trim()}...` : normalizedDescription;
-  const finalDescription = `${baseDescription} ${TRANSFER_DESCRIPTION_SUFFIX[locale]}`.slice(0, 158).trim();
+  const reviewSnippet =
+    reviewCount && reviewCount > 0
+      ? locale === "es"
+        ? ` ${reviewAverage?.toFixed(1) ?? "5.0"}/5 basado en ${reviewCount} reseñas verificadas.`
+        : locale === "fr"
+        ? ` ${reviewAverage?.toFixed(1) ?? "5.0"}/5 base sur ${reviewCount} avis verifies.`
+        : ` ${reviewAverage?.toFixed(1) ?? "5.0"}/5 based on ${reviewCount} verified reviews.`
+      : "";
+  const finalDescription = `${baseDescription}${reviewSnippet} ${TRANSFER_DESCRIPTION_SUFFIX[locale]}`.slice(0, 158).trim();
+  const titlePrefix =
+    reviewCount && reviewCount > 0
+      ? locale === "es"
+        ? `${title} opiniones`
+        : locale === "fr"
+        ? `${title} avis`
+        : `${title} reviews`
+      : title;
 
   return {
-    title: `${title} | ${TITLE_SUFFIX[locale]}`,
+    title: `${titlePrefix} | ${TITLE_SUFFIX[locale]}`,
     description: finalDescription,
     alternates: {
       canonical,
@@ -274,14 +294,14 @@ export const buildProDiscoveryTransferMetadata = ({
       }
     },
     openGraph: {
-      title: `${title} | ProDiscovery`,
+      title: `${titlePrefix} | ProDiscovery`,
       description: finalDescription,
       url: canonical,
       type: "article"
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} | ProDiscovery`,
+      title: `${titlePrefix} | ProDiscovery`,
       description: finalDescription
     }
   };
