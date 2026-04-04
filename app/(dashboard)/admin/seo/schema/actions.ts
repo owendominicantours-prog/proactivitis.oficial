@@ -108,6 +108,42 @@ const mergeSuggestedOverride = (
   return merged;
 };
 
+const hasMeaningfulSuggestion = (suggestion: Partial<TransferSchemaOverride> | null | undefined) =>
+  Object.values(suggestion ?? {}).some((value) => hasMeaningfulValue(value));
+
+const autoApplySuggestionIfPossible = async ({
+  slug,
+  locale,
+  suggestion,
+  source
+}: {
+  slug: string;
+  locale: Locale;
+  suggestion: Partial<TransferSchemaOverride> | null | undefined;
+  source: "manual" | "autopilot";
+}) => {
+  if (!hasMeaningfulSuggestion(suggestion)) {
+    await updateSchemaProcessingState(slug, locale, {
+      overrideAppliedAt: undefined,
+      overrideAppliedSource: undefined,
+      lastAutopilotStatus: source === "autopilot" ? "no_changes_needed" : undefined,
+      lastAutopilotDetail: source === "autopilot" ? "no_meaningful_override_suggestions" : undefined
+    });
+    return false;
+  }
+
+  const current = await getTransferSchemaOverride(slug, locale);
+  const merged = mergeSuggestedOverride(current, suggestion);
+  await saveTransferSchemaOverride(slug, locale, merged);
+  await updateSchemaProcessingState(slug, locale, {
+    overrideAppliedAt: new Date().toISOString(),
+    overrideAppliedSource: source,
+    lastAutopilotStatus: source === "autopilot" ? "applied" : undefined,
+    lastAutopilotDetail: source === "autopilot" ? "override_auto_applied" : undefined
+  });
+  return true;
+};
+
 export async function saveTransferSchemaOverrideAction(formData: FormData) {
   const slug = readField(formData, "slug");
   const locale = (readField(formData, "locale") || "es") as Locale;
@@ -201,9 +237,17 @@ export async function reviewTransferSchemaWithGeminiAction(formData: FormData) {
       reviewModel: review.model,
       reviewSource: "manual"
     });
+    const applied = await autoApplySuggestionIfPossible({
+      slug,
+      locale,
+      suggestion: review.overrideSuggestions,
+      source: "manual"
+    });
 
     revalidateTransferSchemaPaths(slug);
-    redirect(`/admin/seo/schema?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}&gemini=ok`);
+    redirect(
+      `/admin/seo/schema?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}&gemini=${applied ? "applied" : "no_changes"}`
+    );
   } catch (error) {
     if (isRedirectError(error)) throw error;
     const message = error instanceof Error ? error.message : "Gemini review failed.";
@@ -228,14 +272,14 @@ export async function applyGeminiOverrideSuggestionsAction(formData: FormData) {
     );
   }
 
-  const storeScope = locale;
-  const current = await getTransferSchemaOverride(slug, locale);
-  const merged = mergeSuggestedOverride(current, review.overrideSuggestions);
-  await saveTransferSchemaOverride(slug, storeScope, merged);
-  await updateSchemaProcessingState(slug, locale, {
-    overrideAppliedAt: new Date().toISOString(),
-    overrideAppliedSource: "manual"
+  const applied = await autoApplySuggestionIfPossible({
+    slug,
+    locale,
+    suggestion: review.overrideSuggestions,
+    source: "manual"
   });
   revalidateTransferSchemaPaths(slug);
-  redirect(`/admin/seo/schema?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}&gemini=applied`);
+  redirect(
+    `/admin/seo/schema?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}&gemini=${applied ? "applied" : "no_changes"}`
+  );
 }

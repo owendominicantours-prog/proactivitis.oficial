@@ -76,7 +76,7 @@ const normalizeSearch = (value: string) =>
     .trim();
 
 const statusTone = (status?: string) =>
-  status === "updated"
+  status === "updated" || status === "applied" || status === "no_changes_needed"
     ? "bg-emerald-100 text-emerald-800"
     : status === "error"
     ? "bg-rose-100 text-rose-800"
@@ -351,7 +351,13 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
 
       {resolved?.gemini === "applied" ? (
         <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 shadow-sm">
-          Se aplicaron las overrideSuggestions de Gemini al editor de esta landing.
+          Gemini reviso y aplico automaticamente las overrideSuggestions a esta landing.
+        </section>
+      ) : null}
+
+      {resolved?.gemini === "no_changes" ? (
+        <section className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900 shadow-sm">
+          Gemini reviso la landing y no encontro cambios utiles para aplicar.
         </section>
       ) : null}
 
@@ -436,7 +442,9 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
                             <p className="mt-1 text-xs text-slate-500">{sourceLabel(state.overrideAppliedSource)}</p>
                           </>
                         ) : (
-                          <span className="text-slate-400">Pendiente</span>
+                          <span className="text-slate-400">
+                            {state?.lastAutopilotStatus === "no_changes_needed" ? "No hacia falta" : "Autoaplicacion pendiente"}
+                          </span>
                         )}
                       </td>
                       <td className="px-4 py-3">

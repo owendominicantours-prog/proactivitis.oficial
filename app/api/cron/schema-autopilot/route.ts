@@ -6,7 +6,7 @@ import {
   type SchemaAutopilotProcessedItem,
   type SchemaAutopilotState
 } from "@/lib/schemaAutopilotState";
-import { updateSchemaProcessingState } from "@/lib/schemaProcessingState";
+import { getSchemaProcessingState, updateSchemaProcessingState } from "@/lib/schemaProcessingState";
 import { buildTransferSchemaPreviewData, listTransferSchemaCandidateSlugs } from "@/lib/transferSchemaAutopilot";
 import { getTransferSchemaOverride, saveTransferSchemaOverride, type TransferSchemaOverride } from "@/lib/schemaManager";
 import type { Locale } from "@/lib/translations";
@@ -34,6 +34,9 @@ const mergeSuggestedOverride = (
   });
   return merged;
 };
+
+const hasMeaningfulSuggestion = (suggestion: Partial<TransferSchemaOverride> | null | undefined) =>
+  Object.values(suggestion ?? {}).some((value) => hasMeaningfulValue(value));
 
 const getBearerToken = (request: NextRequest) => {
   const header = request.headers.get("authorization") ?? "";
@@ -89,15 +92,45 @@ export async function GET(request: NextRequest) {
     }
 
     const existingReview = await getGeminiSchemaReview(preview.slug, job.locale);
+    const processingState = await getSchemaProcessingState(preview.slug, job.locale);
     if (!shouldRefreshReview(existingReview?.generatedAt ?? null)) {
-      processed.push({ slug: preview.slug, locale: job.locale, status: "skipped", detail: "fresh_review_exists" });
-      await updateSchemaProcessingState(preview.slug, job.locale, {
-        reviewGeneratedAt: existingReview?.generatedAt,
-        reviewModel: existingReview?.model,
-        lastAutopilotStatus: "skipped",
-        lastAutopilotDetail: "fresh_review_exists",
-        lastAutopilotRunAt: new Date().toISOString()
-      });
+      if (!processingState?.overrideAppliedAt && existingReview?.overrideSuggestions) {
+        if (hasMeaningfulSuggestion(existingReview.overrideSuggestions)) {
+          const current = await getTransferSchemaOverride(preview.slug, job.locale);
+          const merged = mergeSuggestedOverride(current, existingReview.overrideSuggestions);
+          await saveTransferSchemaOverride(preview.slug, job.locale, merged);
+          await updateSchemaProcessingState(preview.slug, job.locale, {
+            reviewGeneratedAt: existingReview.generatedAt,
+            reviewModel: existingReview.model,
+            reviewSource: processingState?.reviewSource ?? "autopilot",
+            overrideAppliedAt: new Date().toISOString(),
+            overrideAppliedSource: "autopilot",
+            lastAutopilotStatus: "applied",
+            lastAutopilotDetail: "fresh_review_auto_applied",
+            lastAutopilotRunAt: new Date().toISOString()
+          });
+          processed.push({ slug: preview.slug, locale: job.locale, status: "applied", detail: "fresh_review_auto_applied" });
+        } else {
+          await updateSchemaProcessingState(preview.slug, job.locale, {
+            reviewGeneratedAt: existingReview.generatedAt,
+            reviewModel: existingReview.model,
+            reviewSource: processingState?.reviewSource ?? "autopilot",
+            lastAutopilotStatus: "no_changes_needed",
+            lastAutopilotDetail: "fresh_review_no_meaningful_changes",
+            lastAutopilotRunAt: new Date().toISOString()
+          });
+          processed.push({ slug: preview.slug, locale: job.locale, status: "no_changes_needed", detail: "fresh_review_no_meaningful_changes" });
+        }
+      } else {
+        processed.push({ slug: preview.slug, locale: job.locale, status: "skipped_fresh", detail: "fresh_review_exists" });
+        await updateSchemaProcessingState(preview.slug, job.locale, {
+          reviewGeneratedAt: existingReview?.generatedAt,
+          reviewModel: existingReview?.model,
+          lastAutopilotStatus: "skipped_fresh",
+          lastAutopilotDetail: "fresh_review_exists",
+          lastAutopilotRunAt: new Date().toISOString()
+        });
+      }
       continue;
     }
 
@@ -111,7 +144,8 @@ export async function GET(request: NextRequest) {
         schemaGraph: preview.graph
       });
 
-      if (review.overrideSuggestions) {
+      const hasSuggestions = hasMeaningfulSuggestion(review.overrideSuggestions);
+      if (hasSuggestions) {
         const current = await getTransferSchemaOverride(preview.slug, job.locale);
         const merged = mergeSuggestedOverride(current, review.overrideSuggestions);
         await saveTransferSchemaOverride(preview.slug, job.locale, merged);
@@ -121,14 +155,19 @@ export async function GET(request: NextRequest) {
         reviewGeneratedAt: review.generatedAt,
         reviewModel: review.model,
         reviewSource: "autopilot",
-        overrideAppliedAt: review.overrideSuggestions ? new Date().toISOString() : undefined,
-        overrideAppliedSource: review.overrideSuggestions ? "autopilot" : undefined,
-        lastAutopilotStatus: "updated",
-        lastAutopilotDetail: review.summary,
+        overrideAppliedAt: hasSuggestions ? new Date().toISOString() : undefined,
+        overrideAppliedSource: hasSuggestions ? "autopilot" : undefined,
+        lastAutopilotStatus: hasSuggestions ? "applied" : "no_changes_needed",
+        lastAutopilotDetail: hasSuggestions ? "review_auto_applied" : "review_no_meaningful_changes",
         lastAutopilotRunAt: new Date().toISOString()
       });
 
-      processed.push({ slug: preview.slug, locale: job.locale, status: "updated" });
+      processed.push({
+        slug: preview.slug,
+        locale: job.locale,
+        status: hasSuggestions ? "applied" : "no_changes_needed",
+        detail: hasSuggestions ? "review_auto_applied" : "review_no_meaningful_changes"
+      });
     } catch (error) {
       await updateSchemaProcessingState(preview.slug, job.locale, {
         lastAutopilotStatus: "error",

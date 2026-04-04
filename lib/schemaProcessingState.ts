@@ -71,6 +71,14 @@ export async function listSchemaProcessingStates(): Promise<
     });
 }
 
+export async function getSchemaProcessingState(
+  slug: string,
+  locale: Locale
+): Promise<SchemaProcessingState | null> {
+  const store = await getStore();
+  return store.transfer?.[slug]?.[locale] ?? null;
+}
+
 export async function updateSchemaProcessingState(
   slug: string,
   locale: Locale,
