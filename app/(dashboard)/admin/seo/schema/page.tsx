@@ -14,6 +14,7 @@ import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_PHONE, PRO
 import { TransferLocationType } from "@prisma/client";
 import type { Locale } from "@/lib/translations";
 import { getGeminiSchemaReview, listGeminiSchemaReviews } from "@/lib/geminiSchemaReview";
+import { listSchemaProcessingStates } from "@/lib/schemaProcessingState";
 import { getSchemaAutopilotState } from "@/lib/schemaAutopilotState";
 import { getTransferReviewSummaryForLanding } from "@/lib/transferReviews";
 import {
@@ -80,6 +81,9 @@ const statusTone = (status?: string) =>
     : status === "error"
     ? "bg-rose-100 text-rose-800"
     : "bg-slate-100 text-slate-700";
+
+const sourceLabel = (source?: string) =>
+  source === "autopilot" ? "Autopilot" : source === "manual" ? "Manual" : "Sin fuente";
 
 async function buildTransferSchemaPreview(slug: string, locale: Locale): Promise<PreviewData | null> {
   const landing = await resolveLanding(slug);
@@ -241,10 +245,11 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
   const resolved = searchParams ? await searchParams : undefined;
   const locale = resolved?.locale ?? "es";
   const search = resolved?.search?.trim() ?? "";
-  const [dynamicCombos, allGeminiReviews, autopilotState] = await Promise.all([
+  const [dynamicCombos, allGeminiReviews, autopilotState, processingStates] = await Promise.all([
     getDynamicTransferLandingCombos(),
     listGeminiSchemaReviews(),
-    getSchemaAutopilotState()
+    getSchemaAutopilotState(),
+    listSchemaProcessingStates()
   ]);
   const allAvailableSlugs = Array.from(
     new Set([
@@ -263,11 +268,11 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
   const warnings = getSchemaWarnings(override, preview?.graph ?? null);
   const faqDefaultValue = resolved?.faqDraft || stringifyFaqItems(override?.faqItems);
   const geminiReview = preview ? await getGeminiSchemaReview(preview.landing.landingSlug, locale) : null;
+  const processingStateMap = new Map(
+    processingStates.map((item) => [`${item.slug}:${item.locale}`, item.state] as const)
+  );
   const filteredGeminiReviews = allGeminiReviews.filter((item) =>
     search ? normalizeSearch(`${item.slug} ${item.locale}`).includes(normalizeSearch(search)) : true
-  );
-  const lastProcessedMap = new Map(
-    (autopilotState.lastProcessed ?? []).map((item) => [`${item.slug}:${item.locale}`, item] as const)
   );
 
   return (
@@ -362,8 +367,8 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Autopilot</p>
             <h2 className="mt-2 text-xl font-semibold text-slate-900">Landings ya procesadas por Gemini</h2>
             <p className="mt-2 max-w-3xl text-sm text-slate-600">
-              Esta tabla te muestra qué slug y locale ya tienen review guardado, cuándo se generó y qué pasó en el
-              último lote automático.
+              Esta tabla te muestra review generado, override aplicado y el último estado real del autopilot por slug
+              y locale.
             </p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
@@ -404,8 +409,8 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
               <tr>
                 <th className="px-4 py-3 font-semibold">Slug</th>
                 <th className="px-4 py-3 font-semibold">Locale</th>
-                <th className="px-4 py-3 font-semibold">Generado</th>
-                <th className="px-4 py-3 font-semibold">Modelo</th>
+                <th className="px-4 py-3 font-semibold">Review</th>
+                <th className="px-4 py-3 font-semibold">Override</th>
                 <th className="px-4 py-3 font-semibold">Ultimo lote</th>
                 <th className="px-4 py-3 font-semibold">Detalle</th>
               </tr>
@@ -413,22 +418,39 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
             <tbody className="divide-y divide-slate-100 bg-white">
               {filteredGeminiReviews.length > 0 ? (
                 filteredGeminiReviews.slice(0, 250).map((item) => {
-                  const lastProcessed = lastProcessedMap.get(`${item.slug}:${item.locale}`);
+                  const state = processingStateMap.get(`${item.slug}:${item.locale}`);
                   return (
                     <tr key={`${item.slug}:${item.locale}`} className="align-top">
                       <td className="px-4 py-3 font-medium text-slate-900">{item.slug}</td>
                       <td className="px-4 py-3 text-slate-700">{item.locale}</td>
                       <td className="px-4 py-3 text-slate-700">
-                        {new Date(item.review.generatedAt).toLocaleString("es-DO")}
-                      </td>
-                      <td className="px-4 py-3 text-slate-700">{item.review.model}</td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone(lastProcessed?.status)}`}>
-                          {lastProcessed?.status ?? "review guardado"}
-                        </span>
+                        <p>{new Date(item.review.generatedAt).toLocaleString("es-DO")}</p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {item.review.model} · {sourceLabel(state?.reviewSource)}
+                        </p>
                       </td>
                       <td className="px-4 py-3 text-slate-600">
-                        {lastProcessed?.detail ?? item.review.summary}
+                        {state?.overrideAppliedAt ? (
+                          <>
+                            <p>{new Date(state.overrideAppliedAt).toLocaleString("es-DO")}</p>
+                            <p className="mt-1 text-xs text-slate-500">{sourceLabel(state.overrideAppliedSource)}</p>
+                          </>
+                        ) : (
+                          <span className="text-slate-400">Pendiente</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone(state?.lastAutopilotStatus)}`}>
+                          {state?.lastAutopilotStatus ?? "sin corrida"}
+                        </span>
+                        {state?.lastAutopilotRunAt ? (
+                          <p className="mt-1 text-xs text-slate-500">
+                            {new Date(state.lastAutopilotRunAt).toLocaleString("es-DO")}
+                          </p>
+                        ) : null}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {state?.lastAutopilotDetail ?? item.review.summary}
                       </td>
                     </tr>
                   );

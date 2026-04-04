@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import type { Locale } from "@/lib/translations";
 import { getGeminiSchemaReview, reviewTransferSchemaWithGemini } from "@/lib/geminiSchemaReview";
+import { updateSchemaProcessingState } from "@/lib/schemaProcessingState";
 import {
   clearTransferSchemaOverride,
   generateTransferFaqDraft,
@@ -117,6 +118,12 @@ export async function saveTransferSchemaOverrideAction(formData: FormData) {
   }
 
   await saveTransferSchemaOverride(slug, scope, buildOverrideFromForm(formData));
+  if (scope !== "all") {
+    await updateSchemaProcessingState(slug, scope, {
+      overrideAppliedAt: new Date().toISOString(),
+      overrideAppliedSource: "manual"
+    });
+  }
   revalidateTransferSchemaPaths(slug);
 }
 
@@ -181,13 +188,18 @@ export async function reviewTransferSchemaWithGeminiAction(formData: FormData) {
   }
 
   try {
-    await reviewTransferSchemaWithGemini({
+    const review = await reviewTransferSchemaWithGemini({
       slug,
       locale,
       pageUrl,
       pageTitle,
       pageDescription,
       schemaGraph
+    });
+    await updateSchemaProcessingState(slug, locale, {
+      reviewGeneratedAt: review.generatedAt,
+      reviewModel: review.model,
+      reviewSource: "manual"
     });
 
     revalidateTransferSchemaPaths(slug);
@@ -220,6 +232,10 @@ export async function applyGeminiOverrideSuggestionsAction(formData: FormData) {
   const current = await getTransferSchemaOverride(slug, locale);
   const merged = mergeSuggestedOverride(current, review.overrideSuggestions);
   await saveTransferSchemaOverride(slug, storeScope, merged);
+  await updateSchemaProcessingState(slug, locale, {
+    overrideAppliedAt: new Date().toISOString(),
+    overrideAppliedSource: "manual"
+  });
   revalidateTransferSchemaPaths(slug);
   redirect(`/admin/seo/schema?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}&gemini=applied`);
 }
