@@ -20,6 +20,7 @@ type TourBookingWidgetProps = {
   tourId: string;
   basePrice: number;
   timeSlots: TimeSlotOption[];
+  operatingDays?: string[];
   options?: TourOption[];
   supplierHasStripeAccount: boolean;
   platformSharePercent: number;
@@ -38,14 +39,142 @@ type TourOption = {
   id: string;
   name: string;
   type?: string | null;
+  checkoutType?: string | null;
   description?: string | null;
   pricePerPerson?: number | null;
   basePrice?: number | null;
   baseCapacity?: number | null;
   extraPricePerPerson?: number | null;
   pickupTimes?: string[] | null;
+  availableDays?: string[] | null;
+  unavailableReason?: string | null;
   isDefault?: boolean | null;
   active?: boolean | null;
+};
+
+const WEEKDAY_ORDER = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday"
+] as const;
+
+type WeekdayKey = (typeof WEEKDAY_ORDER)[number];
+
+const WEEKDAY_ALIASES: Record<string, WeekdayKey> = {
+  sun: "sunday",
+  sunday: "sunday",
+  domingo: "sunday",
+  dom: "sunday",
+  mon: "monday",
+  monday: "monday",
+  lunes: "monday",
+  lun: "monday",
+  tue: "tuesday",
+  tues: "tuesday",
+  tuesday: "tuesday",
+  martes: "tuesday",
+  mar: "tuesday",
+  wed: "wednesday",
+  wednesday: "wednesday",
+  miercoles: "wednesday",
+  miércoles: "wednesday",
+  "mi?rcoles": "wednesday",
+  mie: "wednesday",
+  thu: "thursday",
+  thur: "thursday",
+  thursday: "thursday",
+  jueves: "thursday",
+  jue: "thursday",
+  fri: "friday",
+  friday: "friday",
+  viernes: "friday",
+  vie: "friday",
+  sat: "saturday",
+  saturday: "saturday",
+  sabado: "saturday",
+  sábado: "saturday",
+  "s?bado": "saturday",
+  sab: "saturday"
+};
+
+const WEEKDAY_LABELS: Record<WeekdayKey, string> = {
+  sunday: "Dom",
+  monday: "Lun",
+  tuesday: "Mar",
+  wednesday: "Mie",
+  thursday: "Jue",
+  friday: "Vie",
+  saturday: "Sab"
+};
+
+const normalizeWeekdayLabel = (value: string): WeekdayKey | null => {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  return WEEKDAY_ALIASES[normalized] ?? null;
+};
+
+const parseDateWeekday = (value: string): WeekdayKey | null => {
+  if (!value) return null;
+  const [yearRaw, monthRaw, dayRaw] = value.split("-");
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  const day = Number(dayRaw);
+  if (!year || !month || !day) return null;
+  const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+  return WEEKDAY_ORDER[weekday] ?? null;
+};
+
+const parseAvailableDays = (days?: string[] | null): WeekdayKey[] | null => {
+  if (!days?.length) return null;
+  const normalized = days
+    .map((day) => normalizeWeekdayLabel(day))
+    .filter((day): day is WeekdayKey => Boolean(day));
+  return normalized.length ? normalized : null;
+};
+
+const formatDaysSummary = (days?: WeekdayKey[] | null) => {
+  if (!days?.length) return "";
+  return days.map((day) => WEEKDAY_LABELS[day]).join(", ");
+};
+
+const isOptionAvailableForDay = (option: TourOption | null, selectedWeekday: WeekdayKey | null) => {
+  if (!option || !selectedWeekday) return true;
+  const optionDays = parseAvailableDays(option.availableDays);
+  if (!optionDays?.length) return true;
+  return optionDays.includes(selectedWeekday);
+};
+
+const parseOptionTypeMeta = (rawType?: string | null) => {
+  if (!rawType?.trim()) {
+    return { checkoutType: null, availableDays: null as string[] | null };
+  }
+  const parts = rawType
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const checkoutType = parts[0] ?? rawType.trim();
+  let availableDays: string[] | null = null;
+
+  for (const part of parts.slice(1)) {
+    const match = part.match(/^days?\s*[:=]\s*(.+)$/i);
+    if (!match) continue;
+    const parsed = match[1]
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+    if (parsed.length) {
+      availableDays = parsed;
+    }
+  }
+
+  return { checkoutType, availableDays };
 };
 
 type OptionPricing = {
@@ -97,6 +226,7 @@ export function TourBookingWidget({
   tourId,
   basePrice,
   timeSlots,
+  operatingDays,
   options,
   supplierHasStripeAccount: _supplierHasStripeAccount,
   platformSharePercent: _platformSharePercent,
@@ -116,7 +246,24 @@ export function TourBookingWidget({
   const [youth, setYouth] = useState(0);
   const [child, setChild] = useState(0);
   const [showTravelersPopover, setShowTravelersPopover] = useState(false);
-  const resolvedOptions = (options ?? []).filter((option) => option.active !== false);
+  const normalizedOperatingDays = useMemo(
+    () => parseAvailableDays(operatingDays ?? null),
+    [operatingDays]
+  );
+  const resolvedOptions = useMemo(
+    () =>
+      (options ?? [])
+        .filter((option) => option.active !== false)
+        .map((option) => {
+          const parsedType = parseOptionTypeMeta(option.type);
+          return {
+            ...option,
+            checkoutType: option.checkoutType ?? parsedType.checkoutType,
+            availableDays: option.availableDays ?? parsedType.availableDays
+          };
+        }),
+    [options]
+  );
   const defaultOption =
     resolvedOptions.find((option) => option.isDefault) ?? resolvedOptions[0] ?? null;
   const [selectedOptionId, setSelectedOptionId] = useState(
@@ -125,6 +272,17 @@ export function TourBookingWidget({
 
   const selectedOption =
     resolvedOptions.find((option) => option.id === selectedOptionId) ?? defaultOption;
+  const selectedWeekday = useMemo(() => parseDateWeekday(date), [date]);
+  const selectedOptionAvailable = isOptionAvailableForDay(selectedOption ?? null, selectedWeekday);
+  const operatingDayBlocked = Boolean(
+    date &&
+      selectedWeekday &&
+      normalizedOperatingDays?.length &&
+      !normalizedOperatingDays.includes(selectedWeekday)
+  );
+  const availableOptionsCount = resolvedOptions.filter((option) =>
+    isOptionAvailableForDay(option, selectedWeekday)
+  ).length;
 
   const optionPickupTimes = selectedOption?.pickupTimes?.filter(Boolean) ?? [];
   const timeSlotLabels = useMemo(() => {
@@ -178,8 +336,19 @@ export function TourBookingWidget({
     }
   }, [selectedTime, timeSlotLabels]);
 
+  useEffect(() => {
+    if (!selectedWeekday) return;
+    if (!selectedOption || selectedOptionAvailable) return;
+    const fallbackOption = resolvedOptions.find((option) =>
+      isOptionAvailableForDay(option, selectedWeekday)
+    );
+    if (fallbackOption?.id) {
+      setSelectedOptionId(fallbackOption.id);
+    }
+  }, [resolvedOptions, selectedOption, selectedOptionAvailable, selectedWeekday]);
+
   const handleCheckAvailability = () => {
-    if (!date) return;
+    if (!date || operatingDayBlocked || !selectedOptionAvailable) return;
     const params = new URLSearchParams({
       tourId,
       date,
@@ -195,7 +364,9 @@ export function TourBookingWidget({
     if (selectedOption?.id) {
       params.set("tourOptionId", selectedOption.id);
       params.set("tourOptionName", selectedOption.name);
-      if (selectedOption.type) params.set("tourOptionType", selectedOption.type);
+      if (selectedOption.checkoutType || selectedOption.type) {
+        params.set("tourOptionType", selectedOption.checkoutType ?? selectedOption.type ?? "");
+      }
       if (selectedOption.pricePerPerson !== undefined && selectedOption.pricePerPerson !== null) {
         params.set("tourOptionPrice", selectedOption.pricePerPerson.toString());
       }
@@ -287,13 +458,17 @@ export function TourBookingWidget({
           <div className="space-y-2">
             {resolvedOptions.map((option) => {
               const optionPricing = resolveOptionPricing(option, totalTravelers, basePrice);
+              const optionDays = parseAvailableDays(option.availableDays);
+              const disabledForDate = !isOptionAvailableForDay(option, selectedWeekday);
               return (
                 <label
                   key={option.id}
-                  className={`flex cursor-pointer items-start justify-between gap-3 rounded-xl border px-3 py-2 text-xs ${
-                    option.id === selectedOption?.id
-                      ? "border-sky-400 bg-sky-50"
-                      : "border-slate-200 bg-white"
+                  className={`flex items-start justify-between gap-3 rounded-xl border px-3 py-2 text-xs ${
+                    disabledForDate
+                      ? "cursor-not-allowed border-rose-200 bg-rose-50/70 opacity-70"
+                      : option.id === selectedOption?.id
+                        ? "cursor-pointer border-sky-400 bg-sky-50"
+                        : "cursor-pointer border-slate-200 bg-white"
                   }`}
                 >
                   <div className="flex items-start gap-2">
@@ -301,7 +476,8 @@ export function TourBookingWidget({
                       type="radio"
                       name="tourOption"
                       checked={option.id === selectedOption?.id}
-                      onChange={() => setSelectedOptionId(option.id)}
+                      onChange={() => !disabledForDate && setSelectedOptionId(option.id)}
+                      disabled={disabledForDate}
                       className="mt-1"
                     />
                     <div>
@@ -309,6 +485,17 @@ export function TourBookingWidget({
                       {option.description && (
                         <p className="text-xs text-slate-500">{option.description}</p>
                       )}
+                      {optionDays?.length ? (
+                        <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                          Disponible: {formatDaysSummary(optionDays)}
+                        </p>
+                      ) : null}
+                      {disabledForDate ? (
+                        <p className="mt-1 text-[11px] font-semibold text-rose-600">
+                          {option.unavailableReason ||
+                            "Esta opcion no opera en la fecha seleccionada."}
+                        </p>
+                      ) : null}
                     </div>
                   </div>
                   <span className="text-sm font-semibold text-slate-800">{optionPricing.summaryLabel}</span>
@@ -388,6 +575,25 @@ export function TourBookingWidget({
         </div>
       </div>
 
+      {operatingDayBlocked ? (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+          Esta actividad no opera el dia seleccionado. Disponible:{" "}
+          <span className="font-semibold">{formatDaysSummary(normalizedOperatingDays)}</span>.
+        </div>
+      ) : null}
+
+      {!operatingDayBlocked && date && selectedWeekday && !selectedOptionAvailable ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          La opcion elegida no opera ese dia. Cambia de ticket o elige una fecha compatible.
+        </div>
+      ) : null}
+
+      {!operatingDayBlocked && date && selectedWeekday && availableOptionsCount === 0 ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          No hay tickets disponibles para el dia seleccionado.
+        </div>
+      ) : null}
+
       {/* Travelers popover */}
       {showTravelersPopover && (
         <div
@@ -443,9 +649,11 @@ export function TourBookingWidget({
       <button
         type="button"
         onClick={handleCheckAvailability}
-        disabled={!date}
+        disabled={!date || operatingDayBlocked || !selectedOptionAvailable}
         className={`w-full rounded-lg px-4 py-3 text-sm font-semibold text-white transition ${
-          date ? "bg-sky-500 hover:bg-sky-600" : "cursor-not-allowed bg-slate-300"
+          date && !operatingDayBlocked && selectedOptionAvailable
+            ? "bg-sky-500 hover:bg-sky-600"
+            : "cursor-not-allowed bg-slate-300"
         }`}
       >
         Check availability

@@ -169,7 +169,7 @@ export function TourOptionsEditor({ initialOptions, onChange }: TourOptionsEdito
             <input
               value={option.type}
               onChange={(event) => updateOption(option.id, { type: event.target.value })}
-              placeholder="Tipo (shared, private, vip)"
+              placeholder="Tipo o regla (vip | days:tue,wed,thu,fri,sat,sun)"
               className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
             />
             <input
@@ -211,6 +211,9 @@ export function TourOptionsEditor({ initialOptions, onChange }: TourOptionsEdito
             placeholder="Pickup times (comma separated, optional)"
             className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
           />
+          <p className="mt-2 text-xs text-slate-500">
+            Puedes bloquear tickets por dia usando el campo tipo. Ejemplo: <span className="font-semibold">drink-pack | days:tue,wed</span>
+          </p>
           <div className="mt-3 flex justify-end">
             <button
               type="button"

@@ -67,6 +67,11 @@ const NORTH_COAST_PARTY_BOAT_TOURS = new Set([
   "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua"
 ]);
 
+const COCO_BONGO_COMPARISON_TOURS = new Set([
+  "coco-bongo-punta-cana-show-disco-skip-the-line",
+  "coco-bongo-punta-cana"
+]);
+
 const TOUR_H1_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
   "tour-en-buggy-en-punta-cana": {
     es: "Tour en buggy en Punta Cana: barro, cueva y aventura",
@@ -1143,10 +1148,11 @@ export default async function TourDetailPage({
       category: true,
       destinationId: true,
       departureDestinationId: true,
-      language: true,
-      location: true,
-      timeOptions: true,
-      duration: true,
+        language: true,
+        location: true,
+        timeOptions: true,
+        operatingDays: true,
+        duration: true,
       adminNote: true,
       price: true,
       capacity: true,
@@ -1305,6 +1311,7 @@ export default async function TourDetailPage({
   const categories = (tour.category ?? "").split(",").map((i) => i.trim()).filter(Boolean);
   const languages = (tour.language ?? "").split(",").map((i) => i.trim()).filter(Boolean);
   const timeSlots = parseJsonArray<PersistedTimeSlot>(tour.timeOptions);
+  const operatingDays = parseJsonArray<string>(tour.operatingDays);
   const durationValue = parseDuration(tour.duration);
   const displayTime = timeSlots.length ? formatTimeSlot(timeSlots[0]) : "09:00 AM";
   const parsedAdminItinerary = parseAdminItinerary(tour.adminNote ?? "");
@@ -1398,6 +1405,12 @@ export default async function TourDetailPage({
     tour.slug === "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua";
   const commercialIntentLinks = agencyMode ? [] : buildCommercialIntentLinks(locale, tour.slug);
   const practicalInfo = buildPracticalInfo(locale, tour.slug);
+  const isCocoBongoTour = COCO_BONGO_COMPARISON_TOURS.has(tour.slug);
+  const regularOption =
+    tour.options?.find((option) => /regular/i.test(option.name)) ?? tour.options?.[0] ?? null;
+  const goldOption =
+    tour.options?.find((option) => /gold/i.test(option.name)) ?? tour.options?.[1] ?? null;
+  const drinkPackOption = tour.options?.find((option) => /drink pack/i.test(option.name)) ?? null;
   const mapQuery = encodeURIComponent(`${heroTitle} ${tour.location ?? "Punta Cana"}`);
   const mapEmbedUrl = `https://www.google.com/maps?q=${mapQuery}&output=embed`;
   const mapSearchUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
@@ -1766,6 +1779,7 @@ export default async function TourDetailPage({
     tourId: tour.id,
     basePrice: effectiveTourPrice,
     timeSlots,
+    operatingDays,
     options:
       agencyMode
         ? []
@@ -2029,6 +2043,127 @@ export default async function TourDetailPage({
             <div className="space-y-3 text-sm text-slate-700 leading-relaxed whitespace-pre-line">
               {longDescriptionParagraphs.map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {isCocoBongoTour ? (
+        <section className="mx-auto mt-6 max-w-[1240px] px-4">
+          <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                  {localeLabel(locale, "Comparativa de entradas", "Ticket comparison", "Comparatif des billets")}
+                </p>
+                <h2 className="mt-2 text-[20px] font-semibold text-slate-900">
+                  {localeLabel(
+                    locale,
+                    "Regular vs Gold Member: que cambia realmente",
+                    "Regular vs Gold Member: what really changes",
+                    "Regular vs Gold Member : ce qui change vraiment"
+                  )}
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm text-slate-600">
+                  {localeLabel(
+                    locale,
+                    "Asi evitamos reservas equivocadas: la opcion economica es para vivir el show en area general, mientras Gold da asiento, mas espacio y bar premium.",
+                    "This makes the difference clear before booking: the cheaper option is the general-standing experience, while Gold adds seating, more space and premium bar.",
+                    "Cela clarifie la difference avant reservation : l option economique reste en zone generale, tandis que Gold ajoute siege, espace et bar premium."
+                  )}
+                </p>
+              </div>
+              {drinkPackOption ? (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                  <p className="font-semibold">{drinkPackOption.name}</p>
+                  <p>
+                    {localeLabel(
+                      locale,
+                      "Solo disponible martes y miercoles. El widget bloquea automaticamente otras fechas.",
+                      "Only available on Tuesdays and Wednesdays. The widget automatically blocks other dates.",
+                      "Disponible uniquement mardi et mercredi. Le widget bloque automatiquement les autres dates."
+                    )}
+                  </p>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              {regularOption ? (
+                <article className="rounded-[22px] border border-slate-200 bg-slate-50 p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
+                    {localeLabel(locale, "Opcion base", "Base option", "Option de base")}
+                  </p>
+                  <div className="mt-2 flex items-end justify-between gap-4">
+                    <h3 className="text-lg font-bold text-slate-900">{regularOption.name}</h3>
+                    <p className="text-xl font-black text-slate-900">
+                      ${Number(regularOption.pricePerPerson ?? tour.price).toFixed(0)}
+                    </p>
+                  </div>
+                  <ul className="mt-4 space-y-2 text-sm text-slate-700">
+                    <li>• {localeLabel(locale, "Entrada sin filas", "Skip-the-line entry", "Entree coupe-file")}</li>
+                    <li>• {localeLabel(locale, "Area general, normalmente de pie", "General area, usually standing", "Zone generale, souvent debout")}</li>
+                    <li>• {localeLabel(locale, "Bar abierto regular", "Regular open bar", "Open bar standard")}</li>
+                    <li>• {localeLabel(locale, "Ideal si priorizas precio", "Best if price matters most", "Ideal si le prix passe d abord")}</li>
+                  </ul>
+                </article>
+              ) : null}
+
+              {goldOption ? (
+                <article className="rounded-[22px] border border-amber-200 bg-amber-50 p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-700">
+                    {localeLabel(locale, "Mejor experiencia", "Best experience", "Meilleure experience")}
+                  </p>
+                  <div className="mt-2 flex items-end justify-between gap-4">
+                    <h3 className="text-lg font-bold text-slate-900">{goldOption.name}</h3>
+                    <p className="text-xl font-black text-amber-800">
+                      ${Number(goldOption.pricePerPerson ?? tour.price).toFixed(0)}
+                    </p>
+                  </div>
+                  <ul className="mt-4 space-y-2 text-sm text-slate-700">
+                    <li>• {localeLabel(locale, "Entrada VIP sin filas", "VIP fast-track entry", "Entree VIP rapide")}</li>
+                    <li>• {localeLabel(locale, "Asiento reservado y mas espacio", "Reserved seating and more space", "Siege reserve et plus d espace")}</li>
+                    <li>• {localeLabel(locale, "Bar premium y mejor vista del show", "Premium bar and better show view", "Bar premium et meilleure vue sur le show")}</li>
+                    <li>• {localeLabel(locale, "Recomendado si no quieres pasar horas de pie", "Recommended if you do not want to stand for hours", "Recommande si vous ne voulez pas rester debout pendant des heures")}</li>
+                  </ul>
+                </article>
+              ) : null}
+            </div>
+
+            <div className="mt-6 overflow-hidden rounded-[22px] border border-slate-200">
+              <div className="grid grid-cols-[1.3fr,1fr,1fr] bg-slate-100 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <div className="px-4 py-3">{localeLabel(locale, "Caracteristica", "Feature", "Caracteristique")}</div>
+                <div className="px-4 py-3">{regularOption?.name ?? "Regular"}</div>
+                <div className="px-4 py-3">{goldOption?.name ?? "Gold Member"}</div>
+              </div>
+              {[
+                [
+                  localeLabel(locale, "Tipo de area", "Area type", "Type de zone"),
+                  localeLabel(locale, "General / de pie", "General / standing", "Generale / debout"),
+                  localeLabel(locale, "Reservada / sentada", "Reserved / seated", "Reservee / assise")
+                ],
+                [
+                  localeLabel(locale, "Bar", "Bar", "Bar"),
+                  localeLabel(locale, "Regular", "Regular", "Standard"),
+                  localeLabel(locale, "Premium", "Premium", "Premium")
+                ],
+                [
+                  localeLabel(locale, "Comodidad durante el show", "Comfort during the show", "Confort pendant le show"),
+                  localeLabel(locale, "Basica", "Basic", "Basique"),
+                  localeLabel(locale, "Alta", "High", "Eleve")
+                ],
+                [
+                  localeLabel(locale, "Para quien conviene", "Best for", "Ideal pour"),
+                  localeLabel(locale, "Quien quiere entrar al mejor precio", "Travelers focused on the best price", "Voyageurs axes sur le meilleur prix"),
+                  localeLabel(locale, "Quien quiere espacio, asiento y experiencia VIP", "Travelers wanting space, seating and VIP comfort", "Voyageurs voulant espace, siege et confort VIP")
+                ]
+              ].map((row) => (
+                <div key={row[0]} className="grid grid-cols-[1.3fr,1fr,1fr] border-t border-slate-200 text-sm text-slate-700">
+                  <div className="px-4 py-3 font-semibold text-slate-900">{row[0]}</div>
+                  <div className="px-4 py-3">{row[1]}</div>
+                  <div className="px-4 py-3">{row[2]}</div>
+                </div>
               ))}
             </div>
           </div>
