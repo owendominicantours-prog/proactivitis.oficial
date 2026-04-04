@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { getNotificationsForRecipient, parseNotificationMetadata } from "@/lib/notificationService";
 import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
 import { prisma } from "@/lib/prisma";
+import { PROACTIVITIS_WHATSAPP_LINK } from "@/lib/seo";
 import CustomerPaymentMethod from "@/components/customer/CustomerPaymentMethod";
 import { CustomerPreferencesForm } from "@/components/customer/CustomerPreferencesForm";
 
@@ -129,7 +130,7 @@ export default async function CustomerPortal() {
     ? await getNotificationsForRecipient({ role: "CUSTOMER", userId: user.id, limit: 4 })
     : [];
   const whatsappBase =
-    process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/18093949877?text=Hola%20Proactivitis";
+    process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? `${PROACTIVITIS_WHATSAPP_LINK}?text=Hola%20Proactivitis`;
   const buildWhatsappLink = (message: string) => {
     const hasQuery = whatsappBase.includes("?");
     const hasText = whatsappBase.includes("text=");

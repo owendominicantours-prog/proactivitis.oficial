@@ -15,6 +15,7 @@ import {
   getPremiumTransferContentOverrides,
   getSharedImageRegistry
 } from "@/lib/siteContent";
+import { PROACTIVITIS_PHONE, PROACTIVITIS_WHATSAPP_LINK, PROACTIVITIS_WHATSAPP_NUMBER } from "@/lib/seo";
 import HomeSettingsForm from "@/components/admin/HomeSettingsForm";
 import ContactSettingsForm from "@/components/admin/ContactSettingsForm";
 import GlobalBannerSettingsForm from "@/components/admin/GlobalBannerSettingsForm";
@@ -151,13 +152,13 @@ export default async function AdminSettingsPage() {
       phone: {
         label: contactContent.phone?.label ?? t("contact.section.phone.label"),
         details: contactContent.phone?.details ?? t("contact.section.phone.details"),
-        number: contactContent.phone?.number ?? "+1 (809) 394-9877"
+        number: contactContent.phone?.number ?? PROACTIVITIS_PHONE
       },
       whatsapp: {
         label: contactContent.whatsapp?.label ?? t("contact.whatsapp.label"),
         cta: contactContent.whatsapp?.cta ?? t("contact.whatsapp.cta"),
-        number: contactContent.whatsapp?.number ?? "18093949877",
-        link: contactContent.whatsapp?.link ?? "https://wa.me/18093949877"
+        number: contactContent.whatsapp?.number ?? PROACTIVITIS_WHATSAPP_NUMBER,
+        link: contactContent.whatsapp?.link ?? PROACTIVITIS_WHATSAPP_LINK
       },
       emails: {
         sectionTitle: contactContent.emails?.sectionTitle ?? t("contact.email.sectionTitle"),

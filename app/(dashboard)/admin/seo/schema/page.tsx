@@ -10,7 +10,7 @@ import {
 } from "@/components/public/TransferLandingPage";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import { normalizeTextDeep } from "@/lib/text-format";
-import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL } from "@/lib/seo";
+import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_PHONE, PROACTIVITIS_URL } from "@/lib/seo";
 import { TransferLocationType } from "@prisma/client";
 import type { Locale } from "@/lib/translations";
 import { getGeminiSchemaReview, listGeminiSchemaReviews } from "@/lib/geminiSchemaReview";
@@ -590,7 +590,7 @@ export default async function AdminSchemaManagerPage({ searchParams }: Props) {
                 <div className="grid gap-4 md:grid-cols-3">
                   <label className="text-sm text-slate-600">
                     Provider telephone
-                    <input name="provider_telephone" defaultValue={override?.providerTelephone ?? "+1-809-394-9877"} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
+                    <input name="provider_telephone" defaultValue={override?.providerTelephone ?? PROACTIVITIS_PHONE} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
                   </label>
                   <label className="text-sm text-slate-600">
                     Provider email

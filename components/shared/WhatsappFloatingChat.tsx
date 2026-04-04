@@ -3,8 +3,9 @@
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
+import { PROACTIVITIS_WHATSAPP_LINK } from "@/lib/seo";
 
-const DEFAULT_WHATSAPP_LINK = "https://wa.me/18093949877?text=Hola%20Proactivitis";
+const DEFAULT_WHATSAPP_LINK = `${PROACTIVITIS_WHATSAPP_LINK}?text=Hola%20Proactivitis`;
 
 const COPY = {
   es: { title: "Soporte inmediato", cta: "Chatea por WhatsApp", intro: "Hola, vengo de" },

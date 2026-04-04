@@ -5,7 +5,10 @@ export const SAME_AS_URLS = [
 
 export const PROACTIVITIS_URL = "https://proactivitis.com";
 export const PROACTIVITIS_LOGO = `${PROACTIVITIS_URL}/logo.png`;
-export const PROACTIVITIS_PHONE = "+1-809-394-9877";
+export const PROACTIVITIS_PHONE = "+1 (829) 475-6298";
+export const PROACTIVITIS_PHONE_MACHINE = "18294756298";
+export const PROACTIVITIS_WHATSAPP_NUMBER = PROACTIVITIS_PHONE_MACHINE;
+export const PROACTIVITIS_WHATSAPP_LINK = `https://wa.me/${PROACTIVITIS_WHATSAPP_NUMBER}`;
 export const PROACTIVITIS_EMAIL = "info@proactivitis.com";
 
 export const ECUADOR_SUPPORT_EMAIL = "soporte.ec@proactivitis.com";

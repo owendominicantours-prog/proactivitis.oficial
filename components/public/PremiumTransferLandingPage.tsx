@@ -5,14 +5,20 @@ import { getPremiumTransferContentOverrides } from "@/lib/siteContent";
 import { prisma } from "@/lib/prisma";
 import PremiumTransferBookingWidget from "@/components/transfers/PremiumTransferBookingWidget";
 import StructuredData from "@/components/schema/StructuredData";
-import { PROACTIVITIS_URL, PROACTIVITIS_LOCALBUSINESS, SAME_AS_URLS, getPriceValidUntil } from "@/lib/seo";
+import {
+  PROACTIVITIS_URL,
+  PROACTIVITIS_LOCALBUSINESS,
+  PROACTIVITIS_WHATSAPP_LINK,
+  SAME_AS_URLS,
+  getPriceValidUntil
+} from "@/lib/seo";
 import { normalizeTextDeep } from "@/lib/text-format";
 import {
   premiumTransferMarketLandings,
   type PremiumTransferMarketLanding
 } from "@/data/premium-transfer-market-landings";
 
-const WHATSAPP_LINK = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/18093949877";
+const WHATSAPP_LINK = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? PROACTIVITIS_WHATSAPP_LINK;
 const DOMINICAN_COUNTRY_CODES = ["RD", "DO", "DOMINICAN-REPUBLIC"];
 const PREMIUM_AREA_HINTS = ["bavaro", "cap-cana", "uvero-alto", "arena-gorda", "punta-cana-resorts"];
 

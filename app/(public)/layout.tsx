@@ -4,7 +4,7 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import PublicHeaderSwitch from "@/components/public/PublicHeaderSwitch";
 import WhatsappFloatingChat from "@/components/shared/WhatsappFloatingChat";
 import VisitorSalesChat from "@/components/shared/VisitorSalesChat";
-import { getPriceValidUntil } from "@/lib/seo";
+import { getPriceValidUntil, PROACTIVITIS_PHONE } from "@/lib/seo";
 
 const OFFER_SERVICE_SCHEMA = {
   "@type": "Offer",
@@ -95,7 +95,7 @@ const TRAVEL_AGENCY_SCHEMA = {
   url: "https://proactivitis.com",
   logo: "https://proactivitis.com/logo.png",
   image: "https://proactivitis.com/icon.png",
-  telephone: "+1-809-394-9877",
+  telephone: PROACTIVITIS_PHONE,
   email: "info@proactivitis.com",
   description:
     "Plataforma lider en la gestion de experiencias turisticas y traslados privados a nivel global.",

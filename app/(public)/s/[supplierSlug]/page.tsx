@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { PROACTIVITIS_URL } from "@/lib/seo";
+import { PROACTIVITIS_URL, PROACTIVITIS_WHATSAPP_LINK } from "@/lib/seo";
 import { authOptions } from "@/lib/auth";
 import { MinisiteTourGrid } from "@/components/minisite/MinisiteTourGrid";
 
@@ -235,7 +235,7 @@ export default async function SupplierMinisitePublicPage({ params, searchParams 
                 href={
                   minisite.Supplier.productsEnabled
                     ? "/supplier/tours"
-                    : "https://wa.me/+18093949877?text=Quiero+activar+productos+del+minisite"
+                    : `${PROACTIVITIS_WHATSAPP_LINK}?text=Quiero+activar+productos+del+minisite`
                 }
                 className="primary-btn text-xs"
               >

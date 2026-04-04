@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth";
 import Eticket from "@/components/booking/Eticket";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { PROACTIVITIS_WHATSAPP_LINK } from "@/lib/seo";
 const statusMessages: Record<string, string> = {
   CONFIRMED: "Confirmada",
   CANCELLATION_REQUESTED: "Cancelación solicitada",
@@ -73,7 +74,7 @@ export default async function CustomerPublicReservationsPage() {
     orderBy: { travelDate: "asc" }
   });
 
-  const whatsappBase = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/18093949877?text=Hola%20Proactivitis";
+  const whatsappBase = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? `${PROACTIVITIS_WHATSAPP_LINK}?text=Hola%20Proactivitis`;
   const buildWhatsappLink = (message: string) => {
     const hasQuery = whatsappBase.includes("?");
     const hasText = whatsappBase.includes("text=");

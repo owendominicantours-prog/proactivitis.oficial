@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Mail, Phone, Smartphone } from "lucide-react";
 
 import ContactForm from "@/components/contact/ContactForm";
+import { PROACTIVITIS_PHONE, PROACTIVITIS_WHATSAPP_LINK, PROACTIVITIS_WHATSAPP_NUMBER } from "@/lib/seo";
 import { Locale, translate, type TranslationKey } from "@/lib/translations";
 import { getContactContentOverrides } from "@/lib/siteContent";
 
@@ -16,11 +17,11 @@ export default async function PublicContactPage({ locale }: PublicContactPagePro
   const heroDescription = overrides.hero?.description ?? translate(locale, "contact.hero.description");
   const phoneLabel = overrides.phone?.label ?? translate(locale, "contact.section.phone.label");
   const phoneDetails = overrides.phone?.details ?? translate(locale, "contact.section.phone.details");
-  const phoneNumber = overrides.phone?.number ?? "+1 (809) 394-9877";
+  const phoneNumber = overrides.phone?.number ?? PROACTIVITIS_PHONE;
   const whatsappLabel = overrides.whatsapp?.label ?? translate(locale, "contact.whatsapp.label");
   const whatsappCta = overrides.whatsapp?.cta ?? translate(locale, "contact.whatsapp.cta");
-  const whatsappNumber = overrides.whatsapp?.number ?? "18093949877";
-  const whatsappLink = overrides.whatsapp?.link ?? `https://wa.me/${whatsappNumber}`;
+  const whatsappNumber = overrides.whatsapp?.number ?? PROACTIVITIS_WHATSAPP_NUMBER;
+  const whatsappLink = overrides.whatsapp?.link ?? `${PROACTIVITIS_WHATSAPP_LINK}?text=Hola%20Proactivitis`;
   const emailSectionTitle = overrides.emails?.sectionTitle ?? translate(locale, "contact.email.sectionTitle");
   const contactEmails: { labelKey: TranslationKey; value: string }[] = [
     { labelKey: "contact.email.general", value: overrides.emails?.general ?? "info@proactivitis.com" },

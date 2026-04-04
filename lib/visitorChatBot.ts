@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { PROACTIVITIS_WHATSAPP_LINK } from "@/lib/seo";
 
 type ChatHistoryItem = {
   senderRole: string;
@@ -35,7 +36,7 @@ const copy = {
     toursIntro: "Te recomiendo estas opciones reales de la web:",
     toursMore: "Aqui tienes mas opciones que encajan con lo que buscas:",
     fallback: "Te puedo ayudar con traslados, tours y hoteles. Dime primero que quieres reservar.",
-    human: "Te conecto con asesor humano ahora: https://wa.me/18093949877",
+    human: `Te conecto con asesor humano ahora: ${PROACTIVITIS_WHATSAPP_LINK}`,
     pay: "Si quieres, tambien puedo enviarte el enlace de pago ahora.",
     upsell: "Si quieres, tambien te recomiendo excursiones segun tu hotel."
   },
@@ -49,7 +50,7 @@ const copy = {
     toursIntro: "These are real options available on the website:",
     toursMore: "Here are more options that match what you want:",
     fallback: "I can help with transfers, tours, and hotels. Tell me what you want to book first.",
-    human: "I can connect you with a human advisor now: https://wa.me/18093949877",
+    human: `I can connect you with a human advisor now: ${PROACTIVITIS_WHATSAPP_LINK}`,
     pay: "If you want, I can also send your direct payment link now.",
     upsell: "If you want, I can also recommend tours based on your hotel."
   },
@@ -63,7 +64,7 @@ const copy = {
     toursIntro: "Voici des options reelles disponibles sur le site:",
     toursMore: "Voici d'autres options adaptees a votre demande:",
     fallback: "Je peux aider pour transferts, tours et hotels. Dites-moi quoi reserver d'abord.",
-    human: "Je vous connecte a un conseiller humain: https://wa.me/18093949877",
+    human: `Je vous connecte a un conseiller humain: ${PROACTIVITIS_WHATSAPP_LINK}`,
     pay: "Si vous voulez, je peux aussi envoyer le lien de paiement direct.",
     upsell: "Si vous voulez, je peux aussi recommander des excursions selon votre hotel."
   }
@@ -453,9 +454,9 @@ const FAQ_REPLY: Record<FaqIntent["key"], Record<Lang, string>> = {
     fr: "Parfait. Assistance depuis l'arrivee PUJ jusqu'a l'hotel."
   },
   contact: {
-    es: "Te atiendo aqui mismo y tambien por WhatsApp directo: https://wa.me/18093949877",
-    en: "I can support you here and also on direct WhatsApp: https://wa.me/18093949877",
-    fr: "Je vous aide ici et aussi sur WhatsApp direct: https://wa.me/18093949877"
+    es: `Te atiendo aqui mismo y tambien por WhatsApp directo: ${PROACTIVITIS_WHATSAPP_LINK}`,
+    en: `I can support you here and also on direct WhatsApp: ${PROACTIVITIS_WHATSAPP_LINK}`,
+    fr: `Je vous aide ici et aussi sur WhatsApp direct: ${PROACTIVITIS_WHATSAPP_LINK}`
   }
 };
 

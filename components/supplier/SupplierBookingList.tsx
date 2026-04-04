@@ -14,6 +14,7 @@ import {
   Slack
 } from "lucide-react";
 import { buildBookingPresentation } from "@/lib/bookingPresentation";
+import { PROACTIVITIS_WHATSAPP_NUMBER } from "@/lib/seo";
 
 export type SupplierTimelineEntry = {
   title: string;
@@ -400,7 +401,7 @@ export function SupplierBookingList({ bookings }: Props) {
 
   const handleSendToDriver = (booking: SupplierBookingSummary) => {
     if (typeof window === "undefined") return;
-    const phone = booking.whatsappNumber?.replace(/\D/g, "") ?? "18093949877";
+    const phone = booking.whatsappNumber?.replace(/\D/g, "") ?? PROACTIVITIS_WHATSAPP_NUMBER;
     const rawMessage =
       booking.flowType === "transfer" && booking.tripType === "round-trip"
         ? `Reserva ${booking.bookingCode}\nCliente: ${booking.customerName ?? "Cliente"}\nIda: ${booking.pickup ?? "Pendiente"} · ${booking.startTime ?? "Hora por confirmar"}\nRegreso: ${booking.hotel ?? "Pendiente"} · ${
@@ -941,7 +942,7 @@ export function SupplierBookingList({ bookings }: Props) {
                   Enviar al chofer
                 </button>
                 <a
-                  href={`https://wa.me/${booking.whatsappNumber?.replace(/\D/g, "") ?? "18093949877"}`}
+                  href={`https://wa.me/${booking.whatsappNumber?.replace(/\D/g, "") ?? PROACTIVITIS_WHATSAPP_NUMBER}`}
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700"
