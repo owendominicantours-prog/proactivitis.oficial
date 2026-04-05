@@ -145,6 +145,14 @@ const formatDaysSummary = (days?: WeekdayKey[] | null) => {
   return days.map((day) => WEEKDAY_LABELS[day]).join(", ");
 };
 
+const summarizeOptionDescription = (value?: string | null) => {
+  const text = value?.replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  const firstSentence = text.split(/(?<=[.!?])\s+/)[0]?.trim();
+  if (firstSentence && firstSentence.length <= 140) return firstSentence;
+  return text.length > 140 ? `${text.slice(0, 137).trimEnd()}...` : text;
+};
+
 const isOptionAvailableForDay = (option: TourOption | null, selectedWeekday: WeekdayKey | null) => {
   if (!option || !selectedWeekday) return true;
   const optionDays = parseAvailableDays(option.availableDays);
@@ -461,6 +469,7 @@ export function TourBookingWidget({
               const optionPricing = resolveOptionPricing(option, totalTravelers, basePrice);
               const optionDays = parseAvailableDays(option.availableDays);
               const disabledForDate = !isOptionAvailableForDay(option, selectedWeekday);
+              const shortDescription = summarizeOptionDescription(option.description);
               return (
                 <label
                   key={option.id}
@@ -472,7 +481,7 @@ export function TourBookingWidget({
                         : "cursor-pointer border-slate-200 bg-white"
                   }`}
                 >
-                  <div className="flex items-start gap-2">
+                  <div className="flex min-w-0 items-start gap-3">
                     <input
                       type="radio"
                       name="tourOption"
@@ -481,17 +490,17 @@ export function TourBookingWidget({
                       disabled={disabledForDate}
                       className="mt-1"
                     />
-                    <div>
+                    <div className="min-w-0 flex-1">
                       {option.imageUrl ? (
                         <div
-                          className="mb-2 h-16 w-24 rounded-lg bg-cover bg-center"
+                          className="mb-2 h-16 w-full max-w-[132px] rounded-lg bg-cover bg-center"
                           style={{ backgroundImage: `url(${option.imageUrl})` }}
                         />
                       ) : null}
                       <p className="text-sm font-semibold text-slate-900">{option.name}</p>
-                      {option.description && (
-                        <p className="text-xs text-slate-500">{option.description}</p>
-                      )}
+                      {shortDescription ? (
+                        <p className="line-clamp-2 text-xs text-slate-500">{shortDescription}</p>
+                      ) : null}
                       {optionDays?.length ? (
                         <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
                           Disponible: {formatDaysSummary(optionDays)}
@@ -512,6 +521,30 @@ export function TourBookingWidget({
           </div>
         </div>
       )}
+
+      {selectedOption && (selectedOption.description || selectedOption.imageUrl) ? (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs text-slate-700">
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Detalle de la opcion
+          </p>
+          <div className="mt-2 flex gap-3">
+            {selectedOption.imageUrl ? (
+              <div
+                className="h-20 w-28 shrink-0 rounded-lg bg-cover bg-center"
+                style={{ backgroundImage: `url(${selectedOption.imageUrl})` }}
+              />
+            ) : null}
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-slate-900">{selectedOption.name}</p>
+              {selectedOption.description ? (
+                <p className="mt-1 whitespace-pre-line leading-relaxed text-slate-600">
+                  {selectedOption.description}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
       {/* PRICE HEADER */}
       <div className="space-y-1">
         <p className="text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-slate-500">From price</p>
