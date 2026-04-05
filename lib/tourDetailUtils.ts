@@ -343,9 +343,9 @@ const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>
     fr: "Juanillo VIP by Scape Park propose Hoyo Azul, catamaran premium, plage Juanillo et dejeuner superieur a Cap Cana."
   },
   "scape-park-punta-cana": {
-    es: "Scape Park Punta Cana con opciones Full Admission, Sunshine Cruise, Buggies y Juanillo VIP. Transporte y almuerzo incluidos.",
-    en: "Scape Park Punta Cana with Full Admission, Sunshine Cruise, Buggies and Juanillo VIP options. Transport and lunch included.",
-    fr: "Scape Park Punta Cana avec options Full Admission, Sunshine Cruise, Buggies et Juanillo VIP. Transport et dejeuner inclus."
+    es: "Reserva Scape Park Punta Cana al mejor precio 2026. Incluye Hoyo Azul, tirolesas, Juanillo VIP y transporte desde tu hotel. Confirmacion instantanea por WhatsApp.",
+    en: "Book Scape Park Punta Cana at the best 2026 price. Includes Hoyo Azul, zip lines, Juanillo VIP and hotel pickup. Instant WhatsApp confirmation.",
+    fr: "Reservez Scape Park Punta Cana au meilleur prix 2026. Inclut Hoyo Azul, tyroliennes, Juanillo VIP et pickup hotel. Confirmation instantanee sur WhatsApp."
   }
 };
 
