@@ -7,6 +7,7 @@ type TourOptionDraft = {
   name: string;
   type: string;
   description: string;
+  imageUrl: string;
   pricePerPerson: string;
   basePrice: string;
   baseCapacity: string;
@@ -20,6 +21,7 @@ export type TourOptionPayload = {
   name: string;
   type?: string;
   description?: string;
+  imageUrl?: string;
   pricePerPerson?: number;
   basePrice?: number;
   baseCapacity?: number;
@@ -43,6 +45,7 @@ const emptyOption = (): TourOptionDraft => ({
   name: "",
   type: "",
   description: "",
+  imageUrl: "",
   pricePerPerson: "",
   basePrice: "",
   baseCapacity: "",
@@ -65,6 +68,7 @@ export function TourOptionsEditor({ initialOptions, onChange }: TourOptionsEdito
       name: option.name ?? `Opcion ${index + 1}`,
       type: option.type ?? "",
       description: option.description ?? "",
+      imageUrl: option.imageUrl ?? "",
       pricePerPerson: option.pricePerPerson?.toString() ?? "",
       basePrice: option.basePrice?.toString() ?? "",
       baseCapacity: option.baseCapacity?.toString() ?? "",
@@ -86,6 +90,7 @@ export function TourOptionsEditor({ initialOptions, onChange }: TourOptionsEdito
           name: option.name.trim(),
           type: option.type.trim() || undefined,
           description: option.description.trim() || undefined,
+          imageUrl: option.imageUrl.trim() || undefined,
           pricePerPerson: parseNumber(option.pricePerPerson),
           basePrice: parseNumber(option.basePrice),
           baseCapacity: option.baseCapacity ? Number.parseInt(option.baseCapacity, 10) : undefined,
@@ -179,6 +184,12 @@ export function TourOptionsEditor({ initialOptions, onChange }: TourOptionsEdito
               className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
             />
           </div>
+          <input
+            value={option.imageUrl}
+            onChange={(event) => updateOption(option.id, { imageUrl: event.target.value })}
+            placeholder="URL de imagen para esta opcion"
+            className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+          />
           <div className="mt-3 grid gap-3 md:grid-cols-4">
             <input
               value={option.pricePerPerson}

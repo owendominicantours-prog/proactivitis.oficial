@@ -693,6 +693,7 @@ model TourOption {
   name                 String
   type                 String?
   description          String?
+  imageUrl             String?
   pricePerPerson       Float?
   basePrice            Float?
   baseCapacity         Int?

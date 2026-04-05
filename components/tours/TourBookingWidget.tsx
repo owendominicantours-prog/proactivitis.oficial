@@ -41,6 +41,7 @@ type TourOption = {
   type?: string | null;
   checkoutType?: string | null;
   description?: string | null;
+  imageUrl?: string | null;
   pricePerPerson?: number | null;
   basePrice?: number | null;
   baseCapacity?: number | null;
@@ -481,6 +482,12 @@ export function TourBookingWidget({
                       className="mt-1"
                     />
                     <div>
+                      {option.imageUrl ? (
+                        <div
+                          className="mb-2 h-16 w-24 rounded-lg bg-cover bg-center"
+                          style={{ backgroundImage: `url(${option.imageUrl})` }}
+                        />
+                      ) : null}
                       <p className="text-sm font-semibold text-slate-900">{option.name}</p>
                       {option.description && (
                         <p className="text-xs text-slate-500">{option.description}</p>

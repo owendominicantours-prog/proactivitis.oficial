@@ -249,6 +249,11 @@ const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     es: "Juanillo VIP by Scape Park en Punta Cana",
     en: "Juanillo VIP by Scape Park in Punta Cana",
     fr: "Juanillo VIP by Scape Park a Punta Cana"
+  },
+  "scape-park-punta-cana": {
+    es: "Scape Park Punta Cana: opciones y combos",
+    en: "Scape Park Punta Cana: options and combos",
+    fr: "Scape Park Punta Cana : options et combos"
   }
 };
 const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
@@ -341,6 +346,11 @@ const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>
     es: "Juanillo VIP by Scape Park ofrece Hoyo Azul, catamaran premium, Playa Juanillo y almuerzo superior en Cap Cana.",
     en: "Juanillo VIP by Scape Park delivers Hoyo Azul, premium catamaran, Juanillo Beach and elevated lunch in Cap Cana.",
     fr: "Juanillo VIP by Scape Park propose Hoyo Azul, catamaran premium, plage Juanillo et dejeuner superieur a Cap Cana."
+  },
+  "scape-park-punta-cana": {
+    es: "Scape Park Punta Cana con opciones Full Admission, Sunshine Cruise, Buggies y Juanillo VIP. Transporte y almuerzo incluidos.",
+    en: "Scape Park Punta Cana with Full Admission, Sunshine Cruise, Buggies and Juanillo VIP options. Transport and lunch included.",
+    fr: "Scape Park Punta Cana avec options Full Admission, Sunshine Cruise, Buggies et Juanillo VIP. Transport et dejeuner inclus."
   }
 };
 

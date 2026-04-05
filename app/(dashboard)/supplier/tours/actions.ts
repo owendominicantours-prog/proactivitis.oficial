@@ -15,6 +15,7 @@ type TourOptionInput = {
   name: string;
   type?: string;
   description?: string;
+  imageUrl?: string;
   pricePerPerson?: number;
   basePrice?: number;
   baseCapacity?: number;
@@ -61,6 +62,7 @@ function parseTourOptions(formData: FormData): TourOptionInput[] {
         name: typeof option?.name === "string" ? sanitized(option.name, "title") : "",
         type: typeof option?.type === "string" ? option.type.trim() : undefined,
         description: typeof option?.description === "string" ? sanitized(option.description, "description") : undefined,
+        imageUrl: typeof option?.imageUrl === "string" ? option.imageUrl.trim() : undefined,
         pricePerPerson: typeof option?.pricePerPerson === "number" ? option.pricePerPerson : undefined,
         basePrice: typeof option?.basePrice === "number" ? option.basePrice : undefined,
         baseCapacity: typeof option?.baseCapacity === "number" ? option.baseCapacity : undefined,
@@ -194,6 +196,7 @@ export async function createTourAction(formData: FormData) {
         name: option.name,
         type: option.type,
         description: option.description,
+        imageUrl: option.imageUrl,
         pricePerPerson: option.pricePerPerson,
         basePrice: option.basePrice,
         baseCapacity: option.baseCapacity,
@@ -290,6 +293,7 @@ export async function duplicateTourAction(formData: FormData) {
         name: option.name,
         type: option.type ?? undefined,
         description: option.description ?? undefined,
+        imageUrl: option.imageUrl ?? undefined,
         pricePerPerson: option.pricePerPerson ?? undefined,
         basePrice: option.basePrice ?? undefined,
         baseCapacity: option.baseCapacity ?? undefined,
@@ -419,6 +423,7 @@ export async function updateTourAction(formData: FormData) {
         name: option.name,
         type: option.type,
         description: option.description,
+        imageUrl: option.imageUrl,
         pricePerPerson: option.pricePerPerson,
         basePrice: option.basePrice,
         baseCapacity: option.baseCapacity,

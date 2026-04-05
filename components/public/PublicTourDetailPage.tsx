@@ -73,6 +73,7 @@ const COCO_BONGO_COMPARISON_TOURS = new Set([
 ]);
 
 const SCAPE_PARK_TOURS = new Set([
+  "scape-park-punta-cana",
   "scape-park-full-admission-punta-cana",
   "scape-park-sunshine-cruise-punta-cana",
   "scape-park-buggies-punta-cana",
@@ -169,6 +170,11 @@ const TOUR_H1_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     es: "Juanillo VIP by Scape Park en Punta Cana",
     en: "Juanillo VIP by Scape Park in Punta Cana",
     fr: "Juanillo VIP by Scape Park a Punta Cana"
+  },
+  "scape-park-punta-cana": {
+    es: "Scape Park Punta Cana: opciones y combos",
+    en: "Scape Park Punta Cana: options and combos",
+    fr: "Scape Park Punta Cana : options et combos"
   }
 };
 
@@ -876,6 +882,50 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
         answer: "Oui. La partie catamaran comprend boissons premium et snorkel."
       }
     ]
+  },
+  "scape-park-punta-cana": {
+    es: [
+      {
+        question: "Cual opcion de Scape Park me conviene mas?",
+        answer: "Full Admission es la base mas equilibrada. Sunshine Cruise agrega mar y catamaran, Buggies suma adrenalina off-road, y Juanillo VIP es la opcion mas exclusiva."
+      },
+      {
+        question: "Todas las opciones incluyen transporte y almuerzo?",
+        answer: "Si. Todas las opciones principales incluyen transporte ida y vuelta y almuerzo; lo que cambia es el nivel de experiencia adicional."
+      },
+      {
+        question: "Puedo elegir la opcion al reservar?",
+        answer: "Si. Reservas el mismo producto y eliges la variante exacta dentro del selector de opciones."
+      }
+    ],
+    en: [
+      {
+        question: "Which Scape Park option fits me best?",
+        answer: "Full Admission is the balanced base. Sunshine Cruise adds sea and catamaran, Buggies adds off-road adrenaline, and Juanillo VIP is the most exclusive option."
+      },
+      {
+        question: "Do all options include transport and lunch?",
+        answer: "Yes. All main options include round-trip transport and lunch; what changes is the level of added experience."
+      },
+      {
+        question: "Can I choose the option while booking?",
+        answer: "Yes. You book the same product and select the exact variant inside the options selector."
+      }
+    ],
+    fr: [
+      {
+        question: "Quelle option Scape Park me convient le mieux?",
+        answer: "Full Admission est la base la plus equilibree. Sunshine Cruise ajoute mer et catamaran, Buggies apporte plus d adrenaline, et Juanillo VIP est l option la plus exclusive."
+      },
+      {
+        question: "Toutes les options incluent transport et dejeuner?",
+        answer: "Oui. Toutes les options principales incluent transport aller-retour et dejeuner ; ce qui change est le niveau d experience ajoutee."
+      },
+      {
+        question: "Puis-je choisir l option pendant la reservation?",
+        answer: "Oui. Vous reservez le meme produit et choisissez la variante exacte dans le selecteur d options."
+      }
+    ]
   }
 };
 
@@ -1363,13 +1413,14 @@ export default async function TourDetailPage({
       options: {
         where: { active: true },
         orderBy: { sortOrder: "asc" },
-        select: {
-          id: true,
-          name: true,
-          type: true,
-          description: true,
-          pricePerPerson: true,
-          basePrice: true,
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            description: true,
+            imageUrl: true,
+            pricePerPerson: true,
+            basePrice: true,
           baseCapacity: true,
           extraPricePerPerson: true,
           pickupTimes: true,
@@ -1617,28 +1668,28 @@ export default async function TourDetailPage({
   const drinkPackOption = tour.options?.find((option) => /drink pack/i.test(option.name)) ?? null;
   const scapeProducts = [
     {
-      slug: "scape-park-full-admission-punta-cana",
+      slug: "full-admission",
       title: localeLabel(locale, "Full Admission", "Full Admission", "Full Admission"),
       price: 143,
       focus: localeLabel(locale, "Variedad y mejor relacion valor", "Best overall value and variety", "Meilleur rapport valeur-variete"),
       detail: localeLabel(locale, "Hoyo Azul, tirolesas, cuevas, fauna y buffet.", "Hoyo Azul, zip lines, caves, fauna and buffet.", "Hoyo Azul, tyroliennes, grottes, fauna et buffet.")
     },
     {
-      slug: "scape-park-sunshine-cruise-punta-cana",
+      slug: "sunshine-cruise",
       title: localeLabel(locale, "Scape Park + Sunshine Cruise", "Scape Park + Sunshine Cruise", "Scape Park + Sunshine Cruise"),
       price: 183,
       focus: localeLabel(locale, "Selva + mar el mismo dia", "Jungle + sea in one day", "Jungle + mer le meme jour"),
       detail: localeLabel(locale, "Parque completo mas catamaran, snorkel y open bar.", "Full park plus catamaran, snorkel and open bar.", "Parc complet plus catamaran, snorkel et open bar.")
     },
     {
-      slug: "scape-park-buggies-punta-cana",
+      slug: "buggies",
       title: localeLabel(locale, "Scape Park + Buggies", "Scape Park + Buggies", "Scape Park + Buggies"),
       price: 183,
       focus: localeLabel(locale, "Mas adrenalina", "More adrenaline", "Plus d adrenaline"),
       detail: localeLabel(locale, "Parque completo mas ruta 4x4 en buggy.", "Full park plus a 4x4 buggy route.", "Parc complet plus parcours buggy 4x4.")
     },
     {
-      slug: "juanillo-vip-scape-park-punta-cana",
+      slug: "juanillo-vip",
       title: localeLabel(locale, "Juanillo VIP", "Juanillo VIP", "Juanillo VIP"),
       price: 203,
       focus: localeLabel(locale, "La opcion premium", "The premium option", "L option premium"),
@@ -2433,12 +2484,10 @@ export default async function TourDetailPage({
 
             <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {scapeProducts.map((item) => {
-                const href = locale === "es" ? `/tours/${item.slug}` : `/${locale}/tours/${item.slug}`;
-                const isCurrent = item.slug === tour.slug;
+                const isCurrent = item.price === Math.round(effectiveTourPrice);
                 return (
-                  <Link
+                  <article
                     key={item.slug}
-                    href={href}
                     className={`rounded-[22px] border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
                       isCurrent ? "border-sky-300 bg-sky-50" : "border-slate-200 bg-slate-50"
                     }`}
@@ -2452,7 +2501,7 @@ export default async function TourDetailPage({
                     <p className="mt-2 text-2xl font-black text-indigo-600">${item.price}</p>
                     <p className="mt-2 text-sm font-semibold text-slate-800">{item.focus}</p>
                     <p className="mt-2 text-sm text-slate-600">{item.detail}</p>
-                  </Link>
+                  </article>
                 );
               })}
             </div>

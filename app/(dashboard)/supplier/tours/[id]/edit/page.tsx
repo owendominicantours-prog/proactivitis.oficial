@@ -154,6 +154,7 @@ export default async function SupplierTourEditPage({ params }: Props) {
       name: option.name,
       type: option.type ?? undefined,
       description: option.description ?? undefined,
+      imageUrl: option.imageUrl ?? undefined,
       pricePerPerson: option.pricePerPerson ?? undefined,
       basePrice: option.basePrice ?? undefined,
       baseCapacity: option.baseCapacity ?? undefined,
