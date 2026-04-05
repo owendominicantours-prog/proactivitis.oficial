@@ -1661,41 +1661,43 @@ export default async function TourDetailPage({
   const practicalInfo = buildPracticalInfo(locale, tour.slug);
   const isCocoBongoTour = COCO_BONGO_COMPARISON_TOURS.has(tour.slug);
   const isScapeParkTour = SCAPE_PARK_TOURS.has(tour.slug);
+  const currentScapeOptionId =
+    tour.options?.find((option) => option.isDefault)?.id ?? tour.options?.[0]?.id ?? null;
   const regularOption =
     tour.options?.find((option) => /regular/i.test(option.name)) ?? tour.options?.[0] ?? null;
   const goldOption =
     tour.options?.find((option) => /gold/i.test(option.name)) ?? tour.options?.[1] ?? null;
   const drinkPackOption = tour.options?.find((option) => /drink pack/i.test(option.name)) ?? null;
-  const scapeProducts = [
-    {
-      slug: "full-admission",
-      title: localeLabel(locale, "Full Admission", "Full Admission", "Full Admission"),
-      price: 143,
-      focus: localeLabel(locale, "Variedad y mejor relacion valor", "Best overall value and variety", "Meilleur rapport valeur-variete"),
-      detail: localeLabel(locale, "Hoyo Azul, tirolesas, cuevas, fauna y buffet.", "Hoyo Azul, zip lines, caves, fauna and buffet.", "Hoyo Azul, tyroliennes, grottes, fauna et buffet.")
-    },
-    {
-      slug: "sunshine-cruise",
-      title: localeLabel(locale, "Scape Park + Sunshine Cruise", "Scape Park + Sunshine Cruise", "Scape Park + Sunshine Cruise"),
-      price: 183,
-      focus: localeLabel(locale, "Selva + mar el mismo dia", "Jungle + sea in one day", "Jungle + mer le meme jour"),
-      detail: localeLabel(locale, "Parque completo mas catamaran, snorkel y open bar.", "Full park plus catamaran, snorkel and open bar.", "Parc complet plus catamaran, snorkel et open bar.")
-    },
-    {
-      slug: "buggies",
-      title: localeLabel(locale, "Scape Park + Buggies", "Scape Park + Buggies", "Scape Park + Buggies"),
-      price: 183,
-      focus: localeLabel(locale, "Mas adrenalina", "More adrenaline", "Plus d adrenaline"),
-      detail: localeLabel(locale, "Parque completo mas ruta 4x4 en buggy.", "Full park plus a 4x4 buggy route.", "Parc complet plus parcours buggy 4x4.")
-    },
-    {
-      slug: "juanillo-vip",
-      title: localeLabel(locale, "Juanillo VIP", "Juanillo VIP", "Juanillo VIP"),
-      price: 203,
-      focus: localeLabel(locale, "La opcion premium", "The premium option", "L option premium"),
-      detail: localeLabel(locale, "Hoyo Azul, catamaran premium, Juanillo y almuerzo superior.", "Hoyo Azul, premium catamaran, Juanillo and elevated lunch.", "Hoyo Azul, catamaran premium, Juanillo et dejeuner superieur.")
+  const scapeProducts = (tour.options ?? []).map((option) => {
+    const optionKey = (option.type ?? option.name).toLowerCase();
+    const summary = option.description?.split(/(?<=[.!?])\s+/)[0]?.trim() || "";
+    let focus = localeLabel(locale, "Opcion disponible", "Available option", "Option disponible");
+    let detail = summary;
+
+    if (optionKey.includes("full-admission")) {
+      focus = localeLabel(locale, "Variedad y mejor relacion valor", "Best overall value and variety", "Meilleur rapport valeur-variete");
+      detail = localeLabel(locale, "Hoyo Azul, tirolesas, cuevas y aventura en un solo pase.", "Hoyo Azul, zip lines, caves and adventure in one pass.", "Hoyo Azul, tyroliennes, grottes et aventure en un seul pass.");
+    } else if (optionKey.includes("sunshine-cruise")) {
+      focus = localeLabel(locale, "Selva + mar el mismo dia", "Jungle + sea in one day", "Jungle + mer le meme jour");
+      detail = localeLabel(locale, "Parque completo, catamaran, snorkel y barra libre.", "Full park, catamaran, snorkel and open bar.", "Parc complet, catamaran, snorkel et open bar.");
+    } else if (optionKey.includes("buggies")) {
+      focus = localeLabel(locale, "Mas adrenalina", "More adrenaline", "Plus d adrenaline");
+      detail = localeLabel(locale, "Parque completo con circuito 4x4 en buggy por la jungla.", "Full park plus a 4x4 buggy route through the jungle.", "Parc complet avec parcours buggy 4x4 dans la jungle.");
+    } else if (optionKey.includes("juanillo-vip")) {
+      focus = localeLabel(locale, "La opcion premium", "The premium option", "L option premium");
+      detail = localeLabel(locale, "Catamaran, Juanillo Beach Club, almuerzo y Blue Hole.", "Catamaran, Juanillo Beach Club, lunch and Blue Hole.", "Catamaran, Juanillo Beach Club, dejeuner et Blue Hole.");
     }
-  ];
+
+    return {
+      slug: option.id,
+      title: option.name,
+      price: option.pricePerPerson ?? effectiveTourPrice,
+      focus,
+      detail,
+      image: option.imageUrl || resolveTourHeroImage(tour),
+      isCurrent: option.id === currentScapeOptionId
+    };
+  });
   const mapQuery = encodeURIComponent(`${heroTitle} ${tour.location ?? "Punta Cana"}`);
   const mapEmbedUrl = `https://www.google.com/maps?q=${mapQuery}&output=embed`;
   const mapSearchUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
@@ -2474,9 +2476,9 @@ export default async function TourDetailPage({
                 <p className="mt-2 max-w-3xl text-sm text-slate-600">
                   {localeLabel(
                     locale,
-                    "Full Admission es la base mas equilibrada. Sunshine Cruise sube la experiencia con mar y catamaran, Buggies la lleva hacia adrenalina pura, y Juanillo VIP es la capa premium.",
-                    "Full Admission is the balanced base. Sunshine Cruise adds sea and catamaran, Buggies pushes it into pure adrenaline, and Juanillo VIP is the premium layer.",
-                    "Full Admission est la base la plus equilibree. Sunshine Cruise ajoute la mer et le catamaran, Buggies renforce l adrenaline, et Juanillo VIP represente le niveau premium."
+                    "Compara rapido cada variante y elige si prefieres equilibrio, mar, adrenalina o una experiencia premium dentro de Cap Cana.",
+                    "Compare each option quickly and choose whether you want balance, sea, adrenaline or a premium Cap Cana experience.",
+                    "Comparez rapidement chaque variante et choisissez entre equilibre, mer, adrenaline ou une experience premium a Cap Cana."
                   )}
                 </p>
               </div>
@@ -2484,7 +2486,7 @@ export default async function TourDetailPage({
 
             <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {scapeProducts.map((item) => {
-                const isCurrent = item.price === Math.round(effectiveTourPrice);
+                const isCurrent = item.isCurrent;
                 return (
                   <article
                     key={item.slug}
@@ -2492,6 +2494,17 @@ export default async function TourDetailPage({
                       isCurrent ? "border-sky-300 bg-sky-50" : "border-slate-200 bg-slate-50"
                     }`}
                   >
+                    <div className="overflow-hidden rounded-[18px] border border-white/60 bg-white">
+                      <div className="relative aspect-[4/3] w-full">
+                        <Image
+                          src={item.image}
+                          alt={item.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 25vw"
+                        />
+                      </div>
+                    </div>
                     <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
                       {isCurrent
                         ? localeLabel(locale, "Estas viendo", "Viewing now", "En cours")

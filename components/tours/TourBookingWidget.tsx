@@ -255,6 +255,7 @@ export function TourBookingWidget({
   const [youth, setYouth] = useState(0);
   const [child, setChild] = useState(0);
   const [showTravelersPopover, setShowTravelersPopover] = useState(false);
+  const [expandedOptionId, setExpandedOptionId] = useState("");
   const normalizedOperatingDays = useMemo(
     () => parseAvailableDays(operatingDays ?? null),
     [operatingDays]
@@ -337,6 +338,12 @@ export function TourBookingWidget({
       setSelectedOptionId(initialOptionId);
     }
   }, [initialOptionId]);
+
+  useEffect(() => {
+    if (!expandedOptionId && (initialOptionId ?? defaultOption?.id)) {
+      setExpandedOptionId(initialOptionId ?? defaultOption?.id ?? "");
+    }
+  }, [defaultOption?.id, expandedOptionId, initialOptionId]);
 
   useEffect(() => {
     if (!timeSlotLabels.length) return;
@@ -470,8 +477,9 @@ export function TourBookingWidget({
               const optionDays = parseAvailableDays(option.availableDays);
               const disabledForDate = !isOptionAvailableForDay(option, selectedWeekday);
               const shortDescription = summarizeOptionDescription(option.description);
+              const isExpanded = expandedOptionId === option.id;
               return (
-                <label
+                <div
                   key={option.id}
                   className={`flex items-start justify-between gap-3 rounded-xl border px-3 py-2 text-xs ${
                     disabledForDate
@@ -481,12 +489,16 @@ export function TourBookingWidget({
                         : "cursor-pointer border-slate-200 bg-white"
                   }`}
                 >
-                  <div className="flex min-w-0 items-start gap-3">
+                  <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-3">
                     <input
                       type="radio"
                       name="tourOption"
                       checked={option.id === selectedOption?.id}
-                      onChange={() => !disabledForDate && setSelectedOptionId(option.id)}
+                      onChange={() => {
+                        if (disabledForDate) return;
+                        setSelectedOptionId(option.id);
+                        setExpandedOptionId(option.id);
+                      }}
                       disabled={disabledForDate}
                       className="mt-1"
                     />
@@ -497,10 +509,27 @@ export function TourBookingWidget({
                           style={{ backgroundImage: `url(${option.imageUrl})` }}
                         />
                       ) : null}
-                      <p className="text-sm font-semibold text-slate-900">{option.name}</p>
-                      {shortDescription ? (
-                        <p className="line-clamp-2 text-xs text-slate-500">{shortDescription}</p>
-                      ) : null}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-900">{option.name}</p>
+                          {shortDescription ? (
+                            <p className="line-clamp-2 text-xs text-slate-500">{shortDescription}</p>
+                          ) : null}
+                        </div>
+                        {option.description ? (
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              setExpandedOptionId((current) => (current === option.id ? "" : option.id));
+                            }}
+                            className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.12em] text-sky-700"
+                          >
+                            {isExpanded ? "Ocultar" : "Ver mas"}
+                          </button>
+                        ) : null}
+                      </div>
                       {optionDays?.length ? (
                         <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
                           Disponible: {formatDaysSummary(optionDays)}
@@ -512,39 +541,22 @@ export function TourBookingWidget({
                             "Esta opcion no opera en la fecha seleccionada."}
                         </p>
                       ) : null}
+                      {isExpanded && option.description ? (
+                        <div className="mt-2 rounded-lg bg-white/70 p-2 text-xs leading-relaxed text-slate-600">
+                          {option.description}
+                        </div>
+                      ) : null}
                     </div>
+                  </label>
+                  <div className="shrink-0 pl-2">
+                    <span className="text-sm font-semibold text-slate-800">{optionPricing.summaryLabel}</span>
                   </div>
-                  <span className="text-sm font-semibold text-slate-800">{optionPricing.summaryLabel}</span>
-                </label>
+                </div>
               );
             })}
           </div>
         </div>
       )}
-
-      {selectedOption && (selectedOption.description || selectedOption.imageUrl) ? (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs text-slate-700">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Detalle de la opcion
-          </p>
-          <div className="mt-2 flex gap-3">
-            {selectedOption.imageUrl ? (
-              <div
-                className="h-20 w-28 shrink-0 rounded-lg bg-cover bg-center"
-                style={{ backgroundImage: `url(${selectedOption.imageUrl})` }}
-              />
-            ) : null}
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-slate-900">{selectedOption.name}</p>
-              {selectedOption.description ? (
-                <p className="mt-1 whitespace-pre-line leading-relaxed text-slate-600">
-                  {selectedOption.description}
-                </p>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      ) : null}
       {/* PRICE HEADER */}
       <div className="space-y-1">
         <p className="text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-slate-500">From price</p>
