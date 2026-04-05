@@ -250,11 +250,6 @@ const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     en: "Juanillo VIP by Scape Park in Punta Cana",
     fr: "Juanillo VIP by Scape Park a Punta Cana"
   },
-  "scape-park-punta-cana": {
-    es: "Scape Park Punta Cana: opciones y combos",
-    en: "Scape Park Punta Cana: options and combos",
-    fr: "Scape Park Punta Cana : options et combos"
-  }
 };
 const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
   "transfer-privado-proactivitis": {
