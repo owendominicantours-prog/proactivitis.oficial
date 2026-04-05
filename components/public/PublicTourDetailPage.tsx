@@ -938,6 +938,62 @@ const localeLabel = (locale: Locale, esLabel: string, enLabel: string, frLabel: 
   return esLabel;
 };
 
+const splitScapeOptionDescription = (description?: string | null) => {
+  const text = description?.replace(/\s+/g, " ").trim();
+  if (!text) {
+    return {
+      summary: "",
+      schedule: "",
+      specialOps: "",
+      bayahibe: "",
+      returnWindow: "",
+      notes: ""
+    };
+  }
+
+  const sentences = text.split(/(?<=\.)\s+/).map((part) => part.trim()).filter(Boolean);
+  let summary = "";
+  let schedule = "";
+  let specialOps = "";
+  let bayahibe = "";
+  let returnWindow = "";
+  const notes: string[] = [];
+
+  for (const sentence of sentences) {
+    const lower = sentence.toLowerCase();
+    if (!summary) {
+      summary = sentence;
+      continue;
+    }
+    if (!schedule && (lower.includes("opera de") || lower.includes("disponible solo") || lower.includes("recogida aproximada"))) {
+      schedule = sentence;
+      continue;
+    }
+    if (!specialOps && (lower.includes("turnos de buggy") || lower.includes("sunshine cruise suele") || lower.includes("itinerario suele ser mas relajado"))) {
+      specialOps = sentence;
+      continue;
+    }
+    if (!bayahibe && (lower.includes("bayahibe") || lower.includes("la romana"))) {
+      bayahibe = sentence;
+      continue;
+    }
+    if (!returnWindow && (lower.includes("regreso normalmente") || lower.includes("regreso suele") || lower.includes("llegada al hotel"))) {
+      returnWindow = sentence;
+      continue;
+    }
+    notes.push(sentence);
+  }
+
+  return {
+    summary,
+    schedule,
+    specialOps,
+    bayahibe,
+    returnWindow,
+    notes: notes.join(" ")
+  };
+};
+
 type IntentLink = {
   href: string;
   title: string;
@@ -1677,6 +1733,7 @@ export default async function TourDetailPage({
   const drinkPackOption = tour.options?.find((option) => /drink pack/i.test(option.name)) ?? null;
   const scapeProducts = (tour.options ?? []).map((option) => {
     const optionKey = (option.type ?? option.name).toLowerCase();
+    const structuredDescription = splitScapeOptionDescription(option.description);
     const summary = option.description?.split(/(?<=[.!?])\s+/)[0]?.trim() || "";
     let focus = localeLabel(locale, "Opcion disponible", "Available option", "Option disponible");
     let detail = summary;
@@ -1702,7 +1759,8 @@ export default async function TourDetailPage({
       focus,
       detail,
       image: option.imageUrl || resolveTourHeroImage(tour),
-      isCurrent: option.id === currentScapeOptionId
+      isCurrent: option.id === currentScapeOptionId,
+      structuredDescription
     };
   });
   const mapQuery = encodeURIComponent(`${heroTitle} ${tour.location ?? "Punta Cana"}`);
@@ -2531,10 +2589,55 @@ export default async function TourDetailPage({
                       <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
                         {localeLabel(locale, "Ver detalles", "View details", "Voir details")}
                       </summary>
-                      <div className="mt-3 space-y-3 text-sm leading-relaxed text-slate-600">
-                        <p>
-                          {(tour.options ?? []).find((option) => option.id === item.slug)?.description ?? item.detail}
-                        </p>
+                      <div className="mt-3 space-y-3 text-sm text-slate-600">
+                        {item.structuredDescription.summary ? (
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                              {localeLabel(locale, "Resumen", "Summary", "Resume")}
+                            </p>
+                            <p className="mt-1 leading-relaxed">{item.structuredDescription.summary}</p>
+                          </div>
+                        ) : null}
+                        {item.structuredDescription.schedule ? (
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                              {localeLabel(locale, "Horario", "Schedule", "Horaire")}
+                            </p>
+                            <p className="mt-1 leading-relaxed">{item.structuredDescription.schedule}</p>
+                          </div>
+                        ) : null}
+                        {item.structuredDescription.specialOps ? (
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                              {localeLabel(locale, "Operacion especial", "Special operation", "Operation speciale")}
+                            </p>
+                            <p className="mt-1 leading-relaxed">{item.structuredDescription.specialOps}</p>
+                          </div>
+                        ) : null}
+                        {item.structuredDescription.bayahibe ? (
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                              {localeLabel(locale, "Bayahibe / La Romana", "Bayahibe / La Romana", "Bayahibe / La Romana")}
+                            </p>
+                            <p className="mt-1 leading-relaxed">{item.structuredDescription.bayahibe}</p>
+                          </div>
+                        ) : null}
+                        {item.structuredDescription.returnWindow ? (
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                              {localeLabel(locale, "Regreso", "Return", "Retour")}
+                            </p>
+                            <p className="mt-1 leading-relaxed">{item.structuredDescription.returnWindow}</p>
+                          </div>
+                        ) : null}
+                        {item.structuredDescription.notes ? (
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                              {localeLabel(locale, "Notas", "Notes", "Notes")}
+                            </p>
+                            <p className="mt-1 leading-relaxed">{item.structuredDescription.notes}</p>
+                          </div>
+                        ) : null}
                       </div>
                     </details>
                     <Link

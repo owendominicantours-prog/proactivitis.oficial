@@ -464,7 +464,7 @@ export function TourBookingWidget({
               return (
                 <div
                   key={option.id}
-                  className={`flex items-start justify-between gap-3 rounded-xl border px-3 py-2 text-xs ${
+                  className={`flex items-start justify-between gap-2 rounded-xl border px-2.5 py-2 text-xs ${
                     disabledForDate
                       ? "cursor-not-allowed border-rose-200 bg-rose-50/70 opacity-70"
                       : option.id === selectedOption?.id
@@ -472,7 +472,7 @@ export function TourBookingWidget({
                         : "cursor-pointer border-slate-200 bg-white"
                   }`}
                 >
-                  <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-3">
+                  <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-2">
                     <input
                       type="radio"
                       name="tourOption"
@@ -487,26 +487,30 @@ export function TourBookingWidget({
                     <div className="min-w-0 flex-1">
                       {option.imageUrl ? (
                         <div
-                          className="mb-2 h-16 w-full max-w-[132px] rounded-lg bg-cover bg-center"
+                          className="mb-1.5 h-12 w-full max-w-[96px] rounded-lg bg-cover bg-center"
                           style={{ backgroundImage: `url(${option.imageUrl})` }}
                         />
                       ) : null}
-                      <p className="text-sm font-semibold text-slate-900">{option.name}</p>
+                      <p className="line-clamp-2 text-[13px] font-semibold leading-snug text-slate-900">
+                        {option.name}
+                      </p>
                       {optionDays?.length ? (
-                        <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                          Disponible: {formatDaysSummary(optionDays)}
+                        <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                          {formatDaysSummary(optionDays)}
                         </p>
                       ) : null}
                       {disabledForDate ? (
-                        <p className="mt-1 text-[11px] font-semibold text-rose-600">
+                        <p className="mt-0.5 text-[10px] font-semibold text-rose-600">
                           {option.unavailableReason ||
                             "Esta opcion no opera en la fecha seleccionada."}
                         </p>
                       ) : null}
                     </div>
                   </label>
-                  <div className="shrink-0 pl-2">
-                    <span className="text-sm font-semibold text-slate-800">{optionPricing.summaryLabel}</span>
+                  <div className="shrink-0 pl-1 text-right">
+                    <span className="text-[13px] font-semibold leading-none text-slate-800">
+                      {optionPricing.summaryLabel}
+                    </span>
                   </div>
                 </div>
               );
