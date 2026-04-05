@@ -145,14 +145,6 @@ const formatDaysSummary = (days?: WeekdayKey[] | null) => {
   return days.map((day) => WEEKDAY_LABELS[day]).join(", ");
 };
 
-const summarizeOptionDescription = (value?: string | null) => {
-  const text = value?.replace(/\s+/g, " ").trim();
-  if (!text) return "";
-  const firstSentence = text.split(/(?<=[.!?])\s+/)[0]?.trim();
-  if (firstSentence && firstSentence.length <= 140) return firstSentence;
-  return text.length > 140 ? `${text.slice(0, 137).trimEnd()}...` : text;
-};
-
 const isOptionAvailableForDay = (option: TourOption | null, selectedWeekday: WeekdayKey | null) => {
   if (!option || !selectedWeekday) return true;
   const optionDays = parseAvailableDays(option.availableDays);
@@ -255,7 +247,6 @@ export function TourBookingWidget({
   const [youth, setYouth] = useState(0);
   const [child, setChild] = useState(0);
   const [showTravelersPopover, setShowTravelersPopover] = useState(false);
-  const [expandedOptionId, setExpandedOptionId] = useState("");
   const normalizedOperatingDays = useMemo(
     () => parseAvailableDays(operatingDays ?? null),
     [operatingDays]
@@ -338,12 +329,6 @@ export function TourBookingWidget({
       setSelectedOptionId(initialOptionId);
     }
   }, [initialOptionId]);
-
-  useEffect(() => {
-    if (!expandedOptionId && (initialOptionId ?? defaultOption?.id)) {
-      setExpandedOptionId(initialOptionId ?? defaultOption?.id ?? "");
-    }
-  }, [defaultOption?.id, expandedOptionId, initialOptionId]);
 
   useEffect(() => {
     if (!timeSlotLabels.length) return;
@@ -476,8 +461,6 @@ export function TourBookingWidget({
               const optionPricing = resolveOptionPricing(option, totalTravelers, basePrice);
               const optionDays = parseAvailableDays(option.availableDays);
               const disabledForDate = !isOptionAvailableForDay(option, selectedWeekday);
-              const shortDescription = summarizeOptionDescription(option.description);
-              const isExpanded = expandedOptionId === option.id;
               return (
                 <div
                   key={option.id}
@@ -497,7 +480,6 @@ export function TourBookingWidget({
                       onChange={() => {
                         if (disabledForDate) return;
                         setSelectedOptionId(option.id);
-                        setExpandedOptionId(option.id);
                       }}
                       disabled={disabledForDate}
                       className="mt-1"
@@ -509,27 +491,7 @@ export function TourBookingWidget({
                           style={{ backgroundImage: `url(${option.imageUrl})` }}
                         />
                       ) : null}
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-slate-900">{option.name}</p>
-                          {shortDescription ? (
-                            <p className="line-clamp-2 text-xs text-slate-500">{shortDescription}</p>
-                          ) : null}
-                        </div>
-                        {option.description ? (
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.preventDefault();
-                              event.stopPropagation();
-                              setExpandedOptionId((current) => (current === option.id ? "" : option.id));
-                            }}
-                            className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.12em] text-sky-700"
-                          >
-                            {isExpanded ? "Ocultar" : "Ver mas"}
-                          </button>
-                        ) : null}
-                      </div>
+                      <p className="text-sm font-semibold text-slate-900">{option.name}</p>
                       {optionDays?.length ? (
                         <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
                           Disponible: {formatDaysSummary(optionDays)}
@@ -540,11 +502,6 @@ export function TourBookingWidget({
                           {option.unavailableReason ||
                             "Esta opcion no opera en la fecha seleccionada."}
                         </p>
-                      ) : null}
-                      {isExpanded && option.description ? (
-                        <div className="mt-2 rounded-lg bg-white/70 p-2 text-xs leading-relaxed text-slate-600">
-                          {option.description}
-                        </div>
                       ) : null}
                     </div>
                   </label>

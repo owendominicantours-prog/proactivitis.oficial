@@ -890,12 +890,12 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
         answer: "Full Admission es la base mas equilibrada. Sunshine Cruise agrega mar y catamaran, Buggies suma adrenalina off-road, y Juanillo VIP es la opcion mas exclusiva."
       },
       {
-        question: "Todas las opciones incluyen transporte y almuerzo?",
-        answer: "Si. Todas las opciones principales incluyen transporte ida y vuelta y almuerzo; lo que cambia es el nivel de experiencia adicional."
+        question: "Que debo saber si estoy hospedado en Bayahibe o La Romana?",
+        answer: "Para hoteles en Bayahibe o La Romana la recogida suele operar solo martes y sabados, y puede aplicar suplemento de transporte segun hotel."
       },
       {
-        question: "Puedo elegir la opcion al reservar?",
-        answer: "Si. Reservas el mismo producto y eliges la variante exacta dentro del selector de opciones."
+        question: "A que hora termina el tour y como funcionan las actividades especiales?",
+        answer: "La operacion suele arrancar por la manana y el regreso sale normalmente entre 03:30 PM y 04:30 PM, con llegada al hotel entre 05:00 PM y 06:00 PM. Los buggies se asignan por turnos al llegar, Sunshine Cruise suele operar al final del dia y Juanillo VIP lleva un ritmo mas relajado."
       }
     ],
     en: [
@@ -904,12 +904,12 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
         answer: "Full Admission is the balanced base. Sunshine Cruise adds sea and catamaran, Buggies adds off-road adrenaline, and Juanillo VIP is the most exclusive option."
       },
       {
-        question: "Do all options include transport and lunch?",
-        answer: "Yes. All main options include round-trip transport and lunch; what changes is the level of added experience."
+        question: "What should I know if I stay in Bayahibe or La Romana?",
+        answer: "For hotels in Bayahibe or La Romana, pickup usually runs only on Tuesdays and Saturdays, and an added transport supplement may apply depending on the hotel."
       },
       {
-        question: "Can I choose the option while booking?",
-        answer: "Yes. You book the same product and select the exact variant inside the options selector."
+        question: "What time does the day end and how do the special activities run?",
+        answer: "Operations usually start in the morning and return transport often leaves between 3:30 PM and 4:30 PM, with hotel arrival between 5:00 PM and 6:00 PM. Buggies are assigned in time slots at the counter, Sunshine Cruise usually runs at the end of the day, and Juanillo VIP follows a more relaxed flow."
       }
     ],
     fr: [
@@ -918,12 +918,12 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
         answer: "Full Admission est la base la plus equilibree. Sunshine Cruise ajoute mer et catamaran, Buggies apporte plus d adrenaline, et Juanillo VIP est l option la plus exclusive."
       },
       {
-        question: "Toutes les options incluent transport et dejeuner?",
-        answer: "Oui. Toutes les options principales incluent transport aller-retour et dejeuner ; ce qui change est le niveau d experience ajoutee."
+        question: "Que faut-il savoir si je loge a Bayahibe ou La Romana?",
+        answer: "Pour les hotels de Bayahibe ou La Romana, la prise en charge fonctionne generalement seulement mardi et samedi, et un supplement transport peut s appliquer selon l hotel."
       },
       {
-        question: "Puis-je choisir l option pendant la reservation?",
-        answer: "Oui. Vous reservez le meme produit et choisissez la variante exacte dans le selecteur d options."
+        question: "A quelle heure se termine la journee et comment fonctionnent les activites speciales?",
+        answer: "L operation commence generalement le matin et le retour part souvent entre 15h30 et 16h30, avec arrivee hotel entre 17h00 et 18h00. Les buggies sont attribues par tour au comptoir, Sunshine Cruise se fait souvent en fin de journee et Juanillo VIP suit un rythme plus detendu."
       }
     ]
   }
@@ -2494,9 +2494,9 @@ export default async function TourDetailPage({
                 <p className="mt-2 max-w-3xl text-sm text-slate-600">
                   {localeLabel(
                     locale,
-                    "Compara rapido cada variante y elige si prefieres equilibrio, mar, adrenalina o una experiencia premium dentro de Cap Cana.",
-                    "Compare each option quickly and choose whether you want balance, sea, adrenaline or a premium Cap Cana experience.",
-                    "Comparez rapidement chaque variante et choisissez entre equilibre, mer, adrenaline ou une experience premium a Cap Cana."
+                    "Compara rapido cada variante, abre los detalles dentro de cada tarjeta y luego selecciona la que quieras reservar.",
+                    "Compare each option quickly, open the details inside each card and then select the one you want to book.",
+                    "Comparez rapidement chaque option, ouvrez les details dans chaque carte puis selectionnez celle que vous voulez reserver."
                   )}
                 </p>
               </div>
@@ -2506,9 +2506,8 @@ export default async function TourDetailPage({
               {scapeProducts.map((item) => {
                 const isCurrent = item.isCurrent;
                 return (
-                  <Link
+                  <article
                     key={item.slug}
-                    href={buildTourOptionHref(item.slug)}
                     className={`rounded-[22px] border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
                       isCurrent ? "border-sky-300 bg-sky-50" : "border-slate-200 bg-slate-50"
                     }`}
@@ -2528,7 +2527,29 @@ export default async function TourDetailPage({
                     <p className="mt-2 text-2xl font-black text-indigo-600">${item.price}</p>
                     <p className="mt-2 text-sm font-semibold text-slate-800">{item.focus}</p>
                     <p className="mt-2 text-sm text-slate-600">{item.detail}</p>
-                  </Link>
+                    <details className="mt-3 rounded-xl border border-slate-200 bg-white/70 px-3 py-2">
+                      <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
+                        {localeLabel(locale, "Ver detalles", "View details", "Voir details")}
+                      </summary>
+                      <div className="mt-3 space-y-3 text-sm leading-relaxed text-slate-600">
+                        <p>
+                          {(tour.options ?? []).find((option) => option.id === item.slug)?.description ?? item.detail}
+                        </p>
+                      </div>
+                    </details>
+                    <Link
+                      href={buildTourOptionHref(item.slug)}
+                      className={`mt-4 inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                        isCurrent
+                          ? "bg-sky-600 text-white hover:bg-sky-700"
+                          : "bg-slate-900 text-white hover:bg-slate-800"
+                      }`}
+                    >
+                      {isCurrent
+                        ? localeLabel(locale, "Opcion seleccionada", "Selected option", "Option selectionnee")
+                        : localeLabel(locale, "Seleccionar esta opcion", "Select this option", "Selectionner cette option")}
+                    </Link>
+                  </article>
                 );
               })}
             </div>
