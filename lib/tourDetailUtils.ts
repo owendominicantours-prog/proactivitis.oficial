@@ -229,6 +229,26 @@ const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     es: "Barco privado en Sosua desde Puerto Plata",
     en: "Private party boat in Sosua from Puerto Plata",
     fr: "Bateau prive a Sosua depuis Puerto Plata"
+  },
+  "scape-park-full-admission-punta-cana": {
+    es: "Scape Park Full Admission en Punta Cana",
+    en: "Scape Park Full Admission in Punta Cana",
+    fr: "Scape Park Full Admission a Punta Cana"
+  },
+  "scape-park-sunshine-cruise-punta-cana": {
+    es: "Scape Park + Sunshine Cruise en Punta Cana",
+    en: "Scape Park + Sunshine Cruise in Punta Cana",
+    fr: "Scape Park + Sunshine Cruise a Punta Cana"
+  },
+  "scape-park-buggies-punta-cana": {
+    es: "Scape Park + Buggies en Punta Cana",
+    en: "Scape Park + Buggies in Punta Cana",
+    fr: "Scape Park + Buggies a Punta Cana"
+  },
+  "juanillo-vip-scape-park-punta-cana": {
+    es: "Juanillo VIP by Scape Park en Punta Cana",
+    en: "Juanillo VIP by Scape Park in Punta Cana",
+    fr: "Juanillo VIP by Scape Park a Punta Cana"
   }
 };
 const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
@@ -301,6 +321,26 @@ const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>
     es: "Barco privado para fiestas en Sosua con todo incluido, open bar y snorkel. Salida desde Puerto Plata.",
     en: "Private party boat in Sosua with all inclusive service, open bar and snorkel. Departure from Puerto Plata.",
     fr: "Bateau prive pour fete a Sosua avec tout inclus, open bar et snorkel. Depart depuis Puerto Plata."
+  },
+  "scape-park-full-admission-punta-cana": {
+    es: "Scape Park Full Admission en Cap Cana con Hoyo Azul, tirolesas, cuevas, fauna, transporte y almuerzo buffet incluido.",
+    en: "Scape Park Full Admission in Cap Cana with Hoyo Azul, zip lines, caves, fauna, transport and buffet lunch included.",
+    fr: "Scape Park Full Admission a Cap Cana avec Hoyo Azul, tyroliennes, grottes, faune, transport et buffet inclus."
+  },
+  "scape-park-sunshine-cruise-punta-cana": {
+    es: "Scape Park + Sunshine Cruise combina el parque completo con catamaran, snorkel, barra libre y parada en Juanillo.",
+    en: "Scape Park + Sunshine Cruise combines full park access with catamaran, snorkel, open bar and a Juanillo stop.",
+    fr: "Scape Park + Sunshine Cruise combine acces complet au parc, catamaran, snorkel, open bar et arret a Juanillo."
+  },
+  "scape-park-buggies-punta-cana": {
+    es: "Scape Park + Buggies une Hoyo Azul, tirolesas y cuevas con una ruta 4x4 en buggy dentro de Cap Cana.",
+    en: "Scape Park + Buggies mixes Hoyo Azul, zip lines and caves with a 4x4 buggy route inside Cap Cana.",
+    fr: "Scape Park + Buggies reunit Hoyo Azul, tyroliennes et grottes avec un parcours buggy 4x4 a Cap Cana."
+  },
+  "juanillo-vip-scape-park-punta-cana": {
+    es: "Juanillo VIP by Scape Park ofrece Hoyo Azul, catamaran premium, Playa Juanillo y almuerzo superior en Cap Cana.",
+    en: "Juanillo VIP by Scape Park delivers Hoyo Azul, premium catamaran, Juanillo Beach and elevated lunch in Cap Cana.",
+    fr: "Juanillo VIP by Scape Park propose Hoyo Azul, catamaran premium, plage Juanillo et dejeuner superieur a Cap Cana."
   }
 };
 

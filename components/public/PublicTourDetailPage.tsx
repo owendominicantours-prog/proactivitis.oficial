@@ -72,6 +72,13 @@ const COCO_BONGO_COMPARISON_TOURS = new Set([
   "coco-bongo-punta-cana"
 ]);
 
+const SCAPE_PARK_TOURS = new Set([
+  "scape-park-full-admission-punta-cana",
+  "scape-park-sunshine-cruise-punta-cana",
+  "scape-park-buggies-punta-cana",
+  "juanillo-vip-scape-park-punta-cana"
+]);
+
 const TOUR_H1_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
   "tour-en-buggy-en-punta-cana": {
     es: "Tour en buggy en Punta Cana: barro, cueva y aventura",
@@ -142,6 +149,26 @@ const TOUR_H1_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     es: "Sosua Party Boat: snorkel, open bar y opcion privada",
     en: "Sosua Party Boat: snorkel, open bar, private option",
     fr: "Sosua Party Boat : snorkel, open bar, option privee"
+  },
+  "scape-park-full-admission-punta-cana": {
+    es: "Scape Park Full Admission en Punta Cana",
+    en: "Scape Park Full Admission in Punta Cana",
+    fr: "Scape Park Full Admission a Punta Cana"
+  },
+  "scape-park-sunshine-cruise-punta-cana": {
+    es: "Scape Park + Sunshine Cruise en Punta Cana",
+    en: "Scape Park + Sunshine Cruise in Punta Cana",
+    fr: "Scape Park + Sunshine Cruise a Punta Cana"
+  },
+  "scape-park-buggies-punta-cana": {
+    es: "Scape Park + Buggies en Punta Cana",
+    en: "Scape Park + Buggies in Punta Cana",
+    fr: "Scape Park + Buggies a Punta Cana"
+  },
+  "juanillo-vip-scape-park-punta-cana": {
+    es: "Juanillo VIP by Scape Park en Punta Cana",
+    en: "Juanillo VIP by Scape Park in Punta Cana",
+    fr: "Juanillo VIP by Scape Park a Punta Cana"
   }
 };
 
@@ -671,6 +698,182 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       {
         question: "Pickup possible depuis Puerto Plata, Amber Cove ou Taino Bay?",
         answer: "Oui. Nous coordonnons la prise en charge depuis Puerto Plata, Amber Cove et Taino Bay selon horaire et disponibilite."
+      }
+    ]
+  },
+  "scape-park-full-admission-punta-cana": {
+    es: [
+      {
+        question: "Que incluye Scape Park Full Admission?",
+        answer: "Incluye Hoyo Azul, zip lines, cuevas, Saltos Azules, Faunaland, transporte ida y vuelta y almuerzo buffet."
+      },
+      {
+        question: "Es una buena opcion para familias?",
+        answer: "Si. Es la opcion mas equilibrada para familias y grupos porque combina naturaleza, agua y actividades de distinta intensidad en un mismo dia."
+      },
+      {
+        question: "Cuanto dura la experiencia?",
+        answer: "La duracion estimada es {durationLabel}, contando parque, traslados y tiempo para almorzar."
+      }
+    ],
+    en: [
+      {
+        question: "What is included in Scape Park Full Admission?",
+        answer: "It includes Hoyo Azul, zip lines, caves, Blue Jumps, Faunaland, round-trip transport and buffet lunch."
+      },
+      {
+        question: "Is it a good option for families?",
+        answer: "Yes. It is the most balanced choice for families and groups because it combines nature, water and different activity levels in one day."
+      },
+      {
+        question: "How long does the experience last?",
+        answer: "Estimated duration is {durationLabel}, including park time, transfers and buffet lunch."
+      }
+    ],
+    fr: [
+      {
+        question: "Que comprend Scape Park Full Admission?",
+        answer: "Hoyo Azul, tyroliennes, grottes, Saltos Azules, Faunaland, transport aller-retour et buffet sont inclus."
+      },
+      {
+        question: "Est-ce une bonne option pour les familles?",
+        answer: "Oui. C est l option la plus equilibree pour les familles et groupes car elle combine nature, eau et activites de differente intensite."
+      },
+      {
+        question: "Quelle est la duree de l experience?",
+        answer: "La duree estimee est de {durationLabel}, avec parc, transferts et temps pour dejeuner."
+      }
+    ]
+  },
+  "scape-park-sunshine-cruise-punta-cana": {
+    es: [
+      {
+        question: "Que agrega Sunshine Cruise al Scape Park completo?",
+        answer: "Agrega un catamaran al final del parque con snorkel, barra libre y parada en la piscina natural de Juanillo."
+      },
+      {
+        question: "Es mejor que Full Admission normal?",
+        answer: "Si quieres selva y mar en el mismo dia, esta es la mejora mas completa. Si solo quieres parque, Full Admission suele ser suficiente."
+      },
+      {
+        question: "Incluye almuerzo y transporte?",
+        answer: "Si, incluye transporte ida y vuelta y almuerzo buffet, ademas del crucero Sunshine."
+      }
+    ],
+    en: [
+      {
+        question: "What does Sunshine Cruise add to full Scape Park access?",
+        answer: "It adds a catamaran after the park activities, with snorkel, open bar and a stop at Juanillo natural pool."
+      },
+      {
+        question: "Is it better than regular Full Admission?",
+        answer: "If you want both jungle and sea in one day, this is the strongest upgrade. If you only want the park, Full Admission is usually enough."
+      },
+      {
+        question: "Does it include lunch and transport?",
+        answer: "Yes. It includes round-trip transport, buffet lunch and the Sunshine cruise experience."
+      }
+    ],
+    fr: [
+      {
+        question: "Que rajoute Sunshine Cruise au Scape Park complet?",
+        answer: "Un catamaran apres le parc avec snorkel, open bar et arret a la piscine naturelle de Juanillo."
+      },
+      {
+        question: "Est-ce mieux que le Full Admission classique?",
+        answer: "Si vous voulez jungle et mer le meme jour, c est la meilleure evolution. Si vous voulez seulement le parc, Full Admission suffit souvent."
+      },
+      {
+        question: "Le dejeuner et le transport sont-ils inclus?",
+        answer: "Oui. Le transport aller-retour, le buffet et le Sunshine cruise sont inclus."
+      }
+    ]
+  },
+  "scape-park-buggies-punta-cana": {
+    es: [
+      {
+        question: "Que incluye Scape Park + Buggies?",
+        answer: "Incluye el acceso completo al parque mas una ruta en buggy 4x4 por senderos exclusivos dentro de Cap Cana."
+      },
+      {
+        question: "Para quien conviene este combo?",
+        answer: "Es el mejor formato para viajeros que priorizan accion y quieren sumar conduccion off-road al parque."
+      },
+      {
+        question: "Hay equipo de seguridad incluido?",
+        answer: "Si, el equipo de seguridad esta incluido junto con transporte y almuerzo buffet."
+      }
+    ],
+    en: [
+      {
+        question: "What is included in Scape Park + Buggies?",
+        answer: "It includes full park access plus a 4x4 buggy route on exclusive Cap Cana trails."
+      },
+      {
+        question: "Who is this combo best for?",
+        answer: "It is the best fit for travelers who want action first and want to add off-road driving to the park day."
+      },
+      {
+        question: "Is safety gear included?",
+        answer: "Yes. Safety gear is included together with transport and buffet lunch."
+      }
+    ],
+    fr: [
+      {
+        question: "Que comprend Scape Park + Buggies?",
+        answer: "L acces complet au parc plus un parcours buggy 4x4 sur des pistes exclusives de Cap Cana."
+      },
+      {
+        question: "Pour qui ce combo est-il ideal?",
+        answer: "Pour les voyageurs qui veulent surtout de l action et ajouter la conduite off-road a la journee de parc."
+      },
+      {
+        question: "L equipement de securite est-il inclus?",
+        answer: "Oui. L equipement de securite, le transport et le buffet sont inclus."
+      }
+    ]
+  },
+  "juanillo-vip-scape-park-punta-cana": {
+    es: [
+      {
+        question: "Que hace diferente a Juanillo VIP?",
+        answer: "Es la opcion mas exclusiva: Hoyo Azul con prioridad, catamaran premium, Juanillo Beach Club y almuerzo superior."
+      },
+      {
+        question: "Es una excursion de lujo real?",
+        answer: "Si. Esta pensada para viajeros que quieren menos densidad, mejor servicio y una experiencia mas premium en Cap Cana."
+      },
+      {
+        question: "Incluye snorkel y bebidas premium?",
+        answer: "Si, incluye navegacion con bebidas premium y snorkel durante la salida en catamaran."
+      }
+    ],
+    en: [
+      {
+        question: "What makes Juanillo VIP different?",
+        answer: "It is the most exclusive option: priority Hoyo Azul access, premium catamaran, Juanillo Beach Club and elevated lunch."
+      },
+      {
+        question: "Is it a real luxury excursion?",
+        answer: "Yes. It is designed for travelers who want less crowding, stronger service and a more premium Cap Cana day."
+      },
+      {
+        question: "Does it include snorkel and premium drinks?",
+        answer: "Yes. The catamaran segment includes premium drinks and snorkel."
+      }
+    ],
+    fr: [
+      {
+        question: "Qu est-ce qui rend Juanillo VIP different?",
+        answer: "C est l option la plus exclusive : acces prioritaire a Hoyo Azul, catamaran premium, Juanillo Beach Club et dejeuner superieur."
+      },
+      {
+        question: "Est-ce une vraie excursion luxe?",
+        answer: "Oui. Elle vise les voyageurs qui veulent moins de foule, un meilleur service et une journee plus premium a Cap Cana."
+      },
+      {
+        question: "Le snorkel et les boissons premium sont-ils inclus?",
+        answer: "Oui. La partie catamaran comprend boissons premium et snorkel."
       }
     ]
   }
@@ -1406,11 +1609,42 @@ export default async function TourDetailPage({
   const commercialIntentLinks = agencyMode ? [] : buildCommercialIntentLinks(locale, tour.slug);
   const practicalInfo = buildPracticalInfo(locale, tour.slug);
   const isCocoBongoTour = COCO_BONGO_COMPARISON_TOURS.has(tour.slug);
+  const isScapeParkTour = SCAPE_PARK_TOURS.has(tour.slug);
   const regularOption =
     tour.options?.find((option) => /regular/i.test(option.name)) ?? tour.options?.[0] ?? null;
   const goldOption =
     tour.options?.find((option) => /gold/i.test(option.name)) ?? tour.options?.[1] ?? null;
   const drinkPackOption = tour.options?.find((option) => /drink pack/i.test(option.name)) ?? null;
+  const scapeProducts = [
+    {
+      slug: "scape-park-full-admission-punta-cana",
+      title: localeLabel(locale, "Full Admission", "Full Admission", "Full Admission"),
+      price: 143,
+      focus: localeLabel(locale, "Variedad y mejor relacion valor", "Best overall value and variety", "Meilleur rapport valeur-variete"),
+      detail: localeLabel(locale, "Hoyo Azul, tirolesas, cuevas, fauna y buffet.", "Hoyo Azul, zip lines, caves, fauna and buffet.", "Hoyo Azul, tyroliennes, grottes, fauna et buffet.")
+    },
+    {
+      slug: "scape-park-sunshine-cruise-punta-cana",
+      title: localeLabel(locale, "Scape Park + Sunshine Cruise", "Scape Park + Sunshine Cruise", "Scape Park + Sunshine Cruise"),
+      price: 183,
+      focus: localeLabel(locale, "Selva + mar el mismo dia", "Jungle + sea in one day", "Jungle + mer le meme jour"),
+      detail: localeLabel(locale, "Parque completo mas catamaran, snorkel y open bar.", "Full park plus catamaran, snorkel and open bar.", "Parc complet plus catamaran, snorkel et open bar.")
+    },
+    {
+      slug: "scape-park-buggies-punta-cana",
+      title: localeLabel(locale, "Scape Park + Buggies", "Scape Park + Buggies", "Scape Park + Buggies"),
+      price: 183,
+      focus: localeLabel(locale, "Mas adrenalina", "More adrenaline", "Plus d adrenaline"),
+      detail: localeLabel(locale, "Parque completo mas ruta 4x4 en buggy.", "Full park plus a 4x4 buggy route.", "Parc complet plus parcours buggy 4x4.")
+    },
+    {
+      slug: "juanillo-vip-scape-park-punta-cana",
+      title: localeLabel(locale, "Juanillo VIP", "Juanillo VIP", "Juanillo VIP"),
+      price: 203,
+      focus: localeLabel(locale, "La opcion premium", "The premium option", "L option premium"),
+      detail: localeLabel(locale, "Hoyo Azul, catamaran premium, Juanillo y almuerzo superior.", "Hoyo Azul, premium catamaran, Juanillo and elevated lunch.", "Hoyo Azul, catamaran premium, Juanillo et dejeuner superieur.")
+    }
+  ];
   const mapQuery = encodeURIComponent(`${heroTitle} ${tour.location ?? "Punta Cana"}`);
   const mapEmbedUrl = `https://www.google.com/maps?q=${mapQuery}&output=embed`;
   const mapSearchUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
@@ -2165,6 +2399,62 @@ export default async function TourDetailPage({
                   <div className="px-4 py-3">{row[2]}</div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {isScapeParkTour ? (
+        <section className="mx-auto mt-6 max-w-[1240px] px-4">
+          <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                  {localeLabel(locale, "Comparativa Scape Park", "Scape Park comparison", "Comparatif Scape Park")}
+                </p>
+                <h2 className="mt-2 text-[20px] font-semibold text-slate-900">
+                  {localeLabel(
+                    locale,
+                    "Que opcion te conviene mas dentro de Cap Cana",
+                    "Which Cap Cana option fits you best",
+                    "Quelle option de Cap Cana vous convient le mieux"
+                  )}
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm text-slate-600">
+                  {localeLabel(
+                    locale,
+                    "Full Admission es la base mas equilibrada. Sunshine Cruise sube la experiencia con mar y catamaran, Buggies la lleva hacia adrenalina pura, y Juanillo VIP es la capa premium.",
+                    "Full Admission is the balanced base. Sunshine Cruise adds sea and catamaran, Buggies pushes it into pure adrenaline, and Juanillo VIP is the premium layer.",
+                    "Full Admission est la base la plus equilibree. Sunshine Cruise ajoute la mer et le catamaran, Buggies renforce l adrenaline, et Juanillo VIP represente le niveau premium."
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {scapeProducts.map((item) => {
+                const href = locale === "es" ? `/tours/${item.slug}` : `/${locale}/tours/${item.slug}`;
+                const isCurrent = item.slug === tour.slug;
+                return (
+                  <Link
+                    key={item.slug}
+                    href={href}
+                    className={`rounded-[22px] border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
+                      isCurrent ? "border-sky-300 bg-sky-50" : "border-slate-200 bg-slate-50"
+                    }`}
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
+                      {isCurrent
+                        ? localeLabel(locale, "Estas viendo", "Viewing now", "En cours")
+                        : localeLabel(locale, "Disponible", "Available", "Disponible")}
+                    </p>
+                    <h3 className="mt-2 text-lg font-bold text-slate-900">{item.title}</h3>
+                    <p className="mt-2 text-2xl font-black text-indigo-600">${item.price}</p>
+                    <p className="mt-2 text-sm font-semibold text-slate-800">{item.focus}</p>
+                    <p className="mt-2 text-sm text-slate-600">{item.detail}</p>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
