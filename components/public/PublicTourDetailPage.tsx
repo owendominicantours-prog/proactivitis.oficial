@@ -1103,6 +1103,7 @@ export type TourDetailSearchParams = {
   bookingCode?: string;
   agencyLink?: string;
   from?: string;
+  option?: string;
 };
 
 type TourDetailProps = {
@@ -1345,6 +1346,7 @@ export default async function TourDetailPage({
   const hotelSlugFromQuery = resolvedSearchParams?.hotelSlug;
   const bookingCodeFromQuery = resolvedSearchParams?.bookingCode;
   const agencyLinkFromQuery = resolvedSearchParams?.agencyLink;
+  const optionIdFromQuery = resolvedSearchParams?.option;
   const originHotel =
     hotelSlugFromQuery !== undefined
       ? await prisma.location.findUnique({
@@ -1661,8 +1663,13 @@ export default async function TourDetailPage({
   const practicalInfo = buildPracticalInfo(locale, tour.slug);
   const isCocoBongoTour = COCO_BONGO_COMPARISON_TOURS.has(tour.slug);
   const isScapeParkTour = SCAPE_PARK_TOURS.has(tour.slug);
+  const selectedScapeOptionId =
+    (optionIdFromQuery &&
+    tour.options?.some((option) => option.id === optionIdFromQuery)
+      ? optionIdFromQuery
+      : null) ?? null;
   const currentScapeOptionId =
-    tour.options?.find((option) => option.isDefault)?.id ?? tour.options?.[0]?.id ?? null;
+    selectedScapeOptionId ?? tour.options?.find((option) => option.isDefault)?.id ?? tour.options?.[0]?.id ?? null;
   const regularOption =
     tour.options?.find((option) => /regular/i.test(option.name)) ?? tour.options?.[0] ?? null;
   const goldOption =
@@ -2081,9 +2088,20 @@ export default async function TourDetailPage({
     hotelSlug: hotelSlugFromQuery ?? undefined,
     bookingCode: bookingCodeFromQuery ?? undefined,
     originHotelName: originHotel?.name ?? undefined,
+    initialOptionId: currentScapeOptionId ?? undefined,
     discountPercent,
     agencyLink: agencyLinkFromQuery ?? undefined,
     agencyDirectDiscountPercent
+  };
+  const currentTourPath = toLocalizedPath(`/tours/${tour.slug}`, locale);
+  const buildTourOptionHref = (optionId: string) => {
+    const params = new URLSearchParams();
+    if (hotelSlugFromQuery) params.set("hotelSlug", hotelSlugFromQuery);
+    if (bookingCodeFromQuery) params.set("bookingCode", bookingCodeFromQuery);
+    if (agencyLinkFromQuery) params.set("agencyLink", agencyLinkFromQuery);
+    if (resolvedSearchParams?.from) params.set("from", resolvedSearchParams.from);
+    params.set("option", optionId);
+    return `${currentTourPath}?${params.toString()}#booking`;
   };
   const relatedToursSchema = relatedTourCards.length
     ? {
@@ -2488,22 +2506,18 @@ export default async function TourDetailPage({
               {scapeProducts.map((item) => {
                 const isCurrent = item.isCurrent;
                 return (
-                  <article
+                  <Link
                     key={item.slug}
+                    href={buildTourOptionHref(item.slug)}
                     className={`rounded-[22px] border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
                       isCurrent ? "border-sky-300 bg-sky-50" : "border-slate-200 bg-slate-50"
                     }`}
                   >
                     <div className="overflow-hidden rounded-[18px] border border-white/60 bg-white">
-                      <div className="relative aspect-[4/3] w-full">
-                        <Image
-                          src={item.image}
-                          alt={item.title}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, 25vw"
-                        />
-                      </div>
+                      <div
+                        className="aspect-[4/3] w-full bg-cover bg-center"
+                        style={{ backgroundImage: `url(${item.image})` }}
+                      />
                     </div>
                     <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
                       {isCurrent
@@ -2514,7 +2528,7 @@ export default async function TourDetailPage({
                     <p className="mt-2 text-2xl font-black text-indigo-600">${item.price}</p>
                     <p className="mt-2 text-sm font-semibold text-slate-800">{item.focus}</p>
                     <p className="mt-2 text-sm text-slate-600">{item.detail}</p>
-                  </article>
+                  </Link>
                 );
               })}
             </div>
