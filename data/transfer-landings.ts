@@ -618,7 +618,7 @@ export const transferLandings: TransferLandingData[] = [
     trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
     faq: buildFaq("Barcelo Bavaro Beach"),
     seoTitle: "Transfer privado PUJ a Barcelo Bavaro Beach | Proactivitis",
-    metaDescription: "Transporte privado desde PUJ a Barcelo Bavaro Beach con chofer bilingue, espera gratuita y ruta directa. Reserva en minutos con precios claros y confirmacion inmediata.",
+    metaDescription: "Reserva tu traslado privado al Barcelo Bavaro Beach. Sin esperas, conductor con cartel, aire acondicionado y seguimiento de vuelo en tiempo real. Llega a tu hotel en 15 min.",
     keywords: ["PUJ Barcelo Bavaro Beach transfer", "Barcelo Bavaro Beach transfer privado", "transfer Barcelo Bavaro Beach"],
     canonical: "https://proactivitis.com/transfer/punta-cana-international-airport-to-barcelo-bavaro-beach"
   },
