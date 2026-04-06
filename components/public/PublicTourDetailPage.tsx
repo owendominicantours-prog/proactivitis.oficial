@@ -21,6 +21,7 @@ import { authOptions } from "@/lib/auth";
 import { ensureLeadingCapital } from "@/lib/text-format";
 import { getActiveOfferPriceMapForTours } from "@/lib/offerPricing";
 import { formatDurationDisplay } from "@/lib/formatDuration";
+import { normalizeTourLocation, normalizeTourLanguages } from "@/lib/tour-display";
 
 const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
 
@@ -1555,15 +1556,22 @@ export default async function TourDetailPage({
 
   const offerPriceMap = await getActiveOfferPriceMapForTours([{ id: tour.id, price: tour.price }]);
   const activeOffer = offerPriceMap.get(tour.id);
-  const preferencePrice = discountPercent > 0 ? tour.price * (1 - discountPercent / 100) : tour.price;
+  const allowPublicDiscounts = !agencyProLink && !directAgencyMode;
+  const preferencePrice =
+    allowPublicDiscounts && discountPercent > 0 ? tour.price * (1 - discountPercent / 100) : tour.price;
   const effectiveTourPrice =
     agencyProLink
       ? agencyProLink.price
-      : typeof activeOffer?.finalPrice === "number"
+      : allowPublicDiscounts && typeof activeOffer?.finalPrice === "number"
         ? Math.min(activeOffer.finalPrice, preferencePrice)
         : preferencePrice;
-  const hasActiveDiscount = !agencyProLink && effectiveTourPrice < tour.price;
-  const discountTag = agencyProLink
+  const agencyDirectNetPrice =
+    directAgencyMode && agencyDirectDiscountPercent > 0
+      ? Math.round(effectiveTourPrice * (1 - agencyDirectDiscountPercent / 100) * 100) / 100
+      : null;
+  const displayTourPrice = agencyDirectNetPrice ?? effectiveTourPrice;
+  const hasActiveDiscount = allowPublicDiscounts && effectiveTourPrice < tour.price;
+  const discountTag = !allowPublicDiscounts || agencyProLink
     ? null
     : activeOffer
       ? activeOffer.discountType === "PERCENT"
@@ -1616,7 +1624,8 @@ export default async function TourDetailPage({
     translate(locale, "tour.fallback.exclude.photos")
   ];
   const categories = (tour.category ?? "").split(",").map((i) => i.trim()).filter(Boolean);
-  const languages = (tour.language ?? "").split(",").map((i) => i.trim()).filter(Boolean);
+  const languages = normalizeTourLanguages(tour.language);
+  const locationLabel = normalizeTourLocation(tour.location);
   const timeSlots = parseJsonArray<PersistedTimeSlot>(tour.timeOptions);
   const operatingDays = parseJsonArray<string>(tour.operatingDays);
   const durationValue = parseDuration(tour.duration);
@@ -1680,7 +1689,7 @@ export default async function TourDetailPage({
   const durationUnitSource = translation?.durationUnit ?? durationValue.unit;
   const durationUnit = normalizeDurationUnit(durationUnitSource, locale);
   const durationLabel = `${durationValue.value} ${durationUnit}`;
-  const priceLabel = `$${effectiveTourPrice.toFixed(0)} USD`;
+  const priceLabel = `$${displayTourPrice.toFixed(0)} USD`;
   const shortDescriptionText = localizedShortDescription ?? localizedDescription;
   const needsReadMore = Boolean(shortDescriptionText && shortDescriptionText.length > 220);
   const shortTeaser =
@@ -1750,7 +1759,10 @@ export default async function TourDetailPage({
     return {
       slug: option.id,
       title: option.name,
-      price: option.pricePerPerson ?? effectiveTourPrice,
+      price:
+        directAgencyMode && agencyDirectDiscountPercent > 0
+          ? Math.round((option.pricePerPerson ?? effectiveTourPrice) * (1 - agencyDirectDiscountPercent / 100) * 100) / 100
+          : option.pricePerPerson ?? effectiveTourPrice,
       focus,
       detail,
       image: option.imageUrl || resolveTourHeroImage(tour),
@@ -1758,7 +1770,7 @@ export default async function TourDetailPage({
       structuredDescription
     };
   });
-  const mapQuery = encodeURIComponent(`${heroTitle} ${tour.location ?? "Punta Cana"}`);
+  const mapQuery = encodeURIComponent(`${heroTitle} ${locationLabel}`);
   const mapEmbedUrl = `https://www.google.com/maps?q=${mapQuery}&output=embed`;
   const mapSearchUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
   const travelerGallery = [...gallery].reverse().slice(0, 6);
@@ -1951,7 +1963,7 @@ export default async function TourDetailPage({
     mpn: tour.productId,
     areaServed: {
       "@type": "AdministrativeArea",
-      name: tour.location || "Punta Cana"
+      name: locationLabel
     },
     offers: {
       "@type": "Offer",
@@ -2142,7 +2154,7 @@ export default async function TourDetailPage({
     bookingCode: bookingCodeFromQuery ?? undefined,
     originHotelName: originHotel?.name ?? undefined,
     initialOptionId: currentScapeOptionId ?? undefined,
-    discountPercent,
+    discountPercent: allowPublicDiscounts ? discountPercent : 0,
     agencyLink: agencyLinkFromQuery ?? undefined,
     agencyDirectDiscountPercent
   };
@@ -2264,7 +2276,7 @@ export default async function TourDetailPage({
                   />
                   <circle cx="12" cy="8.4" r="2.4" />
                 </svg>
-                <span>{tour.location ?? "Punta Cana"}</span>
+                <span>{locationLabel}</span>
               </div>
               {agencyMode ? (
                 <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">
