@@ -11,6 +11,7 @@ import { authOptions } from "@/lib/auth";
 import { formatTimeUntil, requiresCancellationRequest } from "@/lib/bookings";
 import { buildBookingPresentation } from "@/lib/bookingPresentation";
 import { prisma } from "@/lib/prisma";
+import { getSiteDateKey } from "@/lib/site-date";
 
 type PageProps = {
   searchParams?: Promise<{
@@ -154,7 +155,7 @@ export default async function AgencyBookingsPage({ searchParams }: PageProps) {
   const filtered = normalizedBookings.filter(({ booking, channel, searchText }) => {
     const matchesQuery = query ? searchText.includes(query) : true;
     const matchesCode = codeFilter ? (booking.bookingCode ?? booking.id).toLowerCase().includes(codeFilter) : true;
-    const matchesDate = dateFilter ? booking.travelDate.toISOString().slice(0, 10) === dateFilter : true;
+    const matchesDate = dateFilter ? getSiteDateKey(booking.travelDate) === dateFilter : true;
     const matchesStatus = statusFilter ? booking.status.toLowerCase() === statusFilter : true;
     const matchesChannel = channelFilter ? channel === channelFilter : true;
     return matchesQuery && matchesCode && matchesDate && matchesStatus && matchesChannel;
@@ -169,7 +170,8 @@ export default async function AgencyBookingsPage({ searchParams }: PageProps) {
   const totalDirectCommissionThisMonth = bookingsThisMonth.reduce((sum, item) => {
     return item.channel === "direct" ? sum + (item.booking.agencyFee ?? 0) : sum;
   }, 0);
-  const upcomingCount = normalizedBookings.filter(({ booking }) => booking.travelDate >= new Date()).length;
+  const todayKey = getSiteDateKey();
+  const upcomingCount = normalizedBookings.filter(({ booking }) => getSiteDateKey(booking.travelDate) >= todayKey).length;
   const latestBooking = normalizedBookings[0]?.booking ?? null;
 
   return (

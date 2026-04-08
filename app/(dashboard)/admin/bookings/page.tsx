@@ -10,6 +10,7 @@ import {
 } from "@/lib/actions/bookingCancellation";
 import { formatTimeUntil } from "@/lib/bookings";
 import { buildBookingPresentation } from "@/lib/bookingPresentation";
+import { addDaysToSiteDateKey, getSiteDateKey } from "@/lib/site-date";
 import { updateBookingStatus } from "@/lib/actions/bookingStatus";
 import { addAdminBookingNote, updateAdminTransferLogistics } from "@/app/(dashboard)/admin/bookings/actions";
 
@@ -314,33 +315,23 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   ).sort();
 
   const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(now.getDate() + 1);
-  const weekLater = new Date(now);
-  weekLater.setDate(now.getDate() + 7);
+  const todayKey = getSiteDateKey(now);
+  const tomorrowKey = addDaysToSiteDateKey(todayKey, 1);
+  const weekLaterKey = addDaysToSiteDateKey(todayKey, 7);
+  const bookingDateKey = (booking: AdminBookingView) => getSiteDateKey(booking.travelDateValue);
 
   const withinDateMode = (booking: AdminBookingView) => {
-    const travel = new Date(booking.travelDateValue);
+    const travelKey = bookingDateKey(booking);
     switch (dateMode) {
       case "today":
-        return (
-          travel.getFullYear() === now.getFullYear() &&
-          travel.getMonth() === now.getMonth() &&
-          travel.getDate() === now.getDate()
-        );
+        return travelKey === todayKey;
       case "tomorrow":
-        return (
-          travel.getFullYear() === tomorrow.getFullYear() &&
-          travel.getMonth() === tomorrow.getMonth() &&
-          travel.getDate() === tomorrow.getDate()
-        );
+        return travelKey === tomorrowKey;
       case "week":
-        return travel >= now && travel <= weekLater;
+        return travelKey >= todayKey && travelKey <= weekLaterKey;
       case "range": {
         if (!customStart || !customEnd) return true;
-        const start = new Date(customStart);
-        const end = new Date(customEnd);
-        return travel >= start && travel <= end;
+        return travelKey >= customStart && travelKey <= customEnd;
       }
       default:
         return true;
@@ -348,20 +339,16 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   };
 
   const tabFilter = (booking: AdminBookingView) => {
-    const travel = new Date(booking.travelDateValue);
+    const travelKey = bookingDateKey(booking);
     switch (tab) {
       case "today":
         return withinDateMode(booking);
       case "tomorrow":
-        return (
-          travel.getFullYear() === tomorrow.getFullYear() &&
-          travel.getMonth() === tomorrow.getMonth() &&
-          travel.getDate() === tomorrow.getDate()
-        );
+        return travelKey === tomorrowKey;
       case "upcoming":
-        return travel > new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        return travelKey > todayKey;
       case "past":
-        return travel < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        return travelKey < todayKey;
       case "payment":
         return booking.status === "PAYMENT_PENDING";
       default:
@@ -374,7 +361,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     .filter((booking) => (shouldApplyDateFilter ? withinDateMode(booking) : true))
     .filter((booking) => {
       if (!exactTravelDate) return true;
-      return new Date(booking.travelDateValue).toISOString().slice(0, 10) === exactTravelDate;
+      return bookingDateKey(booking) === exactTravelDate;
     })
     .filter((booking) => (selectedStatus.length ? selectedStatus.includes(booking.status) : true))
     .filter((booking) => (selectedTour === "all" ? true : booking.tourTitle === selectedTour))

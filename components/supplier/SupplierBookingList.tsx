@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { buildBookingPresentation } from "@/lib/bookingPresentation";
 import { PROACTIVITIS_WHATSAPP_NUMBER } from "@/lib/seo";
+import { addDaysToSiteDateKey, getSiteDateKey } from "@/lib/site-date";
 
 export type SupplierTimelineEntry = {
   title: string;
@@ -142,10 +143,9 @@ export function SupplierBookingList({ bookings }: Props) {
   const [page, setPage] = useState(1);
 
   const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(now.getDate() + 1);
-  const weekLater = new Date(now);
-  weekLater.setDate(now.getDate() + 7);
+  const todayKey = getSiteDateKey(now);
+  const tomorrowKey = addDaysToSiteDateKey(todayKey, 1);
+  const weekLaterKey = addDaysToSiteDateKey(todayKey, 7);
 
   const enrichedBookings = useMemo(
     () => bookings.map((booking) => ({ ...booking, status: statusOverrides[booking.id] ?? booking.status })),
@@ -158,8 +158,8 @@ export function SupplierBookingList({ bookings }: Props) {
     return Array.from(set).sort();
   }, [enrichedBookings]);
 
-  const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const bookingDate = (booking: SupplierBookingSummary) => new Date(booking.travelDateValue);
+  const bookingDateKey = (booking: SupplierBookingSummary) => getSiteDateKey(booking.travelDateValue);
   const bookingDateTime = (booking: SupplierBookingSummary) => {
     if (!booking.startTime) return null;
     const base = bookingDate(booking);
@@ -170,19 +170,19 @@ export function SupplierBookingList({ bookings }: Props) {
   };
 
   const matchesDateMode = (booking: SupplierBookingSummary) => {
-    const travel = bookingDate(booking);
+    const travelKey = bookingDateKey(booking);
     switch (dateFilterMode) {
       case "today":
-        return startOfDay(travel).getTime() === startOfDay(now).getTime();
+        return travelKey === todayKey;
       case "tomorrow":
-        return startOfDay(travel).getTime() === startOfDay(tomorrow).getTime();
+        return travelKey === tomorrowKey;
       case "week":
-        return travel >= now && travel <= weekLater;
+        return travelKey >= todayKey && travelKey <= weekLaterKey;
       case "range": {
-        const start = customStart ? new Date(customStart) : null;
-        const end = customEnd ? new Date(customEnd) : null;
+        const start = customStart || null;
+        const end = customEnd || null;
         if (start && end) {
-          return travel >= startOfDay(start) && travel <= startOfDay(end);
+          return travelKey >= start && travelKey <= end;
         }
         return true;
       }
@@ -192,16 +192,16 @@ export function SupplierBookingList({ bookings }: Props) {
   };
 
   const tabPredicate = (booking: SupplierBookingSummary) => {
-    const travel = bookingDate(booking);
+    const travelKey = bookingDateKey(booking);
     switch (activeTab) {
       case "today":
-        return startOfDay(travel).getTime() === startOfDay(now).getTime();
+        return travelKey === todayKey;
       case "tomorrow":
-        return startOfDay(travel).getTime() === startOfDay(tomorrow).getTime();
+        return travelKey === tomorrowKey;
       case "upcoming":
-        return travel > startOfDay(now);
+        return travelKey > todayKey;
       case "past":
-        return travel < startOfDay(now);
+        return travelKey < todayKey;
       case "payment":
         return booking.status === "PAYMENT_PENDING";
       default:
@@ -237,7 +237,7 @@ export function SupplierBookingList({ bookings }: Props) {
       })
       .filter((booking) => {
         if (!exactDateFilter) return true;
-        return booking.travelDateValue.slice(0, 10) === exactDateFilter;
+        return bookingDateKey(booking) === exactDateFilter;
       })
       .filter(tabPredicate);
   }, [
@@ -279,9 +279,6 @@ export function SupplierBookingList({ bookings }: Props) {
   }, [enrichedBookings]);
 
   const summary = useMemo(() => {
-    const todayStart = startOfDay(now);
-    const todayEnd = new Date(todayStart);
-    todayEnd.setDate(todayEnd.getDate() + 1);
     let reservasHoy = 0;
     let totalPaxHoy = 0;
     let totalDelDia = 0;
@@ -289,8 +286,7 @@ export function SupplierBookingList({ bookings }: Props) {
     let nextDepartureMinutes: number | null = null;
 
     enrichedBookings.forEach((booking) => {
-      const travel = bookingDate(booking);
-      if (travel >= todayStart && travel < todayEnd) {
+      if (bookingDateKey(booking) === todayKey) {
         reservasHoy += 1;
         totalPaxHoy += booking.pax;
         totalDelDia += booking.totalAmount;
@@ -308,7 +304,7 @@ export function SupplierBookingList({ bookings }: Props) {
     });
 
     return { reservasHoy, totalPaxHoy, totalDelDia, pendientesPago, nextDepartureMinutes };
-  }, [enrichedBookings, now]);
+  }, [enrichedBookings, todayKey]);
 
   const addFeedback = (bookingId: string, message: string) => {
     setActionFeedbacks((prev) => ({ ...prev, [bookingId]: message }));

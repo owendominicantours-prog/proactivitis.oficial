@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Locale } from "@/lib/translations";
+import { getSiteDateTimeInputValue } from "@/lib/site-date";
 
 type DestinationOption = {
   id: string;
@@ -195,9 +196,9 @@ export default function PremiumTransferBookingWidget({
   preferredDestinationHint
 }: Props) {
   const copy = UI[locale] ?? UI.es;
-  const now = new Date(Date.now() + 2 * 60 * 60 * 1000);
-  const defaultDate = now.toISOString().slice(0, 10);
-  const defaultTime = now.toISOString().slice(11, 16);
+  const defaultDateTime = getSiteDateTimeInputValue(new Date(Date.now() + 2 * 60 * 60 * 1000));
+  const defaultDate = defaultDateTime.slice(0, 10);
+  const defaultTime = defaultDateTime.slice(11, 16);
   const preferredDestination =
     destinations.find((item) => {
       if (!preferredDestinationHint) return false;

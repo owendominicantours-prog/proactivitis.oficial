@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import TrasladoSearch, { LocationOption } from "@/components/traslado/TrasladoSearch";
 import { prisma } from "@/lib/prisma";
+import { getSiteDateTimeInputValue } from "@/lib/site-date";
 import { getTransferPointsForCountry } from "@/lib/transfers";
 
 const BASE_ORIGIN_CODE = "PUJ";
@@ -31,7 +32,7 @@ const getDefaultDateTime = () => {
   const date = new Date();
   date.setMinutes(0, 0, 0);
   date.setHours(date.getHours() + 2);
-  return date.toISOString().slice(0, 16);
+  return getSiteDateTimeInputValue(date);
 };
 
 const findHotelBySlug = async (slug: string | null) => {
