@@ -36,6 +36,7 @@ type EmailShellOptions = {
   contentHtml: string;
   footerNote?: string;
   disclaimer?: string;
+  reasonWhyReceived?: string;
   supportEmail?: string;
   supportLabel?: string;
   baseUrl?: string;
@@ -82,6 +83,7 @@ export const buildEmailShell = ({
   contentHtml,
   footerNote,
   disclaimer,
+  reasonWhyReceived,
   supportEmail = "support@proactivitis.com",
   supportLabel = "Soporte Proactivitis",
   baseUrl = "https://proactivitis.com",
@@ -104,6 +106,23 @@ export const buildEmailShell = ({
           }
         </div>
         <div style="padding:32px;">
+          <div style="margin-bottom:20px;padding:16px 18px;border-radius:18px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);">
+            <p style="margin:0;font-size:12px;letter-spacing:0.24em;text-transform:uppercase;color:#94a3b8;">Resumen</p>
+            <p style="margin:10px 0 0;font-size:14px;line-height:1.75;color:#475569;">
+              ${
+                intro
+                  ? escapeHtml(intro)
+                  : "Este mensaje contiene informacion operativa y enlaces seguros relacionados con tu cuenta o actividad dentro de Proactivitis."
+              }
+            </p>
+            <p style="margin:10px 0 0;font-size:13px;line-height:1.75;color:#64748b;">
+              ${
+                reasonWhyReceived
+                  ? escapeHtml(reasonWhyReceived)
+                  : "Recibes este correo porque realizaste una accion dentro de Proactivitis, como registrarte, reservar, solicitar ayuda o participar en una comunicacion operativa."
+              }
+            </p>
+          </div>
           ${contentHtml}
         </div>
         <div style="padding:24px 32px;background:#f8fafc;border-top:1px solid rgba(15,23,42,0.06);">
@@ -119,6 +138,9 @@ export const buildEmailShell = ({
                 : "Este correo fue enviado por Proactivitis como parte de la gestion de tu cuenta, reserva o solicitud dentro de nuestra plataforma."
             }
           </p>
+          <p style="margin:0 0 8px;font-size:12px;line-height:1.7;color:#64748b;">
+            Para tu seguridad, evita compartir este mensaje con terceros y utiliza solamente los enlaces que ves escritos dentro de este correo o en nuestro dominio oficial.
+          </p>
           <p style="margin:0;font-size:12px;line-height:1.7;color:#64748b;">
             Si necesitas ayuda, escribe a
             <a href="mailto:${escapeHtml(supportEmail)}" style="color:#0ea5e9;text-decoration:none;font-weight:600;">
@@ -128,6 +150,9 @@ export const buildEmailShell = ({
             <a href="${escapeHtml(baseUrl)}" style="color:#0ea5e9;text-decoration:none;font-weight:600;">
               ${escapeHtml(baseUrl)}
             </a>.
+          </p>
+          <p style="margin:8px 0 0;font-size:12px;line-height:1.7;color:#64748b;">
+            Sitio oficial: ${escapeHtml(baseUrl)} · Correo de soporte: ${escapeHtml(supportEmail)}
           </p>
         </div>
       </div>
@@ -167,6 +192,8 @@ export const buildCustomerEticketEmail = ({
     tone: "primary",
     disclaimer:
       "Este correo confirma la emision de tu voucher y contiene informacion operativa de tu reserva. Guardalo para presentarlo el dia del servicio.",
+    reasonWhyReceived:
+      "Recibes este correo porque una reserva fue confirmada con tu direccion de correo y se emitio un voucher asociado a tu servicio.",
     footerNote: supplierName
       ? `Operador asignado: ${supplierName}. Si necesitas asistencia previa al servicio, usa los enlaces seguros de este correo o nuestro soporte oficial.`
       : "Si necesitas asistencia previa al servicio, usa los enlaces seguros de este correo o nuestro soporte oficial.",
@@ -256,6 +283,8 @@ export const buildSupplierBookingEmail = ({
     tone: "dark",
     disclaimer:
       "Este correo fue enviado al proveedor asignado para coordinar y operar una reserva confirmada dentro de Proactivitis.",
+    reasonWhyReceived:
+      "Recibes este correo porque tu cuenta o empresa aparece como responsable de operar una reserva confirmada dentro de Proactivitis.",
     footerNote:
       "Revisa el panel para validar horarios, contacto del viajero, logistica y documentacion antes del servicio.",
     contentHtml: `

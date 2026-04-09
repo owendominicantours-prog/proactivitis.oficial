@@ -879,6 +879,19 @@ model CustomerPreference {
   User                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model EmailSuppression {
+  id            String   @id @default(cuid())
+  email         String
+  scope         String   @default("optional")
+  source        String?
+  reason        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([email, scope])
+  @@index([email])
+}
+
 model BlogPost {
   id          String          @id @default(cuid())
   title       String

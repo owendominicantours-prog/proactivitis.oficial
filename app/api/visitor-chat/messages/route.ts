@@ -134,7 +134,8 @@ export async function POST(request: NextRequest) {
     void sendEmail({
       to: recipients,
       subject: "Nuevo mensaje de visitante - Chat Web",
-      html
+      html,
+      category: "internal"
     });
 
     const response = NextResponse.json({ ok: true });

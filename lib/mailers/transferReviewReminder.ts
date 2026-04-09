@@ -66,6 +66,7 @@ export async function sendTransferReviewReminder(payload: TransferReviewReminder
     to: payload.to,
     from: FROM_EMAIL,
     subject,
-    html
+    html,
+    category: "optional"
   });
 }

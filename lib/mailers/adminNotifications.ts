@@ -90,7 +90,8 @@ const sendAdminEmail = async (
       to: recipients,
       from: FROM_EMAIL,
       subject,
-      html
+      html,
+      category: "internal"
     });
   } catch (error) {
     console.error("Error enviando correo a admin:", error);
@@ -356,7 +357,8 @@ export async function notifySupplierTourModeration({
       to,
       from: FROM_EMAIL,
       subject: actionInfo.subject,
-      html
+      html,
+      category: "internal"
     });
   } catch (error) {
     console.error("Error enviando correo al proveedor:", error);
