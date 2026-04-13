@@ -2,13 +2,19 @@ import type { Metadata } from "next";
 import type { TourSearchParams } from "@/lib/filterBuilder";
 import { fr } from "@/lib/translations";
 import PublicToursPage from "@/components/public/PublicToursPage";
+import { SITE_CONFIG } from "@/lib/site-config";
 
-const canonicalUrl = "https://proactivitis.com/fr/tours";
+const canonicalUrl = `${SITE_CONFIG.url}/fr/tours`;
 
 export const metadata: Metadata = {
-  title: "Excursions a Punta Cana: Saona, Buggy, Catamaran et Party Boat | Proactivitis",
+  title:
+    SITE_CONFIG.variant === "funjet"
+      ? "Excursions a Punta Cana: Saona, Buggy, Catamaran et Party Boat | Funjet Tour Oprador"
+      : "Excursions a Punta Cana: Saona, Buggy, Catamaran et Party Boat | Proactivitis",
   description:
-    "Reservez des excursions a Punta Cana avec pickup hotel, prix clairs et support local. Ile Saona, buggy, catamaran, party boat et plus.",
+    SITE_CONFIG.variant === "funjet"
+      ? "Reservez des excursions a Punta Cana avec support direct, prix clairs et confirmation rapide. Ile Saona, buggy, catamaran, party boat et plus."
+      : "Reservez des excursions a Punta Cana avec pickup hotel, prix clairs et support local. Ile Saona, buggy, catamaran, party boat et plus.",
   keywords: [
     "meilleures excursions punta cana",
     "tours punta cana",
@@ -26,16 +32,27 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: "Excursions a Punta Cana: Saona, Buggy, Catamaran et Party Boat | Proactivitis",
+    title:
+      SITE_CONFIG.variant === "funjet"
+        ? "Excursions a Punta Cana: Saona, Buggy, Catamaran et Party Boat | Funjet Tour Oprador"
+        : "Excursions a Punta Cana: Saona, Buggy, Catamaran et Party Boat | Proactivitis",
     description:
-      "Reservez des excursions a Punta Cana avec pickup hotel, prix clairs et confirmation rapide.",
+      SITE_CONFIG.variant === "funjet"
+        ? "Reservez des excursions a Punta Cana avec support direct, prix clairs et confirmation rapide."
+        : "Reservez des excursions a Punta Cana avec pickup hotel, prix clairs et confirmation rapide.",
     url: canonicalUrl,
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Excursions a Punta Cana: Saona, Buggy, Catamaran et Party Boat | Proactivitis",
-    description: "Reservez des activites a Punta Cana avec pickup hotel et support 24/7."
+    title:
+      SITE_CONFIG.variant === "funjet"
+        ? "Excursions a Punta Cana | Funjet Tour Oprador"
+        : "Excursions a Punta Cana: Saona, Buggy, Catamaran et Party Boat | Proactivitis",
+    description:
+      SITE_CONFIG.variant === "funjet"
+        ? "Reservez des activites a Punta Cana avec support direct et prix clairs."
+        : "Reservez des activites a Punta Cana avec pickup hotel et support 24/7."
   },
   robots: {
     index: true,

@@ -11,6 +11,9 @@ type HeaderProps = {
   rightSlot?: ReactNode;
   logoScale?: number;
   dropdownNav?: { label: string; items: { label: string; href: string }[] };
+  logoSrc?: string;
+  logoAlt?: string;
+  homeHref?: string;
 };
 
 export const Header = ({
@@ -18,7 +21,10 @@ export const Header = ({
   navDisplay = "inline",
   rightSlot,
   logoScale = 3,
-  dropdownNav
+  dropdownNav,
+  logoSrc = "/logo.png",
+  logoAlt = "Proactivitis",
+  homeHref = "/"
 }: HeaderProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -33,10 +39,10 @@ export const Header = ({
     <header className="border-b bg-white shadow-sm">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:h-20 sm:px-6">
         <div className="flex min-w-0 items-center overflow-visible">
-          <Link href="/" className="flex items-center">
+          <Link href={homeHref} className="flex items-center">
             <Image
-              src="/logo.png"
-              alt="Proactivitis"
+              src={logoSrc}
+              alt={logoAlt}
               width={200}
               height={60}
               className="h-10 max-w-[150px] w-auto origin-left object-contain transition-transform sm:h-14 sm:max-w-[190px] md:h-12 md:max-w-none md:scale-[var(--logo-scale)]"

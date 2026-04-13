@@ -6,6 +6,7 @@ import TransferHeroNotices from "@/components/public/TransferHeroNotices";
 import { prisma } from "@/lib/prisma";
 import { getTransferPointsForCountry, TransferPointOption } from "@/lib/transfers";
 import { Locale, translate } from "@/lib/translations";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 const heroStats = [
   { labelKey: "transfer.hero.stat.transfers", value: "5.000+" },
@@ -44,6 +45,7 @@ export default async function PublicTransferPage({
   heroDescriptionOverride,
   heroImageOverride
 }: Props) {
+  const isFunjet = SITE_CONFIG.variant === "funjet";
   const transfersV2Enabled = process.env.TRANSFERS_V2_ENABLED === "true";
   const homeHref = locale === "es" ? "/" : `/${locale}`;
   const toursRootHref = locale === "es" ? "/tours" : `/${locale}/tours`;
@@ -178,42 +180,50 @@ export default async function PublicTransferPage({
       </section>
 
       <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-10 px-4 py-10">
-        <section className="rounded-[32px] border border-amber-300/30 bg-gradient-to-r from-[#1f2937] via-[#111827] to-[#0f172a] p-6 text-white shadow-xl">
-          <p className="text-xs uppercase tracking-[0.35em] text-amber-200">
-            {locale === "es" ? "Elite Collection" : locale === "fr" ? "Collection Elite" : "Elite Collection"}
-          </p>
-          <h2 className="mt-2 text-2xl font-black">
-            {locale === "es"
-              ? "Punta Cana Premium Transfer Services"
-              : locale === "fr"
-              ? "Punta Cana Premium Transfer Services"
-              : "Punta Cana Premium Transfer Services"}
-          </h2>
-          <p className="mt-2 text-sm text-slate-200">
-            {locale === "es"
-              ? "Flota VIP con Cadillac y Suburban para clientes premium."
-              : locale === "fr"
-              ? "Flotte VIP avec Cadillac et Suburban pour clients premium."
-              : "VIP fleet with Cadillac and Suburban for premium clients."}
-          </p>
-          <Link
-            href={premiumVipHref}
-            className="mt-4 inline-flex rounded-full bg-amber-300 px-5 py-2 text-xs font-bold uppercase tracking-[0.25em] text-slate-900 transition hover:bg-amber-200"
-          >
-            {locale === "es" ? "Ver Landing VIP" : locale === "fr" ? "Voir Landing VIP" : "Open VIP Landing"}
-          </Link>
-        </section>
+        {!isFunjet ? (
+          <section className="rounded-[32px] border border-amber-300/30 bg-gradient-to-r from-[#1f2937] via-[#111827] to-[#0f172a] p-6 text-white shadow-xl">
+            <p className="text-xs uppercase tracking-[0.35em] text-amber-200">
+              {locale === "es" ? "Elite Collection" : locale === "fr" ? "Collection Elite" : "Elite Collection"}
+            </p>
+            <h2 className="mt-2 text-2xl font-black">
+              {locale === "es"
+                ? "Punta Cana Premium Transfer Services"
+                : locale === "fr"
+                  ? "Punta Cana Premium Transfer Services"
+                  : "Punta Cana Premium Transfer Services"}
+            </h2>
+            <p className="mt-2 text-sm text-slate-200">
+              {locale === "es"
+                ? "Flota VIP con Cadillac y Suburban para clientes premium."
+                : locale === "fr"
+                  ? "Flotte VIP avec Cadillac et Suburban pour clients premium."
+                  : "VIP fleet with Cadillac and Suburban for premium clients."}
+            </p>
+            <Link
+              href={premiumVipHref}
+              className="mt-4 inline-flex rounded-full bg-amber-300 px-5 py-2 text-xs font-bold uppercase tracking-[0.25em] text-slate-900 transition hover:bg-amber-200"
+            >
+              {locale === "es" ? "Ver Landing VIP" : locale === "fr" ? "Voir Landing VIP" : "Open VIP Landing"}
+            </Link>
+          </section>
+        ) : null}
 
         <section className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-xs uppercase tracking-[0.35em] text-slate-500">
             {locale === "es" ? "Planifica todo en un solo flujo" : locale === "fr" ? "Planifiez tout en un seul flux" : "Plan everything in one flow"}
           </p>
           <h2 className="mt-2 text-xl font-bold text-slate-900">
-            {locale === "es"
-              ? "Combina traslado + hotel + tours sin salir de Proactivitis"
-              : locale === "fr"
-              ? "Combinez transfert + hotel + excursions sans quitter Proactivitis"
-              : "Bundle transfer + hotel + tours without leaving Proactivitis"}
+            {isFunjet
+              ? locale === "es"
+                ? "Reserva tu traslado y completa tu viaje en un solo lugar"
+                : locale === "fr"
+                  ? "Reservez votre transfert et completez votre voyage au meme endroit"
+                  : "Book your transfer and complete your trip in one place"
+              : locale === "es"
+                ? "Combina traslado + hotel + tours sin salir de Proactivitis"
+                : locale === "fr"
+                  ? "Combinez transfert + hotel + excursions sans quitter Proactivitis"
+                  : "Bundle transfer + hotel + tours without leaving Proactivitis"}
           </h2>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
@@ -228,18 +238,22 @@ export default async function PublicTransferPage({
             >
               {locale === "es" ? "Ver tours" : locale === "fr" ? "Voir excursions" : "View tours"}
             </Link>
-            <Link
-              href={premiumVipHref}
-              className="rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800 transition hover:bg-amber-100"
-            >
-              {locale === "es" ? "VIP transfer" : locale === "fr" ? "Transfert VIP" : "VIP transfer"}
-            </Link>
-            <Link
-              href={proDiscoveryTransfersHref}
-              className="rounded-full border border-sky-300 bg-sky-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-sky-800 transition hover:bg-sky-100"
-            >
-              {locale === "es" ? "Ver en ProDiscovery" : locale === "fr" ? "Voir dans ProDiscovery" : "View in ProDiscovery"}
-            </Link>
+            {!isFunjet ? (
+              <Link
+                href={premiumVipHref}
+                className="rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800 transition hover:bg-amber-100"
+              >
+                {locale === "es" ? "VIP transfer" : locale === "fr" ? "Transfert VIP" : "VIP transfer"}
+              </Link>
+            ) : null}
+            {!isFunjet ? (
+              <Link
+                href={proDiscoveryTransfersHref}
+                className="rounded-full border border-sky-300 bg-sky-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-sky-800 transition hover:bg-sky-100"
+              >
+                {locale === "es" ? "Ver en ProDiscovery" : locale === "fr" ? "Voir dans ProDiscovery" : "View in ProDiscovery"}
+              </Link>
+            ) : null}
           </div>
         </section>
 

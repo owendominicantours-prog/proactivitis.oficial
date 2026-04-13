@@ -11,6 +11,7 @@ import HomeTransferTicker from "@/components/public/HomeTransferTicker";
 import { Locale, translate } from "@/lib/translations";
 import { getHomeContentOverrides } from "@/lib/siteContent";
 import { getPriceValidUntil, PROACTIVITIS_URL } from "@/lib/seo";
+import { SITE_CONFIG } from "@/lib/site-config";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 
@@ -34,9 +35,9 @@ const PUNTA_CANA_LINKS = [
 const SOSUA_PARTY_BOAT_LINKS = [
   {
     slug: "party-boat-sosua",
-    es: "Sosua Party Boat: precios y opciones VIP",
-    en: "Sosua Party Boat: prices and VIP options",
-    fr: "Sosua Party Boat : prix et options VIP"
+    es: "Sosua Party Boat: precios y opciones destacadas",
+    en: "Sosua Party Boat: prices and top options",
+    fr: "Sosua Party Boat : prix et meilleures options"
   },
   {
     slug: "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua",
@@ -47,6 +48,7 @@ const SOSUA_PARTY_BOAT_LINKS = [
 ] as const;
 
 export default async function PublicHomePage({ locale }: PublicHomePageProps) {
+  const isFunjet = SITE_CONFIG.variant === "funjet";
   const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
     translate(locale, key, replacements);
   const transferHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
@@ -138,7 +140,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
       image: `${PROACTIVITIS_URL}/fototours/fotosimple.jpg`,
       brand: {
         "@type": "Brand",
-        name: "Proactivitis"
+        name: SITE_CONFIG.name
       },
       aggregateRating: {
         "@type": "AggregateRating",
@@ -199,7 +201,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
       image: `${PROACTIVITIS_URL}${landing.heroImage}`,
       brand: {
         "@type": "Brand",
-        name: "Proactivitis"
+        name: SITE_CONFIG.name
       },
       aggregateRating: {
         "@type": "AggregateRating",
@@ -251,7 +253,6 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     { path: "/", name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home" },
     { path: "/tours", name: locale === "es" ? "Tours" : locale === "fr" ? "Excursions" : "Tours" },
     { path: "/traslado", name: locale === "es" ? "Traslados" : locale === "fr" ? "Transferts" : "Transfers" },
-    { path: "/prodiscovery", name: "ProDiscovery" },
     { path: "/news", name: locale === "es" ? "Noticias" : locale === "fr" ? "Actualites" : "News" },
     {
       path: locale === "es" ? "/hoteles" : "/hotels",
@@ -259,7 +260,12 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     },
     { path: "/punta-cana/tours", name: "Punta Cana Tours" },
     { path: "/punta-cana/traslado", name: "Punta Cana Transfers" },
-    { path: "/punta-cana/premium-transfer-services", name: "Premium Transfer Services" }
+    ...(!isFunjet
+      ? [
+          { path: "/prodiscovery", name: "ProDiscovery" },
+          { path: "/punta-cana/premium-transfer-services", name: "Premium Transfer Services" }
+        ]
+      : [])
   ];
 
   const allPublicPageUrls = Array.from(
@@ -282,14 +288,20 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     "@graph": [
       {
         "@type": "OnlineBusiness",
-        "@id": "https://proactivitis.com/#organization",
-        name: "Proactivitis",
-        url: "https://proactivitis.com/",
-        logo: "https://proactivitis.com/logo.png",
+        "@id": `${PROACTIVITIS_URL}/#organization`,
+        name: SITE_CONFIG.name,
+        url: `${PROACTIVITIS_URL}/`,
+        logo: `${PROACTIVITIS_URL}${SITE_CONFIG.logoSrc}`,
         description: translate(locale, "home.schema.description"),
         hasOfferCatalog: {
           "@type": "OfferCatalog",
-          name: "Servicios Proactivitis",
+          name: isFunjet
+            ? locale === "es"
+              ? "Servicios Funjet"
+              : locale === "fr"
+                ? "Services Funjet"
+                : "Funjet services"
+            : "Servicios Proactivitis",
           itemListElement: [
             {
               "@type": "Offer",
@@ -327,7 +339,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               itemOffered: {
                 "@type": "Service",
                 name: "Tours y Excursiones",
-                url: "https://proactivitis.com/tours"
+                url: `${PROACTIVITIS_URL}/tours`
               }
             },
             {
@@ -366,7 +378,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               itemOffered: {
                 "@type": "Service",
                 name: "Traslados Privados",
-                url: "https://proactivitis.com/traslado"
+                url: `${PROACTIVITIS_URL}/traslado`
               }
             },
             {
@@ -404,8 +416,14 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               },
               itemOffered: {
                 "@type": "Service",
-                name: "Portal para Agencias y Suplidores",
-                url: "https://proactivitis.com/become-a-supplier"
+                name: isFunjet
+                  ? locale === "es"
+                    ? "Asistencia directa para reservas"
+                    : locale === "fr"
+                      ? "Assistance directe pour reservations"
+                      : "Direct booking assistance"
+                  : "Portal para Agencias y Suplidores",
+                url: isFunjet ? `${PROACTIVITIS_URL}/contact` : `${PROACTIVITIS_URL}/become-a-supplier`
               }
             }
           ]
@@ -415,12 +433,12 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         "@type": "WebPage",
         "@id": `${localizedPath("/")}#webpage`,
         url: localizedPath("/"),
-        name: locale === "es" ? "Inicio Proactivitis" : locale === "fr" ? "Accueil Proactivitis" : "Proactivitis Home",
+        name: locale === "es" ? `Inicio ${SITE_CONFIG.name}` : locale === "fr" ? `Accueil ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} Home`,
         isPartOf: {
           "@id": `${PROACTIVITIS_URL}/#website`
         },
         about: {
-          "@id": "https://proactivitis.com/#organization"
+          "@id": `${PROACTIVITIS_URL}/#organization`
         }
       },
       {
@@ -442,7 +460,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
       {
         "@type": "ItemList",
         "@id": `${localizedPath("/")}#public-pages`,
-        name: locale === "es" ? "Paginas publicas Proactivitis" : locale === "fr" ? "Pages publiques Proactivitis" : "Proactivitis public pages",
+        name: locale === "es" ? `Paginas publicas ${SITE_CONFIG.name}` : locale === "fr" ? `Pages publiques ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} public pages`,
         numberOfItems: allPublicPageItems.length,
         itemListOrder: "https://schema.org/ItemListOrderAscending",
         itemListElement: allPublicPageItems
@@ -450,7 +468,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
       {
         "@type": "ItemList",
         "@id": `${localizedPath("/")}#product-catalog`,
-        name: locale === "es" ? "Catalogo de productos Proactivitis" : locale === "fr" ? "Catalogue de produits Proactivitis" : "Proactivitis product catalog",
+        name: locale === "es" ? `Catalogo de productos ${SITE_CONFIG.name}` : locale === "fr" ? `Catalogue de produits ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} product catalog`,
         numberOfItems: tourProducts.length + transferProducts.length,
         itemListOrder: "https://schema.org/ItemListOrderAscending",
         itemListElement: [...tourProducts, ...transferProducts].map((product, index) => ({
@@ -472,10 +490,22 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           },
           {
             "@type": "Question",
-            name: translate(locale, "home.schema.faq.question.agencies"),
+            name: isFunjet
+              ? locale === "es"
+                ? "Como recibo ayuda para reservar?"
+                : locale === "fr"
+                  ? "Comment obtenir de l aide pour reserver ?"
+                  : "How do I get help booking?"
+              : translate(locale, "home.schema.faq.question.agencies"),
             acceptedAnswer: {
               "@type": "Answer",
-              text: translate(locale, "home.schema.faq.answer.agencies")
+              text: isFunjet
+                ? locale === "es"
+                  ? "Puedes escribirnos por WhatsApp y te ayudamos a elegir tours, traslados y horarios con confirmacion rapida."
+                  : locale === "fr"
+                    ? "Vous pouvez nous ecrire sur WhatsApp et nous vous aidons a choisir excursions, transferts et horaires avec confirmation rapide."
+                    : "You can message us on WhatsApp and we will help you choose tours, transfers, and schedules with fast confirmation."
+                : translate(locale, "home.schema.faq.answer.agencies")
             }
           }
         ]

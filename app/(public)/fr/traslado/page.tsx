@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
 import { fr } from "@/lib/translations";
 import PublicTransferPage from "@/components/public/PublicTransferPage";
+import { SITE_CONFIG } from "@/lib/site-config";
 
-const canonicalUrl = "https://proactivitis.com/fr/traslado";
+const canonicalUrl = `${SITE_CONFIG.url}/fr/traslado`;
 
 export const metadata: Metadata = {
-  title: "Transfert Aeroport Punta Cana (PUJ) vers Hotels et Resorts | Proactivitis",
+  title:
+    SITE_CONFIG.variant === "funjet"
+      ? "Transfert aeroport Punta Cana (PUJ) vers hotels et resorts | Funjet Tour Oprador"
+      : "Transfert Aeroport Punta Cana (PUJ) vers Hotels et Resorts | Proactivitis",
   description:
-    "Reservez un transfert prive depuis PUJ vers les hotels et resorts de Punta Cana avec tarif fixe, suivi de vol et support 24/7.",
+    SITE_CONFIG.variant === "funjet"
+      ? "Reservez un transfert prive a Punta Cana avec tarif fixe, suivi de vol et confirmation rapide sur WhatsApp."
+      : "Reservez un transfert prive depuis PUJ vers les hotels et resorts de Punta Cana avec tarif fixe, suivi de vol et support 24/7.",
   keywords: [
     "transfert aeroport punta cana",
     "transfert prive punta cana",
@@ -25,16 +31,27 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: "Transfert Aeroport Punta Cana (PUJ) vers Hotels et Resorts | Proactivitis",
+    title:
+      SITE_CONFIG.variant === "funjet"
+        ? "Transfert aeroport Punta Cana (PUJ) vers hotels et resorts | Funjet Tour Oprador"
+        : "Transfert Aeroport Punta Cana (PUJ) vers Hotels et Resorts | Proactivitis",
     description:
-      "Reservez un transfert prive depuis PUJ vers les hotels de Punta Cana avec tarif fixe et suivi de vol.",
+      SITE_CONFIG.variant === "funjet"
+        ? "Reservez un transfert prive a Punta Cana avec tarif fixe et suivi de vol."
+        : "Reservez un transfert prive depuis PUJ vers les hotels de Punta Cana avec tarif fixe et suivi de vol.",
     url: canonicalUrl,
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Transfert Aeroport Punta Cana (PUJ) vers Hotels et Resorts | Proactivitis",
-    description: "Reservez un transfert prive a Punta Cana avec tarif fixe et support local."
+    title:
+      SITE_CONFIG.variant === "funjet"
+        ? "Transferts Punta Cana | Funjet Tour Oprador"
+        : "Transfert Aeroport Punta Cana (PUJ) vers Hotels et Resorts | Proactivitis",
+    description:
+      SITE_CONFIG.variant === "funjet"
+        ? "Reservez un transfert prive a Punta Cana avec tarif fixe et support direct."
+        : "Reservez un transfert prive a Punta Cana avec tarif fixe et support local."
   },
   robots: {
     index: true,

@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { es } from "@/lib/translations";
 import PublicHomePage from "@/components/public/PublicHomePage";
+import { SITE_CONFIG } from "@/lib/site-config";
 
-const canonicalUrl = "https://proactivitis.com/";
+const canonicalUrl = `${SITE_CONFIG.url}/`;
 
 export const metadata: Metadata = {
-  title: "Tours, Excursiones y Traslados en Punta Cana | Proactivitis",
-  description:
-    "Reserva tours en Punta Cana, excursiones todo incluido y traslados privados al aeropuerto con precios claros, soporte 24/7 y confirmacion inmediata.",
+  title: SITE_CONFIG.homeTitle.es,
+  description: SITE_CONFIG.homeDescription.es,
   keywords: [
     "tours punta cana",
     "excursiones punta cana",
@@ -25,16 +25,15 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: "Tours, Excursiones y Traslados en Punta Cana | Proactivitis",
-    description:
-      "Reserva tours en Punta Cana, excursiones todo incluido y traslados privados con confirmacion inmediata.",
+    title: SITE_CONFIG.homeTitle.es,
+    description: SITE_CONFIG.homeDescription.es,
     url: canonicalUrl,
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tours, Excursiones y Traslados en Punta Cana | Proactivitis",
-    description: "Reserva experiencias y traslados en Punta Cana con precios claros y soporte 24/7."
+    title: SITE_CONFIG.homeTitle.es,
+    description: SITE_CONFIG.homeDescription.es
   },
   robots: {
     index: true,

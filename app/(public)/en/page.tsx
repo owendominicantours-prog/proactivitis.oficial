@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { en } from "@/lib/translations";
 import PublicHomePage from "@/components/public/PublicHomePage";
+import { SITE_CONFIG } from "@/lib/site-config";
 
-const canonicalUrl = "https://proactivitis.com/en";
+const canonicalUrl = `${SITE_CONFIG.url}/en`;
 
 export const metadata: Metadata = {
-  title: "Punta Cana Tours, Excursions and Airport Transfers | Proactivitis",
-  description:
-    "Book Punta Cana tours, top excursions, and private airport transfers with clear pricing, verified operators, and instant confirmation.",
+  title: SITE_CONFIG.homeTitle.en,
+  description: SITE_CONFIG.homeDescription.en,
   keywords: [
     "punta cana tours",
     "punta cana excursions",
@@ -25,16 +25,15 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: "Punta Cana Tours, Excursions and Airport Transfers | Proactivitis",
-    description:
-      "Book Punta Cana tours, excursions, and private airport transfers with transparent pricing and instant confirmation.",
+    title: SITE_CONFIG.homeTitle.en,
+    description: SITE_CONFIG.homeDescription.en,
     url: canonicalUrl,
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Punta Cana Tours, Excursions and Airport Transfers | Proactivitis",
-    description: "Book top Punta Cana experiences and private airport transfers in minutes."
+    title: SITE_CONFIG.homeTitle.en,
+    description: SITE_CONFIG.homeDescription.en
   },
   robots: {
     index: true,

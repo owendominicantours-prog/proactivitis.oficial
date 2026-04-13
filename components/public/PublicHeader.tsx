@@ -6,6 +6,7 @@ import { PublicAuthButtons } from "@/components/public/PublicAuthButtons";
 import { PublicCurrencyLanguage } from "@/components/public/PublicCurrencyLanguage";
 import { Locale, useTranslation } from "@/context/LanguageProvider";
 import { useSession } from "next-auth/react";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 const publicNavLinks: Array<{
   labels: Record<Locale, string>;
@@ -53,10 +54,10 @@ export function PublicHeader() {
     href: getLocalizedPath(navItem.hrefByLocale?.[locale] ?? navItem.href, locale)
   }));
   const dropdownNav = {
-    label: "Contacto",
+    label: locale === "es" ? "Explora" : locale === "fr" ? "Explorer" : "Explore",
     items: [
-      { label: "Contacto", href: getLocalizedPath("/contact", locale) },
-      { label: "Blog", href: getLocalizedPath("/news", locale) }
+      { label: locale === "es" ? "Contacto" : locale === "fr" ? "Contact" : "Contact", href: getLocalizedPath("/contact", locale) },
+      { label: locale === "es" ? "Blog" : locale === "fr" ? "Guides" : "Guides", href: getLocalizedPath("/news", locale) }
     ]
   };
 
@@ -76,5 +77,14 @@ export function PublicHeader() {
     </div>
   );
 
-  return <Header navItems={navItems} rightSlot={rightSlot} dropdownNav={dropdownNav} />;
+  return (
+    <Header
+      navItems={navItems}
+      rightSlot={rightSlot}
+      dropdownNav={dropdownNav}
+      logoSrc={SITE_CONFIG.logoSrc}
+      logoAlt={SITE_CONFIG.logoAlt}
+      homeHref={getLocalizedPath("/", locale)}
+    />
+  );
 }

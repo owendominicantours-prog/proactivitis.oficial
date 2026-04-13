@@ -22,6 +22,7 @@ import { ensureLeadingCapital } from "@/lib/text-format";
 import { getActiveOfferPriceMapForTours } from "@/lib/offerPricing";
 import { formatDurationDisplay } from "@/lib/formatDuration";
 import { normalizeTourLocation, normalizeTourLanguages } from "@/lib/tour-display";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
 
@@ -1749,7 +1750,8 @@ export default async function TourDetailPage({
   const hasVisualTimeline = visualTimeline.length > 0;
   const localizedTitle = ensureLeadingCapital(translation?.title ?? tour.title);
   const heroTitle = resolveTourH1(tour.slug, locale, localizedTitle);
-  const isDiscoveryMode = presentationMode === "discovery";
+  const isFunjet = SITE_CONFIG.variant === "funjet";
+  const isDiscoveryMode = presentationMode === "discovery" && !isFunjet;
   const discoveryBadgeLabel = localeLabel(locale, "Ficha ProDiscovery", "ProDiscovery listing", "Fiche ProDiscovery");
   const visibleHeroTitle = isDiscoveryMode
     ? localeLabel(
@@ -2045,7 +2047,7 @@ export default async function TourDetailPage({
     mainEntityOfPage: tourUrl,
     brand: {
       "@type": "Brand",
-      name: "Proactivitis"
+      name: SITE_CONFIG.name
     },
     category: touristTypeFallback ?? "Tour",
     sku: tour.slug,
@@ -2231,7 +2233,7 @@ export default async function TourDetailPage({
     isPartOf: {
       "@type": "WebSite",
       "@id": `${PROACTIVITIS_URL}#website`,
-      name: "Proactivitis",
+      name: SITE_CONFIG.name,
       url: PROACTIVITIS_URL
     },
     about: [
@@ -2346,10 +2348,13 @@ export default async function TourDetailPage({
       </div>
       <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-700">
         <p className="font-semibold text-slate-900">
-          {agencyDisplayName ??
-            tour.SupplierProfile?.company ??
-            tour.SupplierProfile?.User?.name ??
-            translate(locale, "tour.booking.panel.providerFallback")}
+          {agencyMode
+            ? agencyDisplayName ?? localeLabel(locale, "Agencia", "Agency", "Agence")
+            : isFunjet
+              ? SITE_CONFIG.name
+              : tour.SupplierProfile?.company ??
+                tour.SupplierProfile?.User?.name ??
+                translate(locale, "tour.booking.panel.providerFallback")}
         </p>
         <p>
           {agencyMode
@@ -2366,7 +2371,14 @@ export default async function TourDetailPage({
                   "You are booking as an agency with your net rate applied at checkout.",
                   "Vous reservez en tant qu agence avec votre tarif net applique au checkout."
                 )
-            : translate(locale, "tour.booking.panel.supplier")}
+              : isFunjet
+                ? localeLabel(
+                    locale,
+                    "Reserva directa con confirmacion rapida y asistencia por WhatsApp.",
+                    "Direct booking with fast confirmation and WhatsApp support.",
+                    "Reservation directe avec confirmation rapide et support WhatsApp."
+                  )
+                : translate(locale, "tour.booking.panel.supplier")}
         </p>
         {agencyMode && agencyProLink?.note ? <p className="mt-2 text-xs text-slate-500">{agencyProLink.note}</p> : null}
       </div>

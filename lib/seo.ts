@@ -1,22 +1,23 @@
+import { SITE_CONFIG } from "@/lib/site-config";
+
 export const SAME_AS_URLS = [
-  "https://www.facebook.com/proactivitis",
-  "https://www.instagram.com/proactivitis"
+  ...SITE_CONFIG.sameAs
 ];
 
-export const PROACTIVITIS_URL = "https://proactivitis.com";
-export const PROACTIVITIS_LOGO = `${PROACTIVITIS_URL}/logo.png`;
-export const PROACTIVITIS_PHONE = "+1 (829) 475-6298";
-export const PROACTIVITIS_PHONE_MACHINE = "18294756298";
+export const PROACTIVITIS_URL = SITE_CONFIG.url;
+export const PROACTIVITIS_LOGO = `${PROACTIVITIS_URL}${SITE_CONFIG.logoSrc}`;
+export const PROACTIVITIS_PHONE = SITE_CONFIG.phone;
+export const PROACTIVITIS_PHONE_MACHINE = SITE_CONFIG.phoneMachine;
 export const PROACTIVITIS_WHATSAPP_NUMBER = PROACTIVITIS_PHONE_MACHINE;
-export const PROACTIVITIS_WHATSAPP_LINK = `https://wa.me/${PROACTIVITIS_WHATSAPP_NUMBER}`;
-export const PROACTIVITIS_EMAIL = "info@proactivitis.com";
+export const PROACTIVITIS_WHATSAPP_LINK = SITE_CONFIG.whatsappLink;
+export const PROACTIVITIS_EMAIL = SITE_CONFIG.email;
 
 export const ECUADOR_SUPPORT_EMAIL = "soporte.ec@proactivitis.com";
 export const ECUADOR_SUPPORT_PHONE = "+593-9-876-54321";
 
 export const PROACTIVITIS_LOCALBUSINESS = {
   "@type": "LocalBusiness",
-  name: "Proactivitis",
+  name: SITE_CONFIG.name,
   url: PROACTIVITIS_URL,
   telephone: PROACTIVITIS_PHONE,
   email: PROACTIVITIS_EMAIL,

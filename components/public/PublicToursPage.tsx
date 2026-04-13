@@ -12,8 +12,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import StructuredData from "@/components/schema/StructuredData";
 import { PROACTIVITIS_URL } from "@/lib/seo";
+import { SITE_CONFIG } from "@/lib/site-config";
 import { ensureLeadingCapital } from "@/lib/text-format";
 import { getActiveOfferPriceMapForTours } from "@/lib/offerPricing";
+import { formatTourLanguages, normalizeTourLocation } from "@/lib/tour-display";
 
 const parseDurationMeta = (value?: string | null) => {
   if (!value) return null;
@@ -202,6 +204,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const params = resolvedSearchParams ?? {};
   const sort = (params.sort ?? "popular").trim();
+  const isFunjet = SITE_CONFIG.variant === "funjet";
   const puntaCanaHubHref = locale === "es" ? "/punta-cana/tours" : `/${locale}/punta-cana/tours`;
   const transfersHubHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
   const hotelsHubHref = locale === "es" ? "/hoteles" : `/${locale}/hotels`;
@@ -343,6 +346,10 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
     params.maxPrice && t("tours.filter.active.maxPrice", { value: params.maxPrice })
   ].filter(Boolean);
 
+  const hasMultipleDestinationCountries = new Set(
+    destinations.map((dest) => dest.country.slug).filter(Boolean)
+  ).size > 1;
+
   const featureKeys: TranslationKey[] = [
     "tours.features.instant",
     "tours.features.flexible",
@@ -415,7 +422,15 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
             <h1 className="text-3xl font-semibold text-slate-900 md:text-4xl">
               {t("tours.header.title")}
             </h1>
-            <p className="text-base text-slate-600">{t("tours.header.description")}</p>
+            <p className="text-base text-slate-600">
+              {isFunjet
+                ? locale === "es"
+                  ? "Reserva tours y excursiones en Punta Cana con atencion directa, confirmacion rapida y opciones claras para parejas, familias y grupos."
+                  : locale === "fr"
+                    ? "Reservez excursions et activites a Punta Cana avec support direct, confirmation rapide et options claires pour couples, familles et groupes."
+                    : "Book Punta Cana tours and excursions with direct support, fast confirmation, and clear options for couples, families, and groups."
+                : t("tours.header.description")}
+            </p>
             <div className="flex flex-wrap gap-3">
               <Link
                 href={puntaCanaHubHref}
@@ -435,18 +450,22 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
               >
                 {locale === "es" ? "Hoteles" : "Hotels"}
               </Link>
-              <Link
-                href={premiumTransferHref}
-                className="rounded-full border border-amber-300 bg-amber-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800 transition hover:bg-amber-100"
-              >
-                {locale === "es" ? "Transfer VIP" : locale === "en" ? "VIP Transfer" : "Transfert VIP"}
-              </Link>
-              <Link
-                href={proDiscoveryToursHref}
-                className="rounded-full border border-sky-300 bg-sky-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-sky-800 transition hover:bg-sky-100"
-              >
-                {locale === "es" ? "Comparar en ProDiscovery" : locale === "fr" ? "Comparer dans ProDiscovery" : "Compare on ProDiscovery"}
-              </Link>
+              {!isFunjet ? (
+                <Link
+                  href={premiumTransferHref}
+                  className="rounded-full border border-amber-300 bg-amber-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800 transition hover:bg-amber-100"
+                >
+                  {locale === "es" ? "Transfer VIP" : locale === "en" ? "VIP Transfer" : "Transfert VIP"}
+                </Link>
+              ) : null}
+              {!isFunjet ? (
+                <Link
+                  href={proDiscoveryToursHref}
+                  className="rounded-full border border-sky-300 bg-sky-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-sky-800 transition hover:bg-sky-100"
+                >
+                  {locale === "es" ? "Comparar en ProDiscovery" : locale === "fr" ? "Comparer dans ProDiscovery" : "Compare on ProDiscovery"}
+                </Link>
+              ) : null}
             </div>
             <TrustBadges locale={locale} compact className="pt-2" />
           </div>
@@ -511,7 +530,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                         ? "Usa los filtros para comparar destinos, precios, idiomas y duraciones."
                         : locale === "fr"
                           ? "Utilisez les filtres pour comparer destinations, prix, langues et durees."
-                          : "Use filters to compare destinations, pricing, languages, and durations."}
+                      : "Use filters to compare destinations, pricing, languages, and durations."}
                     </p>
                   )}
                 </div>
@@ -555,7 +574,8 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                 const fromLabel = t("tour.card.fromLabel");
                 const languagesLabel = t("tour.card.language.label");
                 const languageFallback = t("tour.card.language.fallback");
-                const languageValue = tour.language?.trim() ? tour.language : languageFallback;
+                const languageValue = formatTourLanguages(tour.language) || languageFallback;
+                const locationValue = normalizeTourLocation(tour.departureDestination?.name ?? tour.location);
                 const reviewCount = reviewSummary[tour.id]?.count ?? 0;
                 const reviewAverage = reviewSummary[tour.id]?.average ?? 0;
                 const reviewsLabel = t("tour.hero.reviewsCount", { count: reviewCount });
@@ -587,7 +607,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                     </div>
                     <div className="space-y-2 px-4 py-4">
                       <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                        <span>{tour.departureDestination?.name ?? tour.location}</span>
+                        <span>{locationValue}</span>
                         <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-emerald-600">
                           {verifiedText}
                         </span>
@@ -758,7 +778,13 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                 className="group rounded-2xl border border-slate-200 bg-slate-50 p-6 transition hover:border-sky-500 hover:bg-white"
               >
                 <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                  {locale === "es" ? "Desde" : locale === "fr" ? "Depuis" : "From"} {dest.country.name}
+                  {hasMultipleDestinationCountries
+                    ? `${locale === "es" ? "Desde" : locale === "fr" ? "Depuis" : "From"} ${dest.country.name}`
+                    : locale === "es"
+                      ? "Destino destacado"
+                      : locale === "fr"
+                        ? "Destination phare"
+                        : "Featured destination"}
                 </div>
                 <h3 className="mt-2 text-xl font-bold text-slate-900">{dest.name}</h3>
                 <p className="mt-1 text-sm text-slate-600">

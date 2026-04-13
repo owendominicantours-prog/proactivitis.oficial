@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatReviewCountShort } from "@/lib/reviewCounts";
 import { formatDurationDisplay } from "@/lib/formatDuration";
+import { getTourPrimaryLocation, normalizeTourLocation } from "@/lib/tour-display";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 type TourCardProps = {
   slug: string;
@@ -75,18 +77,25 @@ export function TourCard({
   pickupIncluded,
   compact = false
 }: TourCardProps) {
+  const isFunjet = SITE_CONFIG.variant === "funjet";
   const normalizedImages = Array.from(new Set([image, ...(images ?? [])].filter(Boolean)));
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const normalizedRating = typeof rating === "number" ? rating : 0;
   const normalizedCount = reviewCount ?? 0;
   const reviewLabel = formatReviewCountShort(normalizedCount);
-  const badgeText = `★ ${normalizedRating.toFixed(1)} · ${reviewLabel} reviews`;
+  const badgeText = `Rating ${normalizedRating.toFixed(1)} - ${reviewLabel} reviews`;
   const showBadge = normalizedRating > 0 && normalizedCount > 0;
   const tagList = tags && tags.length ? tags : ["Top Experience"];
-  const locationText = zone || location?.split(",")[0] || "Punta Cana";
+  const locationText = zone || getTourPrimaryLocation(location);
+  const normalizedLocation = normalizeTourLocation(location);
   const audienceLabel = maxPax && maxPax <= 8 ? "Small group" : "Top seller";
   const durationLabel = formatDurationDisplay(duration, "4 hours");
   const activeImage = normalizedImages[activeImageIndex] ?? image;
+  const bookingBadgeLabel = isFunjet ? "Direct booking" : "Instant booking";
+  const fallbackDescription = isFunjet
+    ? `Book this ${locationText} experience with direct local support from ${SITE_CONFIG.name}.`
+    : `Book a verified ${locationText} experience with professional local support.`;
+  const ctaLabel = isFunjet ? "Book now" : "View tour";
 
   const percentDiscountPrice = discountPercent > 0 ? price * (1 - discountPercent / 100) : price;
   const bestDiscountedPrice =
@@ -168,12 +177,12 @@ export function TourCard({
           <div className="flex items-center justify-between gap-3">
             <p className="text-brand text-[10px] font-medium uppercase tracking-[0.35em]">{locationText}</p>
             <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600">
-              Instant booking
+              {bookingBadgeLabel}
             </span>
           </div>
           <h3 className={`font-black leading-tight text-slate-900 ${compact ? "text-lg" : "text-2xl"}`}>{title}</h3>
           <p className={`leading-relaxed text-slate-500 ${compact ? "line-clamp-1 text-xs" : "line-clamp-2 text-sm"}`}>
-            {description ?? `Book a verified ${locationText} experience with professional local support.`}
+            {description ?? fallbackDescription}
           </p>
 
           <div className={`flex flex-wrap items-center gap-2 border-y border-slate-50 text-[11px] text-slate-500 ${compact ? "py-1.5" : "py-2"}`}>
@@ -187,7 +196,7 @@ export function TourCard({
             </span>
             <span className="flex items-center gap-1">
               <IconMap />
-              {location}
+              {normalizedLocation}
             </span>
           </div>
 
@@ -236,7 +245,7 @@ export function TourCard({
                 compact ? "px-4 py-2" : "px-6 py-3"
               }`}
             >
-              View tour
+              {ctaLabel}
             </span>
           </div>
         </div>

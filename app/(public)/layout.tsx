@@ -5,6 +5,7 @@ import PublicHeaderSwitch from "@/components/public/PublicHeaderSwitch";
 import WhatsappFloatingChat from "@/components/shared/WhatsappFloatingChat";
 import VisitorSalesChat from "@/components/shared/VisitorSalesChat";
 import { getPriceValidUntil, PROACTIVITIS_PHONE } from "@/lib/seo";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 const OFFER_SERVICE_SCHEMA = {
   "@type": "Offer",
@@ -46,23 +47,25 @@ const ORGANIZATION_SCHEMA = {
   "@graph": [
     {
       "@type": "OnlineBusiness",
-      "@id": "https://proactivitis.com/#organization",
-      name: "Proactivitis",
-      url: "https://proactivitis.com/",
-      logo: "https://proactivitis.com/logo.png",
-      image: "https://proactivitis.com/icon.png",
+      "@id": `${SITE_CONFIG.url}/#organization`,
+      name: SITE_CONFIG.name,
+      url: `${SITE_CONFIG.url}/`,
+      logo: `${SITE_CONFIG.url}${SITE_CONFIG.logoSrc}`,
+      image: `${SITE_CONFIG.url}/icon.png`,
       description:
-        "Plataforma global de gestion turistica: Soluciones de traslados y tours para Clientes, Agencias de Viajes y Suplidores.",
+        SITE_CONFIG.variant === "funjet"
+          ? "Venta directa de tours y traslados en Punta Cana con atencion comercial inmediata."
+          : "Plataforma global de gestion turistica: Soluciones de traslados y tours para Clientes, Agencias de Viajes y Suplidores.",
       hasOfferCatalog: {
         "@type": "OfferCatalog",
-        name: "Servicios Proactivitis",
+        name: SITE_CONFIG.variant === "funjet" ? "Servicios Funjet" : "Servicios Proactivitis",
         itemListElement: [
           {
             ...OFFER_SERVICE_SCHEMA,
             itemOffered: {
               "@type": "Service",
               name: "Tours y Excursiones",
-              url: "https://proactivitis.com/tours"
+              url: `${SITE_CONFIG.url}/tours`
             }
           },
           {
@@ -70,17 +73,21 @@ const ORGANIZATION_SCHEMA = {
             itemOffered: {
               "@type": "Service",
               name: "Traslados Privados",
-              url: "https://proactivitis.com/traslado"
+              url: `${SITE_CONFIG.url}/traslado`
             }
           },
-          {
-            ...OFFER_SERVICE_SCHEMA,
-            itemOffered: {
-              "@type": "Service",
-              name: "Portal para Agencias y Suplidores",
-              url: "https://proactivitis.com/become-a-supplier"
-            }
-          }
+          ...(SITE_CONFIG.variant === "funjet"
+            ? []
+            : [
+                {
+                  ...OFFER_SERVICE_SCHEMA,
+                  itemOffered: {
+                    "@type": "Service",
+                    name: "Portal para Agencias y Suplidores",
+                    url: `${SITE_CONFIG.url}/become-a-supplier`
+                  }
+                }
+              ])
         ]
       }
     }
@@ -90,15 +97,17 @@ const ORGANIZATION_SCHEMA = {
 const TRAVEL_AGENCY_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "TravelAgency",
-  name: "Proactivitis",
-  alternateName: "Proactivitis Global",
-  url: "https://proactivitis.com",
-  logo: "https://proactivitis.com/logo.png",
-  image: "https://proactivitis.com/icon.png",
-  telephone: PROACTIVITIS_PHONE,
-  email: "info@proactivitis.com",
+  name: SITE_CONFIG.name,
+  alternateName: SITE_CONFIG.siteName,
+  url: SITE_CONFIG.url,
+  logo: `${SITE_CONFIG.url}${SITE_CONFIG.logoSrc}`,
+  image: `${SITE_CONFIG.url}/icon.png`,
+  telephone: SITE_CONFIG.phone || PROACTIVITIS_PHONE,
+  email: SITE_CONFIG.email,
   description:
-    "Plataforma lider en la gestion de experiencias turisticas y traslados privados a nivel global.",
+    SITE_CONFIG.variant === "funjet"
+      ? "Agencia de venta directa especializada en tours y traslados en Punta Cana."
+      : "Plataforma lider en la gestion de experiencias turisticas y traslados privados a nivel global.",
   areaServed: {
     "@type": "Country",
     name: "Worldwide"
@@ -111,19 +120,23 @@ const TRAVEL_AGENCY_SCHEMA = {
     {
       "@type": "WebPage",
       name: "Traslados Privados",
-      url: "https://proactivitis.com/traslado",
+      url: `${SITE_CONFIG.url}/traslado`,
       description: "Traslado de lujo y traslados de aeropuerto con estandar internacional."
     },
-    {
-      "@type": "WebPage",
-      name: "Programa de Partners",
-      url: "https://proactivitis.com/become-a-supplier",
-      description: "Unase a la red de especialistas locales certificados por Proactivitis."
-    },
+    ...(SITE_CONFIG.variant === "funjet"
+      ? []
+      : [
+          {
+            "@type": "WebPage",
+            name: "Programa de Partners",
+            url: `${SITE_CONFIG.url}/become-a-supplier`,
+            description: "Unase a la red de especialistas locales certificados por Proactivitis."
+          }
+        ]),
     {
       "@type": "WebPage",
       name: "Destinos Globales",
-      url: "https://proactivitis.com/destinations",
+      url: `${SITE_CONFIG.url}/destinations`,
       description: "Guia de experiencias en los destinos mas importantes del mundo."
     }
   ]
@@ -132,13 +145,13 @@ const TRAVEL_AGENCY_SCHEMA = {
 const WEBSITE_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  "@id": "https://proactivitis.com/#website",
-  url: "https://proactivitis.com/",
-  name: "Proactivitis",
+  "@id": `${SITE_CONFIG.url}/#website`,
+  url: `${SITE_CONFIG.url}/`,
+  name: SITE_CONFIG.siteName,
   inLanguage: ["es", "en", "fr"],
   potentialAction: {
     "@type": "SearchAction",
-    target: "https://proactivitis.com/search?q={search_term_string}",
+    target: `${SITE_CONFIG.url}/search?q={search_term_string}`,
     "query-input": "required name=search_term_string"
   }
 };

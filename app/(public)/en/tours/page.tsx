@@ -2,13 +2,19 @@ import type { Metadata } from "next";
 import type { TourSearchParams } from "@/lib/filterBuilder";
 import { en } from "@/lib/translations";
 import PublicToursPage from "@/components/public/PublicToursPage";
+import { SITE_CONFIG } from "@/lib/site-config";
 
-const canonicalUrl = "https://proactivitis.com/en/tours";
+const canonicalUrl = `${SITE_CONFIG.url}/en/tours`;
 
 export const metadata: Metadata = {
-  title: "Punta Cana Tours: Saona, Buggy, Catamaran and Party Boat | Proactivitis",
+  title:
+    SITE_CONFIG.variant === "funjet"
+      ? "Punta Cana Tours: Saona, Buggy, Catamaran and Party Boat | Funjet Tour Oprador"
+      : "Punta Cana Tours: Saona, Buggy, Catamaran and Party Boat | Proactivitis",
   description:
-    "Book Punta Cana tours and excursions with hotel pickup, clear pricing, and local support. Saona Island, buggy, catamaran, party boat, and more.",
+    SITE_CONFIG.variant === "funjet"
+      ? "Book Punta Cana tours and excursions with direct support, clear pricing, and fast confirmation. Saona Island, buggy, catamaran, party boat, and more."
+      : "Book Punta Cana tours and excursions with hotel pickup, clear pricing, and local support. Saona Island, buggy, catamaran, party boat, and more.",
   keywords: [
     "best punta cana tours",
     "punta cana excursions",
@@ -26,16 +32,27 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: "Punta Cana Tours: Saona, Buggy, Catamaran and Party Boat | Proactivitis",
+    title:
+      SITE_CONFIG.variant === "funjet"
+        ? "Punta Cana Tours: Saona, Buggy, Catamaran and Party Boat | Funjet Tour Oprador"
+        : "Punta Cana Tours: Saona, Buggy, Catamaran and Party Boat | Proactivitis",
     description:
-      "Book Punta Cana tours and excursions with hotel pickup, transparent pricing, and 24/7 support.",
+      SITE_CONFIG.variant === "funjet"
+        ? "Book Punta Cana tours and excursions with direct support, transparent pricing, and fast confirmation."
+        : "Book Punta Cana tours and excursions with hotel pickup, transparent pricing, and 24/7 support.",
     url: canonicalUrl,
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Punta Cana Tours: Saona, Buggy, Catamaran and Party Boat | Proactivitis",
-    description: "Book top Punta Cana experiences with hotel pickup, clear pricing, and local support."
+    title:
+      SITE_CONFIG.variant === "funjet"
+        ? "Punta Cana Tours | Funjet Tour Oprador"
+        : "Punta Cana Tours: Saona, Buggy, Catamaran and Party Boat | Proactivitis",
+    description:
+      SITE_CONFIG.variant === "funjet"
+        ? "Book top Punta Cana experiences with direct support and clear pricing."
+        : "Book top Punta Cana experiences with hotel pickup, clear pricing, and local support."
   },
   robots: {
     index: true,
