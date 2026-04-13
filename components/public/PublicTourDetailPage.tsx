@@ -2203,9 +2203,50 @@ export default async function TourDetailPage({
     }))
   };
 
+  const highlightsSchema =
+    highlights.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          "@id": `${tourUrl}#highlights`,
+          name: `${heroTitle} highlights`,
+          itemListOrder: "https://schema.org/ItemListOrderAscending",
+          numberOfItems: Math.min(highlights.length, 8),
+          itemListElement: highlights.slice(0, 8).map((item, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: item
+          }))
+        }
+      : null;
+
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${tourUrl}#webpage`,
+    url: tourUrl,
+    name: heroTitle,
+    description: localizedDescription ?? shortTeaser,
+    inLanguage: locale,
+    isPartOf: {
+      "@type": "WebSite",
+      "@id": `${PROACTIVITIS_URL}#website`,
+      name: "Proactivitis",
+      url: PROACTIVITIS_URL
+    },
+    about: [
+      { "@id": `${tourUrl}#product` },
+      { "@id": `${tourUrl}#trip` }
+    ],
+    primaryImageOfPage: schemaImageObjects[0] ?? undefined,
+    breadcrumb: { "@id": `${tourUrl}#breadcrumb` },
+    ...(schemaKeywords ? { keywords: schemaKeywords.join(", ") } : {})
+  };
+
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
+    "@id": `${tourUrl}#breadcrumb`,
     itemListElement: [
       {
         "@type": "ListItem",
@@ -2336,7 +2377,9 @@ export default async function TourDetailPage({
   <div className="travel-surface min-h-screen pb-24 overflow-x-hidden text-slate-950">
       <StructuredData data={tourSchema} />
       <StructuredData data={touristTripSchema} />
+      <StructuredData data={webPageSchema} />
       <StructuredData data={mediaGallerySchema} />
+      {highlightsSchema ? <StructuredData data={highlightsSchema} /> : null}
       <StructuredData data={breadcrumbSchema} />
       <StructuredData data={faqSchema} />
       {relatedToursSchema ? <StructuredData data={relatedToursSchema} /> : null}
