@@ -157,6 +157,29 @@ const TOUR_KEYWORDS_BY_SLUG: Record<string, Partial<Record<Locale, string[]>>> =
     es: ["barco privado sosua", "party boat privado puerto plata", "yate privado sosua"],
     en: ["private party boat sosua", "private boat puerto plata", "sosua private yacht charter"],
     fr: ["bateau prive sosua", "party boat prive puerto plata", "yacht prive sosua"]
+  },
+  "private-buggy-tour-cenote-swim-dominican-lunch": {
+    es: [
+      "buggy privado punta cana",
+      "tour buggy privado punta cana",
+      "buggy cenote punta cana",
+      "buggy con almuerzo dominicano",
+      "excursion privada buggy punta cana"
+    ],
+    en: [
+      "private buggy punta cana",
+      "private buggy tour punta cana",
+      "buggy cenote punta cana",
+      "buggy tour with dominican lunch",
+      "private off road tour punta cana"
+    ],
+    fr: [
+      "buggy prive punta cana",
+      "tour prive buggy punta cana",
+      "buggy cenote punta cana",
+      "buggy avec dejeuner dominicain",
+      "excursion buggy privee punta cana"
+    ]
   }
 };
 const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
@@ -249,6 +272,11 @@ const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     es: "Juanillo VIP by Scape Park en Punta Cana",
     en: "Juanillo VIP by Scape Park in Punta Cana",
     fr: "Juanillo VIP by Scape Park a Punta Cana"
+  },
+  "private-buggy-tour-cenote-swim-dominican-lunch": {
+    es: "Buggy privado en Punta Cana con cenote y almuerzo dominicano",
+    en: "Private buggy tour in Punta Cana with cenote swim and Dominican lunch",
+    fr: "Tour prive en buggy a Punta Cana avec cenote et dejeuner dominicain"
   },
 };
 const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
@@ -346,6 +374,11 @@ const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>
     es: "Reserva Scape Park Punta Cana al mejor precio 2026. Incluye Hoyo Azul, tirolesas, Juanillo VIP y transporte desde tu hotel. Confirmacion instantanea por WhatsApp.",
     en: "Book Scape Park Punta Cana at the best 2026 price. Includes Hoyo Azul, zip lines, Juanillo VIP and hotel pickup. Instant WhatsApp confirmation.",
     fr: "Reservez Scape Park Punta Cana au meilleur prix 2026. Inclut Hoyo Azul, tyroliennes, Juanillo VIP et pickup hotel. Confirmation instantanee sur WhatsApp."
+  },
+  "private-buggy-tour-cenote-swim-dominican-lunch": {
+    es: "Reserva un buggy privado en Punta Cana con bano en cenote o rio, almuerzo dominicano, bebida y fotos incluidas. Experiencia privada para tu grupo.",
+    en: "Book a private buggy tour in Punta Cana with cenote or river swim, Dominican lunch, drink, and photos included. Private experience for your group.",
+    fr: "Reserve un tour prive en buggy a Punta Cana avec baignade en cenote ou riviere, dejeuner dominicain, boisson et photos incluses."
   }
 };
 

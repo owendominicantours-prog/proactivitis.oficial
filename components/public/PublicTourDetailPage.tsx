@@ -81,6 +81,32 @@ const SCAPE_PARK_TOURS = new Set([
   "juanillo-vip-scape-park-punta-cana"
 ]);
 
+const TOUR_KEYWORDS_BY_SLUG: Record<string, Partial<Record<Locale, string[]>>> = {
+  "private-buggy-tour-cenote-swim-dominican-lunch": {
+    es: [
+      "buggy privado punta cana",
+      "tour buggy privado punta cana",
+      "buggy cenote punta cana",
+      "buggy con almuerzo dominicano",
+      "excursion privada buggy punta cana"
+    ],
+    en: [
+      "private buggy punta cana",
+      "private buggy tour punta cana",
+      "buggy cenote punta cana",
+      "buggy tour with dominican lunch",
+      "private off road tour punta cana"
+    ],
+    fr: [
+      "buggy prive punta cana",
+      "tour prive buggy punta cana",
+      "buggy cenote punta cana",
+      "buggy avec dejeuner dominicain",
+      "excursion buggy privee punta cana"
+    ]
+  }
+};
+
 const TOUR_H1_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
   "tour-en-buggy-en-punta-cana": {
     es: "Tour en buggy en Punta Cana: barro, cueva y aventura",
@@ -171,6 +197,11 @@ const TOUR_H1_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     es: "Juanillo VIP by Scape Park en Punta Cana",
     en: "Juanillo VIP by Scape Park in Punta Cana",
     fr: "Juanillo VIP by Scape Park a Punta Cana"
+  },
+  "private-buggy-tour-cenote-swim-dominican-lunch": {
+    es: "Buggy privado en Punta Cana con cenote y almuerzo dominicano",
+    en: "Private buggy tour in Punta Cana with cenote swim and Dominican lunch",
+    fr: "Tour prive en buggy a Punta Cana avec cenote et dejeuner dominicain"
   },
 };
 
@@ -920,6 +951,51 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       {
         question: "A quelle heure se termine la journee et comment fonctionnent les activites speciales?",
         answer: "L operation commence generalement le matin et le retour part souvent entre 15h30 et 16h30, avec arrivee hotel entre 17h00 et 18h00. Les buggies sont attribues par tour au comptoir, Sunshine Cruise se fait souvent en fin de journee et Juanillo VIP suit un rythme plus detendu."
+      }
+    ]
+  }
+  ,
+  "private-buggy-tour-cenote-swim-dominican-lunch": {
+    es: [
+      {
+        question: "Que incluye este buggy privado en Punta Cana?",
+        answer: "Incluye buggy privado para tu grupo, guia, parada para bano en cenote o rio, almuerzo dominicano, una bebida y fotos del recorrido."
+      },
+      {
+        question: "Es una excursion compartida o privada?",
+        answer: "Es una experiencia privada. No se mezcla tu grupo con otros viajeros durante la salida."
+      },
+      {
+        question: "Que debo llevar para esta experiencia?",
+        answer: "Recomendamos ropa comoda, ropa de bano, toalla, protector solar y calzado que puedas usar en terreno off-road y zonas con agua."
+      }
+    ],
+    en: [
+      {
+        question: "What is included in this private buggy tour in Punta Cana?",
+        answer: "It includes a private buggy for your group, guide, cenote or river swim stop, Dominican lunch, one drink, and photos of the experience."
+      },
+      {
+        question: "Is this a shared or private excursion?",
+        answer: "It is a private experience. Your group is not mixed with other travelers during the tour."
+      },
+      {
+        question: "What should I bring for this experience?",
+        answer: "We recommend comfortable clothes, swimwear, towel, sunscreen, and shoes suitable for off-road terrain and water stops."
+      }
+    ],
+    fr: [
+      {
+        question: "Que comprend ce tour prive en buggy a Punta Cana?",
+        answer: "Le tour comprend buggy prive pour votre groupe, guide, arret baignade en cenote ou riviere, dejeuner dominicain, une boisson et photos de l experience."
+      },
+      {
+        question: "Est-ce une excursion partagee ou privee?",
+        answer: "C est une experience privee. Votre groupe n est pas melange avec d autres voyageurs."
+      },
+      {
+        question: "Que faut-il apporter pour cette experience?",
+        answer: "Nous recommandons vetements confortables, maillot de bain, serviette, creme solaire et chaussures adaptees au terrain off-road et a l eau."
       }
     ]
   }
@@ -1897,7 +1973,7 @@ export default async function TourDetailPage({
   const galleryImagesAbsolute = gallery
     .map((image) => (image.startsWith("http") ? image : `${PROACTIVITIS_URL}${image}`))
     .filter((image) => image && image !== heroImageAbsolute);
-  const schemaImages = [heroImageAbsolute, ...galleryImagesAbsolute].slice(0, 5);
+  const schemaImages = [heroImageAbsolute, ...galleryImagesAbsolute].slice(0, 10);
   const tourUrl = agencyMode
     ? `${PROACTIVITIS_URL}/agency-pro/${agencyLinkFromQuery}`
     : `${PROACTIVITIS_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`;
@@ -1913,11 +1989,12 @@ export default async function TourDetailPage({
   const touristTypeFallback = categories.find((category) =>
     ["Family", "Adventure", "Couples"].includes(category)
   );
-  const schemaKeywords = PUNTA_CANA_TOP_TOURS.has(tour.slug)
-    ? TOUR_SCHEMA_KEYWORDS[locale]
-    : NORTH_COAST_PARTY_BOAT_TOURS.has(tour.slug)
-      ? NORTH_COAST_SCHEMA_KEYWORDS[locale]
-      : undefined;
+  const schemaKeywords = TOUR_KEYWORDS_BY_SLUG[tour.slug]?.[locale]
+    ?? (PUNTA_CANA_TOP_TOURS.has(tour.slug)
+      ? TOUR_SCHEMA_KEYWORDS[locale]
+      : NORTH_COAST_PARTY_BOAT_TOURS.has(tour.slug)
+        ? NORTH_COAST_SCHEMA_KEYWORDS[locale]
+        : undefined);
   const aggregateRating =
     detailReviewCount > 0
       ? {
@@ -1926,6 +2003,18 @@ export default async function TourDetailPage({
           reviewCount: detailReviewCount,
           bestRating: "5"
         }
+      : undefined;
+  const availableLanguages = normalizeTourLanguages(tour.language);
+  const schemaAdditionalProperty =
+    tour.slug === "private-buggy-tour-cenote-swim-dominican-lunch"
+      ? [
+          { "@type": "PropertyValue", name: "Tour format", value: localeLabel(locale, "Privado", "Private", "Prive") },
+          { "@type": "PropertyValue", name: "Pickup", value: localeLabel(locale, "Disponible tras confirmar reserva", "Available after booking confirmation", "Disponible apres confirmation") },
+          { "@type": "PropertyValue", name: "Swim stop", value: localeLabel(locale, "Cenote o rio natural", "Cenote or natural river", "Cenote ou riviere naturelle") },
+          { "@type": "PropertyValue", name: "Meal included", value: localeLabel(locale, "Almuerzo dominicano", "Dominican lunch", "Dejeuner dominicain") },
+          { "@type": "PropertyValue", name: "Media included", value: localeLabel(locale, "Fotos y videos", "Photos and videos", "Photos et videos") },
+          { "@type": "PropertyValue", name: "Minimum driver age", value: "18+" }
+        ]
       : undefined;
   const reviewSchema =
     detailReviewCount > 0
@@ -1961,9 +2050,24 @@ export default async function TourDetailPage({
     category: touristTypeFallback ?? "Tour",
     sku: tour.slug,
     mpn: tour.productId,
+    slogan:
+      tour.slug === "private-buggy-tour-cenote-swim-dominican-lunch"
+        ? localeLabel(
+            locale,
+            "Buggy privado, bano en cenote y almuerzo dominicano real",
+            "Private buggy, cenote swim, and real Dominican lunch",
+            "Buggy prive, baignade en cenote et vrai dejeuner dominicain"
+          )
+        : undefined,
     areaServed: {
       "@type": "AdministrativeArea",
       name: locationLabel
+    },
+    availableLanguage: availableLanguages,
+    isFamilyFriendly: true,
+    audience: {
+      "@type": "Audience",
+      audienceType: localeLabel(locale, "Parejas, amigos y grupos privados", "Couples, friends, and private groups", "Couples, amis et groupes prives")
     },
     offers: {
       "@type": "Offer",
@@ -2019,6 +2123,7 @@ export default async function TourDetailPage({
     },
     sameAs: SAME_AS_URLS,
     ...(schemaKeywords ? { keywords: schemaKeywords.join(", ") } : {}),
+    ...(schemaAdditionalProperty ? { additionalProperty: schemaAdditionalProperty } : {}),
     ...(aggregateRating ? { aggregateRating } : {}),
     ...(reviewSchema ? { review: reviewSchema } : {})
   };
@@ -2034,6 +2139,8 @@ export default async function TourDetailPage({
     inLanguage: locale,
     touristType: categories.length ? categories : [touristTypeFallback ?? "General"],
     provider: PROACTIVITIS_LOCALBUSINESS,
+    availableLanguage: availableLanguages,
+    ...(schemaAdditionalProperty ? { additionalProperty: schemaAdditionalProperty } : {}),
     itinerary: visualTimeline.slice(0, 6).map((stop, index) => ({
       "@type": "TouristAttraction",
       name: stop.title,
