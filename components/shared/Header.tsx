@@ -71,7 +71,7 @@ export const Header = ({
                   key={item.label}
                   href={item.href}
                   className={`text-xs font-semibold uppercase tracking-[0.3em] transition ${
-                    isFunjet ? "text-white/85 hover:text-[#FFC300]" : "text-slate-500 hover:text-slate-900"
+                    isFunjet ? "text-white hover:text-[#FFC300]" : "text-slate-500 hover:text-slate-900"
                   }`}
                 >
                   {item.label}

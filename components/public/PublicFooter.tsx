@@ -159,7 +159,7 @@ export function PublicFooter() {
         className={`pointer-events-none absolute inset-0 ${SITE_CONFIG.variant === "funjet" ? "bg-[radial-gradient(circle_at_top_right,rgba(255,195,0,0.18),transparent_20%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_18%)]" : "bg-slate-950"}`}
         aria-hidden="true"
       />
-      <div className="relative z-10 mx-auto max-w-6xl space-y-6 px-0 text-gray-400 md:hidden">
+      <div className="relative z-10 mx-auto max-w-6xl space-y-6 px-0 text-white md:hidden">
         <div className="flex flex-col items-center gap-3 rounded-[28px] border border-white/15 bg-white/8 px-5 py-5 text-center text-white">
           <Image src={SITE_CONFIG.logoSrc} alt={SITE_CONFIG.logoAlt} width={220} height={88} className="h-14 w-auto object-contain" />
           <p className="max-w-sm text-xs font-medium leading-6 text-white/80">{copy.tagline}</p>
@@ -176,7 +176,7 @@ export function PublicFooter() {
             {openGroup === group.title ? (
               <div className="space-y-1 px-4 pb-4 text-xs uppercase tracking-[0.3em]">
                 {group.links.map((link) => (
-                  <Link key={link.href} href={link.href} className="block text-slate-200 transition hover:text-sky-300">
+                  <Link key={link.href} href={link.href} className="block text-white transition hover:text-[#FFC300]">
                     {link.label}
                   </Link>
                 ))}
@@ -185,9 +185,9 @@ export function PublicFooter() {
           </div>
         ))}
         <TrustBadges locale={locale} compact className="rounded-2xl border border-white/10 bg-slate-900/80 p-4" />
-        <div className="space-y-2 border-t border-white/10 pt-4 text-[0.65rem] uppercase tracking-[0.3em] text-gray-500">
-          <p className="text-center font-semibold text-slate-100">{copy.tagline}</p>
-          <p className="text-center">&copy; {new Date().getFullYear()} {SITE_CONFIG.siteName}</p>
+        <div className="space-y-2 border-t border-white/10 pt-4 text-[0.65rem] uppercase tracking-[0.3em] text-white/85">
+          <p className="text-center font-semibold text-white">{copy.tagline}</p>
+          <p className="text-center text-white/80">&copy; {new Date().getFullYear()} {SITE_CONFIG.siteName}</p>
         </div>
       </div>
 
@@ -202,9 +202,9 @@ export function PublicFooter() {
             </div>
             {groups.map((group) => (
               <div key={group.title} className="space-y-3">
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{group.title}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-white">{group.title}</p>
                 {group.links.map((link) => (
-                  <Link key={link.href} href={link.href} className="block text-white transition hover:text-sky-300">
+                  <Link key={link.href} href={link.href} className="block text-white transition hover:text-[#FFC300]">
                     {link.label}
                   </Link>
                 ))}
@@ -214,8 +214,8 @@ export function PublicFooter() {
           <TrustBadges locale={locale} compact className="mt-8" />
         </div>
 
-        <div className="mx-auto mt-6 flex max-w-6xl flex-col gap-4 border-t border-white/10 pt-6 text-xs text-gray-400 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-wrap items-center gap-3 text-[0.6rem] uppercase tracking-[0.3em] text-gray-300">
+        <div className="mx-auto mt-6 flex max-w-6xl flex-col gap-4 border-t border-white/10 pt-6 text-xs text-white md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap items-center gap-3 text-[0.6rem] uppercase tracking-[0.3em] text-white">
             {paymentMethods.map((method) => (
               <span key={method} className="rounded-full border border-white/20 px-3 py-1 text-[0.6rem] font-semibold">
                 {method}
@@ -223,10 +223,10 @@ export function PublicFooter() {
             ))}
           </div>
           <div className="space-y-2 md:space-y-1">
-            <p className="text-center text-[0.65rem] uppercase tracking-[0.3em] text-gray-500 md:text-left">
+            <p className="text-center text-[0.65rem] uppercase tracking-[0.3em] text-white/80 md:text-left">
               &copy; {new Date().getFullYear()} {SITE_CONFIG.siteName}
             </p>
-            <p className="text-center text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-slate-200 md:text-left">
+            <p className="text-center text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-white md:text-left">
               {copy.tagline}
             </p>
           </div>
