@@ -108,7 +108,11 @@ export function TourCard({
   return (
     <Link href={`/tours/${slug}`} className="group block">
       <article
-        className={`flex h-full flex-col overflow-hidden border border-slate-100 bg-white shadow-card transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl ${
+        className={`flex h-full flex-col overflow-hidden border transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl ${
+          isFunjet
+            ? "border-[#E9D7FA] bg-white shadow-[0_18px_44px_rgba(106,13,173,0.12)]"
+            : "border-slate-100 bg-white shadow-card"
+        } ${
           compact ? "rounded-[20px]" : "rounded-[28px]"
         }`}
       >
@@ -123,7 +127,7 @@ export function TourCard({
             />
           </div>
           {showBadge ? (
-            <div className="absolute right-3 top-3 rounded-xl bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-slate-900 shadow-sm backdrop-blur">
+            <div className={`absolute right-3 top-3 rounded-xl px-2.5 py-1 text-[11px] font-semibold shadow-sm backdrop-blur ${isFunjet ? "bg-[#FFC300]/95 text-[#4D0A7D]" : "bg-white/90 text-slate-900"}`}>
               {badgeText}
             </div>
           ) : null}
@@ -175,8 +179,8 @@ export function TourCard({
 
         <div className={`flex flex-1 flex-col gap-2 ${compact ? "p-3" : "p-4"}`}>
           <div className="flex items-center justify-between gap-3">
-            <p className="text-brand text-[10px] font-medium uppercase tracking-[0.35em]">{locationText}</p>
-            <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600">
+            <p className={`text-[10px] font-medium uppercase tracking-[0.35em] ${isFunjet ? "text-[#6A0DAD]" : "text-brand"}`}>{locationText}</p>
+            <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${isFunjet ? "bg-[#F7EFFD] text-[#6A0DAD]" : "bg-slate-100 text-slate-600"}`}>
               {bookingBadgeLabel}
             </span>
           </div>
@@ -222,11 +226,11 @@ export function TourCard({
             </div>
           ) : null}
 
-          <div className={`mt-auto flex items-center justify-between border-t border-slate-100 ${compact ? "pt-2.5" : "pt-4"}`}>
+          <div className={`mt-auto flex items-center justify-between ${isFunjet ? "border-t border-[#EFE2FA]" : "border-t border-slate-100"} ${compact ? "pt-2.5" : "pt-4"}`}>
             <div>
               <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400">From</p>
               <div className="flex items-baseline gap-1">
-                <span className={`${compact ? "text-2xl" : "text-3xl"} font-black ${hasDiscount ? "text-emerald-600" : "text-brand"}`}>
+                <span className={`${compact ? "text-2xl" : "text-3xl"} font-black ${hasDiscount ? "text-emerald-600" : isFunjet ? "text-[#6A0DAD]" : "text-brand"}`}>
                   ${bestDiscountedPrice.toFixed(0)}
                 </span>
                 <span className="text-sm font-semibold text-slate-500">USD</span>
@@ -241,7 +245,11 @@ export function TourCard({
               ) : null}
             </div>
             <span
-              className={`rounded-2xl bg-brand text-sm font-bold text-white shadow-lg shadow-brand/40 transition-colors group-hover:bg-brand-light ${
+              className={`rounded-2xl text-sm font-bold text-white transition-colors ${
+                isFunjet
+                  ? "bg-[linear-gradient(135deg,#6A0DAD_0%,#8B32D1_100%)] shadow-[0_16px_34px_rgba(106,13,173,0.28)] group-hover:bg-[linear-gradient(135deg,#4D0A7D_0%,#6A0DAD_100%)]"
+                  : "bg-brand shadow-lg shadow-brand/40 group-hover:bg-brand-light"
+              } ${
                 compact ? "px-4 py-2" : "px-6 py-3"
               }`}
             >

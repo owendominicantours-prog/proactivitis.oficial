@@ -122,16 +122,23 @@
 }
 
 :root {
-  font-family: var(--font-inter, "Inter", system-ui, -apple-system, sans-serif);
+  font-family: var(--font-body, "Poppins", system-ui, -apple-system, sans-serif);
   font-optical-sizing: auto;
   background-color: #f4f7f8;
-  --font-heading: var(--font-geist, "Geist", "Inter", system-ui, sans-serif);
+  --font-heading: var(--font-body, "Poppins", system-ui, sans-serif);
+  --font-script: var(--font-brand, "Pacifico", cursive);
   --font-mono: var(--font-geist-mono, "Geist Mono", ui-monospace, "SFMono-Regular", monospace);
   --color-primary: #102a43;
   --color-secondary: #1d3b6c;
   --color-accent: #1f74c0;
   --color-border: #d7e2eb;
   --color-muted: #f0f4f8;
+  --brand-funjet: #6a0dad;
+  --brand-funjet-dark: #4d0a7d;
+  --brand-funjet-light: #8b32d1;
+  --brand-funjet-sun: #ffc300;
+  --brand-funjet-soft: #f7effd;
+  --brand-funjet-mist: #f2f2f2;
 }
 
 @media (max-width: 480px) {
@@ -151,7 +158,7 @@
 
 body {
   @apply text-slate-900;
-  font-family: var(--font-inter, "Inter", system-ui, -apple-system, sans-serif);
+  font-family: var(--font-body, "Poppins", system-ui, -apple-system, sans-serif);
   overflow-x: hidden;
   background:
     radial-gradient(circle at 30% 20%, rgba(173, 232, 229, 0.28) 0%, rgba(173, 232, 229, 0) 38%),
@@ -159,6 +166,29 @@ body {
     radial-gradient(circle at 65% 78%, rgba(146, 220, 226, 0.18) 0%, rgba(146, 220, 226, 0) 36%),
     linear-gradient(180deg, #f7fafb 0%, #eef7f7 48%, #f5fafa 100%);
   background-color: #f4f7f8;
+}
+
+html[data-site-variant="funjet"] {
+  background-color: var(--brand-funjet-mist);
+}
+
+body[data-site-variant="funjet"] {
+  color: #2f1744;
+  background:
+    radial-gradient(circle at 15% 12%, rgba(255, 195, 0, 0.3) 0%, rgba(255, 195, 0, 0) 22%),
+    radial-gradient(circle at 88% 14%, rgba(156, 92, 255, 0.22) 0%, rgba(156, 92, 255, 0) 28%),
+    radial-gradient(circle at 78% 74%, rgba(106, 13, 173, 0.18) 0%, rgba(106, 13, 173, 0) 30%),
+    linear-gradient(180deg, #fcf8ff 0%, #f7effd 42%, #ffffff 100%);
+  background-color: var(--brand-funjet-mist);
+}
+
+body[data-site-variant="funjet"]::before {
+  opacity: 0.08;
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.9) 0 14%, transparent 15%),
+    radial-gradient(circle at 82% 34%, rgba(255, 255, 255, 0.85) 0 12%, transparent 13%),
+    radial-gradient(circle at 45% 82%, rgba(255, 255, 255, 0.6) 0 10%, transparent 11%);
+  filter: blur(30px);
 }
 
 body::before {
@@ -198,6 +228,14 @@ h2 {
 
 a {
   @apply text-brand hover:text-brand-light transition;
+}
+
+body[data-site-variant="funjet"] a {
+  color: var(--brand-funjet);
+}
+
+body[data-site-variant="funjet"] a:hover {
+  color: var(--brand-funjet-dark);
 }
 
 .glass-card {
@@ -247,6 +285,57 @@ a {
 .boton-naranja:focus-visible {
   background-color: #144365;
   transform: translateY(-2px);
+}
+
+body[data-site-variant="funjet"] .botones-banner {
+  justify-content: flex-start;
+}
+
+body[data-site-variant="funjet"] .boton-verde,
+body[data-site-variant="funjet"] .boton-naranja {
+  border-radius: 999px;
+  min-width: 200px;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 18px 40px rgba(106, 13, 173, 0.2);
+}
+
+body[data-site-variant="funjet"] .boton-verde {
+  background: linear-gradient(135deg, var(--brand-funjet) 0%, var(--brand-funjet-light) 100%);
+  color: #fff;
+}
+
+body[data-site-variant="funjet"] .boton-verde:hover,
+body[data-site-variant="funjet"] .boton-verde:focus-visible {
+  background: linear-gradient(135deg, var(--brand-funjet-dark) 0%, var(--brand-funjet) 100%);
+}
+
+body[data-site-variant="funjet"] .boton-naranja {
+  background: var(--brand-funjet-sun);
+  color: #3a2255;
+}
+
+body[data-site-variant="funjet"] .boton-naranja:hover,
+body[data-site-variant="funjet"] .boton-naranja:focus-visible {
+  background: #ffcf33;
+}
+
+body[data-site-variant="funjet"] .travel-surface {
+  position: relative;
+}
+
+body[data-site-variant="funjet"] .travel-surface::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 22px;
+  background:
+    radial-gradient(circle at 10px -2px, transparent 12px, rgba(106, 13, 173, 0.08) 13px, rgba(106, 13, 173, 0.08) 16px, transparent 17px) repeat-x;
+  background-size: 44px 22px;
+  opacity: 0.65;
+  pointer-events: none;
 }
 
 .panel-card {

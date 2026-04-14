@@ -2,23 +2,23 @@ import "@/styles/globals.css";
 import type { Metadata } from "next";
 import { ReactNode } from "react";
 import { headers } from "next/headers";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist_Mono, Pacifico, Poppins } from "next/font/google";
 import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SITE_CONFIG } from "@/lib/site-config";
 
-const inter = Inter({
+const bodyFont = Poppins({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-inter",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-body",
   display: "swap"
 });
 
-const geist = Geist({
+const brandFont = Pacifico({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-geist",
+  weight: ["400"],
+  variable: "--font-brand",
   display: "swap"
 });
 
@@ -76,8 +76,12 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const localeHeader = requestHeaders.get("x-proactivitis-locale");
   const lang = localeHeader === "en" || localeHeader === "fr" ? localeHeader : "es";
   return (
-    <html lang={lang} className={`${inter.variable} ${geist.variable} ${geistMono.variable}`}>
-      <body className="min-h-full bg-[#F8FAFC] text-slate-900 antialiased">
+    <html
+      lang={lang}
+      data-site-variant={SITE_CONFIG.variant}
+      className={`${bodyFont.variable} ${brandFont.variable} ${geistMono.variable}`}
+    >
+      <body data-site-variant={SITE_CONFIG.variant} className="min-h-full bg-[#F8FAFC] text-slate-900 antialiased">
         <Providers>{children}</Providers>
         <Analytics />
         <SpeedInsights />

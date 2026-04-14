@@ -413,16 +413,18 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
     <div className="travel-surface pb-16">
       <StructuredData data={itemListSchema} />
       <StructuredData data={breadcrumbSchema} />
-      <section className="border-b border-slate-200 bg-gradient-to-br from-white via-slate-50 to-white">
+      <section
+        className={`border-b ${isFunjet ? "border-[#E9D7FA] bg-[radial-gradient(circle_at_top_left,rgba(255,195,0,0.18),transparent_18%),linear-gradient(135deg,#FFF8FF_0%,#F7EFFD_48%,#FFFFFF_100%)]" : "border-slate-200 bg-gradient-to-br from-white via-slate-50 to-white"}`}
+      >
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 md:flex-row md:items-end md:justify-between">
           <div className="space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
+            <p className={`text-xs font-semibold uppercase tracking-[0.4em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
               {t("tours.header.tagline")}
             </p>
-            <h1 className="text-3xl font-semibold text-slate-900 md:text-4xl">
+            <h1 className={`text-3xl md:text-4xl ${isFunjet ? "font-bold text-[#34114A]" : "font-semibold text-slate-900"}`}>
               {t("tours.header.title")}
             </h1>
-            <p className="text-base text-slate-600">
+            <p className={`text-base ${isFunjet ? "max-w-3xl text-[#6B4D82]" : "text-slate-600"}`}>
               {isFunjet
                 ? locale === "es"
                   ? "Reserva tours y excursiones en Punta Cana con atencion directa, confirmacion rapida y opciones claras para parejas, familias y grupos."
@@ -434,13 +436,13 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
             <div className="flex flex-wrap gap-3">
               <Link
                 href={puntaCanaHubHref}
-                className="rounded-full bg-brand px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-sm shadow-brand/30"
+                className={`rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white ${isFunjet ? "bg-[linear-gradient(135deg,#6A0DAD_0%,#8B32D1_100%)] shadow-[0_16px_34px_rgba(106,13,173,0.22)]" : "bg-brand shadow-sm shadow-brand/30"}`}
               >
                 {t("tours.puntaCanaHub.cta")}
               </Link>
               <Link
                 href={transfersHubHref}
-                className="rounded-full border border-slate-300 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-400"
+                className={`rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition ${isFunjet ? "border border-[#E9D7FA] bg-white text-[#6A0DAD] hover:border-[#CFAAF1]" : "border border-slate-300 text-slate-700 hover:border-slate-400"}`}
               >
                 {locale === "es" ? "Traslados" : locale === "en" ? "Transfers" : "Transferts"}
               </Link>
@@ -469,7 +471,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                 </Link>
               ) : null}
             </div>
-            <TrustBadges locale={locale} compact className="pt-2" />
+            <TrustBadges locale={locale} compact className={`pt-2 ${isFunjet ? "[&_*]:border-[#E9D7FA]" : ""}`} />
           </div>
         </div>
       </section>

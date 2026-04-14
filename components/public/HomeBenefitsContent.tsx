@@ -1,5 +1,6 @@
 import { Locale, translate, type TranslationKey } from "@/lib/translations";
 import type { HomeContentOverrides } from "@/lib/siteContent";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 const benefits = [
   {
@@ -26,17 +27,18 @@ type HomeBenefitsContentProps = {
 
 export function HomeBenefitsContent({ locale, overrides }: HomeBenefitsContentProps) {
   const t = (key: TranslationKey) => translate(locale, key);
+  const isFunjet = SITE_CONFIG.variant === "funjet";
 
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,2fr)] lg:items-start">
-      <div className="space-y-3 rounded-[28px] border border-slate-200 bg-white px-6 py-5 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
+      <div className={`space-y-3 rounded-[28px] px-6 py-6 shadow-sm ${isFunjet ? "border border-[#E9D7FA] bg-[linear-gradient(160deg,#6A0DAD_0%,#8B32D1_100%)] text-white shadow-[0_24px_60px_rgba(106,13,173,0.24)]" : "border border-slate-200 bg-white"}`}>
+        <p className={`text-xs font-semibold uppercase tracking-[0.35em] ${isFunjet ? "text-white/70" : "text-slate-500"}`}>
           {overrides?.label ?? t("home.section.whatWeDo.label")}
         </p>
-        <h2 className="text-2xl font-semibold leading-tight text-slate-900 md:text-[2rem]">
+        <h2 className={`text-2xl leading-tight md:text-[2rem] ${isFunjet ? "text-white" : "font-semibold text-slate-900"}`}>
           {overrides?.title ?? t("home.section.whatWeDo.title")}
         </h2>
-        <p className="max-w-xl text-sm leading-6 text-slate-600">
+        <p className={`max-w-xl text-sm leading-6 ${isFunjet ? "text-white/90" : "text-slate-600"}`}>
           {overrides?.description ?? t("home.section.whatWeDo.description")}
         </p>
       </div>
@@ -44,10 +46,10 @@ export function HomeBenefitsContent({ locale, overrides }: HomeBenefitsContentPr
         {benefits.map((benefit, index) => (
           <article
             key={benefit.titleKey}
-            className="rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-sm"
+            className={`rounded-[28px] px-5 py-5 shadow-sm ${isFunjet ? "border border-[#E9D7FA] bg-white shadow-[0_16px_40px_rgba(106,13,173,0.12)]" : "border border-slate-200 bg-white"}`}
           >
             <div className="flex items-start gap-3">
-              <span className="flex h-10 min-w-10 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 px-2 text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-700">
+              <span className={`flex h-12 min-w-12 items-center justify-center rounded-2xl px-2 text-[11px] font-bold uppercase tracking-[0.14em] ${isFunjet ? "border border-[#FFE082] bg-[#FFF4CC] text-[#6A0DAD]" : "border border-emerald-200 bg-emerald-50 text-emerald-700"}`}>
                 {benefit.icon}
               </span>
               <div className="space-y-1.5">

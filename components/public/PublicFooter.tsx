@@ -147,8 +147,17 @@ export function PublicFooter() {
   }));
 
   return (
-    <footer className="relative isolate overflow-hidden border-t border-slate-900 bg-slate-950 px-6 py-10 text-sm text-gray-200 font-[var(--font-open-sans)]">
-      <div className="pointer-events-none absolute inset-0 bg-slate-950" aria-hidden="true" />
+    <footer
+      className={`relative isolate overflow-hidden px-6 py-10 text-sm font-[var(--font-open-sans)] ${
+        SITE_CONFIG.variant === "funjet"
+          ? "border-t border-white/20 bg-[linear-gradient(180deg,#4D0A7D_0%,#6A0DAD_58%,#7D2DC0_100%)] text-white"
+          : "border-t border-slate-900 bg-slate-950 text-gray-200"
+      }`}
+    >
+      <div
+        className={`pointer-events-none absolute inset-0 ${SITE_CONFIG.variant === "funjet" ? "bg-[radial-gradient(circle_at_top_right,rgba(255,195,0,0.18),transparent_20%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_18%)]" : "bg-slate-950"}`}
+        aria-hidden="true"
+      />
       <div className="relative z-10 mx-auto max-w-6xl space-y-6 px-0 text-gray-400 md:hidden">
         {groups.map((group) => (
           <div key={group.title} className="rounded-2xl border border-white/10 bg-slate-900/80">

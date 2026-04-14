@@ -82,6 +82,7 @@ export function PublicHeader() {
       logoSrc={SITE_CONFIG.logoSrc}
       logoAlt={SITE_CONFIG.logoAlt}
       homeHref={getLocalizedPath("/", locale)}
+      brandVariant={SITE_CONFIG.variant}
     />
   );
 }

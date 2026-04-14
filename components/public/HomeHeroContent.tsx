@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Locale, translate, type TranslationKey } from "@/lib/translations";
 import type { HomeContentOverrides } from "@/lib/siteContent";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 type HomeHeroContentProps = {
   locale: Locale;
@@ -12,16 +13,40 @@ export function HomeHeroContent({ locale, overrides }: HomeHeroContentProps) {
     translate(locale, key, replacements);
   const toursHref = locale === "es" ? "/tours" : `/${locale}/tours`;
   const transfersHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
+  const isFunjet = SITE_CONFIG.variant === "funjet";
 
   return (
-    <div className="max-w-4xl space-y-6 text-center text-white md:text-left">
-      <p className="text-xs uppercase tracking-[0.8em] text-white/70">
-        {overrides?.brand ?? t("home.hero.brand")}
-      </p>
-      <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
-        {overrides?.title ?? t("home.hero.title")}
+    <div className={`max-w-4xl space-y-6 text-center text-white md:text-left ${isFunjet ? "py-10" : ""}`}>
+      <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
+        <p className={`text-xs uppercase tracking-[0.8em] ${isFunjet ? "rounded-full border border-white/20 bg-white/10 px-4 py-2 text-white/90" : "text-white/70"}`}>
+          {overrides?.brand ?? t("home.hero.brand")}
+        </p>
+        {isFunjet ? (
+          <span className="rounded-full bg-[#FFC300] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.35em] text-[#4D0A7D]">
+            Explora, disfruta, repite
+          </span>
+        ) : null}
+      </div>
+      <h1 className={`leading-tight ${isFunjet ? "text-5xl font-bold md:text-6xl" : "text-4xl font-semibold md:text-5xl"}`}>
+        {isFunjet ? (
+          <>
+            <span className="block font-[var(--font-brand)] text-[#FFC300]">{SITE_CONFIG.siteName}</span>
+            <span className="mt-3 block">{overrides?.title ?? t("home.hero.title")}</span>
+          </>
+        ) : (
+          overrides?.title ?? t("home.hero.title")
+        )}
       </h1>
-      <p className="text-lg text-white/90">{overrides?.description ?? t("home.hero.description")}</p>
+      <p className={`max-w-2xl ${isFunjet ? "text-xl text-white/95" : "text-lg text-white/90"}`}>
+        {overrides?.description ?? t("home.hero.description")}
+      </p>
+      {isFunjet ? (
+        <div className="flex flex-wrap items-center justify-center gap-3 text-sm font-medium text-white/90 md:justify-start">
+          <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">🌴 Experiencias tropicales</span>
+          <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">✈️ Reservas rápidas</span>
+          <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">🤝 Soporte cercano</span>
+        </div>
+      ) : null}
       <div className="botones-banner">
         <Link href={toursHref} className="boton-verde">
           {overrides?.ctaPrimary ?? t("home.hero.cta.primary")}
