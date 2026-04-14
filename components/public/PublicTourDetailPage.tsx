@@ -2496,11 +2496,15 @@ export default async function TourDetailPage({
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{heroReviewsLabel}</p>
                 </div>
               </div>
-                <div className="flex flex-wrap gap-3 text-sm font-medium text-slate-700">
+                <div className={`flex flex-wrap gap-3 text-sm font-medium ${isFunjet ? "text-[#5E4671]" : "text-slate-700"}`}>
                   {trustBadges.map((badge) => (
                     <span
                       key={badge}
-                      className="rounded-full border border-slate-200 bg-white/80 px-4 py-1 text-sm font-semibold text-slate-700 shadow-sm"
+                      className={`rounded-full px-4 py-1 text-sm font-semibold shadow-sm ${
+                        isFunjet
+                          ? "border border-[#E8D6FA] bg-[linear-gradient(180deg,#ffffff_0%,#fbf3ff_100%)] text-[#5E4671]"
+                          : "border border-slate-200 bg-white/80 text-slate-700"
+                      }`}
                     >
                       {badge}
                     </span>
@@ -2509,7 +2513,11 @@ export default async function TourDetailPage({
               <div className={`flex gap-3 ${isDiscoveryMode ? "flex-col sm:flex-row" : "flex-wrap"}`}>
                     <Link
                       href="#booking"
-                      className={`rounded-3xl bg-indigo-600 px-10 py-4 text-base font-bold text-white shadow-xl shadow-indigo-100 transition-transform hover:scale-105 active:scale-95 ${
+                      className={`rounded-3xl px-10 py-4 text-base font-bold text-white transition-transform hover:scale-105 active:scale-95 ${
+                        isFunjet
+                          ? "bg-[#6A0DAD] shadow-[0_20px_45px_rgba(106,13,173,0.25)]"
+                          : "bg-indigo-600 shadow-xl shadow-indigo-100"
+                      } ${
                         isDiscoveryMode ? "text-center sm:w-auto" : ""
                       }`}
                     >
@@ -2520,13 +2528,21 @@ export default async function TourDetailPage({
                     <GalleryLightbox
                       images={gallery}
                       buttonLabel={heroGalleryCta}
-                      buttonClassName={`rounded-2xl border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-50 ${
+                      buttonClassName={`rounded-2xl border px-7 py-3 text-sm font-semibold transition-colors ${
+                        isFunjet
+                          ? "border-[#E8D6FA] bg-white text-[#4D0A7D] hover:bg-[#FAF1FF]"
+                          : "border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
+                      } ${
                         isDiscoveryMode ? "w-full sm:w-auto text-center" : ""
                       }`}
                     />
                     <a
                       href="#traveler-photos"
-                      className={`rounded-2xl border border-emerald-200 bg-emerald-50 px-7 py-3 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 ${
+                      className={`rounded-2xl border px-7 py-3 text-sm font-semibold transition-colors ${
+                        isFunjet
+                          ? "border-[#FFD86E] bg-[#FFF4C5] text-[#7A4D00] hover:bg-[#FFED9A]"
+                          : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                      } ${
                         isDiscoveryMode ? "w-full sm:w-auto text-center" : ""
                       }`}
                     >
@@ -2540,13 +2556,19 @@ export default async function TourDetailPage({
       </section>
 
       <section className="mx-auto mt-6 max-w-[1240px] px-4">
-        <nav className="sticky top-16 z-10 rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 shadow-lg backdrop-blur lg:top-8">
-          <div className="flex gap-3 overflow-x-auto py-1 text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">
+        <nav className={`sticky top-16 z-10 rounded-2xl px-3 py-2 shadow-lg backdrop-blur lg:top-8 ${
+          isFunjet
+            ? "border border-[#E7D2FB] bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(250,241,255,0.92))]"
+            : "border border-slate-200 bg-white/90"
+        }`}>
+          <div className={`flex gap-3 overflow-x-auto py-1 text-sm font-semibold uppercase tracking-[0.3em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
             {heroNavTabs.map((tab) => (
               <a
                 key={tab.href}
                 href={tab.href}
-                className="whitespace-nowrap rounded-full px-4 py-2 transition hover:bg-slate-100 hover:text-slate-700"
+                className={`whitespace-nowrap rounded-full px-4 py-2 transition ${
+                  isFunjet ? "hover:bg-white hover:text-[#4D0A7D]" : "hover:bg-slate-100 hover:text-slate-700"
+                }`}
               >
                 {translate(locale, tab.labelKey)}
               </a>
@@ -3035,41 +3057,41 @@ export default async function TourDetailPage({
           </div>
           </section>
 
-          <section id="reviews" className="space-y-6">
+          <section id="reviews" className={`space-y-6 rounded-[30px] p-6 ${isFunjet ? "border border-[#E7D2FB] bg-[linear-gradient(145deg,#ffffff_0%,#faf2ff_100%)] shadow-[0_24px_65px_rgba(106,13,173,0.10)]" : ""}`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                <p className={`text-xs uppercase tracking-[0.4em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
                   {translate(locale, "tour.section.reviews.label")}
                 </p>
-                <h2 className="text-[20px] font-semibold text-slate-900">
+                <h2 className={`text-[20px] ${isFunjet ? "font-bold text-[#34114A]" : "font-semibold text-slate-900"}`}>
                   {translate(locale, "tour.section.reviews.heading")}
                   <span className="sr-only"> {localizedTitle}</span>
                 </h2>
               </div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{reviewSummary}</p>
+              <p className={`text-xs uppercase tracking-[0.3em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-400"}`}>{reviewSummary}</p>
             </div>
             <div className="grid gap-6 lg:grid-cols-[1.2fr,1fr]">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <p className="text-4xl font-semibold text-slate-900">
+                  <p className={`text-4xl ${isFunjet ? "font-black text-[#6A0DAD]" : "font-semibold text-slate-900"}`}>
                     {detailReviewCount ? ratingValue.toFixed(1) : "0.0"}
                   </p>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                  <p className={`text-xs uppercase tracking-[0.3em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>
                     {translate(locale, "tour.section.reviews.ratingOutOf")}
                   </p>
                 </div>
                 {detailReviewCount ? (
-                  <div className="space-y-3 text-sm text-slate-700">
+                  <div className={`space-y-3 text-sm ${isFunjet ? "text-[#5E4671]" : "text-slate-700"}`}>
                     {reviewBreakdown.map((item) => (
                       <div key={item.labelKey} className="flex items-center gap-3">
-                        <span className="w-24 text-xs text-slate-500">{translate(locale, item.labelKey)}</span>
-                        <div className="relative flex-1 overflow-hidden rounded-full bg-slate-100">
+                        <span className={`w-24 text-xs ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>{translate(locale, item.labelKey)}</span>
+                        <div className={`relative flex-1 overflow-hidden rounded-full ${isFunjet ? "bg-[#F2E8FC]" : "bg-slate-100"}`}>
                           <span
-                            className="block h-2 rounded-full bg-emerald-500"
+                            className={`block h-2 rounded-full ${isFunjet ? "bg-[#6A0DAD]" : "bg-emerald-500"}`}
                             style={{ width: `${item.percent}%` }}
                           />
                         </div>
-                        <span className="ml-2 text-xs font-semibold text-slate-500">{item.percent}%</span>
+                        <span className={`ml-2 text-xs font-semibold ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>{item.percent}%</span>
                       </div>
                     ))}
                   </div>
@@ -3080,9 +3102,9 @@ export default async function TourDetailPage({
               <div className="space-y-4 max-h-[520px] overflow-y-auto pr-2">
                 {reviewHighlights.length ? (
                   reviewHighlights.map((review) => (
-                    <div key={review.id} className="rounded-[16px] border border-[#F1F5F9] bg-white p-4 shadow">
+                    <div key={review.id} className={`rounded-[20px] p-4 ${isFunjet ? "border border-[#E7D2FB] bg-[linear-gradient(180deg,#ffffff_0%,#fbf3ff_100%)] shadow-[0_16px_40px_rgba(106,13,173,0.10)]" : "border border-[#F1F5F9] bg-white shadow"}`}>
                       <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-sm font-bold text-indigo-600">
+                        <div className={`flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold ${isFunjet ? "bg-[#F3E6FF] text-[#6A0DAD]" : "bg-indigo-50 text-indigo-600"}`}>
                           {review.name
                             .split(" ")
                             .map((chunk) => chunk[0])
@@ -3091,11 +3113,11 @@ export default async function TourDetailPage({
                             .toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-slate-900">{review.name}</p>
-                          <p className="text-xs text-slate-500">{review.date}</p>
+                          <p className={`text-sm font-semibold ${isFunjet ? "text-[#34114A]" : "text-slate-900"}`}>{review.name}</p>
+                          <p className={`text-xs ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>{review.date}</p>
                         </div>
                       </div>
-                      <p className="mt-2 text-sm text-slate-700">{review.quote}</p>
+                      <p className={`mt-2 text-sm ${isFunjet ? "text-[#5E4671]" : "text-slate-700"}`}>{review.quote}</p>
                     </div>
                   ))
                 ) : (
