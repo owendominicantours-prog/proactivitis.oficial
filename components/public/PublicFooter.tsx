@@ -174,7 +174,7 @@ export function PublicFooter() {
           <div key={group.title} className="rounded-2xl border border-white/10 bg-slate-900/80">
             <button
               type="button"
-              className="w-full px-4 py-3 text-left font-semibold uppercase tracking-[0.3em]"
+              className="w-full px-4 py-3 text-left font-semibold uppercase tracking-[0.3em] text-white"
               onClick={() => setOpenGroup((prev) => (prev === group.title ? null : group.title))}
             >
               {group.title}
@@ -182,7 +182,7 @@ export function PublicFooter() {
             {openGroup === group.title ? (
               <div className="space-y-1 px-4 pb-4 text-xs uppercase tracking-[0.3em]">
                 {group.links.map((link) => (
-                  <Link key={link.href} href={link.href} className="block text-white transition hover:text-[#FFC300]">
+                  <Link key={link.href} href={link.href} className="block !text-white transition hover:!text-[#FFC300]">
                     {link.label}
                   </Link>
                 ))}
@@ -214,9 +214,9 @@ export function PublicFooter() {
             </div>
             {groups.map((group) => (
               <div key={group.title} className="space-y-3">
-                <p className="text-xs uppercase tracking-[0.3em] text-white">{group.title}</p>
+                <p className="text-xs uppercase tracking-[0.3em] !text-white">{group.title}</p>
                 {group.links.map((link) => (
-                  <Link key={link.href} href={link.href} className="block text-white transition hover:text-[#FFC300]">
+                  <Link key={link.href} href={link.href} className="block !text-white transition hover:!text-[#FFC300]">
                     {link.label}
                   </Link>
                 ))}
