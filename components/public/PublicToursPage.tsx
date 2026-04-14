@@ -216,6 +216,14 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
       : `/${locale}/punta-cana/premium-transfer-services`;
   const tourHref = (slug: string) => (locale === "es" ? `/tours/${slug}` : `/${locale}/tours/${slug}`);
   const sosuaPartyBoatHref = tourHref("party-boat-sosua");
+  const funjetHeroLabel = locale === "es" ? "Funjet tour studio" : locale === "fr" ? "Studio tours Funjet" : "Funjet tour studio";
+  const funjetHeroTitle = locale === "es" ? "Tours con una lectura mas rapida y visual" : locale === "fr" ? "Des tours avec une lecture plus rapide et visuelle" : "Tours with a faster, more visual reading flow";
+  const funjetHeroCopy =
+    locale === "es"
+      ? "Filtra, compara y abre opciones sin caer en una pagina pesada. Funjet va directo a categorias, precios y experiencias."
+      : locale === "fr"
+        ? "Filtrez, comparez et ouvrez des options sans tomber sur une page lourde. Funjet va droit aux categories, prix et experiences."
+        : "Filter, compare, and open options without landing on a heavy page. Funjet goes straight to categories, pricing, and experiences.";
 
   let countries: CountryOption[] = [];
   try {
@@ -415,7 +423,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   };
 
   return (
-    <div className="travel-surface pb-16">
+    <div className={`pb-16 ${isFunjet ? "bg-[linear-gradient(180deg,#fcf6ff_0%,#ffffff_30%,#fff9e3_100%)]" : "travel-surface"}`}>
       <StructuredData data={itemListSchema} />
       <StructuredData data={breadcrumbSchema} />
       <section
@@ -424,19 +432,13 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 md:flex-row md:items-end md:justify-between">
           <div className="space-y-4">
             <p className={`text-xs font-semibold uppercase tracking-[0.4em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
-              {t("tours.header.tagline")}
+              {isFunjet ? funjetHeroLabel : t("tours.header.tagline")}
             </p>
             <h1 className={`text-3xl md:text-4xl ${isFunjet ? "font-bold text-[#34114A]" : "font-semibold text-slate-900"}`}>
-              {t("tours.header.title")}
+              {isFunjet ? funjetHeroTitle : t("tours.header.title")}
             </h1>
             <p className={`text-base ${isFunjet ? "max-w-3xl text-[#6B4D82]" : "text-slate-600"}`}>
-              {isFunjet
-                ? locale === "es"
-                  ? "Reserva tours y excursiones en Punta Cana con atencion directa, confirmacion rapida y opciones claras para parejas, familias y grupos."
-                  : locale === "fr"
-                    ? "Reservez excursions et activites a Punta Cana avec support direct, confirmation rapide et options claires pour couples, familles et groupes."
-                    : "Book Punta Cana tours and excursions with direct support, fast confirmation, and clear options for couples, families, and groups."
-                : t("tours.header.description")}
+              {isFunjet ? funjetHeroCopy : t("tours.header.description")}
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
@@ -447,7 +449,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
               </Link>
               <Link
                 href={transfersHubHref}
-                className={`rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition ${isFunjet ? "border border-[#E9D7FA] bg-white text-[#6A0DAD] hover:border-[#CFAAF1]" : "border border-slate-300 text-slate-700 hover:border-slate-400"}`}
+                className={`rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition ${isFunjet ? "border border-[#FFD86E] bg-[#FFC300] text-[#4D0A7D] hover:bg-[#FFD24D]" : "border border-slate-300 text-slate-700 hover:border-slate-400"}`}
               >
                 {locale === "es" ? "Traslados" : locale === "en" ? "Transfers" : "Transferts"}
               </Link>
@@ -478,6 +480,26 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
             </div>
             <TrustBadges locale={locale} compact className={`pt-2 ${isFunjet ? "[&_*]:border-[#E9D7FA]" : ""}`} />
           </div>
+          {isFunjet ? (
+            <div className="grid gap-3 rounded-[32px] border border-white/70 bg-white/80 p-4 shadow-[0_22px_60px_rgba(106,13,173,0.12)] md:w-[320px]">
+              <div className="rounded-[24px] bg-[#6A0DAD] px-4 py-4 text-white">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-white/70">
+                  {locale === "es" ? "Vistas rapidas" : locale === "fr" ? "Vues rapides" : "Quick views"}
+                </p>
+                <p className="mt-2 text-lg font-bold">
+                  {locale === "es" ? "Adventure, sea, culture, VIP" : locale === "fr" ? "Aventure, mer, culture, VIP" : "Adventure, sea, culture, VIP"}
+                </p>
+              </div>
+              <div className="rounded-[24px] bg-[#FFF8DE] px-4 py-4 text-[#4D0A7D]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.35em] opacity-70">
+                  {locale === "es" ? "Funjet flow" : locale === "fr" ? "Flow Funjet" : "Funjet flow"}
+                </p>
+                <p className="mt-2 text-sm font-semibold">
+                  {locale === "es" ? "Filtra, abre y reserva sin dar vueltas." : locale === "fr" ? "Filtrez, ouvrez et reservez sans detours." : "Filter, open, and book without the extra noise."}
+                </p>
+              </div>
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -507,24 +529,34 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
             </div>
           </aside>
           <section className="space-y-4">
-            <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 text-sm font-medium text-slate-700 shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-2 text-slate-600">
+            <div className={`p-4 text-sm font-medium shadow-sm ${isFunjet ? "rounded-[28px] border border-[#E9D7FA] bg-white text-[#5E4671]" : "rounded-2xl border border-slate-200 bg-white/90 text-slate-700"}`}>
+              <div className={`flex flex-wrap items-center justify-between gap-2 ${isFunjet ? "text-[#5E4671]" : "text-slate-600"}`}>
                 {featureKeys.map((key) => (
                   <span key={key} className="flex items-center gap-2">
-                    <span className="text-emerald-500">✅</span>
+                    <span className={isFunjet ? "text-[#6A0DAD]" : "text-emerald-500"}>{isFunjet ? "●" : "✅"}</span>
                     {t(key)}
                   </span>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm">
+            <div className={`p-4 shadow-sm ${isFunjet ? "rounded-[28px] border border-[#E9D7FA] bg-[linear-gradient(135deg,#ffffff_0%,#faf1ff_100%)]" : "rounded-2xl border border-slate-200 bg-white/95"}`}>
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-                    {locale === "es" ? "Resultados disponibles" : locale === "fr" ? "Resultats disponibles" : "Available results"}
+                  <p className={`text-xs font-semibold uppercase tracking-[0.35em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
+                    {isFunjet
+                      ? locale === "es"
+                        ? "Vista de catalogo"
+                        : locale === "fr"
+                          ? "Vue catalogue"
+                          : "Catalog view"
+                      : locale === "es"
+                        ? "Resultados disponibles"
+                        : locale === "fr"
+                          ? "Resultats disponibles"
+                          : "Available results"}
                   </p>
-                  <p className="text-lg font-semibold text-slate-900">{resultsLabel}</p>
+                  <p className={`text-lg ${isFunjet ? "font-bold text-[#34114A]" : "font-semibold text-slate-900"}`}>{resultsLabel}</p>
                   {activeFilters.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {activeFilters.map((label) => (
@@ -534,12 +566,18 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-slate-500">
-                      {locale === "es"
-                        ? "Usa los filtros para comparar destinos, precios, idiomas y duraciones."
-                        : locale === "fr"
-                          ? "Utilisez les filtres pour comparer destinations, prix, langues et durees."
-                      : "Use filters to compare destinations, pricing, languages, and durations."}
+                    <p className={`text-sm ${isFunjet ? "text-[#6B4D82]" : "text-slate-500"}`}>
+                      {isFunjet
+                        ? locale === "es"
+                          ? "Mueve filtros y orden para quedarte solo con lo que te sirve."
+                          : locale === "fr"
+                            ? "Ajustez les filtres et le tri pour garder uniquement ce qui vous sert."
+                            : "Adjust filters and sort order to keep only what matters."
+                        : locale === "es"
+                          ? "Usa los filtros para comparar destinos, precios, idiomas y duraciones."
+                          : locale === "fr"
+                            ? "Utilisez les filtres pour comparer destinations, prix, langues et durees."
+                            : "Use filters to compare destinations, pricing, languages, and durations."}
                     </p>
                   )}
                 </div>
@@ -557,7 +595,11 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                   <select
                     name="sort"
                     defaultValue={sort}
-                    className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-sky-400 focus:bg-white"
+                    className={`rounded-xl px-4 py-3 text-sm outline-none transition ${
+                      isFunjet
+                        ? "border border-[#E9D7FA] bg-white text-[#4D0A7D] focus:border-[#6A0DAD]"
+                        : "border border-slate-200 bg-slate-50 text-slate-700 focus:border-sky-400 focus:bg-white"
+                    }`}
                   >
                     <option value="popular">{locale === "es" ? "Más reservados" : locale === "fr" ? "Plus reserves" : "Most booked"}</option>
                     <option value="price-low">{locale === "es" ? "Precio más bajo" : locale === "fr" ? "Prix le plus bas" : "Lowest price"}</option>
@@ -566,7 +608,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                   </select>
                   <button
                     type="submit"
-                    className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+                    className={`rounded-xl px-4 py-3 text-sm font-semibold text-white transition ${isFunjet ? "bg-[#6A0DAD] hover:bg-[#58108F]" : "bg-slate-900 hover:bg-slate-700"}`}
                   >
                     {locale === "es" ? "Aplicar" : locale === "fr" ? "Appliquer" : "Apply"}
                   </button>
@@ -607,9 +649,13 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                   <Link
                     key={tour.slug}
                     href={tourPath}
-                    className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                    className={`flex flex-col justify-between transition hover:-translate-y-0.5 ${
+                      isFunjet
+                        ? "rounded-[30px] border border-[#EAD8FB] bg-white shadow-[0_20px_60px_rgba(106,13,173,0.10)] hover:shadow-[0_26px_70px_rgba(106,13,173,0.16)]"
+                        : "rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-md"
+                    }`}
                   >
-                    <div className="relative h-44 w-full overflow-hidden rounded-t-2xl bg-slate-200">
+                    <div className={`relative h-44 w-full overflow-hidden bg-slate-200 ${isFunjet ? "rounded-t-[30px]" : "rounded-t-2xl"}`}>
                       <DynamicImage
                         src={tour.heroImage ?? "/fototours/fototour.jpeg"}
                         alt={localizedTitle}
@@ -617,17 +663,17 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                       />
                     </div>
                     <div className="space-y-2 px-4 py-4">
-                      <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                      <div className={`flex items-center justify-between text-xs font-semibold uppercase tracking-[0.3em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>
                         <span>{locationValue}</span>
-                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-emerald-600">
+                        <span className={`rounded-full px-2 py-0.5 ${isFunjet ? "bg-[#FFF4C5] text-[#7A4D00]" : "bg-emerald-100 text-emerald-600"}`}>
                           {verifiedText}
                         </span>
                       </div>
-                      <p className="text-sm font-semibold text-slate-900 line-clamp-2">{localizedTitle}</p>
+                      <p className={`line-clamp-2 text-sm ${isFunjet ? "font-bold text-[#34114A]" : "font-semibold text-slate-900"}`}>{localizedTitle}</p>
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="text-sm font-semibold text-slate-900">
                           {fromLabel}{" "}
-                          <span className={`text-base font-black ${hasDiscount ? "text-emerald-600" : "text-indigo-600"}`}>
+                          <span className={`text-base font-black ${hasDiscount ? "text-emerald-600" : isFunjet ? "text-[#6A0DAD]" : "text-indigo-600"}`}>
                             ${effectivePrice.toFixed(0)}
                           </span>
                           {hasDiscount && (

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Locale, translate } from "@/lib/translations";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 type TourSearchItem = {
   id: string;
@@ -76,6 +77,7 @@ export default function HomeTourSearch({ locale, tours }: Props) {
   const [query, setQuery] = useState("");
   const normalizedQuery = normalize(query);
   const base = locale === "es" ? "" : `/${locale}`;
+  const isFunjet = SITE_CONFIG.variant === "funjet";
 
   const results = useMemo(() => {
     if (normalizedQuery.length < 2) return [];
@@ -93,35 +95,83 @@ export default function HomeTourSearch({ locale, tours }: Props) {
   }, [normalizedQuery, tours]);
 
   return (
-    <div className="rounded-[28px] border border-slate-300 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] ring-1 ring-slate-200/70 sm:p-6">
+    <div
+      className={`p-5 sm:p-6 ${
+        isFunjet
+          ? "rounded-[34px] border border-[#E6D2FB] bg-[linear-gradient(140deg,#4D0A7D_0%,#6A0DAD_62%,#7B24C5_100%)] shadow-[0_30px_80px_rgba(63,9,102,0.32)]"
+          : "rounded-[28px] border border-slate-300 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] ring-1 ring-slate-200/70"
+      }`}
+    >
       <div className="space-y-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.32em] text-slate-700">
-            {translate(locale, "home.tourSearch.label")}
+          <p className={`text-xs font-bold uppercase tracking-[0.32em] ${isFunjet ? "text-[#FFD86E]" : "text-slate-700"}`}>
+            {isFunjet
+              ? locale === "es"
+                ? "Radar de experiencias"
+                : locale === "fr"
+                  ? "Radar d experiences"
+                  : "Experience radar"
+              : translate(locale, "home.tourSearch.label")}
           </p>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">{translate(locale, "home.tourSearch.helper")}</p>
+          <p className={`mt-2 max-w-2xl text-sm leading-6 ${isFunjet ? "text-white/86" : "text-slate-700"}`}>
+            {isFunjet
+              ? locale === "es"
+                ? "Escribe una idea simple y te mostramos opciones que encajan rapido. Saona, buggy, snorkel, catamaran o destinos aunque escribas con errores."
+                : locale === "fr"
+                  ? "Ecrivez une idee simple et nous vous montrons rapidement les options correspondantes. Saona, buggy, snorkel, catamaran ou destinations meme avec fautes."
+                  : "Type a simple idea and we quickly surface matching options. Saona, buggy, snorkel, catamaran, or destinations even with typos."
+              : translate(locale, "home.tourSearch.helper")}
+          </p>
         </div>
         <div className="relative">
           <input
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder={translate(locale, "home.tourSearch.placeholder")}
-            className="w-full rounded-2xl border-2 border-slate-300 bg-slate-50 px-4 py-3.5 text-sm font-medium text-slate-950 placeholder:font-normal placeholder:text-slate-500 shadow-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-200/60"
+            placeholder={
+              isFunjet
+                ? locale === "es"
+                  ? "Prueba: Saona, buggy, snorkel, Santo Domingo"
+                  : locale === "fr"
+                    ? "Essayez : Saona, buggy, snorkel, Saint-Domingue"
+                    : "Try: Saona, buggy, snorkel, Santo Domingo"
+                : translate(locale, "home.tourSearch.placeholder")
+            }
+            className={`w-full rounded-[24px] px-4 py-4 text-sm font-medium outline-none transition ${
+              isFunjet
+                ? "border border-white/15 bg-white/10 text-white placeholder:font-normal placeholder:text-white/55 focus:border-[#FFD86E] focus:bg-white/12 focus:ring-4 focus:ring-[#FFD86E]/25"
+                : "border-2 border-slate-300 bg-slate-50 text-slate-950 placeholder:font-normal placeholder:text-slate-500 shadow-sm focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-200/60"
+            }`}
           />
           {normalizedQuery.length >= 2 && (
-            <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 rounded-2xl border border-slate-300 bg-white p-3 shadow-[0_20px_60px_rgba(15,23,42,0.18)]">
+            <div
+              className={`absolute left-0 right-0 top-[calc(100%+8px)] z-20 p-3 ${
+                isFunjet
+                  ? "rounded-[26px] border border-white/10 bg-[#4B0A79] shadow-[0_20px_60px_rgba(18,3,29,0.45)]"
+                  : "rounded-2xl border border-slate-300 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
+              }`}
+            >
               {results.length ? (
                 <>
-                  <p className="px-2 pb-2 text-xs font-bold uppercase tracking-[0.3em] text-slate-600">
-                    {translate(locale, "home.tourSearch.resultsLabel")}
+                  <p className={`px-2 pb-2 text-xs font-bold uppercase tracking-[0.3em] ${isFunjet ? "text-[#FFD86E]" : "text-slate-600"}`}>
+                    {isFunjet
+                      ? locale === "es"
+                        ? "Coincidencias funjet"
+                        : locale === "fr"
+                          ? "Correspondances funjet"
+                          : "Funjet matches"
+                      : translate(locale, "home.tourSearch.resultsLabel")}
                   </p>
                   <div className="max-h-[320px] space-y-2 overflow-auto">
                     {results.map((tour) => (
                       <Link
                         key={tour.id}
                         href={`${base}/tours/${tour.slug}`}
-                        className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 transition hover:border-emerald-300 hover:bg-white"
+                        className={`flex items-center gap-3 p-3 transition ${
+                          isFunjet
+                            ? "rounded-[20px] border border-white/10 bg-white/7 hover:border-[#FFD86E] hover:bg-white/10"
+                            : "rounded-xl border border-slate-200 bg-slate-50 hover:border-emerald-300 hover:bg-white"
+                        }`}
                       >
                         <div className="h-12 w-14 overflow-hidden rounded-lg bg-slate-200">
                           {tour.image ? (
@@ -136,18 +186,18 @@ export default function HomeTourSearch({ locale, tours }: Props) {
                           ) : null}
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-slate-900">{tour.title}</p>
-                          <p className="truncate text-xs font-medium text-slate-600">{tour.location ?? "Punta Cana"}</p>
+                          <p className={`truncate text-sm font-semibold ${isFunjet ? "text-white" : "text-slate-900"}`}>{tour.title}</p>
+                          <p className={`truncate text-xs font-medium ${isFunjet ? "text-white/65" : "text-slate-600"}`}>{tour.location ?? "Punta Cana"}</p>
                         </div>
-                        <span className="ml-auto text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">
-                          {translate(locale, "tour.card.details")}
+                        <span className={`ml-auto text-xs font-bold uppercase tracking-[0.2em] ${isFunjet ? "text-[#FFD86E]" : "text-emerald-700"}`}>
+                          {isFunjet ? (locale === "es" ? "Abrir" : locale === "fr" ? "Voir" : "Open") : translate(locale, "tour.card.details")}
                         </span>
                       </Link>
                     ))}
                   </div>
                 </>
               ) : (
-                <p className="px-2 py-2 text-xs font-medium text-slate-600">
+                <p className={`px-2 py-2 text-xs font-medium ${isFunjet ? "text-white/75" : "text-slate-600"}`}>
                   {translate(locale, "home.tourSearch.noResults")}
                 </p>
               )}

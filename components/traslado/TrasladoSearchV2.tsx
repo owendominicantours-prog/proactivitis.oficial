@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "@/context/LanguageProvider";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 const DEFAULT_ROUND_TRIP_DISCOUNT = 5;
 const ROUND_TRIP_DISCOUNT_PERCENT = (() => {
@@ -44,6 +45,7 @@ type QuoteVehicle = {
 
 export default function TrasladoSearchV2() {
   const { t } = useTranslation();
+  const isFunjet = SITE_CONFIG.variant === "funjet";
   const [originQuery, setOriginQuery] = useState("");
   const [destinationQuery, setDestinationQuery] = useState("");
   const [originOptions, setOriginOptions] = useState<LocationSummary[]>([]);
@@ -269,7 +271,13 @@ export default function TrasladoSearchV2() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-lg">
+      <div
+        className={`space-y-4 p-6 shadow-lg ${
+          isFunjet
+            ? "rounded-[34px] border border-[#E7D2FB] bg-[linear-gradient(145deg,#ffffff_0%,#faf1ff_52%,#fff8de_100%)]"
+            : "rounded-3xl border border-slate-200 bg-white"
+        }`}
+      >
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
@@ -293,25 +301,42 @@ export default function TrasladoSearchV2() {
           >
             {t("transfer.search.tripType.roundTrip")}
           </button>
-          <span className="text-xs text-slate-500">
+          <span className={`text-xs ${isFunjet ? "text-[#6B4D82]" : "text-slate-500"}`}>
             {t("transfer.search.tripType.roundTripDiscount", {
               discount: normalizedDiscountPercent
             })}
           </span>
         </div>
 
+        {isFunjet ? (
+          <div className="grid gap-3 md:grid-cols-[1.1fr_0.9fr]">
+            <div className="rounded-[26px] bg-[#6A0DAD] px-5 py-5 text-white">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-white/70">Funjet route builder</p>
+              <p className="mt-2 text-2xl font-bold">Origen, destino y horario en una sola pieza visual.</p>
+            </div>
+            <div className="rounded-[26px] bg-[#FFF2BF] px-5 py-5 text-[#4D0A7D]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.35em] opacity-70">Direct booking</p>
+              <p className="mt-2 text-sm font-semibold">Busca la ruta, mira las unidades y reserva sin paneles intermedios.</p>
+            </div>
+          </div>
+        ) : null}
+
         <div className="grid gap-4 md:grid-cols-3">
           <div className="relative" ref={originRef}>
-            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-              {t("transfer.search.field.origin")}
+            <label className={`text-xs font-semibold uppercase tracking-[0.3em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
+              {isFunjet ? "Pick up" : t("transfer.search.field.origin")}
             </label>
             <div className="relative">
               <input
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 transition focus:border-emerald-500"
+                className={`w-full px-4 py-3 text-sm transition ${
+                  isFunjet
+                    ? "rounded-[22px] border border-[#E6D2FB] bg-white text-[#34114A] focus:border-[#6A0DAD]"
+                    : "rounded-2xl border border-slate-200 bg-white text-slate-800 focus:border-emerald-500"
+                }`}
                 value={originDisplay}
                 onChange={(event) => handleOriginChange(event.target.value)}
                 onFocus={() => setOriginOpen(true)}
-                placeholder={t("transfer.search.placeholder.originExample")}
+                placeholder={isFunjet ? "Airport, hotel o zona de salida" : t("transfer.search.placeholder.originExample")}
               />
               {originLoading && (
                 <div className="pointer-events-none absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center">
@@ -345,16 +370,20 @@ export default function TrasladoSearchV2() {
           </div>
 
           <div className="relative" ref={destinationRef}>
-            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-              {t("transfer.search.field.destination")}
+            <label className={`text-xs font-semibold uppercase tracking-[0.3em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
+              {isFunjet ? "Drop off" : t("transfer.search.field.destination")}
             </label>
             <div className="relative">
               <input
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 transition focus:border-emerald-500"
+                className={`w-full px-4 py-3 text-sm transition ${
+                  isFunjet
+                    ? "rounded-[22px] border border-[#E6D2FB] bg-white text-[#34114A] focus:border-[#6A0DAD]"
+                    : "rounded-2xl border border-slate-200 bg-white text-slate-800 focus:border-emerald-500"
+                }`}
                 value={destinationDisplay}
                 onChange={(event) => handleDestinationChange(event.target.value)}
                 onFocus={() => setDestinationOpen(true)}
-                placeholder={t("transfer.search.placeholder.destinationExample")}
+                placeholder={isFunjet ? "Hotel, villa o resort de llegada" : t("transfer.search.placeholder.destinationExample")}
               />
               {destinationLoading && (
                 <div className="pointer-events-none absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center">
@@ -388,8 +417,8 @@ export default function TrasladoSearchV2() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-              {t("transfer.search.field.passengers")}
+            <label className={`text-xs font-semibold uppercase tracking-[0.3em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
+              {isFunjet ? "Travelers" : t("transfer.search.field.passengers")}
             </label>
             <input
               type="number"
@@ -410,7 +439,11 @@ export default function TrasladoSearchV2() {
                 setPassengers(normalizedPassengers);
                 setPassengersInput(String(normalizedPassengers));
               }}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800"
+              className={`w-full px-4 py-3 text-sm ${
+                isFunjet
+                  ? "rounded-[22px] border border-[#E6D2FB] bg-white text-[#34114A]"
+                  : "rounded-2xl border border-slate-200 bg-white text-slate-800"
+              }`}
             />
           </div>
         </div>
@@ -461,10 +494,12 @@ export default function TrasladoSearchV2() {
 
         <button
           onClick={handleQuote}
-          className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500"
-        >
-          {quoteLoading ? t("transfer.search.action.loading") : t("transfer.search.action.search")}
-        </button>
+            className={`w-full px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition ${
+              isFunjet ? "rounded-[24px] bg-[#6A0DAD] hover:bg-[#58108F]" : "rounded-2xl bg-emerald-600 hover:bg-emerald-500"
+            }`}
+          >
+            {quoteLoading ? t("transfer.search.action.loading") : t("transfer.search.action.search")}
+          </button>
 
         {quoteError && (
           <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm">
@@ -484,7 +519,11 @@ export default function TrasladoSearchV2() {
             return (
               <article
                 key={vehicle.id}
-                className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-card transition-transform duration-300 hover:-translate-y-2"
+                className={`group flex h-full flex-col overflow-hidden transition-transform duration-300 hover:-translate-y-2 ${
+                  isFunjet
+                    ? "rounded-[32px] border border-[#E7D2FB] bg-white shadow-[0_22px_70px_rgba(106,13,173,0.12)]"
+                    : "rounded-[28px] border border-slate-100 bg-white shadow-card"
+                }`}
               >
                 <div className="relative">
                   <div
@@ -499,7 +538,7 @@ export default function TrasladoSearchV2() {
                     </span>
                   )}
                   <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
-                    <span className="rounded-full border border-white/80 bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-500 shadow">
+                    <span className={`rounded-full border border-white/80 bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] shadow ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
                       {vehicle.category}
                     </span>
                     <span className="rounded-full border border-white/80 bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-500 shadow">
@@ -509,10 +548,10 @@ export default function TrasladoSearchV2() {
                 </div>
 
                 <div className="flex flex-1 flex-col gap-2 p-4">
-                  <p className="text-brand text-[10px] font-medium uppercase tracking-[0.35em]">
+                  <p className={`text-[10px] font-medium uppercase tracking-[0.35em] ${isFunjet ? "text-[#A86AD8]" : "text-brand"}`}>
                     {selectedOrigin?.name || "Airport"} to {selectedDestination?.name || "Hotel"}
                   </p>
-                  <h3 className="text-2xl font-black leading-tight text-slate-900">{vehicle.name}</h3>
+                  <h3 className={`text-2xl font-black leading-tight ${isFunjet ? "text-[#34114A]" : "text-slate-900"}`}>{vehicle.name}</h3>
                   <p className="line-clamp-2 text-sm leading-relaxed text-slate-500">
                     {t("transfer.search.vehicle.capacityRange", {
                       min: vehicle.minPax,
@@ -535,7 +574,7 @@ export default function TrasladoSearchV2() {
                         {isRoundTrip ? t("transfer.search.vehicle.priceLabel.roundTrip") : t("transfer.search.vehicle.priceLabel.oneWay")}
                       </p>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-brand">${displayPrice.toFixed(2)}</span>
+                        <span className={`text-3xl font-black ${isFunjet ? "text-[#6A0DAD]" : "text-brand"}`}>${displayPrice.toFixed(2)}</span>
                         <span className="text-sm font-semibold text-slate-500">USD</span>
                       </div>
                       {isRoundTrip && (
@@ -548,7 +587,11 @@ export default function TrasladoSearchV2() {
                     </div>
                     <Link
                       href={reserveUrl}
-                      className="rounded-2xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-lg shadow-brand/40 transition-colors group-hover:bg-brand-light"
+                      className={`rounded-2xl px-6 py-3 text-sm font-bold text-white transition-colors ${
+                        isFunjet
+                          ? "bg-[#6A0DAD] shadow-[0_16px_38px_rgba(106,13,173,0.35)] group-hover:bg-[#58108F]"
+                          : "bg-brand shadow-lg shadow-brand/40 group-hover:bg-brand-light"
+                      }`}
                     >
                       {t("transfer.search.action.reserve")}
                     </Link>

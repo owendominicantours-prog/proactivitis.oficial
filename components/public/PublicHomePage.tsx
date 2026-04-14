@@ -60,6 +60,18 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   const priceValidUntil = getPriceValidUntil();
   const localePrefix = locale === "es" ? "" : `/${locale}`;
   const localizedPath = (path: string) => `${PROACTIVITIS_URL}${locale === "es" ? path : `/${locale}${path}`}`;
+  const funjetFeaturedTitle =
+    locale === "es"
+      ? "Escoge una vibra y empieza por ahi"
+      : locale === "fr"
+        ? "Choisissez une ambiance et commencez par la"
+        : "Pick a vibe and start there";
+  const funjetFeaturedCopy =
+    locale === "es"
+      ? "No necesitas leer cien bloques. Mira, filtra y abre la experiencia que mejor encaja con tu viaje."
+      : locale === "fr"
+        ? "Pas besoin de lire cent blocs. Regardez, filtrez et ouvrez l experience qui correspond le mieux a votre voyage."
+        : "You do not need to read a hundred blocks. Browse, filter, and open the experience that fits your trip best.";
 
   const [publishedTours, tourRatingAgg, transferRatingAgg] = await Promise.all([
     prisma.tour.findMany({
@@ -533,38 +545,49 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         <div className="mx-auto max-w-6xl space-y-4 px-4 py-12 sm:px-6">
           <HomeRecommendedHeader locale={locale} overrides={homeOverrides.recommended} />
           <HomeTourSearchSection locale={locale} />
-          <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
+          <div className={`p-8 ${isFunjet ? "rounded-[34px] border border-[#E6D2FB] bg-[linear-gradient(135deg,#ffffff_0%,#f9f0ff_55%,#fff9e1_100%)] shadow-[0_26px_70px_rgba(106,13,173,0.15)]" : "rounded-3xl border border-slate-100 bg-white/90 shadow-sm"}`}>
             <FeaturedToursSection locale={locale} />
           </div>
-          <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-              {homeOverrides.puntaCana?.subtitle ?? t("puntaCana.links.subtitle")}
+          <div className={`p-8 ${isFunjet ? "rounded-[34px] border border-[#E6D2FB] bg-white shadow-[0_22px_65px_rgba(106,13,173,0.12)]" : "rounded-3xl border border-slate-100 bg-white/90 shadow-sm"}`}>
+            <p className={`text-xs font-semibold uppercase tracking-[0.3em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
+              {isFunjet ? (locale === "es" ? "Rutas favoritas" : locale === "fr" ? "Routes favorites" : "Favorite routes") : homeOverrides.puntaCana?.subtitle ?? t("puntaCana.links.subtitle")}
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-              {homeOverrides.puntaCana?.title ?? t("puntaCana.links.title")}
+            <h2 className={`mt-2 text-2xl ${isFunjet ? "font-bold text-[#34114A]" : "font-semibold text-slate-900"}`}>
+              {isFunjet ? funjetFeaturedTitle : homeOverrides.puntaCana?.title ?? t("puntaCana.links.title")}
             </h2>
+            {isFunjet ? <p className="mt-3 max-w-3xl text-sm leading-7 text-[#6B4D82]">{funjetFeaturedCopy}</p> : null}
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {PUNTA_CANA_LINKS.map((item) => (
                 <Link
                   key={item.slug}
                   href={tourHref(item.slug)}
-                  className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
+                  className={`px-4 py-3 text-sm font-semibold transition hover:-translate-y-0.5 ${
+                    isFunjet
+                      ? "rounded-[22px] border border-[#F1E3FF] bg-[linear-gradient(180deg,#ffffff_0%,#fbf5ff_100%)] text-[#52206F] hover:border-[#CFAAF1]"
+                      : "rounded-2xl border border-slate-100 bg-slate-50 text-slate-700 hover:bg-white"
+                  }`}
                 >
                   {t(item.labelKey)}
                 </Link>
               ))}
             </div>
           </div>
-          <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+          <div className={`p-8 ${isFunjet ? "rounded-[34px] border border-[#E6D2FB] bg-white shadow-[0_22px_65px_rgba(106,13,173,0.12)]" : "rounded-3xl border border-slate-100 bg-white/90 shadow-sm"}`}>
+            <p className={`text-xs font-semibold uppercase tracking-[0.3em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
               Sosua Party Boat
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-              {locale === "es"
-                ? "Reserva tu party boat en Sosua al mejor precio"
-                : locale === "en"
-                  ? "Book your Sosua party boat at the best price"
-                  : "Reservez votre party boat a Sosua au meilleur prix"}
+            <h2 className={`mt-2 text-2xl ${isFunjet ? "font-bold text-[#34114A]" : "font-semibold text-slate-900"}`}>
+              {isFunjet
+                ? locale === "es"
+                  ? "Norte de Republica Dominicana en modo party"
+                  : locale === "en"
+                    ? "North coast in full party mode"
+                    : "La cote nord en mode fete"
+                : locale === "es"
+                  ? "Reserva tu party boat en Sosua al mejor precio"
+                  : locale === "en"
+                    ? "Book your Sosua party boat at the best price"
+                    : "Reservez votre party boat a Sosua au meilleur prix"}
             </h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {SOSUA_PARTY_BOAT_LINKS.map((item) => (

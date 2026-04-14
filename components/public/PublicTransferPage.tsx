@@ -57,6 +57,14 @@ export default async function PublicTransferPage({
       : `/${locale}/punta-cana/premium-transfer-services`;
   const proDiscoveryTransfersHref = locale === "es" ? "/prodiscovery?type=transfer" : `/${locale}/prodiscovery?type=transfer`;
   const transferHref = (slug: string) => (locale === "es" ? `/transfer/${slug}` : `/${locale}/transfer/${slug}`);
+  const funjetTransferLabel = locale === "es" ? "Funjet move desk" : locale === "fr" ? "Desk transferts Funjet" : "Funjet move desk";
+  const funjetTransferTitle = locale === "es" ? "Traslados privados con una experiencia mas limpia" : locale === "fr" ? "Transferts prives avec une experience plus claire" : "Private transfers with a cleaner booking experience";
+  const funjetTransferCopy =
+    locale === "es"
+      ? "Busca origen y destino en un formato mas directo, visual y orientado a decidir rapido."
+      : locale === "fr"
+        ? "Recherchez origine et destination dans un format plus direct, visuel et concu pour decider rapidement."
+        : "Search origin and destination in a more direct, visual format built for faster decisions.";
   let options: LocationOption[] = [];
   let originPoints: TransferPointOption[] = [];
   const transferLandingSlugs = PUNTA_CANA_TRANSFER_LINKS.map((item) => item.slug);
@@ -119,7 +127,7 @@ export default async function PublicTransferPage({
   }
 
   return (
-    <div className="travel-surface">
+    <div className={isFunjet ? "bg-[linear-gradient(180deg,#fff9e2_0%,#ffffff_22%,#f9efff_100%)]" : "travel-surface"}>
       <section
         className="relative flex min-h-[380px] w-full items-center overflow-hidden md:min-h-[520px]"
         style={{
@@ -131,26 +139,20 @@ export default async function PublicTransferPage({
         <div className="absolute inset-0 bg-slate-900/55 md:bg-slate-900/65" />
         <div className="relative z-10 mx-auto w-full max-w-6xl space-y-6 px-4 py-14">
           <p className="text-xs uppercase tracking-[0.5em] text-white/70">
-            {translate(locale, "transfer.hero.label")}
+            {isFunjet ? funjetTransferLabel : translate(locale, "transfer.hero.label")}
           </p>
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="space-y-2">
               <h1 className="text-4xl font-black leading-tight text-white md:text-5xl">
-                {heroTitleOverride ?? translate(locale, "transfer.hero.title")}
+                {heroTitleOverride ?? (isFunjet ? funjetTransferTitle : translate(locale, "transfer.hero.title"))}
               </h1>
               <p className="text-base text-white/90">
-                {heroDescriptionOverride ?? translate(locale, "transfer.hero.description")}
+                {heroDescriptionOverride ?? (isFunjet ? funjetTransferCopy : translate(locale, "transfer.hero.description"))}
               </p>
               <div className="flex flex-wrap gap-3 text-sm font-semibold uppercase tracking-[0.2em] text-white">
                 <Link
-                  href={homeHref}
-                  className="inline-flex items-center justify-center rounded-full border border-white/70 bg-white/90 px-4 py-2 text-slate-900 shadow-sm transition hover:bg-white"
-                >
-                  {translate(locale, "transfer.link.home")}
-                </Link>
-                <Link
                   href={toursRootHref}
-                  className="inline-flex items-center justify-center rounded-full border border-white/80 bg-transparent px-4 py-2 text-white transition hover:bg-white/10"
+                  className={`inline-flex items-center justify-center rounded-full px-4 py-2 transition ${isFunjet ? "border border-[#FFD86E] bg-[#FFC300] text-[#4D0A7D] hover:bg-[#FFD24D]" : "border border-white/80 bg-transparent text-white hover:bg-white/10"}`}
                 >
                   {translate(locale, "transfer.link.tours")}
                 </Link>
@@ -163,7 +165,7 @@ export default async function PublicTransferPage({
               </div>
               <TransferHeroNotices locale={locale} />
             </div>
-            <div className="grid w-full max-w-xs grid-cols-1 gap-3 rounded-[28px] border border-white/20 bg-white/10 p-4 text-center text-white shadow-sm backdrop-blur md:max-w-[320px]">
+            <div className={`grid w-full max-w-xs grid-cols-1 gap-3 rounded-[28px] p-4 text-center text-white shadow-sm backdrop-blur md:max-w-[320px] ${isFunjet ? "border border-[#FFD86E]/30 bg-[linear-gradient(180deg,rgba(255,195,0,0.15),rgba(255,255,255,0.08))]" : "border border-white/20 bg-white/10"}`}>
               {heroStats.map((stat) => (
                 <div key={stat.labelKey} className="space-y-1">
                   <p className="text-xs uppercase tracking-[0.4em] text-white/70">
@@ -208,17 +210,27 @@ export default async function PublicTransferPage({
           </section>
         ) : null}
 
-        <section className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-500">
-            {locale === "es" ? "Planifica todo en un solo flujo" : locale === "fr" ? "Planifiez tout en un seul flux" : "Plan everything in one flow"}
-          </p>
-          <h2 className="mt-2 text-xl font-bold text-slate-900">
+        <section className={`p-6 shadow-sm ${isFunjet ? "rounded-[34px] border border-[#E9D7FA] bg-[linear-gradient(135deg,#ffffff_0%,#f7edff_100%)]" : "rounded-[30px] border border-slate-200 bg-white"}`}>
+          <p className={`text-xs uppercase tracking-[0.35em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
             {isFunjet
               ? locale === "es"
-                ? "Reserva tu traslado y completa tu viaje en un solo lugar"
+                ? "Flow de reserva"
                 : locale === "fr"
-                  ? "Reservez votre transfert et completez votre voyage au meme endroit"
-                  : "Book your transfer and complete your trip in one place"
+                  ? "Flow de reservation"
+                  : "Booking flow"
+              : locale === "es"
+                ? "Planifica todo en un solo flujo"
+                : locale === "fr"
+                  ? "Planifiez tout en un seul flux"
+                  : "Plan everything in one flow"}
+          </p>
+          <h2 className={`mt-2 text-xl ${isFunjet ? "font-bold text-[#34114A]" : "font-bold text-slate-900"}`}>
+            {isFunjet
+              ? locale === "es"
+                ? "Arma llegada, salida y experiencias desde una sola vista"
+                : locale === "fr"
+                  ? "Construisez arrivee, retour et experiences depuis une seule vue"
+                  : "Build arrival, return, and experiences from one view"
               : locale === "es"
                 ? "Combina traslado + hotel + tours sin salir de Proactivitis"
                 : locale === "fr"
@@ -236,7 +248,7 @@ export default async function PublicTransferPage({
             ) : null}
             <Link
               href={toursRootHref}
-              className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-400"
+              className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition ${isFunjet ? "border border-[#FFD86E] bg-[#FFC300] text-[#4D0A7D] hover:bg-[#FFD24D]" : "border border-slate-300 text-slate-700 hover:border-slate-400"}`}
             >
               {locale === "es" ? "Ver tours" : locale === "fr" ? "Voir excursions" : "View tours"}
             </Link>
@@ -259,9 +271,9 @@ export default async function PublicTransferPage({
           </div>
         </section>
 
-        <section className="rounded-[36px] border border-slate-100 bg-white/90 p-6 shadow-2xl">
+        <section className={`p-6 shadow-2xl ${isFunjet ? "rounded-[38px] border border-[#E9D7FA] bg-[linear-gradient(180deg,#ffffff_0%,#f8f0ff_100%)]" : "rounded-[36px] border border-slate-100 bg-white/90"}`}>
           <Suspense fallback={<div />}>
-            {transfersV2Enabled ? (
+            {isFunjet || transfersV2Enabled ? (
               <TrasladoSearchV2 />
             ) : (
               <TrasladoSearch hotels={options} originPoints={originPoints} />
@@ -269,12 +281,24 @@ export default async function PublicTransferPage({
           </Suspense>
         </section>
 
-        <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
-            {translate(locale, "transfer.links.subtitle")}
+        <section className={`p-8 shadow-lg ${isFunjet ? "rounded-[34px] border border-[#E9D7FA] bg-white" : "rounded-[32px] border border-slate-100 bg-white/90"}`}>
+          <p className={`text-xs uppercase tracking-[0.4em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
+            {isFunjet
+              ? locale === "es"
+                ? "Rutas que mas se abren"
+                : locale === "fr"
+                  ? "Routes les plus consultees"
+                  : "Most opened routes"
+              : translate(locale, "transfer.links.subtitle")}
           </p>
-          <h2 className="mt-3 text-2xl font-bold text-slate-900">
-            {translate(locale, "transfer.links.title")}
+          <h2 className={`mt-3 text-2xl ${isFunjet ? "font-bold text-[#34114A]" : "font-bold text-slate-900"}`}>
+            {isFunjet
+              ? locale === "es"
+                ? "Abre una ruta y decide por reputacion visual"
+                : locale === "fr"
+                  ? "Ouvrez un itineraire et decidez par reputation visuelle"
+                  : "Open a route and decide with a more visual reputation layer"
+              : translate(locale, "transfer.links.title")}
           </h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {PUNTA_CANA_TRANSFER_LINKS.map((item) => (

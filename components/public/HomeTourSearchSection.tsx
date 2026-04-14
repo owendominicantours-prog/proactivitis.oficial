@@ -3,6 +3,8 @@ import type { Prisma } from "@prisma/client";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 import { Locale } from "@/lib/translations";
 import HomeTourSearch from "@/components/public/HomeTourSearch";
+import { SITE_CONFIG } from "@/lib/site-config";
+import { resolveFunjetTourTitle } from "@/lib/funjetTourTitles";
 
 let tourTranslationTableExists: boolean | null = null;
 
@@ -54,10 +56,13 @@ type Props = {
 
 export default async function HomeTourSearchSection({ locale }: Props) {
   const tours = await fetchTourSearchItems(locale);
+  const isFunjet = SITE_CONFIG.variant === "funjet";
   const searchItems = tours.map((tour) => ({
     id: tour.id,
     slug: tour.slug,
-    title: tour.translations?.[0]?.title ?? tour.title,
+    title: isFunjet
+      ? resolveFunjetTourTitle(tour.slug, tour.translations?.[0]?.title ?? tour.title)
+      : tour.translations?.[0]?.title ?? tour.title,
     image: tour.heroImage,
     location: tour.location
   }));

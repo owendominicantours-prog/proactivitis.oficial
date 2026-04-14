@@ -3,12 +3,15 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const suggestions = ["Punta Cana", "Cancún", "Safari", "Tours gastronómicos", "Aventura"];
+import { SITE_CONFIG } from "@/lib/site-config";
+
+const suggestions = ["Punta Cana", "Saona", "Buggy", "Snorkel", "Catamaran"];
 
 export function PublicHeaderSearch() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const isFunjet = SITE_CONFIG.variant === "funjet";
 
   const handleSubmit = () => {
     const params = new URLSearchParams();
@@ -21,8 +24,12 @@ export function PublicHeaderSearch() {
     <div className="relative">
       <button
         type="button"
-        aria-label="Abrir búsqueda"
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+        aria-label="Open search"
+        className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
+          isFunjet
+            ? "border border-white/20 bg-white/10 text-white hover:border-[#FFC300] hover:text-[#FFC300]"
+            : "border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+        }`}
         onClick={() => setOpen((prev) => !prev)}
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -31,31 +38,47 @@ export function PublicHeaderSearch() {
         </svg>
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-30 mt-2 w-80 rounded-2xl border border-slate-200 bg-white p-4 shadow-lg">
+        <div
+          className={`absolute right-0 top-full z-30 mt-2 w-80 rounded-[26px] p-4 shadow-lg ${
+            isFunjet
+              ? "border border-white/10 bg-[linear-gradient(180deg,#4D0A7D_0%,#6A0DAD_100%)] text-white shadow-[0_24px_65px_rgba(49,7,79,0.38)]"
+              : "border border-slate-200 bg-white"
+          }`}
+        >
           <div className="flex items-center justify-between gap-2">
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-800 outline-none"
-              placeholder="Buscar destino o tour"
+              className={`flex-1 rounded-2xl px-4 py-3 text-sm font-semibold outline-none ${
+                isFunjet
+                  ? "border border-white/15 bg-white/12 text-white placeholder:text-white/55"
+                  : "border border-slate-200 bg-slate-50 text-slate-800"
+              }`}
+              placeholder={isFunjet ? "Busca Saona, buggy o snorkel" : "Buscar destino o tour"}
             />
             <button
               type="button"
               onClick={handleSubmit}
-              className="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-white transition hover:bg-slate-800"
+              className={`rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.35em] transition ${
+                isFunjet ? "bg-[#FFC300] text-[#4D0A7D] hover:bg-[#FFD24D]" : "bg-slate-900 text-white hover:bg-slate-800"
+              }`}
             >
-              Ir
+              {isFunjet ? "Go" : "Ir"}
             </button>
           </div>
-          <div className="mt-3 space-y-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-            Sugerencias
+          <div className={`mt-3 text-xs font-semibold uppercase tracking-[0.3em] ${isFunjet ? "text-white/65" : "text-slate-500"}`}>
+            {isFunjet ? "Ideas rapidas" : "Sugerencias"}
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
             {suggestions.map((item) => (
               <button
                 key={item}
                 type="button"
-                className="rounded-full border border-slate-200 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+                className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.2em] transition ${
+                  isFunjet
+                    ? "border border-white/15 bg-white/8 text-white/88 hover:border-[#FFC300] hover:text-[#FFC300]"
+                    : "border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                }`}
                 onClick={() => {
                   setQuery(item);
                   router.push(`/tours?destination=${encodeURIComponent(item)}`);
