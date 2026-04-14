@@ -15,10 +15,6 @@ export function PublicAuthButtons() {
     return <div className={`text-sm ${isFunjet ? "text-white/70" : "text-slate-500"}`}>Cargando...</div>;
   }
 
-  if (isFunjet && !session) {
-    return null;
-  }
-
   if (session) {
     const isAdmin = session.user?.role === "ADMIN";
     const portalHref = isFunjet ? (isAdmin ? "/admin" : "/") : "/portal";
@@ -75,19 +71,24 @@ export function PublicAuthButtons() {
   }
 
   return (
-    <button
-      onClick={() => signIn(undefined, { callbackUrl: "/" })}
-      className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
-        isFunjet
-          ? "border border-white/20 bg-white/10 text-white hover:border-[#FFC300] hover:text-[#FFC300]"
-          : "border border-slate-300 text-slate-700 hover:border-slate-400"
-      }`}
-      aria-label="Iniciar sesion"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.5 19.5a6.5 6.5 0 0113 0" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 11.5a4 4 0 100-8 4 4 0 000 8z" />
-      </svg>
-    </button>
+    isFunjet ? (
+      <Link
+        href="/auth/login"
+        className="flex h-10 items-center justify-center rounded-full border border-white/20 bg-white/10 px-4 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:border-[#FFC300] hover:text-[#FFC300]"
+      >
+        Admin
+      </Link>
+    ) : (
+      <button
+        onClick={() => signIn(undefined, { callbackUrl: "/" })}
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 text-slate-700 transition hover:border-slate-400"
+        aria-label="Iniciar sesion"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.5 19.5a6.5 6.5 0 0113 0" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 11.5a4 4 0 100-8 4 4 0 000 8z" />
+        </svg>
+      </button>
+    )
   );
 }
