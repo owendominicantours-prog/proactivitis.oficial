@@ -86,7 +86,7 @@ const FUNJET_CONFIG: SiteConfig = {
   legalName: "Funjet Tour Oprador",
   siteName: "Funjet Tour Oprador",
   url: "https://funjettouroprador.com",
-  logoSrc: "/logo.png",
+  logoSrc: "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/funjet/Funjet%20Logo.png",
   logoAlt: "Funjet Tour Oprador",
   phone: "+1 (829) 475-6298",
   phoneMachine: "18294756298",

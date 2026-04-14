@@ -7,6 +7,8 @@ import { getTourReviewSummaryForTours } from "@/lib/tourReviews";
 import { getActiveOfferPriceMapForTours } from "@/lib/offerPricing";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { SITE_CONFIG } from "@/lib/site-config";
+import { resolveFunjetTourTitle } from "@/lib/funjetTourTitles";
 
 let tourTranslationTableExists: boolean | null = null;
 
@@ -115,6 +117,7 @@ type Props = {
 };
 
 export default async function FeaturedToursSection({ locale }: Props) {
+  const isFunjet = SITE_CONFIG.variant === "funjet";
   const session = await getServerSession(authOptions);
   const userId = (session?.user as { id?: string } | null)?.id ?? null;
   const preference = userId
@@ -159,10 +162,7 @@ export default async function FeaturedToursSection({ locale }: Props) {
         <TourCard
           key={tour.id}
           slug={tour.slug}
-          title={
-            tour.translations?.[0]?.title ??
-            tour.title
-          }
+          title={isFunjet ? resolveFunjetTourTitle(tour.slug, tour.translations?.[0]?.title ?? tour.title) : tour.translations?.[0]?.title ?? tour.title}
           location={tour.location ?? "Destino Premium"}
           zone={tour.location ? tour.location.split(",")[0] : "Punta Cana"}
           price={tour.price}

@@ -57,7 +57,9 @@ export const Header = ({
               className="h-10 max-w-[150px] w-auto origin-left object-contain transition-transform sm:h-14 sm:max-w-[190px] md:h-12 md:max-w-none md:scale-[var(--logo-scale)]"
               style={{ "--logo-scale": logoScale } as CSSProperties}
             />
-            {isFunjet ? <span className="hidden font-[var(--font-brand)] text-2xl text-[#FFC300] md:inline">{logoAlt}</span> : null}
+            {isFunjet && logoSrc === "/logo.png" ? (
+              <span className="hidden font-[var(--font-brand)] text-2xl text-[#FFC300] md:inline">{logoAlt}</span>
+            ) : null}
           </Link>
         </div>
 

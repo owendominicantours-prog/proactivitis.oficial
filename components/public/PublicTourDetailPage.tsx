@@ -23,6 +23,7 @@ import { getActiveOfferPriceMapForTours } from "@/lib/offerPricing";
 import { formatDurationDisplay } from "@/lib/formatDuration";
 import { normalizeTourLocation, normalizeTourLanguages } from "@/lib/tour-display";
 import { SITE_CONFIG } from "@/lib/site-config";
+import { resolveFunjetTourTitle } from "@/lib/funjetTourTitles";
 
 const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
 
@@ -1751,9 +1752,11 @@ export default async function TourDetailPage({
           ? itinerarySource
           : [];
   const hasVisualTimeline = visualTimeline.length > 0;
-  const localizedTitle = ensureLeadingCapital(translation?.title ?? tour.title);
-  const heroTitle = resolveTourH1(tour.slug, locale, localizedTitle);
   const isFunjet = SITE_CONFIG.variant === "funjet";
+  const localizedTitle = ensureLeadingCapital(
+    isFunjet ? resolveFunjetTourTitle(tour.slug, translation?.title ?? tour.title) : translation?.title ?? tour.title
+  );
+  const heroTitle = resolveTourH1(tour.slug, locale, localizedTitle);
   const isDiscoveryMode = presentationMode === "discovery" && !isFunjet;
   const discoveryBadgeLabel = localeLabel(locale, "Ficha ProDiscovery", "ProDiscovery listing", "Fiche ProDiscovery");
   const visibleHeroTitle = isDiscoveryMode
@@ -1786,7 +1789,9 @@ export default async function TourDetailPage({
   const trustBadges = buildTourTrustBadges(locale, languages, categories);
   const faqList = buildTourFaq(locale, tour.slug, heroTitle, durationLabel, displayTime, priceLabel);
   const relatedTourCards = relatedTours.map((item) => {
-    const localizedRelatedTitle = ensureLeadingCapital(item.translations?.[0]?.title ?? item.title);
+    const localizedRelatedTitle = ensureLeadingCapital(
+      isFunjet ? resolveFunjetTourTitle(item.slug, item.translations?.[0]?.title ?? item.title) : item.translations?.[0]?.title ?? item.title
+    );
     const relatedImage = resolveTourHeroImage(item);
     const relatedHref = locale === "es" ? `/tours/${item.slug}` : `/${locale}/tours/${item.slug}`;
     return {

@@ -8,6 +8,8 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SITE_CONFIG } from "@/lib/site-config";
 
+const siteLogoUrl = SITE_CONFIG.logoSrc.startsWith("http") ? SITE_CONFIG.logoSrc : `${SITE_CONFIG.url}${SITE_CONFIG.logoSrc}`;
+
 const bodyFont = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
@@ -55,7 +57,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: `${SITE_CONFIG.url}${SITE_CONFIG.logoSrc}`,
+        url: siteLogoUrl,
         alt: `${SITE_CONFIG.siteName} logo`
       }
     ]
@@ -67,7 +69,7 @@ export const metadata: Metadata = {
       SITE_CONFIG.variant === "funjet"
         ? "Reserva tours y traslados con Funjet Tour Oprador. Atencion directa, confirmacion rapida y soporte por WhatsApp."
         : "Reserva tours, traslados privados y actividades con Proactivitis. Confirmacion inmediata, precios claros y soporte 24/7.",
-    images: [`${SITE_CONFIG.url}${SITE_CONFIG.logoSrc}`]
+    images: [siteLogoUrl]
   }
 };
 

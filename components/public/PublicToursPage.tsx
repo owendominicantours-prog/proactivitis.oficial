@@ -13,6 +13,7 @@ import { authOptions } from "@/lib/auth";
 import StructuredData from "@/components/schema/StructuredData";
 import { PROACTIVITIS_URL } from "@/lib/seo";
 import { SITE_CONFIG } from "@/lib/site-config";
+import { resolveFunjetTourTitle } from "@/lib/funjetTourTitles";
 import { ensureLeadingCapital } from "@/lib/text-format";
 import { getActiveOfferPriceMapForTours } from "@/lib/offerPricing";
 import { formatTourLanguages, normalizeTourLocation } from "@/lib/tour-display";
@@ -380,7 +381,11 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
     "@type": "ListItem",
     position: index + 1,
     url: `${PROACTIVITIS_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`,
-    name: ensureLeadingCapital(tour.translations?.[0]?.title ?? tour.title)
+    name: ensureLeadingCapital(
+      isFunjet
+        ? resolveFunjetTourTitle(tour.slug, tour.translations?.[0]?.title ?? tour.title)
+        : tour.translations?.[0]?.title ?? tour.title
+    )
   }));
   const itemListSchema = {
     "@context": "https://schema.org",
@@ -572,7 +577,9 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {toursSorted.map((tour) => {
                 const translation = tour.translations?.[0];
-                const localizedTitle = ensureLeadingCapital(translation?.title ?? tour.title);
+                const localizedTitle = ensureLeadingCapital(
+                  isFunjet ? resolveFunjetTourTitle(tour.slug, translation?.title ?? tour.title) : translation?.title ?? tour.title
+                );
                 const tourPath = locale === "es" ? `/tours/${tour.slug}` : `/${locale}/tours/${tour.slug}`;
                 const verifiedText = t("tour.card.verifiedLabel");
                 const fromLabel = t("tour.card.fromLabel");
