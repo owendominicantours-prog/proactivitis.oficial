@@ -186,7 +186,7 @@ export function PublicFooter() {
                     key={link.href}
                     href={link.href}
                     className="block font-semibold text-white transition hover:text-[#FFC300]"
-                    style={{ color: "#FFFFFF" }}
+                    style={{ color: "#FFFFFF", opacity: 1, WebkitTextFillColor: "#FFFFFF" }}
                   >
                     {link.label}
                   </Link>
@@ -219,13 +219,13 @@ export function PublicFooter() {
             </div>
             {groups.map((group) => (
               <div key={group.title} className="space-y-3">
-                <p className="text-xs uppercase tracking-[0.3em] text-white" style={{ color: "#FFFFFF" }}>{group.title}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-white" style={{ color: "#FFFFFF", opacity: 1, WebkitTextFillColor: "#FFFFFF" }}>{group.title}</p>
                 {group.links.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
                     className="block font-semibold text-white transition hover:text-[#FFC300]"
-                    style={{ color: "#FFFFFF" }}
+                    style={{ color: "#FFFFFF", opacity: 1, WebkitTextFillColor: "#FFFFFF" }}
                   >
                     {link.label}
                   </Link>
