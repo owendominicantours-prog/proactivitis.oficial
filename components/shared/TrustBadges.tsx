@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { Locale, translate, type TranslationKey } from "@/lib/translations";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 type BadgeLink = {
   key: "trustpilot" | "google";
@@ -35,15 +36,16 @@ type TrustBadgesProps = {
 
 export function TrustBadges({ locale, compact, className }: TrustBadgesProps) {
   const t = (key: TranslationKey) => translate(locale, key);
+  const isFunjet = SITE_CONFIG.variant === "funjet";
 
   return (
     <div className={className}>
       {!compact && (
         <div className="mb-3 space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">
+          <p className={`text-xs font-semibold uppercase tracking-[0.4em] ${isFunjet ? "text-white" : "text-slate-400"}`}>
             {t("trust.badges.eyebrow")}
           </p>
-          <p className="text-sm text-slate-500">{t("trust.badges.body")}</p>
+          <p className={`text-sm ${isFunjet ? "text-white/80" : "text-slate-500"}`}>{t("trust.badges.body")}</p>
         </div>
       )}
       <div className="flex flex-wrap gap-3">
@@ -53,13 +55,15 @@ export function TrustBadges({ locale, compact, className }: TrustBadgesProps) {
             href={link.href}
             target="_blank"
             rel="noreferrer"
-            className={`group flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition hover:-translate-y-0.5 ${link.ring}`}
+            className={`group flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition hover:-translate-y-0.5 ${
+              isFunjet ? "border-white/15 bg-white/8" : link.ring
+            }`}
           >
             <span className={`grid h-7 w-7 place-items-center rounded-full ${link.iconBg}`}>
               <Star className={`h-4 w-4 ${link.accent}`} />
             </span>
-            <span className="text-slate-700">{t(`trust.badges.${link.key}`)}</span>
-            <span className="text-[0.65rem] text-slate-400">{t("trust.badges.cta")}</span>
+            <span className={isFunjet ? "text-white" : "text-slate-700"}>{t(`trust.badges.${link.key}`)}</span>
+            <span className={`text-[0.65rem] ${isFunjet ? "text-white/75" : "text-slate-400"}`}>{t("trust.badges.cta")}</span>
           </Link>
         ))}
       </div>

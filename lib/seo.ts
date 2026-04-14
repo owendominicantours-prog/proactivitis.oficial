@@ -5,7 +5,9 @@ export const SAME_AS_URLS = [
 ];
 
 export const PROACTIVITIS_URL = SITE_CONFIG.url;
-export const PROACTIVITIS_LOGO = `${PROACTIVITIS_URL}${SITE_CONFIG.logoSrc}`;
+const resolveSiteAssetUrl = (value: string) =>
+  value.startsWith("http://") || value.startsWith("https://") ? value : `${PROACTIVITIS_URL}${value}`;
+export const PROACTIVITIS_LOGO = resolveSiteAssetUrl(SITE_CONFIG.logoSrc);
 export const PROACTIVITIS_PHONE = SITE_CONFIG.phone;
 export const PROACTIVITIS_PHONE_MACHINE = SITE_CONFIG.phoneMachine;
 export const PROACTIVITIS_WHATSAPP_NUMBER = PROACTIVITIS_PHONE_MACHINE;

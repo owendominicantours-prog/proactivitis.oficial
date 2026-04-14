@@ -227,10 +227,10 @@ export default async function PublicTransferPage({
           <h2 className={`mt-2 text-xl ${isFunjet ? "font-bold text-[#34114A]" : "font-bold text-slate-900"}`}>
             {isFunjet
               ? locale === "es"
-                ? "Arma llegada, salida y experiencias desde una sola vista"
+                ? "Arma llegada, salida y planes del viaje desde una sola vista"
                 : locale === "fr"
-                  ? "Construisez arrivee, retour et experiences depuis une seule vue"
-                  : "Build arrival, return, and experiences from one view"
+                  ? "Construisez arrivee, retour et plan du voyage depuis une seule vue"
+                  : "Build arrival, return, and the rest of the trip from one view"
               : locale === "es"
                 ? "Combina traslado + hotel + tours sin salir de Proactivitis"
                 : locale === "fr"

@@ -19,6 +19,7 @@ import {
   SAME_AS_URLS
 } from "@/lib/seo";
 import { Locale, translate } from "@/lib/translations";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 type LandingLevel = "country" | "destination" | "microzone";
 
@@ -145,12 +146,15 @@ const buildSegmentsContext = async (segments: string[]): Promise<LandingContext 
   };
 };
 
-const DEFAULT_TITLE = "Traslados Proactivitis";
-const DEFAULT_DESCRIPTION = "Descubre la red global de traslados premium de Proactivitis.";
+const DEFAULT_TITLE = SITE_CONFIG.variant === "funjet" ? "Traslados privados Funjet" : "Traslados Proactivitis";
+const DEFAULT_DESCRIPTION =
+  SITE_CONFIG.variant === "funjet"
+    ? "Descubre la red de traslados privados de Funjet para moverte entre aeropuerto, hoteles y rutas clave."
+    : "Descubre la red global de traslados premium de Proactivitis.";
 const DEFAULT_METADATA_IMAGE = "https://www.proactivitis.com/transfer/sedan.png";
 const TRANSFER_BANNER_IMAGE =
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
-const TRANSFER_BASE_URL = "https://proactivitis.com/traslado";
+const TRANSFER_BASE_URL = `${SITE_CONFIG.url}/traslado`;
 
 const resolveLocale = async (): Promise<Locale> => {
   const requestHeaders = await headers();
@@ -207,7 +211,7 @@ export async function generateMetadata({
     description = translate(LOCALE, "transfer.metadata.description.country", { country: countryName });
     description = ensureContains(description, countryName);
     description = ensureContains(description, country.slug.replace(/-/g, " "));
-    keywords.push(`proactivitis ${countryName}`);
+    keywords.push(`${SITE_CONFIG.variant === "funjet" ? "funjet" : "proactivitis"} ${countryName}`);
   } else if (level === "destination" && destination) {
     title = translate(LOCALE, "transfer.metadata.title.destination", { destination: destinationName });
     description =
@@ -215,7 +219,7 @@ export async function generateMetadata({
       translate(LOCALE, "transfer.metadata.description.destination", { destination: destinationName });
     description = ensureContains(description, destinationName);
     description = ensureContains(description, countryName);
-    keywords.push(`transporte ${destinationName}`, `proactivitis ${countryName}`);
+    keywords.push(`transporte ${destinationName}`, `${SITE_CONFIG.variant === "funjet" ? "funjet" : "proactivitis"} ${countryName}`);
   } else if (level === "microzone" && microZone) {
     title = translate(LOCALE, "transfer.metadata.title.microzone", { hotel: hotelName });
     description = translate(LOCALE, "transfer.metadata.description.microzone", {
@@ -224,11 +228,11 @@ export async function generateMetadata({
     });
     description = ensureContains(description, hotelName);
     description = ensureContains(description, countryName);
-    keywords.push(`traslado ${hotelName}`, `transporte ${destinationName ?? countryName}`, `proactivitis ${countryName}`);
+    keywords.push(`traslado ${hotelName}`, `transporte ${destinationName ?? countryName}`, `${SITE_CONFIG.variant === "funjet" ? "funjet" : "proactivitis"} ${countryName}`);
   }
 
   if (!keywords.length) {
-    keywords.push(`proactivitis ${countryName}`);
+    keywords.push(`${SITE_CONFIG.variant === "funjet" ? "funjet" : "proactivitis"} ${countryName}`);
   }
 
   if (level === "destination") {
@@ -263,7 +267,7 @@ export async function generateMetadata({
       title,
       description,
       url: pageUrl,
-      siteName: "Proactivitis",
+      siteName: SITE_CONFIG.siteName,
       type: "website",
       images: [
         {
@@ -546,7 +550,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
         <div className="absolute inset-0">
           <Image
             src={TRANSFER_BANNER_IMAGE}
-            alt="Traslados Proactivitis"
+            alt={SITE_CONFIG.variant === "funjet" ? "Traslados Funjet" : "Traslados Proactivitis"}
             fill
             sizes="100vw"
             className="object-cover"

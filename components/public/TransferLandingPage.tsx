@@ -26,10 +26,11 @@ import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL } from
 import { isIndexableTransferVariant } from "@/lib/seo-index-policy";
 import { applyTransferSchemaOverride, getTransferSchemaOverride } from "@/lib/schemaManager";
 import { getApprovedTransferReviewsForLanding, getTransferReviewSummaryForLanding } from "@/lib/transferReviews";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 const DEFAULT_AIRPORT_SLUG = "puj-airport";
 const DEFAULT_AIRPORT_NAME = "Punta Cana International Airport (PUJ)";
-const BASE_URL = "https://proactivitis.com";
+const BASE_URL = SITE_CONFIG.url;
 const FALLBACK_PRICE = 44;
 const FALLBACK_HERO_IMAGES = ["/transfer/mini van.png", "/transfer/sedan.png", "/transfer/suv.png"];
 const DEFAULT_ORIGIN_LABELS: Record<Locale, string> = {
@@ -193,7 +194,7 @@ const buildFallbackLanding = ({
         answer: "Mantenemos comunicacion continua por WhatsApp y confirmamos el pickup antes de tu llegada."
       }
     ],
-    seoTitle: `Transfer privado ${originName} a ${destinationName} | Proactivitis`,
+    seoTitle: `Transfer privado ${originName} a ${destinationName} | ${SITE_CONFIG.name}`,
     metaDescription: `Servicio premium desde ${originName} hasta ${destinationName} con chofer bilingue y confirmacion inmediata.`,
     keywords: [
       `${originName} ${destinationName} transfer`,
@@ -468,7 +469,7 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
         title: seoTitle,
         description: seoDescription,
         url: canonical,
-        siteName: "Proactivitis",
+        siteName: SITE_CONFIG.siteName,
         type: "website",
         locale: locale === "es" ? "es_DO" : locale === "fr" ? "fr_FR" : "en_US",
         images: [
@@ -494,7 +495,7 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
   const canonicalTargetSlug = canIndexVariant ? landing.landingSlug : parsedSlug.baseSlug;
   const canonical = buildCanonical(canonicalTargetSlug, locale);
   const marketTitles = buildMarketTransferTitles(locale, landing.hotelName);
-  const seoTitle = ensureLeadingCapital(`${marketTitles.seoTitle} | Proactivitis`);
+  const seoTitle = ensureLeadingCapital(`${marketTitles.seoTitle} | ${SITE_CONFIG.name}`);
   const rawDescription = ensureMetaDescription(localized.metaDescription, locale, landing.hotelName);
   const seoDescription = rawDescription.endsWith(".") ? rawDescription : `${rawDescription}.`;
   const imageUrl = encodeURI(`${BASE_URL}${localized.heroImage}`);
@@ -518,7 +519,7 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
       title: seoTitle,
       description: seoDescription,
       url: canonical,
-      siteName: "Proactivitis",
+      siteName: SITE_CONFIG.siteName,
       type: "website",
       locale: locale === "es" ? "es_DO" : locale === "fr" ? "fr_FR" : "en_US",
       images: [
@@ -631,9 +632,9 @@ export async function TransferLandingPage({
       },
       provider: {
         "@type": "TravelAgency",
-        name: "Proactivitis",
+        name: SITE_CONFIG.name,
         url: BASE_URL,
-        logo: `${BASE_URL}/icon.png`
+        logo: SITE_CONFIG.logoSrc.startsWith("http") ? SITE_CONFIG.logoSrc : `${BASE_URL}${SITE_CONFIG.logoSrc}`
       },
       image: [toAbsoluteImageUrl(generic.heroImage)],
       offers: {
@@ -822,10 +823,10 @@ export async function TransferLandingPage({
     serviceType: t("transferLanding.schema.serviceType", { hotel: localizedLanding.hotelName }),
     provider: {
       "@type": "TravelAgency",
-      name: "Proactivitis",
+      name: SITE_CONFIG.name,
       url: BASE_URL,
-      logo: `${BASE_URL}/icon.png`,
-      sameAs: ["https://www.instagram.com/proactivitis/", "https://www.facebook.com/proactivitis"]
+      logo: SITE_CONFIG.logoSrc.startsWith("http") ? SITE_CONFIG.logoSrc : `${BASE_URL}${SITE_CONFIG.logoSrc}`,
+      sameAs: SITE_CONFIG.sameAs
     },
     areaServed: [
       {
@@ -891,11 +892,11 @@ export async function TransferLandingPage({
     "@context": "https://schema.org",
     "@type": "TravelAgency",
     "@id": `${PROACTIVITIS_URL}#organization`,
-    name: "Proactivitis",
+    name: SITE_CONFIG.name,
     url: BASE_URL,
-    logo: `${BASE_URL}/icon.png`,
+    logo: SITE_CONFIG.logoSrc.startsWith("http") ? SITE_CONFIG.logoSrc : `${BASE_URL}${SITE_CONFIG.logoSrc}`,
     image: [toAbsoluteImageUrl(localizedLanding.heroImage)],
-    sameAs: ["https://www.instagram.com/proactivitis/", "https://www.facebook.com/proactivitis"],
+    sameAs: SITE_CONFIG.sameAs,
     telephone: PROACTIVITIS_LOCALBUSINESS.telephone,
     email: PROACTIVITIS_LOCALBUSINESS.email,
     priceRange: "$$",
