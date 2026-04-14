@@ -24,15 +24,6 @@ const publicNavLinks: Array<{
   {
     labels: { es: "Traslado", en: "Transfer", fr: "Transfert" },
     href: "/traslado"
-  },
-  {
-    labels: { es: "Alojamiento", en: "Accommodation", fr: "Hebergement" },
-    href: "/hoteles",
-    hrefByLocale: {
-      es: "/hoteles",
-      en: "/hotels",
-      fr: "/hotels"
-    }
   }
 ];
 
@@ -53,12 +44,18 @@ export function PublicHeader() {
     label: navItem.labels[locale] ?? navItem.labels.es,
     href: getLocalizedPath(navItem.hrefByLocale?.[locale] ?? navItem.href, locale)
   }));
+  const isFunjet = SITE_CONFIG.variant === "funjet";
   const dropdownNav = {
     label: locale === "es" ? "Explora" : locale === "fr" ? "Explorer" : "Explore",
-    items: [
-      { label: locale === "es" ? "Contacto" : locale === "fr" ? "Contact" : "Contact", href: getLocalizedPath("/contact", locale) },
-      { label: locale === "es" ? "Blog" : locale === "fr" ? "Guides" : "Guides", href: getLocalizedPath("/news", locale) }
-    ]
+    items: isFunjet
+      ? [
+          { label: locale === "es" ? "Contacto" : locale === "fr" ? "Contact" : "Contact", href: getLocalizedPath("/contact", locale) },
+          { label: locale === "es" ? "Reserva por WhatsApp" : locale === "fr" ? "Reservation WhatsApp" : "Book on WhatsApp", href: getLocalizedPath("/contact", locale) }
+        ]
+      : [
+          { label: locale === "es" ? "Contacto" : locale === "fr" ? "Contact" : "Contact", href: getLocalizedPath("/contact", locale) },
+          { label: locale === "es" ? "Blog" : locale === "fr" ? "Guides" : "Guides", href: getLocalizedPath("/news", locale) }
+        ]
   };
 
   const userName = session?.user?.name ?? session?.user?.email ?? null;

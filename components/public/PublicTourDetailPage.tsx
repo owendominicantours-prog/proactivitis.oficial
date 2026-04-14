@@ -1073,7 +1073,7 @@ type IntentLink = {
   description: string;
 };
 
-const buildCommercialIntentLinks = (locale: Locale, slug: string): IntentLink[] => {
+const buildCommercialIntentLinks = (locale: Locale, slug: string, isFunjet = false): IntentLink[] => {
   const prefix = locale === "es" ? "" : `/${locale}`;
   const links: IntentLink[] = [
     {
@@ -1120,8 +1120,11 @@ const buildCommercialIntentLinks = (locale: Locale, slug: string): IntentLink[] 
         "Private PUJ-to-hotel transfer with fixed rates.",
         "Transfert prive PUJ vers hotel avec tarif fixe."
       )
-    },
-    {
+    }
+  ];
+
+  if (!isFunjet) {
+    links.push({
       href: `${prefix}/${locale === "es" ? "hoteles" : "hotels"}`,
       title: localeLabel(
         locale,
@@ -1137,8 +1140,8 @@ const buildCommercialIntentLinks = (locale: Locale, slug: string): IntentLink[] 
           : "Demandez un devis resort tout inclus avec support personnalise.",
         "Demandez un devis resort tout inclus avec support personnalise."
       )
-    }
-  ];
+    });
+  }
 
   return links;
 };
@@ -1797,7 +1800,7 @@ export default async function TourDetailPage({
   const isSosuaPartyBoatTour =
     tour.slug === "party-boat-sosua" ||
     tour.slug === "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua";
-  const commercialIntentLinks = agencyMode ? [] : buildCommercialIntentLinks(locale, tour.slug);
+  const commercialIntentLinks = agencyMode ? [] : buildCommercialIntentLinks(locale, tour.slug, isFunjet);
   const practicalInfo = buildPracticalInfo(locale, tour.slug);
   const isCocoBongoTour = COCO_BONGO_COMPARISON_TOURS.has(tour.slug);
   const isScapeParkTour = SCAPE_PARK_TOURS.has(tour.slug);

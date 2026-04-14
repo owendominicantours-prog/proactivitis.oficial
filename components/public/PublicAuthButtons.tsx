@@ -3,29 +3,37 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signIn, signOut, useSession } from "next-auth/react";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 export function PublicAuthButtons() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const showPortalButton = session && (pathname === "/" || pathname === "/home");
+  const isFunjet = SITE_CONFIG.variant === "funjet";
 
   if (status === "loading") {
     return <div className="text-sm text-slate-500">Cargando...</div>;
   }
 
+  if (isFunjet && !session) {
+    return null;
+  }
+
   if (session) {
+    const isAdmin = session.user?.role === "ADMIN";
+    const portalHref = isFunjet ? (isAdmin ? "/admin" : "/") : "/portal";
     return (
       <div className="flex items-center gap-2">
-        {showPortalButton ? (
+        {showPortalButton || isFunjet ? (
           <Link
-            href="/portal"
+            href={portalHref}
             className="flex h-10 items-center justify-center rounded-full border border-slate-300 bg-white px-4 text-sm font-semibold uppercase tracking-[0.3em] text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
           >
-            Portal
+            {isFunjet ? (isAdmin ? "Admin" : SITE_CONFIG.name) : "Portal"}
           </Link>
         ) : (
           <Link
-            href="/portal"
+            href={portalHref}
             aria-label="Abrir portal"
             className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:border-slate-400"
           >

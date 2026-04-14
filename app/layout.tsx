@@ -6,6 +6,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,39 +30,44 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://proactivitis.com"),
-  title: "Proactivitis | Tours, Traslados y Actividades para Reservar",
+  metadataBase: new URL(SITE_CONFIG.url),
+  title: `${SITE_CONFIG.siteName} | Tours, Traslados y Actividades para Reservar`,
   description:
-    "Reserva tours, traslados privados y actividades con Proactivitis. Confirmacion inmediata, precios claros y soporte 24/7.",
+    SITE_CONFIG.variant === "funjet"
+      ? "Reserva tours y traslados con Funjet Tour Oprador. Atencion directa, confirmacion rapida y soporte por WhatsApp."
+      : "Reserva tours, traslados privados y actividades con Proactivitis. Confirmacion inmediata, precios claros y soporte 24/7.",
   icons: {
     icon: [
-      { url: "/logo.png", type: "image/png" },
-      { url: "/logo.png", sizes: "96x96", type: "image/png" }
+      { url: SITE_CONFIG.logoSrc, type: "image/png" },
+      { url: SITE_CONFIG.logoSrc, sizes: "96x96", type: "image/png" }
     ],
-    shortcut: ["/logo.png"],
-    apple: [{ url: "/logo.png", sizes: "180x180", type: "image/png" }]
+    shortcut: [SITE_CONFIG.logoSrc],
+    apple: [{ url: SITE_CONFIG.logoSrc, sizes: "180x180", type: "image/png" }]
   },
   openGraph: {
-    title: "Proactivitis | Tours, Traslados y Actividades para Reservar",
+    title: `${SITE_CONFIG.siteName} | Tours, Traslados y Actividades para Reservar`,
     description:
-      "Reserva tours, traslados privados y actividades con Proactivitis. Confirmacion inmediata, precios claros y soporte 24/7.",
-    url: "https://proactivitis.com",
-    siteName: "Proactivitis",
+      SITE_CONFIG.variant === "funjet"
+        ? "Reserva tours y traslados con Funjet Tour Oprador. Atencion directa, confirmacion rapida y soporte por WhatsApp."
+        : "Reserva tours, traslados privados y actividades con Proactivitis. Confirmacion inmediata, precios claros y soporte 24/7.",
+    url: SITE_CONFIG.url,
+    siteName: SITE_CONFIG.siteName,
     type: "website",
     images: [
       {
-        url: "https://www.proactivitis.com/logo.png",
-        alt: "Proactivitis logo"
+        url: `${SITE_CONFIG.url}${SITE_CONFIG.logoSrc}`,
+        alt: `${SITE_CONFIG.siteName} logo`
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    site: "@proactivitis",
-    title: "Proactivitis | Tours, Traslados y Actividades",
+    title: `${SITE_CONFIG.siteName} | Tours, Traslados y Actividades`,
     description:
-      "Reserva tours, traslados privados y actividades con Proactivitis. Confirmacion inmediata, precios claros y soporte 24/7.",
-    images: ["https://www.proactivitis.com/logo.png"]
+      SITE_CONFIG.variant === "funjet"
+        ? "Reserva tours y traslados con Funjet Tour Oprador. Atencion directa, confirmacion rapida y soporte por WhatsApp."
+        : "Reserva tours, traslados privados y actividades con Proactivitis. Confirmacion inmediata, precios claros y soporte 24/7.",
+    images: [`${SITE_CONFIG.url}${SITE_CONFIG.logoSrc}`]
   }
 };
 

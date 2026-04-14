@@ -128,8 +128,8 @@ const FUNJET_CONFIG: SiteConfig = {
       label: { es: "Hablar por WhatsApp", en: "Chat on WhatsApp", fr: "Parler sur WhatsApp" }
     },
     {
-      href: "/news",
-      label: { es: "Guias y consejos", en: "Guides and tips", fr: "Guides et conseils" }
+      href: "/contact",
+      label: { es: "Ayuda para reservar", en: "Booking help", fr: "Aide a la reservation" }
     }
   ]
 };

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "next-auth/middleware";
 
+const isFunjetSite = process.env.NEXT_PUBLIC_SITE_BRAND?.trim().toLowerCase() === "funjet";
+
 const roleRoutes = [
   { base: "/admin", roles: ["ADMIN"] },
   { base: "/supplier", roles: ["SUPPLIER"] },
@@ -13,6 +15,40 @@ const roleRoutes = [
   { base: "/portal/agency", roles: ["AGENCY"] },
   { base: "/portal/customer", roles: ["CUSTOMER"] }
 ];
+
+const funjetBlockedPrefixes = [
+  "/supplier",
+  "/agency",
+  "/customer",
+  "/me",
+  "/chat",
+  "/portal",
+  "/agency-pro",
+  "/agency-transfer",
+  "/review",
+  "/transfer-review",
+  "/hoteles",
+  "/hotels",
+  "/news",
+  "/thingtodo",
+  "/things-to-do",
+  "/prodiscovery",
+  "/become-a-supplier",
+  "/agency-partners",
+  "/agency-program",
+  "/cliente-de-honor",
+  "/search",
+  "/s",
+  "/preview",
+  "/email-preview"
+];
+
+const stripLocalePrefix = (pathname: string) => pathname.replace(/^\/(en|fr)(?=\/|$)/, "") || "/";
+
+const isBlockedForFunjet = (pathname: string) => {
+  const normalized = stripLocalePrefix(pathname.toLowerCase());
+  return funjetBlockedPrefixes.some((prefix) => normalized === prefix || normalized.startsWith(`${prefix}/`));
+};
 
 function matchAllowed(pathname: string, role?: string) {
   const normalized = pathname.toLowerCase();
@@ -28,6 +64,9 @@ function matchAllowed(pathname: string, role?: string) {
 export default withAuth(
   (req) => {
     const { pathname } = req.nextUrl;
+    if (isFunjetSite && isBlockedForFunjet(pathname)) {
+      return new NextResponse("Not Found", { status: 404 });
+    }
     const locale = pathname.startsWith("/en") ? "en" : pathname.startsWith("/fr") ? "fr" : "es";
     const currentLocaleCookie = req.cookies.get("proactivitis-language")?.value;
     const requestHeaders = new Headers(req.headers);

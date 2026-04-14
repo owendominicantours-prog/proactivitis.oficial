@@ -27,11 +27,17 @@ type FooterCopy = {
 const FOOTER_STRUCTURE: SectionDefinition[] = [
   {
     key: "support",
-    hrefs: ["/help-center", "/contact", "/how-it-works", "/faqs"]
+    hrefs:
+      SITE_CONFIG.variant === "funjet"
+        ? ["/contact", "/faqs", "/tours", "/traslado"]
+        : ["/help-center", "/contact", "/how-it-works", "/faqs"]
   },
   {
     key: "company",
-    hrefs: ["/about", "/our-mission", "/press", "/partners"]
+    hrefs:
+      SITE_CONFIG.variant === "funjet"
+        ? ["/about", "/contact", "/legal/terms", "/legal/privacy"]
+        : ["/about", "/our-mission", "/press", "/partners"]
   },
   {
     key: "growth",
@@ -47,15 +53,15 @@ const FOOTER_TRANSLATIONS: Record<Locale, FooterCopy> = {
   es: {
     support: {
       title: "Soporte",
-      links: ["Centro de ayuda", "Contacto", "Como funciona", "FAQs"]
+      links: SITE_CONFIG.variant === "funjet" ? ["Contacto", "FAQs", "Tours", "Traslados"] : ["Centro de ayuda", "Contacto", "Como funciona", "FAQs"]
     },
     company: {
       title: "Empresa",
       links: [
         SITE_CONFIG.variant === "funjet" ? "Sobre Funjet" : "Sobre Proactivitis",
-        "Nuestra mision",
-        "Prensa",
-        "Aliados"
+        SITE_CONFIG.variant === "funjet" ? "Contacto" : "Nuestra mision",
+        SITE_CONFIG.variant === "funjet" ? "Terminos" : "Prensa",
+        SITE_CONFIG.variant === "funjet" ? "Privacidad" : "Aliados"
       ]
     },
     growth: {
@@ -71,15 +77,15 @@ const FOOTER_TRANSLATIONS: Record<Locale, FooterCopy> = {
   en: {
     support: {
       title: "Support",
-      links: ["Help Center", "Contact", "How it works", "FAQs"]
+      links: SITE_CONFIG.variant === "funjet" ? ["Contact", "FAQs", "Tours", "Transfers"] : ["Help Center", "Contact", "How it works", "FAQs"]
     },
     company: {
       title: "Company",
       links: [
         SITE_CONFIG.variant === "funjet" ? "About Funjet" : "About Proactivitis",
-        "Our mission",
-        "Press",
-        "Partners"
+        SITE_CONFIG.variant === "funjet" ? "Contact" : "Our mission",
+        SITE_CONFIG.variant === "funjet" ? "Terms" : "Press",
+        SITE_CONFIG.variant === "funjet" ? "Privacy" : "Partners"
       ]
     },
     growth: {
@@ -95,15 +101,15 @@ const FOOTER_TRANSLATIONS: Record<Locale, FooterCopy> = {
   fr: {
     support: {
       title: "Support",
-      links: ["Centre d'aide", "Contact", "Comment ca marche", "FAQs"]
+      links: SITE_CONFIG.variant === "funjet" ? ["Contact", "FAQs", "Tours", "Transferts"] : ["Centre d'aide", "Contact", "Comment ca marche", "FAQs"]
     },
     company: {
       title: "Entreprise",
       links: [
         SITE_CONFIG.variant === "funjet" ? "A propos de Funjet" : "A propos de Proactivitis",
-        "Notre mission",
-        "Presse",
-        "Partenaires"
+        SITE_CONFIG.variant === "funjet" ? "Contact" : "Notre mission",
+        SITE_CONFIG.variant === "funjet" ? "Conditions" : "Presse",
+        SITE_CONFIG.variant === "funjet" ? "Confidentialite" : "Partenaires"
       ]
     },
     growth: {

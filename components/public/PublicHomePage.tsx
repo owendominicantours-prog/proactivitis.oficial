@@ -253,11 +253,15 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     { path: "/", name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home" },
     { path: "/tours", name: locale === "es" ? "Tours" : locale === "fr" ? "Excursions" : "Tours" },
     { path: "/traslado", name: locale === "es" ? "Traslados" : locale === "fr" ? "Transferts" : "Transfers" },
-    { path: "/news", name: locale === "es" ? "Noticias" : locale === "fr" ? "Actualites" : "News" },
-    {
-      path: locale === "es" ? "/hoteles" : "/hotels",
-      name: locale === "es" ? "Hoteles" : locale === "fr" ? "Hotels" : "Hotels"
-    },
+    ...(!isFunjet
+      ? [
+          { path: "/news", name: locale === "es" ? "Noticias" : locale === "fr" ? "Actualites" : "News" },
+          {
+            path: locale === "es" ? "/hoteles" : "/hotels",
+            name: locale === "es" ? "Hoteles" : locale === "fr" ? "Hotels" : "Hotels"
+          }
+        ]
+      : []),
     { path: "/punta-cana/tours", name: "Punta Cana Tours" },
     { path: "/punta-cana/traslado", name: "Punta Cana Transfers" },
     ...(!isFunjet

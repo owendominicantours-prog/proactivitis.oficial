@@ -444,12 +444,14 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
               >
                 {locale === "es" ? "Traslados" : locale === "en" ? "Transfers" : "Transferts"}
               </Link>
-              <Link
-                href={hotelsHubHref}
-                className="rounded-full border border-slate-300 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-400"
-              >
-                {locale === "es" ? "Hoteles" : "Hotels"}
-              </Link>
+              {!isFunjet ? (
+                <Link
+                  href={hotelsHubHref}
+                  className="rounded-full border border-slate-300 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-400"
+                >
+                  {locale === "es" ? "Hoteles" : "Hotels"}
+                </Link>
+              ) : null}
               {!isFunjet ? (
                 <Link
                   href={premiumTransferHref}

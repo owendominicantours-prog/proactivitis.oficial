@@ -226,12 +226,14 @@ export default async function PublicTransferPage({
                   : "Bundle transfer + hotel + tours without leaving Proactivitis"}
           </h2>
           <div className="mt-4 flex flex-wrap gap-3">
-            <Link
-              href={hotelsRootHref}
-              className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-400"
-            >
-              {locale === "es" ? "Ver hoteles" : locale === "fr" ? "Voir hotels" : "View hotels"}
-            </Link>
+            {!isFunjet ? (
+              <Link
+                href={hotelsRootHref}
+                className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-400"
+              >
+                {locale === "es" ? "Ver hoteles" : locale === "fr" ? "Voir hotels" : "View hotels"}
+              </Link>
+            ) : null}
             <Link
               href={toursRootHref}
               className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-400"
