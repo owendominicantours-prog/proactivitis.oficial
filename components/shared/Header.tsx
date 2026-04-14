@@ -58,6 +58,7 @@ export const Header = ({
                 key={item.href}
                 href={item.href}
                 className="rounded-full border border-transparent px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-white transition hover:border-white/20 hover:bg-white/10 hover:text-[#FFC300]"
+                style={{ color: "#FFFFFF", opacity: 1, WebkitTextFillColor: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,0.18)" }}
               >
                 {item.label}
               </Link>
@@ -69,6 +70,7 @@ export const Header = ({
                   aria-expanded={dropdownOpen}
                   onClick={() => setDropdownOpen((prev) => !prev)}
                   className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-white transition hover:border-white/20 hover:bg-white/15 hover:text-[#FFC300]"
+                  style={{ color: "#FFFFFF", opacity: 1, WebkitTextFillColor: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,0.18)" }}
                 >
                   {dropdownNav.label}
                   <span className="text-sm leading-none">▾</span>
@@ -81,6 +83,7 @@ export const Header = ({
                         href={item.href}
                         onClick={() => setDropdownOpen(false)}
                         className="block rounded-2xl px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-white transition hover:bg-white/10 hover:text-[#FFC300]"
+                        style={{ color: "#FFFFFF", opacity: 1, WebkitTextFillColor: "#FFFFFF" }}
                       >
                         {item.label}
                       </Link>
@@ -113,6 +116,7 @@ export const Header = ({
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
                     className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-white/10 hover:text-[#FFC300]"
+                    style={{ color: "#FFFFFF", opacity: 1, WebkitTextFillColor: "#FFFFFF" }}
                   >
                     {item.label}
                   </Link>
@@ -128,6 +132,7 @@ export const Header = ({
                         href={item.href}
                         onClick={() => setMobileOpen(false)}
                         className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-white/10 hover:text-[#FFC300]"
+                        style={{ color: "#FFFFFF", opacity: 1, WebkitTextFillColor: "#FFFFFF" }}
                       >
                         {item.label}
                       </Link>

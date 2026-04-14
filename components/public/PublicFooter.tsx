@@ -162,18 +162,19 @@ export function PublicFooter() {
                 height={96}
                 className="h-16 w-auto object-contain"
               />
-              <p className="mt-4 text-sm leading-7 text-white">{copy.tagline}</p>
+              <p className="mt-4 text-sm leading-7 text-white" style={{ color: "#FFFFFF", opacity: 1, WebkitTextFillColor: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,0.18)" }}>{copy.tagline}</p>
             </div>
 
             {groups.map((group) => (
-              <div key={group.title} className="rounded-[26px] border border-white/10 bg-white/5 p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.32em] text-white">{group.title}</p>
+              <div key={group.title} className="rounded-[26px] border border-white/12 bg-white/8 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.32em] text-white" style={{ color: "#FFFFFF", opacity: 1, WebkitTextFillColor: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,0.18)" }}>{group.title}</p>
                 <div className="mt-4 space-y-3">
                   {group.links.map((link) => (
                     <Link
                       key={link.href}
                       href={link.href}
                       className="block text-sm font-semibold leading-6 text-white transition hover:text-[#FFC300]"
+                      style={{ color: "#FFFFFF", opacity: 1, WebkitTextFillColor: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,0.18)" }}
                     >
                       {link.label}
                     </Link>
@@ -199,10 +200,10 @@ export function PublicFooter() {
               ))}
             </div>
             <div className="space-y-1">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white" style={{ color: "#FFFFFF", opacity: 1, WebkitTextFillColor: "#FFFFFF" }}>
                 &copy; {new Date().getFullYear()} {SITE_CONFIG.siteName}
               </p>
-              <p className="text-[11px] uppercase tracking-[0.24em] text-white/90">{copy.tagline}</p>
+              <p className="text-[11px] uppercase tracking-[0.24em] text-white/90" style={{ color: "#FFFFFF", opacity: 1, WebkitTextFillColor: "#FFFFFF" }}>{copy.tagline}</p>
             </div>
           </div>
         </div>
