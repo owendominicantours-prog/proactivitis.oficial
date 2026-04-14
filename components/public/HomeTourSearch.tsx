@@ -113,7 +113,10 @@ export default function HomeTourSearch({ locale, tours }: Props) {
                   : "Experience radar"
               : translate(locale, "home.tourSearch.label")}
           </p>
-          <p className={`mt-2 max-w-2xl text-sm leading-6 ${isFunjet ? "!text-white" : "text-slate-700"}`}>
+          <p
+            className={`mt-2 max-w-2xl text-sm leading-6 ${isFunjet ? "" : "text-slate-700"}`}
+            style={isFunjet ? { color: "#FFFFFF" } : undefined}
+          >
             {isFunjet
               ? locale === "es"
                 ? "Escribe una idea simple y te mostramos opciones que encajan rapido. Saona, buggy, snorkel, catamaran o destinos aunque escribas con errores."
@@ -139,7 +142,7 @@ export default function HomeTourSearch({ locale, tours }: Props) {
             }
             className={`w-full rounded-[24px] px-4 py-4 text-sm font-medium outline-none transition ${
               isFunjet
-                ? "border border-white/15 bg-white/10 !text-white placeholder:font-normal placeholder:!text-white focus:border-[#FFD86E] focus:bg-white/12 focus:ring-4 focus:ring-[#FFD86E]/25"
+                ? "border border-white/15 bg-white/10 text-white placeholder:font-normal placeholder:text-white placeholder:opacity-100 focus:border-[#FFD86E] focus:bg-white/12 focus:ring-4 focus:ring-[#FFD86E]/25"
                 : "border-2 border-slate-300 bg-slate-50 text-slate-950 placeholder:font-normal placeholder:text-slate-500 shadow-sm focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-200/60"
             }`}
           />
