@@ -685,8 +685,12 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-2">
           <div className="overflow-hidden rounded-[32px] bg-slate-900">
             <Image
-              src="/mini-portada.png"
-              alt="Grupo de viajeros felices"
+              src={
+                isFunjet
+                  ? "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/funjet/funjet.png"
+                  : "/mini-portada.png"
+              }
+              alt={isFunjet ? "Funjet travelers" : "Grupo de viajeros felices"}
               width={900}
               height={600}
               className="object-cover"
