@@ -147,22 +147,78 @@ export function PublicFooter() {
     }))
   }));
 
+  if (SITE_CONFIG.variant === "funjet") {
+    return (
+      <footer className="relative overflow-hidden border-t border-white/12 bg-[linear-gradient(180deg,#3F0868_0%,#5F10A0_48%,#7425BC_100%)] px-6 py-12 text-white">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,195,0,0.18),transparent_18%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_16%)]" />
+
+        <div className="relative z-10 mx-auto max-w-7xl space-y-8">
+          <div className="grid gap-6 xl:grid-cols-[1.2fr_repeat(4,minmax(0,1fr))]">
+            <div className="rounded-[30px] border border-white/12 bg-white/8 p-6">
+              <Image
+                src={SITE_CONFIG.logoOnDarkSrc}
+                alt={SITE_CONFIG.logoAlt}
+                width={240}
+                height={96}
+                className="h-16 w-auto object-contain"
+              />
+              <p className="mt-4 text-sm leading-7 text-white">{copy.tagline}</p>
+            </div>
+
+            {groups.map((group) => (
+              <div key={group.title} className="rounded-[26px] border border-white/10 bg-white/5 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.32em] text-white">{group.title}</p>
+                <div className="mt-4 space-y-3">
+                  {group.links.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="block text-sm font-semibold leading-6 text-white transition hover:text-[#FFC300]"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-[28px] border border-white/10 bg-white/6 p-5">
+            <TrustBadges locale={locale} compact className="text-white" />
+          </div>
+
+          <div className="flex flex-col gap-4 border-t border-white/10 pt-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-wrap gap-3">
+              {paymentMethods.map((method) => (
+                <span
+                  key={method}
+                  className="rounded-full border border-white/15 bg-white/6 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-white"
+                >
+                  {method}
+                </span>
+              ))}
+            </div>
+            <div className="space-y-1">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white">
+                &copy; {new Date().getFullYear()} {SITE_CONFIG.siteName}
+              </p>
+              <p className="text-[11px] uppercase tracking-[0.24em] text-white/90">{copy.tagline}</p>
+            </div>
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
   return (
     <footer
-      className={`relative isolate overflow-hidden px-6 py-10 text-sm font-[var(--font-open-sans)] ${
-        SITE_CONFIG.variant === "funjet"
-          ? "border-t border-white/20 bg-[linear-gradient(180deg,#4D0A7D_0%,#6A0DAD_58%,#7D2DC0_100%)] text-white"
-          : "border-t border-slate-900 bg-slate-950 text-gray-200"
-      }`}
+      className="relative isolate overflow-hidden border-t border-slate-900 bg-slate-950 px-6 py-10 text-sm font-[var(--font-open-sans)] text-gray-200"
     >
-      <div
-        className={`pointer-events-none absolute inset-0 ${SITE_CONFIG.variant === "funjet" ? "bg-[radial-gradient(circle_at_top_right,rgba(255,195,0,0.18),transparent_20%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_18%)]" : "bg-slate-950"}`}
-        aria-hidden="true"
-      />
+      <div className="pointer-events-none absolute inset-0 bg-slate-950" aria-hidden="true" />
       <div className="relative z-10 mx-auto max-w-6xl space-y-6 px-0 text-white md:hidden">
         <div className="flex flex-col items-center gap-3 rounded-[28px] border border-white/15 bg-white/8 px-5 py-5 text-center text-white">
           <Image
-            src={SITE_CONFIG.variant === "funjet" ? SITE_CONFIG.logoOnDarkSrc : SITE_CONFIG.logoSrc}
+            src={SITE_CONFIG.logoSrc}
             alt={SITE_CONFIG.logoAlt}
             width={220}
             height={88}
@@ -208,7 +264,7 @@ export function PublicFooter() {
             <div className="space-y-4">
               <div className="rounded-[30px] border border-white/15 bg-white/8 px-6 py-6">
                 <Image
-                  src={SITE_CONFIG.variant === "funjet" ? SITE_CONFIG.logoOnDarkSrc : SITE_CONFIG.logoSrc}
+                  src={SITE_CONFIG.logoSrc}
                   alt={SITE_CONFIG.logoAlt}
                   width={240}
                   height={96}

@@ -38,6 +38,110 @@ export const Header = ({
     setDropdownOpen(false);
   }, [pathname]);
 
+  if (isFunjet) {
+    return (
+      <header className="sticky top-0 z-40 border-b border-white/15 bg-[linear-gradient(90deg,rgba(58,6,98,0.98),rgba(106,13,173,0.97),rgba(126,39,198,0.96))] text-white shadow-[0_18px_48px_rgba(58,6,98,0.38)] backdrop-blur">
+        <div className="mx-auto flex min-h-[82px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+          <Link href={homeHref} className="flex min-w-0 items-center">
+            <Image
+              src={logoSrc}
+              alt={logoAlt}
+              width={220}
+              height={74}
+              className="h-12 w-auto object-contain sm:h-14"
+            />
+          </Link>
+
+          <nav className="hidden items-center gap-3 lg:flex">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-full border border-transparent px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-white transition hover:border-white/20 hover:bg-white/10 hover:text-[#FFC300]"
+              >
+                {item.label}
+              </Link>
+            ))}
+            {dropdownNav ? (
+              <div className="relative">
+                <button
+                  type="button"
+                  aria-expanded={dropdownOpen}
+                  onClick={() => setDropdownOpen((prev) => !prev)}
+                  className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-white transition hover:border-white/20 hover:bg-white/15 hover:text-[#FFC300]"
+                >
+                  {dropdownNav.label}
+                  <span className="text-sm leading-none">▾</span>
+                </button>
+                {dropdownOpen ? (
+                  <div className="absolute left-0 top-[calc(100%+10px)] z-50 w-56 rounded-[22px] border border-white/10 bg-[#4A0A76] p-2 shadow-[0_22px_56px_rgba(25,3,40,0.45)]">
+                    {dropdownNav.items.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setDropdownOpen(false)}
+                        className="block rounded-2xl px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-white transition hover:bg-white/10 hover:text-[#FFC300]"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </nav>
+
+          <div className="hidden items-center gap-3 lg:flex">{rightSlot}</div>
+
+          <button
+            type="button"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-white/20 bg-white/10 px-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-white transition hover:border-white/30 hover:bg-white/15 lg:hidden"
+            onClick={() => setMobileOpen((prev) => !prev)}
+          >
+            Menu
+          </button>
+        </div>
+
+        {mobileOpen ? (
+          <div className="border-t border-white/10 bg-[#4B0A79] lg:hidden">
+            <div className="mx-auto max-w-7xl space-y-4 px-4 py-4 sm:px-6">
+              {rightSlot ? <div className="border-b border-white/10 pb-4">{rightSlot}</div> : null}
+              <div className="grid gap-2">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-white/10 hover:text-[#FFC300]"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+              {dropdownNav ? (
+                <div className="space-y-2 border-t border-white/10 pt-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/60">{dropdownNav.label}</p>
+                  <div className="grid gap-2">
+                    {dropdownNav.items.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-white/10 hover:text-[#FFC300]"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+      </header>
+    );
+  }
+
   return (
     <header
       className={
