@@ -2393,6 +2393,527 @@ export default async function TourDetailPage({
     </div>
   );
 
+  const funjetGallery = gallery.length ? gallery.slice(0, 5) : [heroImage];
+  const funjetHeroGallery = [...funjetGallery, heroImage].filter(Boolean).slice(0, 5);
+
+  if (isFunjet) {
+    return (
+      <div className="travel-surface min-h-screen overflow-x-hidden bg-[#FCFAFF] pb-24 text-slate-950">
+        <StructuredData data={tourSchema} />
+        <StructuredData data={touristTripSchema} />
+        <StructuredData data={webPageSchema} />
+        <StructuredData data={mediaGallerySchema} />
+        {highlightsSchema ? <StructuredData data={highlightsSchema} /> : null}
+        <StructuredData data={breadcrumbSchema} />
+        <StructuredData data={faqSchema} />
+        {relatedToursSchema ? <StructuredData data={relatedToursSchema} /> : null}
+
+        <section className="mx-auto max-w-[1320px] px-4 pb-8 pt-6 lg:pt-8">
+          {agencyMode ? (
+            <div className="mb-4 rounded-[24px] border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-sky-50 px-5 py-4 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-[0.35em] text-emerald-700">
+                    {localeLabel(locale, "Reserva por agencia", "Agency booking", "Reservation agence")}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900">
+                    {localeLabel(
+                      locale,
+                      `Oferta privada gestionada por ${agencyDisplayName ?? "tu agencia"}.`,
+                      `Private offer managed by ${agencyDisplayName ?? "your agency"}.`,
+                      `Offre privee geree par ${agencyDisplayName ?? "votre agence"}.`
+                    )}
+                  </p>
+                </div>
+                <div className="rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-semibold text-emerald-700">
+                  {localeLabel(locale, "Tarifa acordada", "Agreed rate", "Tarif convenu")} · {priceLabel}
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr),380px] xl:grid-cols-[minmax(0,1fr),400px]">
+            <div className="space-y-5">
+              <div className="space-y-4 rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_25px_60px_rgba(106,13,173,0.08)] lg:p-7">
+                <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.24em] text-[#8D65B0]">
+                  <span className="rounded-full bg-[#F3E6FF] px-3 py-1">{locationLabel}</span>
+                  <span className="rounded-full bg-[#FFF4C5] px-3 py-1 text-[#7A4D00]">
+                    {localeLabel(locale, "Reserva directa", "Direct booking", "Reservation directe")}
+                  </span>
+                  {detailReviewCount ? (
+                    <span className="rounded-full bg-[#EEF7FF] px-3 py-1 text-[#0B65C2]">
+                      {ratingValue.toFixed(1)} / 5 · {reviewSummary}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="space-y-3">
+                  <h1 className="max-w-4xl text-3xl font-black leading-tight text-[#1D1230] sm:text-4xl lg:text-[2.65rem]">
+                    {visibleHeroTitle}
+                  </h1>
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-[#5E4671]">
+                    <div className="flex items-center gap-2 font-semibold">
+                      <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5 text-[#FFC300]" fill="currentColor">
+                        <path d="M12 3.5l2.7 5.48 6.05.88-4.38 4.27 1.03 6.03L12 17.9l-5.4 2.84 1.03-6.03-4.38-4.27 6.05-.88L12 3.5z" />
+                      </svg>
+                      {detailReviewCount ? ratingValue.toFixed(1) : "0.0"}
+                      <span className="font-medium text-[#8D65B0]">({detailReviewCount})</span>
+                    </div>
+                    <span>•</span>
+                    <span>{durationLabel}</span>
+                    <span>•</span>
+                    <span>{languagesValue}</span>
+                  </div>
+                  <p className="max-w-4xl text-base leading-7 text-[#5E4671]">{shortDescriptionText ?? shortTeaser}</p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {trustBadges.slice(0, 4).map((badge) => (
+                    <span
+                      key={badge}
+                      className="rounded-full border border-[#E8D6FA] bg-[linear-gradient(180deg,#ffffff_0%,#fbf3ff_100%)] px-4 py-2 text-sm font-semibold text-[#5E4671]"
+                    >
+                      {badge}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-[minmax(0,1.65fr),minmax(0,1fr)]">
+                <div className="relative min-h-[380px] overflow-hidden rounded-[30px] bg-[#EEE6F7]">
+                  <Image
+                    src={funjetHeroGallery[0] ?? heroImage}
+                    alt={heroTitle}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 65vw"
+                    priority
+                  />
+                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-[#1D1230]/70 via-[#1D1230]/20 to-transparent p-5">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/75">
+                        {localeLabel(locale, "Vista general", "Overview", "Vue d ensemble")}
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-white">{heroTitle}</p>
+                    </div>
+                    <GalleryLightbox
+                      images={gallery}
+                      buttonLabel={localeLabel(locale, "Ver fotos", "See photos", "Voir les photos")}
+                      buttonClassName="rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#34114A] shadow-lg"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {funjetHeroGallery.slice(1, 5).map((img, index) => (
+                    <div key={`${img}-${index}`} className="relative min-h-[184px] overflow-hidden rounded-[24px] bg-[#EEE6F7]">
+                      <Image
+                        src={img}
+                        alt={`${heroTitle} ${index + 2}`}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                      />
+                      {index === 3 && gallery.length > 5 ? (
+                        <div className="absolute inset-0 flex items-center justify-center bg-[#1D1230]/55 text-sm font-bold text-white">
+                          +{gallery.length - 4}
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <nav className="sticky top-16 z-10 rounded-2xl border border-[#E7D2FB] bg-white/90 px-3 py-2 shadow-lg backdrop-blur lg:top-6">
+                <div className="flex gap-3 overflow-x-auto py-1 text-sm font-semibold uppercase tracking-[0.28em] text-[#6A0DAD]">
+                  {heroNavTabs.map((tab) => (
+                    <a
+                      key={tab.href}
+                      href={tab.href}
+                      className="whitespace-nowrap rounded-full px-4 py-2 transition hover:bg-[#F6EDFF] hover:text-[#4D0A7D]"
+                    >
+                      {translate(locale, tab.labelKey)}
+                    </a>
+                  ))}
+                </div>
+              </nav>
+
+              <div className="grid gap-3 md:grid-cols-4">
+                {quickInfo.map((item) => (
+                  <article
+                    key={item.label}
+                    className="rounded-[24px] border border-[#E7D2FB] bg-white p-5 text-left shadow-[0_12px_30px_rgba(106,13,173,0.06)]"
+                  >
+                    <span className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F5E9FF] text-2xl">
+                      {item.icon}
+                    </span>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#8D65B0]">{item.label}</p>
+                    <p className="mt-2 text-base font-bold text-[#1D1230]">{item.value}</p>
+                    <p className="mt-1 text-sm text-[#5E4671]">{item.detail}</p>
+                  </article>
+                ))}
+              </div>
+
+              <section id="overview" className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr),minmax(280px,0.85fr)]">
+                <article className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
+                  <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
+                    {translate(locale, "tour.section.overview.label")}
+                  </p>
+                  <h2 className="mt-3 text-[26px] font-black text-[#1D1230]">
+                    {localeLabel(locale, "Todo lo que debes saber", "Everything you should know", "Tout ce qu il faut savoir")}
+                  </h2>
+                  <div className="mt-4 space-y-4 text-[15px] leading-7 text-[#5E4671]">
+                    {(longDescriptionParagraphs.length ? longDescriptionParagraphs : [shortDescriptionText ?? shortTeaser]).map((paragraph, index) => (
+                      <p key={index}>{paragraph}</p>
+                    ))}
+                  </div>
+                </article>
+
+                <article className="rounded-[32px] border border-[#E7D2FB] bg-[linear-gradient(180deg,#ffffff_0%,#faf3ff_100%)] p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
+                  <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
+                    {localeLabel(locale, "Lo mejor del tour", "Top highlights", "Points forts")}
+                  </p>
+                  <div className="mt-4 space-y-3">
+                    {highlights.slice(0, 8).map((item) => (
+                      <div key={item} className="flex gap-3 rounded-2xl border border-[#E7D2FB] bg-white px-4 py-3">
+                        <span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#6A0DAD] text-xs font-bold text-white">
+                          ✓
+                        </span>
+                        <p className="text-sm font-semibold text-[#34114A]">{item}</p>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              </section>
+
+              <section id="includes" className="grid gap-6 lg:grid-cols-2">
+                <article className="rounded-[30px] border border-[#DDF1E5] bg-[#F7FFF9] p-6">
+                  <p className="text-xs font-black uppercase tracking-[0.34em] text-[#00A86B]">
+                    {translate(locale, "tour.section.coverage.includes")}
+                  </p>
+                  <ul className="mt-4 space-y-3 text-sm font-medium text-[#244936]">
+                    {includes.map((item) => (
+                      <li key={item} className="flex gap-3">
+                        <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#00A86B] text-xs font-bold text-white">✓</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+                <article className="rounded-[30px] border border-[#FFE2E2] bg-[#FFF8F8] p-6">
+                  <p className="text-xs font-black uppercase tracking-[0.34em] text-[#D23A3A]">
+                    {translate(locale, "tour.section.coverage.excludes")}
+                  </p>
+                  <ul className="mt-4 space-y-3 text-sm font-medium text-[#6A3838]">
+                    {excludes.map((item) => (
+                      <li key={item} className="flex gap-3">
+                        <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#D23A3A] text-xs font-bold text-white">×</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              </section>
+
+              <section id="itinerary" className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
+                      {translate(locale, "tour.section.itinerary.label")}
+                    </p>
+                    <h2 className="mt-3 text-[26px] font-black text-[#1D1230]">
+                      {translate(locale, "tour.section.itinerary.heading")}
+                    </h2>
+                  </div>
+                  <p className="text-sm text-[#8D65B0]">{durationLabel}</p>
+                </div>
+                <div className="mt-6 space-y-4">
+                  {hasVisualTimeline ? (
+                    visualTimeline.map((stop, index) => (
+                      <div key={`${stop.title}-${index}`} className="grid gap-4 rounded-[24px] border border-[#E7D2FB] bg-[#FCF7FF] p-5 md:grid-cols-[88px,minmax(0,1fr)]">
+                        <div className="rounded-[18px] bg-white px-4 py-3 text-center shadow-sm">
+                          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#8D65B0]">
+                            {localeLabel(locale, "Parada", "Stop", "Arret")}
+                          </p>
+                          <p className="mt-1 text-lg font-black text-[#6A0DAD]">{index + 1}</p>
+                          <p className="mt-1 text-xs font-semibold text-[#8D65B0]">{stop.time}</p>
+                        </div>
+                        <div>
+                          <p className="text-lg font-bold text-[#1D1230]">{stop.title}</p>
+                          <p className="mt-2 text-sm leading-7 text-[#5E4671]">
+                            {stop.description ?? translate(locale, "tour.section.itinerary.detailPending")}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-[16px] border border-dashed border-[#D3A8FF] bg-[#FCF7FF] p-4 text-sm text-[#6A0DAD]">
+                      {translate(locale, "tour.section.itinerary.detailPending")}
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              <section id="practical" className="grid gap-6 lg:grid-cols-[minmax(0,1fr),minmax(0,1fr)]">
+                <article className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
+                  <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
+                    {localeLabel(locale, "Que llevar", "What to bring", "Que faut-il apporter")}
+                  </p>
+                  <ul className="mt-4 space-y-3 text-sm font-medium text-[#5E4671]">
+                    {practicalInfo.whatToBring.map((item) => (
+                      <li key={item} className="flex gap-3">
+                        <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#F3E6FF] text-sm text-[#6A0DAD]">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+                <article className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
+                  <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
+                    {localeLabel(locale, "Restricciones y seguridad", "Restrictions and safety", "Restrictions et securite")}
+                  </p>
+                  <ul className="mt-4 space-y-3 text-sm font-medium text-[#5E4671]">
+                    {practicalInfo.restrictions.map((item) => (
+                      <li key={item} className="flex gap-3">
+                        <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#FFF0F0] text-sm text-[#D23A3A]">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              </section>
+
+              <section id="meeting-point" className="overflow-hidden rounded-[32px] border border-[#E7D2FB] bg-white shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#F1E6FD] px-6 py-5">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
+                      {localeLabel(locale, "Punto de encuentro", "Meeting point", "Point de rencontre")}
+                    </p>
+                    <p className="mt-2 text-lg font-bold text-[#1D1230]">{heroTitle}</p>
+                  </div>
+                  <a
+                    href={mapSearchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full border border-[#D3A8FF] px-4 py-2 text-sm font-semibold text-[#6A0DAD] transition hover:bg-[#F6EDFF]"
+                  >
+                    {localeLabel(locale, "Abrir en Google Maps", "Open in Google Maps", "Ouvrir dans Google Maps")}
+                  </a>
+                </div>
+                <iframe
+                  title={`${heroTitle} map`}
+                  src={mapEmbedUrl}
+                  className="h-[320px] w-full"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </section>
+
+              <section id="traveler-photos" className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
+                      {localeLabel(locale, "Fotos de viajeros", "Traveler photos", "Photos des voyageurs")}
+                    </p>
+                    <h2 className="mt-3 text-[26px] font-black text-[#1D1230]">
+                      {localeLabel(locale, "Clientes reales, momentos reales", "Real guests, real moments", "Vrais clients, vrais moments")}
+                    </h2>
+                  </div>
+                  <GalleryLightbox
+                    images={gallery}
+                    buttonLabel={localeLabel(locale, "Abrir galeria", "Open gallery", "Ouvrir la galerie")}
+                    buttonClassName="rounded-full border border-[#E7D2FB] bg-white px-4 py-2 text-sm font-semibold text-[#6A0DAD]"
+                  />
+                </div>
+                <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3">
+                  {travelerGallery.map((img, index) => (
+                    <div key={`${img}-${index}`} className="relative min-h-[180px] overflow-hidden rounded-[22px] bg-[#EEE6F7]">
+                      <Image
+                        src={img}
+                        alt={localeLabel(locale, "Foto de viajero", "Traveler photo", "Photo voyageur")}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section id="reviews" className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_24px_65px_rgba(106,13,173,0.10)]">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
+                      {translate(locale, "tour.section.reviews.label")}
+                    </p>
+                    <h2 className="mt-3 text-[26px] font-black text-[#1D1230]">
+                      {translate(locale, "tour.section.reviews.heading")}
+                    </h2>
+                  </div>
+                  <p className="text-sm font-semibold text-[#8D65B0]">{reviewSummary}</p>
+                </div>
+                <div className="mt-6 grid gap-6 lg:grid-cols-[280px,minmax(0,1fr)]">
+                  <div className="space-y-5">
+                    <div className="rounded-[28px] border border-[#E7D2FB] bg-[linear-gradient(180deg,#ffffff_0%,#faf3ff_100%)] p-5">
+                      <div className="flex items-end gap-3">
+                        <p className="text-5xl font-black text-[#6A0DAD]">{detailReviewCount ? ratingValue.toFixed(1) : "0.0"}</p>
+                        <p className="pb-2 text-xs font-bold uppercase tracking-[0.24em] text-[#8D65B0]">
+                          {translate(locale, "tour.section.reviews.ratingOutOf")}
+                        </p>
+                      </div>
+                      <div className="mt-4 space-y-3 text-sm text-[#5E4671]">
+                        {reviewBreakdown.map((item) => (
+                          <div key={item.labelKey} className="flex items-center gap-3">
+                            <span className="w-24 text-xs font-semibold text-[#8D65B0]">{translate(locale, item.labelKey)}</span>
+                            <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-[#F2E8FC]">
+                              <span className="block h-2 rounded-full bg-[#6A0DAD]" style={{ width: `${item.percent}%` }} />
+                            </div>
+                            <span className="text-xs font-semibold text-[#8D65B0]">{item.percent}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {travelerGallery.slice(0, 4).length ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        {travelerGallery.slice(0, 4).map((img, index) => (
+                          <div key={`${img}-${index}`} className="relative min-h-[110px] overflow-hidden rounded-[18px] bg-[#EEE6F7]">
+                            <Image
+                              src={img}
+                              alt={`${heroTitle} traveler ${index + 1}`}
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 768px) 50vw, 180px"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="space-y-4">
+                    {reviewHighlights.length ? (
+                      reviewHighlights.map((review) => (
+                        <article key={review.id} className="rounded-[24px] border border-[#E7D2FB] bg-white p-5 shadow-[0_10px_30px_rgba(106,13,173,0.06)]">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F3E6FF] text-sm font-bold text-[#6A0DAD]">
+                                {review.name
+                                  .split(" ")
+                                  .map((chunk) => chunk[0])
+                                  .slice(0, 2)
+                                  .join("")
+                                  .toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="text-sm font-bold text-[#34114A]">{review.name}</p>
+                                <p className="text-xs text-[#8D65B0]">{review.date}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 text-[#FFC300]">
+                              {Array.from({ length: 5 }).map((_, index) => (
+                                <span key={index}>★</span>
+                              ))}
+                            </div>
+                          </div>
+                          <p className="mt-4 text-sm leading-7 text-[#5E4671]">{review.quote}</p>
+                        </article>
+                      ))
+                    ) : (
+                      <p className="text-sm text-[#5E4671]">{translate(locale, "tour.section.reviews.empty")}</p>
+                    )}
+                    <div className="rounded-[28px] border border-[#E7D2FB] bg-[#FCF7FF] p-5">
+                      <TourReviewForm tourId={tour.id} locale={locale} />
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section id="faq" className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
+                <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
+                  {translate(locale, "tour.section.faq.label")}
+                </p>
+                <h2 className="mt-3 text-[26px] font-black text-[#1D1230]">
+                  {translate(locale, "tour.section.faq.heading")}
+                </h2>
+                <div className="mt-6 space-y-4">
+                  {faqList.map((item) => (
+                    <article key={item.question} className="rounded-[22px] border border-[#E7D2FB] bg-[#FCF7FF] p-5">
+                      <p className="text-sm font-bold text-[#34114A]">{item.question}</p>
+                      <p className="mt-2 text-sm leading-7 text-[#5E4671]">{item.answer}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+
+              {!agencyMode && relatedTourCards.length ? (
+                <section className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
+                  <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
+                    {localeLabel(locale, "Mas tours", "More tours", "Plus d excursions")}
+                  </p>
+                  <h2 className="mt-3 text-[26px] font-black text-[#1D1230]">
+                    {localeLabel(locale, "Te puede interesar", "You may also like", "Vous pourriez aimer")}
+                  </h2>
+                  <div className="mt-6 grid gap-4 md:grid-cols-2">
+                    {relatedTourCards.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        className="group overflow-hidden rounded-[24px] border border-[#E7D2FB] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                      >
+                        <div className="relative h-52 w-full">
+                          <Image
+                            src={item.image}
+                            alt={item.title}
+                            fill
+                            className="object-cover transition duration-500 group-hover:scale-105"
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                          />
+                        </div>
+                        <div className="space-y-2 p-4">
+                          <p className="text-base font-bold text-[#1D1230]">{item.title}</p>
+                          <p className="text-sm font-semibold text-[#6A0DAD]">{item.price}</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+            </div>
+
+            <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+              <BookingPanel className="border-[#E7D2FB] shadow-[0_24px_60px_rgba(106,13,173,0.12)]" />
+              <div className="rounded-[28px] border border-[#E7D2FB] bg-white p-5 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
+                <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
+                  {localeLabel(locale, "Por que reservar con Funjet", "Why book with Funjet", "Pourquoi reserver avec Funjet")}
+                </p>
+                <div className="mt-4 space-y-3 text-sm text-[#5E4671]">
+                  <div className="rounded-2xl border border-[#E7D2FB] bg-[#FCF7FF] px-4 py-3">
+                    {localeLabel(locale, "Confirmacion rapida y soporte directo por WhatsApp.", "Fast confirmation and direct WhatsApp support.", "Confirmation rapide et support direct par WhatsApp.")}
+                  </div>
+                  <div className="rounded-2xl border border-[#E7D2FB] bg-[#FCF7FF] px-4 py-3">
+                    {localeLabel(locale, "Precios claros antes del checkout, sin sorpresas.", "Clear pricing before checkout, no surprises.", "Prix clairs avant le checkout, sans surprises.")}
+                  </div>
+                  <div className="rounded-2xl border border-[#E7D2FB] bg-[#FCF7FF] px-4 py-3">
+                    {localeLabel(locale, "Tours y traslados alimentados por inventario real.", "Tours and transfers powered by real inventory.", "Tours et transferts alimentes par un inventaire reel.")}
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="booking" className="mx-auto mt-6 max-w-[1320px] px-4 lg:hidden">
+          <div className="ring-1 ring-[#E7D2FB] shadow-md">
+            <BookingPanel />
+          </div>
+        </section>
+
+        <ReserveFloatingButton
+          targetId="booking"
+          priceLabel={priceLabel}
+          label={floatingButtonLabel}
+          buttonLabel={floatingButtonCta}
+        />
+      </div>
+    );
+  }
+
   return (
   <div className="travel-surface min-h-screen pb-24 overflow-x-hidden text-slate-950">
       <StructuredData data={tourSchema} />

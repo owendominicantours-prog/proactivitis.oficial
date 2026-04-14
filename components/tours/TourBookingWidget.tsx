@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 type TimeSlotOption = {
   hour: number;
@@ -242,6 +243,7 @@ export function TourBookingWidget({
   agencyDirectDiscountPercent = 0
 }: TourBookingWidgetProps) {
   const router = useRouter();
+  const isFunjet = SITE_CONFIG.variant === "funjet";
   const [date, setDate] = useState("");
   const [adults, setAdults] = useState(1);
   const [youth, setYouth] = useState(0);
@@ -452,10 +454,16 @@ export function TourBookingWidget({
   ];
 
   return (
-    <div className="relative w-full max-w-sm space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-md">
+    <div
+      className={`relative w-full max-w-sm space-y-4 rounded-[24px] border p-4 shadow-md ${
+        isFunjet
+          ? "border-[#E7D2FB] bg-[linear-gradient(180deg,#ffffff_0%,#fcf7ff_100%)] shadow-[0_20px_50px_rgba(106,13,173,0.14)]"
+          : "border-slate-200 bg-white"
+      }`}
+    >
       {resolvedOptions.length > 0 && (
         <div className="space-y-2">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-slate-500">Opcion</p>
+          <p className={`text-[0.65rem] font-semibold uppercase tracking-[0.25em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>Opcion</p>
           <div className="space-y-2">
             {resolvedOptions.map((option) => {
               const optionPricing = resolveOptionPricing(option, totalTravelers, basePrice);
@@ -468,8 +476,12 @@ export function TourBookingWidget({
                     disabledForDate
                       ? "cursor-not-allowed border-rose-200 bg-rose-50/70 opacity-70"
                       : option.id === selectedOption?.id
-                        ? "cursor-pointer border-sky-400 bg-sky-50"
-                        : "cursor-pointer border-slate-200 bg-white"
+                        ? isFunjet
+                          ? "cursor-pointer border-[#B774FF] bg-[#F8F0FF]"
+                          : "cursor-pointer border-sky-400 bg-sky-50"
+                        : isFunjet
+                          ? "cursor-pointer border-[#E7D2FB] bg-white"
+                          : "cursor-pointer border-slate-200 bg-white"
                   }`}
                 >
                   <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-2">
@@ -491,11 +503,11 @@ export function TourBookingWidget({
                           style={{ backgroundImage: `url(${option.imageUrl})` }}
                         />
                       ) : null}
-                      <p className="line-clamp-2 text-[13px] font-semibold leading-snug text-slate-900">
+                      <p className={`line-clamp-2 text-[13px] font-semibold leading-snug ${isFunjet ? "text-[#34114A]" : "text-slate-900"}`}>
                         {option.name}
                       </p>
                       {optionDays?.length ? (
-                        <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                        <p className={`mt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-400"}`}>
                           {formatDaysSummary(optionDays)}
                         </p>
                       ) : null}
@@ -508,7 +520,7 @@ export function TourBookingWidget({
                     </div>
                   </label>
                   <div className="shrink-0 pl-1 text-right">
-                    <span className="text-[13px] font-semibold leading-none text-slate-800">
+                    <span className={`text-[13px] font-semibold leading-none ${isFunjet ? "text-[#4D0A7D]" : "text-slate-800"}`}>
                       {optionPricing.summaryLabel}
                     </span>
                   </div>
@@ -520,15 +532,15 @@ export function TourBookingWidget({
       )}
       {/* PRICE HEADER */}
       <div className="space-y-1">
-        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-slate-500">From price</p>
-        <p className="text-3xl font-semibold text-slate-900">
-          ${priceHeaderValue.toFixed(2)} <span className="text-xs font-normal text-slate-500">USD</span>
+        <p className={`text-[0.65rem] font-semibold uppercase tracking-[0.25em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>From price</p>
+        <p className={`text-3xl font-semibold ${isFunjet ? "text-[#34114A]" : "text-slate-900"}`}>
+          ${priceHeaderValue.toFixed(2)} <span className={`text-xs font-normal ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>USD</span>
         </p>
-        <p className="text-xs text-slate-600">{priceHeaderNote} - Confirmacion inmediata</p>
+        <p className={`text-xs ${isFunjet ? "text-[#5E4671]" : "text-slate-600"}`}>{priceHeaderNote} - Confirmacion inmediata</p>
       </div>
 
       {/* ESTIMATED TOTAL */}
-      <div className="rounded-xl bg-slate-50 px-3 py-1.5 text-xs text-slate-700">
+      <div className={`rounded-xl px-3 py-1.5 text-xs ${isFunjet ? "border border-[#E7D2FB] bg-[#F8F0FF] text-[#5E4671]" : "bg-slate-50 text-slate-700"}`}>
         <span className="font-semibold">Estimated total:</span> ${estimatedTotal.toFixed(2)} for {totalTravelers} traveler
         {totalTravelers > 1 ? "s" : ""}
       </div>
@@ -541,38 +553,38 @@ export function TourBookingWidget({
       )}
 
       {/* DATE + TRAVELERS + START TIME */}
-      <div className="rounded-xl border border-slate-200">
-      <div className="grid grid-cols-[1.15fr,1fr] divide-x divide-slate-200">
+      <div className={`rounded-xl border ${isFunjet ? "border-[#E7D2FB]" : "border-slate-200"}`}>
+      <div className={`grid grid-cols-[1.15fr,1fr] divide-x ${isFunjet ? "divide-[#E7D2FB]" : "divide-slate-200"}`}>
           {/* DATE */}
           <div className="flex flex-col px-4 py-2">
-            <span className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Date</span>
+            <span className={`text-[0.65rem] font-semibold uppercase tracking-[0.2em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>Date</span>
             <input
               type="date"
               value={date}
               onChange={(event) => setDate(event.target.value)}
-              className="mt-1 w-full border-none bg-transparent text-sm text-slate-900 outline-none"
+              className={`mt-1 w-full border-none bg-transparent text-sm outline-none ${isFunjet ? "text-[#34114A]" : "text-slate-900"}`}
             />
           </div>
 
           {/* TRAVELERS */}
           <div className="relative flex flex-col px-4 py-2">
             <button ref={triggerRef} type="button" onClick={handlePopperToggle} className="w-full text-left outline-none">
-              <span className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Travelers</span>
-              <p className="mt-0.5 text-sm font-semibold text-slate-900">
+              <span className={`text-[0.65rem] font-semibold uppercase tracking-[0.2em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>Travelers</span>
+              <p className={`mt-0.5 text-sm font-semibold ${isFunjet ? "text-[#34114A]" : "text-slate-900"}`}>
                 {totalTravelers} traveler{totalTravelers > 1 ? "s" : ""}
               </p>
-              <p className="text-xs text-slate-500">{travelersSummary()}</p>
+              <p className={`text-xs ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>{travelersSummary()}</p>
             </button>
           </div>
         </div>
 
-        <div className="border-t border-slate-200 bg-slate-100 px-4 py-2 space-y-1">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Start time</p>
+        <div className={`border-t px-4 py-2 space-y-1 ${isFunjet ? "border-[#E7D2FB] bg-[#FCF7FF]" : "border-slate-200 bg-slate-100"}`}>
+          <p className={`text-[0.65rem] font-semibold uppercase tracking-[0.2em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>Start time</p>
           {timeSlotLabels.length > 1 ? (
             <select
               value={selectedTime}
               onChange={(event) => setSelectedTime(event.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 outline-none"
+              className={`w-full rounded-xl border bg-white px-3 py-2 text-xs outline-none ${isFunjet ? "border-[#E7D2FB] text-[#5E4671]" : "border-slate-200 text-slate-600"}`}
             >
               {timeSlotLabels.map((slot) => (
                 <option key={slot} value={slot}>
@@ -581,9 +593,9 @@ export function TourBookingWidget({
               ))}
             </select>
           ) : timeSlotLabels.length === 1 ? (
-            <p className="text-xs font-semibold text-slate-900">{timeSlotLabels[0]}</p>
+            <p className={`text-xs font-semibold ${isFunjet ? "text-[#34114A]" : "text-slate-900"}`}>{timeSlotLabels[0]}</p>
           ) : (
-            <p className="text-xs text-slate-500">Start time will be confirmed after booking.</p>
+            <p className={`text-xs ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>Start time will be confirmed after booking.</p>
           )}
         </div>
       </div>
@@ -611,9 +623,11 @@ export function TourBookingWidget({
       {showTravelersPopover && (
         <div
           ref={popoverRef}
-          className="absolute left-1/2 top-[165px] z-[9999] mt-2 w-[300px] -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-2xl"
+          className={`absolute left-1/2 top-[165px] z-[9999] mt-2 w-[300px] -translate-x-1/2 rounded-2xl border p-4 text-sm shadow-2xl ${
+            isFunjet ? "border-[#E7D2FB] bg-white" : "border-slate-200 bg-white"
+          }`}
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
+          <p className={`text-xs font-semibold uppercase tracking-[0.35em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>
             Select up to 15 travelers in total.
           </p>
 
@@ -621,17 +635,23 @@ export function TourBookingWidget({
             {travelerGroups.map(({ label, range, count, setter }) => (
               <div
                 key={label}
-                className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"
+                className={`flex items-center justify-between rounded-xl border px-3 py-2 ${
+                  isFunjet ? "border-[#E7D2FB] bg-[#FCF7FF]" : "border-slate-200 bg-slate-50"
+                }`}
               >
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">{label}</p>
-                  <p className="text-[0.65rem] text-slate-500">{range}</p>
+                  <p className={`text-sm font-semibold ${isFunjet ? "text-[#34114A]" : "text-slate-900"}`}>{label}</p>
+                  <p className={`text-[0.65rem] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>{range}</p>
                 </div>
                 <div className="flex items-center gap-3 text-base font-semibold">
                   <button
                     type="button"
                     onClick={handleDecrement(setter)}
-                    className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-300 text-slate-500 hover:border-slate-400"
+                    className={`flex h-7 w-7 items-center justify-center rounded-full border ${
+                      isFunjet
+                        ? "border-[#D3A8FF] text-[#6A0DAD] hover:border-[#B774FF]"
+                        : "border-slate-300 text-slate-500 hover:border-slate-400"
+                    }`}
                   >
                     -
                   </button>
@@ -639,7 +659,11 @@ export function TourBookingWidget({
                   <button
                     type="button"
                     onClick={handleIncrement(setter)}
-                    className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-300 text-slate-500 hover:border-slate-400"
+                    className={`flex h-7 w-7 items-center justify-center rounded-full border ${
+                      isFunjet
+                        ? "border-[#D3A8FF] text-[#6A0DAD] hover:border-[#B774FF]"
+                        : "border-slate-300 text-slate-500 hover:border-slate-400"
+                    }`}
                   >
                     +
                   </button>
@@ -651,7 +675,9 @@ export function TourBookingWidget({
           <button
             type="button"
             onClick={handleApplyTravelers}
-            className="mt-4 w-full rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600"
+            className={`mt-4 w-full rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm ${
+              isFunjet ? "bg-[#6A0DAD] hover:bg-[#4D0A7D]" : "bg-emerald-500 hover:bg-emerald-600"
+            }`}
           >
             Apply
           </button>
@@ -665,17 +691,25 @@ export function TourBookingWidget({
         disabled={!date || operatingDayBlocked || !selectedOptionAvailable}
         className={`w-full rounded-lg px-4 py-3 text-sm font-semibold text-white transition ${
           date && !operatingDayBlocked && selectedOptionAvailable
-            ? "bg-sky-500 hover:bg-sky-600"
+            ? isFunjet
+              ? "bg-[#0077FF] hover:bg-[#005FD1]"
+              : "bg-sky-500 hover:bg-sky-600"
             : "cursor-not-allowed bg-slate-300"
         }`}
       >
-        Check availability
+        {isFunjet ? "Reserve now" : "Check availability"}
       </button>
 
       {/* BENEFITS */}
-      <div className="space-y-2 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-3 text-xs text-slate-800">
+      <div
+        className={`space-y-2 rounded-xl px-3 py-3 text-xs ${
+          isFunjet
+            ? "border border-[#DDF1E5] bg-[#F2FFF5] text-[#244936]"
+            : "border border-emerald-100 bg-emerald-50 text-slate-800"
+        }`}
+      >
         <div className="flex items-start gap-2">
-          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[0.65rem] text-white">
+          <span className={`flex h-4 w-4 items-center justify-center rounded-full text-[0.65rem] text-white ${isFunjet ? "bg-[#00A86B]" : "bg-emerald-500"}`}>
             OK
           </span>
           <p>
@@ -683,7 +717,7 @@ export function TourBookingWidget({
           </p>
         </div>
         <div className="flex items-start gap-2">
-          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[0.65rem] text-white">
+          <span className={`flex h-4 w-4 items-center justify-center rounded-full text-[0.65rem] text-white ${isFunjet ? "bg-[#00A86B]" : "bg-emerald-500"}`}>
             OK
           </span>
           <p>
@@ -693,8 +727,8 @@ export function TourBookingWidget({
       </div>
 
       {/* URGENCY */}
-      <div className="flex gap-3 rounded-xl border border-amber-100 bg-amber-50 px-3 py-3 text-xs text-slate-800">
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 text-amber-700">!</div>
+      <div className={`flex gap-3 rounded-xl px-3 py-3 text-xs ${isFunjet ? "border border-[#FFE39A] bg-[#FFF8DA] text-[#7A4D00]" : "border border-amber-100 bg-amber-50 text-slate-800"}`}>
+        <div className={`flex h-7 w-7 items-center justify-center rounded-full ${isFunjet ? "bg-[#FFE39A] text-[#7A4D00]" : "bg-amber-100 text-amber-700"}`}>!</div>
         <div>
           <p className="font-semibold">Book ahead!</p>
           <p>On average, this is booked several days in advance.</p>
