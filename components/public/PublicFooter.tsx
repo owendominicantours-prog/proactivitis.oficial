@@ -161,7 +161,13 @@ export function PublicFooter() {
       />
       <div className="relative z-10 mx-auto max-w-6xl space-y-6 px-0 text-white md:hidden">
         <div className="flex flex-col items-center gap-3 rounded-[28px] border border-white/15 bg-white/8 px-5 py-5 text-center text-white">
-          <Image src={SITE_CONFIG.logoSrc} alt={SITE_CONFIG.logoAlt} width={220} height={88} className="h-14 w-auto object-contain" />
+          <Image
+            src={SITE_CONFIG.variant === "funjet" ? SITE_CONFIG.logoOnDarkSrc : SITE_CONFIG.logoSrc}
+            alt={SITE_CONFIG.logoAlt}
+            width={220}
+            height={88}
+            className="h-14 w-auto object-contain"
+          />
           <p className="max-w-sm text-xs font-medium leading-6 text-white/80">{copy.tagline}</p>
         </div>
         {groups.map((group) => (
@@ -196,7 +202,13 @@ export function PublicFooter() {
           <div className="grid gap-8 md:grid-cols-[minmax(0,1.2fr)_repeat(3,minmax(0,1fr))]">
             <div className="space-y-4">
               <div className="rounded-[30px] border border-white/15 bg-white/8 px-6 py-6">
-                <Image src={SITE_CONFIG.logoSrc} alt={SITE_CONFIG.logoAlt} width={240} height={96} className="h-16 w-auto object-contain" />
+                <Image
+                  src={SITE_CONFIG.variant === "funjet" ? SITE_CONFIG.logoOnDarkSrc : SITE_CONFIG.logoSrc}
+                  alt={SITE_CONFIG.logoAlt}
+                  width={240}
+                  height={96}
+                  className="h-16 w-auto object-contain"
+                />
                 <p className="mt-4 max-w-sm text-sm leading-7 text-white/78">{copy.tagline}</p>
               </div>
             </div>

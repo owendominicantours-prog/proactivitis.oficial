@@ -9,6 +9,7 @@ export type SiteConfig = {
   siteName: string;
   url: string;
   logoSrc: string;
+  logoOnDarkSrc: string;
   logoAlt: string;
   phone: string;
   phoneMachine: string;
@@ -33,6 +34,7 @@ const PROACTIVITIS_CONFIG: SiteConfig = {
   siteName: "Proactivitis",
   url: "https://proactivitis.com",
   logoSrc: "/logo.png",
+  logoOnDarkSrc: "/logo.png",
   logoAlt: "Proactivitis",
   phone: "+1 (829) 475-6298",
   phoneMachine: "18294756298",
@@ -87,6 +89,7 @@ const FUNJET_CONFIG: SiteConfig = {
   siteName: "Funjet Tour Oprador",
   url: "https://funjettouroprador.com",
   logoSrc: "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/funjet/Funjet%20Logo.png",
+  logoOnDarkSrc: "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/funjet/Logo%20Blanco.png",
   logoAlt: "Funjet Tour Oprador",
   phone: "+1 (829) 475-6298",
   phoneMachine: "18294756298",

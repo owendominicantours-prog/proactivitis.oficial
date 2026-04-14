@@ -79,7 +79,7 @@ export function PublicHeader() {
       navItems={navItems}
       rightSlot={rightSlot}
       dropdownNav={dropdownNav}
-      logoSrc={SITE_CONFIG.logoSrc}
+      logoSrc={SITE_CONFIG.variant === "funjet" ? SITE_CONFIG.logoOnDarkSrc : SITE_CONFIG.logoSrc}
       logoAlt={SITE_CONFIG.logoAlt}
       homeHref={getLocalizedPath("/", locale)}
       brandVariant={SITE_CONFIG.variant}
