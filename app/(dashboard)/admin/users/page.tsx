@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { deleteUserAction, resetUserPreferencesAction } from "./actions";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 type SearchParams = {
   q?: string;
@@ -12,6 +13,28 @@ type Props = {
 };
 
 export default async function AdminUsersPage({ searchParams }: Props) {
+  if (SITE_CONFIG.variant === "funjet") {
+    return (
+      <div className="space-y-8 pb-8">
+        <header className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Usuarios</p>
+          <h1 className="text-3xl font-semibold text-slate-900">Usuarios desactivados en Funjet</h1>
+          <p className="text-sm text-slate-600">
+            Funjet no administra el directorio global de usuarios de Proactivitis desde este panel.
+          </p>
+        </header>
+
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-sm leading-7 text-slate-600">
+            Esta sección queda vacía hasta que exista una segmentación propia de usuarios por marca.
+            Mientras tanto, se oculta para evitar mezclar cuentas y acciones administrativas entre
+            Funjet y Proactivitis.
+          </p>
+        </section>
+      </div>
+    );
+  }
+
   const params = (searchParams ? await searchParams : undefined) ?? {};
   const query = (params.q ?? "").trim().toLowerCase();
   const role = params.role ?? "all";

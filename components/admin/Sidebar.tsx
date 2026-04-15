@@ -24,7 +24,6 @@ const funjetSections = [
   { name: "Transfer", href: "/admin/transfers" },
   { name: "Reservas", href: "/admin/bookings" },
   { name: "Chat", href: "/admin/chat" },
-  { name: "Usuarios", href: "/admin/users" },
   { name: "Ajustes", href: "/admin/settings" }
 ];
 
