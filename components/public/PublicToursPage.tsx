@@ -822,6 +822,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
       </main>
 
       {!isFunjet ? (
+      <>
       <section className="mx-auto max-w-6xl px-4 py-10">
         <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
@@ -849,6 +850,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
           </div>
         </div>
       </section>
+      </>
       ) : null}
 
       <section className="bg-white">
