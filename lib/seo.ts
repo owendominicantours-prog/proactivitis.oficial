@@ -13,6 +13,15 @@ export const PROACTIVITIS_PHONE_MACHINE = SITE_CONFIG.phoneMachine;
 export const PROACTIVITIS_WHATSAPP_NUMBER = PROACTIVITIS_PHONE_MACHINE;
 export const PROACTIVITIS_WHATSAPP_LINK = SITE_CONFIG.whatsappLink;
 export const PROACTIVITIS_EMAIL = SITE_CONFIG.email;
+export const PROACTIVITIS_PRICE_RANGE = "$$";
+export const PROACTIVITIS_POSTAL_ADDRESS = {
+  "@type": "PostalAddress",
+  streetAddress: "Bavaro, Punta Cana",
+  addressLocality: "Punta Cana",
+  postalCode: "23000",
+  addressRegion: "La Altagracia",
+  addressCountry: "DO"
+} as const;
 
 export const ECUADOR_SUPPORT_EMAIL = "soporte.ec@proactivitis.com";
 export const ECUADOR_SUPPORT_PHONE = "+593-9-876-54321";
@@ -25,6 +34,7 @@ export const PROACTIVITIS_LOCALBUSINESS = {
   email: PROACTIVITIS_EMAIL,
   image: PROACTIVITIS_LOGO,
   logo: PROACTIVITIS_LOGO,
+  priceRange: PROACTIVITIS_PRICE_RANGE,
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "Customer Service",
@@ -33,10 +43,7 @@ export const PROACTIVITIS_LOCALBUSINESS = {
     availableLanguage: ["es", "en"]
   },
   sameAs: SAME_AS_URLS,
-  address: {
-    "@type": "PostalAddress",
-    addressCountry: "DO"
-  }
+  address: PROACTIVITIS_POSTAL_ADDRESS
 } as const;
 
 export const getPriceValidUntil = () => {
