@@ -62,6 +62,9 @@ export const metadata: Metadata = {
       }
     ]
   },
+  verification: {
+    google: SITE_CONFIG.variant === "funjet" ? "BjPRureAUYTrG5avs3yQ4T_EU08JEx4QdcZiOD33wX0" : undefined
+  },
   twitter: {
     card: "summary_large_image",
     title: `${SITE_CONFIG.siteName} | Tours, Traslados y Actividades`,
