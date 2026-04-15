@@ -128,10 +128,13 @@ model Conversation {
   createdById             String
   createdAt               DateTime                  @default(now())
   updatedAt               DateTime
+  siteBrand               SiteBrand                 @default(PROACTIVITIS)
   User                    User                      @relation(fields: [createdById], references: [id], onDelete: Cascade)
   Booking                 Booking?                  @relation(fields: [reservationId], references: [id])
   ConversationParticipant ConversationParticipant[]
   Message                 Message[]
+
+  @@index([siteBrand, type, updatedAt])
 }
 
 model ConversationParticipant {

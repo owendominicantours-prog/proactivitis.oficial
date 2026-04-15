@@ -6,6 +6,7 @@ import { buildEmailShell } from "@/lib/emailTemplates";
 import { resolveNotificationRecipients } from "@/lib/notificationEmailSettings";
 import { ensureVisitorChatSession, VISITOR_CHAT_COOKIE } from "@/lib/visitorChatSession";
 import { buildVisitorContextFromRequest, encodeVisitorContext } from "@/lib/visitorChatContext";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 type MessageBody = {
   content?: string;
@@ -106,16 +107,16 @@ export async function POST(request: NextRequest) {
       data: { updatedAt: new Date() }
     });
 
-    const adminChatUrl = "https://proactivitis.com/admin/chat";
+    const adminChatUrl = `${SITE_CONFIG.url}/admin/chat`;
     const safeMessage = content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const html = buildEmailShell({
       eyebrow: "Chat web",
       title: "Nuevo mensaje de visitante",
       intro: "Un visitante envio un mensaje desde el chat publico y requiere seguimiento del equipo.",
-      baseUrl: "https://proactivitis.com",
+      baseUrl: SITE_CONFIG.url,
       tone: "dark",
       disclaimer:
-        "Este correo fue enviado por Proactivitis para avisar de una nueva conversacion iniciada en el chat de visitantes.",
+        `Este correo fue enviado por ${SITE_CONFIG.name} para avisar de una nueva conversacion iniciada en el chat de visitantes.`,
       footerNote: `Conversacion: ${session.conversationId}`,
       contentHtml: `
         <div style="padding:20px;border-radius:18px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);">

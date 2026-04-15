@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { parseVisitorContext } from "@/lib/visitorChatContext";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 const VISITOR_ACTIVE_WINDOW_MS = 3 * 60 * 1000;
 
@@ -14,7 +15,9 @@ export async function GET(request: NextRequest) {
 
   const typeFilter = request.nextUrl.searchParams.get("type")?.toUpperCase();
   const isAdmin = session.user.role === "ADMIN";
+  const siteBrand = getCurrentSiteBrand();
   const filterClause = {
+    siteBrand,
     ...(isAdmin
       ? {}
       : {
@@ -138,9 +141,10 @@ export async function DELETE(request: NextRequest) {
   if (!type) {
     return NextResponse.json({ error: "Debes indicar type" }, { status: 400 });
   }
+  const siteBrand = getCurrentSiteBrand();
 
   const conversations = await prisma.conversation.findMany({
-    where: { type },
+    where: { type, siteBrand },
     select: { id: true }
   });
   const ids = conversations.map((item) => item.id);

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
   });
 
-  if (!conversation) {
+  if (!conversation || conversation.siteBrand !== getCurrentSiteBrand()) {
     return NextResponse.json({ error: "Conversacion no encontrada" }, { status: 404 });
   }
 

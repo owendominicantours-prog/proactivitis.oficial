@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 export async function DELETE(
   request: NextRequest,
@@ -13,8 +14,8 @@ export async function DELETE(
   }
 
   const { conversationId } = await context.params;
-  const conversation = await prisma.conversation.findUnique({
-    where: { id: conversationId },
+  const conversation = await prisma.conversation.findFirst({
+    where: { id: conversationId, siteBrand: getCurrentSiteBrand() },
     select: { id: true }
   });
 

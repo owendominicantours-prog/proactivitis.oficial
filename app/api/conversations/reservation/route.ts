@@ -4,8 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 export async function POST(request: NextRequest) {
+  const siteBrand = getCurrentSiteBrand();
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -35,6 +37,9 @@ export async function POST(request: NextRequest) {
   if (!booking) {
     return NextResponse.json({ error: "Reserva no encontrada" }, { status: 404 });
   }
+  if (booking.siteBrand !== siteBrand) {
+    return NextResponse.json({ error: "Reserva no disponible en esta marca" }, { status: 404 });
+  }
 
   const customerId = booking.userId;
   const supplierUserId = booking.Tour?.SupplierProfile?.userId;
@@ -44,6 +49,7 @@ export async function POST(request: NextRequest) {
 
   const existing = await prisma.conversation.findFirst({
     where: {
+      siteBrand,
       type: "RESERVATION",
       reservationId: booking.id
     }
@@ -58,6 +64,7 @@ export async function POST(request: NextRequest) {
   const createdConversation = await prisma.conversation.create({
     data: {
       id: randomUUID(),
+      siteBrand,
       type: "RESERVATION",
       reservationId: booking.id,
       createdById: session.user.id,

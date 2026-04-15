@@ -1,8 +1,8 @@
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 export const VISITOR_CHAT_COOKIE = "visitor_chat_token";
-const VISITOR_CHAT_EMAIL_DOMAIN = "visitor-chat.proactivitis.local";
 
 type VisitorSessionData = {
   token: string;
@@ -12,8 +12,11 @@ type VisitorSessionData = {
 };
 
 export async function ensureVisitorChatSession(tokenFromCookie?: string | null): Promise<VisitorSessionData> {
+  const siteBrand = getCurrentSiteBrand();
   const token = tokenFromCookie && tokenFromCookie.length > 10 ? tokenFromCookie : randomUUID();
-  const visitorEmail = `visitor-${token}@${VISITOR_CHAT_EMAIL_DOMAIN}`;
+  const visitorChatEmailDomain =
+    siteBrand === "FUNJET" ? "visitor-chat.funjet.local" : "visitor-chat.proactivitis.local";
+  const visitorEmail = `visitor-${token}@${visitorChatEmailDomain}`;
 
   const [visitor, admin] = await Promise.all([
     prisma.user.upsert({
@@ -39,6 +42,7 @@ export async function ensureVisitorChatSession(tokenFromCookie?: string | null):
 
   let conversation = await prisma.conversation.findFirst({
     where: {
+      siteBrand,
       type: "VISITOR_CHAT",
       createdById: visitor.id,
       ConversationParticipant: {
@@ -52,6 +56,7 @@ export async function ensureVisitorChatSession(tokenFromCookie?: string | null):
     conversation = await prisma.conversation.create({
       data: {
         id: randomUUID(),
+        siteBrand,
         type: "VISITOR_CHAT",
         createdById: visitor.id,
         updatedAt: new Date(),

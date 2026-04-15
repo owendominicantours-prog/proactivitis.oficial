@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { createNotification } from "@/lib/notificationService";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 type SupportTicketBody = {
   name?: string;
@@ -14,6 +15,7 @@ type SupportTicketBody = {
 };
 
 export async function POST(request: NextRequest) {
+  const siteBrand = getCurrentSiteBrand();
   const body = (await request.json().catch(() => ({}))) as SupportTicketBody;
   const session = await getServerSession(authOptions);
 
@@ -52,6 +54,7 @@ export async function POST(request: NextRequest) {
 
   const existing = await prisma.conversation.findFirst({
     where: {
+      siteBrand,
       type: "SUPPORT",
       ConversationParticipant: {
         every: {
@@ -75,6 +78,7 @@ export async function POST(request: NextRequest) {
   const createdConversation = await prisma.conversation.create({
     data: {
       id: randomUUID(),
+      siteBrand,
       type: "SUPPORT",
       createdById: requesterId,
       updatedAt: new Date(),
