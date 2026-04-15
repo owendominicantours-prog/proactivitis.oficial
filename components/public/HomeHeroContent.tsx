@@ -23,16 +23,16 @@ export function HomeHeroContent({ locale, overrides }: HomeHeroContentProps) {
         : "Funjet direct booking";
   const funjetTitle =
     locale === "es"
-      ? "Reserva tours y traslados sin vueltas"
+      ? "Tours y Traslados en Punta Cana: Reserva con Funjet Tour Operador"
       : locale === "fr"
-        ? "Reservez tours et transferts sans detours"
-        : "Book tours and transfers fast";
+        ? "Tours et transferts a Punta Cana : reservez avec Funjet Tour Operador"
+        : "Punta Cana Tours and Transfers: Book with Funjet Tour Operador";
   const funjetDescription =
     locale === "es"
-      ? "Abre tours, cotiza traslados y decide rapido."
+      ? "Explora Punta Cana con Funjet Tour Operador. Desde traslados privados hasta tours en Buggy e Isla Saona. Cancelacion facil, atencion local y los mejores precios garantizados. Reserva tu aventura hoy."
       : locale === "fr"
-        ? "Ouvrez les tours, calculez les transferts et decidez rapidement."
-        : "Open tours, quote transfers, and decide quickly.";
+        ? "Explorez Punta Cana avec Funjet Tour Operador. Des transferts prives aux tours en buggy et a l ile Saona. Annulation facile, assistance locale et tarifs competitifs. Reservez votre aventure aujourd hui."
+        : "Explore Punta Cana with Funjet Tour Operador. From private transfers to Buggy tours and Saona Island. Easy cancellation, local support, and competitive pricing. Book your adventure today.";
 
   return (
     <div className={`max-w-4xl space-y-6 text-center text-white md:text-left ${isFunjet ? "py-10" : ""}`}>

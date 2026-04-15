@@ -47,6 +47,13 @@ const SOSUA_PARTY_BOAT_LINKS = [
   }
 ] as const;
 
+const FUNJET_HOME_FEATURED_TOURS = [
+  "tour-en-buggy-en-punta-cana",
+  "excursion-en-buggy-y-atv-en-punta-cana",
+  "tour-y-entrada-para-de-isla-saona-desde-punta-cana",
+  "parasailing-punta-cana"
+] as const;
+
 export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   const isFunjet = SITE_CONFIG.variant === "funjet";
   const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
@@ -60,6 +67,18 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   const priceValidUntil = getPriceValidUntil();
   const localePrefix = locale === "es" ? "" : `/${locale}`;
   const localizedPath = (path: string) => `${PROACTIVITIS_URL}${locale === "es" ? path : `/${locale}${path}`}`;
+  const localizedHomeTitle =
+    locale === "es"
+      ? "Tours y Traslados en Punta Cana: Reserva con Funjet Tour Operador"
+      : locale === "fr"
+        ? "Tours et transferts a Punta Cana : reservez avec Funjet Tour Operador"
+        : "Punta Cana Tours and Transfers: Book with Funjet Tour Operador";
+  const localizedHomeDescription =
+    locale === "es"
+      ? "Explora Punta Cana con Funjet Tour Operador. Desde traslados privados hasta tours en Buggy e Isla Saona. Cancelacion facil, atencion local y los mejores precios garantizados. Reserva tu aventura hoy."
+      : locale === "fr"
+        ? "Explorez Punta Cana avec Funjet Tour Operador. Des transferts prives aux tours en buggy et a l ile Saona. Annulation facile, assistance locale et tarifs competitifs. Reservez votre aventure aujourd hui."
+        : "Explore Punta Cana with Funjet Tour Operador. From private transfers to Buggy tours and Saona Island. Easy cancellation, local support, and competitive pricing. Book your adventure today.";
   const funjetFeaturedTitle =
     locale === "es"
       ? "Escoge una vibra y empieza por ahi"
@@ -261,6 +280,13 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     };
   });
 
+  const funjetFeaturedTourItems = FUNJET_HOME_FEATURED_TOURS.map((slug, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    url: localizedPath(`/tours/${slug}`),
+    name: uniquePublishedTours.find((tour) => tour.slug === slug)?.title ?? slug
+  }));
+
   const corePublicPages = [
     { path: "/", name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home" },
     { path: "/tours", name: locale === "es" ? "Tours" : locale === "fr" ? "Excursions" : "Tours" },
@@ -303,12 +329,19 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     "@context": "https://schema.org",
     "@graph": [
       {
+        "@type": "WebSite",
+        "@id": `${PROACTIVITIS_URL}/#website`,
+        name: SITE_CONFIG.siteName,
+        url: `${PROACTIVITIS_URL}/`,
+        inLanguage: locale
+      },
+      {
         "@type": "OnlineBusiness",
         "@id": `${PROACTIVITIS_URL}/#organization`,
         name: SITE_CONFIG.name,
         url: `${PROACTIVITIS_URL}/`,
         logo: `${PROACTIVITIS_URL}${SITE_CONFIG.logoSrc}`,
-        description: translate(locale, "home.schema.description"),
+        description: isFunjet ? localizedHomeDescription : translate(locale, "home.schema.description"),
         hasOfferCatalog: {
           "@type": "OfferCatalog",
           name: isFunjet
@@ -449,7 +482,8 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         "@type": "WebPage",
         "@id": `${localizedPath("/")}#webpage`,
         url: localizedPath("/"),
-        name: locale === "es" ? `Inicio ${SITE_CONFIG.name}` : locale === "fr" ? `Accueil ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} Home`,
+        name: isFunjet ? localizedHomeTitle : locale === "es" ? `Inicio ${SITE_CONFIG.name}` : locale === "fr" ? `Accueil ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} Home`,
+        description: isFunjet ? localizedHomeDescription : translate(locale, "home.schema.description"),
         isPartOf: {
           "@id": `${PROACTIVITIS_URL}/#website`
         },
@@ -492,6 +526,34 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           position: index + 1,
           item: product
         }))
+      },
+      ...(isFunjet
+        ? [
+            {
+              "@type": "ItemList",
+              "@id": `${localizedPath("/")}#featured-funjet-tours`,
+              name: locale === "es" ? "Tours destacados Funjet en Punta Cana" : locale === "fr" ? "Tours Funjet en vedette a Punta Cana" : "Featured Funjet tours in Punta Cana",
+              itemListOrder: "https://schema.org/ItemListOrderAscending",
+              numberOfItems: funjetFeaturedTourItems.length,
+              itemListElement: funjetFeaturedTourItems
+            }
+          ]
+        : []),
+      {
+        "@type": "CollectionPage",
+        "@id": `${localizedPath("/")}#collection`,
+        name: isFunjet ? localizedHomeTitle : locale === "es" ? `Inicio ${SITE_CONFIG.name}` : locale === "fr" ? `Accueil ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} Home`,
+        url: localizedPath("/"),
+        description: isFunjet ? localizedHomeDescription : translate(locale, "home.schema.description"),
+        isPartOf: {
+          "@id": `${PROACTIVITIS_URL}/#website`
+        },
+        about: {
+          "@id": `${PROACTIVITIS_URL}/#organization`
+        },
+        mainEntity: {
+          "@id": `${localizedPath("/")}#product-catalog`
+        }
       },
       {
         "@type": "FAQPage",

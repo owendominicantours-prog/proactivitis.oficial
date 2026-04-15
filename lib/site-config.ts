@@ -98,14 +98,14 @@ const FUNJET_CONFIG: SiteConfig = {
   sameAs: [],
   defaultLocalePath: "/",
   homeTitle: {
-    es: "Tours y traslados en Punta Cana | Funjet Tour Operador",
-    en: "Punta Cana tours and airport transfers | Funjet Tour Operador",
-    fr: "Tours et transferts a Punta Cana | Funjet Tour Operador"
+    es: "Tours y Traslados en Punta Cana: Reserva con Funjet Tour Operador",
+    en: "Punta Cana Tours and Transfers: Book with Funjet Tour Operador",
+    fr: "Tours et transferts a Punta Cana : reservez avec Funjet Tour Operador"
   },
   homeDescription: {
-    es: "Reserva tours, excursiones y traslados en Punta Cana con atencion directa, precios claros y confirmacion rapida por WhatsApp.",
-    en: "Book Punta Cana tours, excursions, and airport transfers with direct support, clear pricing, and fast WhatsApp confirmation.",
-    fr: "Reservez excursions et transferts a Punta Cana avec support direct, prix clairs et confirmation rapide sur WhatsApp."
+    es: "Explora Punta Cana con Funjet Tour Operador. Desde traslados privados hasta tours en Buggy e Isla Saona. Cancelacion facil, atencion local y los mejores precios garantizados. Reserva tu aventura hoy.",
+    en: "Explore Punta Cana with Funjet Tour Operador. From private transfers to Buggy tours and Saona Island. Easy cancellation, local support, and competitive pricing. Book your adventure today.",
+    fr: "Explorez Punta Cana avec Funjet Tour Operador. Des transferts prives aux tours en buggy et a l ile Saona. Annulation facile, assistance locale et tarifs competitifs. Reservez votre aventure aujourd hui."
   },
   footerTagline: {
     es: "Funjet Tour Operador - Venta directa de tours y traslados en Punta Cana.",
