@@ -347,6 +347,7 @@ export default async function PublicTransferPage({
         </section>
 
         {!isFunjet ? (
+        <>
         <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
             {translate(locale, "transfer.longform.eyebrow")}
@@ -446,6 +447,7 @@ export default async function PublicTransferPage({
             {translate(locale, "transfer.contact")}
           </button>
         </section>
+        </>
         ) : (
           <section className="grid gap-4 md:grid-cols-3">
             <div className="rounded-[28px] border border-[#E9D7FA] bg-white p-5 shadow-sm">
