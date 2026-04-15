@@ -2408,7 +2408,7 @@ export default async function TourDetailPage({
         <StructuredData data={faqSchema} />
         {relatedToursSchema ? <StructuredData data={relatedToursSchema} /> : null}
 
-        <section className="mx-auto max-w-[1320px] px-3 pb-8 pt-4 sm:px-4 lg:pt-8">
+        <section className="mx-auto max-w-[1320px] px-4 pb-8 pt-6 lg:pt-8">
           {agencyMode ? (
             <div className="mb-4 rounded-[24px] border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-sky-50 px-5 py-4 shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -2432,9 +2432,9 @@ export default async function TourDetailPage({
             </div>
           ) : null}
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr),380px] xl:grid-cols-[minmax(0,1fr),400px]">
-            <div className="space-y-4 sm:space-y-5">
-              <div className="space-y-4 rounded-[28px] border border-[#E7D2FB] bg-white p-4 shadow-[0_25px_60px_rgba(106,13,173,0.08)] sm:rounded-[32px] sm:p-6 lg:p-7">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr),380px] xl:grid-cols-[minmax(0,1fr),400px]">
+            <div className="space-y-5">
+              <div className="space-y-4 rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_25px_60px_rgba(106,13,173,0.08)] lg:p-7">
                 <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.24em] text-[#8D65B0]">
                   <span className="rounded-full bg-[#F3E6FF] px-3 py-1">{locationLabel}</span>
                   <span className="rounded-full bg-[#FFF4C5] px-3 py-1 text-[#7A4D00]">
@@ -2447,7 +2447,7 @@ export default async function TourDetailPage({
                   ) : null}
                 </div>
                 <div className="space-y-3">
-                  <h1 className="max-w-4xl text-[1.85rem] font-black leading-tight text-[#1D1230] sm:text-4xl lg:text-[2.65rem]">
+                  <h1 className="max-w-4xl text-3xl font-black leading-tight text-[#1D1230] sm:text-4xl lg:text-[2.65rem]">
                     {visibleHeroTitle}
                   </h1>
                   <div className="flex flex-wrap items-center gap-3 text-sm text-[#5E4671]">
@@ -2478,7 +2478,7 @@ export default async function TourDetailPage({
               </div>
 
               <div className="grid gap-3 md:grid-cols-[minmax(0,1.65fr),minmax(0,1fr)]">
-                <div className="relative min-h-[260px] overflow-hidden rounded-[24px] bg-[#EEE6F7] sm:min-h-[320px] sm:rounded-[30px]">
+                <div className="relative min-h-[380px] overflow-hidden rounded-[30px] bg-[#EEE6F7]">
                   <Image
                     src={funjetHeroGallery[0] ?? heroImage}
                     alt={heroTitle}
@@ -2501,9 +2501,9 @@ export default async function TourDetailPage({
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   {funjetHeroGallery.slice(1, 5).map((img, index) => (
-                    <div key={`${img}-${index}`} className="relative min-h-[120px] overflow-hidden rounded-[18px] bg-[#EEE6F7] sm:min-h-[184px] sm:rounded-[24px]">
+                    <div key={`${img}-${index}`} className="relative min-h-[184px] overflow-hidden rounded-[24px] bg-[#EEE6F7]">
                       <Image
                         src={img}
                         alt={`${heroTitle} ${index + 2}`}
@@ -2521,8 +2521,8 @@ export default async function TourDetailPage({
                 </div>
               </div>
 
-              <nav className="sticky top-16 z-10 rounded-2xl border border-[#E7D2FB] bg-white/90 px-2 py-2 shadow-lg backdrop-blur lg:top-6">
-                <div className="flex gap-2 overflow-x-auto py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6A0DAD] sm:gap-3 sm:text-sm sm:tracking-[0.28em]">
+              <nav className="sticky top-16 z-10 rounded-2xl border border-[#E7D2FB] bg-white/90 px-3 py-2 shadow-lg backdrop-blur lg:top-6">
+                <div className="flex gap-3 overflow-x-auto py-1 text-sm font-semibold uppercase tracking-[0.28em] text-[#6A0DAD]">
                   {heroNavTabs.map((tab) => (
                     <a
                       key={tab.href}
@@ -2535,11 +2535,11 @@ export default async function TourDetailPage({
                 </div>
               </nav>
 
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-3 md:grid-cols-4">
                 {quickInfo.map((item) => (
                   <article
                     key={item.label}
-                    className="rounded-[20px] border border-[#E7D2FB] bg-white p-4 text-left shadow-[0_12px_30px_rgba(106,13,173,0.06)] sm:rounded-[24px] sm:p-5"
+                    className="rounded-[24px] border border-[#E7D2FB] bg-white p-5 text-left shadow-[0_12px_30px_rgba(106,13,173,0.06)]"
                   >
                     <span className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F5E9FF] text-2xl">
                       {item.icon}
@@ -2552,11 +2552,11 @@ export default async function TourDetailPage({
               </div>
 
               <section id="overview" className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr),minmax(280px,0.85fr)]">
-                <article className="rounded-[28px] border border-[#E7D2FB] bg-white p-4 shadow-[0_16px_45px_rgba(106,13,173,0.08)] sm:rounded-[32px] sm:p-6">
+                <article className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
                   <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
                     {translate(locale, "tour.section.overview.label")}
                   </p>
-                  <h2 className="mt-3 text-[22px] font-black text-[#1D1230] sm:text-[26px]">
+                  <h2 className="mt-3 text-[26px] font-black text-[#1D1230]">
                     {localeLabel(locale, "Todo lo que debes saber", "Everything you should know", "Tout ce qu il faut savoir")}
                   </h2>
                   <div className="mt-4 space-y-4 text-[15px] leading-7 text-[#5E4671]">
@@ -2566,7 +2566,7 @@ export default async function TourDetailPage({
                   </div>
                 </article>
 
-                <article className="rounded-[28px] border border-[#E7D2FB] bg-[linear-gradient(180deg,#ffffff_0%,#faf3ff_100%)] p-4 shadow-[0_16px_45px_rgba(106,13,173,0.08)] sm:rounded-[32px] sm:p-6">
+                <article className="rounded-[32px] border border-[#E7D2FB] bg-[linear-gradient(180deg,#ffffff_0%,#faf3ff_100%)] p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
                   <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
                     {localeLabel(locale, "Lo mejor del tour", "Top highlights", "Points forts")}
                   </p>
@@ -2584,7 +2584,7 @@ export default async function TourDetailPage({
               </section>
 
               <section id="includes" className="grid gap-6 lg:grid-cols-2">
-                <article className="rounded-[24px] border border-[#DDF1E5] bg-[#F7FFF9] p-4 sm:rounded-[30px] sm:p-6">
+                <article className="rounded-[30px] border border-[#DDF1E5] bg-[#F7FFF9] p-6">
                   <p className="text-xs font-black uppercase tracking-[0.34em] text-[#00A86B]">
                     {translate(locale, "tour.section.coverage.includes")}
                   </p>
@@ -2597,7 +2597,7 @@ export default async function TourDetailPage({
                     ))}
                   </ul>
                 </article>
-                <article className="rounded-[24px] border border-[#FFE2E2] bg-[#FFF8F8] p-4 sm:rounded-[30px] sm:p-6">
+                <article className="rounded-[30px] border border-[#FFE2E2] bg-[#FFF8F8] p-6">
                   <p className="text-xs font-black uppercase tracking-[0.34em] text-[#D23A3A]">
                     {translate(locale, "tour.section.coverage.excludes")}
                   </p>
@@ -2612,13 +2612,13 @@ export default async function TourDetailPage({
                 </article>
               </section>
 
-              <section id="itinerary" className="rounded-[28px] border border-[#E7D2FB] bg-white p-4 shadow-[0_16px_45px_rgba(106,13,173,0.08)] sm:rounded-[32px] sm:p-6">
+              <section id="itinerary" className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                   <div>
                     <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
                       {translate(locale, "tour.section.itinerary.label")}
                     </p>
-                    <h2 className="mt-3 text-[22px] font-black text-[#1D1230] sm:text-[26px]">
+                    <h2 className="mt-3 text-[26px] font-black text-[#1D1230]">
                       {translate(locale, "tour.section.itinerary.heading")}
                     </h2>
                   </div>
@@ -2627,7 +2627,7 @@ export default async function TourDetailPage({
                 <div className="mt-6 space-y-4">
                   {hasVisualTimeline ? (
                     visualTimeline.map((stop, index) => (
-                      <div key={`${stop.title}-${index}`} className="grid gap-4 rounded-[20px] border border-[#E7D2FB] bg-[#FCF7FF] p-4 md:grid-cols-[88px,minmax(0,1fr)] sm:rounded-[24px] sm:p-5">
+                      <div key={`${stop.title}-${index}`} className="grid gap-4 rounded-[24px] border border-[#E7D2FB] bg-[#FCF7FF] p-5 md:grid-cols-[88px,minmax(0,1fr)]">
                         <div className="rounded-[18px] bg-white px-4 py-3 text-center shadow-sm">
                           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#8D65B0]">
                             {localeLabel(locale, "Parada", "Stop", "Arret")}
@@ -2652,7 +2652,7 @@ export default async function TourDetailPage({
               </section>
 
               <section id="practical" className="grid gap-6 lg:grid-cols-[minmax(0,1fr),minmax(0,1fr)]">
-                <article className="rounded-[28px] border border-[#E7D2FB] bg-white p-4 shadow-[0_16px_45px_rgba(106,13,173,0.08)] sm:rounded-[32px] sm:p-6">
+                <article className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
                   <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
                     {localeLabel(locale, "Que llevar", "What to bring", "Que faut-il apporter")}
                   </p>
@@ -2665,7 +2665,7 @@ export default async function TourDetailPage({
                     ))}
                   </ul>
                 </article>
-                <article className="rounded-[28px] border border-[#E7D2FB] bg-white p-4 shadow-[0_16px_45px_rgba(106,13,173,0.08)] sm:rounded-[32px] sm:p-6">
+                <article className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
                   <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
                     {localeLabel(locale, "Restricciones y seguridad", "Restrictions and safety", "Restrictions et securite")}
                   </p>
@@ -2680,7 +2680,7 @@ export default async function TourDetailPage({
                 </article>
               </section>
 
-              <section id="meeting-point" className="overflow-hidden rounded-[28px] border border-[#E7D2FB] bg-white shadow-[0_16px_45px_rgba(106,13,173,0.08)] sm:rounded-[32px]">
+              <section id="meeting-point" className="overflow-hidden rounded-[32px] border border-[#E7D2FB] bg-white shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#F1E6FD] px-6 py-5">
                   <div>
                     <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
@@ -2706,13 +2706,13 @@ export default async function TourDetailPage({
                 />
               </section>
 
-              <section id="traveler-photos" className="rounded-[28px] border border-[#E7D2FB] bg-white p-4 shadow-[0_16px_45px_rgba(106,13,173,0.08)] sm:rounded-[32px] sm:p-6">
+              <section id="traveler-photos" className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                   <div>
                     <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
                       {localeLabel(locale, "Fotos de viajeros", "Traveler photos", "Photos des voyageurs")}
                     </p>
-                    <h2 className="mt-3 text-[22px] font-black text-[#1D1230] sm:text-[26px]">
+                    <h2 className="mt-3 text-[26px] font-black text-[#1D1230]">
                       {localeLabel(locale, "Clientes reales, momentos reales", "Real guests, real moments", "Vrais clients, vrais moments")}
                     </h2>
                   </div>
@@ -2722,9 +2722,9 @@ export default async function TourDetailPage({
                     buttonClassName="rounded-full border border-[#E7D2FB] bg-white px-4 py-2 text-sm font-semibold text-[#6A0DAD]"
                   />
                 </div>
-                <div className="mt-6 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3">
+                <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3">
                   {travelerGallery.map((img, index) => (
-                    <div key={`${img}-${index}`} className="relative min-h-[130px] overflow-hidden rounded-[18px] bg-[#EEE6F7] sm:min-h-[180px] sm:rounded-[22px]">
+                    <div key={`${img}-${index}`} className="relative min-h-[180px] overflow-hidden rounded-[22px] bg-[#EEE6F7]">
                       <Image
                         src={img}
                         alt={localeLabel(locale, "Foto de viajero", "Traveler photo", "Photo voyageur")}
@@ -2737,13 +2737,13 @@ export default async function TourDetailPage({
                 </div>
               </section>
 
-              <section id="reviews" className="rounded-[28px] border border-[#E7D2FB] bg-white p-4 shadow-[0_24px_65px_rgba(106,13,173,0.10)] sm:rounded-[32px] sm:p-6">
+              <section id="reviews" className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_24px_65px_rgba(106,13,173,0.10)]">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                   <div>
                     <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
                       {translate(locale, "tour.section.reviews.label")}
                     </p>
-                    <h2 className="mt-3 text-[22px] font-black text-[#1D1230] sm:text-[26px]">
+                    <h2 className="mt-3 text-[26px] font-black text-[#1D1230]">
                       {translate(locale, "tour.section.reviews.heading")}
                     </h2>
                   </div>
@@ -2771,9 +2771,9 @@ export default async function TourDetailPage({
                       </div>
                     </div>
                     {travelerGallery.slice(0, 4).length ? (
-                      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                      <div className="grid grid-cols-2 gap-3">
                         {travelerGallery.slice(0, 4).map((img, index) => (
-                          <div key={`${img}-${index}`} className="relative min-h-[90px] overflow-hidden rounded-[16px] bg-[#EEE6F7] sm:min-h-[110px] sm:rounded-[18px]">
+                          <div key={`${img}-${index}`} className="relative min-h-[110px] overflow-hidden rounded-[18px] bg-[#EEE6F7]">
                             <Image
                               src={img}
                               alt={`${heroTitle} traveler ${index + 1}`}
@@ -2789,7 +2789,7 @@ export default async function TourDetailPage({
                   <div className="space-y-4">
                     {reviewHighlights.length ? (
                       reviewHighlights.map((review) => (
-                        <article key={review.id} className="rounded-[20px] border border-[#E7D2FB] bg-white p-4 shadow-[0_10px_30px_rgba(106,13,173,0.06)] sm:rounded-[24px] sm:p-5">
+                        <article key={review.id} className="rounded-[24px] border border-[#E7D2FB] bg-white p-5 shadow-[0_10px_30px_rgba(106,13,173,0.06)]">
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex items-center gap-3">
                               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F3E6FF] text-sm font-bold text-[#6A0DAD]">
@@ -2824,16 +2824,16 @@ export default async function TourDetailPage({
                 </div>
               </section>
 
-              <section id="faq" className="rounded-[28px] border border-[#E7D2FB] bg-white p-4 shadow-[0_16px_45px_rgba(106,13,173,0.08)] sm:rounded-[32px] sm:p-6">
+              <section id="faq" className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
                 <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
                   {translate(locale, "tour.section.faq.label")}
                 </p>
-                <h2 className="mt-3 text-[22px] font-black text-[#1D1230] sm:text-[26px]">
+                <h2 className="mt-3 text-[26px] font-black text-[#1D1230]">
                   {translate(locale, "tour.section.faq.heading")}
                 </h2>
                 <div className="mt-6 space-y-4">
                   {faqList.map((item) => (
-                    <article key={item.question} className="rounded-[18px] border border-[#E7D2FB] bg-[#FCF7FF] p-4 sm:rounded-[22px] sm:p-5">
+                    <article key={item.question} className="rounded-[22px] border border-[#E7D2FB] bg-[#FCF7FF] p-5">
                       <p className="text-sm font-bold text-[#34114A]">{item.question}</p>
                       <p className="mt-2 text-sm leading-7 text-[#5E4671]">{item.answer}</p>
                     </article>
@@ -2842,11 +2842,11 @@ export default async function TourDetailPage({
               </section>
 
               {!agencyMode && relatedTourCards.length ? (
-                <section className="rounded-[28px] border border-[#E7D2FB] bg-white p-4 shadow-[0_16px_45px_rgba(106,13,173,0.08)] sm:rounded-[32px] sm:p-6">
+                <section className="rounded-[32px] border border-[#E7D2FB] bg-white p-6 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
                   <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">
                     {localeLabel(locale, "Mas tours", "More tours", "Plus d excursions")}
                   </p>
-                  <h2 className="mt-3 text-[22px] font-black text-[#1D1230] sm:text-[26px]">
+                  <h2 className="mt-3 text-[26px] font-black text-[#1D1230]">
                     {localeLabel(locale, "Te puede interesar", "You may also like", "Vous pourriez aimer")}
                   </h2>
                   <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -2898,7 +2898,7 @@ export default async function TourDetailPage({
           </div>
         </section>
 
-        <section id="booking" className="mx-auto mt-6 max-w-[1320px] px-3 sm:px-4 lg:hidden">
+        <section id="booking" className="mx-auto mt-6 max-w-[1320px] px-4 lg:hidden">
           <div className="ring-1 ring-[#E7D2FB] shadow-md">
             <BookingPanel />
           </div>

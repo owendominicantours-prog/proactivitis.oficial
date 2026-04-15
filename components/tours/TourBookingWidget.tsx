@@ -456,7 +456,7 @@ export function TourBookingWidget({
 
   return (
     <div
-      className={`relative w-full space-y-4 rounded-[24px] border p-4 shadow-md sm:max-w-sm sm:p-5 ${
+      className={`relative w-full max-w-sm space-y-4 rounded-[24px] border p-4 shadow-md ${
         isFunjet
           ? "border-[#E7D2FB] bg-[linear-gradient(180deg,#ffffff_0%,#fcf7ff_100%)] shadow-[0_20px_50px_rgba(106,13,173,0.14)]"
           : "border-slate-200 bg-white"
@@ -534,14 +534,14 @@ export function TourBookingWidget({
       {/* PRICE HEADER */}
       <div className="space-y-1">
         <p className={`text-[0.65rem] font-semibold uppercase tracking-[0.25em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>From price</p>
-        <p className={`text-2xl font-semibold sm:text-3xl ${isFunjet ? "text-[#34114A]" : "text-slate-900"}`}>
+        <p className={`text-3xl font-semibold ${isFunjet ? "text-[#34114A]" : "text-slate-900"}`}>
           ${priceHeaderValue.toFixed(2)} <span className={`text-xs font-normal ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>USD</span>
         </p>
         <p className={`text-xs ${isFunjet ? "text-[#5E4671]" : "text-slate-600"}`}>{priceHeaderNote} - Confirmacion inmediata</p>
       </div>
 
       {/* ESTIMATED TOTAL */}
-      <div className={`rounded-xl px-3 py-1.5 text-[11px] sm:text-xs ${isFunjet ? "border border-[#E7D2FB] bg-[#F8F0FF] text-[#5E4671]" : "bg-slate-50 text-slate-700"}`}>
+      <div className={`rounded-xl px-3 py-1.5 text-xs ${isFunjet ? "border border-[#E7D2FB] bg-[#F8F0FF] text-[#5E4671]" : "bg-slate-50 text-slate-700"}`}>
         <span className="font-semibold">Estimated total:</span> ${estimatedTotal.toFixed(2)} for {totalTravelers} traveler
         {totalTravelers > 1 ? "s" : ""}
       </div>
@@ -555,13 +555,9 @@ export function TourBookingWidget({
 
       {/* DATE + TRAVELERS + START TIME */}
       <div className={`rounded-xl border ${isFunjet ? "border-[#E7D2FB]" : "border-slate-200"}`}>
-      <div
-        className={`grid grid-cols-1 divide-y sm:grid-cols-[1.15fr,1fr] sm:divide-y-0 sm:divide-x ${
-          isFunjet ? "divide-[#E7D2FB]" : "divide-slate-200"
-        }`}
-      >
+      <div className={`grid grid-cols-[1.15fr,1fr] divide-x ${isFunjet ? "divide-[#E7D2FB]" : "divide-slate-200"}`}>
           {/* DATE */}
-          <div className="flex flex-col px-4 py-3 sm:py-2">
+          <div className="flex flex-col px-4 py-2">
             <span className={`text-[0.65rem] font-semibold uppercase tracking-[0.2em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>Date</span>
             <input
               type="date"
@@ -572,7 +568,7 @@ export function TourBookingWidget({
           </div>
 
           {/* TRAVELERS */}
-          <div className="relative flex flex-col px-4 py-3 sm:py-2">
+          <div className="relative flex flex-col px-4 py-2">
             <button ref={triggerRef} type="button" onClick={handlePopperToggle} className="w-full text-left outline-none">
               <span className={`text-[0.65rem] font-semibold uppercase tracking-[0.2em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>Travelers</span>
               <p className={`mt-0.5 text-sm font-semibold ${isFunjet ? "text-[#34114A]" : "text-slate-900"}`}>
@@ -628,7 +624,7 @@ export function TourBookingWidget({
       {showTravelersPopover && (
         <div
           ref={popoverRef}
-          className={`absolute left-4 right-4 top-[190px] z-[9999] mt-2 rounded-2xl border p-4 text-sm shadow-2xl sm:left-1/2 sm:right-auto sm:top-[165px] sm:w-[300px] sm:-translate-x-1/2 ${
+          className={`absolute left-1/2 top-[165px] z-[9999] mt-2 w-[300px] -translate-x-1/2 rounded-2xl border p-4 text-sm shadow-2xl ${
             isFunjet ? "border-[#E7D2FB] bg-white" : "border-slate-200 bg-white"
           }`}
         >
@@ -694,7 +690,7 @@ export function TourBookingWidget({
         type="button"
         onClick={handleCheckAvailability}
         disabled={!date || operatingDayBlocked || !selectedOptionAvailable}
-        className={`w-full rounded-lg px-4 py-3 text-sm font-semibold text-white transition sm:text-[15px] ${
+        className={`w-full rounded-lg px-4 py-3 text-sm font-semibold text-white transition ${
           date && !operatingDayBlocked && selectedOptionAvailable
             ? isFunjet
               ? "bg-[#0077FF] hover:bg-[#005FD1]"
