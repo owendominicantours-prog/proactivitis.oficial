@@ -3215,39 +3215,43 @@ export default async function TourDetailPage({
             </div>
 
             <div className="mt-6 overflow-hidden rounded-[22px] border border-slate-200">
-              <div className="grid grid-cols-[1.3fr,1fr,1fr] bg-slate-100 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                <div className="px-4 py-3">{localeLabel(locale, "Caracteristica", "Feature", "Caracteristique")}</div>
-                <div className="px-4 py-3">{regularOption?.name ?? "Regular"}</div>
-                <div className="px-4 py-3">{goldOption?.name ?? "Gold Member"}</div>
-              </div>
-              {[
-                [
-                  localeLabel(locale, "Tipo de area", "Area type", "Type de zone"),
-                  localeLabel(locale, "General / de pie", "General / standing", "Generale / debout"),
-                  localeLabel(locale, "Reservada / sentada", "Reserved / seated", "Reservee / assise")
-                ],
-                [
-                  localeLabel(locale, "Bar", "Bar", "Bar"),
-                  localeLabel(locale, "Regular", "Regular", "Standard"),
-                  localeLabel(locale, "Premium", "Premium", "Premium")
-                ],
-                [
-                  localeLabel(locale, "Comodidad durante el show", "Comfort during the show", "Confort pendant le show"),
-                  localeLabel(locale, "Basica", "Basic", "Basique"),
-                  localeLabel(locale, "Alta", "High", "Eleve")
-                ],
-                [
-                  localeLabel(locale, "Para quien conviene", "Best for", "Ideal pour"),
-                  localeLabel(locale, "Quien quiere entrar al mejor precio", "Travelers focused on the best price", "Voyageurs axes sur le meilleur prix"),
-                  localeLabel(locale, "Quien quiere espacio, asiento y experiencia VIP", "Travelers wanting space, seating and VIP comfort", "Voyageurs voulant espace, siege et confort VIP")
-                ]
-              ].map((row) => (
-                <div key={row[0]} className="grid grid-cols-[1.3fr,1fr,1fr] border-t border-slate-200 text-sm text-slate-700">
-                  <div className="px-4 py-3 font-semibold text-slate-900">{row[0]}</div>
-                  <div className="px-4 py-3">{row[1]}</div>
-                  <div className="px-4 py-3">{row[2]}</div>
+              <div className="overflow-x-auto">
+                <div className="min-w-[720px]">
+                  <div className="grid grid-cols-[1.3fr,1fr,1fr] bg-slate-100 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                    <div className="px-4 py-3">{localeLabel(locale, "Caracteristica", "Feature", "Caracteristique")}</div>
+                    <div className="px-4 py-3">{regularOption?.name ?? "Regular"}</div>
+                    <div className="px-4 py-3">{goldOption?.name ?? "Gold Member"}</div>
+                  </div>
+                  {[
+                    [
+                      localeLabel(locale, "Tipo de area", "Area type", "Type de zone"),
+                      localeLabel(locale, "General / de pie", "General / standing", "Generale / debout"),
+                      localeLabel(locale, "Reservada / sentada", "Reserved / seated", "Reservee / assise")
+                    ],
+                    [
+                      localeLabel(locale, "Bar", "Bar", "Bar"),
+                      localeLabel(locale, "Regular", "Regular", "Standard"),
+                      localeLabel(locale, "Premium", "Premium", "Premium")
+                    ],
+                    [
+                      localeLabel(locale, "Comodidad durante el show", "Comfort during the show", "Confort pendant le show"),
+                      localeLabel(locale, "Basica", "Basic", "Basique"),
+                      localeLabel(locale, "Alta", "High", "Eleve")
+                    ],
+                    [
+                      localeLabel(locale, "Para quien conviene", "Best for", "Ideal pour"),
+                      localeLabel(locale, "Quien quiere entrar al mejor precio", "Travelers focused on the best price", "Voyageurs axes sur le meilleur prix"),
+                      localeLabel(locale, "Quien quiere espacio, asiento y experiencia VIP", "Travelers wanting space, seating and VIP comfort", "Voyageurs voulant espace, siege et confort VIP")
+                    ]
+                  ].map((row) => (
+                    <div key={row[0]} className="grid grid-cols-[1.3fr,1fr,1fr] border-t border-slate-200 text-sm text-slate-700">
+                      <div className="px-4 py-3 font-semibold text-slate-900">{row[0]}</div>
+                      <div className="px-4 py-3">{row[1]}</div>
+                      <div className="px-4 py-3">{row[2]}</div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </section>
@@ -3429,7 +3433,7 @@ export default async function TourDetailPage({
 
       <section id="meeting-point" className="mx-auto mt-6 max-w-[1240px] px-4">
         <div className="overflow-hidden rounded-[24px] border border-slate-100 bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-slate-500">
                 {localeLabel(locale, "Punto de encuentro", "Meeting point", "Point de rencontre")}
@@ -3501,7 +3505,7 @@ export default async function TourDetailPage({
       <main className="mx-auto mt-10 grid max-w-[1240px] gap-10 px-4 lg:grid-cols-[1fr,420px]">
         <div className="space-y-10">
           <section id="includes" className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
                   {translate(locale, "tour.section.coverage.label")}
@@ -3544,7 +3548,7 @@ export default async function TourDetailPage({
           </section>
 
           <section id="itinerary" className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
                   {translate(locale, "tour.section.itinerary.label")}
@@ -3579,7 +3583,7 @@ export default async function TourDetailPage({
           </section>
 
           <section id="reviews" className={`space-y-6 rounded-[30px] p-6 ${isFunjet ? "border border-[#E7D2FB] bg-[linear-gradient(145deg,#ffffff_0%,#faf2ff_100%)] shadow-[0_24px_65px_rgba(106,13,173,0.10)]" : ""}`}>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className={`text-xs uppercase tracking-[0.4em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
                   {translate(locale, "tour.section.reviews.label")}
