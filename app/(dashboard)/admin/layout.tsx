@@ -3,8 +3,9 @@ import { getServerSession } from "next-auth";
 import { PanelShell, NotificationMenuItem } from "@/components/dashboard/PanelShell";
 import { authOptions } from "@/lib/auth";
 import { getNotificationUnreadCount, getNotificationsForRecipient } from "@/lib/notificationService";
+import { SITE_CONFIG } from "@/lib/site-config";
 
-const adminNav = [
+const defaultAdminNav = [
   { label: "Dashboard", href: "/admin" },
   { label: "Landings", href: "/admin/landings" },
   { label: "SEO", href: "/admin/seo" },
@@ -30,8 +31,19 @@ const adminNav = [
   { label: "Notificaciones", href: "/admin/notifications" }
 ];
 
+const funjetAdminNav = [
+  { label: "Dashboard", href: "/admin" },
+  { label: "Tours", href: "/admin/tours" },
+  { label: "Transfer", href: "/admin/transfers" },
+  { label: "Reservas", href: "/admin/bookings" },
+  { label: "Chat", href: "/admin/chat" },
+  { label: "Usuarios", href: "/admin/users" },
+  { label: "Ajustes", href: "/admin/settings" },
+  { label: "Notificaciones", href: "/admin/notifications" }
+];
+
 export const metadata = {
-  title: "Admin Space Proactivitis"
+  title: SITE_CONFIG.variant === "funjet" ? "Admin Funjet" : "Admin Space Proactivitis"
 };
 
 export default async function AdminDashboardLayout({ children }: { children: ReactNode }) {
@@ -49,9 +61,12 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
     unreadCount = count;
   }
 
+  const isFunjet = SITE_CONFIG.variant === "funjet";
+  const adminNav = isFunjet ? funjetAdminNav : defaultAdminNav;
+
   return (
     <PanelShell
-      roleLabel="Administracion"
+      roleLabel={isFunjet ? "Funjet Directo" : "Administracion"}
       title="Dashboard"
       navItems={adminNav}
       navDisplay="dropdown"

@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
@@ -19,7 +20,12 @@ export async function GET(request: NextRequest) {
     : undefined;
 
   const bookings = await prisma.booking.findMany({
-    where,
+    where: where
+      ? {
+          ...where,
+          siteBrand: getCurrentSiteBrand()
+        }
+      : { siteBrand: getCurrentSiteBrand() },
     orderBy: { createdAt: "desc" },
     take: query ? 10 : 5,
     include: {
@@ -66,7 +72,8 @@ export async function POST(request: NextRequest) {
       customerEmail: body.customerEmail || "",
       agencyProLinkId,
       agencyMarkupAmount,
-      agencyPricingMode
+      agencyPricingMode,
+      siteBrand: getCurrentSiteBrand()
     } as Prisma.BookingUncheckedCreateInput
   });
   return NextResponse.json({ booking }, { status: 201 });

@@ -20,6 +20,7 @@ import TransferLocationImport from "@/components/admin/transfers/TransferLocatio
 import VehicleImageField from "@/components/admin/transfers/VehicleImageField";
 import { allLandings } from "@/data/transfer-landings";
 import CollapsibleSection from "@/components/admin/CollapsibleSection";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 const TRANSFERS_ENABLED = process.env.TRANSFERS_V2_ENABLED === "true";
 
@@ -30,6 +31,7 @@ const LOCATION_TYPE_OPTIONS: { value: TransferLocationType; label: string }[] = 
 ];
 
 export default async function TransfersAdminPage() {
+  const siteBrand = getCurrentSiteBrand();
   if (!TRANSFERS_ENABLED) {
     return (
       <div className="space-y-4 rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
@@ -56,11 +58,13 @@ export default async function TransfersAdminPage() {
       }
     }),
     prisma.transferLocation.findMany({
+      where: { siteBrand },
       orderBy: { name: "asc" },
       include: { zone: true }
     }),
     prisma.transferVehicle.findMany({ orderBy: { name: "asc" } }),
     prisma.transferRoute.findMany({
+      where: { siteBrand },
       orderBy: { createdAt: "desc" },
       include: {
         zoneA: { include: { country: true } },
@@ -74,22 +78,27 @@ export default async function TransfersAdminPage() {
     })
   ]);
 
-  const landingLinkMap = new Map<string, string>();
-  locations
-    .filter((location) => location.type === TransferLocationType.HOTEL)
-    .forEach((location) => {
-      const landingSlug = `punta-cana-international-airport-to-${location.slug}`;
-      landingLinkMap.set(landingSlug, location.name);
-    });
-  allLandings().forEach((landing) => {
-    if (!landingLinkMap.has(landing.landingSlug)) {
-      landingLinkMap.set(landing.landingSlug, landing.hotelName);
-    }
-  });
+  const isFunjet = siteBrand === "FUNJET";
+  const landingLinks = isFunjet
+    ? []
+    : (() => {
+        const landingLinkMap = new Map<string, string>();
+        locations
+          .filter((location) => location.type === TransferLocationType.HOTEL)
+          .forEach((location) => {
+            const landingSlug = `punta-cana-international-airport-to-${location.slug}`;
+            landingLinkMap.set(landingSlug, location.name);
+          });
+        allLandings().forEach((landing) => {
+          if (!landingLinkMap.has(landing.landingSlug)) {
+            landingLinkMap.set(landing.landingSlug, landing.hotelName);
+          }
+        });
 
-  const landingLinks = Array.from(landingLinkMap.entries()).sort(([slugA], [slugB]) =>
-    slugA.localeCompare(slugB)
-  );
+        return Array.from(landingLinkMap.entries()).sort(([slugA], [slugB]) =>
+          slugA.localeCompare(slugB)
+        );
+      })();
 
   return (
     <div className="space-y-10 pb-10">
@@ -105,8 +114,15 @@ export default async function TransfersAdminPage() {
       <CollapsibleSection
         title="Landing pages"
         description="Convierte cualquier slug de transfers en landing pública y revisa el tráfico."
-        badge={`${landingLinks.length} disponibles`}
+        badge={isFunjet ? "Sin herencia" : `${landingLinks.length} disponibles`}
       >
+        {isFunjet ? (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600">
+            Funjet no hereda las landings de Proactivitis. Esta seccion queda vacia hasta que creemos
+            landings propias para la marca.
+          </div>
+        ) : (
+          <>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Landing pages</p>
@@ -130,6 +146,8 @@ export default async function TransfersAdminPage() {
             </a>
           ))}
         </div>
+          </>
+        )}
       </CollapsibleSection>
 
       <CollapsibleSection

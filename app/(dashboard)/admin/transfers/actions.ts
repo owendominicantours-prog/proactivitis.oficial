@@ -3,6 +3,7 @@
 import { TransferLocationType, VehicleCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 const TRANSFER_ADMIN_PATH = "/(dashboard)/admin/transfers";
 
@@ -149,6 +150,7 @@ export async function deleteTransferZoneAction(formData: FormData) {
 }
 
 export async function addTransferLocationAction(formData: FormData) {
+  const siteBrand = getCurrentSiteBrand();
   const name = formData.get("name");
   const slug = formData.get("slug");
   const type = formData.get("type");
@@ -183,7 +185,8 @@ export async function addTransferLocationAction(formData: FormData) {
       address: typeof address === "string" ? address.trim() : undefined,
       zoneId: zone.id,
       countryCode: zone.countryCode,
-      active: true
+      active: true,
+      siteBrand
     },
     create: {
       name: name.trim(),
@@ -192,7 +195,8 @@ export async function addTransferLocationAction(formData: FormData) {
       description: typeof description === "string" ? description.trim() : undefined,
       address: typeof address === "string" ? address.trim() : undefined,
       zoneId: zone.id,
-      countryCode: zone.countryCode
+      countryCode: zone.countryCode,
+      siteBrand
     }
   });
 
@@ -267,6 +271,7 @@ export async function addTransferVehicleAction(formData: FormData) {
 }
 
 export async function addTransferRouteAction(formData: FormData) {
+  const siteBrand = getCurrentSiteBrand();
   const zoneAId = formData.get("zoneAId");
   const zoneBId = formData.get("zoneBId");
 
@@ -297,11 +302,12 @@ export async function addTransferRouteAction(formData: FormData) {
         zoneBId: sorted[1].id
       }
     },
-    update: { active: true, countryCode: zoneA.countryCode },
+    update: { active: true, countryCode: zoneA.countryCode, siteBrand },
     create: {
       zoneAId: sorted[0].id,
       zoneBId: sorted[1].id,
-      countryCode: zoneA.countryCode
+      countryCode: zoneA.countryCode,
+      siteBrand
     }
   });
 

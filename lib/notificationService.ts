@@ -2,6 +2,7 @@ import type { Notification } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { NotificationRole, NotificationType } from "@/lib/types/notificationTypes";
 import { randomUUID } from "crypto";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 export type NotificationMetadata = {
   role?: NotificationRole;
@@ -169,6 +170,7 @@ export async function createNotification({
   const payload: NotificationMetadata = {
     ...(metadata ?? {})
   };
+  const siteBrand = getCurrentSiteBrand();
   if (recipientUserId) payload.userId = recipientUserId;
   payload.role = role;
   await prisma.notification.create({
@@ -182,7 +184,8 @@ export async function createNotification({
       bookingId: bookingId ?? metadata?.bookingId ?? null,
       metadata: Object.keys(payload).length ? JSON.stringify(payload) : null,
       caseNumber: metadata?.bookingId ?? null,
-      isRead: false
+      isRead: false,
+      siteBrand
     }
   });
 }
@@ -240,7 +243,10 @@ export async function getNotificationsForRecipient(recipient: NotificationRecipi
     const where = buildRecipientFilters(recipient);
     if (!where) return [];
     return prisma.notification.findMany({
-      where,
+      where: {
+        ...where,
+        siteBrand: getCurrentSiteBrand()
+      },
       orderBy: { createdAt: "desc" },
       take: limit
     });
@@ -248,7 +254,7 @@ export async function getNotificationsForRecipient(recipient: NotificationRecipi
 
   const scanLimit = Math.max(limit * 8, 80);
   const candidates = await prisma.notification.findMany({
-    where: { role: recipient.role },
+    where: { role: recipient.role, siteBrand: getCurrentSiteBrand() },
     orderBy: { createdAt: "desc" },
     take: scanLimit
   });
@@ -266,6 +272,7 @@ export async function getNotificationUnreadCount(recipient: NotificationRecipien
     return prisma.notification.count({
       where: {
         ...where,
+        siteBrand: getCurrentSiteBrand(),
         isRead: false
       }
     });
@@ -274,6 +281,7 @@ export async function getNotificationUnreadCount(recipient: NotificationRecipien
   const candidates = await prisma.notification.findMany({
     where: {
       role: recipient.role,
+      siteBrand: getCurrentSiteBrand(),
       isRead: false
     },
     orderBy: { createdAt: "desc" },
@@ -316,7 +324,8 @@ export async function getContactNotifications(limit = 50) {
   return prisma.notification.findMany({
     where: {
       role: "ADMIN",
-      type: "ADMIN_CONTACT_REQUEST"
+      type: "ADMIN_CONTACT_REQUEST",
+      siteBrand: getCurrentSiteBrand()
     },
     orderBy: { createdAt: "desc" },
     take: limit

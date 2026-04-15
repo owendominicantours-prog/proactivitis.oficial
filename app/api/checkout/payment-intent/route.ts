@@ -6,6 +6,7 @@ import { BookingSourceEnum, BookingStatusEnum } from "@/lib/types/booking";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 import { getStripe } from "@/lib/stripe";
 import { randomUUID } from "crypto";
 import jwt from "jsonwebtoken";
@@ -449,7 +450,8 @@ export async function POST(request: NextRequest) {
       agencyFee: directAgencyBooking ? agencyDirectDiscountAmount : undefined,
       agencyMarkupAmount: agencyProLink?.markup ?? agencyTransferLink?.markup ?? undefined,
       agencyPricingMode: Boolean(agencyProLink || agencyTransferLink),
-      paymentMethod: payload.paymentOption === "later" ? "PAY_LATER" : "CARD"
+      paymentMethod: payload.paymentOption === "later" ? "PAY_LATER" : "CARD",
+      siteBrand: getCurrentSiteBrand()
     } as any
   });
 

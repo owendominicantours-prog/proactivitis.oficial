@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { TransferLocationType } from "@prisma/client";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 type ImportFailure = {
   row: number;
@@ -10,6 +11,7 @@ type ImportFailure = {
 };
 
 export async function POST(request: NextRequest) {
+  const siteBrand = getCurrentSiteBrand();
   const formData = await request.formData();
   const csvField = formData.get("csvFile");
   const fallbackZoneId = formData.get("zoneId");
@@ -134,7 +136,8 @@ export async function POST(request: NextRequest) {
       countryCode: zone.countryCode,
       description: descriptionIndex !== -1 ? cells[descriptionIndex] : undefined,
       address: addressIndex !== -1 ? cells[addressIndex] : undefined,
-      active: true
+      active: true,
+      siteBrand
     };
 
     const existing = await prisma.transferLocation.findUnique({ where: { slug: normalizedSlug } });

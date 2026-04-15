@@ -1,8 +1,12 @@
 ﻿import { prisma } from "@/lib/prisma";
 import { TourModerationConsole, SimpleTourRecord } from "@/components/admin/tours/TourModerationConsole";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 export default async function AdminToursPage() {
   const tours = await prisma.tour.findMany({
+    where: {
+      siteBrand: getCurrentSiteBrand()
+    },
     include: {
       SupplierProfile: {
         select: {

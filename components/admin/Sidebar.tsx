@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { SITE_CONFIG } from "@/lib/site-config";
 
-const sections = [
+const defaultSections = [
   { name: "Dashboard", href: "/admin", icon: "dashboard" },
   { name: "Landings", href: "/admin/landings" },
   { name: "Tours", href: "/admin/tours" },
@@ -17,9 +18,25 @@ const sections = [
   { name: "IA Tools", href: "/admin/ai" }
 ];
 
-export const Sidebar = () => (
+const funjetSections = [
+  { name: "Dashboard", href: "/admin", icon: "dashboard" },
+  { name: "Tours", href: "/admin/tours" },
+  { name: "Transfer", href: "/admin/transfers" },
+  { name: "Reservas", href: "/admin/bookings" },
+  { name: "Chat", href: "/admin/chat" },
+  { name: "Usuarios", href: "/admin/users" },
+  { name: "Ajustes", href: "/admin/settings" }
+];
+
+export const Sidebar = () => {
+  const isFunjet = SITE_CONFIG.variant === "funjet";
+  const sections = isFunjet ? funjetSections : defaultSections;
+
+  return (
   <aside className="fixed left-0 top-0 h-screen w-64 border-r border-slate-900/20 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 text-white shadow-xl">
-    <div className="mb-10 text-xs font-semibold uppercase tracking-[0.6em] text-slate-400">Proactivitis Admin</div>
+    <div className="mb-10 text-xs font-semibold uppercase tracking-[0.6em] text-slate-400">
+      {isFunjet ? "Funjet Admin" : "Proactivitis Admin"}
+    </div>
     <div className="space-y-2 text-sm">
       {sections.map((section) => (
         <Link
@@ -32,4 +49,5 @@ export const Sidebar = () => (
       ))}
     </div>
   </aside>
-);
+  );
+};

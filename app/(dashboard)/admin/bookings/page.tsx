@@ -13,6 +13,7 @@ import { buildBookingPresentation } from "@/lib/bookingPresentation";
 import { addDaysToSiteDateKey, getSiteDateKey } from "@/lib/site-date";
 import { updateBookingStatus } from "@/lib/actions/bookingStatus";
 import { addAdminBookingNote, updateAdminTransferLogistics } from "@/app/(dashboard)/admin/bookings/actions";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 type TimelineEntry = {
   title: string;
@@ -129,7 +130,11 @@ const statusOptions = [
 ];
 
 export default async function AdminBookingsPage({ searchParams }: any) {
+  const siteBrand = getCurrentSiteBrand();
   const bookings = await prisma.booking.findMany({
+    where: {
+      siteBrand
+    },
     include: {
       Tour: true,
       User: {
@@ -160,6 +165,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   const bookingIds = bookings.map((booking) => booking.id);
   const notifications = await prisma.notification.findMany({
     where: {
+      siteBrand,
       bookingId: {
         in: bookingIds
       }

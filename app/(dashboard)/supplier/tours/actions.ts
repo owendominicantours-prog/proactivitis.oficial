@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { randomUUID } from "crypto";
@@ -147,6 +148,7 @@ export async function createTourAction(formData: FormData) {
   const tourOptions = parseTourOptions(formData);
 
   const tourId = randomUUID();
+  const siteBrand = getCurrentSiteBrand();
   await prisma.tour.create({
     data: {
       id: tourId,
@@ -184,7 +186,8 @@ export async function createTourAction(formData: FormData) {
       status: "pending",
       supplierId,
       departureDestinationId,
-      countryId: countryCode
+      countryId: countryCode,
+      siteBrand
     }
   });
 
@@ -282,7 +285,8 @@ export async function duplicateTourAction(formData: FormData) {
       departureDestinationId: tour.departureDestinationId,
       countryId: tour.countryId,
       platformSharePercent: tour.platformSharePercent ?? 20,
-      productId: randomUUID()
+      productId: randomUUID(),
+      siteBrand: tour.siteBrand
     }
   });
 

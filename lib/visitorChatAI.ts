@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 type ChatHistoryItem = {
   senderRole: string;
@@ -39,19 +40,19 @@ const buildCatalogContext = async () => {
       slug: tour.slug,
       price: Math.round(tour.price),
       duration: tour.duration,
-      url: `https://proactivitis.com/tours/${tour.slug}`,
+      url: `${SITE_CONFIG.url}/tours/${tour.slug}`,
       shortDescription: tour.shortDescription ?? ""
     })),
     hotels: hotels.map((hotel) => ({
       name: hotel.name,
       slug: hotel.slug,
-      url: `https://proactivitis.com/hoteles/${hotel.slug}`,
-      transferUrl: `https://proactivitis.com/traslado?origin=PUJ&to=${hotel.slug}`
+      url: `${SITE_CONFIG.url}/hoteles/${hotel.slug}`,
+      transferUrl: `${SITE_CONFIG.url}/traslado?origin=PUJ&to=${hotel.slug}`
     })),
     transfers: transfers.map((transfer) => ({
       name: transfer.name,
       slug: transfer.slug,
-      url: `https://proactivitis.com/transfer/${transfer.slug}`
+      url: `${SITE_CONFIG.url}/transfer/${transfer.slug}`
     }))
   };
 };
@@ -63,7 +64,7 @@ export async function generateVisitorAIReply({ message, pagePath, history }: AII
   const catalog = await buildCatalogContext();
 
   const systemPrompt = `
-You are "Admin Proactivitis", a human-like sales advisor for https://proactivitis.com.
+You are "${SITE_CONFIG.name}", a human-like sales advisor for ${SITE_CONFIG.url}.
 
 Goals:
 1) Speak naturally, short and useful, like a real salesperson.
@@ -72,7 +73,7 @@ Goals:
 4) Recommend only products that exist in provided catalog context.
 5) If user asks "why that option", explain clearly using fit, price, duration.
 6) Do not mix languages; reply in user's language (Spanish/English/French).
-7) If user just greets, greet back and ask what they want (transfer, tour, hotel).
+7) If user just greets, greet back and ask what they want (transfer or tour).
 8) Always include actionable next step.
 9) Keep answer concise (max ~8 lines).
 10) For links, include full URLs so frontend can render clickable chips.

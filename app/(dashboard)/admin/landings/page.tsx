@@ -22,6 +22,7 @@ import CollapsibleSection from "@/components/admin/CollapsibleSection";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import LandingRefreshControl from "@/components/admin/LandingRefreshControl";
 import { countryPuntaCanaLandings } from "@/data/country-punta-cana-landings";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 type SearchParams = {
   zone?: string;
@@ -53,6 +54,20 @@ type ExplorerEntry = {
 };
 
 export default async function LandingsAdminPage({ searchParams }: LandingsAdminPageProps) {
+  if (SITE_CONFIG.variant === "funjet") {
+    return (
+      <div className="space-y-6">
+        <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Landings</p>
+          <h1 className="mt-3 text-3xl font-semibold text-slate-900">Sin landings activas en Funjet</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
+            En Funjet no heredamos landings SEO de Proactivitis. Esta seccion queda vacia hasta que construyamos landings propias para la marca.
+          </p>
+        </section>
+      </div>
+    );
+  }
+
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const params = resolvedSearchParams ?? {};
   const [zones, locations, dynamicCombos, publishedTours] = await Promise.all([

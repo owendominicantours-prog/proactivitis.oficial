@@ -2,6 +2,7 @@ import { BookingStatus } from "@/lib/types/booking";
 import { prisma } from "@/lib/prisma";
 import { ensureSupplierProfile } from "@/lib/supplierProfiles";
 import { getAgencyWorkspaceMetrics } from "@/lib/agencyMetrics";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 export function getCurrentMonthRange(date = new Date()) {
   const start = new Date(date.getFullYear(), date.getMonth(), 1);
@@ -15,27 +16,32 @@ const confirmedStatuses: BookingStatus[] = ["CONFIRMED", "COMPLETED"];
 export async function getAdminDashboardMetrics() {
   const now = new Date();
   const { start, end } = getCurrentMonthRange(now);
+  const siteBrand = getCurrentSiteBrand();
 
   const [confirmedCount, cancellationCount, requestCount, revenueResult] = await Promise.all([
     prisma.booking.count({
       where: {
+        siteBrand,
         travelDate: { gte: start, lt: end },
         status: { in: confirmedStatuses }
       }
     }),
     prisma.booking.count({
       where: {
+        siteBrand,
         status: "CANCELLED",
         cancellationAt: { gte: start, lt: end }
       }
     }),
     prisma.booking.count({
       where: {
+        siteBrand,
         status: "CANCELLATION_REQUESTED"
       }
     }),
     prisma.booking.aggregate({
       where: {
+        siteBrand,
         travelDate: { gte: start, lt: end },
         status: { in: confirmedStatuses }
       },

@@ -8,6 +8,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum SiteBrand {
+  PROACTIVITIS
+  FUNJET
+}
+
 enum VehicleCategory {
   SEDAN
   VAN
@@ -108,9 +113,12 @@ model Booking {
   paymentBrand          String?        @map("payment_brand")
   paymentLast4          String?        @map("payment_last4")
   paymentMethod         String?        @map("payment_method")
+  siteBrand            SiteBrand      @default(PROACTIVITIS)
   TourReviews           TourReview[]
   TransferReviews       TransferReview[]
   TransferReviewReminder TransferReviewReminder?
+
+  @@index([siteBrand])
 }
 
 model Conversation {
@@ -173,7 +181,10 @@ model Notification {
   metadata   String?
   caseNumber String?
   isRead     Boolean  @default(false) @map("read")
+  siteBrand  SiteBrand @default(PROACTIVITIS)
   createdAt  DateTime @default(now())
+
+  @@index([siteBrand, role, createdAt])
 }
 
 model NotificationEmailSetting {
@@ -424,6 +435,7 @@ model TransferLocation {
   address     String?
   heroImage   String?
   active      Boolean              @default(true)
+  siteBrand   SiteBrand            @default(PROACTIVITIS)
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
 
@@ -433,6 +445,8 @@ model TransferLocation {
   destinationOverrides  TransferRoutePriceOverride[]    @relation("DestinationOverrides")
   originAgencyTransferLinks AgencyTransferLink[]        @relation("AgencyTransferOrigin")
   destinationAgencyTransferLinks AgencyTransferLink[]   @relation("AgencyTransferDestination")
+
+  @@index([siteBrand, active])
 }
 
 model TransferVehicle {
@@ -458,6 +472,7 @@ model TransferRoute {
   zoneBId     String
   countryCode String
   active      Boolean                 @default(true)
+  siteBrand   SiteBrand               @default(PROACTIVITIS)
   createdAt   DateTime                @default(now())
   updatedAt   DateTime                @updatedAt
 
@@ -469,6 +484,7 @@ model TransferRoute {
 
   @@unique([zoneAId, zoneBId])
   @@index([countryCode])
+  @@index([siteBrand, active])
 }
 
 model TransferRoutePrice {
@@ -685,6 +701,9 @@ model Tour {
   options                TourOption[]
   blogPosts              BlogPostTour[]
   reviews                TourReview[]
+  siteBrand              SiteBrand                  @default(PROACTIVITIS)
+
+  @@index([siteBrand, status])
 }
 
 model TourOption {

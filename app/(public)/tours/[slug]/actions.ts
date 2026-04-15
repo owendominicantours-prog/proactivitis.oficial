@@ -10,6 +10,7 @@ import { authOptions } from "@/lib/auth";
 import { randomUUID } from "crypto";
 import jwt from "jsonwebtoken";
 import { getStripe } from "@/lib/stripe";
+import { getCurrentSiteBrand } from "@/lib/site-brand";
 
 function parseNumber(value: FormDataEntryValue | null, fallback = 0) {
   if (typeof value === "string") {
@@ -153,7 +154,8 @@ export async function createBookingAction(formData: FormData) {
       totalAmount,
       userId,
       status: BookingStatusEnum.PAYMENT_PENDING,
-      source: BookingSourceEnum.WEB
+      source: BookingSourceEnum.WEB,
+      siteBrand: getCurrentSiteBrand()
     }
   });
 
