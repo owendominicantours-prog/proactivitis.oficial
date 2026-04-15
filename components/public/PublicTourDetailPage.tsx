@@ -24,6 +24,7 @@ import { formatDurationDisplay } from "@/lib/formatDuration";
 import { normalizeTourLocation, normalizeTourLanguages } from "@/lib/tour-display";
 import { SITE_CONFIG } from "@/lib/site-config";
 import { resolveFunjetTourTitle } from "@/lib/funjetTourTitles";
+import { getFunjetTourSchemaProfile } from "@/lib/funjetTourSchemaProfiles";
 
 const DEFAULT_TOUR_IMAGE = "/fototours/fotosimple.jpg";
 
@@ -2005,6 +2006,7 @@ export default async function TourDetailPage({
       : NORTH_COAST_PARTY_BOAT_TOURS.has(tour.slug)
         ? NORTH_COAST_SCHEMA_KEYWORDS[locale]
         : undefined);
+  const funjetSchemaProfile = isFunjet ? getFunjetTourSchemaProfile(tour.slug, locale, tourUrl) : null;
   const aggregateRating =
     detailReviewCount > 0
       ? {
@@ -2026,6 +2028,14 @@ export default async function TourDetailPage({
           { "@type": "PropertyValue", name: "Minimum driver age", value: "18+" }
         ]
       : undefined;
+  const mergedSchemaAdditionalProperty = [
+    ...(schemaAdditionalProperty ?? []),
+    ...((funjetSchemaProfile?.additionalProperty ?? []).map((item) => ({
+      "@type": "PropertyValue",
+      name: item.name,
+      value: item.value
+    })) as Array<Record<string, string>>)
+  ];
   const reviewSchema =
     detailReviewCount > 0
       ? translatedReviews.slice(0, 5).map((review) => ({
@@ -2057,7 +2067,7 @@ export default async function TourDetailPage({
       "@type": "Brand",
       name: SITE_CONFIG.name
     },
-    category: touristTypeFallback ?? "Tour",
+    category: funjetSchemaProfile?.category ?? touristTypeFallback ?? "Tour",
     sku: tour.slug,
     mpn: tour.productId,
     slogan:
@@ -2077,7 +2087,9 @@ export default async function TourDetailPage({
     isFamilyFriendly: true,
     audience: {
       "@type": "Audience",
-      audienceType: localeLabel(locale, "Parejas, amigos y grupos privados", "Couples, friends, and private groups", "Couples, amis et groupes prives")
+      audienceType:
+        funjetSchemaProfile?.audienceType ??
+        localeLabel(locale, "Parejas, amigos y grupos privados", "Couples, friends, and private groups", "Couples, amis et groupes prives")
     },
     offers: {
       "@type": "Offer",
@@ -2132,8 +2144,9 @@ export default async function TourDetailPage({
       acceptedPaymentMethod: ["https://schema.org/CreditCard", "https://schema.org/ByBankTransferInAdvance"]
     },
     sameAs: SAME_AS_URLS,
+    ...(funjetSchemaProfile?.relatedRefs?.length ? { isRelatedTo: funjetSchemaProfile.relatedRefs } : {}),
     ...(schemaKeywords ? { keywords: schemaKeywords.join(", ") } : {}),
-    ...(schemaAdditionalProperty ? { additionalProperty: schemaAdditionalProperty } : {}),
+    ...(mergedSchemaAdditionalProperty.length ? { additionalProperty: mergedSchemaAdditionalProperty } : {}),
     ...(aggregateRating ? { aggregateRating } : {}),
     ...(reviewSchema ? { review: reviewSchema } : {})
   };
@@ -2147,10 +2160,15 @@ export default async function TourDetailPage({
     image: schemaImages,
     url: tourUrl,
     inLanguage: locale,
-    touristType: categories.length ? categories : [touristTypeFallback ?? "General"],
+    touristType: funjetSchemaProfile?.touristTypes?.length
+      ? funjetSchemaProfile.touristTypes
+      : categories.length
+        ? categories
+        : [touristTypeFallback ?? "General"],
     provider: PROACTIVITIS_LOCALBUSINESS,
     availableLanguage: availableLanguages,
-    ...(schemaAdditionalProperty ? { additionalProperty: schemaAdditionalProperty } : {}),
+    ...(mergedSchemaAdditionalProperty.length ? { additionalProperty: mergedSchemaAdditionalProperty } : {}),
+    ...(funjetSchemaProfile?.relatedRefs?.length ? { isRelatedTo: funjetSchemaProfile.relatedRefs } : {}),
     itinerary: visualTimeline.slice(0, 6).map((stop, index) => ({
       "@type": "TouristAttraction",
       name: stop.title,
@@ -2246,7 +2264,8 @@ export default async function TourDetailPage({
     },
     about: [
       { "@id": `${tourUrl}#product` },
-      { "@id": `${tourUrl}#trip` }
+      { "@id": `${tourUrl}#trip` },
+      ...(funjetSchemaProfile?.relatedRefs ?? [])
     ],
     primaryImageOfPage: schemaImageObjects[0] ?? undefined,
     breadcrumb: { "@id": `${tourUrl}#breadcrumb` },
@@ -2403,6 +2422,7 @@ export default async function TourDetailPage({
         <StructuredData data={touristTripSchema} />
         <StructuredData data={webPageSchema} />
         <StructuredData data={mediaGallerySchema} />
+        {funjetSchemaProfile?.relatedNodes?.map((node, index) => <StructuredData key={`schema-node-${index}`} data={node} />)}
         {highlightsSchema ? <StructuredData data={highlightsSchema} /> : null}
         <StructuredData data={breadcrumbSchema} />
         <StructuredData data={faqSchema} />
@@ -2920,6 +2940,7 @@ export default async function TourDetailPage({
       <StructuredData data={touristTripSchema} />
       <StructuredData data={webPageSchema} />
       <StructuredData data={mediaGallerySchema} />
+      {funjetSchemaProfile?.relatedNodes?.map((node, index) => <StructuredData key={`schema-node-${index}`} data={node} />)}
       {highlightsSchema ? <StructuredData data={highlightsSchema} /> : null}
       <StructuredData data={breadcrumbSchema} />
       <StructuredData data={faqSchema} />
