@@ -555,7 +555,7 @@ export function TourBookingWidget({
 
       {/* DATE + TRAVELERS + START TIME */}
       <div className={`rounded-xl border ${isFunjet ? "border-[#E7D2FB]" : "border-slate-200"}`}>
-      <div className={`grid grid-cols-[1.15fr,1fr] divide-x ${isFunjet ? "divide-[#E7D2FB]" : "divide-slate-200"}`}>
+      <div className={`grid grid-cols-1 divide-y sm:grid-cols-[1.15fr,1fr] sm:divide-x sm:divide-y-0 ${isFunjet ? "divide-[#E7D2FB]" : "divide-slate-200"}`}>
           {/* DATE */}
           <div className="flex flex-col px-4 py-2">
             <span className={`text-[0.65rem] font-semibold uppercase tracking-[0.2em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>Date</span>
