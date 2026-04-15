@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
-import { es } from "@/lib/translations";
 import PublicContactPage from "@/components/public/PublicContactPage";
+import { SITE_CONFIG } from "@/lib/site-config";
+import { es } from "@/lib/translations";
 
-const canonicalUrl = "https://proactivitis.com/contact";
+const canonicalUrl = `${SITE_CONFIG.url}/contact`;
 
 export const metadata: Metadata = {
-  title: "Contacto | Proactivitis | Soporte Global",
+  title:
+    SITE_CONFIG.variant === "funjet"
+      ? "Contacto | Funjet Tour Operador | Atencion comercial"
+      : "Contacto | Proactivitis | Soporte Global",
   description:
-    "Asistencia 24/7 en español e inglés vía email, WhatsApp y teléfono. Escríbenos y resolveremos tu solicitud con rapidez.",
+    SITE_CONFIG.variant === "funjet"
+      ? "Habla con Funjet Tour Operador. Los canales de WhatsApp, telefono y correo son gestionados por Proactivitis, empresa madre de la operacion."
+      : "Asistencia 24/7 en espanol e ingles via email, WhatsApp y telefono. Escribenos y resolveremos tu solicitud con rapidez.",
   alternates: {
     canonical: canonicalUrl,
     languages: {
