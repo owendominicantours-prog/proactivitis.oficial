@@ -84,23 +84,23 @@ const PROACTIVITIS_CONFIG: SiteConfig = {
 
 const FUNJET_CONFIG: SiteConfig = {
   variant: "funjet",
-  name: "Funjet Tour Oprador",
-  legalName: "Funjet Tour Oprador",
-  siteName: "Funjet Tour Oprador",
-  url: "https://funjettouroprador.com",
+  name: "Funjet Tour Operador",
+  legalName: "Funjet Tour Operador",
+  siteName: "Funjet Tour Operador",
+  url: "https://funjettouroperador.com",
   logoSrc: "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/funjet/Funjet%20Logo.png",
   logoOnDarkSrc: "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/funjet/Logo%20Blanco.png",
-  logoAlt: "Funjet Tour Oprador",
+  logoAlt: "Funjet Tour Operador",
   phone: "+1 (829) 475-6298",
   phoneMachine: "18294756298",
   whatsappLink: "https://wa.me/18294756298",
-  email: "info@funjettouroprador.com",
+  email: "info@funjettouroperador.com",
   sameAs: [],
   defaultLocalePath: "/",
   homeTitle: {
-    es: "Tours y traslados en Punta Cana | Funjet Tour Oprador",
-    en: "Punta Cana tours and airport transfers | Funjet Tour Oprador",
-    fr: "Tours et transferts a Punta Cana | Funjet Tour Oprador"
+    es: "Tours y traslados en Punta Cana | Funjet Tour Operador",
+    en: "Punta Cana tours and airport transfers | Funjet Tour Operador",
+    fr: "Tours et transferts a Punta Cana | Funjet Tour Operador"
   },
   homeDescription: {
     es: "Reserva tours, excursiones y traslados en Punta Cana con atencion directa, precios claros y confirmacion rapida por WhatsApp.",
@@ -108,9 +108,9 @@ const FUNJET_CONFIG: SiteConfig = {
     fr: "Reservez excursions et transferts a Punta Cana avec support direct, prix clairs et confirmation rapide sur WhatsApp."
   },
   footerTagline: {
-    es: "Funjet Tour Oprador - Venta directa de tours y traslados en Punta Cana.",
-    en: "Funjet Tour Oprador - Direct seller of Punta Cana tours and transfers.",
-    fr: "Funjet Tour Oprador - Vente directe de tours et transferts a Punta Cana."
+    es: "Funjet Tour Operador - Venta directa de tours y traslados en Punta Cana.",
+    en: "Funjet Tour Operador - Direct seller of Punta Cana tours and transfers.",
+    fr: "Funjet Tour Operador - Vente directe de tours et transferts a Punta Cana."
   },
   supportSectionTitle: {
     es: "Reserva directa",

@@ -2,6 +2,7 @@ import PDFDocument from "pdfkit";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { toDataURL } from "qrcode";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 const buildBuffer = (doc: PDFKit.PDFDocument) =>
   new Promise<Buffer>((resolve) => {
@@ -55,7 +56,7 @@ export async function GET(
   doc.info.Title = `E-Ticket ${booking.id}`;
   doc.font("Helvetica");
 
-  doc.fillColor("#0f172a").fontSize(24).text("Proactivitis", { align: "left" });
+  doc.fillColor("#0f172a").fontSize(24).text(SITE_CONFIG.name, { align: "left" });
   doc
     .fontSize(10)
     .fillColor("#64748b")
@@ -95,9 +96,9 @@ export async function GET(
     .moveDown(0.3)
     .fontSize(11)
     .fillColor("#0f172a")
-    .text(`Cliente: ${booking.customerName ?? booking.User.name ?? "Viajero Proactivitis"}`)
+    .text(`Cliente: ${booking.customerName ?? booking.User.name ?? `Viajero ${SITE_CONFIG.name}`}`)
     .text(`Email: ${booking.customerEmail}`)
-    .text(`Proveedor: ${booking.Tour.SupplierProfile?.company ?? "Proactivitis"}`)
+    .text(`Proveedor: ${booking.Tour.SupplierProfile?.company ?? SITE_CONFIG.name}`)
     .moveDown();
 
   doc
@@ -122,6 +123,7 @@ export async function GET(
   const buffer = await buildBuffer(doc);
   const response = new NextResponse(new Uint8Array(buffer));
   response.headers.set("Content-Type", "application/pdf");
-  response.headers.set("Content-Disposition", `inline; filename="proactivitis-eticket-${booking.id}.pdf"`);
+  const brandSlug = SITE_CONFIG.variant === "funjet" ? "funjet" : "proactivitis";
+  response.headers.set("Content-Disposition", `inline; filename="${brandSlug}-eticket-${booking.id}.pdf"`);
   return response;
 }

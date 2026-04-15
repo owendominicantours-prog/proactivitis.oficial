@@ -2,6 +2,7 @@ import Image from "next/image";
 import { toDataURL } from "qrcode";
 import EticketActions from "@/components/booking/EticketActions";
 import { buildBookingPresentation } from "@/lib/bookingPresentation";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 type BookingSummary = {
   id: string;
@@ -87,10 +88,10 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
     <section id={variant === "full" ? "eticket" : `eticket-${booking.id}`} className={containerClass}>
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div className="flex items-center gap-3">
-          <Image src="/logo.png" alt="Proactivitis" width={45} height={45} className="rounded-full" priority />
+          <Image src={SITE_CONFIG.logoSrc} alt={SITE_CONFIG.logoAlt} width={45} height={45} className="rounded-full" priority />
           <div>
             <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Voucher digital</p>
-            <p className="text-base font-black uppercase tracking-[0.2em] text-slate-900">Proactivitis</p>
+            <p className="text-base font-black uppercase tracking-[0.2em] text-slate-900">{SITE_CONFIG.name}</p>
           </div>
         </div>
         <div className="text-right">
@@ -201,11 +202,11 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Titular</p>
-              <p className="text-sm font-semibold text-slate-900">{booking.customerName ?? "Viajero Proactivitis"}</p>
+              <p className="text-sm font-semibold text-slate-900">{booking.customerName ?? `Viajero ${SITE_CONFIG.name}`}</p>
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Proveedor</p>
-              <p className="text-sm font-semibold text-slate-900">{supplierName ?? "Proactivitis"}</p>
+              <p className="text-sm font-semibold text-slate-900">{supplierName ?? SITE_CONFIG.name}</p>
             </div>
           </div>
         </div>

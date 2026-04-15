@@ -8,6 +8,7 @@ import Eticket from "@/components/booking/Eticket";
 import BookingEmailDispatcher from "@/components/booking/BookingEmailDispatcher";
 import { ItineraryTimeline } from "@/components/itinerary/ItineraryTimeline";
 import { formatDurationDisplay } from "@/lib/formatDuration";
+import { SITE_CONFIG } from "@/lib/site-config";
 import { BookingConfirmationData } from "./helpers";
 import { useTranslation } from "../../../context/LanguageProvider";
 
@@ -230,7 +231,7 @@ export function BookingConfirmedContent({
               </Link>
             </div>
 
-            <ContactoProveedor nombreProveedor={supplier?.name ?? "Proactivitis"} telefono="" reservaId={booking.id} />
+            <ContactoProveedor nombreProveedor={supplier?.name ?? SITE_CONFIG.name} telefono="" reservaId={booking.id} />
           </aside>
         </div>
 

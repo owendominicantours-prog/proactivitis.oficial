@@ -3,6 +3,7 @@ import { parseAdminItinerary } from "@/lib/itinerary";
 import { TimelineStop } from "@/components/itinerary/ItineraryTimeline";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 import type { Prisma } from "@prisma/client";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 const shuffleArray = <T,>(items: T[]) => items.slice().sort(() => Math.random() - 0.5);
 
@@ -87,9 +88,9 @@ export async function getBookingConfirmationData(
 
   const tour = booking.Tour;
   const supplier = tour.SupplierProfile?.User
-    ? {
-        id: tour.SupplierProfile.User.id,
-        name: tour.SupplierProfile.User.name ?? "Proactivitis"
+      ? {
+          id: tour.SupplierProfile.User.id,
+        name: tour.SupplierProfile.User.name ?? SITE_CONFIG.name
       }
     : null;
   const agencyUser = booking.AgencyProLink?.AgencyUser ?? (booking.source === "AGENCY" ? booking.User : null);
@@ -176,7 +177,7 @@ export async function getBookingConfirmationData(
     duration: stop.time
   }));
 
-  const whatsappLink = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/?text=Hola%20Proactivitis";
+  const whatsappLink = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? SITE_CONFIG.whatsappLink;
   const orderCode = booking.bookingCode ?? `#PR-${booking.id.slice(-4).toUpperCase()}`;
   const travelDateLabel = new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(booking.travelDate);
   const passengerLabel = `${booking.paxAdults + booking.paxChildren} pax`;
