@@ -10,7 +10,7 @@ import HomeTourSearchSection from "@/components/public/HomeTourSearchSection";
 import HomeTransferTicker from "@/components/public/HomeTransferTicker";
 import { Locale, translate } from "@/lib/translations";
 import { getHomeContentOverrides } from "@/lib/siteContent";
-import { getPriceValidUntil, PROACTIVITIS_URL } from "@/lib/seo";
+import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_LOGO, PROACTIVITIS_URL } from "@/lib/seo";
 import { SITE_CONFIG } from "@/lib/site-config";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
@@ -287,6 +287,10 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     name: uniquePublishedTours.find((tour) => tour.slug === slug)?.title ?? slug
   }));
 
+  const funjetFeaturedProducts = FUNJET_HOME_FEATURED_TOURS.map((slug) =>
+    tourProducts.find((product) => product.url === localizedPath(`/tours/${slug}`))
+  ).filter((product): product is NonNullable<(typeof tourProducts)[number]> => Boolean(product));
+
   const corePublicPages = [
     { path: "/", name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home" },
     { path: "/tours", name: locale === "es" ? "Tours" : locale === "fr" ? "Excursions" : "Tours" },
@@ -340,8 +344,12 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         "@id": `${PROACTIVITIS_URL}/#organization`,
         name: SITE_CONFIG.name,
         url: `${PROACTIVITIS_URL}/`,
-        logo: `${PROACTIVITIS_URL}${SITE_CONFIG.logoSrc}`,
+        logo: PROACTIVITIS_LOGO,
+        image: PROACTIVITIS_LOGO,
         description: isFunjet ? localizedHomeDescription : translate(locale, "home.schema.description"),
+        priceRange: PROACTIVITIS_LOCALBUSINESS.priceRange,
+        address: PROACTIVITIS_LOCALBUSINESS.address,
+        contactPoint: PROACTIVITIS_LOCALBUSINESS.contactPoint,
         hasOfferCatalog: {
           "@type": "OfferCatalog",
           name: isFunjet
@@ -491,44 +499,46 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           "@id": `${PROACTIVITIS_URL}/#organization`
         }
       },
-      {
-        "@type": "ItemList",
-        "@id": `${localizedPath("/")}#tour-catalog`,
-        name: locale === "es" ? "Catalogo completo de tours" : locale === "fr" ? "Catalogue complet des excursions" : "Complete tours catalog",
-        numberOfItems: tourCatalogItems.length,
-        itemListOrder: "https://schema.org/ItemListOrderAscending",
-        itemListElement: tourCatalogItems
-      },
-      {
-        "@type": "ItemList",
-        "@id": `${localizedPath("/")}#transfer-catalog`,
-        name: locale === "es" ? "Catalogo completo de traslados" : locale === "fr" ? "Catalogue complet des transferts" : "Complete transfers catalog",
-        numberOfItems: transferCatalogItems.length,
-        itemListOrder: "https://schema.org/ItemListOrderAscending",
-        itemListElement: transferCatalogItems
-      },
-      {
-        "@type": "ItemList",
-        "@id": `${localizedPath("/")}#public-pages`,
-        name: locale === "es" ? `Paginas publicas ${SITE_CONFIG.name}` : locale === "fr" ? `Pages publiques ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} public pages`,
-        numberOfItems: allPublicPageItems.length,
-        itemListOrder: "https://schema.org/ItemListOrderAscending",
-        itemListElement: allPublicPageItems
-      },
-      {
-        "@type": "ItemList",
-        "@id": `${localizedPath("/")}#product-catalog`,
-        name: locale === "es" ? `Catalogo de productos ${SITE_CONFIG.name}` : locale === "fr" ? `Catalogue de produits ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} product catalog`,
-        numberOfItems: tourProducts.length + transferProducts.length,
-        itemListOrder: "https://schema.org/ItemListOrderAscending",
-        itemListElement: [...tourProducts, ...transferProducts].map((product, index) => ({
-          "@type": "ListItem",
-          position: index + 1,
-          item: product
-        }))
-      },
-      ...(isFunjet
+      ...(!isFunjet
         ? [
+            {
+              "@type": "ItemList",
+              "@id": `${localizedPath("/")}#tour-catalog`,
+              name: locale === "es" ? "Catalogo completo de tours" : locale === "fr" ? "Catalogue complet des excursions" : "Complete tours catalog",
+              numberOfItems: tourCatalogItems.length,
+              itemListOrder: "https://schema.org/ItemListOrderAscending",
+              itemListElement: tourCatalogItems
+            },
+            {
+              "@type": "ItemList",
+              "@id": `${localizedPath("/")}#transfer-catalog`,
+              name: locale === "es" ? "Catalogo completo de traslados" : locale === "fr" ? "Catalogue complet des transferts" : "Complete transfers catalog",
+              numberOfItems: transferCatalogItems.length,
+              itemListOrder: "https://schema.org/ItemListOrderAscending",
+              itemListElement: transferCatalogItems
+            },
+            {
+              "@type": "ItemList",
+              "@id": `${localizedPath("/")}#public-pages`,
+              name: locale === "es" ? `Paginas publicas ${SITE_CONFIG.name}` : locale === "fr" ? `Pages publiques ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} public pages`,
+              numberOfItems: allPublicPageItems.length,
+              itemListOrder: "https://schema.org/ItemListOrderAscending",
+              itemListElement: allPublicPageItems
+            },
+            {
+              "@type": "ItemList",
+              "@id": `${localizedPath("/")}#product-catalog`,
+              name: locale === "es" ? `Catalogo de productos ${SITE_CONFIG.name}` : locale === "fr" ? `Catalogue de produits ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} product catalog`,
+              numberOfItems: tourProducts.length + transferProducts.length,
+              itemListOrder: "https://schema.org/ItemListOrderAscending",
+              itemListElement: [...tourProducts, ...transferProducts].map((product, index) => ({
+                "@type": "ListItem",
+                position: index + 1,
+                item: product
+              }))
+            }
+          ]
+        : [
             {
               "@type": "ItemList",
               "@id": `${localizedPath("/")}#featured-funjet-tours`,
@@ -536,9 +546,9 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               itemListOrder: "https://schema.org/ItemListOrderAscending",
               numberOfItems: funjetFeaturedTourItems.length,
               itemListElement: funjetFeaturedTourItems
-            }
-          ]
-        : []),
+            },
+            ...funjetFeaturedProducts
+          ]),
       {
         "@type": "CollectionPage",
         "@id": `${localizedPath("/")}#collection`,
@@ -552,7 +562,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           "@id": `${PROACTIVITIS_URL}/#organization`
         },
         mainEntity: {
-          "@id": `${localizedPath("/")}#product-catalog`
+          "@id": isFunjet ? `${localizedPath("/")}#featured-funjet-tours` : `${localizedPath("/")}#product-catalog`
         }
       },
       {
