@@ -68,10 +68,10 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         : "Pick a vibe and start there";
   const funjetFeaturedCopy =
     locale === "es"
-      ? "No necesitas leer cien bloques. Mira, filtra y abre la experiencia que mejor encaja con tu viaje."
+      ? "Abre una experiencia, revisa precio y reserva."
       : locale === "fr"
-        ? "Pas besoin de lire cent blocs. Regardez, filtrez et ouvrez l experience qui correspond le mieux a votre voyage."
-        : "You do not need to read a hundred blocks. Browse, filter, and open the experience that fits your trip best.";
+        ? "Ouvrez une experience, verifiez le prix et reservez."
+        : "Open an experience, check the price, and book.";
 
   const [publishedTours, tourRatingAgg, transferRatingAgg] = await Promise.all([
     prisma.tour.findMany({
@@ -535,11 +535,44 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         <HomeHeroContent locale={locale} overrides={homeOverrides.hero} />
       </HomeHeroCarousel>
 
-      <section className="border-y border-slate-100 bg-white">
-        <div className="mx-auto max-w-6xl space-y-6 px-4 py-12 sm:px-6">
-          <HomeBenefitsContent locale={locale} overrides={homeOverrides.benefits} />
-        </div>
-      </section>
+      {isFunjet ? (
+        <section className="border-y border-slate-100 bg-white">
+          <div className="mx-auto max-w-6xl grid gap-4 px-4 py-8 sm:px-6 md:grid-cols-3">
+            <div className="rounded-[28px] border border-[#E9D7FA] bg-[linear-gradient(160deg,#6A0DAD_0%,#8B32D1_100%)] px-6 py-6 text-white shadow-[0_24px_60px_rgba(106,13,173,0.24)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/70">
+                {locale === "es" ? "Reserva directa" : locale === "fr" ? "Reservation directe" : "Direct booking"}
+              </p>
+              <h2 className="mt-2 text-2xl font-bold">
+                {locale === "es" ? "Menos texto. Mas accion." : locale === "fr" ? "Moins de texte. Plus d action." : "Less copy. More action."}
+              </h2>
+            </div>
+            <div className="rounded-[28px] border border-[#E9D7FA] bg-white px-5 py-5 shadow-[0_16px_40px_rgba(106,13,173,0.12)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#6A0DAD]">01</p>
+              <p className="mt-2 text-base font-bold text-slate-900">
+                {locale === "es" ? "Busca tours" : locale === "fr" ? "Cherchez des tours" : "Browse tours"}
+              </p>
+              <p className="mt-2 text-sm text-slate-600">
+                {locale === "es" ? "Entra directo al catalogo." : locale === "fr" ? "Entrez directement dans le catalogue." : "Go straight to the catalog."}
+              </p>
+            </div>
+            <div className="rounded-[28px] border border-[#E9D7FA] bg-white px-5 py-5 shadow-[0_16px_40px_rgba(106,13,173,0.12)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#6A0DAD]">02</p>
+              <p className="mt-2 text-base font-bold text-slate-900">
+                {locale === "es" ? "Cotiza traslado" : locale === "fr" ? "Calculez le transfert" : "Quote transfer"}
+              </p>
+              <p className="mt-2 text-sm text-slate-600">
+                {locale === "es" ? "Ve tu opcion desde el primer click." : locale === "fr" ? "Voyez votre option des le premier clic." : "See your option from the first click."}
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="border-y border-slate-100 bg-white">
+          <div className="mx-auto max-w-6xl space-y-6 px-4 py-12 sm:px-6">
+            <HomeBenefitsContent locale={locale} overrides={homeOverrides.benefits} />
+          </div>
+        </section>
+      )}
 
       <section className="travel-surface">
         <div className="mx-auto max-w-6xl space-y-4 px-4 py-12 sm:px-6">
@@ -604,6 +637,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         </div>
       </section>
 
+      {!isFunjet ? (
       <section className="border-y border-slate-100 bg-white">
         <div className="mx-auto max-w-6xl space-y-5 px-4 py-12 sm:px-6">
           <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
@@ -648,6 +682,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           </div>
         </div>
       </section>
+      ) : null}
 
       <section className="travel-surface">
         <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6">
@@ -698,7 +733,29 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
             />
           </div>
           <div className="space-y-4">
-            <HomeAboutContent locale={locale} overrides={homeOverrides.about} />
+            {isFunjet ? (
+              <>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                  {locale === "es" ? "Hazlo rapido" : locale === "fr" ? "Faites-le vite" : "Make it fast"}
+                </p>
+                <h2 className="text-3xl font-semibold text-slate-900">
+                  {locale === "es" ? "Entra, elige y reserva" : locale === "fr" ? "Entrez, choisissez et reservez" : "Open, choose, and book"}
+                </h2>
+                <p className="text-sm text-slate-600">
+                  {locale === "es" ? "Funjet esta hecho para decidir rapido entre tours y traslados sin leer de mas." : locale === "fr" ? "Funjet est concu pour choisir rapidement entre tours et transferts sans trop lire." : "Funjet is built for quick choices between tours and transfers without extra reading."}
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link href={locale === "es" ? "/tours" : `/${locale}/tours`} className="boton-verde">
+                    {locale === "es" ? "Abrir tours" : locale === "fr" ? "Ouvrir les tours" : "Open tours"}
+                  </Link>
+                  <Link href={locale === "es" ? "/traslado" : `/${locale}/traslado`} className="boton-naranja">
+                    {locale === "es" ? "Abrir traslados" : locale === "fr" ? "Ouvrir les transferts" : "Open transfers"}
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <HomeAboutContent locale={locale} overrides={homeOverrides.about} />
+            )}
           </div>
         </div>
       </section>

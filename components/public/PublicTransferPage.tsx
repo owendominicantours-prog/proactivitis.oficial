@@ -61,10 +61,10 @@ export default async function PublicTransferPage({
   const funjetTransferTitle = locale === "es" ? "Traslados privados con una experiencia mas limpia" : locale === "fr" ? "Transferts prives avec une experience plus claire" : "Private transfers with a cleaner booking experience";
   const funjetTransferCopy =
     locale === "es"
-      ? "Busca origen y destino en un formato mas directo, visual y orientado a decidir rapido."
+      ? "Elige origen, destino y reserva rapido."
       : locale === "fr"
-        ? "Recherchez origine et destination dans un format plus direct, visuel et concu pour decider rapidement."
-        : "Search origin and destination in a more direct, visual format built for faster decisions.";
+        ? "Choisissez origine, destination et reservez rapidement."
+        : "Choose origin, destination, and book fast.";
   let options: LocationOption[] = [];
   let originPoints: TransferPointOption[] = [];
   const transferLandingSlugs = PUNTA_CANA_TRANSFER_LINKS.map((item) => item.slug);
@@ -128,6 +128,31 @@ export default async function PublicTransferPage({
 
   return (
     <div className={isFunjet ? "bg-[linear-gradient(180deg,#fff9e2_0%,#ffffff_22%,#f9efff_100%)]" : "travel-surface"}>
+      {isFunjet ? (
+        <section className="mx-auto w-full max-w-6xl px-4 pt-6">
+          <div className="rounded-[34px] border border-[#E9D7FA] bg-[linear-gradient(180deg,#ffffff_0%,#f8f0ff_100%)] p-5 shadow-[0_20px_60px_rgba(106,13,173,0.12)]">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-[#6A0DAD]">
+                  {locale === "es" ? "Reserva rapida" : locale === "fr" ? "Reservation rapide" : "Quick booking"}
+                </p>
+                <h2 className="mt-2 text-2xl font-bold text-[#34114A]">
+                  {locale === "es" ? "Cotiza tu traslado primero" : locale === "fr" ? "Calculez d abord votre transfert" : "Quote your transfer first"}
+                </h2>
+              </div>
+              <Link
+                href={toursRootHref}
+                className="rounded-full border border-[#FFD86E] bg-[#FFC300] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#4D0A7D] transition hover:bg-[#FFD24D]"
+              >
+                {locale === "es" ? "Ver tours" : locale === "fr" ? "Voir excursions" : "View tours"}
+              </Link>
+            </div>
+            <Suspense fallback={<div />}>
+              <TrasladoSearchV2 />
+            </Suspense>
+          </div>
+        </section>
+      ) : null}
       <section
         className="relative flex min-h-[380px] w-full items-center overflow-hidden md:min-h-[520px]"
         style={{
@@ -146,7 +171,7 @@ export default async function PublicTransferPage({
               <h1 className="text-4xl font-black leading-tight text-white md:text-5xl">
                 {heroTitleOverride ?? (isFunjet ? funjetTransferTitle : translate(locale, "transfer.hero.title"))}
               </h1>
-              <p className="text-base text-white/90">
+              <p className="max-w-2xl text-base text-white/90">
                 {heroDescriptionOverride ?? (isFunjet ? funjetTransferCopy : translate(locale, "transfer.hero.description"))}
               </p>
               <div className="flex flex-wrap gap-3 text-sm font-semibold uppercase tracking-[0.2em] text-white">
@@ -163,7 +188,7 @@ export default async function PublicTransferPage({
                   {translate(locale, "transfer.link.puntaCana")}
                 </Link>
               </div>
-              <TransferHeroNotices locale={locale} />
+              {!isFunjet ? <TransferHeroNotices locale={locale} /> : null}
             </div>
             <div className={`grid w-full max-w-xs grid-cols-1 gap-3 rounded-[28px] p-4 text-center text-white shadow-sm backdrop-blur md:max-w-[320px] ${isFunjet ? "border border-[#FFD86E]/30 bg-[linear-gradient(180deg,rgba(255,195,0,0.15),rgba(255,255,255,0.08))]" : "border border-white/20 bg-white/10"}`}>
               {heroStats.map((stat) => (
@@ -214,10 +239,10 @@ export default async function PublicTransferPage({
           <p className={`text-xs uppercase tracking-[0.35em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
             {isFunjet
               ? locale === "es"
-                ? "Flow de reserva"
+                ? "Decide rapido"
                 : locale === "fr"
-                  ? "Flow de reservation"
-                  : "Booking flow"
+                  ? "Decision rapide"
+                  : "Fast decision"
               : locale === "es"
                 ? "Planifica todo en un solo flujo"
                 : locale === "fr"
@@ -227,10 +252,10 @@ export default async function PublicTransferPage({
           <h2 className={`mt-2 text-xl ${isFunjet ? "font-bold text-[#34114A]" : "font-bold text-slate-900"}`}>
             {isFunjet
               ? locale === "es"
-                ? "Arma llegada, salida y planes del viaje desde una sola vista"
+                ? "Reserva traslado y sigue con tu viaje"
                 : locale === "fr"
-                  ? "Construisez arrivee, retour et plan du voyage depuis une seule vue"
-                  : "Build arrival, return, and the rest of the trip from one view"
+                  ? "Reservez le transfert puis continuez votre voyage"
+                  : "Book the transfer and keep moving"
               : locale === "es"
                 ? "Combina traslado + hotel + tours sin salir de Proactivitis"
                 : locale === "fr"
@@ -271,15 +296,13 @@ export default async function PublicTransferPage({
           </div>
         </section>
 
-        <section className={`p-6 shadow-2xl ${isFunjet ? "rounded-[38px] border border-[#E9D7FA] bg-[linear-gradient(180deg,#ffffff_0%,#f8f0ff_100%)]" : "rounded-[36px] border border-slate-100 bg-white/90"}`}>
-          <Suspense fallback={<div />}>
-            {isFunjet || transfersV2Enabled ? (
-              <TrasladoSearchV2 />
-            ) : (
-              <TrasladoSearch hotels={options} originPoints={originPoints} />
-            )}
-          </Suspense>
-        </section>
+        {!isFunjet ? (
+          <section className="rounded-[36px] border border-slate-100 bg-white/90 p-6 shadow-2xl">
+            <Suspense fallback={<div />}>
+              {transfersV2Enabled ? <TrasladoSearchV2 /> : <TrasladoSearch hotels={options} originPoints={originPoints} />}
+            </Suspense>
+          </section>
+        ) : null}
 
         <section className={`p-8 shadow-lg ${isFunjet ? "rounded-[34px] border border-[#E9D7FA] bg-white" : "rounded-[32px] border border-slate-100 bg-white/90"}`}>
           <p className={`text-xs uppercase tracking-[0.4em] ${isFunjet ? "text-[#6A0DAD]" : "text-slate-500"}`}>
@@ -294,10 +317,10 @@ export default async function PublicTransferPage({
           <h2 className={`mt-3 text-2xl ${isFunjet ? "font-bold text-[#34114A]" : "font-bold text-slate-900"}`}>
             {isFunjet
               ? locale === "es"
-                ? "Abre una ruta y decide por reputacion visual"
+                ? "Abre una ruta y reserva"
                 : locale === "fr"
-                  ? "Ouvrez un itineraire et decidez par reputation visuelle"
-                  : "Open a route and decide with a more visual reputation layer"
+                  ? "Ouvrez un trajet et reservez"
+                  : "Open a route and book"
               : translate(locale, "transfer.links.title")}
           </h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -323,6 +346,7 @@ export default async function PublicTransferPage({
           </div>
         </section>
 
+        {!isFunjet ? (
         <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
             {translate(locale, "transfer.longform.eyebrow")}
@@ -336,7 +360,6 @@ export default async function PublicTransferPage({
             <p>{translate(locale, "transfer.longform.body3")}</p>
           </div>
         </section>
-
         <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
             {translate(locale, "transfer.longform2.eyebrow")}
@@ -350,7 +373,6 @@ export default async function PublicTransferPage({
             <p>{translate(locale, "transfer.longform2.body3")}</p>
           </div>
         </section>
-
         <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
             {translate(locale, "transfer.longform3.eyebrow")}
@@ -364,7 +386,6 @@ export default async function PublicTransferPage({
             <p>{translate(locale, "transfer.longform3.body3")}</p>
           </div>
         </section>
-
         <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
             {translate(locale, "transfer.seo.eyebrow")}
@@ -397,7 +418,6 @@ export default async function PublicTransferPage({
             </div>
           </div>
         </section>
-
         <section className="space-y-6 rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
           <div className="flex flex-col gap-3">
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{translate(locale, "transfer.faq.label")}</p>
@@ -417,7 +437,6 @@ export default async function PublicTransferPage({
             ))}
           </div>
         </section>
-
         <section className="space-y-4 rounded-[32px] border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
           <p>{translate(locale, "transfer.note")}</p>
           <button
@@ -427,6 +446,43 @@ export default async function PublicTransferPage({
             {translate(locale, "transfer.contact")}
           </button>
         </section>
+        ) : (
+          <section className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-[28px] border border-[#E9D7FA] bg-white p-5 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.35em] text-[#6A0DAD]">
+                {locale === "es" ? "Paso 1" : locale === "fr" ? "Etape 1" : "Step 1"}
+              </p>
+              <h3 className="mt-2 text-lg font-bold text-[#34114A]">
+                {locale === "es" ? "Cotiza" : locale === "fr" ? "Calculez" : "Quote"}
+              </h3>
+              <p className="mt-2 text-sm text-[#6B4D82]">
+                {locale === "es" ? "Completa el formulario y mira tu opcion." : locale === "fr" ? "Remplissez le formulaire et voyez votre option." : "Fill the form and see your option."}
+              </p>
+            </div>
+            <div className="rounded-[28px] border border-[#E9D7FA] bg-white p-5 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.35em] text-[#6A0DAD]">
+                {locale === "es" ? "Paso 2" : locale === "fr" ? "Etape 2" : "Step 2"}
+              </p>
+              <h3 className="mt-2 text-lg font-bold text-[#34114A]">
+                {locale === "es" ? "Confirma" : locale === "fr" ? "Confirmez" : "Confirm"}
+              </h3>
+              <p className="mt-2 text-sm text-[#6B4D82]">
+                {locale === "es" ? "Elige horario, tipo de viaje y reserva." : locale === "fr" ? "Choisissez l heure, le type de trajet et reservez." : "Choose time, trip type, and book."}
+              </p>
+            </div>
+            <div className="rounded-[28px] border border-[#E9D7FA] bg-white p-5 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.35em] text-[#6A0DAD]">
+                {locale === "es" ? "Paso 3" : locale === "fr" ? "Etape 3" : "Step 3"}
+              </p>
+              <h3 className="mt-2 text-lg font-bold text-[#34114A]">
+                {locale === "es" ? "Llega sin vueltas" : locale === "fr" ? "Arrivez sans detours" : "Arrive without friction"}
+              </h3>
+              <p className="mt-2 text-sm text-[#6B4D82]">
+                {locale === "es" ? "Tienes el traslado listo desde que entras." : locale === "fr" ? "Votre transfert est pret des l entree." : "Your transfer is ready from the first screen."}
+              </p>
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

@@ -23,16 +23,16 @@ export function HomeHeroContent({ locale, overrides }: HomeHeroContentProps) {
         : "Funjet direct booking";
   const funjetTitle =
     locale === "es"
-      ? "Viajes y experiencias memorables en Punta Cana"
+      ? "Reserva tours y traslados sin vueltas"
       : locale === "fr"
-        ? "Voyages et experiences memorables a Punta Cana"
-        : "Travel and memorable experiences in Punta Cana";
+        ? "Reservez tours et transferts sans detours"
+        : "Book tours and transfers fast";
   const funjetDescription =
     locale === "es"
-      ? "Tours, catamaranes, Saona, buggies y traslados privados con una marca mas fresca, dinamica y hecha para reservar sin vueltas."
+      ? "Abre tours, cotiza traslados y decide rapido."
       : locale === "fr"
-        ? "Tours, catamarans, Saona, buggies et transferts prives avec une marque plus fraiche, dynamique et concue pour reserver simplement."
-        : "Tours, catamarans, Saona, buggies, and private transfers with a fresher, more dynamic brand built for easy booking.";
+        ? "Ouvrez les tours, calculez les transferts et decidez rapidement."
+        : "Open tours, quote transfers, and decide quickly.";
 
   return (
     <div className={`max-w-4xl space-y-6 text-center text-white md:text-left ${isFunjet ? "py-10" : ""}`}>
@@ -42,7 +42,7 @@ export function HomeHeroContent({ locale, overrides }: HomeHeroContentProps) {
         </p>
         {isFunjet ? (
           <span className="rounded-full bg-[#FFC300] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.35em] text-[#4D0A7D]">
-            {locale === "es" ? "Explora, disfruta, repite" : locale === "fr" ? "Explorer, profiter, recommencer" : "Explore, enjoy, repeat"}
+            {locale === "es" ? "Entra y reserva" : locale === "fr" ? "Entrez et reservez" : "Open and book"}
           </span>
         ) : null}
       </div>
@@ -61,9 +61,15 @@ export function HomeHeroContent({ locale, overrides }: HomeHeroContentProps) {
       </p>
       {isFunjet ? (
         <div className="flex flex-wrap items-center justify-center gap-3 text-sm font-medium text-white/90 md:justify-start">
-          <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">🌴 Experiencias tropicales</span>
-          <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">✈️ Reservas rápidas</span>
-          <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">🤝 Soporte cercano</span>
+          <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">
+            {locale === "es" ? "Tours listos" : locale === "fr" ? "Tours prets" : "Ready tours"}
+          </span>
+          <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">
+            {locale === "es" ? "Traslados rapidos" : locale === "fr" ? "Transferts rapides" : "Fast transfers"}
+          </span>
+          <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">
+            {locale === "es" ? "Reserva directa" : locale === "fr" ? "Reservation directe" : "Direct booking"}
+          </span>
         </div>
       ) : null}
       <div className="botones-banner">

@@ -217,13 +217,13 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   const tourHref = (slug: string) => (locale === "es" ? `/tours/${slug}` : `/${locale}/tours/${slug}`);
   const sosuaPartyBoatHref = tourHref("party-boat-sosua");
   const funjetHeroLabel = locale === "es" ? "Funjet tour studio" : locale === "fr" ? "Studio tours Funjet" : "Funjet tour studio";
-  const funjetHeroTitle = locale === "es" ? "Tours con una lectura mas rapida y visual" : locale === "fr" ? "Des tours avec une lecture plus rapide et visuelle" : "Tours with a faster, more visual reading flow";
+  const funjetHeroTitle = locale === "es" ? "Tours listos para abrir y reservar" : locale === "fr" ? "Des tours prets a ouvrir et reserver" : "Tours ready to open and book";
   const funjetHeroCopy =
     locale === "es"
-      ? "Filtra, compara y abre opciones sin caer en una pagina pesada. Funjet va directo a categorias, precios y experiencias."
+      ? "Filtra, compara precio y entra directo al tour."
       : locale === "fr"
-        ? "Filtrez, comparez et ouvrez des options sans tomber sur une page lourde. Funjet va droit aux categories, prix et experiences."
-        : "Filter, compare, and open options without landing on a heavy page. Funjet goes straight to categories, pricing, and experiences.";
+        ? "Filtrez, comparez le prix et ouvrez directement le tour."
+        : "Filter, compare price, and open the tour directly.";
 
   let countries: CountryOption[] = [];
   try {
@@ -495,7 +495,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                   {locale === "es" ? "Funjet flow" : locale === "fr" ? "Flow Funjet" : "Funjet flow"}
                 </p>
                 <p className="mt-2 text-sm font-semibold">
-                  {locale === "es" ? "Filtra, abre y reserva sin dar vueltas." : locale === "fr" ? "Filtrez, ouvrez et reservez sans detours." : "Filter, open, and book without the extra noise."}
+                  {locale === "es" ? "Menos lectura. Mas decision." : locale === "fr" ? "Moins de lecture. Plus de decision." : "Less reading. Faster decisions."}
                 </p>
               </div>
             </div>
@@ -712,6 +712,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
               </div>
             )}
 
+            {!isFunjet ? (
             <details className="rounded-2xl border border-slate-200 bg-white/90 p-6 text-sm text-slate-600 shadow-sm">
               <summary className="cursor-pointer list-none text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
                 {locale === "es" ? "Guía y enlaces de búsqueda" : locale === "fr" ? "Guide et liens de recherche" : "Search guide and destination links"}
@@ -779,10 +780,48 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                 </div>
               </div>
             </details>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="rounded-[24px] border border-[#E9D7FA] bg-white p-5 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#6A0DAD]">
+                    {locale === "es" ? "Paso 1" : locale === "fr" ? "Etape 1" : "Step 1"}
+                  </p>
+                  <p className="mt-2 text-base font-bold text-[#34114A]">
+                    {locale === "es" ? "Filtra" : locale === "fr" ? "Filtrez" : "Filter"}
+                  </p>
+                  <p className="mt-2 text-sm text-[#6B4D82]">
+                    {locale === "es" ? "Ajusta destino, idioma, duracion y precio." : locale === "fr" ? "Ajustez destination, langue, duree et prix." : "Adjust destination, language, duration, and price."}
+                  </p>
+                </div>
+                <div className="rounded-[24px] border border-[#E9D7FA] bg-white p-5 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#6A0DAD]">
+                    {locale === "es" ? "Paso 2" : locale === "fr" ? "Etape 2" : "Step 2"}
+                  </p>
+                  <p className="mt-2 text-base font-bold text-[#34114A]">
+                    {locale === "es" ? "Abre el tour" : locale === "fr" ? "Ouvrez le tour" : "Open the tour"}
+                  </p>
+                  <p className="mt-2 text-sm text-[#6B4D82]">
+                    {locale === "es" ? "Revisa precio, fotos y reserva." : locale === "fr" ? "Verifiez le prix, les photos et reservez." : "Check price, photos, and book."}
+                  </p>
+                </div>
+                <div className="rounded-[24px] border border-[#E9D7FA] bg-white p-5 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#6A0DAD]">
+                    {locale === "es" ? "Paso 3" : locale === "fr" ? "Etape 3" : "Step 3"}
+                  </p>
+                  <p className="mt-2 text-base font-bold text-[#34114A]">
+                    {locale === "es" ? "Reserva rapido" : locale === "fr" ? "Reservez vite" : "Book fast"}
+                  </p>
+                  <p className="mt-2 text-sm text-[#6B4D82]">
+                    {locale === "es" ? "Sin bloques largos ni pasos de sobra." : locale === "fr" ? "Sans longs blocs ni etapes inutiles." : "No long blocks or extra steps."}
+                  </p>
+                </div>
+              </div>
+            )}
           </section>
         </div>
       </main>
 
+      {!isFunjet ? (
       <section className="mx-auto max-w-6xl px-4 py-10">
         <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
@@ -810,6 +849,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
           </div>
         </div>
       </section>
+      ) : null}
 
       <section className="bg-white">
         <div className="mx-auto max-w-6xl px-4 py-14">
