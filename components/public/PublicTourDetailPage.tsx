@@ -2453,7 +2453,7 @@ export default async function TourDetailPage({
           ) : null}
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr),380px] xl:grid-cols-[minmax(0,1fr),400px]">
-            <div className="space-y-5">
+            <div className="min-w-0 space-y-5">
               <div className="space-y-4 rounded-[24px] border border-[#E7D2FB] bg-white p-4 shadow-[0_25px_60px_rgba(106,13,173,0.08)] sm:rounded-[32px] sm:p-6 lg:p-7">
                 <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.24em] text-[#8D65B0]">
                   <span className="rounded-full bg-[#F3E6FF] px-3 py-1">{locationLabel}</span>
@@ -2497,7 +2497,7 @@ export default async function TourDetailPage({
                 </div>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-[minmax(0,1.65fr),minmax(0,1fr)]">
+              <div className="grid min-w-0 gap-3 md:grid-cols-[minmax(0,1.65fr),minmax(0,1fr)]">
                 <div className="relative min-h-[260px] overflow-hidden rounded-[22px] bg-[#EEE6F7] sm:min-h-[320px] sm:rounded-[30px] lg:min-h-[380px]">
                   <Image
                     src={funjetHeroGallery[0] ?? heroImage}
@@ -2521,7 +2521,7 @@ export default async function TourDetailPage({
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid min-w-0 grid-cols-2 gap-3">
                   {funjetHeroGallery.slice(1, 5).map((img, index) => (
                     <div key={`${img}-${index}`} className="relative min-h-[120px] overflow-hidden rounded-[18px] bg-[#EEE6F7] sm:min-h-[150px] sm:rounded-[20px] lg:min-h-[184px] lg:rounded-[24px]">
                       <Image
@@ -2555,7 +2555,7 @@ export default async function TourDetailPage({
                 </div>
               </nav>
 
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {quickInfo.map((item) => (
                   <article
                     key={item.label}
@@ -2896,7 +2896,7 @@ export default async function TourDetailPage({
               ) : null}
             </div>
 
-            <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+            <aside className="min-w-0 space-y-4 lg:sticky lg:top-6 lg:self-start">
               <BookingPanel className="border-[#E7D2FB] shadow-[0_24px_60px_rgba(106,13,173,0.12)]" />
               <div className="rounded-[28px] border border-[#E7D2FB] bg-white p-5 shadow-[0_16px_45px_rgba(106,13,173,0.08)]">
                 <p className="text-xs font-black uppercase tracking-[0.34em] text-[#8D65B0]">

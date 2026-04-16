@@ -456,7 +456,7 @@ export function TourBookingWidget({
 
   return (
     <div
-      className={`relative w-full max-w-sm space-y-4 rounded-[24px] border p-4 shadow-md ${
+      className={`relative w-full min-w-0 max-w-none space-y-4 rounded-[24px] border p-4 shadow-md sm:max-w-sm ${
         isFunjet
           ? "border-[#E7D2FB] bg-[linear-gradient(180deg,#ffffff_0%,#fcf7ff_100%)] shadow-[0_20px_50px_rgba(106,13,173,0.14)]"
           : "border-slate-200 bg-white"
@@ -554,8 +554,8 @@ export function TourBookingWidget({
       )}
 
       {/* DATE + TRAVELERS + START TIME */}
-      <div className={`rounded-xl border ${isFunjet ? "border-[#E7D2FB]" : "border-slate-200"}`}>
-      <div className={`grid grid-cols-1 divide-y sm:grid-cols-[1.15fr,1fr] sm:divide-x sm:divide-y-0 ${isFunjet ? "divide-[#E7D2FB]" : "divide-slate-200"}`}>
+      <div className={`min-w-0 rounded-xl border ${isFunjet ? "border-[#E7D2FB]" : "border-slate-200"}`}>
+      <div className={`grid min-w-0 grid-cols-1 divide-y sm:grid-cols-[1.15fr,1fr] sm:divide-x sm:divide-y-0 ${isFunjet ? "divide-[#E7D2FB]" : "divide-slate-200"}`}>
           {/* DATE */}
           <div className="flex flex-col px-4 py-2">
             <span className={`text-[0.65rem] font-semibold uppercase tracking-[0.2em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>Date</span>
@@ -568,8 +568,8 @@ export function TourBookingWidget({
           </div>
 
           {/* TRAVELERS */}
-          <div className="relative flex flex-col px-4 py-2">
-            <button ref={triggerRef} type="button" onClick={handlePopperToggle} className="w-full text-left outline-none">
+          <div className="relative min-w-0 flex flex-col px-4 py-2">
+            <button ref={triggerRef} type="button" onClick={handlePopperToggle} className="min-w-0 w-full text-left outline-none">
               <span className={`text-[0.65rem] font-semibold uppercase tracking-[0.2em] ${isFunjet ? "text-[#8D65B0]" : "text-slate-500"}`}>Travelers</span>
               <p className={`mt-0.5 text-sm font-semibold ${isFunjet ? "text-[#34114A]" : "text-slate-900"}`}>
                 {totalTravelers} traveler{totalTravelers > 1 ? "s" : ""}
@@ -624,7 +624,7 @@ export function TourBookingWidget({
       {showTravelersPopover && (
         <div
           ref={popoverRef}
-          className={`absolute left-1/2 top-[165px] z-[9999] mt-2 w-[300px] -translate-x-1/2 rounded-2xl border p-4 text-sm shadow-2xl ${
+          className={`absolute left-3 right-3 top-[165px] z-[9999] mt-2 w-auto rounded-2xl border p-4 text-sm shadow-2xl sm:left-1/2 sm:right-auto sm:w-[300px] sm:-translate-x-1/2 ${
             isFunjet ? "border-[#E7D2FB] bg-white" : "border-slate-200 bg-white"
           }`}
         >
