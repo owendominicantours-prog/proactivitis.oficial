@@ -92,7 +92,7 @@ export const PanelShell = ({
                 <a
                   key={item.href}
                   href={item.href}
-                  className="rounded-full border border-white/20 bg-white/14 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-white transition hover:border-[#FFC300] hover:bg-white/20 hover:text-[#FFC300]"
+                  className="rounded-full border border-white/25 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-white transition hover:border-white hover:bg-white/16 hover:text-white"
                 >
                   {item.label}
                 </a>
