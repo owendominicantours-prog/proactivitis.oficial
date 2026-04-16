@@ -6,21 +6,7 @@ export const revalidate = 86400;
 const SITEMAPS =
   SITE_CONFIG.variant === "funjet"
     ? ([
-        "/sitemap.xml",
-        "/sitemap-transfers.xml",
-        "/sitemap-tour-variants.xml",
-        "/sitemap-things-to-do.xml",
-        "/sitemap-party-boat.xml",
-        "/sitemap-santo-domingo.xml",
-        "/sitemap-samana-whale.xml",
-        "/sitemap-buggy-atv.xml",
-        "/sitemap-parasailing.xml",
-        "/sitemap-safety-guides.xml",
-        "/sitemap-i18n.xml",
-        "/sitemap-images.xml",
-        "/sitemap-seo-only-tours.xml",
-        "/sitemap-transfer-seo-only.xml",
-        "/sitemap-urgent-discovered.xml"
+        "/sitemap-funjet-public.xml"
       ] as const)
     : ([
         "/sitemap.xml",
