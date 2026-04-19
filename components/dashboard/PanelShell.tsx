@@ -49,9 +49,9 @@ export const PanelShell = ({
   const displayAccount = formatAccount();
 
   const rightSlot = (
-    <div className="flex items-center gap-3 sm:gap-6">
+    <div className="flex w-full flex-wrap items-center justify-end gap-3 sm:w-auto sm:flex-nowrap sm:gap-4 lg:gap-6">
       <NotificationDropdown notifications={notifications} unreadCount={unreadCount} notificationLink={notificationLink} />
-      <div className="hidden items-center gap-3 text-slate-600 sm:flex">
+      <div className="hidden items-center gap-3 text-slate-600 md:flex">
         <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em]">
           {roleLabel}
         </span>
@@ -64,7 +64,20 @@ export const PanelShell = ({
   return (
     <div className="min-h-screen bg-transparent text-slate-900">
       <Header navItems={navItems} rightSlot={rightSlot} navDisplay={navDisplay} />
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:py-10">{children}</main>
+      <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+        <div className="mb-5 flex flex-col gap-3 border-b border-slate-200 pb-4 md:hidden">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400">{roleLabel}</p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">{title}</h1>
+          </div>
+          {displayAccount ? (
+            <span className="inline-flex w-fit items-center rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
+              {displayAccount}
+            </span>
+          ) : null}
+        </div>
+        {children}
+      </main>
     </div>
   );
 };

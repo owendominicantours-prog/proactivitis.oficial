@@ -89,7 +89,7 @@ export default function NotificationDropdown({
       <button
         type="button"
         onClick={toggleOpen}
-        className="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-700 transition hover:bg-slate-50"
+        className="flex min-h-11 items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-700 transition hover:bg-slate-50"
       >
         Notificaciones
         {localUnreadCount ? (
@@ -99,11 +99,11 @@ export default function NotificationDropdown({
         ) : null}
       </button>
       <div
-        className={`absolute right-0 z-50 mt-2 w-96 min-w-[20rem] rounded-lg border border-slate-200 bg-white shadow-lg transition duration-150 ${
+        className={`absolute right-0 z-50 mt-2 w-[min(24rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] rounded-3xl border border-slate-200 bg-white shadow-lg transition duration-150 sm:w-96 sm:min-w-[20rem] ${
           isOpen ? "visible pointer-events-auto opacity-100" : "invisible pointer-events-none opacity-0"
         }`}
       >
-        <div className="space-y-4 p-4">
+        <div className="max-h-[min(32rem,70vh)] space-y-4 overflow-y-auto p-4">
           {(notifications ?? []).length ? (
             GROUP_ORDER.map((groupLabel) => {
               const items = groupedNotifications[groupLabel];
@@ -138,9 +138,9 @@ export default function NotificationDropdown({
                                   <span className="absolute right-0 top-0 h-2 w-2 rounded-full bg-sky-500" />
                                 )}
                               </div>
-                              <div className="flex-1">
-                                <div className="flex items-center justify-between gap-3">
-                                  <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                                  <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-900">
                                     {notification.title ?? display.label}
                                     <span
                                       className={`text-[0.55rem] uppercase tracking-[0.35em] ${display.textClass} opacity-80`}
@@ -152,7 +152,7 @@ export default function NotificationDropdown({
                                     {formatNotificationDate(notification.createdAt)}
                                   </span>
                                 </div>
-                                {details && <p className="text-xs text-slate-500">{details}</p>}
+                                {details && <p className="mt-1 text-xs text-slate-500">{details}</p>}
                               </div>
                             </div>
                           </button>
@@ -175,7 +175,7 @@ export default function NotificationDropdown({
         <div className="border-t border-slate-100 px-4 py-4 text-right text-xs">
           <Link
             href={effectiveNotificationLink}
-            className="rounded-full border border-slate-200 bg-slate-900 px-4 py-1 text-white transition hover:bg-slate-800"
+            className="inline-flex min-h-10 items-center rounded-full border border-slate-200 bg-slate-900 px-4 py-1 text-white transition hover:bg-slate-800"
           >
             Ver todas
           </Link>
