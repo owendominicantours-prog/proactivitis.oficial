@@ -16,13 +16,13 @@ type Locale = "es" | "en" | "fr";
 
 const copyByLocale = {
   es: {
-    metadataTitle: "Programa para agencias | Proactivitis",
+    metadataTitle: "AgencyPro para agencias | Proactivitis",
     metadataDescription:
       "Descubre como funciona Proactivitis para agencias: reservas directas, AgencyPro, traslados, control operativo y herramientas para vender mejor.",
-    badge: "Programa para agencias",
-    heroTitle: "Vende Punta Cana con una plataforma hecha para agencias internacionales",
+    badge: "AgencyPro by Proactivitis",
+    heroTitle: "AgencyPro: la plataforma comercial para agencias que venden tours y traslados con mas control",
     heroBody:
-      "Proactivitis combina reservas directas, enlaces AgencyPro, cotizacion de traslados y control operativo en un entorno pensado para vender mas rapido, con mejor presentacion y mejor seguimiento.",
+      "AgencyPro combina reservas directas, enlaces con tu propio precio, cotizacion de traslados, control operativo y trazabilidad comercial en un solo workspace para agencias serias.",
     applyNow: "Aplicar ahora",
     seeHow: "Ver como funciona",
     moreControl: "Mas control comercial",
@@ -30,7 +30,7 @@ const copyByLocale = {
     ctaApply: "Aplicar como agencia",
     ctaSales: "Hablar con ventas",
     screenshotsEyebrow: "Capturas del sistema",
-    screenshotsTitle: "Asi trabaja una agencia dentro de Proactivitis",
+    screenshotsTitle: "Asi trabaja una agencia dentro de AgencyPro",
     screenshotsBody:
       "Esta landing puede mostrar tus propias capturas del panel. Desde admin podras subirlas para ensenar el catalogo, la venta con AgencyPro y el control de reservas sin depender de disenos estaticos.",
     model1: "Modelo 1",
@@ -41,18 +41,18 @@ const copyByLocale = {
     agencyProBody:
       "Crea un enlace comercial con tu propio precio final para tours o traslados. El cliente entra, reserva online y tu agencia conserva el margen definido entre el precio base y el precio de venta.",
     activationEyebrow: "Como se activa",
-    activationTitle: "Proceso de entrada al programa",
+    activationTitle: "Onboarding comercial y puesta en marcha",
     faqEyebrow: "Preguntas clave",
     faqTitle: "Lo que una agencia necesita entender antes de entrar",
     nextStep: "Siguiente paso",
-    finalTitle: "Si tu agencia vende Caribe, este programa te da una estructura mas seria para crecer",
+    finalTitle: "Si tu agencia vende Caribe, AgencyPro te da una estructura mas seria para crecer",
     finalBody:
-      "Aplica, valida tu cuenta y empieza a trabajar con reservas directas, AgencyPro, traslados y control operativo en una sola plataforma.",
+      "Aplica, valida tu cuenta y activa un workspace con reservas directas, AgencyPro, traslados, control comercial y seguimiento operativo dentro de una sola plataforma.",
     metrics: [
       { value: "2 modelos", label: "Reserva directa y AgencyPro" },
       { value: "Tours + traslados", label: "Inventario listo para vender" },
-      { value: "Panel operativo", label: "Clientes, reservas y seguimiento" },
-      { value: "Mobile ready", label: "Trabajo real desde telefono" }
+      { value: "Workspace operativo", label: "Clientes, reservas y seguimiento" },
+      { value: "Senales enterprise", label: "Trazabilidad, control y orden comercial" }
     ],
     pillars: [
       {
@@ -72,7 +72,7 @@ const copyByLocale = {
       },
       {
         title: "Herramienta para crecer",
-        body: "Pensado para agencias que quieren responder mas rapido, presentar mejor sus productos y vender con una estructura profesional.",
+        body: "Pensado para agencias que quieren responder mas rapido, presentar mejor sus productos y operar con una estructura profesional.",
         icon: MonitorSmartphone
       }
     ],
@@ -120,7 +120,7 @@ const copyByLocale = {
       {
         step: "03",
         title: "Opera y da seguimiento",
-        body: "Controla reservas, traslados, proximas salidas, clientes, estados y margen comercial desde una sola herramienta."
+        body: "Controla reservas, traslados, proximas salidas, clientes, estados, margen y actividad comercial desde una sola herramienta."
       }
     ],
     faqs: [
@@ -138,18 +138,38 @@ const copyByLocale = {
       },
       {
         question: "Que obtiene una agencia despues de ser aprobada?",
-        answer: "Acceso al panel, catalogo de tours, modulo de traslados, reservas, calendario, reportes, AgencyPro y control comercial."
+        answer: "Acceso a AgencyPro Workspace, catalogo de tours, modulo de traslados, reservas, calendario, reportes, links comerciales y control comercial."
+      }
+    ],
+    enterpriseEyebrow: "Senales de producto serio",
+    enterpriseTitle: "Por que AgencyPro se siente como una plataforma y no como un proceso improvisado",
+    enterpriseCards: [
+      {
+        title: "Control por canal",
+        body: "Distingue reserva directa de agencia y venta por AgencyPro para que sepas de donde viene cada ingreso."
+      },
+      {
+        title: "Trazabilidad operativa",
+        body: "Reservas, links, estados, fechas y actividad quedan conectados en el mismo entorno."
+      },
+      {
+        title: "Cotizacion estructurada",
+        body: "Traslados con ruta, vehiculo, ida y vuelta y precio comercial sin depender de cotizaciones manuales."
+      },
+      {
+        title: "Escalabilidad comercial",
+        body: "Tu equipo puede vender, operar y dar seguimiento desde una base mucho mas ordenada."
       }
     ]
   },
   en: {
-    metadataTitle: "Agency Program | Proactivitis",
+    metadataTitle: "AgencyPro for agencies | Proactivitis",
     metadataDescription:
       "Learn how Proactivitis works for travel agencies: direct bookings, AgencyPro, transfers, operational control, and sales tools.",
-    badge: "Agency program",
-    heroTitle: "Sell Punta Cana with a platform built for international agencies",
+    badge: "AgencyPro by Proactivitis",
+    heroTitle: "AgencyPro: the commercial workspace for agencies selling tours and transfers with more control",
     heroBody:
-      "Proactivitis combines direct bookings, AgencyPro links, transfer quoting, and operational control in a workspace designed to help you sell faster with better presentation and follow-up.",
+      "AgencyPro combines direct bookings, links with your own selling price, transfer quoting, operational control, and commercial traceability in one serious workspace.",
     applyNow: "Apply now",
     seeHow: "See how it works",
     moreControl: "More commercial control",
@@ -157,7 +177,7 @@ const copyByLocale = {
     ctaApply: "Apply as an agency",
     ctaSales: "Talk to sales",
     screenshotsEyebrow: "Platform screenshots",
-    screenshotsTitle: "How an agency works inside Proactivitis",
+    screenshotsTitle: "How an agency works inside AgencyPro",
     screenshotsBody:
       "This landing can display your own panel screenshots. From admin, you can upload them to show the catalog, AgencyPro sales flow, and reservation control without relying on static mockups.",
     model1: "Model 1",
@@ -168,18 +188,18 @@ const copyByLocale = {
     agencyProBody:
       "Create a sales link with your own final price for tours or transfers. The client books online and your agency keeps the margin between the base rate and the final selling price.",
     activationEyebrow: "How it starts",
-    activationTitle: "Program onboarding flow",
+    activationTitle: "Commercial onboarding and go-live flow",
     faqEyebrow: "Key questions",
     faqTitle: "What an agency should understand before joining",
     nextStep: "Next step",
-    finalTitle: "If your agency sells the Caribbean, this program gives you a stronger structure to grow",
+    finalTitle: "If your agency sells the Caribbean, AgencyPro gives you a stronger structure to grow",
     finalBody:
-      "Apply, validate your account, and start working with direct bookings, AgencyPro, transfers, and operational control inside one platform.",
+      "Apply, validate your account, and launch a workspace with direct bookings, AgencyPro links, transfers, commercial control, and operational follow-up inside one platform.",
     metrics: [
       { value: "2 models", label: "Direct booking and AgencyPro" },
       { value: "Tours + transfers", label: "Inventory ready to sell" },
-      { value: "Operational panel", label: "Clients, bookings, and follow-up" },
-      { value: "Mobile ready", label: "Real work from your phone" }
+      { value: "Operational workspace", label: "Clients, bookings, and follow-up" },
+      { value: "Enterprise signals", label: "Traceability, control, and commercial order" }
     ],
     pillars: [
       {
@@ -199,7 +219,7 @@ const copyByLocale = {
       },
       {
         title: "Built to help you grow",
-        body: "Designed for agencies that want faster responses, better presentation, and a more professional sales structure.",
+        body: "Designed for agencies that want faster responses, better presentation, and a more professional operating structure.",
         icon: MonitorSmartphone
       }
     ],
@@ -247,7 +267,7 @@ const copyByLocale = {
       {
         step: "03",
         title: "Operate and follow up",
-        body: "Control bookings, transfers, upcoming services, clients, statuses, and commercial margin from one tool."
+        body: "Control bookings, transfers, upcoming services, clients, statuses, margin, and sales activity from one tool."
       }
     ],
     faqs: [
@@ -265,18 +285,38 @@ const copyByLocale = {
       },
       {
         question: "What does an agency get once approved?",
-        answer: "Access to the panel, tour catalog, transfer workspace, bookings, calendar, reports, AgencyPro, and commercial control."
+        answer: "Access to the AgencyPro workspace, tour catalog, transfer workspace, bookings, calendar, reports, commercial links, and commercial control."
+      }
+    ],
+    enterpriseEyebrow: "Signals of a serious product",
+    enterpriseTitle: "Why AgencyPro feels like a platform instead of a messy manual workflow",
+    enterpriseCards: [
+      {
+        title: "Channel control",
+        body: "Separate direct agency booking from AgencyPro link sales so every revenue source is visible."
+      },
+      {
+        title: "Operational traceability",
+        body: "Bookings, links, statuses, dates, and activity stay connected inside the same environment."
+      },
+      {
+        title: "Structured quoting",
+        body: "Transfers with route, vehicle, round trip logic, and commercial pricing without manual quoting chaos."
+      },
+      {
+        title: "Commercial scalability",
+        body: "Your team can sell, operate, and follow up from a more organized base."
       }
     ]
   },
   fr: {
-    metadataTitle: "Programme agences | Proactivitis",
+    metadataTitle: "AgencyPro pour agences | Proactivitis",
     metadataDescription:
       "Decouvrez comment Proactivitis fonctionne pour les agences: reservations directes, AgencyPro, transferts, controle operationnel et outils commerciaux.",
-    badge: "Programme agences",
-    heroTitle: "Vendez Punta Cana avec une plateforme pensee pour les agences internationales",
+    badge: "AgencyPro by Proactivitis",
+    heroTitle: "AgencyPro : l espace commercial pour les agences qui vendent tours et transferts avec plus de controle",
     heroBody:
-      "Proactivitis combine reservations directes, liens AgencyPro, devis transferts et controle operationnel dans un espace de travail concu pour vendre plus vite avec une meilleure presentation et un meilleur suivi.",
+      "AgencyPro combine reservations directes, liens avec votre propre prix, devis transferts, controle operationnel et tracabilite commerciale dans un seul espace de travail.",
     applyNow: "Postuler",
     seeHow: "Voir le fonctionnement",
     moreControl: "Plus de controle commercial",
@@ -284,7 +324,7 @@ const copyByLocale = {
     ctaApply: "Postuler comme agence",
     ctaSales: "Parler aux ventes",
     screenshotsEyebrow: "Captures de la plateforme",
-    screenshotsTitle: "Comment une agence travaille dans Proactivitis",
+    screenshotsTitle: "Comment une agence travaille dans AgencyPro",
     screenshotsBody:
       "Cette landing peut afficher vos propres captures d ecran du panneau. Depuis l admin, vous pouvez les televerser pour montrer le catalogue, la vente AgencyPro et le controle des reservations sans maquettes fixes.",
     model1: "Modele 1",
@@ -295,18 +335,18 @@ const copyByLocale = {
     agencyProBody:
       "Creez un lien commercial avec votre prix final pour tours ou transferts. Le client reserve en ligne et votre agence conserve la marge entre le prix de base et le prix final.",
     activationEyebrow: "Mise en route",
-    activationTitle: "Processus d entree dans le programme",
+    activationTitle: "Onboarding commercial et mise en route",
     faqEyebrow: "Questions cles",
     faqTitle: "Ce qu une agence doit comprendre avant d entrer",
     nextStep: "Etape suivante",
-    finalTitle: "Si votre agence vend les Caraibes, ce programme vous donne une structure plus solide pour grandir",
+    finalTitle: "Si votre agence vend les Caraibes, AgencyPro vous donne une structure plus solide pour grandir",
     finalBody:
-      "Postulez, validez votre compte et commencez a travailler avec reservations directes, AgencyPro, transferts et controle operationnel dans une seule plateforme.",
+      "Postulez, validez votre compte et activez un workspace avec reservations directes, AgencyPro, transferts, controle commercial et suivi operationnel dans une seule plateforme.",
     metrics: [
       { value: "2 modeles", label: "Reservation directe et AgencyPro" },
       { value: "Tours + transferts", label: "Inventaire pret a vendre" },
-      { value: "Panneau operationnel", label: "Clients, reservations et suivi" },
-      { value: "Mobile ready", label: "Travail reel depuis le telephone" }
+      { value: "Workspace operationnel", label: "Clients, reservations et suivi" },
+      { value: "Signaux enterprise", label: "Tracabilite, controle et ordre commercial" }
     ],
     pillars: [
       {
@@ -326,7 +366,7 @@ const copyByLocale = {
       },
       {
         title: "Concu pour grandir",
-        body: "Pense pour les agences qui veulent repondre plus vite, mieux presenter leurs produits et travailler de facon plus professionnelle.",
+        body: "Pense pour les agences qui veulent repondre plus vite, mieux presenter leurs produits et operer de facon plus professionnelle.",
         icon: MonitorSmartphone
       }
     ],
@@ -374,7 +414,7 @@ const copyByLocale = {
       {
         step: "03",
         title: "Operez et suivez",
-        body: "Controlez reservations, transferts, prochaines sorties, clients, statuts et marge commerciale depuis un seul outil."
+        body: "Controlez reservations, transferts, prochaines sorties, clients, statuts, marge et activite commerciale depuis un seul outil."
       }
     ],
     faqs: [
@@ -392,7 +432,27 @@ const copyByLocale = {
       },
       {
         question: "Que recoit une agence une fois approuvee?",
-        answer: "Acces au panneau, catalogue de tours, module transferts, reservations, calendrier, rapports, AgencyPro et controle commercial."
+        answer: "Acces au workspace AgencyPro, catalogue de tours, module transferts, reservations, calendrier, rapports, liens commerciaux et controle commercial."
+      }
+    ],
+    enterpriseEyebrow: "Signaux de produit serieux",
+    enterpriseTitle: "Pourquoi AgencyPro ressemble a une plateforme et non a un flux manuel desordonne",
+    enterpriseCards: [
+      {
+        title: "Controle par canal",
+        body: "Separer reservation directe et ventes par lien AgencyPro pour voir clairement chaque source de revenu."
+      },
+      {
+        title: "Tracabilite operationnelle",
+        body: "Reservations, liens, statuts, dates et activite restent relies dans le meme environnement."
+      },
+      {
+        title: "Devis structures",
+        body: "Transferts avec route, vehicule, aller-retour et prix commercial sans chaos de devis manuels."
+      },
+      {
+        title: "Scalabilite commerciale",
+        body: "Votre equipe peut vendre, operer et suivre depuis une base beaucoup plus organisee."
       }
     ]
   }
@@ -600,6 +660,22 @@ export async function AgencyProgramPage({ locale }: { locale: Locale }) {
               ))}
             </div>
           </article>
+        </section>
+
+        <section className="mt-16">
+          <div className="max-w-3xl space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">{copy.enterpriseEyebrow}</p>
+            <h2 className="text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl">{copy.enterpriseTitle}</h2>
+          </div>
+          <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {copy.enterpriseCards.map((item) => (
+              <article key={item.title} className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-700">AgencyPro</p>
+                <h3 className="mt-3 text-xl font-semibold text-slate-950">{item.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-600">{item.body}</p>
+              </article>
+            ))}
+          </div>
         </section>
 
         <section className="mt-16 rounded-[36px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a,#111827_65%,#14532d)] px-8 py-10 text-white shadow-xl">

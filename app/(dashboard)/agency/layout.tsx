@@ -6,14 +6,14 @@ import { getNotificationUnreadCount, getNotificationsForRecipient } from "@/lib/
 import { SupportTicketButton } from "@/components/dashboard/SupportTicketButton";
 
 const agencyNav = [
-  { label: "Dashboard", href: "/agency" },
-  { label: "Catálogo de tours", href: "/agency/tours" },
+  { label: "AgencyPro Home", href: "/agency" },
+  { label: "Catalogo de tours", href: "/agency/tours" },
   { label: "Traslados", href: "/agency/transfers" },
   { label: "Reservas", href: "/agency/bookings" },
   { label: "Calendario", href: "/agency/calendar" },
   { label: "Comisiones", href: "/agency/commissions" },
   { label: "Reportes", href: "/agency/reports" },
-  { label: "AgencyPro", href: "/agency/subagents" },
+  { label: "Links AgencyPro", href: "/agency/subagents" },
   { label: "Mini sitio", href: "/agency/minisite" },
   { label: "Promocodes", href: "/agency/promocodes" },
   { label: "Chat", href: "/agency/chat" },
@@ -22,7 +22,7 @@ const agencyNav = [
 ];
 
 export const metadata = {
-  title: "Agency | Proactivitis"
+  title: "AgencyPro Workspace | Proactivitis"
 };
 
 export default async function AgencyDashboardLayout({ children }: { children: ReactNode }) {
@@ -44,8 +44,8 @@ export default async function AgencyDashboardLayout({ children }: { children: Re
   return (
     <>
       <PanelShell
-        roleLabel="Agency"
-        title="Panel Agency"
+        roleLabel="AgencyPro"
+        title="AgencyPro Workspace"
         navItems={agencyNav}
         navDisplay="dropdown"
         notifications={notifications}
