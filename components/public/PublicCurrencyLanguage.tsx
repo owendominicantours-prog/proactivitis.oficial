@@ -20,6 +20,24 @@ const SEGMENT_LOCALIZATION: Record<string, Record<Locale, string>> = {
   hotels: { es: "hoteles", en: "hotels", fr: "hotels" }
 };
 
+const ROUTE_LOCALIZATION: Record<string, Record<Locale, string>> = {
+  "/excursion-buggy-punta-cana": {
+    es: "/excursion-buggy-punta-cana",
+    en: "/buggy-tour-punta-cana",
+    fr: "/tour-buggy-punta-cana"
+  },
+  "/buggy-tour-punta-cana": {
+    es: "/excursion-buggy-punta-cana",
+    en: "/buggy-tour-punta-cana",
+    fr: "/tour-buggy-punta-cana"
+  },
+  "/tour-buggy-punta-cana": {
+    es: "/excursion-buggy-punta-cana",
+    en: "/buggy-tour-punta-cana",
+    fr: "/tour-buggy-punta-cana"
+  }
+};
+
 const invertSegmentLocalization = () => {
   const index: Record<string, string> = {};
   for (const [canonical, localizedByLocale] of Object.entries(SEGMENT_LOCALIZATION)) {
@@ -43,6 +61,14 @@ export function PublicCurrencyLanguage() {
     pathSegments.length > 0 && ["en", "fr"].includes(pathSegments[0]) ? pathSegments.slice(1) : pathSegments;
 
   const buildLocalizedPath = (target: Locale) => {
+    const normalizedPath = normalizedSegments.length ? `/${normalizedSegments.join("/")}` : "/";
+    const localizedRoute = ROUTE_LOCALIZATION[normalizedPath];
+    if (localizedRoute) {
+      const query = searchParams.toString();
+      const targetPath = target === "es" ? localizedRoute.es : `/${target}${localizedRoute[target]}`;
+      return `${targetPath}${query ? `?${query}` : ""}`;
+    }
+
     const translatedSegments = [...normalizedSegments];
     if (translatedSegments.length > 0) {
       const first = translatedSegments[0];
