@@ -4,8 +4,10 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { notFound, redirect } from "next/navigation";
 
+import { markNotificationReadAction } from "@/app/(dashboard)/notifications/actions";
 import { authOptions } from "@/lib/auth";
 import { buildBookingDetailRoute } from "@/lib/bookingRoutes";
+import { buildNotificationDetails, formatNotificationDate } from "@/components/dashboard/notificationUtils";
 import {
   getNotificationForRecipient,
   parseNotificationMetadata
@@ -13,11 +15,11 @@ import {
 import { prisma } from "@/lib/prisma";
 import {
   getNotificationDisplayProps,
-  NotificationRole
+  NotificationRole,
+  type NotificationType
 } from "@/lib/types/notificationTypes";
-import { markNotificationReadAction } from "@/app/(dashboard)/notifications/actions";
 
-const formatDate = (value: Date) =>
+const formatLongDate = (value: Date) =>
   new Intl.DateTimeFormat("es-ES", {
     dateStyle: "long",
     timeStyle: "short"
@@ -54,7 +56,7 @@ export default async function NotificationDetailPage(props: unknown) {
   }
 
   const metadata = parseNotificationMetadata(notification.metadata);
-  const display = getNotificationDisplayProps(notification.type as any);
+  const display = getNotificationDisplayProps(notification.type as NotificationType | undefined);
   const notificationCenterRoute = buildNotificationCenterRoute(session.user.role);
   const referenceUrl = metadata.referenceUrl ?? notificationCenterRoute;
   const bookingId = metadata.bookingId ?? notification.bookingId ?? null;
@@ -71,90 +73,123 @@ export default async function NotificationDetailPage(props: unknown) {
       })
     : null;
 
+  const metadataEntries = flattenMetadata(metadata);
+  const detailText = buildNotificationDetails(notification, metadata.tourName);
+
   return (
     <div className="space-y-6">
-      <section className="space-y-2 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Vista detallada</p>
-            <h1 className="text-2xl font-semibold text-slate-900">{display.label}</h1>
+      <section className="overflow-hidden rounded-[32px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a,#1e293b)] px-6 py-6 text-white shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-sky-200">Detalle de notificación</p>
+            <h1 className="mt-3 text-3xl font-semibold text-white">{notification.title ?? display.label}</h1>
+            <p className="mt-3 text-sm leading-relaxed text-slate-200">
+              {detailText ?? "Revisa el contexto de la alerta y desde aquí abre la reserva o la ruta relacionada sin perder el hilo."}
+            </p>
           </div>
-          <span className="text-xs text-slate-500">{formatDate(notification.createdAt)}</span>
+          <div className="space-y-3 rounded-3xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-slate-100">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-300">{display.label}</p>
+            <p className="text-lg font-semibold">{notification.isRead ? "Leída" : "Pendiente"}</p>
+            <p className="text-slate-300">{formatLongDate(notification.createdAt)}</p>
+          </div>
         </div>
-        <p className="text-sm text-slate-500">
-          Revisa la alerta completa y abre la reserva o ruta relacionada desde esta ficha.
-        </p>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center gap-4">
-          <span className="text-3xl">{display.icon}</span>
-          <div>
-            <span
-              className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] ${display.badgeClass}`}
-            >
-              {display.label}
+      <section className="grid gap-6 xl:grid-cols-[1.05fr,0.95fr]">
+        <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex items-start gap-4">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-lg">
+              {display.icon}
             </span>
-            <h2 className="mt-2 text-xl font-semibold text-slate-900">{notification.title}</h2>
+            <div className="min-w-0 flex-1">
+              <span
+                className={`inline-flex rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] ${display.badgeClass}`}
+              >
+                {display.label}
+              </span>
+              <p className="mt-3 text-sm leading-relaxed text-slate-600">{notification.message ?? notification.body ?? "Sin mensaje adicional."}</p>
+            </div>
           </div>
-        </div>
-        <p className="mt-4 text-sm text-slate-600">{notification.message ?? notification.body}</p>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Link
+              href={referenceUrl}
+              className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            >
+              Abrir relacionado
+            </Link>
+            <Link
+              href={notificationCenterRoute}
+              className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              Volver al centro
+            </Link>
+            {!notification.isRead ? (
+              <form action={markNotificationReadAction} method="post">
+                <input type="hidden" name="notificationId" value={notification.id} />
+                <input type="hidden" name="redirectTo" value={`/dashboard/notifications/${notification.id}`} />
+                <button
+                  type="submit"
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100 sm:w-auto"
+                >
+                  Marcar como leída
+                </button>
+              </form>
+            ) : (
+              <span className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                Ya leída
+              </span>
+            )}
+          </div>
+        </article>
+
+        <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">Resumen rápido</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Estado</p>
+              <p className="mt-2 text-base font-semibold text-slate-900">{notification.isRead ? "Leída" : "Pendiente"}</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Fecha</p>
+              <p className="mt-2 text-base font-semibold text-slate-900">{formatNotificationDate(notification.createdAt)}</p>
+            </div>
+          </div>
+
           {booking ? (
-            <div className="rounded-lg border border-slate-100 bg-slate-50 p-4 text-sm text-slate-700">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva relacionada</p>
-              <p className="font-semibold text-slate-900">{booking.Tour?.title ?? "Servicio sin título"}</p>
-              <p>Cliente: {booking.customerName}</p>
-              <p className="text-xs text-slate-500">Código: {booking.bookingCode ?? booking.id}</p>
-              <p className="text-xs text-slate-500">Total: ${booking.totalAmount.toFixed(2)}</p>
+            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Reserva relacionada</p>
+              <p className="mt-2 text-base font-semibold text-slate-900">{booking.Tour?.title ?? "Servicio sin título"}</p>
+              <div className="mt-3 space-y-2 text-sm text-slate-600">
+                <p><span className="font-semibold text-slate-900">Cliente:</span> {booking.customerName}</p>
+                <p><span className="font-semibold text-slate-900">Código:</span> {booking.bookingCode ?? booking.id}</p>
+                <p><span className="font-semibold text-slate-900">Total:</span> ${booking.totalAmount.toFixed(2)}</p>
+              </div>
               <Link
                 href={bookingRoute}
-                className="mt-3 inline-flex items-center text-xs font-semibold uppercase tracking-[0.3em] text-sky-600 hover:text-sky-800"
+                className="mt-4 inline-flex min-h-10 items-center rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-700 transition hover:border-slate-400 hover:bg-white"
               >
                 Ver reserva completa
               </Link>
             </div>
           ) : null}
 
-          <div className="space-y-2 rounded-lg border border-slate-100 bg-slate-50 p-4 text-sm text-slate-700">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Metadata</p>
-            {flattenMetadata(metadata).length ? (
-              <ul className="space-y-1">
-                {flattenMetadata(metadata).map((entry) => (
-                  <li key={entry.key}>
-                    <span className="font-semibold text-slate-900">{entry.key}:</span> {String(entry.value)}
-                  </li>
+          <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Metadata</p>
+            {metadataEntries.length ? (
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {metadataEntries.map((entry) => (
+                  <div key={entry.key} className="rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-600">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{entry.key}</p>
+                    <p className="mt-1 break-words font-medium text-slate-900">{String(entry.value)}</p>
+                  </div>
                 ))}
-              </ul>
+              </div>
             ) : (
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">No hay datos extra.</p>
+              <p className="mt-3 text-sm text-slate-500">No hay datos extra para esta alerta.</p>
             )}
           </div>
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center gap-3 text-sm">
-          <Link href={referenceUrl} className="font-semibold text-sky-600 hover:underline">
-            Abrir ruta relacionada
-          </Link>
-          <Link href={notificationCenterRoute} className="font-semibold text-slate-700 hover:underline">
-            Volver al centro de notificaciones
-          </Link>
-          {!notification.isRead ? (
-            <form action={markNotificationReadAction} method="post" className="flex items-center gap-2 text-xs">
-              <input type="hidden" name="notificationId" value={notification.id} />
-              <input type="hidden" name="redirectTo" value={referenceUrl} />
-              <button
-                type="submit"
-                className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-slate-400"
-              >
-                Marcar como leída y abrir
-              </button>
-            </form>
-          ) : (
-            <span className="text-emerald-600">Ya leída</span>
-          )}
-        </div>
+        </article>
       </section>
     </div>
   );

@@ -116,7 +116,7 @@ export default function NotificationDropdown({
                   <div className="space-y-2">
                     {items.map((notification) => {
                       const metadata = parseNotificationMetadata(notification.metadata);
-                      const redirectUrl = metadata.referenceUrl ?? effectiveNotificationLink;
+                      const redirectUrl = `/dashboard/notifications/${notification.id}`;
                       const notificationType = notification.type as NotificationType | undefined;
                       const display = getNotificationDisplayProps(notificationType);
                       const details = buildNotificationDetails(notification, metadata?.tourName);
