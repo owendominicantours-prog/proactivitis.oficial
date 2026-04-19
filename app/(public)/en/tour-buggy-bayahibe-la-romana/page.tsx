@@ -13,7 +13,7 @@ import {
   getPriceValidUntil
 } from "@/lib/seo";
 
-const PAGE_URL = `${PROACTIVITIS_URL}/tour-buggy-bayahibe-la-romana`;
+const PAGE_URL = `${PROACTIVITIS_URL}/en/tour-buggy-bayahibe-la-romana`;
 const PAGE_TITLE = "Buggy Tour from Bayahibe La Romana | River, Bateyes & Off Road Adventure";
 const PAGE_DESCRIPTION =
   "Book your buggy tour from Bayahibe or La Romana. Drive through off-road trails, visit local bateyes, swim in Chavon River and enjoy an authentic Dominican experience.";
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     description: PAGE_DESCRIPTION,
     url: PAGE_URL,
     siteName: "Proactivitis",
-    locale: "es_DO",
+    locale: "en_US",
     images: [
       {
         url: `${PROACTIVITIS_URL}${DEFAULT_IMAGE}`,
