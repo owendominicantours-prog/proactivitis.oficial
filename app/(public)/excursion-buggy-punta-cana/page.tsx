@@ -5,7 +5,7 @@ import StructuredData from "@/components/schema/StructuredData";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL, getPriceValidUntil } from "@/lib/seo";
 
-const PAGE_URL = `${PROACTIVITIS_URL}/buggy-punta-cana.html`;
+const PAGE_URL = `${PROACTIVITIS_URL}/excursion-buggy-punta-cana`;
 const PAGE_TITLE = "Buggy Punta Cana | Tour en Buggy con Playa, Cueva y Aventura - Proactivitis";
 const PAGE_DESCRIPTION =
   "Reserva tu tour en buggy en Punta Cana con Proactivitis. Incluye playa Macao, cueva, cultura local y aventura off road. ¡Plazas limitadas!";
