@@ -32,3 +32,15 @@ test-results/
 
 # Prisma
 prisma/dev.db
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# Root scratch files
+/temp*.txt
+/tmp*.txt
+/temp*.py
+/script.py
+/script_keys.py
+/script.js
+/script_patch.js
