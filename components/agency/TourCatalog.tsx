@@ -79,7 +79,7 @@ export const TourCatalog = ({ tours }: { tours: AgencyTourSummary[] }) => {
 
   return (
     <div className="space-y-5">
-      <section className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Tours activos" value={String(tours.length)} helper="Inventario publicado listo para vender" />
         <StatCard label="Destinos" value={String(destinations.length)} helper="Zonas activas en tu catalogo" />
         <StatCard label="Proveedores" value={String(suppliers.length)} helper="Operadores con cupo publicado" />
@@ -91,7 +91,7 @@ export const TourCatalog = ({ tours }: { tours: AgencyTourSummary[] }) => {
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="grid gap-3 xl:grid-cols-[1.5fr,1fr,1fr,1fr,auto]">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[1.5fr,1fr,1fr,1fr,auto]">
           <label className="space-y-2">
             <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
               Buscar tour
@@ -160,7 +160,7 @@ export const TourCatalog = ({ tours }: { tours: AgencyTourSummary[] }) => {
           </div>
         </div>
 
-        <div className="mt-4 flex flex-col gap-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-4 flex flex-col gap-3 text-xs text-slate-500 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-3">
             <span>{filtered.length} resultados visibles</span>
             <span>Total publico: {formatMoney(totalPublicInventory)}</span>
@@ -170,7 +170,7 @@ export const TourCatalog = ({ tours }: { tours: AgencyTourSummary[] }) => {
             <button
               type="button"
               onClick={() => setViewMode("cards")}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+              className={`rounded-full px-3 py-2 text-xs font-semibold transition ${
                 viewMode === "cards" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
               }`}
             >
@@ -179,7 +179,7 @@ export const TourCatalog = ({ tours }: { tours: AgencyTourSummary[] }) => {
             <button
               type="button"
               onClick={() => setViewMode("list")}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+              className={`rounded-full px-3 py-2 text-xs font-semibold transition ${
                 viewMode === "list" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
               }`}
             >
@@ -201,7 +201,11 @@ export const TourCatalog = ({ tours }: { tours: AgencyTourSummary[] }) => {
               className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md"
             >
               <div
-                className={`gap-4 ${viewMode === "cards" ? "grid xl:grid-cols-[220px,1.4fr,0.9fr,0.9fr] xl:items-center" : "grid lg:grid-cols-[180px,1.5fr,0.8fr,0.8fr] lg:items-center"}`}
+                className={`gap-4 ${
+                  viewMode === "cards"
+                    ? "grid lg:grid-cols-[220px,1.15fr] xl:grid-cols-[220px,1.4fr,0.9fr,0.9fr] lg:items-start xl:items-center"
+                    : "grid lg:grid-cols-[180px,1.5fr,0.8fr,0.8fr] lg:items-center"
+                }`}
               >
                 <div className={`overflow-hidden rounded-2xl bg-slate-100 ${viewMode === "list" ? "hidden lg:block" : ""}`}>
                   <div className="relative h-40 w-full">
@@ -233,7 +237,7 @@ export const TourCatalog = ({ tours }: { tours: AgencyTourSummary[] }) => {
                   </div>
                 </div>
 
-                <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm sm:grid-cols-3 lg:grid-cols-1">
                   <InfoLine label="Precio publico" value={formatMoney(tour.price)} emphasis="indigo" />
                   <InfoLine label="Pago agencia" value={formatMoney(netAgencyPrice)} emphasis="slate" />
                   <InfoLine label="Comision directa" value={`${tour.commissionPercent}% / ${formatMoney(commissionValue)}`} emphasis="emerald" />

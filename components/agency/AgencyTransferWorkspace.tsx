@@ -303,7 +303,7 @@ export function AgencyTransferWorkspace({
 
   return (
     <div className="space-y-5">
-      <section className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Comision directa" value={`${commissionPercent}%`} helper="Solo aplica cuando la agencia reserva directo." />
         <StatCard label="Puntos activos" value={String(stats.activeLocations)} helper="Origenes y destinos listos para cotizar." />
         <StatCard label="Vehiculos" value={String(stats.activeVehicles)} helper="Flota activa para rutas privadas." />
@@ -329,7 +329,7 @@ export function AgencyTransferWorkspace({
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="grid gap-4 xl:grid-cols-[1.2fr,1.2fr,0.6fr]">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1.2fr,1.2fr,0.6fr]">
           <div className="relative space-y-2" ref={originRef}>
             <label className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Origen</label>
             <div className="relative">
@@ -356,7 +356,7 @@ export function AgencyTransferWorkspace({
                     }}
                     className="w-full px-4 py-3 text-left text-sm transition hover:bg-slate-50"
                   >
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col gap-1 text-left sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                       <span className="font-semibold text-slate-900">{location.name}</span>
                       <span className="text-[11px] uppercase tracking-[0.25em] text-slate-400">{formatLocationMeta(location)}</span>
                     </div>
@@ -392,7 +392,7 @@ export function AgencyTransferWorkspace({
                     }}
                     className="w-full px-4 py-3 text-left text-sm transition hover:bg-slate-50"
                   >
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col gap-1 text-left sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                       <span className="font-semibold text-slate-900">{location.name}</span>
                       <span className="text-[11px] uppercase tracking-[0.25em] text-slate-400">{formatLocationMeta(location)}</span>
                     </div>
@@ -521,7 +521,7 @@ export function AgencyTransferWorkspace({
             <span>Neto agencia agregado: {formatMoney(totals.netGross)}</span>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             <select
               value={categoryFilter}
               onChange={(event) => setCategoryFilter(event.target.value)}
@@ -539,7 +539,7 @@ export function AgencyTransferWorkspace({
               <button
                 type="button"
                 onClick={() => setViewMode("cards")}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                className={`rounded-full px-3 py-2 text-xs font-semibold transition ${
                   viewMode === "cards" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
                 }`}
               >
@@ -548,7 +548,7 @@ export function AgencyTransferWorkspace({
               <button
                 type="button"
                 onClick={() => setViewMode("list")}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                className={`rounded-full px-3 py-2 text-xs font-semibold transition ${
                   viewMode === "list" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
                 }`}
               >
@@ -575,7 +575,7 @@ export function AgencyTransferWorkspace({
                 <div
                   className={`gap-4 ${
                     viewMode === "cards"
-                      ? "grid xl:grid-cols-[220px,1.35fr,0.85fr,0.9fr] xl:items-center"
+                      ? "grid lg:grid-cols-[220px,1.15fr] xl:grid-cols-[220px,1.35fr,0.85fr,0.9fr] lg:items-start xl:items-center"
                       : "grid lg:grid-cols-[180px,1.5fr,0.9fr,0.85fr] lg:items-center"
                   }`}
                 >
@@ -599,14 +599,14 @@ export function AgencyTransferWorkspace({
                       <Tag>{isRoundTrip ? "Ida y vuelta" : "Solo ida"}</Tag>
                     </div>
 
-                    <div className="grid gap-2 text-sm text-slate-600 xl:grid-cols-2">
+                    <div className="grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
                       <span>Capacidad {vehicle.minPax}-{vehicle.maxPax} pax</span>
                       <span>Salida {departureDate || "Pendiente"} {departureTime || ""}</span>
                       {isRoundTrip ? <span>Regreso {returnDate || "Pendiente"} {returnTime || ""}</span> : null}
                     </div>
                   </div>
 
-                  <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                  <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm sm:grid-cols-3 lg:grid-cols-1">
                     <InfoLine label="Precio publico" value={formatMoney(publicPrice)} emphasis="indigo" />
                     <InfoLine label="Pago agencia" value={formatMoney(netPrice)} emphasis="slate" />
                     <InfoLine label="Comision directa" value={`${commissionPercent}% / ${formatMoney(commissionValue)}`} emphasis="emerald" />

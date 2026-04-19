@@ -52,14 +52,15 @@ export default async function AgencyCommissionsPage() {
         </p>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard label="Comisión directa" value={formatCurrency(totalDirectCommission)} helper="Reservas hechas desde tu cuenta" />
         <StatCard label="Margen AgencyPro" value={formatCurrency(totalAgencyProMargin)} helper="Tours y traslados vendidos por link" />
         <StatCard label="Ingreso total" value={formatCurrency(totalAgencyRevenue)} helper="Comisión + margen comercial" />
       </section>
 
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <table className="w-full text-left text-sm text-slate-700">
+        <div className="hidden overflow-x-auto md:block">
+          <table className="w-full min-w-[720px] text-left text-sm text-slate-700">
           <thead className="bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500">
             <tr>
               <th className="px-5 py-3">Reserva</th>
@@ -96,7 +97,38 @@ export default async function AgencyCommissionsPage() {
               </tr>
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
+
+        <div className="space-y-3 p-4 md:hidden">
+          {bookings.length ? (
+            bookings.map((booking) => {
+              const channelLabel = booking.agencyTransferLinkId
+                ? "AgencyPro Transfer"
+                : booking.agencyProLinkId
+                  ? "AgencyPro Tour"
+                  : "Reserva directa";
+              const agencyRevenue = booking.agencyMarkupAmount ?? booking.agencyFee ?? 0;
+
+              return (
+                <article key={booking.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Reserva</p>
+                  <p className="mt-1 break-all text-sm font-semibold text-slate-900">{booking.bookingCode ?? booking.id}</p>
+                  <div className="mt-4 space-y-2 text-sm text-slate-700">
+                    <p><span className="font-semibold text-slate-900">Producto:</span> {booking.Tour?.title ?? "Reserva"}</p>
+                    <p><span className="font-semibold text-slate-900">Canal:</span> {channelLabel}</p>
+                    <p><span className="font-semibold text-slate-900">Venta:</span> {formatCurrency(booking.totalAmount)}</p>
+                    <p><span className="font-semibold text-slate-900">Ingreso agencia:</span> {formatCurrency(agencyRevenue)}</p>
+                  </div>
+                </article>
+              );
+            })
+          ) : (
+            <div className="rounded-2xl border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-500">
+              No hay ingresos registrados todavía.
+            </div>
+          )}
+        </div>
       </section>
     </div>
   );

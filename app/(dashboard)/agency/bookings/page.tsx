@@ -198,7 +198,7 @@ export default async function AgencyBookingsPage({ searchParams }: PageProps) {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Reservas este mes" value={String(bookingsThisMonth.length)} helper="Operación cerrada este mes" />
         <MetricCard label="Margen AgencyPro" value={formatMoney(totalMarkupThisMonth)} helper="Enlaces con precio propio" />
         <MetricCard
@@ -210,7 +210,7 @@ export default async function AgencyBookingsPage({ searchParams }: PageProps) {
       </div>
 
       <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-        <form className="grid gap-3 md:grid-cols-[1.3fr,1fr,1fr,1fr,1fr,auto]" method="get">
+        <form className="grid gap-3 md:grid-cols-2 xl:grid-cols-[1.3fr,1fr,1fr,1fr,1fr,auto]" method="get">
           <label className="space-y-2">
             <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Buscar</span>
             <input
@@ -310,7 +310,7 @@ export default async function AgencyBookingsPage({ searchParams }: PageProps) {
                   </div>
 
                   <div className="mt-4 max-w-4xl">
-                    <h2 className="text-3xl font-semibold leading-tight text-slate-950">{title}</h2>
+                    <h2 className="text-2xl font-semibold leading-tight text-slate-950 sm:text-3xl">{title}</h2>
                     <p className="mt-3 text-[1.02rem] text-slate-500">{subtitle}</p>
                   </div>
 
@@ -318,14 +318,14 @@ export default async function AgencyBookingsPage({ searchParams }: PageProps) {
                     <div className="grid gap-6 md:grid-cols-2">
                       <div className="space-y-2">
                         <InfoLine label="Viajero principal" value={booking.customerName ?? "Pendiente"} />
-                        <p className="text-lg text-slate-700">
+                        <p className="text-base text-slate-700 sm:text-lg">
                           {totalPassengers} {totalPassengers === 1 ? "adulto" : "adultos"}
                         </p>
                       </div>
 
                       <div className="space-y-2 md:text-right">
-                        <p className="text-[1.05rem] font-semibold text-slate-950">{booking.bookingCode ?? booking.id}</p>
-                        <p className="text-lg text-slate-700">Enviada {formatSentDate(booking.createdAt)}</p>
+                        <p className="break-all text-[1.05rem] font-semibold text-slate-950">{booking.bookingCode ?? booking.id}</p>
+                        <p className="text-base text-slate-700 sm:text-lg">Enviada {formatSentDate(booking.createdAt)}</p>
                       </div>
                     </div>
 
@@ -387,15 +387,15 @@ export default async function AgencyBookingsPage({ searchParams }: PageProps) {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-6 py-4">
-                  <details className="space-y-2 text-xs text-slate-500">
+                <div className="flex flex-col gap-3 border-t border-slate-200 px-6 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                  <details className="w-full space-y-2 text-xs text-slate-500 sm:w-auto">
                     <summary className="cursor-pointer list-none text-base text-teal-700">
                       {needsRequest ? "Solicitar cancelación" : "Cancelar reserva"}
                     </summary>
                     <form
                       action={needsRequest ? agencyRequestCancellation : agencyCancelBooking}
                       method="post"
-                      className="mt-2 w-72 space-y-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-lg"
+                      className="mt-2 w-full space-y-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-lg sm:w-72"
                     >
                       <input type="hidden" name="bookingId" value={booking.id} />
                       <label className="block text-[10px] uppercase tracking-[0.3em] text-slate-500">
@@ -420,7 +420,7 @@ export default async function AgencyBookingsPage({ searchParams }: PageProps) {
                     <Link
                       href={whatsappHref}
                       target="_blank"
-                      className="inline-flex items-center gap-2 rounded border border-teal-700 px-5 py-3 text-base font-medium text-teal-700 transition hover:bg-teal-50"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded border border-teal-700 px-5 py-3 text-base font-medium text-teal-700 transition hover:bg-teal-50 sm:w-auto"
                     >
                       <MessageCircle className="h-4 w-4" />
                       Enviar un mensaje al viajero
