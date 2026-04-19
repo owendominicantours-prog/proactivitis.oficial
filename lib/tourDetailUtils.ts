@@ -204,9 +204,9 @@ const META_TITLE_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     fr: "Demi-journee ATV ou buggy 4x4 depuis Bayahibe"
   },
   "tour-en-buggy-en-punta-cana": {
-    es: "Tour en buggy en Punta Cana: aventura off-road",
-    en: "Punta Cana buggy tour: off-road adventure",
-    fr: "Tour en buggy a Punta Cana : aventure off-road"
+    es: "Buggy Punta Cana: tour off-road, playa y barro",
+    en: "Punta Cana buggy tour: off-road, beach and mud",
+    fr: "Buggy Punta Cana : tour off-road, plage et boue"
   },
   "tour-de-safari-cultural-por-el-pais-de-republica-dominicana-desde-punta-cana": {
     es: "Safari cultural en Republica Dominicana desde Punta Cana",
@@ -301,9 +301,9 @@ const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>
     fr: "Aventure en ATV/buggy 4x4 depuis Bayahibe/La Romana avec pistes off-road et arrets locaux. Reservez en minutes."
   },
   "tour-en-buggy-en-punta-cana": {
-    es: "Ruta en buggy por Punta Cana con barro, caminos off-road y paradas locales. Ideal para quien quiere aventura real, sin perder comodidad.",
-    en: "Punta Cana buggy route with mud, off-road tracks and local stops. Built for travelers who want real adventure with easy logistics.",
-    fr: "Parcours buggy a Punta Cana avec boue, pistes off-road et arrets locaux. Parfait pour une vraie aventure, avec logistique simple."
+    es: "Vive el mejor tour en buggy en Punta Cana con playa, cueva natural, caminos de barro y aventura off-road. Reserva facil y consulta disponibilidad.",
+    en: "Experience a top Punta Cana buggy tour with beach, natural cave, muddy off-road trails and easy booking. Check availability online.",
+    fr: "Vivez un buggy tour a Punta Cana avec plage, grotte naturelle, pistes boueuses et aventure off-road. Reservation simple en ligne."
   },
   "tour-de-safari-cultural-por-el-pais-de-republica-dominicana-desde-punta-cana": {
     es: "Conoce el interior dominicano con un safari cultural desde Punta Cana: pueblos, tradiciones, degustaciones y guia local durante todo el recorrido.",

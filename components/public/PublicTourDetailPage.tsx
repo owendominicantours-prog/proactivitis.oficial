@@ -109,9 +109,9 @@ const TOUR_KEYWORDS_BY_SLUG: Record<string, Partial<Record<Locale, string[]>>> =
 
 const TOUR_H1_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
   "tour-en-buggy-en-punta-cana": {
-    es: "Tour en buggy en Punta Cana: barro, cueva y aventura",
-    en: "Punta Cana buggy tour: mud, cave and adventure",
-    fr: "Tour en buggy a Punta Cana : boue, grotte et aventure"
+    es: "Buggy Punta Cana: tour off-road con playa, cueva y barro",
+    en: "Punta Cana buggy tour: off-road, beach, cave and mud",
+    fr: "Buggy a Punta Cana : tour off-road avec plage, grotte et boue"
   },
   "excursion-en-buggy-y-atv-en-punta-cana": {
     es: "Buggy y ATV en Punta Cana: off-road y cenote",
