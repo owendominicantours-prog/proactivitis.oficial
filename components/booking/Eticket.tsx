@@ -125,7 +125,10 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
           </div>
           <div className="space-y-1">
             <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Fecha de ida</p>
-            <p className="text-sm font-semibold text-slate-900">{arrivalDate}</p>
+            <p className="text-sm font-semibold text-slate-900">
+              {arrivalDate}
+              {booking.startTime ? ` · ${booking.startTime}` : ""}
+            </p>
           </div>
           {booking.flowType === "transfer" && booking.tripType === "round-trip" ? (
             <div className="space-y-1">
@@ -140,6 +143,18 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
             <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">{presentation.routeLabel}</p>
             <p className="text-sm font-semibold text-slate-900">{presentation.routeValue}</p>
           </div>
+          {presentation.kind === "transfer" ? (
+            <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Pickup ida</p>
+              <p className="text-sm font-semibold text-slate-900">{booking.originAirport ?? meetingPoint}</p>
+            </div>
+          ) : null}
+          {presentation.kind === "transfer" && booking.tripType === "round-trip" ? (
+            <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Pickup regreso</p>
+              <p className="text-sm font-semibold text-slate-900">{booking.hotel ?? "Pendiente"}</p>
+            </div>
+          ) : null}
           <div className="space-y-1">
             <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Agencia</p>
             <p className="text-sm font-semibold text-slate-900">{booking.agencyName ?? "Reserva directa"}</p>

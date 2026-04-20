@@ -181,12 +181,19 @@ export default async function CustomerPublicReservationsPage() {
                               <InfoLine label="Correo" value={booking.customerEmail} />
                               <InfoLine label="Total" value={`$${booking.totalAmount.toFixed(2)}`} />
                               <InfoLine
-                                label="Pickup"
-                                value={
-                                  isRoundTripTransfer
-                                    ? `${booking.pickup ?? "Por confirmar"} · ${booking.hotel ?? "Por confirmar"}`
-                                    : booking.hotel ?? booking.pickup ?? "Por confirmar"
-                                }
+                                label={isRoundTripTransfer ? "Pickup ida" : "Pickup"}
+                                value={booking.pickup ?? booking.originAirport ?? booking.hotel ?? "Por confirmar"}
+                              />
+                              {isRoundTripTransfer ? (
+                                <InfoLine label="Pickup regreso" value={booking.hotel ?? "Por confirmar"} />
+                              ) : null}
+                              <InfoLine
+                                label="Fecha ida"
+                                value={`${booking.travelDate.toLocaleDateString("es-ES", {
+                                  day: "2-digit",
+                                  month: "long",
+                                  year: "numeric"
+                                })}${booking.startTime ? ` · ${booking.startTime}` : ""}`}
                               />
                               <InfoLine
                                 label="Agencia"

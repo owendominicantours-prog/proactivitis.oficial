@@ -696,7 +696,9 @@ export default async function AdminBookingsPage({ searchParams }: any) {
               });
               const subtitle =
                 booking.flowType === "transfer"
-                  ? `${presentation.routeValue} · ${departureLabel}`
+                  ? booking.tripType === "round-trip"
+                    ? `${presentation.routeValue} · Ida ${departureLabel} · Regreso ${returnLabel}`
+                    : `${presentation.routeValue} · ${departureLabel}`
                   : `${booking.tourTitle} ${booking.startTime ?? ""}`.trim();
 
               return (
@@ -759,13 +761,24 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                         </p>
                         <p className="text-[1rem] leading-7 text-slate-700">
                           <span className="font-semibold text-slate-950">
-                            {booking.flowType === "transfer" && booking.tripType === "round-trip"
-                              ? "Pickup ida / regreso:"
-                              : "Recogida:"}
+                            {booking.flowType === "transfer" ? "Pickup ida:" : "Recogida:"}
                           </span>{" "}
-                          {booking.pickup ?? "Sin punto definido"}
-                          {booking.hotel ? ` · ${booking.hotel}` : ""}
+                          {booking.pickup ?? booking.originAirport ?? "Sin punto definido"}
                         </p>
+                        {booking.flowType === "transfer" && booking.tripType === "round-trip" ? (
+                          <p className="text-[1rem] leading-7 text-slate-700">
+                            <span className="font-semibold text-slate-950">Pickup regreso:</span>{" "}
+                            {booking.hotel ?? "Sin punto definido"}
+                          </p>
+                        ) : null}
+                        <p className="text-[1rem] leading-7 text-slate-700">
+                          <span className="font-semibold text-slate-950">Fecha ida:</span> {departureLabel}
+                        </p>
+                        {booking.flowType === "transfer" && booking.tripType === "round-trip" ? (
+                          <p className="text-[1rem] leading-7 text-slate-700">
+                            <span className="font-semibold text-slate-950">Fecha regreso:</span> {returnLabel}
+                          </p>
+                        ) : null}
                         <p className="text-[1rem] leading-7 text-slate-700">
                           <span className="font-semibold text-slate-950">{presentation.primaryDetailsLabel}:</span>{" "}
                           {presentation.primaryDetailsValue}
