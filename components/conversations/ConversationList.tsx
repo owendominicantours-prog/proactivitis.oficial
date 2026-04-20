@@ -133,8 +133,8 @@ export const ConversationList = ({ onSelect, selectedId, typeFilter, refreshToke
               selectedId === conv.id ? "border-sky-500 bg-white shadow-lg" : "border-slate-100 bg-white/70 hover:border-slate-300"
             }`}
           >
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-              <span>{conv.tour?.title ?? "Soporte general"}</span>
+            <div className="flex flex-col gap-2 text-xs font-semibold text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+              <span className="line-clamp-1">{conv.tour?.title ?? "Soporte general"}</span>
               <span className="inline-flex items-center gap-2">
                 {conv.pendingForMe ? (
                   <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-700">
@@ -170,7 +170,7 @@ export const ConversationList = ({ onSelect, selectedId, typeFilter, refreshToke
               <p className="mt-1 line-clamp-1 text-[11px] text-slate-500">{conv.visitorContext.pageTitle ?? conv.visitorContext.pagePath}</p>
             ) : null}
             <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400">Usuarios: {conv.participants.length}</p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 line-clamp-2 text-xs text-slate-500">
               {conv.lastMessage
                 ? `${conv.lastMessage.sender.name ?? "Tu"} - ${new Date(conv.lastMessage.createdAt).toLocaleString()}`
                 : "Sin mensajes aun"}

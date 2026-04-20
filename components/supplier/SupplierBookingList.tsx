@@ -523,7 +523,7 @@ export function SupplierBookingList({ bookings }: Props) {
           </div>
         )}
 
-        <div className="grid gap-4 md:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Reservas hoy</p>
             <p className="text-3xl font-semibold text-slate-900">{summary.reservasHoy}</p>
@@ -887,73 +887,73 @@ export function SupplierBookingList({ bookings }: Props) {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-6 py-4">
-                  <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleConfirmTime(booking)}
-                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
-                >
-                  <Check className="h-4 w-4" />
-                  Confirmar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleMarkComplete(booking)}
-                  className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700"
-                >
-                  <ClipboardCheck className="h-4 w-4" />
-                  Completada
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleCancel(booking)}
-                  className="flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-700"
-                >
-                  <Slack className="h-4 w-4" />
-                  Solicitar cancelación
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleCopyDetails(booking)}
-                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700"
-                >
-                  <Clipboard className="h-4 w-4" />
-                  Copiar info
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handlePrintDetails(booking)}
-                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700"
-                >
-                  <Printer className="h-4 w-4" />
-                  Imprimir
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSendToDriver(booking)}
-                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-sky-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-sky-700"
-                >
-                  <Send className="h-4 w-4" />
-                  Enviar al chofer
-                </button>
-                <a
-                  href={`https://wa.me/${booking.whatsappNumber?.replace(/\D/g, "") ?? PROACTIVITIS_WHATSAPP_NUMBER}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700"
-                >
-                  <Phone className="h-4 w-4" />
-                  WhatsApp
-                </a>
-                <button
-                  type="button"
-                  onClick={() => openModal(booking)}
-                  className="flex items-center gap-2 rounded border border-teal-700 px-5 py-3 text-sm font-medium text-teal-700 transition hover:bg-teal-50"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Abrir ficha
-                </button>
+                <div className="flex flex-col gap-3 border-t border-slate-200 px-6 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => handleConfirmTime(booking)}
+                      className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+                    >
+                      <Check className="h-4 w-4" />
+                      Confirmar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMarkComplete(booking)}
+                      className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700"
+                    >
+                      <ClipboardCheck className="h-4 w-4" />
+                      Completada
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleCancel(booking)}
+                      className="flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-700"
+                    >
+                      <Slack className="h-4 w-4" />
+                      Solicitar cancelación
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyDetails(booking)}
+                      className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700"
+                    >
+                      <Clipboard className="h-4 w-4" />
+                      Copiar info
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePrintDetails(booking)}
+                      className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700"
+                    >
+                      <Printer className="h-4 w-4" />
+                      Imprimir
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSendToDriver(booking)}
+                      className="flex items-center gap-2 rounded-full border border-slate-200 bg-sky-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-sky-700"
+                    >
+                      <Send className="h-4 w-4" />
+                      Enviar al chofer
+                    </button>
+                    <a
+                      href={`https://wa.me/${booking.whatsappNumber?.replace(/\D/g, "") ?? PROACTIVITIS_WHATSAPP_NUMBER}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700"
+                    >
+                      <Phone className="h-4 w-4" />
+                      WhatsApp
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => openModal(booking)}
+                      className="flex items-center gap-2 rounded border border-teal-700 px-5 py-3 text-sm font-medium text-teal-700 transition hover:bg-teal-50"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      Abrir ficha
+                    </button>
                   </div>
                   {actionFeedbacks[booking.id] ? (
                     <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
@@ -973,18 +973,18 @@ export function SupplierBookingList({ bookings }: Props) {
             <span>
               Página {currentPage} de {totalPages}
             </span>
-            <div className="flex gap-2">
+            <div className="flex w-full gap-2 sm:w-auto">
               <button
                 type="button"
                 onClick={() => setPage(Math.max(1, currentPage - 1))}
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600"
+                className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600 sm:w-auto"
               >
                 Anterior
               </button>
               <button
                 type="button"
                 onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
-                className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+                className="w-full rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white sm:w-auto"
               >
                 Siguiente
               </button>
@@ -994,16 +994,16 @@ export function SupplierBookingList({ bookings }: Props) {
       </section>
 
       {selectedBooking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-          <div className="max-w-3xl space-y-6 rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/40 p-4">
+          <div className="mx-auto w-full max-w-3xl space-y-6 rounded-2xl bg-white p-5 shadow-2xl sm:p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="text-xl font-semibold text-slate-900">Detalle {selectedBooking.tourTitle}</h3>
                 <p className="mt-1 text-xs uppercase tracking-[0.3em] text-slate-500">
                   {selectedBooking.bookingCode} · {selectedBooking.statusLabel ?? selectedBooking.status}
                 </p>
               </div>
-              <button type="button" onClick={closeModal} className="text-slate-500">
+              <button type="button" onClick={closeModal} className="self-start rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600">
                 Cerrar
               </button>
             </div>
@@ -1053,7 +1053,7 @@ export function SupplierBookingList({ bookings }: Props) {
                 </p>
               </div>
             </div>
-            <div className="grid gap-4 rounded-lg border border-slate-100 bg-slate-50 p-4 text-sm text-slate-700 md:grid-cols-3">
+            <div className="grid gap-4 rounded-lg border border-slate-100 bg-slate-50 p-4 text-sm text-slate-700 sm:grid-cols-2 md:grid-cols-3">
               <p>
                 <span className="text-xs uppercase text-slate-500">Precio total</span>
                 <br />

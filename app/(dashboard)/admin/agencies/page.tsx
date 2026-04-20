@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import { prisma } from "@/lib/prisma";
 
 type SearchParams = {
@@ -81,13 +82,9 @@ export default async function AdminAgenciesPage({ searchParams }: Props) {
     const latestApplication = user.PartnerApplication[0] ?? null;
     const bookingMap = new Map<string, Date>();
 
-    for (const booking of user.Booking) {
-      bookingMap.set(booking.id, booking.createdAt);
-    }
+    for (const booking of user.Booking) bookingMap.set(booking.id, booking.createdAt);
     for (const link of user.AgencyProLinks) {
-      for (const booking of link.Booking) {
-        bookingMap.set(booking.id, booking.createdAt);
-      }
+      for (const booking of link.Booking) bookingMap.set(booking.id, booking.createdAt);
     }
 
     const bookingDates = Array.from(bookingMap.values()).sort((a, b) => b.getTime() - a.getTime());
@@ -95,18 +92,12 @@ export default async function AdminAgenciesPage({ searchParams }: Props) {
     return {
       caseId: user.id,
       userId: user.id,
-      companyName:
-        user.AgencyProfile?.companyName ??
-        latestApplication?.companyName ??
-        user.name ??
-        "Agencia sin nombre",
+      companyName: user.AgencyProfile?.companyName ?? latestApplication?.companyName ?? user.name ?? "Agencia sin nombre",
       ownerName: latestApplication?.contactName ?? user.name ?? "Sin nombre",
       ownerEmail: latestApplication?.email ?? user.email,
       phone: latestApplication?.phone ?? null,
       country: latestApplication?.country ?? null,
-      approved: Boolean(
-        user.agencyApproved || user.AgencyProfile?.approved || latestApplication?.status === "APPROVED"
-      ),
+      approved: Boolean(user.agencyApproved || user.AgencyProfile?.approved || latestApplication?.status === "APPROVED"),
       hasProfile: Boolean(user.AgencyProfile),
       commissionPercent: user.AgencyProfile?.commissionPercent ?? null,
       bookingsCount: bookingMap.size,
@@ -156,88 +147,98 @@ export default async function AdminAgenciesPage({ searchParams }: Props) {
   const activeWithBookingsCount = rows.filter((agency) => agency.bookingsCount > 0).length;
 
   return (
-    <div className="space-y-8 pb-8">
-      <header className="space-y-2">
-        <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Agencias</p>
-        <h1 className="text-3xl font-semibold text-slate-900">Panel de agencias</h1>
-        <p className="text-sm text-slate-600">
-          Controla aprobaciones, actividad comercial y reservas por agencia desde una sola vista.
-        </p>
-      </header>
-
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Total</p>
-          <p className="mt-2 text-3xl font-semibold text-slate-900">{rows.length}</p>
-        </article>
-        <article className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-emerald-700">Aprobadas</p>
-          <p className="mt-2 text-3xl font-semibold text-emerald-900">{approvedCount}</p>
-        </article>
-        <article className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-amber-700">Pendientes</p>
-          <p className="mt-2 text-3xl font-semibold text-amber-900">{pendingCount}</p>
-        </article>
-        <article className="rounded-2xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-sky-700">Con reservas</p>
-          <p className="mt-2 text-3xl font-semibold text-sky-900">{activeWithBookingsCount}</p>
-          <p className="mt-1 text-xs text-sky-700">Perfiles creados: {withProfileCount}</p>
-        </article>
+    <div className="space-y-6 pb-8">
+      <section className="overflow-hidden rounded-[32px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a,#1e293b)] px-6 py-6 text-white shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-sky-200">Agencias</p>
+            <h1 className="mt-3 text-3xl font-semibold">Panel de agencias</h1>
+            <p className="mt-3 text-sm leading-relaxed text-slate-200">
+              Controla aprobaciones, actividad comercial y reservas por agencia desde una sola vista con mejor lectura móvil.
+            </p>
+          </div>
+          <Link
+            href="/admin/partner-applications"
+            className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-white/15 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+          >
+            Ver solicitudes
+          </Link>
+        </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <form className="grid gap-4 md:grid-cols-4">
-          <label className="flex flex-col text-sm text-slate-600">
-            Buscar
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          { label: "Total", value: rows.length, helper: "Casos de agencia detectados" },
+          { label: "Aprobadas", value: approvedCount, helper: "Cuentas listas para operar" },
+          { label: "Pendientes", value: pendingCount, helper: "Solicitudes o casos sin aprobación" },
+          { label: "Con reservas", value: activeWithBookingsCount, helper: `Perfiles creados: ${withProfileCount}` }
+        ].map((item, index) => (
+          <article
+            key={item.label}
+            className={`rounded-3xl border p-5 shadow-sm ${
+              index === 1 ? "border-emerald-200 bg-emerald-50" : index === 2 ? "border-amber-200 bg-amber-50" : index === 3 ? "border-sky-200 bg-sky-50" : "border-slate-200 bg-white"
+            }`}
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">{item.label}</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">{item.value}</p>
+            <p className="mt-2 text-sm text-slate-600">{item.helper}</p>
+          </article>
+        ))}
+      </section>
+
+      <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+        <form className="grid gap-3 md:grid-cols-2 xl:grid-cols-[1.5fr,1fr,auto,auto]">
+          <label className="space-y-2">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Buscar</span>
             <input
               name="q"
               defaultValue={params.q ?? ""}
-              placeholder="Empresa, contacto, email, telefono o pais"
-              className="mt-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
+              placeholder="Empresa, contacto, email, teléfono o país"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white"
             />
           </label>
-          <label className="flex flex-col text-sm text-slate-600">
-            Estado
+          <label className="space-y-2">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Estado</span>
             <select
               name="status"
               defaultValue={status}
-              className="mt-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-sky-400 focus:bg-white"
             >
               <option value="all">Todas</option>
               <option value="approved">Aprobadas</option>
               <option value="pending">Pendientes</option>
             </select>
           </label>
-          <button
-            type="submit"
-            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-          >
-            Filtrar
-          </button>
-          <Link
-            href="/admin/agencies"
-            className="rounded-xl border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700 hover:border-slate-500"
-          >
-            Limpiar
-          </Link>
+          <div className="flex items-end">
+            <button type="submit" className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
+              Filtrar
+            </button>
+          </div>
+          <div className="flex items-end">
+            <Link href="/admin/agencies" className="inline-flex min-h-[48px] w-full items-center justify-center rounded-2xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-500">
+              Limpiar
+            </Link>
+          </div>
         </form>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
+      <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold text-slate-900">Agencias ({filtered.length})</h2>
+          <p className="text-sm text-slate-500">Cada tarjeta resume perfil, volumen y actividad reciente.</p>
         </div>
+
         <div className="grid gap-4 xl:grid-cols-2">
           {filtered.map((agency) => (
-            <article key={agency.caseId} className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
+            <article key={agency.caseId} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                   <p className="text-lg font-semibold text-slate-900">{agency.companyName}</p>
                   <p className="text-sm text-slate-600">{agency.ownerName}</p>
-                  <p className="text-sm text-slate-500">{agency.ownerEmail}</p>
+                  <p className="break-all text-sm text-slate-500">{agency.ownerEmail}</p>
                 </div>
                 <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                  className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${
                     agency.approved ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
                   }`}
                 >
@@ -256,40 +257,45 @@ export default async function AdminAgenciesPage({ searchParams }: Props) {
                 ) : null}
               </div>
 
-              <div className="mt-4 grid gap-3 text-sm text-slate-600 md:grid-cols-5">
+              <div className="mt-4 grid gap-3 text-sm text-slate-600 sm:grid-cols-2 xl:grid-cols-5">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Telefono</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Teléfono</p>
                   <p>{agency.phone ?? "No registrado"}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Pais</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">País</p>
                   <p>{agency.country ?? "No registrado"}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Reservas</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Reservas</p>
                   <p>{agency.bookingsCount}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Links</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Links</p>
                   <p>{agency.linksCount}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Comision</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Comisión</p>
                   <p>{agency.commissionPercent !== null ? `${agency.commissionPercent}%` : "Pendiente"}</p>
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+              <div className="mt-4 flex flex-col gap-3 border-t border-slate-200 pt-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
                 <span>
-                  Ultima reserva: {agency.lastBookingAt ? agency.lastBookingAt.toLocaleDateString("es-ES") : "Sin reservas"}
+                  Última reserva: {agency.lastBookingAt ? agency.lastBookingAt.toLocaleDateString("es-ES") : "Sin reservas"}
                 </span>
-                <Link href={`/admin/agencies/${agency.caseId}`} className="font-semibold text-sky-700 hover:underline">
+                <Link href={`/admin/agencies/${agency.caseId}`} className="inline-flex min-h-10 items-center rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-700 transition hover:border-slate-400 hover:bg-white">
                   Abrir caso
                 </Link>
               </div>
             </article>
           ))}
-          {!filtered.length && <p className="text-sm text-slate-500">No hay agencias para este filtro.</p>}
+
+          {!filtered.length && (
+            <div className="rounded-3xl border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500">
+              No hay agencias para este filtro.
+            </div>
+          )}
         </div>
       </section>
     </div>

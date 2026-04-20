@@ -191,8 +191,8 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
                 key={message.id}
                 className={`rounded-2xl px-4 py-3 text-sm ${
                   isAdminMessage
-                    ? "ml-10 border border-sky-200 bg-sky-50 text-slate-700"
-                    : "mr-10 border border-emerald-200 bg-emerald-50 text-slate-700"
+                    ? "ml-4 border border-sky-200 bg-sky-50 text-slate-700 sm:ml-10"
+                    : "mr-4 border border-emerald-200 bg-emerald-50 text-slate-700 sm:mr-10"
                 }`}
               >
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{message.sender?.name ?? message.sender?.email}</p>
@@ -225,8 +225,8 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
               key={message.id}
               className={`rounded-2xl px-4 py-3 text-sm ${
                 isAdminMessage
-                  ? "ml-10 border border-sky-200 bg-sky-50 text-slate-700"
-                  : "mr-10 border border-emerald-200 bg-emerald-50 text-slate-700"
+                  ? "ml-4 border border-sky-200 bg-sky-50 text-slate-700 sm:ml-10"
+                  : "mr-4 border border-emerald-200 bg-emerald-50 text-slate-700 sm:mr-10"
               }`}
             >
               <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{message.sender?.name ?? message.sender?.email}</p>
@@ -236,7 +236,7 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
         })}
       </div>
 
-      <div className="mt-4 flex gap-3 border-t border-slate-100 pt-4">
+      <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row">
         <input
           type="text"
           placeholder="Escribe un mensaje..."
@@ -252,7 +252,7 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
         />
         <button
           onClick={() => void sendMessage()}
-          className="rounded-full bg-brand px-4 py-2 text-xs font-semibold uppercase tracking-[0.4em] text-white"
+          className="rounded-full bg-brand px-4 py-3 text-xs font-semibold uppercase tracking-[0.4em] text-white"
         >
           Enviar
         </button>

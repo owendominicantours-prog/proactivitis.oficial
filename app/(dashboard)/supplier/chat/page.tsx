@@ -24,7 +24,7 @@ export default function SupplierChatPage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">Conversaciones</p>
             <p className="mt-2 text-sm text-slate-600">Selecciona una reserva para abrir el historial del chat.</p>
           </div>
-          <div className="p-4">
+          <div className="max-h-[420px] overflow-y-auto p-4 xl:max-h-[720px]">
             <ConversationList
               onSelect={(conv) => setConversationId(conv.id)}
               selectedId={conversationId ?? undefined}
@@ -42,7 +42,7 @@ export default function SupplierChatPage() {
                 : "Elige una conversación para empezar."}
             </p>
           </div>
-          <div className="min-h-[620px] p-4">
+          <div className="min-h-[420px] p-4 xl:min-h-[620px]">
             <ChatBox conversationId={conversationId ?? undefined} />
           </div>
         </section>
