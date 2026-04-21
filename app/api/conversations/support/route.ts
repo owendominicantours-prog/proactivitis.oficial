@@ -6,6 +6,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { createNotification } from "@/lib/notificationService";
+import { sendEmail } from "@/lib/email";
+import { buildSupportChatOpenedAdminEmail, buildSupportChatReplyAdminEmail } from "@/lib/supportChatEmail";
 
 type SupportTicketBody = {
   name?: string;
@@ -16,6 +18,7 @@ type SupportTicketBody = {
 export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as SupportTicketBody;
   const session = await getServerSession(authOptions);
+  const incomingMessage = body.message?.trim() ?? "";
 
   let requesterId = session?.user?.id;
   let requesterName = body.name ?? session?.user?.name ?? "Cliente";
@@ -38,6 +41,10 @@ export async function POST(request: NextRequest) {
         }
     });
     requesterId = guest.id;
+  }
+
+  if (!requesterId) {
+    return NextResponse.json({ error: "No se pudo resolver el solicitante" }, { status: 500 });
   }
 
   const admin = await prisma.user.findFirst({
@@ -69,6 +76,45 @@ export async function POST(request: NextRequest) {
   });
 
   if (existing) {
+    if (incomingMessage) {
+      await prisma.message.create({
+        data: {
+          id: randomUUID(),
+          conversationId: existing.id,
+          senderId: requesterId,
+          senderRole: session?.user?.role ?? "CUSTOMER",
+          content: incomingMessage
+        }
+      });
+
+      await createNotification({
+        type: "ADMIN_SYSTEM_ALERT",
+        role: "ADMIN",
+        title: "Nuevo mensaje de soporte",
+        message: `${requesterName} abrió un nuevo mensaje en el chat de ayuda.`,
+        metadata: {
+          conversationId: existing.id,
+          requesterId,
+          requesterEmail,
+          referenceUrl: "/admin/chat"
+        },
+        recipientUserId: admin.id
+      });
+
+      if (admin.email) {
+        await sendEmail({
+          to: admin.email,
+          subject: `Nuevo mensaje de soporte de ${requesterName}`,
+          html: buildSupportChatReplyAdminEmail({
+            requesterName,
+            requesterEmail: requesterEmail ?? "Sin email",
+            message: incomingMessage,
+            conversationUrl: `${request.nextUrl.origin}/admin/chat`
+          })
+        });
+      }
+    }
+
     return NextResponse.json({ conversation: existing });
   }
 
@@ -101,6 +147,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No se pudo crear la conversación" }, { status: 500 });
   }
 
+  if (incomingMessage) {
+    await prisma.message.create({
+      data: {
+        id: randomUUID(),
+        conversationId: conversation.id,
+        senderId: requesterId,
+        senderRole: session?.user?.role ?? "CUSTOMER",
+        content: incomingMessage
+      }
+    });
+  }
+
   // Notificar al admin sobre el nuevo ticket
   await createNotification({
     type: "ADMIN_SYSTEM_ALERT",
@@ -110,10 +168,24 @@ export async function POST(request: NextRequest) {
     metadata: {
       conversationId: conversation.id,
       requesterId,
-      requesterEmail
+      requesterEmail,
+      referenceUrl: "/admin/chat"
     },
     recipientUserId: admin.id
   });
+
+  if (admin.email) {
+    await sendEmail({
+      to: admin.email,
+      subject: `Nuevo chat de soporte de ${requesterName}`,
+      html: buildSupportChatOpenedAdminEmail({
+        requesterName,
+        requesterEmail: requesterEmail ?? "Sin email",
+        message: incomingMessage || "El cliente abrio el chat sin mensaje inicial.",
+        conversationUrl: `${request.nextUrl.origin}/admin/chat`
+      })
+    });
+  }
 
   return NextResponse.json({ conversation });
 }

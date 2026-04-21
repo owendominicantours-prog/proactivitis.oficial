@@ -21,7 +21,7 @@ type ChatFloatButtonProps = {
   phone?: string;
 };
 
-export const ChatFloatButton = ({ href, label = "Centro de ayuda", phone = "+1 809 000 0000" }: ChatFloatButtonProps) => {
+export const ChatFloatButton = ({ href, label = "Soporte Proactivitis", phone = "+1 809 000 0000" }: ChatFloatButtonProps) => {
   const [open, setOpen] = useState(false);
   const [showChatForm, setShowChatForm] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -46,13 +46,13 @@ export const ChatFloatButton = ({ href, label = "Centro de ayuda", phone = "+1 8
     fetchSession();
   }, []);
 
-  const ensureConversation = async () => {
+  const ensureConversation = async (includeMessage = false) => {
     if (loadingConv) return conversationId;
     setLoadingConv(true);
     const res = await fetch("/api/conversations/support", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, message: message.trim() || undefined })
+      body: JSON.stringify({ name, email, message: includeMessage ? message.trim() || undefined : undefined })
     });
     if (!res.ok) {
       setError(res.status === 401 ? "Inicia sesión para chatear" : "No se pudo iniciar el ticket");
@@ -74,12 +74,13 @@ export const ChatFloatButton = ({ href, label = "Centro de ayuda", phone = "+1 8
     }
     setStatus("sending");
     try {
-      const convId = conversationId ?? (await ensureConversation());
+      const guestMode = !session?.user?.id;
+      const convId = guestMode ? await ensureConversation(true) : conversationId ?? (await ensureConversation());
       if (!convId) {
         setStatus("idle");
         return;
       }
-      if (message.trim()) {
+      if (!guestMode && message.trim()) {
         const messageRes = await fetch("/api/messages", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -118,7 +119,7 @@ export const ChatFloatButton = ({ href, label = "Centro de ayuda", phone = "+1 8
 
       {open && (
         <div className="fixed bottom-20 right-6 z-50 w-80 rounded-2xl border border-green-600 bg-white shadow-2xl">
-          <div className="rounded-t-2xl bg-green-700 px-4 py-3 text-white">Centro de ayuda</div>
+          <div className="rounded-t-2xl bg-green-700 px-4 py-3 text-white">Soporte Proactivitis</div>
           <div className="space-y-3 px-4 py-4 text-sm text-slate-700">
             <div className="space-y-2 rounded-lg border border-slate-200 p-3">
               <div className="flex items-center justify-between">
@@ -142,7 +143,7 @@ export const ChatFloatButton = ({ href, label = "Centro de ayuda", phone = "+1 8
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Chat</p>
-                  <p className="text-sm text-slate-600">Habla con nuestro equipo</p>
+                  <p className="text-sm text-slate-600">Habla con el equipo de Proactivitis</p>
                 </div>
                 <button
                   type="button"

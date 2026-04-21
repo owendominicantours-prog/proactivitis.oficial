@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
+import { createNotification } from "@/lib/notificationService";
+import { sendEmail } from "@/lib/email";
+import { buildSupportChatReplyAdminEmail } from "@/lib/supportChatEmail";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -20,7 +23,18 @@ export async function POST(request: NextRequest) {
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
     include: {
-      ConversationParticipant: true
+      ConversationParticipant: {
+        include: {
+          User: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true
+            }
+          }
+        }
+      }
     }
   });
 
@@ -42,6 +56,44 @@ export async function POST(request: NextRequest) {
       content
     }
   });
+
+  if (conversation.type === "SUPPORT" && (session.user.role ?? "CUSTOMER") === "CUSTOMER") {
+    const senderParticipant = conversation.ConversationParticipant.find((item) => item.userId === session.user.id);
+    const requesterName = senderParticipant?.User?.name ?? session.user.name ?? "Cliente";
+    const requesterEmail = senderParticipant?.User?.email ?? session.user.email ?? "Sin email";
+    const adminParticipants = conversation.ConversationParticipant.filter((item) => item.User?.role === "ADMIN");
+
+    await Promise.all(
+      adminParticipants.map(async (adminParticipant) => {
+        await createNotification({
+          type: "ADMIN_SYSTEM_ALERT",
+          role: "ADMIN",
+          title: "Nuevo mensaje de soporte",
+          message: `${requesterName} envio un nuevo mensaje en el chat de ayuda.`,
+          metadata: {
+            conversationId,
+            requesterId: session.user.id,
+            requesterEmail,
+            referenceUrl: "/admin/chat"
+          },
+          recipientUserId: adminParticipant.userId
+        });
+
+        if (adminParticipant.User?.email) {
+          await sendEmail({
+            to: adminParticipant.User.email,
+            subject: `Nuevo mensaje de soporte de ${requesterName}`,
+            html: buildSupportChatReplyAdminEmail({
+              requesterName,
+              requesterEmail,
+              message: content,
+              conversationUrl: `${request.nextUrl.origin}/admin/chat`
+            })
+          });
+        }
+      })
+    );
+  }
 
   return NextResponse.json({ message });
 }
