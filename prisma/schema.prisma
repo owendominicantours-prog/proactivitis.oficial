@@ -276,9 +276,30 @@ model Tour {
   departureDestination   Destination?    @relation(fields: [departureDestinationId], references: [id])
   Booking                Booking[]
   Offer                  Offer[]
+  reviews                TourReview[]
   platformSharePercent   Int             @default(20)
   SupplierProfile        SupplierProfile @relation(fields: [supplierId], references: [id])
   AgencyProLinks         AgencyProLink[]
+}
+
+model TourReview {
+  id            String   @id @default(cuid())
+  tourId         String
+  bookingId      String?
+  userId         String?
+  customerName   String
+  customerEmail  String
+  title          String?
+  body           String   @db.Text
+  rating         Int
+  status         String   @default("PENDING")
+  locale         String   @default("es")
+  approvedAt     DateTime?
+  createdAt      DateTime @default(now())
+  Tour           Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@index([tourId, status])
+  @@index([status, createdAt])
 }
 
 model User {
