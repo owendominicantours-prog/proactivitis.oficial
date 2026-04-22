@@ -1,19 +1,28 @@
 import Image from "next/image";
 import Link from "next/link";
-import TourGalleryViewer from "@/components/shared/TourGalleryViewer";
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
-import { prisma } from "@/lib/prisma";
-import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
+
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
+import TourGalleryViewer from "@/components/shared/TourGalleryViewer";
+import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
+import { parseAdminItinerary, parseItinerary, type ItineraryStop } from "@/lib/itinerary";
+import { prisma } from "@/lib/prisma";
 
 type TourDetailProps = {
-  params: {
+  params: Promise<{
     slug?: string;
-  };
+  }>;
 };
 
-type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
+type PersistedTimeSlot = {
+  hour: number;
+  minute: string;
+  period: "AM" | "PM";
+};
+
+const SITE_URL = "https://proactivitis.com";
+const DEFAULT_IMAGE = "/fototours/fotosimple.jpg";
 
 const parseJsonArray = <T,>(value?: string | null): T[] => {
   if (!value) return [];
@@ -25,12 +34,17 @@ const parseJsonArray = <T,>(value?: string | null): T[] => {
 };
 
 const parseDuration = (value?: string | null) => {
-  if (!value) return { value: "4", unit: "Horas" };
+  if (!value) return { value: "4", unit: "horas" };
   try {
     return JSON.parse(value) as { value: string; unit: string };
   } catch {
-    return { value: value ?? "4", unit: "Horas" };
+    return { value, unit: "" };
   }
+};
+
+const formatDurationLabel = (value?: string | null) => {
+  const parsed = parseDuration(value);
+  return `${parsed.value}${parsed.unit ? ` ${parsed.unit}` : ""}`.trim();
 };
 
 const formatTimeSlot = (slot: PersistedTimeSlot) => {
@@ -38,79 +52,137 @@ const formatTimeSlot = (slot: PersistedTimeSlot) => {
   return `${slot.hour.toString().padStart(2, "0")}:${minute} ${slot.period}`;
 };
 
-const itineraryMock: ItineraryStop[] = [
+const parseGallery = (gallery?: string | null, heroImage?: string | null) => {
+  if (gallery) {
+    try {
+      const parsed = JSON.parse(gallery) as unknown[];
+      const urls = parsed.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+      if (urls.length) return urls;
+    } catch {
+      // ignore malformed gallery JSON
+    }
+  }
+  return [heroImage ?? DEFAULT_IMAGE];
+};
+
+const toAbsoluteUrl = (value?: string | null) => {
+  if (!value) return `${SITE_URL}${DEFAULT_IMAGE}`;
+  if (value.startsWith("http://") || value.startsWith("https://")) return value;
+  return `${SITE_URL}${value.startsWith("/") ? value : `/${value}`}`;
+};
+
+const buildVisibleFaqs = ({
+  title,
+  includes,
+  durationLabel,
+  pickup,
+  language,
+  minAge,
+  physicalLevel
+}: {
+  title: string;
+  includes: string[];
+  durationLabel: string;
+  pickup?: string | null;
+  language?: string | null;
+  minAge?: number | null;
+  physicalLevel?: string | null;
+}) => [
   {
-    time: "09:00",
-    title: "Pick-up",
-    description: "Recogida en el lobby de tu hotel para arrancar con energía."
+    question: `Que incluye ${title}?`,
+    answer: includes.length
+      ? `${title} incluye ${includes.join(", ")}.`
+      : `${title} incluye los servicios confirmados en tu reserva.`
   },
   {
-    time: "Ruta Safari",
-    title: "Ruta Safari",
-    description: "Recorrido por senderos de selva con paradas para fotos."
+    question: "Cuanto dura la experiencia?",
+    answer: `La actividad dura aproximadamente ${durationLabel}.`
   },
   {
-    time: "Cultura Local",
-    title: "Cultura Local",
-    description: "Degustación de café, cacao y tabaco en casa típica."
+    question: "Hay pickup o punto de encuentro?",
+    answer: pickup?.trim() || "El punto de encuentro se confirma antes de la salida."
   },
   {
-    time: "Cenote / Playa",
-    title: "Cenote / Playa",
-    description: "Parada para nadar y refrescarse en un entorno natural."
+    question: "En que idiomas opera el tour?",
+    answer: language?.trim() || "El idioma de la operacion se confirma al reservar."
   },
   {
-    time: "Regreso",
-    title: "Regreso",
-    description: "Traslado de vuelta al punto de origen."
+    question: "Que nivel fisico o edad minima se recomienda?",
+    answer: `El nivel recomendado es ${physicalLevel ?? "moderado"} y la edad minima indicada es ${
+      minAge ?? "segun la operacion"
+    }.`
   }
 ];
 
-const additionalInfo = [
-  "Confirmamos el punto exacto de encuentro con 24h de antelación.",
-  "No apto para personas con movilidad reducida.",
-  "No recomendado para embarazadas.",
-  "Sillas infantiles disponibles bajo solicitud.",
-  "Reserva confirmada desde 2 huéspedes."
-];
+async function getPublishedTourBySlug(slug: string) {
+  return prisma.tour.findFirst({
+    where: { slug, status: "published" },
+    include: {
+      SupplierProfile: {
+        include: {
+          User: {
+            select: { name: true }
+          }
+        }
+      },
+      departureDestination: {
+        include: {
+          country: true
+        }
+      }
+    }
+  });
+}
 
-const packingList = [
-  { icon: "👟", label: "Calzado cerrado", detail: "Protección en terrenos irregulares." },
-  { icon: "🕶️", label: "Gafas de sol", detail: "Ideal para brillo y brisa marina." },
-  { icon: "🧴", label: "Protector solar", detail: "Elige una opción biodegradable." },
-  { icon: "👕", label: "Ropa que se pueda ensuciar", detail: "Capas ligeras y cómodas." }
-];
+export async function generateMetadata({ params }: TourDetailProps): Promise<Metadata> {
+  const { slug } = await params;
+  if (!slug) return {};
 
-const reviewBreakdown = [
-  { label: "5 estrellas", percent: 90 },
-  { label: "4 estrellas", percent: 8 },
-  { label: "3 estrellas", percent: 1 },
-  { label: "2 estrellas", percent: 1 },
-  { label: "1 estrella", percent: 0 }
-];
+  const tour = await getPublishedTourBySlug(slug);
+  if (!tour) return {};
 
-const reviewHighlights = [
-  {
-    name: "Gabriela R.",
-    date: "Mayo 2025 · Verified traveler",
-    quote: "Guía excepcional, recorridos emocionantes y transporte muy cómodo.",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
-  },
-  {
-    name: "James T.",
-    date: "Abril 2025 · Verified traveler",
-    quote: "Muy bien organizado, adrenalina sin perder la seguridad y tiempo para fotos.",
-    avatar: "https://images.unsplash.com/photo-1504593811423-6dd665756598"
-  },
-  {
-    name: "Anna L.",
-    date: "Marzo 2025 · Verified traveler",
-    quote: "El viaje al cenote fue mágico y el equipo muy puntual.",
-    avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39"
-  }
-];
+  const canonical = `${SITE_URL}/tours/${tour.slug}`;
+  const description =
+    tour.shortDescription?.trim() ||
+    tour.description?.trim().slice(0, 160) ||
+    `Reserva ${tour.title} en Proactivitis.`;
+  const title = `${tour.title} | Proactivitis`;
+  const image = toAbsoluteUrl(tour.heroImage);
 
-const reviewTags = ["Excelente guía", "Mucha adrenalina", "Puntualidad"];
+  return {
+    title,
+    description,
+    alternates: {
+      canonical
+    },
+    robots: {
+      index: true,
+      follow: true
+    },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: canonical,
+      siteName: "Proactivitis",
+      locale: "es_DO",
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: tour.title
+        }
+      ]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image]
+    }
+  };
+}
 
 export default async function TourDetailPage({ params }: TourDetailProps) {
   const { slug } = await params;
@@ -125,6 +197,11 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
             select: { name: true }
           }
         }
+      },
+      departureDestination: {
+        include: {
+          country: true
+        }
       }
     }
   });
@@ -137,362 +214,387 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
 
   if (tour.status !== "published") notFound();
 
-  // --- Lógica de datos ---
-  const gallery = (tour.gallery ? JSON.parse(tour.gallery as string) : [tour.heroImage ?? "/fototours/fotosimple.jpg"]) as string[];
-  const includes = tour.includes ? tour.includes.split(";").map((i) => i.trim()).filter(Boolean) : ["Transporte", "Guía", "Almuerzo"];
-  const excludes = ["Propinas", "Bebidas", "Fotos"];
-  const categories = (tour.category ?? "").split(",").map((i) => i.trim()).filter(Boolean);
-  const languages = (tour.language ?? "").split(",").map((i) => i.trim()).filter(Boolean);
+  const gallery = parseGallery(tour.gallery, tour.heroImage);
+  const heroImage = tour.heroImage ?? gallery[0] ?? DEFAULT_IMAGE;
+  const includes = tour.includes
+    ? tour.includes
+        .split(";")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+  const excludes = ["Propinas", "Fotos o videos opcionales", "Extras no detallados"];
+  const languages = (tour.language ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const categories = (tour.category ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const durationLabel = formatDurationLabel(tour.duration);
   const timeSlots = parseJsonArray<PersistedTimeSlot>(tour.timeOptions);
-  const durationValue = parseDuration(tour.duration);
-  const durationLabel = `${durationValue.value} ${durationValue.unit}`;
-  const displayTime = timeSlots.length ? formatTimeSlot(timeSlots[0]) : "09:00 AM";
+  const departureTime = timeSlots.length ? formatTimeSlot(timeSlots[0]) : "Por confirmar";
   const parsedAdminItinerary = parseAdminItinerary(tour.adminNote ?? "");
-  const itinerarySource = parsedAdminItinerary.length ? parsedAdminItinerary : parseItinerary(tour.adminNote ?? "");
-  const visualTimeline = itinerarySource.length ? itinerarySource : itineraryMock;
-  const heroImage = tour.heroImage ?? gallery[0];
-  const priceLabel = `$${tour.price.toFixed(0)} USD`;
-  const needsReadMore = Boolean(tour.shortDescription && tour.shortDescription.length > 220);
+  const parsedItinerary = parsedAdminItinerary.length ? parsedAdminItinerary : parseItinerary(tour.adminNote ?? "");
+  const itinerary: ItineraryStop[] =
+    parsedItinerary.length > 0
+      ? parsedItinerary
+      : [
+          {
+            time: "Salida",
+            title: "Inicio de la experiencia",
+            description: "Recogida o encuentro segun la coordinacion final."
+          },
+          {
+            time: "Actividad",
+            title: "Desarrollo del tour",
+            description: "Experiencia guiada con paradas y puntos destacados del recorrido."
+          },
+          {
+            time: "Regreso",
+            title: "Cierre de la actividad",
+            description: "Fin del servicio y retorno al hotel o punto acordado."
+          }
+        ];
   const shortTeaser =
-    tour.shortDescription && tour.shortDescription.length > 220
-      ? `${tour.shortDescription.slice(0, 220).trim()}…`
-      : tour.shortDescription || "Explora esta aventura guiada por expertos locales.";
-
-  const quickInfo = [
-    {
-      label: "Duración",
-      value: durationLabel,
-      detail: "Experiencia guiada",
-      icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 7v5l3 2" />
-        </svg>
-      )
-    },
-    {
-      label: "Salida",
-      value: displayTime,
-      detail: "Encuentro en el lobby",
-      icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
-          <path d="M12 4a8 8 0 100 16 8 8 0 000-16Zm0 9V7" />
-          <path d="M12 12h4" />
-        </svg>
-      )
-    },
-    {
-      label: "Idiomas",
-      value: languages.length ? languages.join(", ") : "Por confirmar",
-      detail: languages.length ? `${languages.length} idiomas disponibles` : "Por confirmar",
-      icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
-          <path d="M4 6h16M4 12h16M4 18h16" />
-          <path d="M8 4c0 2.21-1.343 4-3 4M18 4c0 2.21 1.343 4 3 4" />
-        </svg>
-      )
-    },
-    {
-      label: "Capacidad",
-      value: `${tour.capacity ?? "15"} pers.`,
-      detail: "Grupos reducidos",
-      icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
-          <circle cx="8" cy="8" r="3" />
-          <circle cx="16" cy="8" r="3" />
-          <path d="M2 21c0-3.314 2.686-6 6-6h8c3.314 0 6 2.686 6 6" />
-        </svg>
-      )
-    }
-  ];
+    tour.shortDescription?.trim() ||
+    tour.description?.trim().slice(0, 220) ||
+    "Experiencia guiada con soporte local y reserva online.";
+  const priceLabel = tour.price > 0 ? `$${tour.price.toFixed(0)} USD` : "Precio por confirmar";
+  const faqs = buildVisibleFaqs({
+    title: tour.title,
+    includes,
+    durationLabel,
+    pickup: tour.pickup,
+    language: tour.language,
+    minAge: tour.minAge,
+    physicalLevel: tour.physicalLevel
+  });
+  const canonicalUrl = `${SITE_URL}/tours/${tour.slug}`;
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${SITE_URL}/#organization`,
+        name: "Proactivitis",
+        url: SITE_URL,
+        logo: {
+          "@type": "ImageObject",
+          url: `${SITE_URL}/logo.png`
+        },
+        image: `${SITE_URL}/logo.png`,
+        email: "info@proactivitis.com",
+        telephone: "+1-809-394-9877",
+        description:
+          "Proactivitis es una plataforma de experiencias, tours y traslados con reservas directas y soporte local."
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        url: SITE_URL,
+        name: "Proactivitis",
+        publisher: {
+          "@id": `${SITE_URL}/#organization`
+        },
+        inLanguage: "es"
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${canonicalUrl}#webpage`,
+        url: canonicalUrl,
+        name: tour.title,
+        isPartOf: {
+          "@id": `${SITE_URL}/#website`
+        },
+        description: shortTeaser,
+        primaryImageOfPage: {
+          "@id": `${canonicalUrl}#primaryimage`
+        },
+        breadcrumb: {
+          "@id": `${canonicalUrl}#breadcrumb`
+        },
+        inLanguage: "es"
+      },
+      {
+        "@type": "ImageObject",
+        "@id": `${canonicalUrl}#primaryimage`,
+        url: toAbsoluteUrl(heroImage),
+        contentUrl: toAbsoluteUrl(heroImage),
+        name: tour.title
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonicalUrl}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Inicio",
+            item: SITE_URL
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Tours",
+            item: `${SITE_URL}/tours`
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: tour.title,
+            item: canonicalUrl
+          }
+        ]
+      },
+      {
+        "@type": "Service",
+        "@id": `${canonicalUrl}#service`,
+        name: tour.title,
+        serviceType: categories[0] || "Tour",
+        provider: {
+          "@id": `${SITE_URL}/#organization`
+        },
+        areaServed: tour.departureDestination?.name || tour.location,
+        availableLanguage: languages.length ? languages : ["es"],
+        description: shortTeaser,
+        audience: {
+          "@type": "Audience",
+          audienceType: "Travelers"
+        },
+        offers: tour.price > 0 ? { "@id": `${canonicalUrl}#offer` } : undefined
+      },
+      {
+        "@type": "TouristTrip",
+        "@id": `${canonicalUrl}#trip`,
+        name: tour.title,
+        description: tour.description,
+        touristType: "Travelers",
+        provider: {
+          "@id": `${SITE_URL}/#organization`
+        },
+        itinerary: itinerary.map((stop, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: stop.title,
+          description: stop.description ?? stop.title
+        })),
+        offers: tour.price > 0 ? { "@id": `${canonicalUrl}#offer` } : undefined
+      },
+      ...(tour.price > 0
+        ? [
+            {
+              "@type": "Offer",
+              "@id": `${canonicalUrl}#offer`,
+              url: canonicalUrl,
+              priceCurrency: "USD",
+              price: tour.price.toFixed(2),
+              availability: "https://schema.org/InStock",
+              category: categories[0] || "Tour",
+              itemOffered: {
+                "@id": `${canonicalUrl}#service`
+              }
+            }
+          ]
+        : []),
+      {
+        "@type": "FAQPage",
+        "@id": `${canonicalUrl}#faq`,
+        mainEntity: faqs.map((item) => ({
+          "@type": "Question",
+          name: item.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: item.answer
+          }
+        }))
+      }
+    ]
+  };
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] text-slate-900 pb-24 overflow-x-hidden">
-      {/* Hero */}
-      <section className="mx-auto max-w-[1240px] px-4 pt-8 sm:pt-10">
-        <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">
-          <div className="flex flex-col justify-center gap-6 p-6 sm:p-8 lg:p-16">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
-              📍 {tour.location}
+    <div className="min-h-screen overflow-x-hidden bg-slate-50 pb-24 text-slate-900">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+
+      <section className="mx-auto max-w-6xl px-4 pt-8">
+        <div className="grid overflow-hidden rounded-[36px] border border-slate-200 bg-white shadow-[0_30px_70px_rgba(15,23,42,0.08)] lg:grid-cols-[1.1fr,0.9fr]">
+          <div className="flex flex-col justify-center gap-6 p-6 sm:p-8 lg:p-12">
+            <div className="flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-700">
+              <span className="rounded-full bg-sky-50 px-3 py-1">{tour.location}</span>
+              <span className="rounded-full bg-slate-100 px-3 py-1">{durationLabel}</span>
+              <span className="rounded-full bg-slate-100 px-3 py-1">{languages.join(" / ") || "Idioma por confirmar"}</span>
             </div>
-            <h1 className="mb-6 text-3xl font-black leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
-              {tour.title}
-            </h1>
-            <p className="mb-10 text-lg text-slate-500 leading-relaxed">{shortTeaser}</p>
-            <div className="flex items-center gap-8 border-t border-slate-100 pt-8">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Desde</p>
-                <p className="text-4xl font-black text-indigo-600">{priceLabel}</p>
+            <div className="space-y-4">
+              <h1 className="text-3xl font-semibold leading-tight text-slate-950 sm:text-4xl lg:text-5xl">
+                {tour.title}
+              </h1>
+              <p className="max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">{shortTeaser}</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Desde</p>
+                <p className="mt-2 text-2xl font-semibold text-slate-950">{priceLabel}</p>
               </div>
-              <div className="h-10 w-px bg-slate-200" />
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Rating</p>
-                <p className="text-xl font-black">⭐ 4.9</p>
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Salida</p>
+                <p className="mt-2 text-lg font-semibold text-slate-950">{departureTime}</p>
+              </div>
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Proveedor</p>
+                <p className="mt-2 text-lg font-semibold text-slate-950">
+                  {tour.SupplierProfile?.company ?? "Proveedor local"}
+                </p>
               </div>
             </div>
-            <div className="mt-10 flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-3">
               <Link
                 href="#booking"
-                className="rounded-2xl bg-indigo-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-indigo-100 transition-transform hover:scale-105 active:scale-95"
+                className="inline-flex items-center rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
               >
-                Reservar experiencia
+                Reservar ahora
               </Link>
               <Link
-                href="#gallery"
-                className="rounded-2xl border border-slate-200 bg-white px-8 py-4 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50"
+                href="#details"
+                className="inline-flex items-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
               >
-                Ver galería
+                Ver detalles
               </Link>
             </div>
           </div>
-          <div
-            className="h-[400px] lg:h-full bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${heroImage})`
-            }}
-          />
+
+          <div className="relative min-h-[320px] bg-slate-100 lg:min-h-full">
+            <Image
+              src={heroImage}
+              alt={tour.title}
+              fill
+              priority
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 via-transparent to-transparent" />
+          </div>
         </div>
       </section>
 
-      {/* Quick Info */}
-      <section className="mx-auto mt-10 max-w-[1240px] px-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {quickInfo.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
-            >
-              <span className="mb-3 block text-2xl">{item.icon}</span>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{item.label}</p>
-              <p className="text-sm font-black text-slate-900">{item.value}</p>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400 mt-2">{item.detail}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Main Grid */}
-      <main className="mx-auto mt-12 grid max-w-[1240px] gap-10 px-4 lg:grid-cols-[1fr,400px]">
-        <div className="space-y-10">
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
+      <main className="mx-auto mt-10 grid max-w-6xl gap-8 px-4 lg:grid-cols-[minmax(0,1fr),360px]">
+        <div className="space-y-8">
+          <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
             <TourGalleryViewer
-              images={gallery.map((img, index) => ({
-                url: img,
+              images={gallery.map((image, index) => ({
+                url: image,
                 label: `${tour.title} ${index + 1}`
               }))}
             />
           </section>
 
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resumen</p>
-                <h2 className="text-[20px] font-semibold text-slate-900">Visión general</h2>
-              </div>
-              {needsReadMore && (
-                <Link href="#full-description" className="text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">
-                  Leer más
-                </Link>
-              )}
-            </div>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">{shortTeaser}</p>
+          <section id="details" className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Resumen</p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">Vista general del tour</h2>
+            <p className="mt-4 text-sm leading-7 text-slate-600">{tour.description || shortTeaser}</p>
           </section>
 
-          <section id="full-description" className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Descripción</p>
-              <h2 className="text-[20px] font-semibold text-slate-900">Detalles completos</h2>
-            </div>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">
-              {tour.description || "La descripción completa estará disponible pronto."}
-            </p>
-          </section>
-
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
+          <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">Detalles</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">Información clave</h3>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Informacion clave</p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-950">Datos operativos</h2>
               </div>
-              <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">Categorías</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Listo para reservar</span>
             </div>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {[
-                { title: "Categorías", value: categories.join(", ") || "Premium" },
-                { title: "Idiomas", value: languages.join(", ") || "Español / Inglés" },
-                { title: "Capacidad", value: `${tour.capacity ?? 15} personas` },
-                { title: "Nivel físico", value: tour.physicalLevel ?? "Moderado" }
+                { label: "Duracion", value: durationLabel },
+                { label: "Ubicacion", value: tour.location || "Por confirmar" },
+                { label: "Idiomas", value: languages.join(", ") || "Por confirmar" },
+                { label: "Capacidad", value: `${tour.capacity ?? 0} personas`.replace(/^0 personas$/, "Segun operacion") },
+                { label: "Edad minima", value: tour.minAge ? `${tour.minAge}+` : "Consultar" },
+                { label: "Nivel fisico", value: tour.physicalLevel ?? "Moderado" },
+                { label: "Confirmacion", value: tour.confirmationType ?? "Segun disponibilidad" },
+                { label: "Pickup", value: tour.pickup?.trim() || "Se confirma al reservar" }
               ].map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-[16px] border border-[#F1F5F9] bg-white/40 px-4 py-3"
-                >
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-slate-500">
-                    {item.title}
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">{item.value}</p>
-                </div>
+                <article key={item.label} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{item.label}</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-900">{item.value}</p>
+                </article>
               ))}
             </div>
           </section>
 
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <h3 className="text-[16px] font-semibold text-slate-900">Incluye / No incluye</h3>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Incluye</p>
-                <div className="mt-3 space-y-2">
-                  {includes.map((item) => (
-                    <p key={item} className="flex items-center gap-2 text-sm font-semibold text-emerald-600">
-                      <span className="text-lg">✔︎</span>
-                      {item}
-                    </p>
-                  ))}
-                </div>
+          <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="text-2xl font-semibold text-slate-950">Incluye y no incluye</h2>
+            <div className="mt-5 grid gap-5 md:grid-cols-2">
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-700">Incluye</p>
+                <ul className="mt-4 space-y-3">
+                  {includes.length ? (
+                    includes.map((item) => (
+                      <li key={item} className="flex gap-3 text-sm text-slate-700">
+                        <span className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                        <span>{item}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-sm text-slate-600">Se detalla al confirmar la reserva.</li>
+                  )}
+                </ul>
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">No incluye</p>
-                <div className="mt-3 space-y-2">
+              <div className="rounded-2xl border border-rose-100 bg-rose-50/60 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-rose-700">No incluye</p>
+                <ul className="mt-4 space-y-3">
                   {excludes.map((item) => (
-                    <p key={item} className="flex items-center gap-2 text-sm font-semibold text-rose-500">
-                      <span className="text-lg">✘</span>
-                      {item}
-                    </p>
+                    <li key={item} className="flex gap-3 text-sm text-slate-700">
+                      <span className="mt-1 h-2.5 w-2.5 rounded-full bg-rose-500" />
+                      <span>{item}</span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
             </div>
           </section>
 
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
+          <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Itinerario</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">Línea de tiempo</h3>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Itinerario</p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-950">Paso a paso</h2>
               </div>
-              <span className="text-[0.65rem] uppercase tracking-[0.4em] text-slate-400">Paso a paso</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Operacion</span>
             </div>
-            <div className="relative mt-4 pl-0 lg:pl-10">
-              <div className="absolute left-4 top-0 bottom-0 w-px border-l-2 border-dashed border-slate-200" />
-              <div className="space-y-5">
-                {visualTimeline.map((stop, index) => (
-                  <div key={`${stop.title}-${index}`} className="relative flex gap-4">
-                    <div className="flex flex-col items-center">
-                      <span className="h-3 w-3 rounded-full bg-indigo-600" />
-                      {index !== visualTimeline.length - 1 && <span className="mt-2 h-6 w-px bg-slate-200" />}
-                    </div>
-                    <div className="flex-1 rounded-[16px] border border-[#F1F5F9] bg-white/70 px-4 py-3">
-                      <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{stop.time}</p>
-                      <p className="mt-1 text-[16px] font-semibold text-slate-900">{stop.title}</p>
-                      <p className="mt-1 text-sm text-slate-600">{stop.description ?? "Detalle próximamente."}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Prueba social</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">Opiniones</h3>
-              </div>
-              <div className="text-xs uppercase tracking-[0.3em] text-slate-400">⭐ 4.9 · 1,230 reseñas</div>
-            </div>
-            <div className="mt-4 grid gap-6 lg:grid-cols-[1.2fr,1fr]">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <p className="text-4xl font-semibold text-slate-900">4.9</p>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">de 5</p>
-                </div>
-                <div className="space-y-3 text-sm text-slate-600">
-                  {reviewBreakdown.map((item) => (
-                    <div key={item.label} className="flex items-center gap-3">
-                      <span className="w-24 text-xs text-slate-500">{item.label}</span>
-                      <div className="relative flex-1 overflow-hidden rounded-full bg-slate-100">
-                        <span
-                          className="block h-2 rounded-full bg-emerald-500"
-                          style={{ width: `${item.percent}%` }}
-                        />
-                      </div>
-                      <span className="ml-2 text-xs font-semibold text-slate-500">{item.percent}%</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
-                  {reviewTags.map((tag) => (
-                    <span key={tag} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
-                      {tag}
+            <div className="mt-6 space-y-4">
+              {itinerary.map((stop, index) => (
+                <article key={`${stop.title}-${index}`} className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="inline-flex rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white">
+                      {stop.time || `Paso ${index + 1}`}
                     </span>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-4">
-                {reviewHighlights.map((review) => (
-                  <div key={review.name} className="rounded-[16px] border border-[#F1F5F9] bg-white p-4 shadow-sm">
-                    <div className="flex items-center gap-3">
-                      <Image
-                        src={review.avatar}
-                        alt={review.name}
-                        width={48}
-                        height={48}
-                        className="h-12 w-12 rounded-full object-cover"
-                      />
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">{review.name}</p>
-                        <p className="text-xs text-slate-500">{review.date}</p>
-                      </div>
-                    </div>
-                    <p className="mt-2 text-sm text-slate-600">{review.quote}</p>
+                    <h3 className="text-lg font-semibold text-slate-950">{stop.title}</h3>
                   </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Prepárate</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">Qué llevar</h3>
-              </div>
-              <span className="text-xs uppercase tracking-[0.35em] text-slate-400">Consejos</span>
-            </div>
-            <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-              {packingList.map((item) => (
-                <div
-                  key={item.label}
-                  className="flex min-w-[140px] flex-col items-center gap-2 rounded-[16px] border border-[#F1F5F9] bg-white/0 px-3 py-4 text-center"
-                >
-                  <span className="text-2xl">{item.icon}</span>
-                  <p className="text-sm font-semibold text-slate-900">{item.label}</p>
-                  <p className="text-xs text-slate-500">{item.detail}</p>
-                </div>
+                  <p className="mt-3 text-sm leading-7 text-slate-600">{stop.description || "Detalle por confirmar."}</p>
+                </article>
               ))}
             </div>
           </section>
 
-          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Extras</p>
-              <h3 className="text-[16px] font-semibold text-slate-900">Información adicional</h3>
-            </div>
-            <ul className="mt-3 space-y-2 text-sm text-slate-600">
-              {additionalInfo.map((info) => (
-                <li key={info} className="flex items-start gap-3">
-                  <span className="mt-1 h-2 w-2 rounded-full bg-slate-400" />
-                  <span>{info}</span>
-                </li>
+          <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">FAQ</p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">Preguntas frecuentes</h2>
+            <div className="mt-5 space-y-4">
+              {faqs.map((item) => (
+                <article key={item.question} className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                  <h3 className="text-base font-semibold text-slate-950">{item.question}</h3>
+                  <p className="mt-2 text-sm leading-7 text-slate-600">{item.answer}</p>
+                </article>
               ))}
-            </ul>
+            </div>
           </section>
         </div>
 
-        <aside className="space-y-6 lg:w-[400px] w-full">
-          <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva</p>
-            <h3 className="mt-2 text-2xl font-bold text-slate-900">Confirma tu cupo</h3>
+        <aside className="space-y-6">
+          <div id="booking" className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-lg">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Reserva</p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">Confirma tu fecha</h2>
             <TourBookingWidget
               tourId={tour.id}
               basePrice={tour.price}
@@ -502,11 +604,21 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
               tourTitle={tour.title}
               tourImage={heroImage}
             />
-            <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-600">
-              <p className="font-semibold text-slate-900">
+            <div className="mt-5 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-600">
+              <p className="font-semibold text-slate-950">
                 {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Proveedor local"}
               </p>
-              <p>Operado por expertos en la región.</p>
+              <p className="mt-1">Operado en {tour.departureDestination?.name || tour.location || "el destino seleccionado"}.</p>
+            </div>
+          </div>
+
+          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Politicas</p>
+            <h2 className="mt-2 text-xl font-semibold text-slate-950">Requisitos y notas</h2>
+            <div className="mt-4 space-y-3 text-sm text-slate-600">
+              <p>{tour.requirements?.trim() || "Sigue las indicaciones del operador y lleva documento valido si aplica."}</p>
+              <p>{tour.cancellationPolicy?.trim() || "Las condiciones de cancelacion se confirman antes del pago."}</p>
+              {tour.terms?.trim() ? <p>{tour.terms.trim()}</p> : null}
             </div>
           </div>
         </aside>
