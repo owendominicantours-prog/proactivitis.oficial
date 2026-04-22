@@ -180,6 +180,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentOption, setPaymentOption] = useState<"now" | "later">("now");
   const [activePaymentMethod, setActivePaymentMethod] = useState<PaymentMethodId>("card");
+  const completedSteps = [
+    activeStep > 0,
+    activeStep > 1,
+    Boolean(paymentOption === "later" ? bookingId : paymentFeedback && !paymentLoading)
+  ];
 
   const displayAmount = Number.isFinite(summary.totalPrice)
     ? `$${summary.totalPrice.toFixed(2)} USD`
