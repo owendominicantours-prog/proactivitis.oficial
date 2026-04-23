@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { buildBookingDetailRoute } from "@/lib/bookingRoutes";
 import {
+  deleteNotificationForRecipient,
   markNotificationReadForRecipient,
   parseNotificationMetadata
 } from "@/lib/notificationService";
@@ -59,4 +60,39 @@ export async function markNotificationReadAction(formData: FormData) {
   });
 
   redirect(bookingRoute);
+}
+
+export async function deleteNotificationAction(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    throw new Error("Debes iniciar sesión para gestionar notificaciones.");
+  }
+
+  const notificationId = formData.get("notificationId");
+  if (!notificationId || typeof notificationId !== "string") {
+    throw new Error("Selecciona una notificación válida.");
+  }
+
+  const deleted = await deleteNotificationForRecipient(notificationId, {
+    role: session.user.role as NotificationRole | undefined,
+    userId: session.user.id
+  });
+
+  if (!deleted) {
+    throw new Error("No tienes acceso a esta notificación.");
+  }
+
+  const returnTo = formData.get("returnTo");
+  const fallback = buildNotificationCenterRoute(session.user.role);
+  if (
+    returnTo &&
+    typeof returnTo === "string" &&
+    returnTo.trim() &&
+    returnTo.startsWith("/") &&
+    !returnTo.startsWith("//")
+  ) {
+    redirect(returnTo);
+  }
+
+  redirect(fallback);
 }

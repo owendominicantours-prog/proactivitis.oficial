@@ -360,3 +360,17 @@ export async function markNotificationReadForRecipient(
 
   return notification;
 }
+
+export async function deleteNotificationForRecipient(
+  notificationId: string,
+  recipient: NotificationRecipient
+) {
+  const notification = await getNotificationForRecipient(notificationId, recipient);
+  if (!notification) return null;
+
+  await prisma.notification.delete({
+    where: { id: notificationId }
+  });
+
+  return notification;
+}
