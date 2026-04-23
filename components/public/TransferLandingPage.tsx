@@ -32,6 +32,8 @@ const DEFAULT_AIRPORT_NAME = "Punta Cana International Airport (PUJ)";
 const BASE_URL = "https://proactivitis.com";
 const FALLBACK_PRICE = 44;
 const FALLBACK_HERO_IMAGE = "/transfer/mini van.png";
+const TRANSFER_HEADER_BANNER =
+  "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
 const DEFAULT_ORIGIN_LABELS: Record<Locale, string> = {
   es: "Aeropuerto de Punta Cana (PUJ)",
   en: "Punta Cana Airport (PUJ)",
@@ -912,7 +914,7 @@ export async function TransferLandingPage({
   const initialVisibleTransferReviews = 7;
   const transferReviewAverage = Math.round(transferReviewSummary.average * 10) / 10;
   const canonicalUrl = buildCanonical(landing.landingSlug, locale);
-  const primaryImageUrl = toAbsoluteImageUrl(localizedLanding.heroImage);
+  const primaryImageUrl = TRANSFER_HEADER_BANNER;
   const transferArea = detectTransferArea(landing.hotelSlug, localizedLanding.hotelName, locale);
   const travelerProfile = detectTransferProfile(landing.hotelSlug, localizedLanding.hotelName);
   const otherLandings = allLandings()
@@ -1227,7 +1229,7 @@ export async function TransferLandingPage({
           </div>
           <div className="relative h-[420px] overflow-hidden rounded-[36px] border border-white/70 shadow-[0_35px_90px_rgba(15,23,42,0.12)]">
             <Image
-              src={localizedLanding.heroImage}
+              src={TRANSFER_HEADER_BANNER}
               alt={localizedLanding.heroImageAlt}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
