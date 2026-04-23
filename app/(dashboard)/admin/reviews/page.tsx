@@ -18,7 +18,7 @@ export default async function AdminReviewsPage() {
         }
       }
     },
-    orderBy: [{ status: "asc" }, { reviewDate: "desc" }, { createdAt: "desc" }]
+    orderBy: [{ status: "asc" }, { approvedAt: "desc" }, { createdAt: "desc" }]
   });
 
   const pendingCount = reviews.filter((review) => review.status === "PENDING").length;
