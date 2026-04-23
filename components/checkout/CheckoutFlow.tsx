@@ -1160,15 +1160,15 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[2.2fr_1fr]">
 
-        <section className="space-y-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-xl">
+        <section className="space-y-6 rounded-3xl border border-slate-300 bg-white p-6 shadow-xl">
 
           <header className="space-y-2">
 
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-400">{t("checkout.hero.tagline")}</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-700">{t("checkout.hero.tagline")}</p>
 
             <h1 className="text-3xl font-semibold text-slate-900">{t("checkout.hero.title")}</h1>
 
-            <p className="text-sm text-slate-600">{t("checkout.hero.description")}</p>
+            <p className="text-sm text-slate-800">{t("checkout.hero.description")}</p>
             <TrustBadges locale={locale} compact className="pt-4" />
 
           </header>
@@ -1225,23 +1225,23 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
           <div className="space-y-6">
 
-            <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <article className="overflow-hidden rounded-2xl border border-slate-400 bg-white">
 
-                  <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
+                  <div className="flex items-center justify-between border-b border-slate-500 bg-slate-100 px-5 py-4">
 
                     <div>
 
-                      <p className="text-xs uppercase tracking-[0.4em] text-slate-400">{t("checkout.step.contact")}</p>
+                      <p className="text-xs uppercase tracking-[0.4em] text-slate-700">{t("checkout.step.contact")}</p>
 
                       <p className="text-lg font-semibold text-slate-900">{t("checkout.section.contact.heading")}</p>
 
-                      <p className="mt-1 text-sm text-slate-500">
+                      <p className="mt-1 text-sm text-slate-700">
                         {isAgencyCheckout
                           ? "Completa aqui los datos del cliente final. El telefono del cliente es opcional."
                           : "Usa los datos del viajero principal o de la persona responsable de la reserva."}
                       </p>
 
-                      {contactSummary && <p className="text-sm text-slate-500">{contactSummary}</p>}
+                      {contactSummary && <p className="text-sm text-slate-700">{contactSummary}</p>}
 
                     </div>
 
@@ -1274,7 +1274,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                     {contactFields.map((field) => (
 
-                      <label key={field.key} className="space-y-1 text-xs uppercase tracking-[0.3em] text-slate-500">
+                      <label key={field.key} className="space-y-1 text-xs uppercase tracking-[0.3em] text-slate-700">
 
                         <span>{field.label}</span>
 
@@ -1292,7 +1292,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                           className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
 
-                            errors[field.key] ? "border-rose-500 ring-2 ring-rose-100" : "border-slate-200"
+                            errors[field.key] ? "border-rose-500 ring-2 ring-rose-100" : "border-slate-400"
 
                           }`}
 
@@ -1308,9 +1308,9 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <div className="space-y-1">
 
-                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500" htmlFor="phone">
+                    <label className="text-xs uppercase tracking-[0.3em] text-slate-700" htmlFor="phone">
 
-                      {t("checkout.contact.phone.label")} <span className="normal-case tracking-normal text-slate-400">(opcional)</span>
+                      {t("checkout.contact.phone.label")} <span className="normal-case tracking-normal text-slate-700">(opcional)</span>
 
                     </label>
 
@@ -1328,7 +1328,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                         }}
 
-                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm sm:w-36"
+                        className="w-full rounded-2xl border border-slate-400 bg-slate-50 px-3 py-3 text-sm sm:w-36"
 
                       >
 
@@ -1358,7 +1358,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                         className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
 
-                          errors.phone ? "border-rose-500 ring-2 ring-rose-100" : "border-slate-200"
+                          errors.phone ? "border-rose-500 ring-2 ring-rose-100" : "border-slate-400"
 
                         }`}
 
@@ -1368,7 +1368,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                     {errors.phone && <p className="text-xs text-rose-500">{errors.phone}</p>}
                     {!errors.phone && (
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-700">
                         {isAgencyCheckout
                           ? "Si la agencia no tiene el telefono del cliente en este momento, puede continuar sin completarlo."
                           : "Puedes dejar este campo vacio y completar el telefono mas adelante si hace falta."}
@@ -1379,7 +1379,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   {isTransferFlow && (
                     <div className="space-y-2">
-                      <label htmlFor="flightNumber" className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                      <label htmlFor="flightNumber" className="text-xs uppercase tracking-[0.3em] text-slate-700">
                         {t("checkout.flightNumber.label")}
                       </label>
                       <input
@@ -1387,9 +1387,9 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                         value={flightNumber}
                         onChange={(event) => setFlightNumber(event.target.value)}
                         placeholder="PUJ 123"
-                        className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                        className="w-full rounded-2xl border border-slate-400 px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                       />
-                      <p className="text-xs text-slate-500">{t("checkout.flightNumber.help")}</p>
+                      <p className="text-xs text-slate-700">{t("checkout.flightNumber.help")}</p>
                     </div>
                   )}
                   <div className="flex justify-end">
@@ -1417,19 +1417,19 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
               </article>
 
 
-            <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <article className="overflow-hidden rounded-2xl border border-slate-400 bg-white">
 
-                <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
+                <div className="flex items-center justify-between border-b border-slate-500 bg-slate-100 px-5 py-4">
 
                   <div>
 
-                    <p className="text-xs uppercase tracking-[0.4em] text-slate-400">{t("checkout.step.details")}</p>
+                    <p className="text-xs uppercase tracking-[0.4em] text-slate-700">{t("checkout.step.details")}</p>
 
                     <p className="text-lg font-semibold text-slate-900">
                       {isTransferFlow ? t("checkout.details.transferHeading") : t("checkout.details.activityHeading")}
                     </p>
 
-                    {travelerSummary && <p className="text-sm text-slate-500">{travelerSummary}</p>}
+                    {travelerSummary && <p className="text-sm text-slate-700">{travelerSummary}</p>}
 
                   </div>
 
@@ -1460,7 +1460,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <div className="space-y-2">
 
-                    <label htmlFor="travelerName" className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                    <label htmlFor="travelerName" className="text-xs uppercase tracking-[0.3em] text-slate-700">
 
                       {t("checkout.details.mainTraveler")}
 
@@ -1478,7 +1478,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                       className={`w-full rounded-2xl border px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${
 
-                        errors.travelerName ? "border-rose-500" : "border-slate-200"
+                        errors.travelerName ? "border-rose-500" : "border-slate-400"
 
                       }`}
 
@@ -1490,7 +1490,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <div className="space-y-2">
 
-                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("checkout.details.pickupPoint")}</p>
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-700">{t("checkout.details.pickupPoint")}</p>
 
                     <div className="grid gap-3 md:grid-cols-2">
 
@@ -1498,7 +1498,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                         className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
 
-                          pickupPreference === "pickup" ? "border-[#008768] bg-emerald-50" : "border-slate-200"
+                          pickupPreference === "pickup" ? "border-[#008768] bg-emerald-50" : "border-slate-400"
 
                         }`}
 
@@ -1524,7 +1524,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                         className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
 
-                          pickupPreference === "later" ? "border-[#008768] bg-emerald-50" : "border-slate-200"
+                          pickupPreference === "later" ? "border-[#008768] bg-emerald-50" : "border-slate-400"
 
                         }`}
 
@@ -1552,13 +1552,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                       <div className="space-y-2">
 
-                        <label htmlFor="pickupLocation" className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                        <label htmlFor="pickupLocation" className="text-xs uppercase tracking-[0.3em] text-slate-700">
 
                           {t("checkout.details.pickupLocation.label")}
 
                         </label>
 
-                        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm">
+                        <div className="flex items-center gap-2 rounded-2xl border border-slate-400 bg-white px-4 py-3 text-sm">
 
                           <MapPin className="h-5 w-5 text-emerald-500" />
 
@@ -1588,7 +1588,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <div className="grid gap-4 md:grid-cols-2">
 
-                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("checkout.details.language.label")}</label>
+                    <label className="text-xs uppercase tracking-[0.3em] text-slate-700">{t("checkout.details.language.label")}</label>
 
                     <select
 
@@ -1596,7 +1596,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                       onChange={(event) => setLanguage(event.target.value)}
 
-                      className="rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      className="rounded-2xl border border-slate-400 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
 
                     >
 
@@ -1616,7 +1616,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <div className="space-y-2">
 
-                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("checkout.details.specialRequirements.label")}</label>
+                    <label className="text-xs uppercase tracking-[0.3em] text-slate-700">{t("checkout.details.specialRequirements.label")}</label>
 
                     <textarea
 
@@ -1628,7 +1628,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                       placeholder={t("checkout.details.specialRequirements.placeholder")}
 
-                      className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      className="w-full rounded-2xl border border-slate-400 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
 
                     />
 
@@ -1671,17 +1671,17 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
               )}
 
               </article>
-            <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <article className="overflow-hidden rounded-2xl border border-slate-400 bg-white">
 
-              <div className="flex items-center justify-between bg-slate-100 px-5 py-4">
+              <div className="flex items-center justify-between border-b border-slate-500 bg-slate-100 px-5 py-4">
 
                 <div>
 
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">{t("checkout.step.payment")}</p>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-700">{t("checkout.step.payment")}</p>
 
                   <p className="text-lg font-semibold text-slate-900">{t("checkout.section.payment.heading")}</p>
 
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-700">
                     {t("checkout.summary.tripMeta", {
                       travelers: summary.totalTravelers,
                       date: summary.date,
@@ -1716,7 +1716,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                 <div className="space-y-4 px-5 pb-6 pt-6">
 
-                  <div className="rounded-2xl border border-slate-200 bg-[#F8FAFC] p-4 text-sm text-slate-600">
+                  <div className="rounded-2xl border border-slate-500 bg-[#F8FAFC] p-4 text-sm text-slate-800 shadow-[inset_0_1px_0_rgba(15,23,42,0.08)]">
 
                     <p className="text-sm font-semibold text-slate-900">{t("checkout.payment.summaryHeading")}</p>
 
@@ -1730,7 +1730,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                     </p>
 
-                    <p className="text-slate-400">
+                    <p className="text-slate-700">
                       {t("checkout.payment.provisionalPrefix")}
                       {bookingId ?? t("checkout.payment.provisionalPending")}
                     </p>
@@ -1744,13 +1744,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                       <p className="mt-2 text-sm font-semibold text-slate-900">
                         {savedPayment.brand ?? "Metodo"} • •••• {savedPayment.last4 ?? "0000"}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-700">
                         Tu metodo esta listo para usar en esta reserva.
                       </p>
                     </div>
                   )}
 
-                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <div className="rounded-2xl border border-slate-400 bg-white p-6 shadow-sm">
 
                     {!stripePromise && (
                       <p className="text-sm text-rose-500">{t("checkout.payment.stripeMissing")}</p>
@@ -1824,7 +1824,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
           <div className="space-y-6 lg:sticky lg:top-8">
 
-            <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-lg">
+            <div className="rounded-3xl border-2 border-slate-400 bg-white p-5 shadow-lg">
 
               <div className="flex items-center gap-3 rounded-2xl bg-pink-50 px-3 py-2 text-sm font-semibold text-rose-600">
 
@@ -1834,7 +1834,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
               </div>
 
-              <div className="mt-4 flex items-center gap-3 border-b border-slate-100 pb-4">
+              <div className="mt-4 flex items-center gap-3 border-b border-slate-300 pb-4">
 
                 <Image
 
@@ -1852,7 +1852,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                 <div>
 
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-700">
 
                     {isTransferFlow ? t("checkout.summary.type.transfer") : t("checkout.summary.type.tour")}
 
@@ -1865,7 +1865,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   {isTransferFlow && (
 
-                    <p className="text-[11px] uppercase tracking-[0.4em] text-slate-500">
+                    <p className="text-[11px] uppercase tracking-[0.4em] text-slate-700">
 
                     {summary.originHotelName ?? t("checkout.summary.defaultHotel")}
 
@@ -1877,13 +1877,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
               </div>
 
-              <div className="space-y-3 text-sm text-slate-600">
+              <div className="space-y-3 text-sm text-slate-800">
 
                 <div className="flex items-center justify-between">
 
                   <span className="flex items-center gap-2">
 
-                    <Users className="h-5 w-5 text-slate-400" /> {t("checkout.summary.persons")}
+                    <Users className="h-5 w-5 text-slate-700" /> {t("checkout.summary.persons")}
 
                   </span>
 
@@ -1902,7 +1902,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <span className="flex items-center gap-2">
 
-                    <CalendarCheck className="h-5 w-5 text-slate-400" /> {t("checkout.summary.date")}
+                    <CalendarCheck className="h-5 w-5 text-slate-700" /> {t("checkout.summary.date")}
 
                   </span>
 
@@ -1914,7 +1914,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                   <span className="flex items-center gap-2">
 
-                    <Clock3 className="h-5 w-5 text-slate-400" /> {t("checkout.summary.time")}
+                    <Clock3 className="h-5 w-5 text-slate-700" /> {t("checkout.summary.time")}
 
                   </span>
 
@@ -1925,13 +1925,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                   <>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-2">
-                        <Clock3 className="h-5 w-5 text-slate-400" /> Trayecto
+                        <Clock3 className="h-5 w-5 text-slate-700" /> Trayecto
                       </span>
                       <strong>{summary.tripType === "round-trip" ? "Ida y vuelta" : "Solo ida"}</strong>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5 text-slate-400" /> {t("checkout.summary.origin")}
+                        <MapPin className="h-5 w-5 text-slate-700" /> {t("checkout.summary.origin")}
                       </span>
                         <strong>
                           {summary.originLabel ?? summary.origin ?? t("checkout.summary.originFallback")}
@@ -1939,7 +1939,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="flex items-center gap-2">
-                          <MapPin className="h-5 w-5 text-slate-400" /> {t("checkout.summary.destination")}
+                          <MapPin className="h-5 w-5 text-slate-700" /> {t("checkout.summary.destination")}
                         </span>
                         <strong>{summary.originHotelName ?? t("checkout.summary.defaultHotel")}</strong>
                     </div>
@@ -1947,13 +1947,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                       <>
                         <div className="flex items-center justify-between">
                           <span className="flex items-center gap-2">
-                            <CalendarCheck className="h-5 w-5 text-slate-400" /> Regreso
+                            <CalendarCheck className="h-5 w-5 text-slate-700" /> Regreso
                           </span>
                           <strong>{returnDateLabel ?? "Pendiente"}</strong>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="flex items-center gap-2">
-                            <Clock3 className="h-5 w-5 text-slate-400" /> Hora regreso
+                            <Clock3 className="h-5 w-5 text-slate-700" /> Hora regreso
                           </span>
                           <strong>{returnTimeLabel ?? "Pendiente"}</strong>
                         </div>
@@ -1976,13 +1976,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
               </div>
 
-              <div className="mt-4 rounded-3xl border border-slate-200 bg-gray-50 p-5 text-slate-900 shadow-sm">
+              <div className="mt-4 rounded-3xl border-2 border-slate-500 bg-gray-50 p-5 text-slate-900 shadow-sm">
 
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{t("checkout.summary.priceLabel")}</p>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-700">{t("checkout.summary.priceLabel")}</p>
 
                 <p className="text-3xl font-semibold text-slate-900">{displayAmount}</p>
 
-                <p className="mt-1 text-[13px] text-slate-500">{perPersonLabel}</p>
+                <p className="mt-1 text-[13px] text-slate-800">{perPersonLabel}</p>
                 {isAgencyCheckout && !summary.agencyLink && summary.agencyDirectPercent > 0 ? (
                   <p className="mt-2 text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
                     Tarifa neta agencia aplicada: {summary.agencyDirectPercent}%
@@ -1991,7 +1991,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
               </div>
 
-              <div className="mt-4 space-y-3 rounded-2xl border border-dashed border-slate-200 p-4 text-xs text-slate-500">
+              <div className="mt-4 space-y-3 rounded-2xl border-2 border-dashed border-slate-500 p-4 text-xs text-slate-800">
 
                 <div className="flex items-center gap-2">
 
@@ -2005,9 +2005,9 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
                 </div>
 
-                <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.4em] text-slate-400">
+                <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.4em] text-slate-700">
 
-                  <Globe className="h-4 w-4 text-slate-400" /> {t("checkout.summary.globalInfrastructure")}
+                  <Globe className="h-4 w-4 text-slate-700" /> {t("checkout.summary.globalInfrastructure")}
 
                 </div>
 
@@ -2227,7 +2227,7 @@ const PaymentForm = memo(function PaymentForm({
 
           onChange={(event) => setPaymentEmailField(event.target.value)}
 
-          className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+          className="w-full rounded-2xl border border-slate-400 px-4 py-3 text-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
 
           placeholder={t("checkout.paymentForm.emailPlaceholder")}
 
@@ -2240,20 +2240,20 @@ const PaymentForm = memo(function PaymentForm({
       <div className="space-y-4">
 
         {savedPaymentMethodId && (
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Metodo de pago</p>
+          <div className="rounded-2xl border border-slate-400 bg-slate-50 p-3">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-700">Metodo de pago</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => setUseSavedMethod(true)}
-                className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] ${useSavedMethod ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-500"}`}
+                className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] ${useSavedMethod ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-400 text-slate-700"}`}
               >
                 Usar metodo guardado
               </button>
               <button
                 type="button"
                 onClick={() => setUseSavedMethod(false)}
-                className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] ${!useSavedMethod ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-500"}`}
+                className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] ${!useSavedMethod ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-400 text-slate-700"}`}
               >
                 Nuevo metodo
               </button>
@@ -2271,7 +2271,7 @@ const PaymentForm = memo(function PaymentForm({
 
               key={method.id}
 
-              className={`overflow-hidden rounded-2xl border transition ${isActive ? "border-[#008768]" : "border-slate-200"}`}
+              className={`overflow-hidden rounded-2xl border transition ${isActive ? "border-[#008768]" : "border-slate-400"}`}
 
             >
 
@@ -2293,7 +2293,7 @@ const PaymentForm = memo(function PaymentForm({
 
                     <p className="font-semibold text-slate-900">{method.label}</p>
 
-                    <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{method.description}</p>
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-700">{method.description}</p>
 
                   </div>
 
@@ -2311,14 +2311,14 @@ const PaymentForm = memo(function PaymentForm({
 
                   {method.id === "card" ? (
 
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className="rounded-2xl border border-slate-400 bg-white p-4 shadow-sm">
                       {useSavedMethod && savedPaymentMethodId ? (
                         <div className="space-y-2 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm text-slate-700">
                           <p className="font-semibold text-slate-900">Usaremos tu tarjeta guardada en Stripe.</p>
                           <p className="text-sm font-semibold text-slate-900">
                             Confirmarás con la tarjeta guardada sin volver a escribir los datos.
                           </p>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-slate-700">
                             No necesitas volver a escribir la tarjeta para esta reserva.
                           </p>
                         </div>
@@ -2370,7 +2370,7 @@ const PaymentForm = memo(function PaymentForm({
 
           onChange={(event) => setPaymentCountry(event.target.value)}
 
-          className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+          className="w-full rounded-2xl border border-slate-400 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
 
           placeholder={t("checkout.paymentForm.countryPlaceholder")}
 
