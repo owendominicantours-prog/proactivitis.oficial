@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import TransferHeroNotices from "@/components/public/TransferHeroNotices";
 import TrasladoSearch, { LocationOption } from "@/components/traslado/TrasladoSearch";
 import TrasladoSearchV2 from "@/components/traslado/TrasladoSearchV2";
-import TransferHeroNotices from "@/components/public/TransferHeroNotices";
 import { prisma } from "@/lib/prisma";
 import { getTransferPointsForCountry, TransferPointOption } from "@/lib/transfers";
 import { Locale, translate } from "@/lib/translations";
@@ -31,6 +31,7 @@ const PUNTA_CANA_TRANSFER_LINKS = [
   { slug: "punta-cana-international-airport-to-dreams-onyx", labelKey: "transfer.links.item.9" },
   { slug: "punta-cana-international-airport-to-breathless-punta-cana", labelKey: "transfer.links.item.10" }
 ] as const;
+
 type Props = {
   locale: Locale;
   heroTitleOverride?: string;
@@ -53,7 +54,8 @@ export default async function PublicTransferPage({
     locale === "es"
       ? "/punta-cana/premium-transfer-services"
       : `/${locale}/punta-cana/premium-transfer-services`;
-  const proDiscoveryTransfersHref = locale === "es" ? "/prodiscovery?type=transfer" : `/${locale}/prodiscovery?type=transfer`;
+  const proDiscoveryTransfersHref =
+    locale === "es" ? "/prodiscovery?type=transfer" : `/${locale}/prodiscovery?type=transfer`;
   const transferHref = (slug: string) => (locale === "es" ? `/transfer/${slug}` : `/${locale}/transfer/${slug}`);
   let options: LocationOption[] = [];
   let originPoints: TransferPointOption[] = [];
@@ -182,19 +184,13 @@ export default async function PublicTransferPage({
           <p className="text-xs uppercase tracking-[0.35em] text-amber-200">
             {locale === "es" ? "Elite Collection" : locale === "fr" ? "Collection Elite" : "Elite Collection"}
           </p>
-          <h2 className="mt-2 text-2xl font-black">
-            {locale === "es"
-              ? "Punta Cana Premium Transfer Services"
-              : locale === "fr"
-              ? "Punta Cana Premium Transfer Services"
-              : "Punta Cana Premium Transfer Services"}
-          </h2>
+          <h2 className="mt-2 text-2xl font-black">Punta Cana Premium Transfer Services</h2>
           <p className="mt-2 text-sm text-slate-200">
             {locale === "es"
               ? "Flota VIP con Cadillac y Suburban para clientes premium."
               : locale === "fr"
-              ? "Flotte VIP avec Cadillac et Suburban pour clients premium."
-              : "VIP fleet with Cadillac and Suburban for premium clients."}
+                ? "Flotte VIP avec Cadillac et Suburban pour clients premium."
+                : "VIP fleet with Cadillac and Suburban for premium clients."}
           </p>
           <Link
             href={premiumVipHref}
@@ -206,14 +202,18 @@ export default async function PublicTransferPage({
 
         <section className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-xs uppercase tracking-[0.35em] text-slate-500">
-            {locale === "es" ? "Planifica todo en un solo flujo" : locale === "fr" ? "Planifiez tout en un seul flux" : "Plan everything in one flow"}
+            {locale === "es"
+              ? "Planifica todo en un solo flujo"
+              : locale === "fr"
+                ? "Planifiez tout en un seul flux"
+                : "Plan everything in one flow"}
           </p>
           <h2 className="mt-2 text-xl font-bold text-slate-900">
             {locale === "es"
               ? "Combina traslado + hotel + tours sin salir de Proactivitis"
               : locale === "fr"
-              ? "Combinez transfert + hotel + excursions sans quitter Proactivitis"
-              : "Bundle transfer + hotel + tours without leaving Proactivitis"}
+                ? "Combinez transfert + hotel + excursions sans quitter Proactivitis"
+                : "Bundle transfer + hotel + tours without leaving Proactivitis"}
           </h2>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
@@ -243,7 +243,7 @@ export default async function PublicTransferPage({
           </div>
         </section>
 
-        <section className="rounded-[36px] border border-slate-100 bg-white/90 p-6 shadow-2xl">
+        <section id="transfer-search" className="rounded-[36px] border border-slate-100 bg-white/90 p-6 shadow-2xl">
           <Suspense fallback={<div />}>
             {transfersV2Enabled ? (
               <TrasladoSearchV2 />
@@ -260,68 +260,208 @@ export default async function PublicTransferPage({
           <h2 className="mt-3 text-2xl font-bold text-slate-900">
             {translate(locale, "transfer.links.title")}
           </h2>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+            {locale === "es"
+              ? "Explora rutas privadas ya preparadas para los hoteles y resorts con mayor demanda. Cada landing conecta mejor con la intencion de busqueda y lleva al viajero directo a una cotizacion real."
+              : locale === "fr"
+                ? "Explorez des trajets prives deja prepares pour les hotels et resorts les plus demandes. Chaque landing repond mieux a l'intention de recherche et mene le voyageur vers un devis reel."
+                : "Explore private routes already prepared for the most requested hotels and resorts. Each landing matches search intent better and moves the traveler straight into a real quote."}
+          </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {PUNTA_CANA_TRANSFER_LINKS.map((item) => (
               <Link
                 key={item.slug}
                 href={transferHref(item.slug)}
-                className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
+                className="group rounded-[28px] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-slate-100/80 px-5 py-5 text-sm text-slate-700 shadow-sm transition hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg"
               >
-                <p>{translate(locale, item.labelKey)}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+                  {locale === "es" ? "Ruta privada" : locale === "fr" ? "Trajet prive" : "Private route"}
+                </p>
+                <p className="mt-2 text-base font-bold leading-6 text-slate-900">{translate(locale, item.labelKey)}</p>
                 {transferReviewSummary.has(item.slug) ? (
-                  <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-600">
+                  <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-700">
                     ★ {transferReviewSummary.get(item.slug)!.avg.toFixed(1)} · {transferReviewSummary.get(item.slug)!.count}{" "}
-                    {locale === "fr" ? "avis" : "resenas"}
+                    {locale === "fr" ? "avis" : locale === "es" ? "resenas" : "reviews"}
                   </p>
                 ) : (
-                  <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                    {locale === "es" ? "Sin resenas aun" : locale === "fr" ? "Pas encore d'avis" : "No reviews yet"}
+                  <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                    {locale === "es" ? "Ruta lista para cotizar" : locale === "fr" ? "Itineraire pret a chiffrer" : "Route ready to quote"}
                   </p>
                 )}
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  {locale === "es"
+                    ? "Recogida puntual, confirmacion clara y traslado privado adaptado a tu llegada."
+                    : locale === "fr"
+                      ? "Prise en charge ponctuelle, confirmation claire et transfert prive adapte a votre arrivee."
+                      : "Punctual pickup, clear confirmation, and private transportation matched to your arrival."}
+                </p>
+                <div className="mt-4 inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-800 transition group-hover:border-slate-900 group-hover:bg-slate-900 group-hover:text-white">
+                  {locale === "es" ? "Ver ruta" : locale === "fr" ? "Voir trajet" : "View route"}
+                </div>
               </Link>
             ))}
           </div>
         </section>
 
-        <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
-            {translate(locale, "transfer.longform.eyebrow")}
-          </p>
-          <h2 className="mt-3 text-2xl font-bold text-slate-900">
-            {translate(locale, "transfer.longform.title")}
-          </h2>
-          <div className="mt-4 space-y-4 text-sm text-slate-600">
-            <p>{translate(locale, "transfer.longform.body1")}</p>
-            <p>{translate(locale, "transfer.longform.body2")}</p>
-            <p>{translate(locale, "transfer.longform.body3")}</p>
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.9fr)]">
+          <div className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+              {translate(locale, "transfer.longform.eyebrow")}
+            </p>
+            <h2 className="mt-3 text-2xl font-bold text-slate-900">
+              {translate(locale, "transfer.longform.title")}
+            </h2>
+            <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600">
+              <p>{translate(locale, "transfer.longform.body1")}</p>
+              <p>{translate(locale, "transfer.longform.body2")}</p>
+              <p>{translate(locale, "transfer.longform.body3")}</p>
+            </div>
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/90 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+                  {locale === "es" ? "Reserva clara" : locale === "fr" ? "Reservation claire" : "Clear booking"}
+                </p>
+                <p className="mt-2 text-sm font-semibold text-slate-900">
+                  {locale === "es"
+                    ? "Confirmacion rapida y detalles visibles antes de pagar."
+                    : locale === "fr"
+                      ? "Confirmation rapide et details visibles avant paiement."
+                      : "Fast confirmation and visible trip details before payment."}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/90 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+                  {locale === "es" ? "Operacion real" : locale === "fr" ? "Operation reelle" : "Real operations"}
+                </p>
+                <p className="mt-2 text-sm font-semibold text-slate-900">
+                  {locale === "es"
+                    ? "Conductores, rutas y seguimiento pensados para llegadas sin friccion."
+                    : locale === "fr"
+                      ? "Chauffeurs, trajets et suivi penses pour une arrivee sans friction."
+                      : "Drivers, routes, and follow-up built for a frictionless arrival."}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/90 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+                  {locale === "es" ? "Atencion real" : locale === "fr" ? "Assistance reelle" : "Real support"}
+                </p>
+                <p className="mt-2 text-sm font-semibold text-slate-900">
+                  {locale === "es"
+                    ? "Ideal para familias, parejas y grupos que quieren llegar bien desde el minuto uno."
+                    : locale === "fr"
+                      ? "Ideal pour familles, couples et groupes qui veulent bien arriver des la premiere minute."
+                      : "Ideal for families, couples, and groups who want a smooth arrival from minute one."}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[32px] border border-slate-900 bg-slate-950 p-8 text-white shadow-[0_30px_80px_rgba(15,23,42,0.32)]">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
+              {locale === "es" ? "Experiencia sin friccion" : locale === "fr" ? "Experience sans friction" : "Frictionless arrival"}
+            </p>
+            <h2 className="mt-3 text-2xl font-bold">
+              {locale === "es"
+                ? "Un traslado que se siente organizado antes de salir del aeropuerto"
+                : locale === "fr"
+                  ? "Un transfert qui semble organise avant meme de quitter l'aeroport"
+                  : "A transfer that feels organized before you even leave the airport"}
+            </h2>
+            <div className="mt-6 space-y-4">
+              {[
+                locale === "es"
+                  ? {
+                      title: "Cotizacion simple",
+                      body: "Menos friccion al reservar, mas claridad sobre la ruta, el hotel y la operacion."
+                    }
+                  : locale === "fr"
+                    ? {
+                        title: "Devis simple",
+                        body: "Moins de friction a la reservation, plus de clarte sur le trajet, l'hotel et l'operation."
+                      }
+                    : {
+                        title: "Simple quoting",
+                        body: "Less friction while booking, more clarity about the route, hotel, and operation."
+                      },
+                locale === "es"
+                  ? {
+                      title: "Llegada mejor resuelta",
+                      body: "Desde PUJ hasta el resort, la experiencia debe verse seria, puntual y comoda."
+                    }
+                  : locale === "fr"
+                    ? {
+                        title: "Arrivee mieux geree",
+                        body: "De PUJ jusqu'au resort, l'experience doit sembler serieuse, ponctuelle et confortable."
+                      }
+                    : {
+                        title: "Better arrival flow",
+                        body: "From PUJ to the resort, the experience should feel serious, punctual, and comfortable."
+                      },
+                locale === "es"
+                  ? {
+                      title: "Upsell natural",
+                      body: "Si el viajero quiere un nivel mas alto, puede pasar a premium o seguir explorando en ProDiscovery."
+                    }
+                  : locale === "fr"
+                    ? {
+                        title: "Upsell naturel",
+                        body: "Si le voyageur veut un niveau superieur, il peut passer au premium ou continuer dans ProDiscovery."
+                      }
+                    : {
+                        title: "Natural upsell",
+                        body: "If the traveler wants a higher tier, they can move into premium or keep exploring in ProDiscovery."
+                      }
+              ].map((item) => (
+                <div key={item.title} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-sm font-semibold text-white">{item.title}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">{item.body}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href={premiumVipHref}
+                className="rounded-full bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-950 transition hover:bg-slate-200"
+              >
+                {locale === "es" ? "Ver premium" : locale === "fr" ? "Voir premium" : "View premium"}
+              </Link>
+              <Link
+                href={proDiscoveryTransfersHref}
+                className="rounded-full border border-white/20 px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:border-white/50 hover:bg-white/10"
+              >
+                {locale === "es" ? "Explorar mas rutas" : locale === "fr" ? "Explorer plus de trajets" : "Explore more routes"}
+              </Link>
+            </div>
           </div>
         </section>
 
-        <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
-            {translate(locale, "transfer.longform2.eyebrow")}
-          </p>
-          <h2 className="mt-3 text-2xl font-bold text-slate-900">
-            {translate(locale, "transfer.longform2.title")}
-          </h2>
-          <div className="mt-4 space-y-4 text-sm text-slate-600">
-            <p>{translate(locale, "transfer.longform2.body1")}</p>
-            <p>{translate(locale, "transfer.longform2.body2")}</p>
-            <p>{translate(locale, "transfer.longform2.body3")}</p>
+        <section className="grid gap-6 xl:grid-cols-2">
+          <div className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+              {translate(locale, "transfer.longform2.eyebrow")}
+            </p>
+            <h2 className="mt-3 text-2xl font-bold text-slate-900">
+              {translate(locale, "transfer.longform2.title")}
+            </h2>
+            <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600">
+              <p>{translate(locale, "transfer.longform2.body1")}</p>
+              <p>{translate(locale, "transfer.longform2.body2")}</p>
+              <p>{translate(locale, "transfer.longform2.body3")}</p>
+            </div>
           </div>
-        </section>
 
-        <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
-            {translate(locale, "transfer.longform3.eyebrow")}
-          </p>
-          <h2 className="mt-3 text-2xl font-bold text-slate-900">
-            {translate(locale, "transfer.longform3.title")}
-          </h2>
-          <div className="mt-4 space-y-4 text-sm text-slate-600">
-            <p>{translate(locale, "transfer.longform3.body1")}</p>
-            <p>{translate(locale, "transfer.longform3.body2")}</p>
-            <p>{translate(locale, "transfer.longform3.body3")}</p>
+          <div className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+              {translate(locale, "transfer.longform3.eyebrow")}
+            </p>
+            <h2 className="mt-3 text-2xl font-bold text-slate-900">
+              {translate(locale, "transfer.longform3.title")}
+            </h2>
+            <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600">
+              <p>{translate(locale, "transfer.longform3.body1")}</p>
+              <p>{translate(locale, "transfer.longform3.body2")}</p>
+              <p>{translate(locale, "transfer.longform3.body3")}</p>
+            </div>
           </div>
         </section>
 
@@ -369,23 +509,43 @@ export default async function PublicTransferPage({
                 key={item.qKey}
                 className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-5 text-sm text-slate-600"
               >
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
-                  {translate(locale, item.qKey)}
-                </p>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{translate(locale, item.qKey)}</p>
                 <p className="font-semibold text-slate-900">{translate(locale, item.aKey)}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="space-y-4 rounded-[32px] border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
-          <p>{translate(locale, "transfer.note")}</p>
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700 transition hover:border-slate-400"
-          >
-            {translate(locale, "transfer.contact")}
-          </button>
+        <section className="rounded-[36px] border border-slate-900 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-8 text-white shadow-[0_35px_90px_rgba(15,23,42,0.36)]">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <div className="space-y-4">
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
+                {locale === "es" ? "Reserva con confianza" : locale === "fr" ? "Reserve avec confiance" : "Book with confidence"}
+              </p>
+              <h2 className="text-3xl font-bold leading-tight">
+                {locale === "es"
+                  ? "Cotiza tu traslado privado y llega a Punta Cana con todo resuelto"
+                  : locale === "fr"
+                    ? "Demandez votre transfert prive et arrivez a Punta Cana avec tout bien organise"
+                    : "Quote your private transfer and arrive in Punta Cana with everything organized"}
+              </h2>
+              <p className="max-w-3xl text-sm leading-7 text-slate-300">{translate(locale, "transfer.note")}</p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+              <Link
+                href="#transfer-search"
+                className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-slate-950 transition hover:bg-slate-200"
+              >
+                {locale === "es" ? "Cotizar ahora" : locale === "fr" ? "Demander un devis" : "Quote now"}
+              </Link>
+              <Link
+                href={premiumVipHref}
+                className="inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-white transition hover:border-white/50 hover:bg-white/10"
+              >
+                {locale === "es" ? "Ver opcion premium" : locale === "fr" ? "Voir option premium" : "View premium option"}
+              </Link>
+            </div>
+          </div>
         </section>
       </div>
     </div>
