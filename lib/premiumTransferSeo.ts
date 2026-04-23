@@ -12,10 +12,10 @@ export function buildPremiumTransferLanguageAlternates(path: string) {
   };
 }
 
-export function buildPremiumTransferSeoTitle(locale: Locale, sourceTitle?: string) {
+export function buildPremiumTransferSeoTitle(locale: Locale, sourceTitle?: string): string {
   const normalized = sourceTitle?.trim();
   if (locale !== "en") {
-    return normalized;
+    return normalized || "Punta Cana Premium Transfer Services | Proactivitis";
   }
 
   if (!normalized) {
@@ -41,9 +41,9 @@ export function buildPremiumTransferSeoTitle(locale: Locale, sourceTitle?: strin
   return `${normalized} | Luxury Airport Pickup & Private SUV Transfer`;
 }
 
-export function buildPremiumTransferSeoDescription(locale: Locale, sourceDescription?: string) {
+export function buildPremiumTransferSeoDescription(locale: Locale, sourceDescription?: string): string {
   if (locale !== "en") {
-    return sourceDescription;
+    return sourceDescription?.trim() || "Premium transfer service in Punta Cana with private vehicles, professional drivers, and direct service to airports, hotels, and private stays.";
   }
 
   const normalized = sourceDescription?.trim();
