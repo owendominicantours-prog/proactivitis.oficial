@@ -40,7 +40,7 @@ export const Header = ({
 
   return (
     <header className="sticky top-0 z-40 border-b bg-white/95 shadow-sm backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-[4.5rem] sm:px-6">
+      <div className="mx-auto flex h-24 max-w-7xl items-center justify-between gap-3 px-4 sm:h-[5.5rem] sm:px-6">
         <div className="flex min-w-0 items-center">
           <Link href="/" className="flex items-center">
             <Image
@@ -48,7 +48,7 @@ export const Header = ({
               alt="Proactivitis"
               width={200}
               height={60}
-              className="h-[4.5rem] w-auto max-w-[280px] origin-left object-contain transition-transform sm:h-[4.75rem] sm:max-w-[320px] lg:h-12 lg:max-w-none lg:scale-[var(--logo-scale)]"
+              className="h-[8.5rem] w-auto max-w-[520px] origin-left object-contain transition-transform sm:h-[7rem] sm:max-w-[420px] lg:h-12 lg:max-w-none lg:scale-[var(--logo-scale)]"
               style={{ "--logo-scale": logoScale } as CSSProperties}
             />
           </Link>
@@ -152,7 +152,7 @@ export const Header = ({
           onClick={() => setMobileOpen(false)}
         />
         <div
-          className={`fixed inset-x-0 top-16 z-50 max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-slate-100 bg-white shadow-2xl transition duration-200 sm:top-[4.5rem] sm:max-h-[calc(100vh-4.5rem)] ${
+          className={`fixed inset-x-0 top-24 z-50 max-h-[calc(100vh-6rem)] overflow-y-auto border-t border-slate-100 bg-white shadow-2xl transition duration-200 sm:top-[5.5rem] sm:max-h-[calc(100vh-5.5rem)] ${
             mobileOpen ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
           }`}
         >
