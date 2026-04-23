@@ -923,7 +923,7 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
         </article>
 
         <article className={`rounded-[32px] border p-6 md:p-7 ${theme.panel}`}>
-          <p className={`text-[11px] font-semibold uppercase tracking-[0.3em] ${theme.accent}`}>
+          <p className={`text-[11px] font-bold uppercase tracking-[0.3em] ${theme.accent}`}>
             {locale === "es" ? "Hoteles conectados" : locale === "fr" ? "Hotels connectes" : "Connected hotels"}
           </p>
           <h2 className="mt-3 text-3xl font-black text-white">
@@ -933,7 +933,7 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
               ? `Couverture hoteliere premium a ${context.areaLabel}`
               : `Premium hotel coverage in ${context.areaLabel}`}
           </h2>
-          <p className="mt-4 text-sm leading-7 text-slate-200">
+          <p className="mt-4 text-sm leading-7 text-white/90">
             {locale === "es"
               ? "Estas conexiones ayudan a que cada variante responda a una intencion concreta sin perder la capacidad real de cotizacion."
               : locale === "fr"
@@ -945,7 +945,7 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
               <Link
                 key={hotel.id}
                 href={locale === "es" ? `/transfer/${safeOrigin.slug}-to-${hotel.slug}` : `/${locale}/transfer/${safeOrigin.slug}-to-${hotel.slug}`}
-                className={`rounded-2xl border px-4 py-3 text-sm transition hover:bg-white/5 ${theme.panelSoft}`}
+                className={`rounded-2xl border px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 ${theme.panelSoft}`}
               >
                 {hotel.name}
               </Link>
@@ -978,12 +978,12 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
         </article>
 
         <article className={`rounded-[32px] border p-6 md:p-7 ${theme.panel}`}>
-          <p className={`text-[11px] font-semibold uppercase tracking-[0.3em] ${theme.accent}`}>
+          <p className={`text-[11px] font-bold uppercase tracking-[0.3em] ${theme.accent}`}>
             {locale === "es" ? "Variantes relacionadas" : locale === "fr" ? "Variantes liees" : "Related variants"}
           </p>
           <div className="mt-4 space-y-5">
             <div>
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-lg font-black text-white">
                 {variant
                   ? locale === "es"
                     ? `Mas rutas premium para ${context.areaLabel}`
@@ -1001,7 +1001,7 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
                   <Link
                     key={item.slug}
                     href={locale === "es" ? `/punta-cana/premium-transfer-services/${item.slug}` : `/${locale}/punta-cana/premium-transfer-services/${item.slug}`}
-                    className={`rounded-2xl border px-4 py-3 text-sm transition hover:bg-white/5 ${theme.panelSoft}`}
+                    className={`rounded-2xl border px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 ${theme.panelSoft}`}
                   >
                     {item.keyword[locale]}
                   </Link>
@@ -1011,7 +1011,7 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
 
             {relatedByIntent.length > 0 ? (
               <div>
-                <h3 className="text-lg font-bold text-white">
+                <h3 className="text-lg font-black text-white">
                   {locale === "es" ? "La misma intencion en otras zonas" : locale === "fr" ? "La meme intention dans d autres zones" : "The same intent in other areas"}
                 </h3>
                 <div className="mt-3 grid gap-3">
@@ -1019,7 +1019,7 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
                     <Link
                       key={item.slug}
                       href={locale === "es" ? `/punta-cana/premium-transfer-services/${item.slug}` : `/${locale}/punta-cana/premium-transfer-services/${item.slug}`}
-                      className={`rounded-2xl border px-4 py-3 text-sm transition hover:bg-white/5 ${theme.panelSoft}`}
+                      className={`rounded-2xl border px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 ${theme.panelSoft}`}
                     >
                       {item.keyword[locale]}
                     </Link>
