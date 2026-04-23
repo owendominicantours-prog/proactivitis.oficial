@@ -457,7 +457,7 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
     name: "Punta Cana International Airport (PUJ)"
   };
   const safeOrigin = origin ?? originFallback;
-  const safeOrigins = origins.length ? origins : [safeOrigin];
+  const safeOrigins = locationOptions.length ? locationOptions : origins.length ? origins : [safeOrigin];
   const safeLocationOptions = locationOptions.length ? locationOptions : [...safeOrigins, ...destinations];
   const canBook = safeLocationOptions.length > 1;
 
