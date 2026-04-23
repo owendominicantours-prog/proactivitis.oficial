@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { CSSProperties, ReactNode, useEffect, useState } from "react";
 
 type HeaderProps = {
@@ -23,6 +24,11 @@ export const Header = ({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
+  const isActivePath = (href: string) => {
+    if (!pathname) return false;
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   useEffect(() => {
     setMobileOpen(false);
@@ -54,14 +60,18 @@ export const Header = ({
           </Link>
         </div>
 
-        <nav className="hidden items-center gap-6 text-sm text-slate-700 lg:flex">
+        <nav className="hidden items-center gap-4 text-sm text-slate-700 lg:flex">
           {navDisplay === "inline" ? (
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 p-1.5 shadow-sm">
               {navItems.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-500 transition hover:text-slate-900"
+                  className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+                    isActivePath(item.href)
+                      ? "bg-slate-900 text-white shadow-sm"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
                 >
                   {item.label}
                 </Link>
@@ -72,23 +82,27 @@ export const Header = ({
                     type="button"
                     aria-expanded={dropdownOpen}
                     onClick={() => setDropdownOpen((prev) => !prev)}
-                    className="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-700 transition hover:bg-slate-50"
+                    className="flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:bg-slate-100"
                   >
                     {dropdownNav.label}
-                    <span className="text-base leading-4">v</span>
+                    <ChevronDown className={`h-4 w-4 transition ${dropdownOpen ? "rotate-180" : ""}`} />
                   </button>
                   <div
-                    className={`pointer-events-auto absolute left-0 z-50 mt-2 w-56 rounded-2xl border border-slate-200 bg-white shadow-lg transition duration-150 ${
+                    className={`pointer-events-auto absolute left-0 z-50 mt-3 w-64 rounded-3xl border border-slate-200 bg-white p-2 shadow-xl transition duration-150 ${
                       dropdownOpen ? "visible opacity-100" : "invisible opacity-0"
                     }`}
                   >
-                    <div className="flex flex-col p-2">
+                    <div className="flex flex-col gap-1">
                       {dropdownNav.items.map((item) => (
                         <Link
                           key={item.label}
                           href={item.href}
                           onClick={() => setDropdownOpen(false)}
-                          className="rounded-xl px-3 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                          className={`rounded-2xl px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+                            isActivePath(item.href)
+                              ? "bg-slate-900 text-white"
+                              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                          }`}
                         >
                           {item.label}
                         </Link>
@@ -104,23 +118,27 @@ export const Header = ({
                 type="button"
                 aria-expanded={dropdownOpen}
                 onClick={() => setDropdownOpen((prev) => !prev)}
-                className="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-700 transition hover:bg-slate-50"
+                className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:bg-slate-50"
               >
-                Menu
-                <span className="text-base leading-4">v</span>
+                Secciones
+                <ChevronDown className={`h-4 w-4 transition ${dropdownOpen ? "rotate-180" : ""}`} />
               </button>
               <div
-                className={`pointer-events-auto absolute left-0 z-50 mt-2 w-64 rounded-2xl border border-slate-200 bg-white shadow-lg transition duration-150 ${
+                className={`pointer-events-auto absolute left-0 z-50 mt-3 w-72 rounded-3xl border border-slate-200 bg-white p-2 shadow-xl transition duration-150 ${
                   dropdownOpen ? "visible opacity-100" : "invisible opacity-0"
                 }`}
               >
-                <div className="flex flex-col p-2">
+                <div className="flex flex-col gap-1">
                   {navItems.map((item) => (
                     <Link
                       key={item.label}
                       href={item.href}
                       onClick={() => setDropdownOpen(false)}
-                      className="rounded-xl px-3 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                      className={`rounded-2xl px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+                        isActivePath(item.href)
+                          ? "bg-slate-900 text-white"
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      }`}
                     >
                       {item.label}
                     </Link>
@@ -136,9 +154,10 @@ export const Header = ({
           <button
             type="button"
             aria-expanded={mobileOpen}
-            className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-700"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 shadow-sm"
             onClick={() => setMobileOpen((prev) => !prev)}
           >
+            {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             {mobileOpen ? "Cerrar" : "Menu"}
           </button>
         </div>
@@ -156,9 +175,23 @@ export const Header = ({
             mobileOpen ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
           }`}
         >
-          <div className="space-y-4 px-4 py-4 sm:px-6 sm:py-5">
+          <div className="space-y-5 px-4 py-5 sm:px-6 sm:py-6">
+            <div className="flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4">
+              <div>
+                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-slate-400">Navegacion</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">Menu principal</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600"
+                aria-label="Cerrar menu"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
             {rightSlot ? (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">{rightSlot}</div>
               </div>
             ) : null}
@@ -169,7 +202,11 @@ export const Header = ({
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-2xl border border-transparent bg-white px-4 py-3 transition hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900"
+                  className={`rounded-3xl border px-4 py-4 transition ${
+                    isActivePath(item.href)
+                      ? "border-slate-900 bg-slate-900 text-white shadow-sm"
+                      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+                  }`}
                 >
                   {item.label}
                 </Link>
@@ -187,7 +224,11 @@ export const Header = ({
                       key={item.href}
                       href={item.href}
                       onClick={() => setMobileOpen(false)}
-                      className="rounded-2xl border border-transparent bg-white px-4 py-3 transition hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900"
+                      className={`rounded-3xl border px-4 py-4 transition ${
+                        isActivePath(item.href)
+                          ? "border-slate-900 bg-slate-900 text-white shadow-sm"
+                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+                      }`}
                     >
                       {item.label}
                     </Link>
