@@ -31,7 +31,7 @@ const DEFAULT_AIRPORT_SLUG = "puj-airport";
 const DEFAULT_AIRPORT_NAME = "Punta Cana International Airport (PUJ)";
 const BASE_URL = "https://proactivitis.com";
 const FALLBACK_PRICE = 44;
-const FALLBACK_HERO_IMAGES = ["/transfer/mini van.png", "/transfer/sedan.png", "/transfer/suv.png"];
+const FALLBACK_HERO_IMAGE = "/transfer/mini van.png";
 const DEFAULT_ORIGIN_LABELS: Record<Locale, string> = {
   es: "Aeropuerto de Punta Cana (PUJ)",
   en: "Punta Cana Airport (PUJ)",
@@ -137,10 +137,7 @@ export const resolveLocationByAlias = async (
   return findBestLocation(rawSlug, generic);
 };
 
-const pickHeroImage = (slug: string) => {
-  const hash = slug.split("").reduce((value, char) => value + char.charCodeAt(0), 0);
-  return FALLBACK_HERO_IMAGES[Math.abs(hash) % FALLBACK_HERO_IMAGES.length];
-};
+const pickHeroImage = (_slug: string) => FALLBACK_HERO_IMAGE;
 
 const humanizeSlug = (value: string) =>
   normalizeLoose(value)
