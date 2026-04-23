@@ -408,6 +408,151 @@ const resolveTourCardImage = (heroImage?: string | null, gallery?: string | null
   return parseGalleryImages(gallery)[0] ?? "/transfer/sedan.png";
 };
 
+const detectTransferArea = (slug: string, hotelName: string, locale: Locale) => {
+  const haystack = `${slug} ${hotelName}`.toLowerCase();
+  if (haystack.includes("cap-cana")) {
+    return locale === "fr" ? "Cap Cana" : locale === "en" ? "Cap Cana" : "Cap Cana";
+  }
+  if (haystack.includes("uvero") || haystack.includes("macao")) {
+    return locale === "fr" ? "Uvero Alto" : locale === "en" ? "Uvero Alto" : "Uvero Alto";
+  }
+  if (haystack.includes("bavaro") || haystack.includes("arena-gorda")) {
+    return locale === "fr" ? "Bavaro" : locale === "en" ? "Bavaro" : "Bavaro";
+  }
+  return locale === "fr" ? "Punta Cana" : locale === "en" ? "Punta Cana" : "Punta Cana";
+};
+
+const detectTransferProfile = (slug: string, hotelName: string) => {
+  const haystack = `${slug} ${hotelName}`.toLowerCase();
+  if (haystack.includes("adult") || haystack.includes("secret") || haystack.includes("breathless")) return "couples";
+  if (haystack.includes("family") || haystack.includes("nickelodeon")) return "family";
+  if (haystack.includes("hard-rock") || haystack.includes("casino") || haystack.includes("group")) return "groups";
+  if (haystack.includes("luxury") || haystack.includes("zoetry") || haystack.includes("finest") || haystack.includes("excellence")) return "premium";
+  return "standard";
+};
+
+const buildTransferSalesCards = (
+  locale: Locale,
+  hotelName: string,
+  hotelSlug: string,
+  originLabel: string,
+  destinationLabel: string
+) => {
+  const area = detectTransferArea(hotelSlug, hotelName, locale);
+  const profile = detectTransferProfile(hotelSlug, hotelName);
+
+  const common = {
+    es: [
+      {
+        title: `Recogida puntual desde ${originLabel}`,
+        body: `Monitoreamos tu vuelo y coordinamos la salida para que llegues a ${destinationLabel} sin fricciones ni esperas innecesarias.`
+      },
+      {
+        title: `Ruta privada hacia ${area}`,
+        body: `Este traslado está pensado para viajeros que quieren bajar del avión y entrar al hotel con una operación clara y rápida.`
+      },
+      {
+        title: "Precio claro antes del checkout",
+        body: "Seleccionas pasajeros, tipo de viaje y vehículo con tarifa visible antes de reservar."
+      }
+    ],
+    en: [
+      {
+        title: `On-time pickup from ${originLabel}`,
+        body: `We track your flight and coordinate departure so you reach ${destinationLabel} without unnecessary waiting.`
+      },
+      {
+        title: `Private route into ${area}`,
+        body: `This transfer is built for travelers who want to land and get into the resort with a cleaner, faster operation.`
+      },
+      {
+        title: "Clear price before checkout",
+        body: "Passengers, trip type, and vehicle are selected with visible pricing before booking."
+      }
+    ],
+    fr: [
+      {
+        title: `Prise en charge ponctuelle depuis ${originLabel}`,
+        body: `Nous suivons votre vol et coordonnons le depart pour arriver a ${destinationLabel} sans attente inutile.`
+      },
+      {
+        title: `Route privee vers ${area}`,
+        body: `Ce transfert est pense pour les voyageurs qui veulent sortir de l aeroport et entrer a l hotel avec une operation plus propre.`
+      },
+      {
+        title: "Prix clair avant checkout",
+        body: "Passagers, type de trajet et vehicule avec tarif visible avant reservation."
+      }
+    ]
+  }[locale];
+
+  const profileOverrideMap = {
+    couples: {
+      es: {
+        title: "Ideal para llegadas de parejas",
+        body: `Una llegada más tranquila y privada para resorts adultos o escapadas románticas hacia ${destinationLabel}.`
+      },
+      en: {
+        title: "Built for couples arrivals",
+        body: `A quieter and more private arrival flow for adults-only resorts or romantic stays into ${destinationLabel}.`
+      },
+      fr: {
+        title: "Ideal pour les couples",
+        body: `Une arrivee plus calme et privee pour resorts adults only ou sejours romantiques vers ${destinationLabel}.`
+      }
+    },
+    family: {
+      es: {
+        title: "Mejor para familias con equipaje",
+        body: "Más útil cuando viajas con maletas, niños, cochecito o quieres entrar al resort sin improvisaciones."
+      },
+      en: {
+        title: "Better for families with luggage",
+        body: "More useful when traveling with bags, children, strollers, or when you want a smoother resort arrival."
+      },
+      fr: {
+        title: "Mieux pour les familles",
+        body: "Plus utile avec bagages, enfants, poussette ou si vous voulez une arrivee plus simple au resort."
+      }
+    },
+    groups: {
+      es: {
+        title: "Útil para grupos y reservas grandes",
+        body: "La operación se siente más controlada cuando llegan varias personas y quieres evitar coordinar taxis separados."
+      },
+      en: {
+        title: "Useful for groups and larger bookings",
+        body: "The operation feels more controlled when several travelers arrive together and want to avoid split taxis."
+      },
+      fr: {
+        title: "Utile pour groupes",
+        body: "L operation parait plus controlee quand plusieurs voyageurs arrivent ensemble et veulent eviter des taxis separes."
+      }
+    },
+    premium: {
+      es: {
+        title: "Más alineado con una estancia premium",
+        body: "Una llegada de mayor nivel para hoteles donde la experiencia de entrada también importa."
+      },
+      en: {
+        title: "Better aligned with premium stays",
+        body: "A stronger arrival match for hotels where the entrance experience also matters."
+      },
+      fr: {
+        title: "Mieux aligne avec un sejour premium",
+        body: "Une arrivee plus forte pour les hotels ou l experience d entree compte aussi."
+      }
+    }
+  } as const;
+
+  const override = profileOverrideMap[profile as keyof typeof profileOverrideMap];
+  if (override) {
+    common[1] = override[locale];
+  }
+
+  return common;
+};
+
 const formatTourDuration = (value?: string | null, locale: Locale = "es") => {
   if (!value) {
     return locale === "fr" ? "Duree variable" : locale === "en" ? "Flexible duration" : "Duracion variable";
@@ -539,51 +684,6 @@ const formatDateTime = (date: Date) => {
   const iso = date.toISOString();
   return iso.slice(0, 16);
 };
-
-const SALES_CARDS = {
-  es: [
-    {
-      title: "Recepcion VIP en aeropuerto",
-      body: "Tu chofer te espera con cartel, monitoreo de vuelo y salida prioritaria sin filas innecesarias."
-    },
-    {
-      title: "Tarifa clara sin sorpresas",
-      body: "Precio final confirmado antes de pagar, con equipaje y asistencia incluidos en el servicio."
-    },
-    {
-      title: "Ideal para familias y grupos",
-      body: "Opciones privadas con espacio real para maletas, ninos y viaje comodo hasta el hotel."
-    }
-  ],
-  en: [
-    {
-      title: "VIP airport meet & greet",
-      body: "Your chauffeur waits with a sign, tracks your flight, and gets you out fast without unnecessary lines."
-    },
-    {
-      title: "Clear pricing, no surprises",
-      body: "Final price is confirmed before payment, including luggage handling and on-trip assistance."
-    },
-    {
-      title: "Perfect for families and groups",
-      body: "Private options with real luggage room and comfortable seating all the way to your resort."
-    }
-  ],
-  fr: [
-    {
-      title: "Accueil VIP a l aeroport",
-      body: "Votre chauffeur vous attend avec pancarte, suivi de vol et sortie rapide sans attente inutile."
-    },
-    {
-      title: "Tarif clair sans surprise",
-      body: "Prix final confirme avant paiement, avec bagages et assistance inclus."
-    },
-    {
-      title: "Ideal familles et groupes",
-      body: "Options privees avec vrai espace bagages et trajet confortable jusqu a l hotel."
-    }
-  ]
-} as const;
 
 export async function TransferLandingPage({
   landingSlug,
@@ -754,11 +854,14 @@ export async function TransferLandingPage({
     locale === "es" ? `/things-to-do/${landing.hotelSlug}` : `/${locale}/things-to-do/${landing.hotelSlug}`;
 
   const defaultDeparture = formatDateTime(new Date(Date.now() + 2 * 60 * 60 * 1000));
-  const salesCards = SALES_CARDS[locale] ?? SALES_CARDS.es;
+  const salesCards = buildTransferSalesCards(
+    locale,
+    localizedLanding.hotelName,
+    landing.hotelSlug,
+    originLabel,
+    destinationLabel
+  );
 
-  const otherLandings = allLandings()
-    .filter((item) => item.landingSlug !== landing.landingSlug)
-    .slice(0, 3);
   const priceValidUntil = getPriceValidUntil();
   const hotelLocation = await prisma.location.findUnique({
     where: { slug: landing.hotelSlug },
@@ -808,17 +911,36 @@ export async function TransferLandingPage({
   const totalApprovedTransferReviews = transferReviewSummary.count;
   const initialVisibleTransferReviews = 7;
   const transferReviewAverage = Math.round(transferReviewSummary.average * 10) / 10;
+  const canonicalUrl = buildCanonical(landing.landingSlug, locale);
+  const primaryImageUrl = toAbsoluteImageUrl(localizedLanding.heroImage);
+  const transferArea = detectTransferArea(landing.hotelSlug, localizedLanding.hotelName, locale);
+  const travelerProfile = detectTransferProfile(landing.hotelSlug, localizedLanding.hotelName);
+  const otherLandings = allLandings()
+    .filter((item) => item.landingSlug !== landing.landingSlug)
+    .sort((a, b) => {
+      const score = (candidate: TransferLandingData) => {
+        let value = 0;
+        if (detectTransferArea(candidate.hotelSlug, candidate.hotelName, locale) === transferArea) value += 3;
+        if (detectTransferProfile(candidate.hotelSlug, candidate.hotelName) === travelerProfile) value += 1;
+        return value;
+      };
+      return score(b) - score(a);
+    })
+    .slice(0, 3);
 
-  const schema = {
+  const serviceSchema = {
     "@context": "https://schema.org",
     "@type": "Service",
-    "@id": `${buildCanonical(landing.landingSlug, locale)}#service`,
+    "@id": `${canonicalUrl}#service`,
     identifier: landing.landingSlug,
-    mainEntityOfPage: buildCanonical(landing.landingSlug, locale),
-    url: buildCanonical(landing.landingSlug, locale),
+    mainEntityOfPage: canonicalUrl,
+    url: canonicalUrl,
+    name: marketTitles.heroTitle,
+    description: localizedLanding.metaDescription,
     serviceType: t("transferLanding.schema.serviceType", { hotel: localizedLanding.hotelName }),
     provider: {
       "@type": "TravelAgency",
+      "@id": `${PROACTIVITIS_URL}#organization`,
       name: "Proactivitis",
       url: BASE_URL,
       logo: `${BASE_URL}/icon.png`,
@@ -827,20 +949,38 @@ export async function TransferLandingPage({
     areaServed: [
       {
         "@type": "Place",
+        "@id": `${canonicalUrl}#origin`,
         name: originLabel
       },
       {
         "@type": "Place",
+        "@id": `${canonicalUrl}#destination`,
         name: destinationLabel
       }
     ],
-    image: [toAbsoluteImageUrl(localizedLanding.heroImage)],
+    availableLanguage: locale === "fr" ? ["fr", "en", "es"] : locale === "en" ? ["en", "es"] : ["es", "en"],
+    audience: {
+      "@type": "Audience",
+      audienceType:
+        travelerProfile === "family"
+          ? "Families"
+          : travelerProfile === "groups"
+          ? "Groups"
+          : travelerProfile === "couples"
+          ? "Couples"
+          : travelerProfile === "premium"
+          ? "Premium travelers"
+          : "Tourists"
+    },
+    image: [primaryImageUrl],
     hasOfferCatalog: {
       "@type": "OfferCatalog",
+      "@id": `${canonicalUrl}#catalog`,
       name: t("transferLanding.schema.catalogName"),
       itemListElement: [
         {
           "@type": "Offer",
+          "@id": `${canonicalUrl}#offer`,
           itemOffered: {
             "@type": "Service",
             name: t("transferLanding.schema.offerName", { hotel: localizedLanding.hotelName })
@@ -882,6 +1022,15 @@ export async function TransferLandingPage({
         }
       ]
     },
+    ...(totalApprovedTransferReviews > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: transferReviewAverage,
+            reviewCount: totalApprovedTransferReviews
+          }
+        }
+      : {})
   };
 
   const businessSchema = {
@@ -900,10 +1049,75 @@ export async function TransferLandingPage({
     contactPoint: PROACTIVITIS_LOCALBUSINESS.contactPoint
   };
 
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${canonicalUrl}#webpage`,
+    url: canonicalUrl,
+    name: ensureLeadingCapital(`${marketTitles.seoTitle} | Proactivitis`),
+    description: localizedLanding.metaDescription,
+    inLanguage: locale,
+    isPartOf: {
+      "@type": "WebSite",
+      "@id": `${PROACTIVITIS_URL}#website`,
+      url: BASE_URL,
+      name: "Proactivitis"
+    },
+    about: { "@id": `${canonicalUrl}#service` },
+    primaryImageOfPage: { "@id": `${canonicalUrl}#image` },
+    breadcrumb: { "@id": `${canonicalUrl}#breadcrumb` }
+  };
+
+  const imageSchema = {
+    "@context": "https://schema.org",
+    "@type": "ImageObject",
+    "@id": `${canonicalUrl}#image`,
+    url: primaryImageUrl,
+    contentUrl: primaryImageUrl,
+    caption: localizedLanding.heroImageAlt,
+    representativeOfPage: true
+  };
+
+  const routeSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": `${canonicalUrl}#route-highlights`,
+    name: locale === "es" ? "Highlights del traslado" : locale === "fr" ? "Highlights du transfert" : "Transfer highlights",
+    itemListElement: localizedLanding.trustBadges.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item
+    }))
+  };
+
+  const reviewSchema =
+    totalApprovedTransferReviews > 0
+      ? approvedTransferReviews.slice(0, 6).map((review, index) => ({
+          "@context": "https://schema.org",
+          "@type": "Review",
+          "@id": `${canonicalUrl}#review-${index + 1}`,
+          author: {
+            "@type": "Person",
+            name: review.customerName
+          },
+          reviewRating: {
+            "@type": "Rating",
+            ratingValue: review.rating,
+            bestRating: 5
+          },
+          reviewBody: review.body,
+          datePublished: (review.approvedAt ?? review.createdAt).toISOString().slice(0, 10),
+          itemReviewed: {
+            "@id": `${canonicalUrl}#service`
+          }
+        }))
+      : [];
+
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    url: buildCanonical(landing.landingSlug, locale),
+    "@id": `${canonicalUrl}#breadcrumb`,
+    url: canonicalUrl,
     itemListElement: [
       {
         "@type": "ListItem",
@@ -929,7 +1143,8 @@ export async function TransferLandingPage({
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    url: buildCanonical(landing.landingSlug, locale),
+    "@id": `${canonicalUrl}#faq`,
+    url: canonicalUrl,
     mainEntity: localizedLanding.faq.map((item) => ({
       "@type": "Question",
       name: item.question,
@@ -942,7 +1157,7 @@ export async function TransferLandingPage({
   const schemaOverride = await getTransferSchemaOverride(landing.landingSlug, locale);
   const schemaGraph = applyTransferSchemaOverride({
     businessSchema,
-    serviceSchema: schema,
+    serviceSchema,
     faqSchema,
     breadcrumbSchema,
     override: schemaOverride
@@ -1343,7 +1558,11 @@ export async function TransferLandingPage({
         </div>
       </section>
       <section className="sr-only">
+        <StructuredData data={webPageSchema} />
+        <StructuredData data={imageSchema} />
+        <StructuredData data={routeSchema} />
         <StructuredData data={schemaGraph} />
+        {reviewSchema.length ? <StructuredData data={reviewSchema} /> : null}
       </section>
     </main>
   );
