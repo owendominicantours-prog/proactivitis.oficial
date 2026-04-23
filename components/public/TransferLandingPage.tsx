@@ -954,15 +954,66 @@ export async function TransferLandingPage({
   return (
     <main className="bg-white">
       <LandingViewTracker landingSlug={landing.landingSlug} />
-      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-50 to-white">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 lg:grid-cols-2">
-          <div className="space-y-4">
-            <p className="text-xs uppercase tracking-[0.5em] text-emerald-600">{t("transferLanding.hero.label")}</p>
-            <h1 className="text-3xl font-black text-slate-900 md:text-4xl">{marketTitles.heroTitle}</h1>
-            <p className="text-lg text-slate-600">{localizedLanding.heroSubtitle}</p>
-            <p className="text-sm text-slate-500">{localizedLanding.heroTagline}</p>
+      <section className="relative overflow-hidden bg-[linear-gradient(135deg,#ecfdf5_0%,#ffffff_42%,#f0fdf4_100%)]">
+        <div className="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_60%)]" />
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 lg:grid-cols-[1.05fr,0.95fr] lg:py-16">
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <p className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1 text-[11px] font-bold uppercase tracking-[0.34em] text-emerald-700">
+                {t("transferLanding.hero.label")}
+              </p>
+              <h1 className="max-w-3xl text-4xl font-black leading-[1.02] text-slate-950 md:text-5xl">
+                {marketTitles.heroTitle}
+              </h1>
+              <p className="max-w-2xl text-lg leading-8 text-slate-600">{localizedLanding.heroSubtitle}</p>
+              <p className="max-w-2xl text-sm leading-7 text-slate-500">{localizedLanding.heroTagline}</p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[24px] border border-emerald-100 bg-white/90 p-4 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                  {locale === "es" ? "Precio desde" : locale === "fr" ? "Prix des" : "Price from"}
+                </p>
+                <p className="mt-2 text-2xl font-black text-slate-950">USD {Math.round(localizedLanding.priceFrom)}</p>
+              </div>
+              <div className="rounded-[24px] border border-emerald-100 bg-white/90 p-4 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                  {locale === "es" ? "Ruta" : locale === "fr" ? "Trajet" : "Route"}
+                </p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-900">
+                  {originLabel} {"->"} {destinationLabel}
+                </p>
+              </div>
+              <div className="rounded-[24px] border border-emerald-100 bg-white/90 p-4 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                  {locale === "es" ? "Servicio" : locale === "fr" ? "Service" : "Service"}
+                </p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-900">
+                  {locale === "es"
+                    ? "Privado, con seguimiento de vuelo"
+                    : locale === "fr"
+                    ? "Prive avec suivi de vol"
+                    : "Private with flight tracking"}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <a
+                href="#transfer-quote-cards"
+                className="rounded-full bg-emerald-600 px-6 py-3 text-xs font-black uppercase tracking-[0.28em] text-white transition hover:bg-emerald-500"
+              >
+                {locale === "es" ? "Cotizar ahora" : locale === "fr" ? "Demander un devis" : "Get a quote"}
+              </a>
+              <Link
+                href={hotelThingsToDoHref}
+                className="rounded-full border border-slate-300 bg-white px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-slate-900 transition hover:border-emerald-400 hover:text-emerald-700"
+              >
+                {locale === "es" ? "Ver tours del hotel" : locale === "fr" ? "Voir tours hotel" : "See hotel tours"}
+              </Link>
+            </div>
           </div>
-          <div className="relative h-96 w-full overflow-hidden rounded-[32px] border border-white/40 shadow-xl">
+          <div className="relative h-[420px] overflow-hidden rounded-[36px] border border-white/70 shadow-[0_35px_90px_rgba(15,23,42,0.12)]">
             <Image
               src={localizedLanding.heroImage}
               alt={localizedLanding.heroImageAlt}
@@ -970,13 +1021,49 @@ export async function TransferLandingPage({
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/65 via-slate-900/15 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-5">
+              <div className="rounded-[28px] border border-white/20 bg-slate-950/55 p-4 backdrop-blur">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-200">
+                  {locale === "es" ? "Llegada sin friccion" : locale === "fr" ? "Arrivee sans friction" : "Frictionless arrival"}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-white">
+                  {locale === "es"
+                    ? "Chofer bilingue, equipaje asistido y confirmacion inmediata desde la primera pantalla."
+                    : locale === "fr"
+                    ? "Chauffeur bilingue, bagages assistes et confirmation immediate."
+                    : "Bilingual driver, luggage assistance, and instant confirmation from the first screen."}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
       <section id="transfer-quote-cards" className="mx-auto max-w-6xl px-4 py-12">
-        <p className="text-sm text-slate-500">
-          {t("transferLanding.route.label")} {originLabel} {"->"} {destinationLabel}
-        </p>
+        <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-700">
+              {locale === "es" ? "Cotizacion en tiempo real" : locale === "fr" ? "Devis en temps reel" : "Real-time quote"}
+            </p>
+            <h2 className="mt-2 text-3xl font-black text-slate-950">
+              {locale === "es"
+                ? `Reserva tu transfer a ${localizedLanding.hotelName}`
+                : locale === "fr"
+                ? `Reservez votre transfert vers ${localizedLanding.hotelName}`
+                : `Book your transfer to ${localizedLanding.hotelName}`}
+            </h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+              {locale === "es"
+                ? "Fecha, pasajeros, tipo de viaje y vehiculo con precio claro antes del checkout."
+                : locale === "fr"
+                ? "Date, passagers, type de trajet et vehicule avec prix clair avant le checkout."
+                : "Date, passengers, trip type, and vehicle with clear pricing before checkout."}
+            </p>
+          </div>
+          <p className="text-sm font-medium text-slate-500">
+            {t("transferLanding.route.label")} {originLabel} {"->"} {destinationLabel}
+          </p>
+        </div>
         {canQuote ? (
           <TransferQuoteCards
             originId={originLocation!.id}
@@ -990,16 +1077,16 @@ export async function TransferLandingPage({
             locale={locale}
           />
         ) : (
-          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <div className="mt-4 rounded-[28px] border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
             {locale === "es"
               ? "Estamos actualizando esta ruta para cotizacion automatica. Puedes cotizar ahora mismo en el formulario general de traslados."
               : locale === "fr"
               ? "Nous mettons a jour cette route pour un devis automatique. Vous pouvez demander un devis immediat via le formulaire general."
               : "We are updating this route for automatic pricing. You can still request an instant quote from the general transfer form."}
-            <div className="mt-3">
+            <div className="mt-4">
               <Link
                 href={locale === "es" ? "/traslado" : `/${locale}/traslado`}
-                className="inline-flex rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white hover:bg-slate-700"
+                className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white hover:bg-slate-700"
               >
                 {locale === "es" ? "Cotizar traslado" : locale === "fr" ? "Demander un devis" : "Get transfer quote"}
               </Link>
@@ -1010,15 +1097,15 @@ export async function TransferLandingPage({
       <section className="mx-auto max-w-6xl px-4 pb-8">
         <div className="grid gap-4 md:grid-cols-3">
           {salesCards.map((card) => (
-            <article key={card.title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.3em] text-emerald-600">
+            <article key={card.title} className="rounded-[28px] border border-emerald-100 bg-[linear-gradient(180deg,#ffffff,#f8fffb)] p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-700">
                 {locale === "es" ? "Beneficio" : locale === "fr" ? "Avantage" : "Benefit"}
               </p>
-              <h3 className="mt-2 text-lg font-bold text-slate-900">{card.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">{card.body}</p>
+              <h3 className="mt-3 text-xl font-black text-slate-950">{card.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-slate-600">{card.body}</p>
               <Link
                 href="#transfer-quote-cards"
-                className="mt-4 inline-flex text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700 hover:text-emerald-800"
+                className="mt-5 inline-flex rounded-full border border-emerald-200 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-700 transition hover:border-emerald-400 hover:bg-emerald-50"
               >
                 {locale === "es" ? "Cotizar ahora" : locale === "fr" ? "Demander un devis" : "Get a quote"}
               </Link>
@@ -1026,20 +1113,27 @@ export async function TransferLandingPage({
           ))}
         </div>
       </section>
-      <section className="mx-auto max-w-6xl space-y-5 px-4 py-12">
-        {localizedLanding.longCopy.map((paragraph, index) => (
-          <p key={index} className="text-base leading-relaxed text-slate-600">
-            {paragraph}
+      <section className="mx-auto max-w-6xl px-4 py-12">
+        <div className="rounded-[32px] border border-slate-100 bg-white p-6 shadow-sm md:p-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">
+            {locale === "es" ? "Informacion util" : locale === "fr" ? "Information utile" : "Useful details"}
           </p>
-        ))}
+          <div className="mt-5 grid gap-5 md:grid-cols-2">
+            {localizedLanding.longCopy.map((paragraph, index) => (
+              <p key={index} className="text-base leading-8 text-slate-600">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        </div>
       </section>
       {recommendedTours.length > 0 ? (
         <section className="mx-auto max-w-6xl px-4 pb-12">
-          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+          <div className="rounded-[32px] border border-slate-100 bg-white p-6 shadow-sm md:p-8">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">
               {locale === "es" ? "Tours recomendados" : locale === "fr" ? "Tours recommandes" : "Recommended tours"}
             </p>
-            <h2 className="mt-2 text-2xl font-bold text-slate-900">
+            <h2 className="mt-2 text-3xl font-black text-slate-950">
               {locale === "es"
                 ? `Combina tu traslado a ${localizedLanding.hotelName} con estas excursiones`
                 : locale === "fr"
@@ -1050,8 +1144,8 @@ export async function TransferLandingPage({
               {recommendedTours.map((tour) => {
                 const tourHref = locale === "es" ? `/tours/${tour.slug}` : `/${locale}/tours/${tour.slug}`;
                 return (
-                  <article key={tour.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                    <div className="relative h-40">
+                  <article key={tour.id} className="overflow-hidden rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff,#f8fafc)] shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+                    <div className="relative h-44">
                       <Image
                         src={resolveTourCardImage(tour.heroImage, tour.gallery)}
                         alt={tour.translations?.[0]?.title ?? tour.title}
@@ -1060,23 +1154,23 @@ export async function TransferLandingPage({
                         className="object-cover"
                       />
                     </div>
-                    <div className="space-y-2 p-4">
-                      <h3 className="line-clamp-2 text-base font-bold text-slate-900">
+                    <div className="space-y-3 p-5">
+                      <h3 className="line-clamp-2 text-lg font-black text-slate-950">
                         {tour.translations?.[0]?.title ?? tour.title}
                       </h3>
-                      <p className="line-clamp-2 text-sm text-slate-600">
+                      <p className="line-clamp-2 text-sm leading-6 text-slate-600">
                         {tour.translations?.[0]?.shortDescription || tour.shortDescription || localizedLanding.heroSubtitle}
                       </p>
-                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
                         {locale === "es" ? "Duracion" : locale === "fr" ? "Duree" : "Duration"}:{" "}
                         {formatTourDuration(tour.duration, locale)}
                       </p>
-                      <p className="text-sm font-semibold text-emerald-700">
+                      <p className="text-base font-black text-emerald-700">
                         {locale === "es" ? "Desde" : locale === "fr" ? "A partir de" : "From"} USD {Math.round(tour.price)}
                       </p>
                       <Link
                         href={tourHref}
-                        className="inline-flex rounded-full border border-emerald-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 transition hover:bg-emerald-50"
+                        className="inline-flex rounded-full border border-emerald-500 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-700 transition hover:bg-emerald-50"
                       >
                         {locale === "es" ? "Ver tour" : locale === "fr" ? "Voir le tour" : "View tour"}
                       </Link>
@@ -1154,11 +1248,11 @@ export async function TransferLandingPage({
         </section>
       ) : null}
       <section className="mx-auto max-w-6xl px-4 py-10">
-        <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+        <div className="rounded-[32px] border border-slate-100 bg-[linear-gradient(135deg,#f8fafc,#f0fdf4)] p-6 md:p-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">
             {activeSalesVariant ? `${activeSalesVariant.badge} + Tours` : t("transferLanding.other.title")}
           </p>
-          <h2 className="mt-2 text-2xl font-bold text-slate-900">
+          <h2 className="mt-2 text-3xl font-black text-slate-950">
             {locale === "es"
               ? `Completa tu viaje en ${localizedLanding.hotelName} con tours`
               : locale === "fr"
@@ -1195,11 +1289,11 @@ export async function TransferLandingPage({
         </div>
       </section>
       <section className="mx-auto max-w-6xl px-4 py-8">
-        <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+        <div className="rounded-[32px] border border-slate-100 bg-white p-6 shadow-sm md:p-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">
             {t("transferLanding.longform.eyebrow")}
           </p>
-          <h2 className="mt-2 text-2xl font-bold text-slate-900">
+          <h2 className="mt-2 text-3xl font-black text-slate-950">
             {t("transferLanding.longform.title", { hotel: localizedLanding.hotelName })}
           </h2>
           <div className="mt-4 space-y-3 text-sm text-slate-600">
@@ -1211,27 +1305,28 @@ export async function TransferLandingPage({
       </section>
       <section className="mx-auto max-w-6xl space-y-6 px-4 py-12">
         <header className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{t("transferLanding.faq.eyebrow")}</p>
-          <h2 className="text-2xl font-bold text-slate-900">{t("transferLanding.faq.title")}</h2>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">{t("transferLanding.faq.eyebrow")}</p>
+          <h2 className="text-3xl font-black text-slate-950">{t("transferLanding.faq.title")}</h2>
         </header>
         <div className="grid gap-4 md:grid-cols-2">
-          {localizedLanding.faq.map((item) => (
-            <article key={item.question} className="rounded-2xl border border-slate-100 bg-white p-6 text-sm text-slate-600 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{item.question}</p>
-              <p className="mt-2 font-semibold text-slate-900">{item.answer}</p>
+          {localizedLanding.faq.map((item, index) => (
+            <article key={item.question} className="rounded-[28px] border border-slate-100 bg-white p-6 text-sm text-slate-600 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-700">0{index + 1}</p>
+              <p className="mt-3 font-black text-slate-950">{item.question}</p>
+              <p className="mt-3 leading-7 text-slate-600">{item.answer}</p>
             </article>
           ))}
         </div>
       </section>
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-6">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{t("transferLanding.other.title")}</p>
-          <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col gap-4 rounded-[32px] border border-slate-100 bg-slate-50 p-6 md:p-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">{t("transferLanding.other.title")}</p>
+          <div className="grid gap-3 md:grid-cols-3">
             {otherLandings.map((item) => (
               <Link
                 key={item.landingSlug}
                 href={locale === "es" ? `/transfer/${item.landingSlug}` : `/${locale}/transfer/${item.landingSlug}`}
-                className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700 transition hover:border-emerald-400 hover:text-emerald-600"
+                className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 text-sm font-semibold leading-6 text-slate-800 transition hover:border-emerald-400 hover:text-emerald-700"
               >
                 {item.hotelName}
               </Link>
@@ -1243,7 +1338,7 @@ export async function TransferLandingPage({
             <Link
               key={`reverse-${item.reverseSlug}`}
               href={locale === "es" ? `/transfer/${item.reverseSlug}` : `/${locale}/transfer/${item.reverseSlug}`}
-              className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-600 underline"
+              className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700 underline underline-offset-4"
             >
               {t("transferLanding.backLink", { hotel: item.hotelName })}
             </Link>

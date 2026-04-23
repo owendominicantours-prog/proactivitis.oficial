@@ -206,7 +206,7 @@ export default function TransferQuoteCards({
 
   return (
     <section className="space-y-6">
-      <div className="rounded-[32px] border border-slate-200 bg-white/90 p-6 shadow">
+      <div className="rounded-[34px] border border-emerald-100 bg-[linear-gradient(135deg,#ffffff,#f8fffb)] p-6 shadow-sm md:p-7">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-1 text-sm text-slate-500">
             {t("transferQuote.datetime")}
@@ -242,7 +242,7 @@ export default function TransferQuoteCards({
             type="button"
             onClick={() => setTripType("one-way")}
             className={`rounded-full px-4 py-2 ${
-              tripType === "one-way" ? "bg-emerald-600 text-white" : "border border-slate-200 text-slate-700"
+              tripType === "one-way" ? "bg-emerald-600 text-white" : "border border-slate-200 bg-white text-slate-700"
             }`}
           >
             {t("transferQuote.oneWay")}
@@ -251,7 +251,7 @@ export default function TransferQuoteCards({
             type="button"
             onClick={() => setTripType("round-trip")}
             className={`rounded-full px-4 py-2 ${
-              tripType === "round-trip" ? "bg-emerald-600 text-white" : "border border-slate-200 text-slate-700"
+              tripType === "round-trip" ? "bg-emerald-600 text-white" : "border border-slate-200 bg-white text-slate-700"
             }`}
           >
             {t("transferQuote.roundTrip")}
@@ -274,7 +274,7 @@ export default function TransferQuoteCards({
           )}
         </div>
       </div>
-      <div className="space-y-4 rounded-[32px] border border-slate-100 bg-white/90 p-6 shadow-sm">
+      <div className="space-y-4 rounded-[34px] border border-slate-100 bg-white p-6 shadow-sm md:p-7">
         <p className="text-sm text-slate-500">
           {t("transferQuote.priceFrom", { price: priceFrom.toFixed(2) })}
         </p>
@@ -302,7 +302,7 @@ export default function TransferQuoteCards({
             return (
               <article
                 key={vehicle.id}
-                className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-card transition-transform duration-300 hover:-translate-y-2"
+                className="group flex h-full flex-col overflow-hidden rounded-[30px] border border-slate-100 bg-[linear-gradient(180deg,#ffffff,#f8fafc)] shadow-sm transition-transform duration-300 hover:-translate-y-2 hover:shadow-md"
               >
                 <div className="relative">
                   <div
@@ -325,12 +325,12 @@ export default function TransferQuoteCards({
                   <p className="text-brand text-[10px] font-medium uppercase tracking-[0.35em]">
                     {originLabel} to {destinationLabel}
                   </p>
-                  <h3 className="text-2xl font-black leading-tight text-slate-900">{vehicle.name}</h3>
+                  <h3 className="text-2xl font-black leading-tight text-slate-950">{vehicle.name}</h3>
                   <p className="text-sm leading-relaxed text-slate-500">
                     {t("transferQuote.passengerRange", { min: vehicle.minPax, max: vehicle.maxPax })}
                   </p>
 
-                  <ul className="space-y-1 border-y border-slate-50 py-2 text-xs text-slate-500">
+                  <ul className="space-y-1 border-y border-slate-100 py-3 text-xs text-slate-500">
                     <li>{t("transferQuote.bullets.private")}</li>
                     <li>{t("transferQuote.bullets.ac")}</li>
                   </ul>
@@ -347,7 +347,7 @@ export default function TransferQuoteCards({
                     </div>
                     <Link
                       href={reserveUrl}
-                      className="rounded-2xl bg-brand px-5 py-3 text-center text-sm font-bold text-white shadow-lg shadow-brand/40 transition-colors group-hover:bg-brand-light"
+                      className="rounded-2xl bg-brand px-5 py-3 text-center text-sm font-bold text-white shadow-md shadow-brand/30 transition-colors group-hover:bg-brand-light"
                     >
                       {t("transferQuote.reserve")}
                     </Link>
