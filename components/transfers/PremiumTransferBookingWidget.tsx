@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Locale } from "@/lib/translations";
 import { getSiteDateTimeInputValue } from "@/lib/site-date";
 
@@ -284,8 +284,14 @@ export default function PremiumTransferBookingWidget({
     destinations[0] ??
     null;
 
+  const originRef = useRef<HTMLDivElement | null>(null);
+  const destinationRef = useRef<HTMLDivElement | null>(null);
   const [originId, setOriginId] = useState(origins[0]?.id ?? "");
   const [destinationId, setDestinationId] = useState(preferredDestination?.id ?? destinations[0]?.id ?? "");
+  const [originQuery, setOriginQuery] = useState(origins[0]?.name ?? "");
+  const [destinationQuery, setDestinationQuery] = useState(preferredDestination?.name ?? destinations[0]?.name ?? "");
+  const [originOpen, setOriginOpen] = useState(false);
+  const [destinationOpen, setDestinationOpen] = useState(false);
   const [passengers, setPassengers] = useState(2);
   const [departureDate, setDepartureDate] = useState(defaultDate);
   const [departureTime, setDepartureTime] = useState(defaultTime);
@@ -303,6 +309,38 @@ export default function PremiumTransferBookingWidget({
     () => destinations.find((item) => item.id === destinationId) ?? null,
     [destinationId, destinations]
   );
+
+  useEffect(() => {
+    if (origin?.name) setOriginQuery(origin.name);
+  }, [origin?.name]);
+
+  useEffect(() => {
+    if (destination?.name) setDestinationQuery(destination.name);
+  }, [destination?.name]);
+
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      if (originRef.current && !originRef.current.contains(event.target as Node)) {
+        setOriginOpen(false);
+      }
+      if (destinationRef.current && !destinationRef.current.contains(event.target as Node)) {
+        setDestinationOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const filterOptions = (items: DestinationOption[], query: string) => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return items.slice(0, 12);
+    return items
+      .filter((item) => item.name.toLowerCase().includes(normalized) || item.slug.toLowerCase().includes(normalized))
+      .slice(0, 12);
+  };
+
+  const filteredOrigins = useMemo(() => filterOptions(origins, originQuery), [originQuery, origins]);
+  const filteredDestinations = useMemo(() => filterOptions(destinations, destinationQuery), [destinationQuery, destinations]);
 
   const validRoute = Boolean(origin?.id && destination?.id && origin.id !== destination.id);
   const validRoundTrip = tripType === "one-way" || Boolean(returnDate && returnTime);
@@ -390,37 +428,83 @@ export default function PremiumTransferBookingWidget({
             <article className="rounded-[28px] border border-white/10 bg-white/5 p-5 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-200">{copy.routeTitle}</p>
               <div className="mt-4 grid gap-3">
-                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">
-                  {copy.origin}
-                  <select
-                    value={originId}
-                    onChange={(event) => setOriginId(event.target.value)}
-                    className="mt-2 w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none"
-                  >
-                    {!origins.length ? <option value="">{copy.emptyOrigin}</option> : null}
-                    {origins.map((item) => (
-                      <option key={`origin-${item.id}`} value={item.id}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <div ref={originRef} className="relative">
+                  <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">
+                    {copy.origin}
+                    <input
+                      value={originQuery}
+                      onChange={(event) => {
+                        setOriginQuery(event.target.value);
+                        setOriginId("");
+                        setOriginOpen(true);
+                      }}
+                      onFocus={() => setOriginOpen(true)}
+                      placeholder={copy.emptyOrigin}
+                      className="mt-2 w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
+                    />
+                  </label>
+                  {originOpen ? (
+                    <div className="absolute z-20 mt-2 max-h-64 w-full overflow-auto rounded-2xl border border-white/10 bg-slate-950 shadow-xl">
+                      {filteredOrigins.length ? (
+                        filteredOrigins.map((item) => (
+                          <button
+                            key={`origin-${item.id}`}
+                            type="button"
+                            onClick={() => {
+                              setOriginId(item.id);
+                              setOriginQuery(item.name);
+                              setOriginOpen(false);
+                            }}
+                            className="block w-full border-b border-white/5 px-4 py-3 text-left text-sm text-white transition hover:bg-white/5"
+                          >
+                            {item.name}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-sm text-slate-400">{copy.emptyOrigin}</div>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
 
-                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">
-                  {copy.destination}
-                  <select
-                    value={destinationId}
-                    onChange={(event) => setDestinationId(event.target.value)}
-                    className="mt-2 w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none"
-                  >
-                    {!destinations.length ? <option value="">{copy.emptyDestination}</option> : null}
-                    {destinations.map((item) => (
-                      <option key={`destination-${item.id}`} value={item.id}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <div ref={destinationRef} className="relative">
+                  <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">
+                    {copy.destination}
+                    <input
+                      value={destinationQuery}
+                      onChange={(event) => {
+                        setDestinationQuery(event.target.value);
+                        setDestinationId("");
+                        setDestinationOpen(true);
+                      }}
+                      onFocus={() => setDestinationOpen(true)}
+                      placeholder={copy.emptyDestination}
+                      className="mt-2 w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
+                    />
+                  </label>
+                  {destinationOpen ? (
+                    <div className="absolute z-20 mt-2 max-h-64 w-full overflow-auto rounded-2xl border border-white/10 bg-slate-950 shadow-xl">
+                      {filteredDestinations.length ? (
+                        filteredDestinations.map((item) => (
+                          <button
+                            key={`destination-${item.id}`}
+                            type="button"
+                            onClick={() => {
+                              setDestinationId(item.id);
+                              setDestinationQuery(item.name);
+                              setDestinationOpen(false);
+                            }}
+                            className="block w-full border-b border-white/5 px-4 py-3 text-left text-sm text-white transition hover:bg-white/5"
+                          >
+                            {item.name}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-sm text-slate-400">{copy.emptyDestination}</div>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </article>
 
