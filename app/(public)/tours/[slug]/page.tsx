@@ -425,7 +425,7 @@ export default async function TourDetailPage({ params }: TourDetailProps) {
         "@id": `${canonicalUrl}#review-${review.id}`,
         author: {
           "@type": "Person",
-          name: review.name
+          name: review.customerName
         },
         datePublished: (review.approvedAt ?? review.createdAt).toISOString().slice(0, 10),
         reviewBody: review.body,
