@@ -68,8 +68,8 @@ const THEMES: Record<string, Theme> = {
     buttonText: "text-slate-950",
     panel: "border-cyan-200/20 bg-slate-950/55",
     panelSoft: "border-cyan-200/15 bg-slate-900/65",
-    accent: "text-cyan-200",
-    accentSoft: "text-cyan-50",
+    accent: "text-amber-100",
+    accentSoft: "text-white",
     border: "border-cyan-200/20"
   },
   luxury: {
@@ -80,8 +80,8 @@ const THEMES: Record<string, Theme> = {
     buttonText: "text-stone-950",
     panel: "border-amber-200/20 bg-stone-950/55",
     panelSoft: "border-amber-200/15 bg-stone-900/65",
-    accent: "text-amber-200",
-    accentSoft: "text-amber-50",
+    accent: "text-amber-100",
+    accentSoft: "text-white",
     border: "border-amber-200/20"
   },
   executive: {
@@ -92,8 +92,8 @@ const THEMES: Record<string, Theme> = {
     buttonText: "text-slate-950",
     panel: "border-emerald-200/20 bg-slate-950/55",
     panelSoft: "border-emerald-200/15 bg-slate-900/65",
-    accent: "text-emerald-200",
-    accentSoft: "text-emerald-50",
+    accent: "text-amber-100",
+    accentSoft: "text-white",
     border: "border-emerald-200/20"
   },
   family: {
@@ -104,8 +104,8 @@ const THEMES: Record<string, Theme> = {
     buttonText: "text-lime-950",
     panel: "border-lime-200/20 bg-stone-950/55",
     panelSoft: "border-lime-200/15 bg-stone-900/65",
-    accent: "text-lime-200",
-    accentSoft: "text-lime-50",
+    accent: "text-amber-100",
+    accentSoft: "text-white",
     border: "border-lime-200/20"
   }
 };
@@ -793,7 +793,7 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
             <a
               key={item.id}
               href={`#${item.id}`}
-              className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition hover:bg-white/5 ${theme.panelSoft}`}
+              className={`rounded-2xl border px-4 py-3 text-sm font-bold text-white transition hover:bg-white/10 ${theme.panelSoft}`}
             >
               {item.label}
             </a>
