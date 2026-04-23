@@ -485,22 +485,30 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
       ).slice(0, 4)
     : [];
 
+  const primaryImageUrl = toAbsoluteImageUrl(content.heroBackgroundImage || content.heroSpotlightImage);
+  const spotlightImageUrl = toAbsoluteImageUrl(content.heroSpotlightImage || content.lifestyleImage || content.heroBackgroundImage);
+  const cadillacImageUrl = toAbsoluteImageUrl(content.cadillacImage);
+  const suburbanImageUrl = toAbsoluteImageUrl(content.suburbanImage);
+  const topHotels = destinations.slice(0, 8);
+
   const graphSchema = {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "WebPage",
-        "@id": `${canonicalUrl}#webpage`,
-        name: seoTitle,
-        description: seoDescription,
-        url: canonicalUrl,
-        inLanguage: locale,
-        isPartOf: { "@id": `${PROACTIVITIS_URL}#website` },
-        about: { "@id": `${canonicalUrl}#service` },
-        primaryImageOfPage: {
-          "@type": "ImageObject",
-          "@id": `${canonicalUrl}#primaryimage`,
-          url: toAbsoluteImageUrl(content.heroBackgroundImage || content.heroSpotlightImage)
+        "@type": "Organization",
+        "@id": `${PROACTIVITIS_URL}#organization`,
+        name: "Proactivitis",
+        url: PROACTIVITIS_URL,
+        logo: `${PROACTIVITIS_URL}/LOGO.png`,
+        sameAs: SAME_AS_URLS
+      },
+      {
+        ...PROACTIVITIS_LOCALBUSINESS,
+        "@id": `${PROACTIVITIS_URL}#localbusiness`,
+        parentOrganization: { "@id": `${PROACTIVITIS_URL}#organization` },
+        areaServed: {
+          "@type": "Place",
+          name: "Punta Cana"
         }
       },
       {
@@ -512,12 +520,65 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
         inLanguage: locale
       },
       {
-        "@type": "Organization",
-        "@id": `${PROACTIVITIS_URL}#organization`,
-        name: "Proactivitis",
-        url: PROACTIVITIS_URL,
-        logo: `${PROACTIVITIS_URL}/LOGO.png`,
-        sameAs: SAME_AS_URLS
+        "@type": "WebPage",
+        "@id": `${canonicalUrl}#webpage`,
+        name: seoTitle,
+        description: seoDescription,
+        url: canonicalUrl,
+        inLanguage: locale,
+        isPartOf: { "@id": `${PROACTIVITIS_URL}#website` },
+        about: { "@id": `${canonicalUrl}#service` },
+        primaryImageOfPage: {
+          "@id": `${canonicalUrl}#primaryimage`
+        },
+        breadcrumb: {
+          "@id": `${canonicalUrl}#breadcrumb`
+        }
+      },
+      {
+        "@type": "ImageObject",
+        "@id": `${canonicalUrl}#primaryimage`,
+        contentUrl: primaryImageUrl,
+        url: primaryImageUrl,
+        caption: heroTitle,
+        representativeOfPage: true
+      },
+      {
+        "@type": "ImageObject",
+        "@id": `${canonicalUrl}#spotlightimage`,
+        contentUrl: spotlightImageUrl,
+        url: spotlightImageUrl,
+        caption: heroSubtitle
+      },
+      {
+        "@type": "Place",
+        "@id": `${canonicalUrl}#origin`,
+        name: safeOrigin.name
+      },
+      {
+        "@type": "Place",
+        "@id": `${canonicalUrl}#destination-area`,
+        name: context.areaLabel,
+        containedInPlace: {
+          "@type": "Place",
+          name: "Punta Cana"
+        }
+      },
+      {
+        "@type": "Offer",
+        "@id": `${canonicalUrl}#offer`,
+        availability: "https://schema.org/InStock",
+        url: canonicalUrl,
+        priceCurrency: "USD",
+        priceValidUntil,
+        category: "Premium airport transfer",
+        eligibleRegion: {
+          "@type": "Country",
+          name: "Dominican Republic"
+        },
+        itemOffered: {
+          "@id": `${canonicalUrl}#service`
+        }
       },
       {
         "@type": "Service",
@@ -525,26 +586,85 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
         name: heroTitle,
         description: heroSubtitle,
         serviceType: "Luxury Airport Transfer",
-        areaServed: {
-          "@type": "Place",
-          name: context.areaLabel
-        },
-        provider: {
-          ...PROACTIVITIS_LOCALBUSINESS
+        provider: { "@id": `${PROACTIVITIS_URL}#localbusiness` },
+        availableLanguage: locale === "es" ? ["es", "en"] : locale === "fr" ? ["fr", "en", "es"] : ["en", "es"],
+        termsOfService: canonicalUrl,
+        hasOfferCatalog: {
+          "@id": `${canonicalUrl}#fleet`
         },
         offers: {
-          "@type": "Offer",
-          availability: "https://schema.org/InStock",
-          url: canonicalUrl,
-          priceCurrency: "USD",
-          priceValidUntil
+          "@id": `${canonicalUrl}#offer`
+        },
+        serviceOutput: {
+          "@type": "Thing",
+          name: locale === "es" ? "Traslado premium confirmado" : locale === "fr" ? "Transfert premium confirme" : "Confirmed premium transfer"
+        },
+        serviceArea: {
+          "@type": "Place",
+          name: "Punta Cana"
+        },
+        areaServed: {
+          "@id": `${canonicalUrl}#destination-area`
+        },
+        hoursAvailable: {
+          "@type": "OpeningHoursSpecification",
+          dayOfWeek: [
+            "https://schema.org/Monday",
+            "https://schema.org/Tuesday",
+            "https://schema.org/Wednesday",
+            "https://schema.org/Thursday",
+            "https://schema.org/Friday",
+            "https://schema.org/Saturday",
+            "https://schema.org/Sunday"
+          ],
+          opens: "00:00",
+          closes: "23:59"
         },
         image: [
-          toAbsoluteImageUrl(content.heroBackgroundImage),
-          toAbsoluteImageUrl(content.heroSpotlightImage),
-          toAbsoluteImageUrl(content.cadillacImage),
-          toAbsoluteImageUrl(content.suburbanImage)
+          primaryImageUrl,
+          spotlightImageUrl,
+          cadillacImageUrl,
+          suburbanImageUrl
+        ],
+        isRelatedTo: topHotels.map((hotel) => ({
+          "@type": "Place",
+          name: hotel.name
+        }))
+      },
+      {
+        "@type": "OfferCatalog",
+        "@id": `${canonicalUrl}#fleet`,
+        name: locale === "es" ? "Flota premium disponible" : locale === "fr" ? "Flotte premium disponible" : "Available premium fleet",
+        itemListElement: [
+          {
+            "@type": "Offer",
+            name: "Cadillac Escalade",
+            itemOffered: {
+              "@type": "Service",
+              name: "Cadillac Escalade premium transfer"
+            },
+            image: cadillacImageUrl
+          },
+          {
+            "@type": "Offer",
+            name: "Chevrolet Suburban",
+            itemOffered: {
+              "@type": "Service",
+              name: "Chevrolet Suburban premium transfer"
+            },
+            image: suburbanImageUrl
+          }
         ]
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${canonicalUrl}#coverage-list`,
+        name: locale === "es" ? "Hoteles conectados" : locale === "fr" ? "Hotels connectes" : "Connected hotels",
+        itemListElement: topHotels.map((hotel, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: hotel.name
+        }))
       },
       {
         "@type": "BreadcrumbList",
