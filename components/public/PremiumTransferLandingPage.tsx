@@ -20,7 +20,6 @@ import {
 
 const WHATSAPP_LINK = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? PROACTIVITIS_WHATSAPP_LINK;
 const DOMINICAN_COUNTRY_CODES = ["RD", "DO", "DOMINICAN-REPUBLIC"];
-const PREMIUM_AREA_HINTS = ["bavaro", "cap-cana", "uvero-alto", "arena-gorda", "punta-cana-resorts"];
 
 const toAbsoluteImageUrl = (value?: string | null) => {
   if (!value) return `${PROACTIVITIS_URL}/transfer/suv.png`;
@@ -28,49 +27,348 @@ const toAbsoluteImageUrl = (value?: string | null) => {
   return `${PROACTIVITIS_URL}${value.startsWith("/") ? value : `/${value}`}`;
 };
 
-const LABELS = {
-  es: {
-    eliteRoute: "Ruta premium recomendada",
-    galleryTitle: "Galeria VIP",
-    fleetCadillac: "Cadillac Escalade Class",
-    fleetSuburban: "Chevrolet Suburban Class",
-    connectedHotels: "Hoteles conectados para transfer VIP",
-    certificationsTitle: "Certificaciones VIP",
-    bookingFallback:
-      "No hay destinos premium disponibles ahora mismo. Escribe por WhatsApp para cotizacion inmediata.",
-    faqTitle: "Preguntas frecuentes VIP"
-  },
-  en: {
-    eliteRoute: "Recommended premium route",
-    galleryTitle: "VIP Gallery",
-    fleetCadillac: "Cadillac Escalade Class",
-    fleetSuburban: "Chevrolet Suburban Class",
-    connectedHotels: "Connected hotels for VIP transfer",
-    certificationsTitle: "VIP Certifications",
-    bookingFallback: "No premium destinations available right now. Message us on WhatsApp for instant quote.",
-    faqTitle: "VIP Frequently Asked Questions"
-  },
-  fr: {
-    eliteRoute: "Itineraire premium recommande",
-    galleryTitle: "Galerie VIP",
-    fleetCadillac: "Cadillac Escalade Class",
-    fleetSuburban: "Chevrolet Suburban Class",
-    connectedHotels: "Hotels connectes pour transfert VIP",
-    certificationsTitle: "Certifications VIP",
-    bookingFallback:
-      "Aucune destination premium disponible pour le moment. Ecrivez-nous sur WhatsApp pour un devis immediat.",
-    faqTitle: "Questions frequentes VIP"
-  }
-} as const;
-
 type Props = {
   locale: Locale;
   variant?: PremiumTransferMarketLanding;
 };
 
+type Theme = {
+  shell: string;
+  heroGlow: string;
+  pill: string;
+  button: string;
+  buttonText: string;
+  panel: string;
+  panelSoft: string;
+  accent: string;
+  accentSoft: string;
+  border: string;
+};
+
+type VariantContext = {
+  intentId: string | null;
+  areaId: string | null;
+  areaLabel: string;
+  themeLabel: string;
+  strapline: string;
+  highlights: string[];
+  reasons: string[];
+  routeSteps: string[];
+  facts: Array<{ label: string; value: string }>;
+  trust: string[];
+  faqs: Array<{ q: string; a: string }>;
+};
+
+const THEMES: Record<string, Theme> = {
+  vip: {
+    shell: "bg-[#07111f] text-slate-100",
+    heroGlow: "from-cyan-400/15 via-sky-300/10 to-amber-300/10",
+    pill: "border-cyan-300/40 bg-cyan-300/10 text-cyan-100",
+    button: "bg-cyan-300 hover:bg-cyan-200",
+    buttonText: "text-slate-950",
+    panel: "border-cyan-200/20 bg-slate-950/55",
+    panelSoft: "border-cyan-200/15 bg-slate-900/65",
+    accent: "text-cyan-200",
+    accentSoft: "text-cyan-50",
+    border: "border-cyan-200/20"
+  },
+  luxury: {
+    shell: "bg-[#140f08] text-stone-100",
+    heroGlow: "from-amber-300/15 via-orange-300/10 to-zinc-50/5",
+    pill: "border-amber-200/40 bg-amber-200/10 text-amber-50",
+    button: "bg-amber-300 hover:bg-amber-200",
+    buttonText: "text-stone-950",
+    panel: "border-amber-200/20 bg-stone-950/55",
+    panelSoft: "border-amber-200/15 bg-stone-900/65",
+    accent: "text-amber-200",
+    accentSoft: "text-amber-50",
+    border: "border-amber-200/20"
+  },
+  executive: {
+    shell: "bg-[#081018] text-slate-100",
+    heroGlow: "from-emerald-300/15 via-teal-300/10 to-cyan-300/10",
+    pill: "border-emerald-200/40 bg-emerald-200/10 text-emerald-50",
+    button: "bg-emerald-300 hover:bg-emerald-200",
+    buttonText: "text-slate-950",
+    panel: "border-emerald-200/20 bg-slate-950/55",
+    panelSoft: "border-emerald-200/15 bg-slate-900/65",
+    accent: "text-emerald-200",
+    accentSoft: "text-emerald-50",
+    border: "border-emerald-200/20"
+  },
+  family: {
+    shell: "bg-[#11120b] text-lime-50",
+    heroGlow: "from-lime-300/15 via-yellow-300/10 to-orange-200/10",
+    pill: "border-lime-200/40 bg-lime-200/10 text-lime-50",
+    button: "bg-lime-300 hover:bg-lime-200",
+    buttonText: "text-lime-950",
+    panel: "border-lime-200/20 bg-stone-950/55",
+    panelSoft: "border-lime-200/15 bg-stone-900/65",
+    accent: "text-lime-200",
+    accentSoft: "text-lime-50",
+    border: "border-lime-200/20"
+  }
+};
+
+const DEFAULT_THEME = THEMES.vip;
+
+const getAreaLabel = (areaId: string | null, locale: Locale) => {
+  const labels: Record<string, Record<Locale, string>> = {
+    bavaro: { es: "Bavaro", en: "Bavaro", fr: "Bavaro" },
+    "cap-cana": { es: "Cap Cana", en: "Cap Cana", fr: "Cap Cana" },
+    "uvero-alto": { es: "Uvero Alto", en: "Uvero Alto", fr: "Uvero Alto" },
+    "arena-gorda": { es: "Arena Gorda", en: "Arena Gorda", fr: "Arena Gorda" },
+    "punta-cana-resorts": {
+      es: "Resorts de Punta Cana",
+      en: "Punta Cana Resorts",
+      fr: "Resorts de Punta Cana"
+    }
+  };
+  return labels[areaId ?? ""]?.[locale] ?? (locale === "fr" ? "Punta Cana" : locale === "en" ? "Punta Cana" : "Punta Cana");
+};
+
+const getVariantTokens = (variant?: PremiumTransferMarketLanding) => {
+  if (!variant) return { intentId: null, areaId: null };
+  const parts = variant.slug.split("-");
+  const areaIds = ["punta-cana-resorts", "uvero-alto", "arena-gorda", "cap-cana", "bavaro"];
+  const areaId = areaIds.find((item) => variant.slug.endsWith(item)) ?? null;
+  if (!areaId) return { intentId: variant.slug, areaId: null };
+  return {
+    areaId,
+    intentId: parts.slice(0, parts.length - areaId.split("-").length).join("-")
+  };
+};
+
+const getThemeKey = (intentId: string | null) => {
+  if (!intentId) return "vip";
+  if (intentId.includes("luxury") || intentId.includes("cadillac") || intentId.includes("suburban")) return "luxury";
+  if (intentId.includes("executive") || intentId.includes("chauffeur")) return "executive";
+  if (intentId.includes("family")) return "family";
+  return "vip";
+};
+
+const getVariantContext = (locale: Locale, variant?: PremiumTransferMarketLanding): VariantContext => {
+  const { intentId, areaId } = getVariantTokens(variant);
+  const areaLabel = getAreaLabel(areaId, locale);
+  const themeKey = getThemeKey(intentId);
+
+  const base = {
+    es: {
+      strapline: "Servicio premium disenado para viajeros que quieren llegar sin estres, sin esperas y con una experiencia claramente superior.",
+      themeLabels: {
+        vip: "Ruta VIP",
+        luxury: "Traslado de lujo",
+        executive: "Chauffeur ejecutivo",
+        family: "Luxury family ride"
+      },
+      highlights: [
+        "Recogida puntual con seguimiento de vuelo en tiempo real.",
+        "SUV premium con espacio de equipaje y climatizacion real.",
+        "Operacion privada de aeropuerto a hotel sin improvisaciones."
+      ],
+      reasons: [
+        "Mas imagen y comodidad que un transfer estandar.",
+        "Confirmacion rapida por WhatsApp y soporte operativo.",
+        "Cobertura solida para llegadas tardias, familias y grupos premium."
+      ],
+      route: [
+        "Recepcion en PUJ con coordinacion previa.",
+        `Salida privada hacia ${areaLabel} con chofer profesional.`,
+        "Seguimiento operativo durante el trayecto y asistencia si cambia el vuelo.",
+        "Entrega directa en lobby o punto autorizado del resort."
+      ],
+      facts: [
+        { label: "Tipo de servicio", value: "Privado premium" },
+        { label: "Cobertura", value: areaLabel },
+        { label: "Disponibilidad", value: "24/7 con confirmacion" },
+        { label: "Soporte", value: "WhatsApp + seguimiento de vuelo" }
+      ],
+      trust: [
+        "Operacion pensada para viajeros que no quieren negociar al llegar.",
+        "Vehiculos premium sujetos a disponibilidad real y coordinacion previa.",
+        "Ideal para llegadas nocturnas, escapadas VIP y reservas de alto valor."
+      ],
+      faqs: [
+        {
+          q: `Este transfer premium cubre ${areaLabel}?`,
+          a: `Si. Esta landing esta enfocada en reservas premium con cobertura para ${areaLabel} y coordinacion previa desde PUJ.`
+        },
+        {
+          q: "Que diferencia hay con un traslado privado normal?",
+          a: "La diferencia esta en la categoria del vehiculo, el tipo de atencion, la experiencia de llegada y la operacion mas controlada."
+        },
+        {
+          q: "Puedo reservar ida y vuelta?",
+          a: "Si. Puedes solicitar llegada, salida o servicio round trip desde el mismo flujo de reserva."
+        }
+      ]
+    },
+    en: {
+      strapline: "A premium airport service built for travelers who want a smoother arrival, stronger comfort, and a more polished operation from the start.",
+      themeLabels: {
+        vip: "VIP route",
+        luxury: "Luxury transfer",
+        executive: "Executive chauffeur",
+        family: "Family premium ride"
+      },
+      highlights: [
+        "On-time pickup with live flight tracking.",
+        "Premium SUV comfort, luggage room, and clean climate-controlled ride.",
+        "Private airport-to-resort operation with less friction and more control."
+      ],
+      reasons: [
+        "Stronger arrival experience than a standard transfer.",
+        "Fast WhatsApp confirmation and direct operational support.",
+        "Well suited for late arrivals, premium couples, and high-value bookings."
+      ],
+      route: [
+        "Airport coordination before landing.",
+        `Private departure from PUJ to ${areaLabel} with a professional driver.`,
+        "Operational monitoring during the route in case flight timing changes.",
+        "Direct drop-off at your resort lobby or approved entry point."
+      ],
+      facts: [
+        { label: "Service type", value: "Private premium" },
+        { label: "Coverage", value: areaLabel },
+        { label: "Availability", value: "24/7 on request" },
+        { label: "Support", value: "WhatsApp + flight tracking" }
+      ],
+      trust: [
+        "Built for travelers who do not want to improvise after landing.",
+        "Premium SUV assignment is managed against real availability.",
+        "Strong fit for premium stays, family arrivals, and executive travel."
+      ],
+      faqs: [
+        {
+          q: `Does this premium transfer cover ${areaLabel}?`,
+          a: `Yes. This route is tailored to premium arrivals with direct coverage for ${areaLabel} and pre-arrival coordination.`
+        },
+        {
+          q: "What makes it different from a normal private transfer?",
+          a: "The difference is vehicle category, arrival experience, attention level, and the overall control of the operation."
+        },
+        {
+          q: "Can I book round trip service?",
+          a: "Yes. You can request arrival, departure, or round-trip service from the same booking flow."
+        }
+      ]
+    },
+    fr: {
+      strapline: "Un service aeroport premium pense pour les voyageurs qui veulent une arrivee plus fluide, plus confortable et mieux controlee.",
+      themeLabels: {
+        vip: "Route VIP",
+        luxury: "Transfert luxe",
+        executive: "Chauffeur executive",
+        family: "Ride premium famille"
+      },
+      highlights: [
+        "Prise en charge ponctuelle avec suivi de vol.",
+        "SUV premium avec espace bagages et climatisation reelle.",
+        "Operation privee aeroport-hotel plus fluide et mieux geree."
+      ],
+      reasons: [
+        "Une arrivee plus forte qu un transfert standard.",
+        "Confirmation rapide via WhatsApp et support operationnel.",
+        "Tres adapte aux arrivees tardives, familles et sejours premium."
+      ],
+      route: [
+        "Coordination avant l arrivee a PUJ.",
+        `Depart prive vers ${areaLabel} avec chauffeur professionnel.`,
+        "Suivi operationnel pendant le trajet si le vol change.",
+        "Depose directe au lobby ou point autorise du resort."
+      ],
+      facts: [
+        { label: "Type de service", value: "Prive premium" },
+        { label: "Couverture", value: areaLabel },
+        { label: "Disponibilite", value: "24/7 sur demande" },
+        { label: "Support", value: "WhatsApp + suivi de vol" }
+      ],
+      trust: [
+        "Concu pour eviter l improvisation apres l atterrissage.",
+        "Affectation premium selon disponibilite reelle de flotte.",
+        "Ideal pour sejours haut de gamme, familles et voyageurs business."
+      ],
+      faqs: [
+        {
+          q: `Ce transfert premium couvre-t-il ${areaLabel} ?`,
+          a: `Oui. Cette landing est orientee vers les arrivees premium avec couverture directe pour ${areaLabel} et coordination avant l arrivee.`
+        },
+        {
+          q: "Quelle difference avec un transfert prive classique ?",
+          a: "La difference se voit dans la categorie du vehicule, l accueil, le niveau d attention et le controle de l operation."
+        },
+        {
+          q: "Puis-je reserver aller-retour ?",
+          a: "Oui. Vous pouvez demander arrivee, depart ou aller-retour depuis le meme parcours de reservation."
+        }
+      ]
+    }
+  }[locale];
+
+  const intentOverrides: Record<string, Partial<VariantContext>> = {
+    "family-luxury-transfer": {
+      highlights:
+        locale === "es"
+          ? [
+              "Espacio para equipaje grande, car seat bajo solicitud y operacion calmada.",
+              "Ideal para llegadas con ninos, cochecitos o varios bultos.",
+              "Menos friccion al aterrizar y mejor entrada al resort."
+            ]
+          : locale === "fr"
+          ? [
+              "Espace pour bagages, siege enfant sur demande et operation calme.",
+              "Ideal pour les familles avec enfants, poussette ou plusieurs valises.",
+              "Moins de friction a l arrivee et meilleure entree au resort."
+            ]
+          : [
+              "Extra luggage room, child seat on request, and calmer arrival handling.",
+              "Ideal for families traveling with kids, strollers, or multiple bags.",
+              "Less friction after landing and a cleaner resort arrival."
+            ]
+    },
+    "executive-transfer-service": {
+      highlights:
+        locale === "es"
+          ? [
+              "Enfoque ejecutivo para reuniones, huespedes premium y traslados de imagen.",
+              "Coordinacion rapida, discreta y mas formal.",
+              "Especial para clientes que no quieren una llegada improvisada."
+            ]
+          : locale === "fr"
+          ? [
+              "Approche executive pour reunions, invites premium et transferts d image.",
+              "Coordination rapide, discrete et plus formelle.",
+              "Ideal pour ceux qui ne veulent pas d arrivee improvisee."
+            ]
+          : [
+              "Executive-focused arrival for meetings, premium guests, and polished transport.",
+              "Fast, discreet, and more formal coordination.",
+              "Best for travelers who do not want a casual arrival experience."
+            ]
+    }
+  };
+
+  const override = intentOverrides[intentId ?? ""] ?? {};
+
+  return {
+    intentId,
+    areaId,
+    areaLabel,
+    themeLabel: base.themeLabels[themeKey as keyof typeof base.themeLabels] ?? base.themeLabels.vip,
+    strapline: base.strapline,
+    highlights: override.highlights ?? base.highlights,
+    reasons: base.reasons,
+    routeSteps: base.route,
+    facts: base.facts,
+    trust: base.trust,
+    faqs: base.faqs
+  };
+};
+
 export default async function PremiumTransferLandingPage({ locale, variant }: Props) {
   const content = normalizeTextDeep(await getPremiumTransferContentOverrides(locale));
-  const copy = normalizeTextDeep(LABELS[locale] ?? LABELS.es);
+  const context = getVariantContext(locale, variant);
+  const theme = THEMES[getThemeKey(context.intentId)] ?? DEFAULT_THEME;
   const heroTitle = variant?.heroTitle[locale] ?? content.heroTitle;
   const heroSubtitle = variant?.heroSubtitle[locale] ?? content.heroSubtitle;
   const seoTitle = variant?.seoTitle[locale] ?? content.seoTitle;
@@ -124,9 +422,7 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
       orderBy: { name: "asc" },
       select: { id: true, slug: true, name: true }
     });
-    if (!origin) {
-      origin = origins[0] ?? null;
-    }
+    if (!origin) origin = origins[0] ?? null;
 
     destinations = await prisma.transferLocation.findMany({
       where: {
@@ -164,196 +460,136 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
   const safeOrigins = origins.length ? origins : [safeOrigin];
   const safeLocationOptions = locationOptions.length ? locationOptions : [...safeOrigins, ...destinations];
   const canBook = safeLocationOptions.length > 1;
-  const preferredDestinationHint =
-    variant?.slug
-      ?.split("-")
-      .slice(-3)
-      .join("-")
-      .toLowerCase() ?? "";
-  const matchedHint = PREMIUM_AREA_HINTS.find((item) => variant?.slug?.includes(item));
 
   const gallery = content.galleryImages ?? [];
   const bullets = content.vipBullets ?? [];
   const certifications = content.vipCertifications ?? [];
 
-  const localizedBasePath = locale === "es" ? "/punta-cana/premium-transfer-services" : `/${locale}/punta-cana/premium-transfer-services`;
+  const localizedBasePath =
+    locale === "es" ? "/punta-cana/premium-transfer-services" : `/${locale}/punta-cana/premium-transfer-services`;
   const canonicalPath = variant ? `${localizedBasePath}/${variant.slug}` : localizedBasePath;
   const canonicalUrl = `${PROACTIVITIS_URL}${canonicalPath}`;
   const priceValidUntil = getPriceValidUntil();
   const homePath = locale === "es" ? "/" : `/${locale}`;
   const puntaCanaPath = locale === "es" ? "/punta-cana/traslado" : `/${locale}/punta-cana/traslado`;
 
-  const serviceSchema = {
+  const relatedByArea = variant
+    ? premiumTransferMarketLandings.filter(
+        (item) => item.slug !== variant.slug && getVariantTokens(item).areaId === context.areaId
+      ).slice(0, 6)
+    : premiumTransferMarketLandings.slice(0, 12);
+
+  const relatedByIntent = variant
+    ? premiumTransferMarketLandings.filter(
+        (item) => item.slug !== variant.slug && getVariantTokens(item).intentId === context.intentId
+      ).slice(0, 4)
+    : [];
+
+  const graphSchema = {
     "@context": "https://schema.org",
-    "@type": "Service",
-    name: heroTitle,
-    description: heroSubtitle,
-    serviceType: "Luxury Airport Transfer",
-    areaServed: {
-      "@type": "City",
-      name: "Punta Cana"
-    },
-    provider: {
-      ...PROACTIVITIS_LOCALBUSINESS
-    },
-    offers: {
-      "@type": "Offer",
-      availability: "https://schema.org/InStock",
-      url: canonicalUrl,
-      priceCurrency: "USD",
-      priceValidUntil,
-      shippingDetails: {
-        "@type": "OfferShippingDetails",
-        doesNotShip: true,
-        shippingDestination: {
-          "@type": "DefinedRegion",
-          addressCountry: "DO"
-        },
-        deliveryTime: {
-          "@type": "ShippingDeliveryTime",
-          handlingTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d"
-          },
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d"
-          }
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${canonicalUrl}#webpage`,
+        name: seoTitle,
+        description: seoDescription,
+        url: canonicalUrl,
+        inLanguage: locale,
+        isPartOf: { "@id": `${PROACTIVITIS_URL}#website` },
+        about: { "@id": `${canonicalUrl}#service` },
+        primaryImageOfPage: {
+          "@type": "ImageObject",
+          "@id": `${canonicalUrl}#primaryimage`,
+          url: toAbsoluteImageUrl(content.heroBackgroundImage || content.heroSpotlightImage)
         }
       },
-      hasMerchantReturnPolicy: {
-        "@type": "MerchantReturnPolicy",
-        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
-        applicableCountry: "DO",
-        returnMethod: "https://schema.org/ReturnByMail",
-        returnFees: "https://schema.org/FreeReturn"
-      }
-    },
-    sameAs: SAME_AS_URLS,
-    ...(variantKeyword ? { keywords: variantKeyword } : {}),
-    image: [
-      toAbsoluteImageUrl(content.heroBackgroundImage),
-      toAbsoluteImageUrl(content.heroSpotlightImage),
-      toAbsoluteImageUrl(content.cadillacImage),
-      toAbsoluteImageUrl(content.suburbanImage),
-      ...(content.galleryImages ?? []).map((image) => toAbsoluteImageUrl(image))
-    ]
-  };
-
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
       {
-        "@type": "ListItem",
-        position: 1,
-        name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
-        item: `${PROACTIVITIS_URL}${homePath}`
+        "@type": "WebSite",
+        "@id": `${PROACTIVITIS_URL}#website`,
+        name: "Proactivitis",
+        url: PROACTIVITIS_URL,
+        publisher: { "@id": `${PROACTIVITIS_URL}#organization` },
+        inLanguage: locale
       },
       {
-        "@type": "ListItem",
-        position: 2,
-        name: "Punta Cana Transfers",
-        item: `${PROACTIVITIS_URL}${puntaCanaPath}`
+        "@type": "Organization",
+        "@id": `${PROACTIVITIS_URL}#organization`,
+        name: "Proactivitis",
+        url: PROACTIVITIS_URL,
+        logo: `${PROACTIVITIS_URL}/LOGO.png`,
+        sameAs: SAME_AS_URLS
       },
       {
-        "@type": "ListItem",
-        position: 3,
+        "@type": "Service",
+        "@id": `${canonicalUrl}#service`,
         name: heroTitle,
-        item: canonicalUrl
+        description: heroSubtitle,
+        serviceType: "Luxury Airport Transfer",
+        areaServed: {
+          "@type": "Place",
+          name: context.areaLabel
+        },
+        provider: {
+          ...PROACTIVITIS_LOCALBUSINESS
+        },
+        offers: {
+          "@type": "Offer",
+          availability: "https://schema.org/InStock",
+          url: canonicalUrl,
+          priceCurrency: "USD",
+          priceValidUntil
+        },
+        image: [
+          toAbsoluteImageUrl(content.heroBackgroundImage),
+          toAbsoluteImageUrl(content.heroSpotlightImage),
+          toAbsoluteImageUrl(content.cadillacImage),
+          toAbsoluteImageUrl(content.suburbanImage)
+        ]
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonicalUrl}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
+            item: `${PROACTIVITIS_URL}${homePath}`
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Punta Cana Transfers",
+            item: `${PROACTIVITIS_URL}${puntaCanaPath}`
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: heroTitle,
+            item: canonicalUrl
+          }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${canonicalUrl}#faq`,
+        mainEntity: context.faqs.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: item.a
+          }
+        }))
       }
     ]
-  };
-
-  const faqQuestions =
-    locale === "es"
-      ? [
-          {
-            q: "Puedo reservar un transfer VIP para hoy?",
-            a: "Si hay disponibilidad de flota premium, confirmamos el servicio el mismo dia."
-          },
-          {
-            q: "Monitorean retrasos de vuelo?",
-            a: "Si, operamos con seguimiento de vuelo para ajustar la recogida automaticamente."
-          },
-          {
-            q: "Solo trabajan con Cadillac y Suburban?",
-            a: "Priorizamos SUVs premium como Cadillac Escalade y Chevrolet Suburban, sujetas a disponibilidad."
-          }
-        ]
-      : locale === "fr"
-      ? [
-          {
-            q: "Puis-je reserver un transfert VIP pour aujourd'hui ?",
-            a: "Si la flotte premium est disponible, nous confirmons le service le jour meme."
-          },
-          {
-            q: "Suivez-vous les retards de vol ?",
-            a: "Oui, nous utilisons le suivi de vol pour ajuster automatiquement la prise en charge."
-          },
-          {
-            q: "Travaillez-vous uniquement avec Cadillac et Suburban ?",
-            a: "Nous privilegions les SUV premium comme Cadillac Escalade et Chevrolet Suburban selon disponibilite."
-          }
-        ]
-      : [
-          {
-            q: "Can I book a VIP transfer for today?",
-            a: "If premium fleet is available, we can confirm same-day service."
-          },
-          {
-            q: "Do you track flight delays?",
-            a: "Yes, we monitor flights and adjust pickup time automatically."
-          },
-          {
-            q: "Do you only work with Cadillac and Suburban?",
-            a: "We prioritize premium SUVs such as Cadillac Escalade and Chevrolet Suburban, subject to availability."
-          }
-        ];
-
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqQuestions.map((item) => ({
-      "@type": "Question",
-      name: item.q,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: item.a
-      }
-    }))
-  };
-
-  const webPageSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: seoTitle,
-    description: seoDescription,
-    url: canonicalUrl,
-    inLanguage: locale,
-    primaryImageOfPage: {
-      "@type": "ImageObject",
-      url: toAbsoluteImageUrl(content.heroBackgroundImage || content.heroSpotlightImage)
-    },
-    isPartOf: {
-      "@type": "WebSite",
-      name: "Proactivitis",
-      url: PROACTIVITIS_URL
-    }
   };
 
   return (
-    <main className="min-h-screen bg-[#020617] text-slate-100">
-      <StructuredData data={serviceSchema} />
-      <StructuredData data={breadcrumbSchema} />
-      <StructuredData data={faqSchema} />
-      <StructuredData data={webPageSchema} />
+    <main className={`min-h-screen ${theme.shell}`}>
+      <StructuredData data={graphSchema} />
 
-      <section className="relative overflow-hidden border-b border-amber-200/20">
+      <section className={`relative overflow-hidden border-b ${theme.border}`}>
         <div className="absolute inset-0">
           <Image
             src={content.heroBackgroundImage || "/transfer/suv.png"}
@@ -363,48 +599,89 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
             sizes="100vw"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/75 to-slate-950/35" />
+          <div className={`absolute inset-0 bg-gradient-to-br ${theme.heroGlow}`} />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_35%),linear-gradient(135deg,rgba(2,6,23,0.9),rgba(2,6,23,0.72),rgba(2,6,23,0.92))]" />
         </div>
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-[1.2fr,1fr] md:py-24">
-          <div className="space-y-5">
-            <p className="inline-flex rounded-full border border-amber-200/40 bg-amber-200/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-amber-100">
-              {content.heroBadge}
-            </p>
-            <h1 className="max-w-3xl text-4xl font-black leading-tight text-white md:text-6xl">
-              {heroTitle}
-            </h1>
-            <p className="max-w-2xl text-lg text-slate-200 md:text-xl">{heroSubtitle}</p>
+
+        <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-14 md:grid-cols-[1.2fr,0.8fr] md:py-20">
+          <div className="space-y-6">
+            <div className={`inline-flex rounded-full border px-4 py-1 text-[11px] font-bold uppercase tracking-[0.32em] ${theme.pill}`}>
+              {variant ? context.themeLabel : content.heroBadge}
+            </div>
+            <div className="space-y-4">
+              <h1 className="max-w-4xl text-4xl font-black leading-[1.02] text-white md:text-6xl">{heroTitle}</h1>
+              <p className={`max-w-3xl text-lg leading-relaxed ${theme.accentSoft} md:text-xl`}>{heroSubtitle}</p>
+              <p className="max-w-2xl text-sm leading-relaxed text-slate-200 md:text-base">{context.strapline}</p>
+            </div>
+
             <div className="flex flex-wrap gap-3">
               <a
                 href="#vip-booking"
-                className="rounded-full bg-amber-300 px-6 py-3 text-xs font-black uppercase tracking-[0.28em] text-slate-900 transition hover:bg-amber-200"
+                className={`rounded-full px-6 py-3 text-xs font-black uppercase tracking-[0.28em] transition ${theme.button} ${theme.buttonText}`}
               >
                 {content.ctaPrimaryLabel}
               </a>
               <Link
                 href={WHATSAPP_LINK}
-                className="rounded-full border border-white/50 px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-white transition hover:bg-white/10"
+                className={`rounded-full border px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] transition hover:bg-white/5 ${theme.border}`}
               >
                 {content.ctaSecondaryLabel}
               </Link>
             </div>
-            <p className="text-xs uppercase tracking-[0.28em] text-slate-300">
-              {copy.eliteRoute}: {safeOrigin.name} {"->"} Punta Cana Resorts
-            </p>
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {context.facts.map((fact) => (
+                <div key={fact.label} className={`rounded-3xl border px-4 py-4 backdrop-blur ${theme.panelSoft}`}>
+                  <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${theme.accent}`}>{fact.label}</p>
+                  <p className="mt-2 text-sm font-medium text-white">{fact.value}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="relative min-h-[380px] overflow-hidden rounded-[34px] border border-amber-200/30 shadow-[0_40px_90px_rgba(0,0,0,0.45)]">
-            <Image
-              src={content.heroSpotlightImage || content.lifestyleImage || "/transfer/sedan.png"}
-              alt={heroTitle || "VIP spotlight"}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 45vw"
-            />
+
+          <div className={`relative overflow-hidden rounded-[32px] border shadow-[0_40px_100px_rgba(0,0,0,0.4)] ${theme.panel}`}>
+            <div className="relative h-[280px] md:h-full md:min-h-[520px]">
+              <Image
+                src={content.heroSpotlightImage || content.lifestyleImage || "/transfer/sedan.png"}
+                alt={heroTitle || "Premium transfer experience"}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 42vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-5">
+                <div className={`rounded-3xl border p-4 backdrop-blur ${theme.panelSoft}`}>
+                  <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${theme.accent}`}>
+                    {locale === "es" ? "Keyword comercial" : locale === "fr" ? "Keyword commerciale" : "Commercial keyword"}
+                  </p>
+                  <p className="mt-2 text-sm font-medium text-white">{variantKeyword ?? seoTitle}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="vip-booking" className="mx-auto max-w-7xl px-4 py-12">
+      <section className="mx-auto max-w-7xl px-4 py-8">
+        <nav className={`grid gap-3 rounded-[28px] border p-4 md:grid-cols-4 ${theme.panel}`}>
+          {[
+            { id: "vip-booking", label: locale === "es" ? "Cotizacion" : locale === "fr" ? "Reservation" : "Booking" },
+            { id: "experience", label: locale === "es" ? "Experiencia" : locale === "fr" ? "Experience" : "Experience" },
+            { id: "coverage", label: locale === "es" ? "Cobertura" : locale === "fr" ? "Couverture" : "Coverage" },
+            { id: "faq", label: "FAQ" }
+          ].map((item) => (
+            <a
+              key={item.id}
+              href={`#${item.id}`}
+              className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition hover:bg-white/5 ${theme.panelSoft}`}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+      </section>
+
+      <section id="vip-booking" className="mx-auto max-w-7xl px-4 pb-10">
         {canBook ? (
           <PremiumTransferBookingWidget
             locale={locale}
@@ -413,148 +690,237 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
             title={content.bookingTitle || "Book your premium transfer"}
             cadillacImage={content.cadillacImage}
             suburbanImage={content.suburbanImage}
-            preferredDestinationHint={matchedHint ?? preferredDestinationHint}
+            preferredDestinationHint={context.areaId ?? ""}
           />
         ) : (
-          <div className="rounded-2xl border border-amber-200/30 bg-slate-900/70 p-6 text-sm text-amber-100">
-            {copy.bookingFallback}
+          <div className={`rounded-3xl border p-6 text-sm ${theme.panel}`}>
+            {locale === "es"
+              ? "No hay destinos premium disponibles en este momento. Escribenos por WhatsApp para cotizacion inmediata."
+              : locale === "fr"
+              ? "Aucune destination premium disponible pour le moment. Ecrivez-nous sur WhatsApp pour un devis immediat."
+              : "No premium destinations available right now. Message us on WhatsApp for an instant quote."}
           </div>
         )}
       </section>
 
-      {destinations.length > 0 ? (
-        <section className="mx-auto max-w-7xl px-4 pb-12">
-          <article className="rounded-3xl border border-amber-200/20 bg-slate-900/60 p-6">
-            <p className="text-xs uppercase tracking-[0.3em] text-amber-200">{copy.connectedHotels}</p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {(variant ? destinations : destinations.slice(0, 12)).map((hotel) => (
-                <Link
-                  key={hotel.id}
-                  href={
-                    locale === "es"
-                      ? `/transfer/${safeOrigin.slug}-to-${hotel.slug}`
-                      : `/${locale}/transfer/${safeOrigin.slug}-to-${hotel.slug}`
-                  }
-                  className="rounded-xl border border-amber-200/25 bg-slate-800/70 px-3 py-3 text-sm text-slate-100 transition hover:border-amber-200/60"
-                >
-                  {hotel.name}
-                </Link>
-              ))}
-            </div>
-          </article>
-        </section>
-      ) : null}
-
-      {variant && destinations.length > 0 ? (
-        <section className="mx-auto max-w-7xl px-4 pb-12">
-          <article className="rounded-3xl border border-amber-200/20 bg-slate-900/60 p-6">
-            {variantKeyword ? <p className="text-xs uppercase tracking-[0.3em] text-amber-200">{variantKeyword}</p> : null}
-            {variantBodyTitle ? <h2 className="mt-2 text-2xl font-semibold text-white">{variantBodyTitle}</h2> : null}
-            {variantBodyIntro ? <p className="mt-3 text-sm leading-relaxed text-slate-200">{variantBodyIntro}</p> : null}
-            <p className="mt-3 text-sm leading-relaxed text-slate-300">
-              {locale === "es"
-                ? "Cobertura hotelera completa en esta landing premium: "
+      <section id="experience" className="mx-auto grid max-w-7xl gap-6 px-4 pb-10 lg:grid-cols-[1.1fr,0.9fr]">
+        <article className={`rounded-[32px] border p-6 md:p-7 ${theme.panel}`}>
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.3em] ${theme.accent}`}>
+            {locale === "es" ? "Por que esta landing vende" : locale === "fr" ? "Pourquoi cette route convertit" : "Why this route converts"}
+          </p>
+          <h2 className="mt-3 text-3xl font-black text-white">
+            {variantBodyTitle ??
+              (locale === "es"
+                ? `Premium transfer real para ${context.areaLabel}`
                 : locale === "fr"
-                ? "Couverture hoteliere complete sur cette landing premium : "
-                : "Full hotel coverage in this premium landing: "}
-              {destinations.map((hotel) => hotel.name).join(", ")}.
-            </p>
-          </article>
-        </section>
-      ) : null}
-
-      {!variant ? (
-      <section className="mx-auto max-w-7xl px-4 pb-12">
-          <article className="rounded-3xl border border-amber-200/20 bg-slate-900/60 p-6">
-            <p className="text-xs uppercase tracking-[0.3em] text-amber-200">
-              {locale === "es" ? "Mas rutas premium en Punta Cana" : locale === "fr" ? "Plus d itineraires premium a Punta Cana" : "More premium routes in Punta Cana"}
-            </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {premiumTransferMarketLandings.map((item) => (
-                <Link
-                  key={item.slug}
-                  href={
-                    locale === "es"
-                      ? `/punta-cana/premium-transfer-services/${item.slug}`
-                      : `/${locale}/punta-cana/premium-transfer-services/${item.slug}`
-                  }
-                  className="rounded-xl border border-amber-200/25 bg-slate-800/70 px-3 py-3 text-sm text-slate-100 transition hover:border-amber-200/60"
-                >
-                  {item.keyword[locale]}
-                </Link>
-              ))}
-            </div>
-          </article>
-        </section>
-      ) : null}
-
-      <section className="mx-auto grid max-w-7xl gap-6 px-4 pb-12 md:grid-cols-2">
-        <article className="overflow-hidden rounded-3xl border border-amber-200/20 bg-slate-900/60">
-          <div className="relative h-64">
-            <Image
-              src={content.cadillacImage || "/transfer/suv.png"}
-              alt="Cadillac premium transfer"
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div className="p-5">
-            <p className="text-xs uppercase tracking-[0.25em] text-amber-200">{copy.fleetCadillac}</p>
-            <h3 className="mt-2 text-2xl font-semibold text-white">Cadillac Escalade</h3>
-          </div>
-        </article>
-        <article className="overflow-hidden rounded-3xl border border-amber-200/20 bg-slate-900/60">
-          <div className="relative h-64">
-            <Image
-              src={content.suburbanImage || "/transfer/suv.png"}
-              alt="Suburban premium transfer"
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div className="p-5">
-            <p className="text-xs uppercase tracking-[0.25em] text-amber-200">{copy.fleetSuburban}</p>
-            <h3 className="mt-2 text-2xl font-semibold text-white">Chevrolet Suburban</h3>
-          </div>
-        </article>
-      </section>
-
-      <section className="mx-auto grid max-w-7xl gap-6 px-4 pb-16 md:grid-cols-[1.3fr,1fr]">
-        <article className="rounded-3xl border border-amber-200/20 bg-slate-900/60 p-6">
-          <p className="text-xs uppercase tracking-[0.3em] text-amber-200">{content.experienceTitle}</p>
-          <p className="mt-3 text-sm leading-relaxed text-slate-200">{content.experienceBody}</p>
-          <ul className="mt-5 space-y-3 text-sm text-slate-100">
-            {bullets.map((bullet) => (
-              <li key={bullet} className="rounded-xl border border-amber-200/20 bg-slate-800/60 px-4 py-3">
-                {bullet}
-              </li>
+                ? `Transfert premium reel pour ${context.areaLabel}`
+                : `Real premium transfer for ${context.areaLabel}`)}
+          </h2>
+          <p className="mt-4 text-sm leading-7 text-slate-200">
+            {variantBodyIntro ??
+              (locale === "es"
+                ? `Esta landing esta construida para viajeros que buscan ${variantKeyword ?? "un transfer premium"} con enfoque en puntualidad, imagen, privacidad y cobertura real hacia ${context.areaLabel}.`
+                : locale === "fr"
+                ? `Cette landing vise les voyageurs qui cherchent ${variantKeyword ?? "un transfert premium"} avec ponctualite, image, intimite et vraie couverture vers ${context.areaLabel}.`
+                : `This landing is built for travelers searching for ${variantKeyword ?? "a premium transfer"} with stronger punctuality, privacy, image, and real coverage into ${context.areaLabel}.`)}
+          </p>
+          <div className="mt-6 grid gap-3 md:grid-cols-3">
+            {context.highlights.map((item) => (
+              <div key={item} className={`rounded-3xl border p-4 text-sm leading-6 ${theme.panelSoft}`}>
+                {item}
+              </div>
             ))}
-          </ul>
+          </div>
         </article>
-        <article className="rounded-3xl border border-amber-200/20 bg-slate-900/60 p-6">
-          <p className="text-xs uppercase tracking-[0.3em] text-amber-200">{copy.galleryTitle}</p>
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            {gallery.slice(0, 4).map((image, index) => (
-              <div key={image + index} className="relative h-28 overflow-hidden rounded-xl">
-                <Image src={image} alt={`Premium gallery ${index + 1}`} fill className="object-cover" />
+
+        <article className={`rounded-[32px] border p-6 md:p-7 ${theme.panel}`}>
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.3em] ${theme.accent}`}>
+            {locale === "es" ? "Ruta operativa" : locale === "fr" ? "Itineraire operationnel" : "Operational route"}
+          </p>
+          <div className="mt-4 space-y-3">
+            {context.routeSteps.map((step, index) => (
+              <div key={step} className={`rounded-3xl border p-4 ${theme.panelSoft}`}>
+                <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${theme.accent}`}>0{index + 1}</p>
+                <p className="mt-2 text-sm leading-6 text-white">{step}</p>
               </div>
             ))}
           </div>
         </article>
       </section>
 
+      <section className="mx-auto grid max-w-7xl gap-6 px-4 pb-10 md:grid-cols-2">
+        <article className={`overflow-hidden rounded-[32px] border ${theme.panel}`}>
+          <div className="relative h-64">
+            <Image src={content.cadillacImage || "/transfer/suv.png"} alt="Cadillac Escalade" fill className="object-cover" />
+          </div>
+          <div className="p-6">
+            <p className={`text-[11px] font-semibold uppercase tracking-[0.28em] ${theme.accent}`}>Cadillac Escalade</p>
+            <h3 className="mt-3 text-2xl font-black text-white">
+              {locale === "es" ? "Imagen premium para llegadas de alto nivel" : locale === "fr" ? "Image premium pour arrivees haut niveau" : "Premium image for high-value arrivals"}
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-slate-200">
+              {locale === "es"
+                ? "Pensado para viajeros que valoran presencia, espacio y una llegada mas cuidada al hotel."
+                : locale === "fr"
+                ? "Pense pour les voyageurs qui valorisent presence, espace et une arrivee plus soignee."
+                : "Built for travelers who value presence, room, and a more polished hotel arrival."}
+            </p>
+          </div>
+        </article>
+
+        <article className={`overflow-hidden rounded-[32px] border ${theme.panel}`}>
+          <div className="relative h-64">
+            <Image src={content.suburbanImage || "/transfer/suv.png"} alt="Chevrolet Suburban" fill className="object-cover" />
+          </div>
+          <div className="p-6">
+            <p className={`text-[11px] font-semibold uppercase tracking-[0.28em] ${theme.accent}`}>Chevrolet Suburban</p>
+            <h3 className="mt-3 text-2xl font-black text-white">
+              {locale === "es" ? "Capacidad premium para equipaje, grupos y familias" : locale === "fr" ? "Capacite premium pour bagages, groupes et familles" : "Premium capacity for luggage, groups, and families"}
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-slate-200">
+              {locale === "es"
+                ? "Una de las opciones mas utiles cuando el confort necesita tambien capacidad real de carga."
+                : locale === "fr"
+                ? "L une des options les plus utiles quand le confort demande aussi une vraie capacite."
+                : "One of the strongest fits when comfort also needs real luggage capacity."}
+            </p>
+          </div>
+        </article>
+      </section>
+
+      <section id="coverage" className="mx-auto grid max-w-7xl gap-6 px-4 pb-10 lg:grid-cols-[0.95fr,1.05fr]">
+        <article className={`rounded-[32px] border p-6 md:p-7 ${theme.panel}`}>
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.3em] ${theme.accent}`}>
+            {locale === "es" ? "Senales de confianza" : locale === "fr" ? "Signaux de confiance" : "Trust signals"}
+          </p>
+          <div className="mt-4 space-y-3">
+            {context.reasons.concat(context.trust).map((item) => (
+              <div key={item} className={`rounded-3xl border p-4 text-sm leading-6 ${theme.panelSoft}`}>
+                {item}
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className={`rounded-[32px] border p-6 md:p-7 ${theme.panel}`}>
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.3em] ${theme.accent}`}>
+            {locale === "es" ? "Hoteles conectados" : locale === "fr" ? "Hotels connectes" : "Connected hotels"}
+          </p>
+          <h2 className="mt-3 text-3xl font-black text-white">
+            {locale === "es"
+              ? `Cobertura hotelera premium en ${context.areaLabel}`
+              : locale === "fr"
+              ? `Couverture hoteliere premium a ${context.areaLabel}`
+              : `Premium hotel coverage in ${context.areaLabel}`}
+          </h2>
+          <p className="mt-4 text-sm leading-7 text-slate-200">
+            {locale === "es"
+              ? "Estas conexiones ayudan a que cada variante responda a una intencion concreta sin perder la capacidad real de cotizacion."
+              : locale === "fr"
+              ? "Ces connexions permettent a chaque variante de repondre a une intention precise sans perdre la capacite reelle de devis."
+              : "These connected routes help each variant match a specific search intent without losing real quoting capability."}
+          </p>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            {(variant ? destinations.slice(0, 16) : destinations.slice(0, 12)).map((hotel) => (
+              <Link
+                key={hotel.id}
+                href={locale === "es" ? `/transfer/${safeOrigin.slug}-to-${hotel.slug}` : `/${locale}/transfer/${safeOrigin.slug}-to-${hotel.slug}`}
+                className={`rounded-2xl border px-4 py-3 text-sm transition hover:bg-white/5 ${theme.panelSoft}`}
+              >
+                {hotel.name}
+              </Link>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-6 px-4 pb-10 lg:grid-cols-[1.05fr,0.95fr]">
+        <article className={`rounded-[32px] border p-6 md:p-7 ${theme.panel}`}>
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.3em] ${theme.accent}`}>
+            {locale === "es" ? "Cobertura visual" : locale === "fr" ? "Galerie" : "Visual coverage"}
+          </p>
+          <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+            {gallery.slice(0, 4).map((image, index) => (
+              <div key={`${image}-${index}`} className="relative h-32 overflow-hidden rounded-2xl">
+                <Image src={image} alt={`${heroTitle} ${index + 1}`} fill className="object-cover" />
+              </div>
+            ))}
+          </div>
+          {bullets.length > 0 ? (
+            <div className="mt-6 grid gap-3 md:grid-cols-2">
+              {bullets.slice(0, 4).map((bullet) => (
+                <div key={bullet} className={`rounded-2xl border p-4 text-sm leading-6 ${theme.panelSoft}`}>
+                  {bullet}
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </article>
+
+        <article className={`rounded-[32px] border p-6 md:p-7 ${theme.panel}`}>
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.3em] ${theme.accent}`}>
+            {locale === "es" ? "Variantes relacionadas" : locale === "fr" ? "Variantes liees" : "Related variants"}
+          </p>
+          <div className="mt-4 space-y-5">
+            <div>
+              <h3 className="text-lg font-bold text-white">
+                {variant
+                  ? locale === "es"
+                    ? `Mas rutas premium para ${context.areaLabel}`
+                    : locale === "fr"
+                    ? `Plus de routes premium pour ${context.areaLabel}`
+                    : `More premium routes for ${context.areaLabel}`
+                  : locale === "es"
+                  ? "Rutas premium destacadas"
+                  : locale === "fr"
+                  ? "Routes premium en vedette"
+                  : "Featured premium routes"}
+              </h3>
+              <div className="mt-3 grid gap-3">
+                {relatedByArea.map((item) => (
+                  <Link
+                    key={item.slug}
+                    href={locale === "es" ? `/punta-cana/premium-transfer-services/${item.slug}` : `/${locale}/punta-cana/premium-transfer-services/${item.slug}`}
+                    className={`rounded-2xl border px-4 py-3 text-sm transition hover:bg-white/5 ${theme.panelSoft}`}
+                  >
+                    {item.keyword[locale]}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {relatedByIntent.length > 0 ? (
+              <div>
+                <h3 className="text-lg font-bold text-white">
+                  {locale === "es" ? "La misma intencion en otras zonas" : locale === "fr" ? "La meme intention dans d autres zones" : "The same intent in other areas"}
+                </h3>
+                <div className="mt-3 grid gap-3">
+                  {relatedByIntent.map((item) => (
+                    <Link
+                      key={item.slug}
+                      href={locale === "es" ? `/punta-cana/premium-transfer-services/${item.slug}` : `/${locale}/punta-cana/premium-transfer-services/${item.slug}`}
+                      className={`rounded-2xl border px-4 py-3 text-sm transition hover:bg-white/5 ${theme.panelSoft}`}
+                    >
+                      {item.keyword[locale]}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </article>
+      </section>
+
       {certifications.length > 0 ? (
-        <section className="mx-auto max-w-7xl px-4 pb-14">
-          <article className="rounded-3xl border border-amber-200/20 bg-slate-900/60 p-6">
-            <p className="text-xs uppercase tracking-[0.3em] text-amber-200">{copy.certificationsTitle}</p>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <section className="mx-auto max-w-7xl px-4 pb-10">
+          <article className={`rounded-[32px] border p-6 md:p-7 ${theme.panel}`}>
+            <p className={`text-[11px] font-semibold uppercase tracking-[0.3em] ${theme.accent}`}>
+              {locale === "es" ? "Capas de confianza" : locale === "fr" ? "Couches de confiance" : "Confidence layers"}
+            </p>
+            <div className="mt-5 grid gap-3 md:grid-cols-2">
               {certifications.map((item) => (
-                <div
-                  key={item}
-                  className="flex items-start gap-3 rounded-xl border border-amber-200/20 bg-slate-800/60 p-4"
-                >
-                  <span className="mt-0.5 text-base text-amber-200">✓</span>
-                  <p className="text-sm text-slate-100">{item}</p>
+                <div key={item} className={`rounded-2xl border p-4 text-sm leading-6 ${theme.panelSoft}`}>
+                  {item}
                 </div>
               ))}
             </div>
@@ -562,14 +928,14 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
         </section>
       ) : null}
 
-      <section className="mx-auto max-w-7xl px-4 pb-20">
-        <article className="rounded-3xl border border-amber-200/20 bg-slate-900/60 p-6">
-          <p className="text-xs uppercase tracking-[0.3em] text-amber-200">{copy.faqTitle}</p>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            {faqQuestions.map((item) => (
-              <div key={item.q} className="rounded-xl border border-amber-200/20 bg-slate-800/60 p-4">
-                <h3 className="text-sm font-semibold text-white">{item.q}</h3>
-                <p className="mt-2 text-xs text-slate-200">{item.a}</p>
+      <section id="faq" className="mx-auto max-w-7xl px-4 pb-20">
+        <article className={`rounded-[32px] border p-6 md:p-7 ${theme.panel}`}>
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.3em] ${theme.accent}`}>FAQ</p>
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            {context.faqs.map((item) => (
+              <div key={item.q} className={`rounded-2xl border p-4 ${theme.panelSoft}`}>
+                <h3 className="text-sm font-bold text-white">{item.q}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-200">{item.a}</p>
               </div>
             ))}
           </div>
