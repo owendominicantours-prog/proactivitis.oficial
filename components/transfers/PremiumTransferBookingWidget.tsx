@@ -57,10 +57,10 @@ const UI = {
     emptyDestination: "Selecciona un destino",
     noRates: "No encontramos tarifas premium para esta configuracion.",
     reserve: "Reservar ahora",
-    selectedVehicle: "Flota preferida",
+    selectedVehicle: "Vehiculo operado",
     allFleet: "Ver todas",
-    filterCadillac: "Cadillac Escalade",
-    filterSuburban: "Chevrolet Suburban",
+    filterCadillac: "SUV Premium",
+    filterSuburban: "SUV Premium",
     dateLabel: "Ida",
     timeLabel: "Hora",
     passengersHelp: "Capacidad final segun vehiculo disponible.",
@@ -102,10 +102,10 @@ const UI = {
     emptyDestination: "Select a destination",
     noRates: "No premium rates found for this setup.",
     reserve: "Book now",
-    selectedVehicle: "Preferred fleet",
+    selectedVehicle: "Vehicle class",
     allFleet: "Show all",
-    filterCadillac: "Cadillac Escalade",
-    filterSuburban: "Chevrolet Suburban",
+    filterCadillac: "Premium SUV",
+    filterSuburban: "Premium SUV",
     dateLabel: "Departure",
     timeLabel: "Time",
     passengersHelp: "Final capacity depends on available vehicle.",
@@ -147,10 +147,10 @@ const UI = {
     emptyDestination: "Selectionnez une destination",
     noRates: "Aucun tarif premium trouve pour cette configuration.",
     reserve: "Reserver",
-    selectedVehicle: "Flotte preferee",
+    selectedVehicle: "Vehicule opere",
     allFleet: "Voir tout",
-    filterCadillac: "Cadillac Escalade",
-    filterSuburban: "Chevrolet Suburban",
+    filterCadillac: "SUV Premium",
+    filterSuburban: "SUV Premium",
     dateLabel: "Depart",
     timeLabel: "Heure",
     passengersHelp: "Capacite finale selon le vehicule disponible.",
@@ -235,10 +235,10 @@ const isPremiumVehicle = (vehicle: QuoteVehicle) => {
   const name = vehicle.name.toLowerCase();
   return (
     vehicle.category === "SUV" ||
-    vehicle.category === "VIP" ||
     name.includes("cadillac") ||
     name.includes("suburban") ||
-    name.includes("escalade")
+    name.includes("escalade") ||
+    name.includes("suv")
   );
 };
 
@@ -302,7 +302,7 @@ export default function PremiumTransferBookingWidget({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasQuoted, setHasQuoted] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<"cadillac" | "suburban" | null>(null);
+  const [selectedModel, setSelectedModel] = useState<"suv" | null>("suv");
 
   const origin = useMemo(() => origins.find((item) => item.id === originId) ?? null, [originId, origins]);
   const destination = useMemo(
@@ -355,12 +355,7 @@ export default function PremiumTransferBookingWidget({
   const filteredVehicles = useMemo(() => {
     const base = [...vehicles].sort(premiumSort);
     if (!selectedModel) return base;
-    return base.filter((vehicle) => {
-      const name = vehicle.name.toLowerCase();
-      return selectedModel === "cadillac"
-        ? name.includes("cadillac") || name.includes("escalade")
-        : name.includes("suburban");
-    });
+    return base.filter(isPremiumVehicle);
   }, [selectedModel, vehicles]);
 
   const quoteMinPrice = useMemo(() => {
@@ -402,7 +397,7 @@ export default function PremiumTransferBookingWidget({
       const data = (await response.json()) as { vehicles?: QuoteVehicle[] };
       const allVehicles = Array.isArray(data.vehicles) ? data.vehicles : [];
       const premiumVehicles = allVehicles.filter(isPremiumVehicle).sort(premiumSort);
-      setVehicles(premiumVehicles.length ? premiumVehicles : allVehicles.sort(premiumSort));
+      setVehicles(premiumVehicles);
     } catch {
       setError(copy.error);
     } finally {
@@ -593,10 +588,8 @@ export default function PremiumTransferBookingWidget({
                 <p className="mt-2 text-sm text-slate-300">
                   {copy.selectedVehicle}:{" "}
                   <span className="font-semibold text-white">
-                    {selectedModel === "cadillac"
+                    {selectedModel === "suv"
                       ? copy.filterCadillac
-                      : selectedModel === "suburban"
-                      ? copy.filterSuburban
                       : copy.noSelection}
                   </span>
                 </p>
@@ -613,14 +606,9 @@ export default function PremiumTransferBookingWidget({
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {[
                 {
-                  id: "cadillac" as const,
+                  id: "suv" as const,
                   label: copy.filterCadillac,
-                  image: cadillacImage ?? "/transfer/suv.png"
-                },
-                {
-                  id: "suburban" as const,
-                  label: copy.filterSuburban,
-                  image: suburbanImage ?? "/transfer/suv.png"
+                  image: cadillacImage ?? suburbanImage ?? "/transfer/suv.png"
                 }
               ].map((item) => (
                 <button
