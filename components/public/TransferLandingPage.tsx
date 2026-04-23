@@ -1094,26 +1094,28 @@ export async function TransferLandingPage({
 
   const reviewSchema =
     totalApprovedTransferReviews > 0
-      ? approvedTransferReviews.slice(0, 6).map((review, index) => ({
+      ? {
           "@context": "https://schema.org",
-          "@type": "Review",
-          "@id": `${canonicalUrl}#review-${index + 1}`,
-          author: {
-            "@type": "Person",
-            name: review.customerName
-          },
-          reviewRating: {
-            "@type": "Rating",
-            ratingValue: review.rating,
-            bestRating: 5
-          },
-          reviewBody: review.body,
-          datePublished: (review.approvedAt ?? review.createdAt).toISOString().slice(0, 10),
-          itemReviewed: {
-            "@id": `${canonicalUrl}#service`
-          }
-        }))
-      : [];
+          "@graph": approvedTransferReviews.slice(0, 6).map((review, index) => ({
+            "@type": "Review",
+            "@id": `${canonicalUrl}#review-${index + 1}`,
+            author: {
+              "@type": "Person",
+              name: review.customerName
+            },
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: review.rating,
+              bestRating: 5
+            },
+            reviewBody: review.body,
+            datePublished: (review.approvedAt ?? review.createdAt).toISOString().slice(0, 10),
+            itemReviewed: {
+              "@id": `${canonicalUrl}#service`
+            }
+          }))
+        }
+      : null;
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -1564,7 +1566,7 @@ export async function TransferLandingPage({
         <StructuredData data={imageSchema} />
         <StructuredData data={routeSchema} />
         <StructuredData data={schemaGraph} />
-        {reviewSchema.length ? <StructuredData data={reviewSchema} /> : null}
+        {reviewSchema ? <StructuredData data={reviewSchema} /> : null}
       </section>
     </main>
   );
