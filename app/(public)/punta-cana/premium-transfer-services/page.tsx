@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
 import PremiumTransferLandingPage from "@/components/public/PremiumTransferLandingPage";
+import {
+  buildPremiumTransferKeywords,
+  buildPremiumTransferLanguageAlternates,
+  buildPremiumTransferSeoDescription,
+  buildPremiumTransferSeoTitle
+} from "@/lib/premiumTransferSeo";
 import { getPremiumTransferContentOverrides } from "@/lib/siteContent";
 import { PROACTIVITIS_URL } from "@/lib/seo";
 import { ensureLeadingCapital } from "@/lib/text-format";
@@ -9,33 +15,25 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = "/punta-cana/premium-transfer-services";
   const canonical = `${PROACTIVITIS_URL}${path}`;
   const image = content.heroBackgroundImage || "/transfer/suv.png";
-  const seoTitle = ensureLeadingCapital(content.seoTitle ?? "Punta Cana Premium Transfer Services | Proactivitis");
+  const seoTitle = ensureLeadingCapital(
+    buildPremiumTransferSeoTitle("es", content.seoTitle ?? "Punta Cana Premium Transfer Services | Proactivitis")
+  );
+  const seoDescription = buildPremiumTransferSeoDescription("es", content.seoDescription);
   return {
     title: seoTitle,
-    description: content.seoDescription,
+    description: seoDescription,
     robots: {
       index: true,
       follow: true
     },
-    keywords: [
-      "punta cana premium transfer services",
-      "cadillac escalade punta cana",
-      "suburban transfer punta cana",
-      "vip airport transfer punta cana",
-      "luxury transfer punta cana"
-    ],
+    keywords: buildPremiumTransferKeywords("es", "traslado premium Punta Cana"),
     alternates: {
       canonical,
-      languages: {
-        es: path,
-        en: `/en${path}`,
-        fr: `/fr${path}`,
-        "x-default": path
-      }
+      languages: buildPremiumTransferLanguageAlternates(path)
     },
     openGraph: {
       title: seoTitle,
-      description: content.seoDescription,
+      description: seoDescription,
       url: canonical,
       siteName: "Proactivitis",
       type: "website",
@@ -45,7 +43,7 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       title: seoTitle,
-      description: content.seoDescription,
+      description: seoDescription,
       images: [image]
     }
   };

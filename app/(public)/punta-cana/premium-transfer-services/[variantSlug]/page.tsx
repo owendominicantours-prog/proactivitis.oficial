@@ -5,6 +5,12 @@ import {
   findPremiumTransferMarketLandingBySlug,
   premiumTransferMarketLandingSlugs
 } from "@/data/premium-transfer-market-landings";
+import {
+  buildPremiumTransferKeywords,
+  buildPremiumTransferLanguageAlternates,
+  buildPremiumTransferSeoDescription,
+  buildPremiumTransferSeoTitle
+} from "@/lib/premiumTransferSeo";
 import { getPremiumTransferContentOverrides } from "@/lib/siteContent";
 import { PROACTIVITIS_URL } from "@/lib/seo";
 import { ensureLeadingCapital } from "@/lib/text-format";
@@ -26,24 +32,20 @@ export async function generateMetadata({
   const path = `/punta-cana/premium-transfer-services/${variant.slug}`;
   const canonical = `${PROACTIVITIS_URL}${path}`;
   const image = fallback.heroBackgroundImage || "/transfer/suv.png";
-  const seoTitle = ensureLeadingCapital(variant.seoTitle.es);
+  const seoTitle = ensureLeadingCapital(buildPremiumTransferSeoTitle("es", variant.seoTitle.es));
+  const seoDescription = buildPremiumTransferSeoDescription("es", variant.seoDescription.es);
 
   return {
     title: seoTitle,
-    description: variant.seoDescription.es,
-    keywords: [variant.keyword.es, "punta cana premium transfer services", "vip airport transfer punta cana"],
+    description: seoDescription,
+    keywords: buildPremiumTransferKeywords("es", variant.keyword.es),
     alternates: {
       canonical,
-      languages: {
-        es: path,
-        en: `/en${path}`,
-        fr: `/fr${path}`,
-        "x-default": path
-      }
+      languages: buildPremiumTransferLanguageAlternates(path)
     },
     openGraph: {
       title: seoTitle,
-      description: variant.seoDescription.es,
+      description: seoDescription,
       url: canonical,
       siteName: "Proactivitis",
       type: "website",
@@ -53,7 +55,7 @@ export async function generateMetadata({
     twitter: {
       card: "summary_large_image",
       title: seoTitle,
-      description: variant.seoDescription.es,
+      description: seoDescription,
       images: [image]
     }
   };

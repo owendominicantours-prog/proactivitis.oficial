@@ -212,13 +212,13 @@ const PREMIUM_TRANSFER_FALLBACKS: Record<Locale, PremiumTransferContentOverrides
     ]
   },
   en: {
-    seoTitle: "Punta Cana Premium Transfer Services | Cadillac Escalade & Chevrolet Suburban",
+    seoTitle: "Punta Cana Luxury Airport Pickup & Private SUV Transfer | Proactivitis",
     seoDescription:
-      "VIP transfer service in Punta Cana with luxury SUVs, professional drivers, and instant booking. Cadillac Escalade and Chevrolet Suburban for airport, resorts, and private events.",
+      "Book a luxury airport pickup or private SUV transfer in Punta Cana with professional drivers, flight tracking, and direct service to resorts, villas, and private events.",
     heroBadge: "Elite Ground Transportation",
     heroTitle: "Punta Cana Premium Transfer Services",
     heroSubtitle:
-      "VIP transfers with Cadillac Escalade and Chevrolet Suburban. Private, punctual, and high-standard service for travelers who expect excellence.",
+      "Luxury airport pickup and private SUV transfer service with punctual operations, direct routing, and premium support for travelers who expect more than a standard ride.",
     heroBackgroundImage:
       "shared:premium.hero.background",
     heroSpotlightImage:
