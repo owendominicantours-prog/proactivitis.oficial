@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { ChevronRight, Trash2, X } from "lucide-react";
 import { deleteNotificationAction, markNotificationReadAction } from "@/app/(dashboard)/notifications/actions";
 import { parseNotificationMetadata } from "@/lib/notificationService";
 import { getNotificationDisplayProps, type NotificationType } from "@/lib/types/notificationTypes";
@@ -104,6 +104,29 @@ export default function NotificationDropdown({
           isOpen ? "visible pointer-events-auto opacity-100" : "invisible pointer-events-none opacity-0"
         }`}
       >
+        <div className="border-b border-slate-200 px-4 py-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-400">
+                Centro de alertas
+              </p>
+              <h3 className="mt-1 text-base font-semibold text-slate-900">Notificaciones</h3>
+              <p className="mt-1 text-xs text-slate-500">
+                {notifications?.length
+                  ? `${notifications.length} visibles ahora`
+                  : "No tienes novedades pendientes."}
+              </p>
+            </div>
+            <button
+              type="button"
+              aria-label="Cerrar notificaciones"
+              onClick={() => setIsOpen(false)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
         <div className="max-h-[min(32rem,70vh)] space-y-4 overflow-y-auto p-4">
           {(notifications ?? []).length ? (
             GROUP_ORDER.map((groupLabel) => {
@@ -124,14 +147,18 @@ export default function NotificationDropdown({
                       return (
                         <div
                           key={notification.id}
-                          className="rounded-2xl border border-slate-100 bg-slate-50 transition hover:border-slate-300 hover:bg-white"
+                          className="rounded-2xl border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-sm"
                         >
-                          <div className="flex items-start gap-2 p-2">
-                            <form action={markNotificationReadAction} className="min-w-0 flex-1">
+                          <div className="space-y-3 p-3">
+                            <form action={markNotificationReadAction} className="min-w-0">
                               <input type="hidden" name="notificationId" value={notification.id} />
                               <input type="hidden" name="redirectTo" value={redirectUrl} />
-                              <button type="submit" className="w-full rounded-2xl p-2 text-left" onClick={() => setIsOpen(false)}>
-                                <div className="flex items-center gap-3">
+                              <button
+                                type="submit"
+                                className="w-full rounded-2xl p-1 text-left"
+                                onClick={() => setIsOpen(false)}
+                              >
+                                <div className="flex items-start gap-3">
                                   <div className="relative">
                                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white">
                                       {display.icon}
@@ -154,22 +181,37 @@ export default function NotificationDropdown({
                                         {formatNotificationDate(notification.createdAt)}
                                       </span>
                                     </div>
-                                    {details && <p className="mt-1 text-xs text-slate-500">{details}</p>}
+                                    {details && <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-600">{details}</p>}
                                   </div>
                                 </div>
                               </button>
                             </form>
-                            <form action={deleteNotificationAction} className="shrink-0">
-                              <input type="hidden" name="notificationId" value={notification.id} />
-                              <input type="hidden" name="returnTo" value={effectiveNotificationLink} />
-                              <button
-                                type="submit"
-                                aria-label="Borrar notificación"
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-rose-300 hover:text-rose-600"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </form>
+                            <div className="flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
+                              <form action={markNotificationReadAction}>
+                                <input type="hidden" name="notificationId" value={notification.id} />
+                                <input type="hidden" name="redirectTo" value={redirectUrl} />
+                                <button
+                                  type="submit"
+                                  onClick={() => setIsOpen(false)}
+                                  className="inline-flex min-h-9 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-slate-700 transition hover:border-slate-300 hover:bg-white hover:text-slate-900"
+                                >
+                                  Abrir
+                                  <ChevronRight className="h-3.5 w-3.5" />
+                                </button>
+                              </form>
+                              <form action={deleteNotificationAction} className="shrink-0">
+                                <input type="hidden" name="notificationId" value={notification.id} />
+                                <input type="hidden" name="returnTo" value={effectiveNotificationLink} />
+                                <button
+                                  type="submit"
+                                  aria-label="Borrar notificación"
+                                  className="inline-flex min-h-9 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-slate-500 transition hover:border-rose-300 hover:text-rose-600"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  Borrar
+                                </button>
+                              </form>
+                            </div>
                           </div>
                         </div>
                       );
@@ -187,10 +229,10 @@ export default function NotificationDropdown({
             </div>
           )}
         </div>
-        <div className="border-t border-slate-100 px-4 py-4 text-right text-xs">
+        <div className="border-t border-slate-100 px-4 py-4">
           <Link
             href={effectiveNotificationLink}
-            className="inline-flex min-h-10 items-center rounded-full border border-slate-200 bg-slate-900 px-4 py-1 text-white transition hover:bg-slate-800"
+            className="inline-flex min-h-10 w-full items-center justify-center rounded-full border border-slate-200 bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-slate-800"
           >
             Ver todas
           </Link>
