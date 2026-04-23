@@ -535,9 +535,9 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[2.2fr_1fr]">
         <section className="space-y-5 rounded-3xl border border-slate-300 bg-white p-4 shadow-xl sm:space-y-6 sm:p-6">
           <header className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Pasarela profesional</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-700">Pasarela profesional</p>
             <h1 className="text-2xl font-semibold text-slate-900 sm:text-3xl">Verifica disponibilidad y asegura tu plaza</h1>
-            <p className="text-sm text-slate-600">Completa cada paso para preparar la experiencia antes de pagar.</p>
+            <p className="text-sm text-slate-800">Completa cada paso para preparar la experiencia antes de pagar.</p>
           </header>
 
           {missingTourId && (
@@ -557,11 +557,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
           <div className="space-y-6">
             <article className="overflow-hidden rounded-2xl border border-slate-400 bg-white">
-              <div className="flex flex-col gap-3 border-b border-slate-400 bg-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+              <div className="flex flex-col gap-3 border-b border-slate-500 bg-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Paso 1 · Datos de contacto</p>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-700">Paso 1 · Datos de contacto</p>
                   <p className="text-lg font-semibold text-slate-900">Completa tus datos</p>
-                  {contactSummary && <p className="text-sm text-slate-500">{contactSummary}</p>}
+                  {contactSummary && <p className="text-sm text-slate-700">{contactSummary}</p>}
                 </div>
                 <span className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-[#008768]">
                   {completedSteps[0] ? (
@@ -577,7 +577,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                 <div className="space-y-4 px-4 pb-5 pt-5 sm:px-5 sm:pb-6 sm:pt-6">
                   <div className="grid gap-4 md:grid-cols-2">
                     {contactFields.map((field) => (
-                      <label key={field.key} className="space-y-1 text-xs uppercase tracking-[0.3em] text-slate-500">
+                      <label key={field.key} className="space-y-1 text-xs uppercase tracking-[0.3em] text-slate-700">
                         <span>{field.label}</span>
                         <input
                           id={field.key}
@@ -594,7 +594,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                     ))}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500" htmlFor="phone">
+                    <label className="text-xs uppercase tracking-[0.3em] text-slate-700" htmlFor="phone">
                       Teléfono
                     </label>
                     <div className="flex flex-col gap-3 sm:flex-row">
@@ -639,11 +639,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
             </article>
 
             <article className="overflow-hidden rounded-2xl border border-slate-400 bg-white">
-              <div className="flex flex-col gap-3 border-b border-slate-400 bg-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+              <div className="flex flex-col gap-3 border-b border-slate-500 bg-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Paso 2 · Detalles</p>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-700">Paso 2 · Detalles</p>
                   <p className="text-lg font-semibold text-slate-900">Detalles de la actividad</p>
-                  {travelerSummary && <p className="text-sm text-slate-500">{travelerSummary}</p>}
+                  {travelerSummary && <p className="text-sm text-slate-700">{travelerSummary}</p>}
                 </div>
                 <span className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-[#008768]">
                   {completedSteps[1] ? (
@@ -658,7 +658,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
               {activeStep === 1 && (
                 <div className="space-y-5 px-4 pb-5 pt-5 sm:px-5 sm:pb-6 sm:pt-6">
                   <div className="space-y-2">
-                    <label htmlFor="travelerName" className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                    <label htmlFor="travelerName" className="text-xs uppercase tracking-[0.3em] text-slate-700">
                       Viajero principal
                     </label>
                     <input
@@ -673,7 +673,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                     {errors.travelerName && <p className="text-xs text-rose-500">{errors.travelerName}</p>}
                   </div>
                   <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Punto de recogida</p>
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-700">Punto de recogida</p>
                     <div className="grid gap-3 md:grid-cols-2">
                       <label
                         className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
@@ -704,7 +704,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                     </div>
                     {pickupPreference === "pickup" && (
                       <div className="space-y-2">
-                        <label htmlFor="pickupLocation" className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                        <label htmlFor="pickupLocation" className="text-xs uppercase tracking-[0.3em] text-slate-700">
                           Localización preferida
                         </label>
                         <div className="flex items-center gap-2 rounded-2xl border border-slate-400 bg-white px-4 py-3 text-sm">
@@ -722,7 +722,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                     )}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500" htmlFor="tourLanguage">Idioma del tour</label>
+                    <label className="text-xs uppercase tracking-[0.3em] text-slate-700" htmlFor="tourLanguage">Idioma del tour</label>
                     <select
                       id="tourLanguage"
                       value={language}
@@ -737,7 +737,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Requisitos especiales</label>
+                    <label className="text-xs uppercase tracking-[0.3em] text-slate-700">Requisitos especiales</label>
                     <textarea
                       value={specialRequirements}
                       onChange={(event) => setSpecialRequirements(event.target.value)}
@@ -767,11 +767,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
             </article>
 
             <article className="overflow-hidden rounded-2xl border border-slate-400 bg-white">
-              <div className="flex flex-col gap-3 border-b border-slate-400 bg-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+              <div className="flex flex-col gap-3 border-b border-slate-500 bg-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Paso 3 · Pago</p>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-700">Paso 3 · Pago</p>
                   <p className="text-lg font-semibold text-slate-900">Información de pago</p>
-                  <p className="text-sm text-slate-500">{summary.totalTravelers} viajeros · {summary.date} · {summary.time}</p>
+                  <p className="text-sm text-slate-700">{summary.totalTravelers} viajeros · {summary.date} · {summary.time}</p>
                 </div>
                 <span className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-[#008768]">
                   {completedSteps[2] ? (
@@ -785,12 +785,12 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
               </div>
               {activeStep === 2 && (
                 <div className="space-y-4 px-4 pb-5 pt-5 sm:px-5 sm:pb-6 sm:pt-6">
-                  <div className="rounded-2xl border border-slate-400 bg-[#F8FAFC] p-4 text-sm text-slate-600">
+                  <div className="rounded-2xl border border-slate-500 bg-[#F8FAFC] p-4 text-sm text-slate-800 shadow-[inset_0_1px_0_rgba(15,23,42,0.08)]">
                     <p className="text-sm font-semibold text-slate-900">Resumen antes del pago</p>
                     <p>
                       {summary.totalTravelers} viajeros · {summary.date} · {summary.time}
                     </p>
-                    <p className="text-slate-400">Reserva provisional · ID: {bookingId ?? "pendiente"}</p>
+                    <p className="text-slate-700">Reserva provisional · ID: {bookingId ?? "pendiente"}</p>
                   </div>
                   <div className="rounded-2xl border border-slate-400 bg-white p-6 shadow-sm">
                     {!stripePromise && <p className="text-sm text-rose-500">Stripe no está configurado.</p>}
@@ -812,7 +812,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
         </section>
         <aside className="space-y-4">
           <div className="sticky top-8 space-y-6">
-            <div className="rounded-3xl border border-slate-300 bg-white p-4 shadow-lg sm:p-5">
+            <div className="rounded-3xl border-2 border-slate-400 bg-white p-4 shadow-lg sm:p-5">
               <div className="flex items-center gap-3 rounded-2xl bg-pink-50 px-3 py-2 text-sm font-semibold text-rose-600">
                 <Clock3 className="h-4 w-4" /> Te guardamos la plaza durante {guardTime}
               </div>
@@ -825,14 +825,14 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                   className="h-[80px] w-[80px] rounded-2xl object-cover"
                 />
                 <div>
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Tour</p>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-700">Tour</p>
                   <p className="text-lg font-semibold text-slate-900">{summary.tourTitle}</p>
                 </div>
               </div>
-              <div className="space-y-3 text-sm text-slate-600">
+              <div className="space-y-3 text-sm text-slate-800">
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-slate-400" /> Personas
+                    <Users className="h-5 w-5 text-slate-700" /> Personas
                   </span>
                   <strong>
                     {summary.adults} adultos y {summary.children} niños
@@ -840,13 +840,13 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
-                    <CalendarCheck className="h-5 w-5 text-slate-400" /> Fecha
+                    <CalendarCheck className="h-5 w-5 text-slate-700" /> Fecha
                   </span>
                   <strong>{summary.date}</strong>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
-                    <Clock3 className="h-5 w-5 text-slate-400" /> Hora
+                    <Clock3 className="h-5 w-5 text-slate-700" /> Hora
                   </span>
                   <strong>{summary.time}</strong>
                 </div>
@@ -857,20 +857,20 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
                 </div>
                 <p>Flexibilidad excepcional · Cancelación gratuita hasta 24 h antes</p>
               </div>
-              <div className="mt-4 rounded-3xl border border-slate-400 bg-gray-50 p-4 text-slate-900 shadow-sm sm:p-5">
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Precio total</p>
+              <div className="mt-4 rounded-3xl border-2 border-slate-500 bg-gray-50 p-4 text-slate-900 shadow-sm sm:p-5">
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-700">Precio total</p>
                 <p className="text-2xl font-semibold text-slate-900 sm:text-3xl">{displayAmount}</p>
-                <p className="mt-1 text-[13px] text-slate-500">{perPersonLabel}</p>
+                <p className="mt-1 text-[13px] text-slate-800">{perPersonLabel}</p>
               </div>
-              <div className="mt-4 space-y-3 rounded-2xl border border-dashed border-slate-400 p-4 text-xs text-slate-500">
+              <div className="mt-4 space-y-3 rounded-2xl border-2 border-dashed border-slate-500 p-4 text-xs text-slate-800">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4 text-emerald-500" /> Pagos verificados y protegidos
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Soporte 24/7 en tu destino
                 </div>
-                <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.4em] text-slate-400">
-                  <Globe className="h-4 w-4 text-slate-400" /> Infraestructura global de cobros
+                <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.4em] text-slate-700">
+                  <Globe className="h-4 w-4 text-slate-700" /> Infraestructura global de cobros
                 </div>
               </div>
             </div>
