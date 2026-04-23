@@ -48,7 +48,7 @@ export const Header = ({
               alt="Proactivitis"
               width={200}
               height={60}
-              className="h-9 w-auto max-w-[138px] origin-left object-contain transition-transform sm:h-11 sm:max-w-[168px] lg:h-12 lg:max-w-none lg:scale-[var(--logo-scale)]"
+              className="h-11 w-auto max-w-[170px] origin-left object-contain transition-transform sm:h-12 sm:max-w-[190px] lg:h-12 lg:max-w-none lg:scale-[var(--logo-scale)]"
               style={{ "--logo-scale": logoScale } as CSSProperties}
             />
           </Link>
