@@ -743,7 +743,7 @@ export default async function PremiumTransferLandingPage({ locale, variant }: Pr
               </a>
               <Link
                 href={WHATSAPP_LINK}
-                className={`rounded-full border px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] transition hover:bg-white/5 ${theme.border}`}
+                className="rounded-full border border-amber-200/70 bg-slate-950/35 px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-white shadow-[0_10px_30px_rgba(0,0,0,0.2)] transition hover:bg-amber-200/10"
               >
                 {content.ctaSecondaryLabel}
               </Link>
