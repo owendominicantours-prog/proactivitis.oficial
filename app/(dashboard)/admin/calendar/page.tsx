@@ -116,6 +116,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
   const previousMonth = addMonths(monthDate, -1);
   const nextMonth = addMonths(monthDate, 1);
   const selectedDate = new Date(`${selectedDay}T00:00:00`);
+  const mobileDays = days.filter((day) => isSameMonth(day, monthDate));
 
   const bookings = await prisma.booking.findMany({
     where: {
@@ -203,13 +204,110 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)]">
-        <div className="rounded-[28px] border border-slate-200 bg-white p-3 shadow-sm sm:p-5">
+        <div className="space-y-4">
+          <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm md:hidden">
+            <div className="flex items-center justify-between gap-3">
+              <Link
+                href={buildCalendarHref(previousMonth, format(previousMonth, "yyyy-MM-01"))}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 text-slate-700 transition hover:border-slate-500"
+                aria-label="Mes anterior"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Link>
+              <div className="text-center">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">Mes actual</p>
+                <h2 className="mt-1 text-xl font-semibold text-slate-900">{format(monthDate, "MMMM yyyy", { locale: es })}</h2>
+              </div>
+              <Link
+                href={buildCalendarHref(nextMonth, format(nextMonth, "yyyy-MM-01"))}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 text-slate-700 transition hover:border-slate-500"
+                aria-label="Mes siguiente"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="mt-4 overflow-x-auto pb-1">
+              <div className="flex min-w-max gap-2">
+                {mobileDays.map((day) => {
+                  const dayKey = format(day, "yyyy-MM-dd");
+                  const dayBookings = bookingsByDay.get(dayKey) ?? [];
+                  const isSelected = selectedDay === dayKey;
+                  const isToday = isSameDay(day, new Date());
+
+                  return (
+                    <Link
+                      key={dayKey}
+                      href={buildCalendarHref(monthDate, dayKey)}
+                      className={`min-w-[86px] rounded-2xl border px-3 py-3 text-left transition ${
+                        isSelected
+                          ? "border-sky-400 bg-sky-50 ring-2 ring-sky-100"
+                          : "border-slate-200 bg-slate-50 hover:border-slate-300"
+                      }`}
+                    >
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        {format(day, "EEE", { locale: es })}
+                      </p>
+                      <div
+                        className={`mt-2 inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
+                          isToday
+                            ? "bg-slate-900 text-white"
+                            : isSelected
+                              ? "bg-sky-600 text-white"
+                              : "bg-white text-slate-800"
+                        }`}
+                      >
+                        {format(day, "d")}
+                      </div>
+                      <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                        {dayBookings.length ? `${dayBookings.length} res.` : "Libre"}
+                      </p>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Dia seleccionado</p>
+              <h3 className="mt-2 text-lg font-semibold text-slate-900">
+                {format(selectedDate, "EEEE d 'de' MMMM", { locale: es })}
+              </h3>
+              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-xl bg-white px-2 py-2">
+                  <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Reservas</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900">{selectedDayBookings.length}</p>
+                </div>
+                <div className="rounded-xl bg-white px-2 py-2">
+                  <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Ingreso</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900">
+                    $
+                    {selectedDayBookings.reduce((sum, booking) => sum + booking.totalAmount, 0).toLocaleString("en-US", {
+                      maximumFractionDigits: 0
+                    })}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-white px-2 py-2">
+                  <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Primera</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900">{selectedDayBookings[0]?.startTime ?? "--"}</p>
+                </div>
+              </div>
+              <Link
+                href={buildBookingsHref(selectedDay)}
+                className="mt-4 inline-flex w-full items-center justify-center rounded-full border border-slate-300 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-500"
+              >
+                Ver en reservas
+              </Link>
+            </div>
+          </div>
+
+          <div className="rounded-[28px] border border-slate-200 bg-white p-3 shadow-sm sm:p-5">
           <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Mes actual</p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-900">{format(monthDate, "MMMM yyyy", { locale: es })}</h2>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="hidden flex-wrap gap-3 md:flex">
               <Link
                 href={buildCalendarHref(previousMonth, format(previousMonth, "yyyy-MM-01"))}
                 className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-500"
@@ -227,7 +325,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
             </div>
           </div>
 
-          <div className="mt-5 overflow-x-auto">
+          <div className="mt-5 hidden overflow-x-auto md:block">
             <div className="min-w-[760px]">
               <div className="grid grid-cols-7 gap-1.5">
                 {weekdayLabels.map((label) => (
@@ -298,6 +396,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
             </div>
           </div>
         </div>
+        </div>
 
         <aside className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-start justify-between gap-3">
@@ -315,7 +414,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
             </Link>
           </div>
 
-          <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700">
+          <div className="mt-5 hidden rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700 md:block">
             <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500">Resumen del dia</p>
             <div className="mt-3 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
               <div>
