@@ -456,24 +456,6 @@ export async function RecogidaPage({
   }
 
   const baseCountryCondition = { countryId: pickupTarget.countryId };
-  const orFilters = [];
-  if (pickupTarget.microZoneId) {
-    orFilters.push({ ...baseCountryCondition, microZoneId: pickupTarget.microZoneId });
-  }
-  if (pickupTarget.destinationId) {
-    orFilters.push({ ...baseCountryCondition, destinationId: pickupTarget.destinationId });
-  }
-  orFilters.push(baseCountryCondition);
-  orFilters.push({
-    ...baseCountryCondition,
-    category: { contains: "Nacional", mode: "insensitive" }
-  });
-  if (pickupTarget.destinationId) {
-    orFilters.push({
-      ...baseCountryCondition,
-      category: { contains: "Punta Cana", mode: "insensitive" }
-    });
-  }
 
   const allHotels = await db.transferLocation.findMany({
     where: { type: "HOTEL", active: true, countryCode: pickupTarget.countryId },
@@ -485,49 +467,82 @@ export async function RecogidaPage({
     orderBy: [{ zone: { name: "asc" } }, { name: "asc" }]
   });
 
-  let tours: TourWithDeparture[] = [];
+  const buildTourInclude = {
+    departureDestination: { select: { name: true, slug: true, country: { select: { slug: true } } } }
+  } as const;
+
+  const uniqueTours = (items: TourWithDeparture[]) => {
+    const seen = new Set<string>();
+    return items.filter((tour) => {
+      if (seen.has(tour.id)) return false;
+      seen.add(tour.id);
+      return true;
+    });
+  };
+
+  let microZoneTours: TourWithDeparture[] = [];
+  let destinationTours: TourWithDeparture[] = [];
+  let countryFallbackTours: TourWithDeparture[] = [];
+
   try {
-    tours = await db.tour.findMany({
+    if (pickupTarget.microZoneId) {
+      microZoneTours = await db.tour.findMany({
+        where: {
+          status: "published",
+          countryId: pickupTarget.countryId,
+          microZoneId: pickupTarget.microZoneId
+        },
+        orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+        take: RECENT_TOURS_LIMIT,
+        include: buildTourInclude
+      });
+    }
+
+    if (pickupTarget.destinationId) {
+      destinationTours = await db.tour.findMany({
+        where: {
+          status: "published",
+          countryId: pickupTarget.countryId,
+          destinationId: pickupTarget.destinationId
+        },
+        orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+        take: RECENT_TOURS_LIMIT + 3,
+        include: buildTourInclude
+      });
+    }
+
+    countryFallbackTours = await db.tour.findMany({
       where: {
         status: "published",
-        OR: orFilters
+        countryId: pickupTarget.countryId
       },
-      orderBy: { featured: "desc" },
-      take: RECENT_TOURS_LIMIT,
-      include: {
-        departureDestination: { select: { name: true, slug: true, country: { select: { slug: true } } } }
-      }
+      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+      take: RECENT_TOURS_LIMIT + 4,
+      include: buildTourInclude
     });
   } catch (error) {
-    console.error("Error cargando tours para location", {
+    console.error("Error cargando tours pickup por hotel", {
       slug: resolvedParams.slug,
-      orFilters,
+      pickupTarget,
       error
     });
   }
 
-  let displayTours = tours;
-  if (!displayTours.length) {
-    try {
-      displayTours = await db.tour.findMany({
-        where: {
-          status: "published",
-          countryId: pickupTarget.countryId
-        },
-        orderBy: { createdAt: "desc" },
-        take: RECENT_TOURS_LIMIT,
-        include: {
-          departureDestination: { select: { name: true, slug: true, country: { select: { slug: true } } } }
-        }
-      });
-    } catch (error) {
-      console.error("Fallback tour query failed for location fallback", {
-        slug: resolvedParams.slug,
-        countryId: pickupTarget.countryId,
-        error
-      });
-    }
-  }
+  const primaryTours = uniqueTours([
+    ...microZoneTours,
+    ...destinationTours.filter((tour) => !microZoneTours.some((item) => item.id === tour.id))
+  ]).slice(0, RECENT_TOURS_LIMIT);
+
+  const secondaryTours = uniqueTours(
+    countryFallbackTours.filter((tour) => !primaryTours.some((item) => item.id === tour.id))
+  ).slice(0, 3);
+
+  const displayTours = primaryTours.length ? primaryTours : countryFallbackTours.slice(0, RECENT_TOURS_LIMIT);
+  const displayMode = primaryTours.length
+    ? pickupTarget.microZoneId
+      ? "microzone"
+      : "destination"
+    : "country";
 
   const canonicalUrl = buildPickupCanonical(pickupTarget.slug, locale);
   const localizedHome = locale === "es" ? "/" : `/${locale}`;
@@ -556,6 +571,36 @@ export async function RecogidaPage({
     .slice(0, 6);
   const pickupBenefits = buildPickupBenefits(pickupTarget.name, locale);
   const pickupFaq = buildPickupFaq(pickupTarget.name, locale);
+  const toursSectionTitle =
+    locale === "es"
+      ? displayMode === "microzone"
+        ? `Tours con mejor encaje para ${pickupTarget.name}`
+        : displayMode === "destination"
+          ? `Tours con recogida desde la zona de ${pickupTarget.name}`
+          : `Tours disponibles cerca de ${pickupTarget.name}`
+      : locale === "fr"
+        ? displayMode === "microzone"
+          ? `Tours avec meilleur encaje pour ${pickupTarget.name}`
+          : displayMode === "destination"
+            ? `Tours avec pickup depuis la zone de ${pickupTarget.name}`
+            : `Tours disponibles pres de ${pickupTarget.name}`
+        : displayMode === "microzone"
+          ? `Best-fit tours for ${pickupTarget.name}`
+          : displayMode === "destination"
+            ? `Tours with pickup from the ${pickupTarget.name} area`
+            : `Available tours near ${pickupTarget.name}`;
+  const toursSectionBody =
+    locale === "es"
+      ? displayMode === "country"
+        ? "No encontramos suficiente inventario hyper-especifico para ese hotel, asi que mostramos opciones cercanas dentro del mismo mercado operativo."
+        : "Estas cards priorizan experiencias con mejor encaje operativo para ese hotel y su zona inmediata."
+      : locale === "fr"
+        ? displayMode === "country"
+          ? "Nous n avons pas trouve assez d inventaire hyper specifique pour cet hotel, donc nous montrons des options proches dans le meme marche operationnel."
+          : "Ces cards priorisent les experiences les plus coherentes pour cet hotel et sa zone immediate."
+        : displayMode === "country"
+          ? "There was not enough hyper-specific inventory for that hotel, so these cards fall back to nearby options in the same operating market."
+          : "These cards prioritize the excursions that operationally fit that hotel and its immediate area better.";
   const destinationAreaLabel = pickupTarget.microZoneId
     ? currentHotelZone
     : pickupTarget.destinationId
@@ -821,8 +866,8 @@ export async function RecogidaPage({
 
         <div className="flex flex-col gap-2">
           <p className="text-xs uppercase tracking-[0.35em] text-slate-500">{t("recogida.tours.eyebrow")}</p>
-          <h2 className="text-3xl font-semibold text-slate-900">{t("recogida.tours.title")}</h2>
-          <p className="text-sm leading-7 text-slate-600">{t("recogida.tours.body")}</p>
+          <h2 className="text-3xl font-semibold text-slate-900">{toursSectionTitle}</h2>
+          <p className="text-sm leading-7 text-slate-600">{toursSectionBody}</p>
         </div>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {displayTours.map((tour) => (
@@ -883,6 +928,40 @@ export async function RecogidaPage({
             </article>
           ))}
         </div>
+
+        {secondaryTours.length ? (
+          <section className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
+                {locale === "es" ? "Mas opciones en el mercado" : locale === "fr" ? "Plus d options dans le marche" : "More options in the market"}
+              </p>
+              <h2 className="text-2xl font-bold text-slate-950">
+                {locale === "es"
+                  ? "Excursiones adicionales si quieres comparar"
+                  : locale === "fr"
+                    ? "Excursions additionnelles si vous voulez comparer"
+                    : "Additional excursions if you want to compare"}
+              </h2>
+            </div>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              {secondaryTours.map((tour) => (
+                <Link
+                  key={tour.id}
+                  href={buildTourUrl(tour, pickupTarget.slug, locale, bookingCode)}
+                  className="rounded-[24px] border border-slate-200 bg-slate-50 px-5 py-5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white"
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                    {tour.departureDestination?.name ?? tour.location}
+                  </p>
+                  <p className="mt-2 text-base font-semibold text-slate-950">{tour.title}</p>
+                  <p className="mt-3 line-clamp-3 text-sm leading-7 text-slate-600">
+                    {tour.shortDescription ?? t("recogida.tours.cardFallback")}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
           <div className="flex flex-col gap-3">
