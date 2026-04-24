@@ -96,7 +96,7 @@ function getStatusLabel(status: string) {
   }
 }
 
-export default async function AdminCalendarPage({ searchParams }: { searchParams?: Promise<SearchParams> | SearchParams }) {
+export default async function AdminCalendarPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const monthDate = parseMonthParam(getParam(resolvedSearchParams, "month"));
   const selectedDay = parseDayParam(getParam(resolvedSearchParams, "day"), monthDate);
