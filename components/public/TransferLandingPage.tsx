@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import type { TransferLandingData } from "@/data/transfer-landings";
-import { findGenericTransferLandingBySlug } from "@/data/transfer-generic-landings";
+import { findGenericTransferLandingBySlug, genericTransferLandings } from "@/data/transfer-generic-landings";
 import {
   applyTransferHotelSalesVariant,
   buildTransferHotelVariantSlug,
@@ -687,6 +687,62 @@ const formatDateTime = (date: Date) => {
   return iso.slice(0, 16);
 };
 
+const buildGenericTransferHighlights = (keyword: string, locale: Locale) => {
+  if (locale === "en") {
+    return [
+      `Built around the search intent for ${keyword}`,
+      "Private airport and hotel transfer with clear pricing",
+      "Flight tracking, WhatsApp support, and bilingual drivers"
+    ];
+  }
+  if (locale === "fr") {
+    return [
+      `Cree autour de l intention de recherche ${keyword}`,
+      "Transfert prive aeroport-hotel avec tarif clair",
+      "Suivi de vol, support WhatsApp et chauffeur bilingue"
+    ];
+  }
+  return [
+    `Creada alrededor de la intencion de busqueda ${keyword}`,
+    "Traslado privado aeropuerto-hotel con precio claro",
+    "Seguimiento de vuelo, soporte por WhatsApp y chofer bilingue"
+  ];
+};
+
+const buildGenericTransferNarrative = (keyword: string, locale: Locale) => {
+  if (locale === "en") {
+    return {
+      title: `Why ${keyword} needs a dedicated transfer page`,
+      body1:
+        "Travelers searching this phrase are already close to booking. They usually want a direct answer about pickup, price clarity, vehicle type, and how fast the confirmation will arrive.",
+      body2:
+        "Instead of forcing them through a generic transport page, this landing narrows the promise: private transfer service in Punta Cana, easy booking, and a more reliable arrival experience from the airport to the hotel.",
+      body3:
+        "That makes this page easier to rank for a narrower intent and easier to convert because the copy, metadata, and internal links are all aligned around the same demand."
+    };
+  }
+  if (locale === "fr") {
+    return {
+      title: `Pourquoi ${keyword} merite une landing dediee`,
+      body1:
+        "Les voyageurs qui recherchent cette expression sont deja proches de la reservation. Ils veulent surtout une reponse claire sur le pickup, le prix, le type de vehicule et la rapidite de confirmation.",
+      body2:
+        "Au lieu de les envoyer vers une page trop generique, cette landing recentre la promesse: transfert prive a Punta Cana, reservation simple et arrivee plus fiable depuis l aeroport jusqu a l hotel.",
+      body3:
+        "Cela aide la page a mieux se positionner sur une intention plus precise et a convertir davantage grace a un message, une metadata et un maillage interne alignes."
+    };
+  }
+  return {
+    title: `Por que ${keyword} necesita una landing dedicada`,
+    body1:
+      "Quien busca esta frase ya esta cerca de reservar. Normalmente quiere una respuesta concreta sobre recogida, precio claro, tipo de vehiculo y rapidez de confirmacion.",
+    body2:
+      "En lugar de empujarlo a una pagina generica de transporte, esta landing concentra la promesa: traslado privado en Punta Cana, reserva sencilla y una llegada mas confiable desde el aeropuerto hasta el hotel.",
+    body3:
+      "Eso hace la URL mas facil de posicionar para una intencion cerrada y tambien mas facil de convertir porque copy, metadata y enlaces internos apuntan a la misma necesidad."
+  };
+};
+
 export async function TransferLandingPage({
   landingSlug,
   locale
@@ -700,6 +756,17 @@ export async function TransferLandingPage({
   const generic = findGenericTransferLandingBySlug(landingSlug);
   if (generic) {
     const genericCanonical = buildCanonical(generic.landingSlug, locale);
+    const genericHighlights = buildGenericTransferHighlights(generic.keyword, locale);
+    const genericNarrative = buildGenericTransferNarrative(generic.keyword, locale);
+    const relatedGenericLandings = genericTransferLandings
+      .filter((item) => item.landingSlug !== generic.landingSlug)
+      .filter(
+        (item) =>
+          item.keyword.includes("punta cana") === generic.keyword.includes("punta cana") ||
+          item.keyword.includes("airport") === generic.keyword.includes("airport") ||
+          item.keyword.includes("private") === generic.keyword.includes("private")
+      )
+      .slice(0, 4);
     const genericFaq = [
       {
         "@type": "Question",
@@ -804,6 +871,43 @@ export async function TransferLandingPage({
         }
       ]
     };
+    const genericWebPageSchema = {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": `${genericCanonical}#webpage`,
+      url: genericCanonical,
+      name: generic.seoTitle[locale],
+      description: generic.metaDescription[locale],
+      isPartOf: {
+        "@type": "WebSite",
+        "@id": `${BASE_URL}/#website`,
+        url: BASE_URL,
+        name: "Proactivitis"
+      },
+      about: {
+        "@id": `${genericCanonical}#service`
+      },
+      primaryImageOfPage: {
+        "@type": "ImageObject",
+        "@id": `${genericCanonical}#image`,
+        url: toAbsoluteImageUrl(generic.heroImage),
+        contentUrl: toAbsoluteImageUrl(generic.heroImage)
+      },
+      breadcrumb: {
+        "@id": `${genericCanonical}#breadcrumb`
+      },
+      inLanguage: locale
+    };
+    const genericHighlightsSchema = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "@id": `${genericCanonical}#highlights`,
+      itemListElement: genericHighlights.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: item
+      }))
+    };
 
     return (
       <>
@@ -813,10 +917,84 @@ export async function TransferLandingPage({
           heroDescriptionOverride={generic.descriptions[locale]}
           heroImageOverride={generic.heroImage}
         />
+        <LandingViewTracker landingSlug={generic.landingSlug} />
+        <main className="mx-auto max-w-6xl space-y-8 px-4 pb-14">
+          <section className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+            <article className="rounded-[30px] border border-slate-100 bg-white p-8 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
+                {locale === "es" ? "Intencion SEO" : locale === "fr" ? "Intention SEO" : "SEO intent"}
+              </p>
+              <h2 className="mt-3 text-2xl font-bold text-slate-900">{genericNarrative.title}</h2>
+              <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600">
+                <p>{genericNarrative.body1}</p>
+                <p>{genericNarrative.body2}</p>
+                <p>{genericNarrative.body3}</p>
+              </div>
+            </article>
+
+            <aside className="rounded-[30px] border border-slate-900 bg-slate-950 p-8 text-white shadow-[0_30px_80px_rgba(15,23,42,0.32)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
+                {locale === "es" ? "Lo que quiere el viajero" : locale === "fr" ? "Ce que veut le voyageur" : "What the traveler wants"}
+              </p>
+              <div className="mt-4 space-y-3">
+                {genericHighlights.map((item) => (
+                  <div key={item} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 text-slate-200">
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Link
+                  href={locale === "es" ? "/traslado" : `/${locale}/traslado`}
+                  className="rounded-full bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.22em] text-slate-950 transition hover:bg-slate-200"
+                >
+                  {locale === "es" ? "Cotizar traslado" : locale === "fr" ? "Demander un devis" : "Quote transfer"}
+                </Link>
+                <Link
+                  href={locale === "es" ? "/punta-cana/premium-transfer-services" : `/${locale}/punta-cana/premium-transfer-services`}
+                  className="rounded-full border border-white/20 px-5 py-3 text-xs font-semibold uppercase tracking-[0.22em] text-white transition hover:border-white/50 hover:bg-white/10"
+                >
+                  {locale === "es" ? "Ver premium" : locale === "fr" ? "Voir premium" : "View premium"}
+                </Link>
+              </div>
+            </aside>
+          </section>
+
+          <section className="rounded-[30px] border border-slate-100 bg-white p-8 shadow-sm">
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
+                {locale === "es" ? "Variantes relacionadas" : locale === "fr" ? "Variantes liees" : "Related variants"}
+              </p>
+              <h2 className="text-2xl font-bold text-slate-900">
+                {locale === "es"
+                  ? "Mas paginas de transfer con intencion de compra real"
+                  : locale === "fr"
+                    ? "Plus de pages transfer avec intention d achat reelle"
+                    : "More transfer pages with real buying intent"}
+              </h2>
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {relatedGenericLandings.map((item) => (
+                <Link
+                  key={item.landingSlug}
+                  href={locale === "es" ? `/transfer/${item.landingSlug}` : `/${locale}/transfer/${item.landingSlug}`}
+                  className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white"
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                    {locale === "es" ? "Keyword" : locale === "fr" ? "Mot cle" : "Keyword"}
+                  </p>
+                  <p className="mt-2 font-semibold text-slate-900">{item.titles[locale]}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </main>
         <section className="sr-only">
+          <StructuredData data={genericWebPageSchema} />
           <StructuredData data={genericSchema} />
           <StructuredData data={genericFaqSchema} />
           <StructuredData data={genericBreadcrumbSchema} />
+          <StructuredData data={genericHighlightsSchema} />
         </section>
       </>
     );
