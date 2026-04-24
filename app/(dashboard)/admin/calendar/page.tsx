@@ -56,8 +56,15 @@ function buildCalendarHref(monthDate: Date, selectedDay: string) {
   return `/admin/calendar?month=${format(monthDate, "yyyy-MM")}&day=${selectedDay}`;
 }
 
-function buildBookingsHref(dayKey: string, bookingCode?: string) {
-  const params = new URLSearchParams({ travelDate: dayKey, date: "range", startDate: dayKey, endDate: dayKey });
+function buildBookingsHref(dayKey: string, bookingId?: string, bookingCode?: string) {
+  const params = new URLSearchParams({
+    tab: "all",
+    travelDate: dayKey,
+    date: "range",
+    startDate: dayKey,
+    endDate: dayKey
+  });
+  if (bookingId) params.set("bookingId", bookingId);
   if (bookingCode) params.set("code", bookingCode);
   return `/admin/bookings?${params.toString()}`;
 }
@@ -371,7 +378,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
 
                   <div className="mt-4 flex flex-wrap gap-3">
                     <Link
-                      href={buildBookingsHref(selectedDay, booking.bookingCode)}
+                      href={buildBookingsHref(selectedDay, booking.id, booking.bookingCode)}
                       className="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white transition hover:bg-slate-700"
                     >
                       Abrir reserva

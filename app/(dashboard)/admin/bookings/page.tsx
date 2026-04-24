@@ -108,10 +108,11 @@ const formatPaymentStatusLabel = (value?: string | null) => {
   return paymentStatusLabelMap[value] ?? value;
 };
 
-type TabKey = "today" | "tomorrow" | "upcoming" | "past" | "payment";
+type TabKey = "all" | "today" | "tomorrow" | "upcoming" | "past" | "payment";
 const PAGE_SIZE = 20;
 
 const tabs: { key: TabKey; label: string }[] = [
+  { key: "all", label: "Todas" },
   { key: "today", label: "Hoy" },
   { key: "tomorrow", label: "Mañana" },
   { key: "upcoming", label: "Próximos" },
@@ -127,6 +128,8 @@ const statusOptions = [
   "COMPLETED",
   "CANCELLATION_REQUESTED"
 ];
+
+const normalizeSearchValue = (value?: string | null) => (value ?? "").trim().toLowerCase();
 
 export default async function AdminBookingsPage({ searchParams }: any) {
   const bookings = await prisma.booking.findMany({
@@ -306,6 +309,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   const selectedTour = getParam("tour") ?? "all";
   const searchQuery = getParam("query") ?? "";
   const codeQuery = getParam("code") ?? "";
+  const exactBookingId = getParam("bookingId") ?? "";
   const pickupSearch = getParam("pickup") ?? "";
   const exactTravelDate = getParam("travelDate") ?? "";
   const orderParam = (getParam("order") as "created" | "travel") ?? "created";
@@ -341,6 +345,8 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   const tabFilter = (booking: AdminBookingView) => {
     const travelKey = bookingDateKey(booking);
     switch (tab) {
+      case "all":
+        return true;
       case "today":
         return withinDateMode(booking);
       case "tomorrow":
@@ -356,8 +362,33 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     }
   };
 
-  const shouldApplyDateFilter = tab === "today" || tab === "tomorrow" || dateMode === "range";
+  const matchesSearchQuery = (booking: AdminBookingView) => {
+    if (!searchQuery.trim()) return true;
+    const query = normalizeSearchValue(searchQuery);
+    const haystack = [
+      booking.customerName,
+      booking.customerEmail,
+      booking.customerPhone,
+      booking.bookingCode,
+      booking.id,
+      booking.tourTitle,
+      booking.hotel,
+      booking.pickup,
+      booking.pickupNotes,
+      booking.originAirport,
+      booking.flightNumber,
+      booking.agencyName,
+      booking.transferVehicleName,
+      booking.transferVehicleCategory
+    ]
+      .map((value) => normalizeSearchValue(value))
+      .join(" ");
+    return haystack.includes(query);
+  };
+
+  const shouldApplyDateFilter = !exactBookingId && (tab === "today" || tab === "tomorrow" || dateMode === "range");
   const filteredRows = rows
+    .filter((booking) => (exactBookingId ? booking.id === exactBookingId : true))
     .filter((booking) => (shouldApplyDateFilter ? withinDateMode(booking) : true))
     .filter((booking) => {
       if (!exactTravelDate) return true;
@@ -367,22 +398,15 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     .filter((booking) => (selectedTour === "all" ? true : booking.tourTitle === selectedTour))
     .filter((booking) => {
       if (!codeQuery.trim()) return true;
-      return (booking.bookingCode ?? booking.id).toLowerCase().includes(codeQuery.trim().toLowerCase());
+      const codeTarget = normalizeSearchValue(codeQuery);
+      return normalizeSearchValue(booking.bookingCode).includes(codeTarget) || normalizeSearchValue(booking.id).includes(codeTarget);
     })
-    .filter((booking) => {
-      if (!searchQuery.trim()) return true;
-      const query = searchQuery.trim().toLowerCase();
-      return (
-        booking.customerName?.toLowerCase().includes(query) ||
-        (booking.bookingCode ?? booking.id).toLowerCase().includes(query) ||
-        booking.customerEmail.toLowerCase().includes(query)
-      );
-    })
+    .filter(matchesSearchQuery)
     .filter((booking) => {
       if (!pickupSearch.trim()) return true;
-      const target = pickupSearch.trim().toLowerCase();
+      const target = normalizeSearchValue(pickupSearch);
       const pickupText = `${booking.hotel ?? booking.pickup ?? ""}`;
-      return pickupText.toLowerCase().includes(target);
+      return normalizeSearchValue(pickupText).includes(target) || normalizeSearchValue(booking.pickupNotes).includes(target);
     })
     .filter(tabFilter);
 
@@ -397,7 +421,18 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   const pageStart = (currentPage - 1) * PAGE_SIZE;
   const pageRows = sortedRows.slice(pageStart, pageStart + PAGE_SIZE);
 
-  const latestBooking = rows[0] ?? null;
+  const focusedBooking = exactBookingId ? rows.find((booking) => booking.id === exactBookingId) ?? null : null;
+  const latestBooking = focusedBooking ?? rows[0] ?? null;
+  const activeFilterCount = [
+    tab !== "all" ? tab : "",
+    dateMode === "range" ? `${customStart ?? ""}${customEnd ?? ""}` : "",
+    selectedTour !== "all" ? selectedTour : "",
+    searchQuery,
+    codeQuery,
+    pickupSearch,
+    exactTravelDate,
+    exactBookingId
+  ].filter(Boolean).length;
 
   const summary = {
     reservasHoy: rows.filter(
@@ -433,14 +468,16 @@ export default async function AdminBookingsPage({ searchParams }: any) {
         <section className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-700">Última reserva</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-700">
+                {focusedBooking ? "Reserva enfocada" : "Última reserva"}
+              </p>
               <p className="text-lg font-semibold text-slate-900">{latestBooking.tourTitle}</p>
               <p className="text-sm text-slate-600">
                 {latestBooking.customerName} · {latestBooking.bookingCode}
               </p>
             </div>
             <a
-              href={`?tab=upcoming&date=week&query=${encodeURIComponent(latestBooking.bookingCode)}&order=created`}
+              href={`?tab=all&bookingId=${encodeURIComponent(latestBooking.id)}&code=${encodeURIComponent(latestBooking.bookingCode)}&order=created`}
               className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
             >
               Ver en lista
@@ -460,7 +497,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="grid gap-4 lg:grid-cols-7">
+        <div className="grid gap-4 lg:grid-cols-8">
           <div>
             <label className="text-xs uppercase text-slate-500">Fecha</label>
             <select
@@ -492,6 +529,21 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                 />
               </div>
             )}
+          </div>
+          <div>
+            <label className="text-xs uppercase text-slate-500">Vista</label>
+            <select
+              name="tab"
+              form="filters-form"
+              defaultValue={tab}
+              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            >
+              {tabs.map((item) => (
+                <option key={item.key} value={item.key}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="text-xs uppercase text-slate-500">Estado</label>
@@ -545,12 +597,22 @@ export default async function AdminBookingsPage({ searchParams }: any) {
             />
           </div>
           <div>
+            <label className="text-xs uppercase text-slate-500">Reserva exacta</label>
+            <input
+              name="bookingId"
+              form="filters-form"
+              defaultValue={exactBookingId}
+              placeholder="ID interno"
+              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
             <label className="text-xs uppercase text-slate-500">Buscar</label>
             <input
               name="query"
               form="filters-form"
               defaultValue={searchQuery}
-              placeholder="Cliente o correo"
+              placeholder="Cliente, correo, vuelo, agencia, tour..."
               className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
             />
           </div>
@@ -588,7 +650,6 @@ export default async function AdminBookingsPage({ searchParams }: any) {
           </div>
         </div>
         <form id="filters-form" method="get" className="mt-4 flex flex-wrap gap-2">
-          <input type="hidden" name="tab" value={tab} />
           <button
             type="submit"
             className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
@@ -614,7 +675,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
               pickupSearch
             )}&travelDate=${encodeURIComponent(exactTravelDate)}&order=${orderParam}${selectedStatus
               .map((status) => `&status=${encodeURIComponent(status)}`)
-              .join("")}`}
+              .join("")}${exactBookingId ? `&bookingId=${encodeURIComponent(exactBookingId)}` : ""}`}
             className={`rounded-full px-4 py-2 transition ${
               tab === item.key
                 ? "border border-slate-900 bg-slate-900 text-white"
@@ -630,6 +691,28 @@ export default async function AdminBookingsPage({ searchParams }: any) {
         >
           Limpiar filtros
         </a>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-slate-500">Resultados</p>
+            <p className="mt-2 text-lg font-semibold text-slate-900">
+              {sortedRows.length} reserva{sortedRows.length === 1 ? "" : "s"} encontrada{sortedRows.length === 1 ? "" : "s"}
+            </p>
+            <p className="mt-1 text-sm text-slate-600">
+              {activeFilterCount
+                ? `Filtros activos: ${activeFilterCount}. La lista muestra exactamente lo que coincide con la búsqueda actual.`
+                : "Sin filtros avanzados. Estás viendo la lista completa según la vista seleccionada."}
+            </p>
+          </div>
+          <a
+            href="/admin/calendar"
+            className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-slate-700 transition hover:border-slate-500"
+          >
+            Volver al calendario
+          </a>
+        </div>
       </section>
 
       <section className="space-y-4">
