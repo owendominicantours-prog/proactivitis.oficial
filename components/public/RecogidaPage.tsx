@@ -528,21 +528,24 @@ export async function RecogidaPage({
     });
   }
 
-  const primaryTours = uniqueTours([
-    ...microZoneTours,
-    ...destinationTours.filter((tour) => !microZoneTours.some((item) => item.id === tour.id))
-  ]).slice(0, RECENT_TOURS_LIMIT);
+  const zoneTours = destinationTours.length
+    ? uniqueTours([
+        ...destinationTours,
+        ...microZoneTours.filter((tour) => !destinationTours.some((item) => item.id === tour.id))
+      ])
+    : uniqueTours([
+        ...microZoneTours,
+        ...countryFallbackTours.filter((tour) => !microZoneTours.some((item) => item.id === tour.id))
+      ]);
+
+  const primaryTours = zoneTours.slice(0, RECENT_TOURS_LIMIT);
 
   const secondaryTours = uniqueTours(
     countryFallbackTours.filter((tour) => !primaryTours.some((item) => item.id === tour.id))
   ).slice(0, 3);
 
   const displayTours = primaryTours.length ? primaryTours : countryFallbackTours.slice(0, RECENT_TOURS_LIMIT);
-  const displayMode = primaryTours.length
-    ? pickupTarget.microZoneId
-      ? "microzone"
-      : "destination"
-    : "country";
+  const displayMode = destinationTours.length ? "zone" : microZoneTours.length ? "nearby-zone" : "country";
 
   const canonicalUrl = buildPickupCanonical(pickupTarget.slug, locale);
   const localizedHome = locale === "es" ? "/" : `/${locale}`;
@@ -573,34 +576,34 @@ export async function RecogidaPage({
   const pickupFaq = buildPickupFaq(pickupTarget.name, locale);
   const toursSectionTitle =
     locale === "es"
-      ? displayMode === "microzone"
-        ? `Tours con mejor encaje para ${pickupTarget.name}`
-        : displayMode === "destination"
-          ? `Tours con recogida desde la zona de ${pickupTarget.name}`
-          : `Tours disponibles cerca de ${pickupTarget.name}`
+      ? displayMode === "zone"
+        ? `Tours de ${currentHotelZone} con recogida desde ${pickupTarget.name}`
+        : displayMode === "nearby-zone"
+          ? `Tours cercanos con recogida desde ${pickupTarget.name}`
+          : `Tours disponibles para viajeros alojados en ${pickupTarget.name}`
       : locale === "fr"
-        ? displayMode === "microzone"
-          ? `Tours avec meilleur encaje pour ${pickupTarget.name}`
-          : displayMode === "destination"
-            ? `Tours avec pickup depuis la zone de ${pickupTarget.name}`
-            : `Tours disponibles pres de ${pickupTarget.name}`
-        : displayMode === "microzone"
-          ? `Best-fit tours for ${pickupTarget.name}`
-          : displayMode === "destination"
-            ? `Tours with pickup from the ${pickupTarget.name} area`
-            : `Available tours near ${pickupTarget.name}`;
+        ? displayMode === "zone"
+          ? `Tours de ${currentHotelZone} avec pickup depuis ${pickupTarget.name}`
+          : displayMode === "nearby-zone"
+            ? `Tours proches avec pickup depuis ${pickupTarget.name}`
+            : `Tours disponibles pour voyageurs logeant a ${pickupTarget.name}`
+        : displayMode === "zone"
+          ? `${currentHotelZone} tours with pickup from ${pickupTarget.name}`
+          : displayMode === "nearby-zone"
+            ? `Nearby tours with pickup from ${pickupTarget.name}`
+            : `Available tours for travelers staying at ${pickupTarget.name}`;
   const toursSectionBody =
     locale === "es"
       ? displayMode === "country"
-        ? "No encontramos suficiente inventario hyper-especifico para ese hotel, asi que mostramos opciones cercanas dentro del mismo mercado operativo."
-        : "Estas cards priorizan experiencias con mejor encaje operativo para ese hotel y su zona inmediata."
+        ? "Esta landing usa el hotel como puerta de entrada SEO y comercial, pero sigue mostrando experiencias del mercado operativo donde encaja ese viajero."
+        : "El hotel funciona como contexto de recogida, mientras que las cards priorizan excursiones reales de la zona operativa correspondiente."
       : locale === "fr"
         ? displayMode === "country"
-          ? "Nous n avons pas trouve assez d inventaire hyper specifique pour cet hotel, donc nous montrons des options proches dans le meme marche operationnel."
-          : "Ces cards priorisent les experiences les plus coherentes pour cet hotel et sa zone immediate."
+          ? "Cette landing utilise l hotel comme porte d entree SEO et commerciale, tout en montrant de vraies experiences du marche operationnel correspondant."
+          : "L hotel sert de contexte pickup, tandis que les cards priorisent de vraies excursions de la zone operationnelle correspondante."
         : displayMode === "country"
-          ? "There was not enough hyper-specific inventory for that hotel, so these cards fall back to nearby options in the same operating market."
-          : "These cards prioritize the excursions that operationally fit that hotel and its immediate area better.";
+          ? "This landing uses the hotel as the SEO and commercial entry point while still showing real excursions from the operating market that fits that traveler."
+          : "The hotel works as pickup context, while the cards prioritize real excursions from the matching operating area.";
   const destinationAreaLabel = pickupTarget.microZoneId
     ? currentHotelZone
     : pickupTarget.destinationId
