@@ -47,6 +47,7 @@ import { recommendedReservation } from "@/lib/checkout";
 import Link from "next/link";
 import { useTranslation } from "../../context/LanguageProvider";
 import { TrustBadges } from "@/components/shared/TrustBadges";
+import { trackBeginCheckout } from "@/lib/analytics";
 
 
 
@@ -489,6 +490,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
   );
 
   const summary = useMemo(() => buildSummary(initialParams, transferDefaults), [initialParams, transferDefaults]);
+  const checkoutTrackedRef = useRef(false);
 
   const contactFields = useMemo<ContactField[]>(() => {
     return [
@@ -775,6 +777,48 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
     : null;
   const isAgencyCheckout = sessionRole === "AGENCY" || Boolean(summary.agencyLink);
 
+  useEffect(() => {
+    if (checkoutTrackedRef.current) return;
+    if (!summary.tourTitle) return;
+
+    trackBeginCheckout(
+      {
+        currency: "USD",
+        value: Number(summary.displayTotalPrice || summary.totalPrice || 0),
+        items: [
+          {
+            item_id: summary.tourId ?? summary.vehicleId ?? undefined,
+            item_name: summary.tourTitle,
+            item_category: isTransferFlow ? "transfer" : "tour",
+            item_variant: isTransferFlow
+              ? [summary.vehicleCategory, summary.tripType].filter(Boolean).join(" / ")
+              : summary.tourOptionName ?? undefined,
+            price: Number(summary.displayTourPrice || summary.tourPrice || 0),
+            quantity: Math.max(1, summary.totalTravelers)
+          }
+        ]
+      },
+      `${summary.tourId ?? summary.vehicleId ?? summary.tourTitle}-${summary.date ?? "date"}-${summary.bookingCode ?? "checkout"}`
+    );
+
+    checkoutTrackedRef.current = true;
+  }, [
+    isTransferFlow,
+    summary.bookingCode,
+    summary.date,
+    summary.displayTotalPrice,
+    summary.displayTourPrice,
+    summary.totalPrice,
+    summary.totalTravelers,
+    summary.tourId,
+    summary.tourOptionName,
+    summary.tourPrice,
+    summary.tourTitle,
+    summary.tripType,
+    summary.vehicleCategory,
+    summary.vehicleId
+  ]);
+
 
 
   const contactSummary = useMemo(() => {
@@ -795,7 +839,7 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
     if (isTransferFlow) {
       sections.push(flightLabel);
     }
-    return sections.join(" · ");
+    return sections.join(" / ");
   }, [contact, phoneCountry, flightNumber, isTransferFlow, t]);
 
 
@@ -2431,6 +2475,7 @@ const PaymentForm = memo(function PaymentForm({
   );
 
 });
+
 
 
 

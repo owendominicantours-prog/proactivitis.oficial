@@ -10,6 +10,7 @@ import { ItineraryTimeline } from "@/components/itinerary/ItineraryTimeline";
 import { formatDurationDisplay } from "@/lib/formatDuration";
 import { BookingConfirmationData } from "./helpers";
 import { useTranslation } from "../../../context/LanguageProvider";
+import BookingPurchaseTracker from "@/components/analytics/BookingPurchaseTracker";
 
 const InfoRow = ({ label, value }: { label: string; value: string }) => (
   <div className="space-y-1">
@@ -32,7 +33,8 @@ export function BookingConfirmedContent({
   startTimeLabel,
   orderCode,
   flowType,
-  discountPercent
+  discountPercent,
+  analytics
 }: BookingConfirmationData) {
   const isTransfer = flowType === "transfer";
   const { t } = useTranslation();
@@ -83,6 +85,13 @@ export function BookingConfirmedContent({
       : "Coordinación del servicio, soporte y confirmación";
   return (
     <div className="bg-slate-50 min-h-screen">
+      <BookingPurchaseTracker
+        transactionId={analytics.transactionId}
+        value={analytics.value}
+        currency={analytics.currency}
+        coupon={analytics.coupon}
+        items={analytics.items}
+      />
       <BookingEmailDispatcher bookingId={booking.id} />
       <section className="bg-white border-b border-slate-200">
         <div className="mx-auto max-w-6xl px-6 py-8 space-y-6">

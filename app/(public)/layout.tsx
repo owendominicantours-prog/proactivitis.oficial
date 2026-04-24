@@ -2,6 +2,7 @@ import { Suspense, type ReactNode } from "react";
 import Script from "next/script";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import PublicHeaderSwitch from "@/components/public/PublicHeaderSwitch";
+import PageViewTracker from "@/components/analytics/PageViewTracker";
 import WhatsappFloatingChat from "@/components/shared/WhatsappFloatingChat";
 import VisitorSalesChat from "@/components/shared/VisitorSalesChat";
 import { getPriceValidUntil, PROACTIVITIS_PHONE } from "@/lib/seo";
@@ -153,11 +154,15 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
 
-          gtag('config', 'G-R3L9DE7KXL');
+          gtag('config', 'G-R3L9DE7KXL', {
+            send_page_view: false,
+            anonymize_ip: true
+          });
           gtag('config', 'AW-17889405007');
         `}
       </Script>
       <div className="flex min-h-screen flex-col bg-transparent text-slate-900">
+        <PageViewTracker />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

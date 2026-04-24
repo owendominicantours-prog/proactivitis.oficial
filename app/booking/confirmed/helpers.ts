@@ -31,12 +31,27 @@ export type BookingConfirmationData = {
   startTimeLabel: string;
   flowType?: "tour" | "transfer";
   discountPercent: number;
+  analytics: {
+    transactionId: string;
+    value: number;
+    currency: string;
+    coupon: string | null;
+    items: Array<{
+      item_id?: string;
+      item_name: string;
+      item_category?: string;
+      item_variant?: string;
+      price?: number;
+      quantity?: number;
+    }>;
+  };
 };
 
 export async function getBookingConfirmationData(
   bookingId: string
 ): Promise<BookingConfirmationData | null> {
-  const booking = await prisma.booking.findUnique({
+  const db = prisma as any;
+  const booking = (await db.booking.findUnique({
     where: { id: bookingId },
     include: {
       User: {
@@ -79,7 +94,7 @@ export async function getBookingConfirmationData(
         }
       }
     }
-  });
+  })) as any;
 
   if (!booking || !booking.Tour) {
     return null;
@@ -111,7 +126,7 @@ export async function getBookingConfirmationData(
     booking.travelDate
   ).toLocaleDateString("es-ES", { dateStyle: "long" })}`;
 
-  const preference = await prisma.customerPreference.findUnique({
+  const preference = await db.customerPreference.findUnique({
     where: { userId: booking.userId },
     select: {
       preferredCountries: true,
@@ -159,18 +174,18 @@ export async function getBookingConfirmationData(
   const fallbackItinerary =
     (tour.description ?? "")
       .split("\n")
-      .map((line) => line.trim())
+      .map((line: string) => line.trim())
       .filter(Boolean)
-      .map((line, index) => {
+      .map((line: string, index: number) => {
         const [timePart, ...descParts] = line.split(" - ");
         return {
           time: timePart ?? `Parada ${index + 1}`,
           title: descParts[0] ?? line,
-          description: descParts.slice(1).join(" - ") || undefined
+          description: descParts.slice(1).join(" / ") || undefined
         };
       }) ?? [];
   const finalItinerary = adminItinerary.length ? adminItinerary : fallbackItinerary;
-  const timelineStops: TimelineStop[] = finalItinerary.map((stop) => ({
+  const timelineStops: TimelineStop[] = finalItinerary.map((stop: { title: string; description?: string; time: string }) => ({
     label: stop.title,
     description: stop.description,
     duration: stop.time
@@ -181,6 +196,26 @@ export async function getBookingConfirmationData(
   const travelDateLabel = new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(booking.travelDate);
   const passengerLabel = `${booking.paxAdults + booking.paxChildren} pax`;
   const startTimeLabel = booking.startTime ?? "Hora por confirmar";
+  const flowType = (booking.flowType ?? "tour") as "tour" | "transfer";
+  const analytics = {
+    transactionId: orderCode,
+    value: booking.totalAmount,
+    currency: "USD",
+    coupon: booking.discountCode ?? null,
+    items: [
+      {
+        item_id: tour.id,
+        item_name: tour.title,
+        item_category: flowType,
+        item_variant:
+          flowType === "transfer"
+            ? [(booking as any).vehicleCategory ?? null, (booking as any).tripType ?? null].filter(Boolean).join(" / ") || undefined
+            : undefined,
+        price: booking.totalAmount,
+        quantity: Math.max(1, booking.paxAdults + booking.paxChildren)
+      }
+    ]
+  };
 
   return {
     booking,
@@ -195,6 +230,9 @@ export async function getBookingConfirmationData(
     passengerLabel,
     startTimeLabel,
     orderCode,
-    discountPercent
+    flowType,
+    discountPercent,
+    analytics
   };
 }
+
