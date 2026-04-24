@@ -66,7 +66,8 @@ function buildBookingsHref(dayKey: string, bookingId?: string, bookingCode?: str
   });
   if (bookingId) params.set("bookingId", bookingId);
   if (bookingCode) params.set("code", bookingCode);
-  return `/admin/bookings?${params.toString()}`;
+  const hash = bookingId ? `#booking-${bookingId}` : "";
+  return `/admin/bookings?${params.toString()}${hash}`;
 }
 
 function getStatusClasses(status: string) {

@@ -727,6 +727,11 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                 ? `Filtros activos: ${activeFilterCount}. La lista muestra exactamente lo que coincide con la búsqueda actual.`
                 : "Sin filtros avanzados. Estás viendo la lista completa según la vista seleccionada."}
             </p>
+            {focusedBooking ? (
+              <p className="mt-2 text-sm font-medium text-emerald-700">
+                Mostrando la reserva exacta {focusedBooking.bookingCode} para {focusedBooking.customerName}.
+              </p>
+            ) : null}
           </div>
           <a
             href="/admin/calendar"
@@ -798,8 +803,9 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                     : `${presentation.routeValue} · ${departureLabel}`
                   : `${booking.tourTitle} ${booking.startTime ?? ""}`.trim();
 
-              return (
+                return (
                 <article
+                  id={`booking-${booking.id}`}
                   key={booking.id}
                   className={`overflow-hidden rounded-[28px] border bg-white shadow-sm ${
                     latestBooking?.id === booking.id ? "border-emerald-300 ring-2 ring-emerald-100" : "border-slate-200"
