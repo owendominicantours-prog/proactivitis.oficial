@@ -743,6 +743,131 @@ const buildGenericTransferNarrative = (keyword: string, locale: Locale) => {
   };
 };
 
+const detectGenericTransferIntent = (keyword: string) => {
+  const lower = keyword.toLowerCase();
+  if (lower.includes("vip") || lower.includes("luxury") || lower.includes("chauffeur") || lower.includes("executive")) {
+    return "premium";
+  }
+  if (lower.includes("suv") || lower.includes("van") || lower.includes("minivan") || lower.includes("for 6") || lower.includes("for 8") || lower.includes("for 10") || lower.includes("for 12") || lower.includes("group")) {
+    return "vehicle";
+  }
+  if (lower.includes("price") || lower.includes("cost") || lower.includes("cheap") || lower.includes("affordable") || lower.includes("best price")) {
+    return "price";
+  }
+  if (lower.includes("round trip") || lower.includes("return") || lower.includes("hotel to airport")) {
+    return "roundtrip";
+  }
+  if (lower.includes("child seat") || lower.includes("baby seat") || lower.includes("car seat") || lower.includes("family")) {
+    return "family";
+  }
+  if (lower.includes("whatsapp") || lower.includes("last minute") || lower.includes("24/7") || lower.includes("flight tracking") || lower.includes("meet and greet")) {
+    return "service";
+  }
+  return "airport";
+};
+
+const buildGenericTransferSalesCards = (keyword: string, locale: Locale) => {
+  const intent = detectGenericTransferIntent(keyword);
+
+  if (intent === "premium") {
+    return locale === "en"
+      ? [
+          { title: "Higher-end arrival", body: "Better vehicle perception, cleaner presentation, and a more executive handoff from airport to hotel." },
+          { title: "Ideal for premium travelers", body: "Useful for couples, VIP guests, corporate travelers, and clients who care about comfort and image." },
+          { title: "More commercial margin", body: "Luxury-intent pages usually support stronger average order value than standard transfer searches." }
+        ]
+      : locale === "fr"
+        ? [
+            { title: "Arrivee plus premium", body: "Meilleure perception du vehicule, presentation plus propre et accueil plus executif de l aeroport a l hotel." },
+            { title: "Ideal pour clients premium", body: "Utile pour couples, VIP, voyageurs corporate et clients sensibles au confort et a l image." },
+            { title: "Valeur commerciale plus forte", body: "Les pages a intention luxe soutiennent souvent un panier moyen plus eleve." }
+          ]
+        : [
+            { title: "Llegada mas premium", body: "Mejor percepcion del vehiculo, presentacion mas limpia y una recepcion mas ejecutiva desde el aeropuerto al hotel." },
+            { title: "Ideal para clientes premium", body: "Sirve para parejas, VIP, ejecutivos y viajeros que valoran comodidad e imagen." },
+            { title: "Mayor valor comercial", body: "Las paginas con intencion luxury suelen soportar un ticket promedio mas alto que una busqueda generica." }
+          ];
+  }
+
+  if (intent === "price") {
+    return locale === "en"
+      ? [
+          { title: "Clear pricing intent", body: "These searches need price confidence first, so the landing should answer cost, pickup, and confirmation speed quickly." },
+          { title: "Better quote behavior", body: "A tighter page reduces friction before the user reaches the transfer quote or checkout flow." },
+          { title: "Stronger pre-sale trust", body: "Transparent language around rates and service quality helps price-sensitive visitors convert." }
+        ]
+      : locale === "fr"
+        ? [
+            { title: "Intention prix claire", body: "Ces recherches veulent d abord de la clarte sur le prix, le pickup et la rapidite de confirmation." },
+            { title: "Meilleur comportement au devis", body: "Une page plus serree reduit la friction avant d arriver au devis ou au checkout." },
+            { title: "Confiance avant vente", body: "Un langage plus transparent sur le tarif et le service aide a convertir les visiteurs sensibles au prix." }
+          ]
+        : [
+            { title: "Intencion de precio clara", body: "Estas busquedas necesitan primero claridad en costo, pickup y rapidez de confirmacion." },
+            { title: "Mejor paso a cotizacion", body: "Una pagina mas cerrada reduce friccion antes de llegar al cotizador o al checkout." },
+            { title: "Mas confianza antes de comprar", body: "Un lenguaje transparente sobre tarifa y servicio ayuda a convertir al viajero sensible al precio." }
+          ];
+  }
+
+  if (intent === "family" || intent === "vehicle") {
+    return locale === "en"
+      ? [
+          { title: "Vehicle-fit intent", body: "The visitor wants to know if luggage, group size, or children are handled correctly before booking." },
+          { title: "Operational clarity", body: "This page can pre-answer seats, comfort, space, and route suitability in a more direct way." },
+          { title: "Higher confidence for groups", body: "Families and group travelers convert better when the page feels specific to their logistics." }
+        ]
+      : locale === "fr"
+        ? [
+            { title: "Intention liee au vehicule", body: "Le visiteur veut savoir si bagages, groupe ou enfants sont bien geres avant de reserver." },
+            { title: "Clarte operationnelle", body: "La page peut repondre plus vite sur l espace, le confort, les sieges et l adequation du trajet." },
+            { title: "Plus de confiance pour groupes", body: "Familles et groupes convertissent mieux quand la page semble adaptee a leur logistique." }
+          ]
+        : [
+            { title: "Intencion ligada al vehiculo", body: "El usuario quiere saber si equipaje, grupo o ninos estan bien cubiertos antes de reservar." },
+            { title: "Claridad operativa", body: "La pagina puede resolver mejor espacio, confort, sillas y encaje de ruta de forma mas directa." },
+            { title: "Mas confianza para grupos", body: "Familias y grupos convierten mejor cuando la pagina parece hecha para su logistica." }
+          ];
+  }
+
+  if (intent === "roundtrip") {
+    return locale === "en"
+      ? [
+          { title: "Arrival + departure solved", body: "Round-trip intent means the traveler wants the whole airport transport flow handled in one decision." },
+          { title: "Less operational leakage", body: "A dedicated page helps lock both directions earlier and reduces return-trip uncertainty." },
+          { title: "Better vacation planning", body: "The landing supports travelers who want transport confirmed before they even check in." }
+        ]
+      : locale === "fr"
+        ? [
+            { title: "Arrivee + depart resolus", body: "L intention aller-retour veut regler tout le transport aeroport en une seule decision." },
+            { title: "Moins de fuite operationnelle", body: "Une page dediee aide a verrouiller les deux trajets plus tot et reduit l incertitude du retour." },
+            { title: "Planification plus propre", body: "La landing aide les voyageurs qui veulent tout confirmer avant meme le check-in." }
+          ]
+        : [
+            { title: "Llegada + salida resueltas", body: "La intencion round-trip quiere resolver todo el transporte al aeropuerto en una sola decision." },
+            { title: "Menos fuga operativa", body: "Una pagina dedicada ayuda a cerrar ambos trayectos mas temprano y reduce incertidumbre del regreso." },
+            { title: "Mejor plan de viaje", body: "La landing ayuda a quien quiere dejar su transporte cerrado antes incluso del check-in." }
+          ];
+  }
+
+  return locale === "en"
+    ? [
+        { title: "Closer to booking", body: "Generic airport transfer searches still carry strong purchase intent when the landing answers the arrival problem clearly." },
+        { title: "Cleaner transfer promise", body: "This page narrows the message around direct transport, support, and easier booking behavior." },
+        { title: "Useful entry page", body: "It works as a conversion doorway for travelers who are not searching by hotel yet but already want transport." }
+      ]
+    : locale === "fr"
+      ? [
+          { title: "Plus proche de la reservation", body: "Les recherches generiques airport transfer gardent une forte intention d achat si la page resout bien l arrivee." },
+          { title: "Promesse plus propre", body: "La page recentre le message sur transport direct, support et reservation plus simple." },
+          { title: "Bonne page d entree", body: "Elle capte les voyageurs qui ne cherchent pas encore par hotel mais veulent deja leur transport." }
+        ]
+      : [
+          { title: "Mas cerca de la reserva", body: "Las busquedas genericas de airport transfer siguen teniendo fuerte intencion de compra si la pagina resuelve bien la llegada." },
+          { title: "Promesa mas limpia", body: "La pagina concentra el mensaje en transporte directo, soporte y reserva mas simple." },
+          { title: "Buena puerta de entrada", body: "Sirve para viajeros que aun no buscan por hotel pero ya quieren resolver su traslado." }
+        ];
+};
+
 export async function TransferLandingPage({
   landingSlug,
   locale
@@ -758,6 +883,7 @@ export async function TransferLandingPage({
     const genericCanonical = buildCanonical(generic.landingSlug, locale);
     const genericHighlights = buildGenericTransferHighlights(generic.keyword, locale);
     const genericNarrative = buildGenericTransferNarrative(generic.keyword, locale);
+    const genericSalesCards = buildGenericTransferSalesCards(generic.keyword, locale);
     const relatedGenericLandings = genericTransferLandings
       .filter((item) => item.landingSlug !== generic.landingSlug)
       .filter(
@@ -908,6 +1034,17 @@ export async function TransferLandingPage({
         name: item
       }))
     };
+    const genericSalesCardsSchema = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "@id": `${genericCanonical}#sales-cards`,
+      itemListElement: genericSalesCards.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.title,
+        description: item.body
+      }))
+    };
 
     return (
       <>
@@ -963,6 +1100,39 @@ export async function TransferLandingPage({
           <section className="rounded-[30px] border border-slate-100 bg-white p-8 shadow-sm">
             <div className="flex flex-col gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
+                {locale === "es" ? "Por que esta keyword vende" : locale === "fr" ? "Pourquoi ce mot cle convertit" : "Why this keyword converts"}
+              </p>
+              <h2 className="text-2xl font-bold text-slate-900">
+                {locale === "es"
+                  ? "La promesa comercial cambia segun la busqueda"
+                  : locale === "fr"
+                    ? "La promesse commerciale change selon la recherche"
+                    : "The sales promise changes with the search"}
+              </h2>
+              <p className="max-w-3xl text-sm leading-7 text-slate-600">
+                {locale === "es"
+                  ? "Estas paginas ya no se quedan solo en el titulo. Ahora explican mejor que espera el viajero segun si busca precio, SUV, round trip, servicio premium o una solucion simple desde el aeropuerto."
+                  : locale === "fr"
+                    ? "Ces pages ne se limitent plus au titre. Elles expliquent mieux ce que cherche le voyageur selon qu il recherche le prix, un SUV, un aller-retour, un service premium ou une solution simple depuis l aeroport."
+                    : "These pages now do more than change the title. They explain what the traveler expects depending on whether the search is about price, SUV capacity, round-trip planning, premium service, or a simple airport transfer solution."}
+              </p>
+            </div>
+            <div className="mt-5 grid gap-4 lg:grid-cols-3">
+              {genericSalesCards.map((item) => (
+                <article key={item.title} className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+                    {locale === "es" ? "Intencion" : locale === "fr" ? "Intention" : "Intent"}
+                  </p>
+                  <h3 className="mt-3 text-lg font-semibold text-slate-900">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-slate-600">{item.body}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-[30px] border border-slate-100 bg-white p-8 shadow-sm">
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
                 {locale === "es" ? "Variantes relacionadas" : locale === "fr" ? "Variantes liees" : "Related variants"}
               </p>
               <h2 className="text-2xl font-bold text-slate-900">
@@ -995,6 +1165,7 @@ export async function TransferLandingPage({
           <StructuredData data={genericFaqSchema} />
           <StructuredData data={genericBreadcrumbSchema} />
           <StructuredData data={genericHighlightsSchema} />
+          <StructuredData data={genericSalesCardsSchema} />
         </section>
       </>
     );
