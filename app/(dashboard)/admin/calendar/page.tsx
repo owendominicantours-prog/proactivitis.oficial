@@ -194,8 +194,8 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
         </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
-        <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)]">
+        <div className="rounded-[28px] border border-slate-200 bg-white p-3 shadow-sm sm:p-5">
           <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Mes actual</p>
@@ -220,19 +220,19 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
           </div>
 
           <div className="mt-5 overflow-x-auto">
-            <div className="min-w-[920px]">
-              <div className="grid grid-cols-7 gap-2">
+            <div className="min-w-[760px]">
+              <div className="grid grid-cols-7 gap-1.5">
                 {weekdayLabels.map((label) => (
                   <div
                     key={label}
-                    className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500"
+                    className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-2 text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500"
                   >
                     {label}
                   </div>
                 ))}
               </div>
 
-              <div className="mt-2 grid grid-cols-7 gap-2">
+              <div className="mt-1.5 grid grid-cols-7 gap-1.5">
                 {days.map((day) => {
                   const dayKey = format(day, "yyyy-MM-dd");
                   const dayBookings = bookingsByDay.get(dayKey) ?? [];
@@ -243,7 +243,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                     <Link
                       key={dayKey}
                       href={buildCalendarHref(monthDate, dayKey)}
-                      className={`min-h-[150px] rounded-[24px] border p-3 text-left transition ${
+                      className={`min-h-[118px] rounded-[18px] border p-2.5 text-left transition ${
                         isSelected
                           ? "border-sky-400 bg-sky-50 shadow-md ring-2 ring-sky-100"
                           : isSameMonth(day, monthDate)
@@ -253,7 +253,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div
-                          className={`inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
+                          className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
                             isToday
                               ? "bg-slate-900 text-white"
                               : isSelected
@@ -263,23 +263,23 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                         >
                           {format(day, "d")}
                         </div>
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                          {dayBookings.length ? `${dayBookings.length} reservas` : "Libre"}
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                          {dayBookings.length ? `${dayBookings.length} res.` : "Libre"}
                         </span>
                       </div>
 
-                      <div className="mt-3 space-y-2">
-                        {dayBookings.slice(0, 3).map((booking) => (
-                          <div key={booking.id} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                            <p className="truncate text-xs font-semibold text-slate-900">{booking.tourTitle}</p>
-                            <p className="mt-1 text-[11px] text-slate-600">
+                      <div className="mt-2 space-y-1.5">
+                        {dayBookings.slice(0, 2).map((booking) => (
+                          <div key={booking.id} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5">
+                            <p className="truncate text-[11px] font-semibold text-slate-900">{booking.tourTitle}</p>
+                            <p className="mt-0.5 truncate text-[10px] text-slate-600">
                               {(booking.startTime ?? "Sin hora")} - {booking.customerName}
                             </p>
                           </div>
                         ))}
-                        {dayBookings.length > 3 ? (
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                            +{dayBookings.length - 3} mas
+                        {dayBookings.length > 2 ? (
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                            +{dayBookings.length - 2} mas
                           </p>
                         ) : null}
                       </div>
