@@ -19,6 +19,7 @@ const adminNav = [
   { label: "Suplidores", href: "/admin/suppliers" },
   { label: "Agencias", href: "/admin/agencies" },
   { label: "Reservas", href: "/admin/bookings" },
+  { label: "Calendario", href: "/admin/calendar" },
   { label: "Finanzas", href: "/admin/finance" },
   { label: "Reportes", href: "/admin/reports" },
   { label: "Solicitudes", href: "/admin/partner-applications" },
