@@ -394,6 +394,73 @@ export const buildMarketTransferTitles = (
   };
 };
 
+const dedupeAlternateNames = (items: Array<string | null | undefined>, primary?: string) =>
+  Array.from(
+    new Set(
+      items
+        .map((item) => item?.trim())
+        .filter((item): item is string => Boolean(item && item.length > 0 && item !== primary))
+    )
+  );
+
+const buildGenericTransferAlternateNames = (keyword: string, locale: Locale, primary: string) => {
+  const normalizedKeyword = ensureLeadingCapital(keyword);
+  const variants =
+    locale === "en"
+      ? [
+          normalizedKeyword,
+          `${normalizedKeyword} in Punta Cana`,
+          `Private ${normalizedKeyword}`,
+          `${normalizedKeyword} booking`
+        ]
+      : locale === "fr"
+        ? [
+            normalizedKeyword,
+            `${normalizedKeyword} a Punta Cana`,
+            `Reservation ${normalizedKeyword}`,
+            `${normalizedKeyword} prive`
+          ]
+        : [
+            normalizedKeyword,
+            `${normalizedKeyword} en Punta Cana`,
+            `Reserva ${normalizedKeyword}`,
+            `${normalizedKeyword} privado`
+          ];
+
+  return dedupeAlternateNames(variants, primary);
+};
+
+const buildMarketTransferAlternateNames = (
+  locale: Locale,
+  hotelName: string,
+  originLabel: string,
+  primary: string
+) => {
+  const variants =
+    locale === "en"
+      ? [
+          `${hotelName} airport transfer`,
+          `${hotelName} private transfer`,
+          `${originLabel} to ${hotelName} transfer`,
+          `${hotelName} transfer booking`
+        ]
+      : locale === "fr"
+        ? [
+            `Transfert aeroport ${hotelName}`,
+            `Transfert prive ${hotelName}`,
+            `${originLabel} vers ${hotelName}`,
+            `Reservation transfert ${hotelName}`
+          ]
+        : [
+            `Traslado aeropuerto ${hotelName}`,
+            `Traslado privado ${hotelName}`,
+            `${originLabel} a ${hotelName}`,
+            `Reserva traslado ${hotelName}`
+          ];
+
+  return dedupeAlternateNames(variants, primary);
+};
+
 const parseGalleryImages = (value?: string | null): string[] => {
   if (!value) return [];
   try {
@@ -881,6 +948,8 @@ export async function TransferLandingPage({
   const generic = findGenericTransferLandingBySlug(landingSlug);
   if (generic) {
     const genericCanonical = buildCanonical(generic.landingSlug, locale);
+    const genericPrimaryName = generic.titles[locale];
+    const genericAlternateNames = buildGenericTransferAlternateNames(generic.keyword, locale, genericPrimaryName);
     const genericHighlights = buildGenericTransferHighlights(generic.keyword, locale);
     const genericNarrative = buildGenericTransferNarrative(generic.keyword, locale);
     const genericSalesCards = buildGenericTransferSalesCards(generic.keyword, locale);
@@ -914,7 +983,8 @@ export async function TransferLandingPage({
       "@context": "https://schema.org",
       "@type": "Service",
       "@id": `${genericCanonical}#service`,
-      name: generic.titles[locale],
+      name: genericPrimaryName,
+      alternateName: genericAlternateNames,
       description: generic.descriptions[locale],
       serviceType: locale === "es" ? "Traslado aeropuerto y transporte terrestre" : locale === "fr" ? "Transfert aeroport et transport terrestre" : "Airport and ground transfer service",
       areaServed: {
@@ -1003,6 +1073,7 @@ export async function TransferLandingPage({
       "@id": `${genericCanonical}#webpage`,
       url: genericCanonical,
       name: generic.seoTitle[locale],
+      alternateName: genericAlternateNames,
       description: generic.metaDescription[locale],
       isPartOf: {
         "@type": "WebSite",
@@ -1266,6 +1337,7 @@ export async function TransferLandingPage({
   const primaryImageUrl = TRANSFER_HEADER_BANNER;
   const transferArea = detectTransferArea(landing.hotelSlug, localizedLanding.hotelName, locale);
   const travelerProfile = detectTransferProfile(landing.hotelSlug, localizedLanding.hotelName);
+  const marketAlternateNames = buildMarketTransferAlternateNames(locale, localizedLanding.hotelName, originLabel, marketTitles.heroTitle);
   const genericKeywordLinks = genericTransferLandings
     .filter(
       (item) =>
@@ -1296,6 +1368,7 @@ export async function TransferLandingPage({
     mainEntityOfPage: canonicalUrl,
     url: canonicalUrl,
     name: marketTitles.heroTitle,
+    alternateName: marketAlternateNames,
     description: localizedLanding.metaDescription,
     serviceType: t("transferLanding.schema.serviceType", { hotel: localizedLanding.hotelName }),
     provider: {
@@ -1415,6 +1488,7 @@ export async function TransferLandingPage({
     "@id": `${canonicalUrl}#webpage`,
     url: canonicalUrl,
     name: ensureLeadingCapital(`${marketTitles.seoTitle} | Proactivitis`),
+    alternateName: marketAlternateNames,
     description: localizedLanding.metaDescription,
     inLanguage: locale,
     isPartOf: {
