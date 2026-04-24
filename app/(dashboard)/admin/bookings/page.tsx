@@ -30,6 +30,7 @@ type AdminBookingView = {
   id: string;
   travelDate: string;
   travelDateValue: string;
+  travelDateKey: string;
   createdAtValue: string;
   updatedAtValue: string | null;
   tourTitle: string;
@@ -48,6 +49,7 @@ type AdminBookingView = {
   startTime: string | null;
   tripType: string | null;
   returnTravelDate: string | null;
+  returnTravelDateKey: string | null;
   returnStartTime: string | null;
   flightNumber: string | null;
   originAirport: string | null;
@@ -130,6 +132,25 @@ const statusOptions = [
 ];
 
 const normalizeSearchValue = (value?: string | null) => (value ?? "").trim().toLowerCase();
+
+const getUtcDateKey = (value: Date | string) => {
+  const date = value instanceof Date ? value : new Date(value);
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+};
+
+const formatUtcDateLabel = (
+  value: Date | string,
+  locale = "es-ES",
+  options: Intl.DateTimeFormatOptions = {
+    day: "2-digit",
+    month: "long",
+    year: "numeric"
+  }
+) =>
+  new Intl.DateTimeFormat(locale, {
+    ...options,
+    timeZone: "UTC"
+  }).format(value instanceof Date ? value : new Date(value));
 
 export default async function AdminBookingsPage({ searchParams }: any) {
   const bookings = await prisma.booking.findMany({
@@ -243,8 +264,9 @@ export default async function AdminBookingsPage({ searchParams }: any) {
 
     return {
       id: booking.id,
-      travelDate: booking.travelDate.toLocaleDateString("es-ES"),
+      travelDate: formatUtcDateLabel(booking.travelDate),
       travelDateValue: booking.travelDate.toISOString(),
+      travelDateKey: getUtcDateKey(booking.travelDate),
       createdAtValue: booking.createdAt.toISOString(),
       updatedAtValue: booking.updatedAt?.toISOString() ?? null,
       tourTitle: booking.Tour?.title ?? "Tour no disponible",
@@ -263,6 +285,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
       startTime: booking.startTime,
       tripType: bookingTripType ?? null,
       returnTravelDate: bookingReturnTravelDate?.toISOString() ?? null,
+      returnTravelDateKey: bookingReturnTravelDate ? getUtcDateKey(bookingReturnTravelDate) : null,
       returnStartTime: bookingReturnStartTime ?? null,
       flightNumber: booking.flightNumber,
       originAirport: booking.originAirport,
@@ -322,7 +345,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   const todayKey = getSiteDateKey(now);
   const tomorrowKey = addDaysToSiteDateKey(todayKey, 1);
   const weekLaterKey = addDaysToSiteDateKey(todayKey, 7);
-  const bookingDateKey = (booking: AdminBookingView) => getSiteDateKey(booking.travelDateValue);
+  const bookingDateKey = (booking: AdminBookingView) => booking.travelDateKey;
 
   const withinDateMode = (booking: AdminBookingView) => {
     const travelKey = bookingDateKey(booking);
@@ -436,17 +459,16 @@ export default async function AdminBookingsPage({ searchParams }: any) {
 
   const summary = {
     reservasHoy: rows.filter(
-      (booking) =>
-        new Date(booking.travelDateValue).toDateString() === now.toDateString()
+      (booking) => booking.travelDateKey === todayKey
     ).length,
     pendientesPago: rows.filter((booking) =>
       ["PAYMENT_PENDING", "PENDING"].includes(booking.status)
     ).length,
     totalPaxHoy: rows
-      .filter((booking) => new Date(booking.travelDateValue).toDateString() === now.toDateString())
+      .filter((booking) => booking.travelDateKey === todayKey)
       .reduce((total, booking) => total + booking.pax, 0),
     totalDelDia: rows
-      .filter((booking) => new Date(booking.travelDateValue).toDateString() === now.toDateString())
+      .filter((booking) => booking.travelDateKey === todayKey)
       .reduce((total, booking) => total + booking.totalAmount, 0),
     nextDepartureMinutes: (() => {
       const upcoming = rows
@@ -726,17 +748,9 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                       `Hola ${booking.customerName}, te confirmamos tu reserva ${booking.bookingCode}.`
                     )}`
                   : null;
-              const departureLabel = `${new Date(booking.travelDateValue).toLocaleDateString("es-ES", {
-                day: "2-digit",
-                month: "long",
-                year: "numeric"
-              })}${booking.startTime ? ` · ${booking.startTime}` : ""}`;
+              const departureLabel = `${formatUtcDateLabel(booking.travelDateValue)}${booking.startTime ? ` · ${booking.startTime}` : ""}`;
               const returnLabel = booking.returnTravelDate
-                ? `${new Date(booking.returnTravelDate).toLocaleDateString("es-ES", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric"
-                  })}${booking.returnStartTime ? ` · ${booking.returnStartTime}` : ""}`
+                ? `${formatUtcDateLabel(booking.returnTravelDate)}${booking.returnStartTime ? ` · ${booking.returnStartTime}` : ""}`
                 : "No aplica";
               const routeOrigin = booking.originAirport ?? booking.pickup ?? booking.hotel ?? "Pendiente";
               const routeDestination = booking.hotel ?? booking.pickup ?? booking.tourTitle;
@@ -764,7 +778,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
               ]
                 .filter(Boolean)
                 .join(" · ");
-              const headerDate = new Date(booking.travelDateValue).toLocaleDateString("es-ES", {
+              const headerDate = formatUtcDateLabel(booking.travelDateValue, "es-ES", {
                 weekday: "short",
                 day: "numeric",
                 month: "short",
@@ -1056,11 +1070,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
                                     <input
                                       type="date"
                                       name="returnTravelDate"
-                                      defaultValue={
-                                        booking.returnTravelDate
-                                          ? new Date(booking.returnTravelDate).toISOString().slice(0, 10)
-                                          : ""
-                                      }
+                                      defaultValue={booking.returnTravelDateKey ?? ""}
                                       className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700"
                                     />
                                   </div>
