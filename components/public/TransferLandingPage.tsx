@@ -1095,6 +1095,15 @@ export async function TransferLandingPage({
   const primaryImageUrl = TRANSFER_HEADER_BANNER;
   const transferArea = detectTransferArea(landing.hotelSlug, localizedLanding.hotelName, locale);
   const travelerProfile = detectTransferProfile(landing.hotelSlug, localizedLanding.hotelName);
+  const genericKeywordLinks = genericTransferLandings
+    .filter(
+      (item) =>
+        item.keyword.includes("airport") ||
+        item.keyword.includes("private") ||
+        item.keyword.includes("transfer price") ||
+        item.keyword.includes("shuttle")
+    )
+    .slice(0, 6);
   const otherLandings = allLandings()
     .filter((item) => item.landingSlug !== landing.landingSlug)
     .sort((a, b) => {
@@ -1517,6 +1526,34 @@ export async function TransferLandingPage({
               <p key={index} className="text-base leading-8 text-slate-600">
                 {paragraph}
               </p>
+            ))}
+          </div>
+        </div>
+      </section>
+      <section className="mx-auto max-w-6xl px-4 pb-12">
+        <div className="rounded-[32px] border border-slate-100 bg-white p-6 shadow-sm md:p-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">
+            {locale === "es" ? "Keywords relacionadas" : locale === "fr" ? "Keywords reliees" : "Related keywords"}
+          </p>
+          <h2 className="mt-2 text-2xl font-black text-slate-950">
+            {locale === "es"
+              ? "Otras busquedas de transfer que tambien convierten"
+              : locale === "fr"
+                ? "Autres recherches transfer qui convertissent aussi"
+                : "Other transfer searches that also convert"}
+          </h2>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {genericKeywordLinks.map((item) => (
+              <Link
+                key={item.landingSlug}
+                href={locale === "es" ? `/transfer/${item.landingSlug}` : `/${locale}/transfer/${item.landingSlug}`}
+                className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white"
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  {locale === "es" ? "Busqueda" : locale === "fr" ? "Recherche" : "Search"}
+                </p>
+                <p className="mt-2 font-semibold leading-6 text-slate-900">{item.titles[locale]}</p>
+              </Link>
             ))}
           </div>
         </div>

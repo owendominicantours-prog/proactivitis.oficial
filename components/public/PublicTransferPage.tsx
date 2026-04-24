@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import TransferHeroNotices from "@/components/public/TransferHeroNotices";
 import TrasladoSearch, { LocationOption } from "@/components/traslado/TrasladoSearch";
 import TrasladoSearchV2 from "@/components/traslado/TrasladoSearchV2";
+import { genericTransferLandings } from "@/data/transfer-generic-landings";
 import { prisma } from "@/lib/prisma";
 import { getTransferPointsForCountry, TransferPointOption } from "@/lib/transfers";
 import { Locale, translate } from "@/lib/translations";
@@ -57,6 +58,7 @@ export default async function PublicTransferPage({
   const proDiscoveryTransfersHref =
     locale === "es" ? "/prodiscovery?type=transfer" : `/${locale}/prodiscovery?type=transfer`;
   const transferHref = (slug: string) => (locale === "es" ? `/transfer/${slug}` : `/${locale}/transfer/${slug}`);
+  const featuredGenericTransferLandings = genericTransferLandings.slice(0, 8);
   let options: LocationOption[] = [];
   let originPoints: TransferPointOption[] = [];
   const transferLandingSlugs = PUNTA_CANA_TRANSFER_LINKS.map((item) => item.slug);
@@ -298,6 +300,42 @@ export default async function PublicTransferPage({
                 <div className="mt-4 inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-800 transition group-hover:border-slate-900 group-hover:bg-slate-900 group-hover:text-white">
                   {locale === "es" ? "Ver ruta" : locale === "fr" ? "Voir trajet" : "View route"}
                 </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
+          <div className="flex flex-col gap-3">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+              {locale === "es" ? "Busquedas comerciales" : locale === "fr" ? "Recherches commerciales" : "Commercial searches"}
+            </p>
+            <h2 className="text-2xl font-bold text-slate-900">
+              {locale === "es"
+                ? "Landings pensadas para keywords de traslado con intencion de reserva"
+                : locale === "fr"
+                  ? "Landings pensees pour des keywords transfer avec intention de reservation"
+                  : "Landing pages built for transfer keywords with booking intent"}
+            </h2>
+            <p className="max-w-3xl text-sm leading-7 text-slate-600">
+              {locale === "es"
+                ? "Estas rutas SEO atacan busquedas mas cerradas sobre airport transfer, shuttle, private transfer y variantes comerciales que suelen aparecer antes de la reserva."
+                : locale === "fr"
+                  ? "Ces pages SEO ciblent des recherches plus precises autour de airport transfer, shuttle, private transfer et d autres variantes commerciales proches de la reservation."
+                  : "These SEO routes target tighter searches around airport transfer, shuttle, private transfer, and other commercial variants that often appear right before booking."}
+            </p>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {featuredGenericTransferLandings.map((item) => (
+              <Link
+                key={item.landingSlug}
+                href={transferHref(item.landingSlug)}
+                className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white"
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  {locale === "es" ? "Keyword SEO" : locale === "fr" ? "Keyword SEO" : "SEO keyword"}
+                </p>
+                <p className="mt-2 font-semibold leading-6 text-slate-900">{item.titles[locale]}</p>
               </Link>
             ))}
           </div>
