@@ -76,6 +76,23 @@ const buildBringList = () =>
     )
     .join("");
 
+const buildDetailGrid = (items: Array<{ label: string; value?: string | number | null }>) =>
+  items
+    .filter((item) => item.value !== undefined && item.value !== null && item.value !== "")
+    .map(
+      (item) => `
+        <div style="padding:14px 16px;border-radius:16px;background:#ffffff;border:1px solid rgba(15,23,42,0.08);">
+          <p style="margin:0;font-size:10px;text-transform:uppercase;letter-spacing:0.28em;color:#94a3b8;">${escapeHtml(
+            item.label
+          )}</p>
+          <p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:#0f172a;font-weight:600;">${escapeHtml(
+            item.value
+          )}</p>
+        </div>
+      `
+    )
+    .join("");
+
 export const buildEmailShell = ({
   eyebrow = "Proactivitis",
   title,
@@ -183,6 +200,47 @@ export const buildCustomerEticketEmail = ({
   const flightInfo = booking.flightNumber ? `Vuelo ${booking.flightNumber}` : "Vuelo pendiente";
   const airportLabel = booking.originAirport ? booking.originAirport : "Aeropuerto por confirmar";
   const reviewUrl = `${baseUrl}/tours/${tour.slug}#reviews`;
+  const totalPax = booking.paxAdults + booking.paxChildren;
+  const tripTypeLabel =
+    booking.tripType === "roundtrip"
+      ? "Ida y vuelta"
+      : booking.tripType === "one_way"
+        ? "Solo ida"
+        : booking.tripType ?? (isTransfer ? "Transfer privado" : "Excursion");
+  const operationalDetails = buildDetailGrid([
+    { label: "Servicio", value: tour.title },
+    { label: "Codigo", value: orderCode },
+    { label: "Fecha principal", value: travelDate },
+    { label: "Hora principal", value: booking.startTime ?? "Por confirmar" },
+    { label: "Pasajeros", value: `${totalPax} personas (${booking.paxAdults} adultos${booking.paxChildren ? `, ${booking.paxChildren} ninos` : ""})` },
+    { label: "Cliente", value: booking.customerName ?? "Titular por confirmar" },
+    { label: "Correo", value: booking.customerEmail },
+    { label: "Telefono", value: booking.customerPhone ?? "Pendiente" },
+    { label: isTransfer ? "Tipo de traslado" : "Punto de encuentro", value: isTransfer ? tripTypeLabel : meetingPoint },
+    { label: isTransfer ? "Hotel / destino" : "Operador", value: isTransfer ? booking.hotel ?? "Hotel por confirmar" : supplierName ?? "Proactivitis" },
+    { label: "Total pagado", value: `$${booking.totalAmount.toFixed(2)} USD` },
+    { label: "ID de reserva", value: booking.id }
+  ]);
+  const transferDetails = isTransfer
+    ? buildDetailGrid([
+        { label: "Origen", value: airportLabel },
+        { label: "Vuelo", value: flightInfo },
+        { label: "Recogida ida", value: booking.pickupNotes ?? "Pendiente de coordinacion" },
+        {
+          label: "Fecha regreso",
+          value: booking.returnTravelDate ? formatDate(booking.returnTravelDate) : booking.tripType === "roundtrip" ? "Pendiente" : null
+        },
+        {
+          label: "Hora regreso",
+          value: booking.returnStartTime ?? (booking.tripType === "roundtrip" ? "Pendiente" : null)
+        },
+        { label: "Agencia", value: booking.agencyName ?? null },
+        { label: "Telefono agencia", value: booking.agencyPhone ?? null }
+      ])
+    : "";
+  const extraNotes = buildDetailGrid([
+    { label: "Notas de recogida", value: booking.pickupNotes ?? "Sin notas adicionales" }
+  ]);
 
   return buildEmailShell({
     eyebrow: "Voucher digital",
@@ -220,22 +278,30 @@ export const buildCustomerEticketEmail = ({
           }</p>
         </div>
       </div>
+      <div style="margin-top:28px;padding:20px;border-radius:20px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);">
+        <h2 style="margin:0 0 14px;font-size:17px;font-weight:700;color:#0f172a;">Detalle completo de la reserva</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+          ${operationalDetails}
+        </div>
+      </div>
       ${
         isTransfer
           ? `
-      <div style="margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
-        <div>
-          <p style="margin:0;font-size:10px;text-transform:uppercase;letter-spacing:0.3em;color:#94a3b8;">Origen</p>
-          <p style="margin:4px 0;font-size:14px;font-weight:600;color:#0f172a;">${escapeHtml(airportLabel)}</p>
-        </div>
-        <div>
-          <p style="margin:0;font-size:10px;text-transform:uppercase;letter-spacing:0.3em;color:#94a3b8;">Vuelo</p>
-          <p style="margin:4px 0;font-size:14px;font-weight:600;color:#0f172a;">${escapeHtml(flightInfo)}</p>
+      <div style="margin-top:16px;padding:20px;border-radius:20px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);">
+        <h2 style="margin:0 0 14px;font-size:17px;font-weight:700;color:#0f172a;">Operacion del traslado</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+          ${transferDetails}
         </div>
       </div>
       `
           : ""
       }
+      <div style="margin-top:16px;padding:20px;border-radius:20px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);">
+        <h2 style="margin:0 0 14px;font-size:17px;font-weight:700;color:#0f172a;">Notas operativas</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+          ${extraNotes}
+        </div>
+      </div>
       <div style="margin-top:32px;">
         <h2 style="margin:0 0 8px;font-size:16px;font-weight:600;color:#0f172a;">Que llevar</h2>
         <ul style="margin:0;padding-left:20px;color:#475569;font-size:14px;">${buildBringList()}</ul>

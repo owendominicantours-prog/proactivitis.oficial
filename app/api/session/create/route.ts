@@ -212,6 +212,23 @@ export async function POST(request: NextRequest) {
     recipientUserId: booking.User.id
   });
 
+  await createNotification({
+    type: "ADMIN_BOOKING_CREATED",
+    role: "ADMIN",
+    title: "Nueva reserva confirmada",
+    message: `${tour.title} - ${booking.customerName || "Cliente"} - ${new Intl.DateTimeFormat("es-ES", {
+      dateStyle: "medium"
+    }).format(booking.travelDate)}${booking.startTime ? ` ${booking.startTime}` : ""}`,
+    bookingId: booking.id,
+    metadata: {
+      bookingId: booking.id,
+      referenceUrl: `/admin/bookings?tab=all&bookingId=${booking.id}`,
+      orderCode,
+      customerEmail: booking.customerEmail,
+      flowType: booking.flowType ?? "tour"
+    }
+  });
+
   const customerHtml = buildCustomerEticketEmail({
     booking: bookingDetails,
     tour: tourData,
