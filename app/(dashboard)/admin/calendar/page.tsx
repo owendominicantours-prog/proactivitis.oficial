@@ -25,6 +25,8 @@ type CalendarBooking = {
   customerName: string;
   tourTitle: string;
   travelDate: Date;
+  operationDate: Date;
+  operationType: "departure" | "return";
   startTime: string | null;
   totalAmount: number;
   hotel: string | null;
@@ -105,6 +107,7 @@ function getStatusLabel(status: string) {
 }
 
 export default async function AdminCalendarPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
+  const db = prisma as any;
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const monthDate = parseMonthParam(getParam(resolvedSearchParams, "month"));
   const selectedDay = parseDayParam(getParam(resolvedSearchParams, "day"), monthDate);
@@ -118,12 +121,22 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
   const selectedDate = new Date(`${selectedDay}T00:00:00`);
   const mobileDays = days.filter((day) => isSameMonth(day, monthDate));
 
-  const bookings = await prisma.booking.findMany({
+  const bookings = (await db.booking.findMany({
     where: {
-      travelDate: {
-        gte: gridStart,
-        lte: new Date(`${format(gridEnd, "yyyy-MM-dd")}T23:59:59.999`)
-      }
+      OR: [
+        {
+          travelDate: {
+            gte: gridStart,
+            lte: new Date(`${format(gridEnd, "yyyy-MM-dd")}T23:59:59.999`)
+          }
+        },
+        {
+          returnTravelDate: {
+            gte: gridStart,
+            lte: new Date(`${format(gridEnd, "yyyy-MM-dd")}T23:59:59.999`)
+          }
+        }
+      ]
     },
     include: {
       Tour: {
@@ -133,33 +146,58 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
       }
     },
     orderBy: [{ travelDate: "asc" }, { startTime: "asc" }, { createdAt: "desc" }]
-  });
+  })) as any[];
 
-  const normalizedBookings: CalendarBooking[] = bookings.map((booking) => ({
-    id: booking.id,
-    bookingCode: booking.bookingCode ?? booking.id,
-    status: booking.status,
-    customerName: booking.customerName,
-    tourTitle: booking.Tour?.title ?? "Reserva sin titulo",
-    travelDate: booking.travelDate,
-    startTime: booking.startTime,
-    totalAmount: booking.totalAmount,
-    hotel: booking.hotel,
-    pickup: booking.pickup
-  }));
+  const normalizedBookings: CalendarBooking[] = bookings.flatMap((booking: any) => {
+    const base = {
+      id: booking.id,
+      bookingCode: booking.bookingCode ?? booking.id,
+      status: booking.status,
+      customerName: booking.customerName,
+      tourTitle: booking.Tour?.title ?? "Reserva sin titulo",
+      travelDate: booking.travelDate,
+      totalAmount: booking.totalAmount,
+      hotel: booking.hotel,
+      pickup: booking.pickup
+    };
+
+    const operations: CalendarBooking[] = [
+      {
+        ...base,
+        operationDate: booking.travelDate,
+        operationType: "departure",
+        startTime: booking.startTime
+      }
+    ];
+
+    const tripType = (booking as any).tripType as string | null | undefined;
+    const returnTravelDate = (booking as any).returnTravelDate as Date | null | undefined;
+    const returnStartTime = (booking as any).returnStartTime as string | null | undefined;
+
+    if (tripType === "round-trip" && returnTravelDate) {
+      operations.push({
+        ...base,
+        operationDate: returnTravelDate,
+        operationType: "return",
+        startTime: returnStartTime ?? null
+      });
+    }
+
+    return operations;
+  });
 
   const bookingsByDay = new Map<string, CalendarBooking[]>();
   for (const booking of normalizedBookings) {
-    const key = format(booking.travelDate, "yyyy-MM-dd");
+    const key = format(booking.operationDate, "yyyy-MM-dd");
     const existing = bookingsByDay.get(key) ?? [];
     existing.push(booking);
     bookingsByDay.set(key, existing);
   }
 
   const selectedDayBookings = bookingsByDay.get(selectedDay) ?? [];
-  const totalMonthBookings = normalizedBookings.filter((booking) => isSameMonth(booking.travelDate, monthDate)).length;
+  const totalMonthBookings = normalizedBookings.filter((booking) => isSameMonth(booking.operationDate, monthDate)).length;
   const totalMonthRevenue = normalizedBookings
-    .filter((booking) => isSameMonth(booking.travelDate, monthDate))
+    .filter((booking) => isSameMonth(booking.operationDate, monthDate))
     .reduce((sum, booking) => sum + booking.totalAmount, 0);
   const busiestDay = Array.from(bookingsByDay.entries())
     .map(([dayKey, dayBookings]) => ({ dayKey, count: dayBookings.length }))
@@ -379,7 +417,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                           <div key={booking.id} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5">
                             <p className="truncate text-[11px] font-semibold text-slate-900">{booking.tourTitle}</p>
                             <p className="mt-0.5 truncate text-[10px] text-slate-600">
-                              {(booking.startTime ?? "Sin hora")} - {booking.customerName}
+                              {(booking.startTime ?? "Sin hora")} - {booking.customerName} - {booking.operationType === "return" ? "Regreso" : "Ida"}
                             </p>
                           </div>
                         ))}
@@ -462,7 +500,9 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Hora</p>
-                      <p className="mt-1 font-medium text-slate-900">{booking.startTime ?? "Sin hora"}</p>
+                      <p className="mt-1 font-medium text-slate-900">
+                        {booking.startTime ?? "Sin hora"} · {booking.operationType === "return" ? "Regreso" : "Ida"}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Pickup</p>

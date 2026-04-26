@@ -152,6 +152,13 @@ const formatUtcDateLabel = (
     timeZone: "UTC"
   }).format(value instanceof Date ? value : new Date(value));
 
+const bookingMatchesOperationDateKey = (booking: AdminBookingView, dateKey: string) =>
+  booking.travelDateKey === dateKey || booking.returnTravelDateKey === dateKey;
+
+const bookingMatchesOperationDateRange = (booking: AdminBookingView, startKey: string, endKey: string) =>
+  (booking.travelDateKey >= startKey && booking.travelDateKey <= endKey) ||
+  Boolean(booking.returnTravelDateKey && booking.returnTravelDateKey >= startKey && booking.returnTravelDateKey <= endKey);
+
 export default async function AdminBookingsPage({ searchParams }: any) {
   const bookings = await prisma.booking.findMany({
     include: {
@@ -345,20 +352,17 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   const todayKey = getSiteDateKey(now);
   const tomorrowKey = addDaysToSiteDateKey(todayKey, 1);
   const weekLaterKey = addDaysToSiteDateKey(todayKey, 7);
-  const bookingDateKey = (booking: AdminBookingView) => booking.travelDateKey;
-
   const withinDateMode = (booking: AdminBookingView) => {
-    const travelKey = bookingDateKey(booking);
     switch (dateMode) {
       case "today":
-        return travelKey === todayKey;
+        return bookingMatchesOperationDateKey(booking, todayKey);
       case "tomorrow":
-        return travelKey === tomorrowKey;
+        return bookingMatchesOperationDateKey(booking, tomorrowKey);
       case "week":
-        return travelKey >= todayKey && travelKey <= weekLaterKey;
+        return bookingMatchesOperationDateRange(booking, todayKey, weekLaterKey);
       case "range": {
         if (!customStart || !customEnd) return true;
-        return travelKey >= customStart && travelKey <= customEnd;
+        return bookingMatchesOperationDateRange(booking, customStart, customEnd);
       }
       default:
         return true;
@@ -366,18 +370,17 @@ export default async function AdminBookingsPage({ searchParams }: any) {
   };
 
   const tabFilter = (booking: AdminBookingView) => {
-    const travelKey = bookingDateKey(booking);
     switch (tab) {
       case "all":
         return true;
       case "today":
         return withinDateMode(booking);
       case "tomorrow":
-        return travelKey === tomorrowKey;
+        return bookingMatchesOperationDateKey(booking, tomorrowKey);
       case "upcoming":
-        return travelKey > todayKey;
+        return booking.travelDateKey > todayKey || Boolean(booking.returnTravelDateKey && booking.returnTravelDateKey > todayKey);
       case "past":
-        return travelKey < todayKey;
+        return booking.travelDateKey < todayKey || Boolean(booking.returnTravelDateKey && booking.returnTravelDateKey < todayKey);
       case "payment":
         return booking.status === "PAYMENT_PENDING";
       default:
@@ -415,7 +418,7 @@ export default async function AdminBookingsPage({ searchParams }: any) {
     .filter((booking) => (shouldApplyDateFilter ? withinDateMode(booking) : true))
     .filter((booking) => {
       if (!exactTravelDate) return true;
-      return bookingDateKey(booking) === exactTravelDate;
+      return bookingMatchesOperationDateKey(booking, exactTravelDate);
     })
     .filter((booking) => (selectedStatus.length ? selectedStatus.includes(booking.status) : true))
     .filter((booking) => (selectedTour === "all" ? true : booking.tourTitle === selectedTour))
@@ -459,16 +462,16 @@ export default async function AdminBookingsPage({ searchParams }: any) {
 
   const summary = {
     reservasHoy: rows.filter(
-      (booking) => booking.travelDateKey === todayKey
+      (booking) => bookingMatchesOperationDateKey(booking, todayKey)
     ).length,
     pendientesPago: rows.filter((booking) =>
       ["PAYMENT_PENDING", "PENDING"].includes(booking.status)
     ).length,
     totalPaxHoy: rows
-      .filter((booking) => booking.travelDateKey === todayKey)
+      .filter((booking) => bookingMatchesOperationDateKey(booking, todayKey))
       .reduce((total, booking) => total + booking.pax, 0),
     totalDelDia: rows
-      .filter((booking) => booking.travelDateKey === todayKey)
+      .filter((booking) => bookingMatchesOperationDateKey(booking, todayKey))
       .reduce((total, booking) => total + booking.totalAmount, 0),
     nextDepartureMinutes: (() => {
       const upcoming = rows
