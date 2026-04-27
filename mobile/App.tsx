@@ -87,6 +87,7 @@ type AppTour = Tour & {
 const heroImage =
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
 const fallbackTourImage = "https://proactivitis.com/fototours/fotosimple.jpg";
+const appBuildLabel = "Version 1.0.1 | Android 2";
 
 const money = (value: number) => `US$${Math.round(value)}`;
 
@@ -1145,6 +1146,7 @@ function ProfileScreen() {
         <View style={styles.profileText}>
           <Text style={styles.profileName}>Cliente invitado</Text>
           <Text style={styles.profileMeta}>Login y reservas sincronizadas entran en la proxima fase.</Text>
+          <Text style={styles.profileBuild}>{appBuildLabel}</Text>
         </View>
       </View>
 
@@ -2610,6 +2612,11 @@ const styles = StyleSheet.create({
     color: colors.mutedOnDark,
     fontSize: 13,
     lineHeight: 18
+  },
+  profileBuild: {
+    color: colors.skySoft,
+    fontSize: 12,
+    fontWeight: "900"
   },
   linkStack: {
     gap: 10
