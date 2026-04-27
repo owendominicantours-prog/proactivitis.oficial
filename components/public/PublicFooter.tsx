@@ -103,6 +103,11 @@ const FOOTER_TRANSLATIONS: Record<Locale, FooterCopy> = {
 };
 
 const paymentMethods = ["Visa", "Mastercard", "Amex", "PayPal", "Apple Pay", "Google Pay"];
+const socialLinks = [
+  { label: "Instagram", href: "https://www.instagram.com/proactivitis" },
+  { label: "Facebook", href: "https://www.facebook.com/proactivitis" },
+  { label: "TikTok", href: "https://www.tiktok.com/@proactivitis" }
+];
 
 const normalizeLocale = (value: string | null): Locale => {
   if (!value) return "es";
@@ -160,6 +165,13 @@ export function PublicFooter() {
         >
           {honorLabel}
         </Link>
+        <div className="flex flex-wrap justify-center gap-3 text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-slate-300">
+          {socialLinks.map((link) => (
+            <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className="transition hover:text-sky-300">
+              {link.label}
+            </a>
+          ))}
+        </div>
         <div className="space-y-2 border-t border-white/10 pt-4 text-[0.65rem] uppercase tracking-[0.3em] text-gray-500">
           <p className="text-center font-semibold text-slate-100">{copy.tagline}</p>
           <p className="text-center">&copy; {new Date().getFullYear()} Proactivitis</p>
@@ -192,6 +204,13 @@ export function PublicFooter() {
             ))}
           </div>
           <div className="space-y-2 md:space-y-1">
+            <p className="flex flex-wrap justify-center gap-3 text-[0.6rem] font-semibold uppercase tracking-[0.24em] text-slate-300 md:justify-start">
+              {socialLinks.map((link) => (
+                <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className="transition hover:text-sky-300">
+                  {link.label}
+                </a>
+              ))}
+            </p>
             <p className="text-center md:text-left">
               <Link
                 href={honorHref}

@@ -6,7 +6,7 @@ import { allLandings } from "@/data/transfer-landings";
 import TrasladoSearchV2 from "@/components/traslado/TrasladoSearchV2";
 import { formatDurationDisplay } from "@/lib/formatDuration";
 import { prisma } from "@/lib/prisma";
-import { PROACTIVITIS_URL, getPriceValidUntil } from "@/lib/seo";
+import { PROACTIVITIS_URL, SAME_AS_URLS, getPriceValidUntil } from "@/lib/seo";
 import { getTourReviewSummaryForTours } from "@/lib/tourReviews";
 import type { Locale } from "@/lib/translations";
 
@@ -859,10 +859,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
         name: "Proactivitis",
         url: PROACTIVITIS_URL,
         logo: `${PROACTIVITIS_URL}/logo.png`,
-        sameAs: [
-          "https://www.instagram.com/proactivitis",
-          "https://www.facebook.com/proactivitis"
-        ]
+        sameAs: SAME_AS_URLS
       },
       {
         "@type": "LocalBusiness",

@@ -1,6 +1,7 @@
 export const SAME_AS_URLS = [
   "https://www.facebook.com/proactivitis",
-  "https://www.instagram.com/proactivitis"
+  "https://www.instagram.com/proactivitis",
+  "https://www.tiktok.com/@proactivitis"
 ];
 
 export const PROACTIVITIS_URL = "https://proactivitis.com";

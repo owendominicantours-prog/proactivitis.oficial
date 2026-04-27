@@ -22,7 +22,7 @@ import { TransferLocationType } from "@prisma/client";
 import { findDynamicLandingBySlug, getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import PublicTransferPage from "@/components/public/PublicTransferPage";
 import { ensureLeadingCapital, normalizeTextDeep } from "@/lib/text-format";
-import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL } from "@/lib/seo";
+import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL, SAME_AS_URLS } from "@/lib/seo";
 import { isIndexableTransferVariant } from "@/lib/seo-index-policy";
 import { applyTransferSchemaOverride, getTransferSchemaOverride } from "@/lib/schemaManager";
 import { getApprovedTransferReviewsForLanding, getTransferReviewSummaryForLanding } from "@/lib/transferReviews";
@@ -1377,7 +1377,7 @@ export async function TransferLandingPage({
       name: "Proactivitis",
       url: BASE_URL,
       logo: `${BASE_URL}/icon.png`,
-      sameAs: ["https://www.instagram.com/proactivitis/", "https://www.facebook.com/proactivitis"]
+      sameAs: SAME_AS_URLS
     },
     areaServed: [
       {
@@ -1474,7 +1474,7 @@ export async function TransferLandingPage({
     url: BASE_URL,
     logo: `${BASE_URL}/icon.png`,
     image: [toAbsoluteImageUrl(localizedLanding.heroImage)],
-    sameAs: ["https://www.instagram.com/proactivitis/", "https://www.facebook.com/proactivitis"],
+    sameAs: SAME_AS_URLS,
     telephone: PROACTIVITIS_LOCALBUSINESS.telephone,
     email: PROACTIVITIS_LOCALBUSINESS.email,
     priceRange: "$$",

@@ -10,7 +10,7 @@ import {
 } from "@/components/public/TransferLandingPage";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import { normalizeTextDeep } from "@/lib/text-format";
-import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_PHONE, PROACTIVITIS_URL } from "@/lib/seo";
+import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_PHONE, PROACTIVITIS_URL, SAME_AS_URLS } from "@/lib/seo";
 import { TransferLocationType } from "@prisma/client";
 import type { Locale } from "@/lib/translations";
 import { getGeminiSchemaReview, listGeminiSchemaReviews } from "@/lib/geminiSchemaReview";
@@ -129,7 +129,7 @@ async function buildTransferSchemaPreview(slug: string, locale: Locale): Promise
       name: "Proactivitis",
       url: "https://proactivitis.com",
       logo: "https://proactivitis.com/icon.png",
-      sameAs: ["https://www.instagram.com/proactivitis/", "https://www.facebook.com/proactivitis"]
+      sameAs: SAME_AS_URLS
     },
     areaServed: [
       { "@type": "Place", name: originLabel },
@@ -176,7 +176,7 @@ async function buildTransferSchemaPreview(slug: string, locale: Locale): Promise
     url: "https://proactivitis.com",
     logo: "https://proactivitis.com/icon.png",
     image: [toAbsoluteImageUrl(localizedLanding.heroImage)],
-    sameAs: ["https://www.instagram.com/proactivitis/", "https://www.facebook.com/proactivitis"],
+    sameAs: SAME_AS_URLS,
     telephone: PROACTIVITIS_LOCALBUSINESS.telephone,
     email: PROACTIVITIS_LOCALBUSINESS.email,
     priceRange: "$$",
