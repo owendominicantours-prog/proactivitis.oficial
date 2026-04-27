@@ -1,10 +1,11 @@
 import { StatusBar } from "expo-status-bar";
 import type { ComponentType } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { createElement, useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
   ImageBackground,
   Linking,
+  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -628,7 +629,23 @@ function CheckoutScreen({ url, onClose }: { url: string; onClose: () => void }) 
         </Pressable>
         <Text style={styles.checkoutTitle}>Checkout Proactivitis</Text>
       </View>
-      <WebView source={{ uri: url }} style={styles.checkoutWebview} startInLoadingState />
+      {Platform.OS === "web" ? (
+        <View style={styles.checkoutWebview}>
+          {createElement("iframe", {
+            src: url,
+            title: "Checkout Proactivitis",
+            allow: "payment *; fullscreen *",
+            style: {
+              border: 0,
+              width: "100%",
+              height: "100%",
+              backgroundColor: colors.card
+            }
+          })}
+        </View>
+      ) : (
+        <WebView source={{ uri: url }} style={styles.checkoutWebview} startInLoadingState />
+      )}
     </View>
   );
 }
