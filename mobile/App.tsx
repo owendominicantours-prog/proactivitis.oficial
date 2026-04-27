@@ -451,7 +451,6 @@ function ProductScreen({
   onCheckout: (url: string) => void;
 }) {
   const [adults, setAdults] = useState(2);
-  const [imageFailed, setImageFailed] = useState(false);
   const [date, setDate] = useState(() => new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
   const [time, setTime] = useState("09:00");
   const [selectedOptionId, setSelectedOptionId] = useState(
@@ -477,12 +476,8 @@ function ProductScreen({
 
   return (
     <View style={styles.productScreen}>
-      <ImageBackground
-        source={tourImageSource(imageFailed ? null : tour.image)}
-        style={styles.productHero}
-        imageStyle={styles.productHeroImage}
-        onError={() => setImageFailed(true)}
-      >
+      <View style={styles.productHero}>
+        <RemoteTourImage uri={tour.image} style={styles.productHeroImage} />
         <View style={styles.productHeroOverlay} />
         <Pressable style={styles.backButton} onPress={onBack}>
           <ArrowLeft size={20} color={colors.white} />
@@ -497,7 +492,7 @@ function ProductScreen({
             <MetaPill icon={Star} label={`${tour.rating}`} />
           </View>
         </View>
-      </ImageBackground>
+      </View>
 
       <View style={styles.productPanel}>
         <Text style={styles.productPrice}>Desde {money(tour.price)}</Text>
@@ -1655,7 +1650,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ink
   },
   productHeroImage: {
-    resizeMode: "cover"
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    width: "100%",
+    height: "100%"
   },
   productHeroOverlay: {
     ...StyleSheet.absoluteFillObject,
