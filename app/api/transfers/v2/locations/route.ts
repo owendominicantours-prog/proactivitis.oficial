@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
+const withCors = (response: NextResponse) => {
+  response.headers.set("Access-Control-Allow-Origin", "*");
+  response.headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  return response;
+};
+
+export function OPTIONS() {
+  return withCors(new NextResponse(null, { status: 204 }));
+}
+
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const query = url.searchParams.get("query")?.trim();
@@ -40,5 +51,5 @@ export async function GET(request: NextRequest) {
       ? "public, s-maxage=120, stale-while-revalidate=600"
       : "public, s-maxage=600, stale-while-revalidate=3600"
   );
-  return response;
+  return withCors(response);
 }

@@ -15,6 +15,19 @@ const ZONE_ROUTE_FALLBACKS: Record<string, string[]> = {
   bayahibe: ["la-romana"]
 };
 
+const withCors = (response: NextResponse) => {
+  response.headers.set("Access-Control-Allow-Origin", "*");
+  response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  return response;
+};
+
+const json = (body: unknown, init?: ResponseInit) => withCors(NextResponse.json(body, init));
+
+export function OPTIONS() {
+  return withCors(new NextResponse(null, { status: 204 }));
+}
+
 async function findRouteWithFallback(originZoneId: string, destinationZoneId: string, originZoneSlug?: string, destinationZoneSlug?: string) {
   const exactZoneIds = [originZoneId, destinationZoneId].sort((a, b) => a.localeCompare(b));
   const exactRoute = await prisma.transferRoute.findFirst({
@@ -82,10 +95,10 @@ export async function POST(request: NextRequest) {
     const passengers = Number(payload?.passengers ?? 1);
 
     if (!originId || !destinationId || originId === destinationId) {
-      return NextResponse.json({ error: "Debes enviar origen y destino distintos." }, { status: 400 });
+      return json({ error: "Debes enviar origen y destino distintos." }, { status: 400 });
     }
     if (Number.isNaN(passengers) || passengers <= 0) {
-      return NextResponse.json({ error: "Indica la cantidad de pasajeros." }, { status: 400 });
+      return json({ error: "Indica la cantidad de pasajeros." }, { status: 400 });
     }
 
     const [origin, destination] = await Promise.all([
@@ -94,7 +107,7 @@ export async function POST(request: NextRequest) {
     ]);
 
     if (!origin || !destination || !origin.zoneId || !destination.zoneId) {
-      return NextResponse.json({ error: "Origen o destino no encontrados." }, { status: 404 });
+      return json({ error: "Origen o destino no encontrados." }, { status: 404 });
     }
 
     const [zoneAId, zoneBId] = [origin.zoneId, destination.zoneId].sort((a, b) => a.localeCompare(b));
@@ -107,7 +120,7 @@ export async function POST(request: NextRequest) {
       ));
 
     if (!route || !route.prices.length) {
-      return NextResponse.json({ error: "No encontramos una ruta disponible para ese par." }, { status: 404 });
+      return json({ error: "No encontramos una ruta disponible para ese par." }, { status: 404 });
     }
 
     const vehicles: QuoteVehicle[] = [];
@@ -142,20 +155,20 @@ export async function POST(request: NextRequest) {
     }
 
     if (!vehicles.length) {
-      return NextResponse.json(
+      return json(
         { error: "No hay vehiculos disponibles para ese numero de pasajeros." },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({
+    return json({
       routeId: route.id,
       currency: "USD",
       vehicles
     });
   } catch (error) {
     console.error("Quote error", error);
-    return NextResponse.json({ error: "No se pudo calcular la tarifa." }, { status: 500 });
+    return json({ error: "No se pudo calcular la tarifa." }, { status: 500 });
   }
 }
 
