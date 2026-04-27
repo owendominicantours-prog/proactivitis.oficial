@@ -79,6 +79,7 @@ type AppTour = Tour & {
   webTour?: MobileTour;
   options?: MobileTourOption[];
   includes?: string[];
+  gallery?: string[];
   fullDescription?: string | null;
   cancellationPolicy?: string | null;
 };
@@ -90,6 +91,9 @@ const fallbackTourImage = "https://proactivitis.com/fototours/fotosimple.jpg";
 const money = (value: number) => `US$${Math.round(value)}`;
 
 const tourImageSource = (uri?: string | null) => ({ uri: uri?.trim() || fallbackTourImage });
+
+const uniqueImages = (items: Array<string | null | undefined>) =>
+  Array.from(new Set(items.map((item) => item?.trim()).filter((item): item is string => Boolean(item))));
 
 const openUrl = (href: string) => {
   void Linking.openURL(href);
@@ -122,6 +126,7 @@ const toAppTour = (tour: MobileTour): AppTour => ({
   webTour: tour,
   options: tour.options,
   includes: tour.includes,
+  gallery: uniqueImages([tour.image, ...tour.gallery]),
   fullDescription: tour.fullDescription,
   cancellationPolicy: tour.cancellationPolicy
 });
@@ -130,6 +135,7 @@ const fallbackTours: AppTour[] = featuredTours.map((tour) => ({
   ...tour,
   options: [],
   includes: [],
+  gallery: [tour.image],
   fullDescription: tour.description,
   cancellationPolicy: null
 }));
@@ -150,7 +156,7 @@ const toMobileTourPayload = (tour: AppTour): MobileTour => ({
   includes: tour.includes ?? [],
   highlights: tour.highlights,
   image: tour.image,
-  gallery: [tour.image],
+  gallery: tour.gallery?.length ? tour.gallery : [tour.image],
   options: tour.options ?? []
 });
 
@@ -450,6 +456,11 @@ function ProductScreen({
   onBack: () => void;
   onCheckout: (url: string) => void;
 }) {
+  const galleryImages = useMemo(
+    () => uniqueImages([tour.image, ...(tour.gallery ?? []), ...(tour.webTour?.gallery ?? [])]),
+    [tour]
+  );
+  const [selectedImage, setSelectedImage] = useState(galleryImages[0] ?? fallbackTourImage);
   const [adults, setAdults] = useState(2);
   const [date, setDate] = useState(() => new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
   const [time, setTime] = useState("09:00");
@@ -460,6 +471,10 @@ function ProductScreen({
   const checkoutPrice = selectedOption?.pricePerPerson ?? tour.price;
   const totalPrice =
     selectedOption?.basePrice && selectedOption.baseCapacity ? selectedOption.basePrice : checkoutPrice * adults;
+
+  useEffect(() => {
+    setSelectedImage(galleryImages[0] ?? fallbackTourImage);
+  }, [galleryImages, tour.id]);
 
   const startCheckout = () => {
     const webTour = tour.webTour ?? toMobileTourPayload(tour);
@@ -477,7 +492,7 @@ function ProductScreen({
   return (
     <View style={styles.productScreen}>
       <View style={styles.productHero}>
-        <RemoteTourImage uri={tour.image} style={styles.productHeroImage} />
+        <RemoteTourImage uri={selectedImage} style={styles.productHeroImage} />
         <View style={styles.productHeroOverlay} />
         <Pressable style={styles.backButton} onPress={onBack}>
           <ArrowLeft size={20} color={colors.white} />
@@ -496,6 +511,34 @@ function ProductScreen({
 
       <View style={styles.productPanel}>
         <Text style={styles.productPrice}>Desde {money(tour.price)}</Text>
+
+        {galleryImages.length > 1 ? (
+          <View style={styles.productGallerySection}>
+            <View style={styles.productGalleryHeader}>
+              <Text style={styles.sectionTitle}>Galeria</Text>
+              <Text style={styles.galleryCount}>{galleryImages.length} fotos</Text>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.productGalleryList}
+            >
+              {galleryImages.map((image, index) => {
+                const active = image === selectedImage;
+                return (
+                  <Pressable
+                    key={`${image}-${index}`}
+                    style={[styles.galleryThumb, active ? styles.galleryThumbActive : null]}
+                    onPress={() => setSelectedImage(image)}
+                  >
+                    <RemoteTourImage uri={image} style={styles.galleryThumbImage} />
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        ) : null}
+
         <Text style={styles.productDescription}>{tour.fullDescription ?? tour.description}</Text>
 
         <View style={styles.productSection}>
@@ -1732,6 +1775,40 @@ const styles = StyleSheet.create({
     color: colors.skyDark,
     fontSize: 18,
     fontWeight: "900"
+  },
+  productGallerySection: {
+    gap: 11
+  },
+  productGalleryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12
+  },
+  galleryCount: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  productGalleryList: {
+    gap: 10,
+    paddingRight: 4
+  },
+  galleryThumb: {
+    width: 98,
+    height: 74,
+    overflow: "hidden",
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "transparent",
+    backgroundColor: colors.line
+  },
+  galleryThumbActive: {
+    borderColor: colors.sky
+  },
+  galleryThumbImage: {
+    width: "100%",
+    height: "100%"
   },
   productDescription: {
     color: colors.text,
