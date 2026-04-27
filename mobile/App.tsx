@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import type { ComponentType } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
   ImageBackground,
@@ -11,7 +11,9 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View
+  View,
+  type ImageStyle,
+  type StyleProp
 } from "react-native";
 import WebView from "react-native-webview";
 import {
@@ -83,8 +85,11 @@ type AppTour = Tour & {
 
 const heroImage =
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
+const fallbackTourImage = "https://proactivitis.com/fototours/fotosimple.jpg";
 
 const money = (value: number) => `US$${Math.round(value)}`;
+
+const tourImageSource = (uri?: string | null) => ({ uri: uri?.trim() || fallbackTourImage });
 
 const openUrl = (href: string) => {
   void Linking.openURL(href);
@@ -150,6 +155,7 @@ const toMobileTourPayload = (tour: AppTour): MobileTour => ({
 });
 
 export default function App() {
+  const scrollRef = useRef<ScrollView>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("home");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<TourCategory>("Todos");
@@ -180,6 +186,13 @@ export default function App() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (checkoutUrl) return;
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    });
+  }, [activeProduct?.id, activeTab, checkoutUrl]);
 
   const filteredTours = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -292,7 +305,7 @@ export default function App() {
         {checkoutUrl ? (
           renderScreen()
         ) : (
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
             {renderScreen()}
           </ScrollView>
         )}
@@ -438,6 +451,7 @@ function ProductScreen({
   onCheckout: (url: string) => void;
 }) {
   const [adults, setAdults] = useState(2);
+  const [imageFailed, setImageFailed] = useState(false);
   const [date, setDate] = useState(() => new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
   const [time, setTime] = useState("09:00");
   const [selectedOptionId, setSelectedOptionId] = useState(
@@ -463,7 +477,12 @@ function ProductScreen({
 
   return (
     <View style={styles.productScreen}>
-      <ImageBackground source={{ uri: tour.image }} style={styles.productHero} imageStyle={styles.productHeroImage}>
+      <ImageBackground
+        source={tourImageSource(imageFailed ? null : tour.image)}
+        style={styles.productHero}
+        imageStyle={styles.productHeroImage}
+        onError={() => setImageFailed(true)}
+      >
         <View style={styles.productHeroOverlay} />
         <Pressable style={styles.backButton} onPress={onBack}>
           <ArrowLeft size={20} color={colors.white} />
@@ -1169,6 +1188,26 @@ function SectionHeader({
   );
 }
 
+function RemoteTourImage({
+  uri,
+  style,
+  resizeMode = "cover"
+}: {
+  uri?: string | null;
+  style: StyleProp<ImageStyle>;
+  resizeMode?: "cover" | "contain";
+}) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <Image
+      source={tourImageSource(failed ? null : uri)}
+      style={style}
+      resizeMode={resizeMode}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 function ActionButton({
   label,
   icon: Icon,
@@ -1216,7 +1255,7 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
 function FeaturedTourCard({ tour, onPress }: { tour: AppTour; onPress: () => void }) {
   return (
     <Pressable style={styles.featuredCard} onPress={onPress}>
-      <Image source={{ uri: tour.image }} style={styles.featuredImage} />
+      <RemoteTourImage uri={tour.image} style={styles.featuredImage} />
       <View style={styles.featuredBody}>
         <Text style={styles.featuredMeta}>{tour.location}</Text>
         <Text style={styles.featuredTitle} numberOfLines={2}>
@@ -1247,7 +1286,7 @@ function TourCard({
 }) {
   return (
     <View style={styles.tourCard}>
-      <Image source={{ uri: tour.image }} style={styles.tourImage} />
+      <RemoteTourImage uri={tour.image} style={styles.tourImage} />
       <View style={styles.tourBody}>
         <View style={styles.tourTopRow}>
           <View style={styles.categoryBadge}>
@@ -1290,7 +1329,7 @@ function TourCard({
 function CompactTourRow({ tour, onPress }: { tour: AppTour; onPress: () => void }) {
   return (
     <Pressable style={styles.compactRow} onPress={onPress}>
-      <Image source={{ uri: tour.image }} style={styles.compactImage} />
+      <RemoteTourImage uri={tour.image} style={styles.compactImage} />
       <View style={styles.compactText}>
         <Text style={styles.compactTitle}>{tour.title}</Text>
         <Text style={styles.compactMeta}>
