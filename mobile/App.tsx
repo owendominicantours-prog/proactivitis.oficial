@@ -88,7 +88,7 @@ type AppTour = Tour & {
 const heroImage =
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
 const fallbackTourImage = "https://proactivitis.com/fototours/fotosimple.jpg";
-const appBuildLabel = "Version 1.0.1 | Android 2";
+const appBuildLabel = "Version 1.0.2 | Android 3";
 
 const money = (value: number) => `US$${Math.round(value)}`;
 
@@ -619,7 +619,150 @@ function ProductScreen({
   );
 }
 
+type CheckoutSummary = {
+  flowType: "tour" | "transfer";
+  title: string;
+  image: string | null;
+  optionName: string | null;
+  date: string;
+  time: string;
+  travelers: number;
+  totalPrice: number;
+  origin: string | null;
+  destination: string | null;
+  vehicle: string | null;
+  tripType: string | null;
+  checkoutUrl: string;
+};
+
+const readCheckoutSummary = (checkoutUrl: string): CheckoutSummary => {
+  const parsed = new URL(checkoutUrl);
+  const params = parsed.searchParams;
+  const flowType = params.get("type") === "transfer" ? "transfer" : "tour";
+  const adults = Number(params.get("adults") ?? params.get("passengers") ?? 1);
+  const youth = Number(params.get("youth") ?? 0);
+  const child = Number(params.get("child") ?? 0);
+  const travelers = Math.max(1, adults + youth + child);
+  const totalPrice = Number(params.get("displayTotalPrice") ?? params.get("totalPrice") ?? params.get("price") ?? 0);
+  return {
+    flowType,
+    title:
+      flowType === "transfer"
+        ? params.get("vehicleName") ?? "Transfer privado Proactivitis"
+        : params.get("tourTitle") ?? "Tour Proactivitis",
+    image: params.get("tourImage"),
+    optionName: params.get("tourOptionName"),
+    date: params.get("date") ?? "Fecha pendiente",
+    time: params.get("time") ?? "Hora pendiente",
+    travelers,
+    totalPrice,
+    origin: params.get("originLabel") ?? params.get("origin"),
+    destination: params.get("originHotelName") ?? params.get("hotelSlug"),
+    vehicle: params.get("vehicleCategory"),
+    tripType: params.get("tripType"),
+    checkoutUrl
+  };
+};
+
+const addCheckoutContactParams = ({
+  checkoutUrl,
+  firstName,
+  lastName,
+  email,
+  phone,
+  pickupLocation,
+  specialRequirements
+}: {
+  checkoutUrl: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  pickupLocation: string;
+  specialRequirements: string;
+}) => {
+  const parsed = new URL(checkoutUrl);
+  const params = parsed.searchParams;
+  params.set("mobileCheckout", "1");
+  params.set("firstName", firstName.trim());
+  params.set("lastName", lastName.trim());
+  params.set("email", email.trim());
+  if (phone.trim()) params.set("phone", phone.trim());
+  const travelerName = `${firstName} ${lastName}`.trim();
+  if (travelerName) params.set("travelerName", travelerName);
+  if (pickupLocation.trim()) params.set("pickupLocation", pickupLocation.trim());
+  if (specialRequirements.trim()) params.set("specialRequirements", specialRequirements.trim());
+  return parsed.toString();
+};
+
+function CheckoutPaymentFrame({ url }: { url: string }) {
+  if (Platform.OS === "web") {
+    return (
+      <View style={styles.checkoutWebview}>
+        {createElement("iframe", {
+          src: url,
+          title: "Checkout Proactivitis",
+          allow: "payment *; fullscreen *",
+          style: {
+            border: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: colors.card
+          }
+        })}
+      </View>
+    );
+  }
+  return <WebView source={{ uri: url }} style={styles.checkoutWebview} startInLoadingState />;
+}
+
 function CheckoutScreen({ url, onClose }: { url: string; onClose: () => void }) {
+  const summary = useMemo(() => readCheckoutSummary(url), [url]);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [pickupLocation, setPickupLocation] = useState(summary.destination ?? "");
+  const [specialRequirements, setSpecialRequirements] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+
+  const validateAndPay = () => {
+    const nextErrors: Record<string, string> = {};
+    if (!firstName.trim()) nextErrors.firstName = "Indica el nombre.";
+    if (!lastName.trim()) nextErrors.lastName = "Indica el apellido.";
+    if (!email.trim() || !email.includes("@")) nextErrors.email = "Indica un email valido.";
+    if (!pickupLocation.trim()) nextErrors.pickupLocation = "Indica hotel o punto de recogida.";
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) return;
+    setPaymentUrl(
+      addCheckoutContactParams({
+        checkoutUrl: url,
+        firstName,
+        lastName,
+        email,
+        phone,
+        pickupLocation,
+        specialRequirements
+      })
+    );
+  };
+
+  if (paymentUrl) {
+    return (
+      <View style={styles.checkoutScreen}>
+        <View style={styles.checkoutTopbar}>
+          <Pressable style={styles.checkoutClose} onPress={() => setPaymentUrl(null)}>
+            <ArrowLeft size={20} color={colors.text} />
+            <Text style={styles.checkoutCloseText}>Datos</Text>
+          </Pressable>
+          <Text style={styles.checkoutTitle}>Pago seguro</Text>
+        </View>
+        <CheckoutPaymentFrame url={paymentUrl} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.checkoutScreen}>
       <View style={styles.checkoutTopbar}>
@@ -627,25 +770,137 @@ function CheckoutScreen({ url, onClose }: { url: string; onClose: () => void }) 
           <ArrowLeft size={20} color={colors.text} />
           <Text style={styles.checkoutCloseText}>Volver</Text>
         </Pressable>
-        <Text style={styles.checkoutTitle}>Checkout Proactivitis</Text>
+        <Text style={styles.checkoutTitle}>Reserva en la app</Text>
       </View>
-      {Platform.OS === "web" ? (
-        <View style={styles.checkoutWebview}>
-          {createElement("iframe", {
-            src: url,
-            title: "Checkout Proactivitis",
-            allow: "payment *; fullscreen *",
-            style: {
-              border: 0,
-              width: "100%",
-              height: "100%",
-              backgroundColor: colors.card
-            }
-          })}
+
+      <ScrollView contentContainerStyle={styles.appCheckoutContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.appCheckoutHero}>
+          <View style={styles.checkoutStepRow}>
+            <View style={styles.checkoutStepActive}>
+              <Text style={styles.checkoutStepTextActive}>1 Datos</Text>
+            </View>
+            <View style={styles.checkoutStep}>
+              <Text style={styles.checkoutStepText}>2 Pago</Text>
+            </View>
+          </View>
+          <Text style={styles.appCheckoutTitle}>Confirma tu reserva</Text>
+          <Text style={styles.appCheckoutSubtitle}>
+            Datos claros antes de pagar. El pago final se procesa en el checkout seguro de Proactivitis.
+          </Text>
         </View>
-      ) : (
-        <WebView source={{ uri: url }} style={styles.checkoutWebview} startInLoadingState />
-      )}
+
+        <View style={styles.checkoutSummaryCard}>
+          {summary.flowType === "tour" ? (
+            <RemoteTourImage uri={summary.image} style={styles.checkoutSummaryImage} />
+          ) : (
+            <View style={styles.checkoutTransferIcon}>
+              <Car size={28} color={colors.white} />
+            </View>
+          )}
+          <View style={styles.checkoutSummaryText}>
+            <Text style={styles.checkoutSummaryType}>{summary.flowType === "transfer" ? "Transfer privado" : "Tour"}</Text>
+            <Text style={styles.checkoutSummaryTitle}>{summary.title}</Text>
+            {summary.optionName ? <Text style={styles.checkoutSummaryMeta}>Opcion: {summary.optionName}</Text> : null}
+            {summary.origin || summary.destination ? (
+              <Text style={styles.checkoutSummaryMeta}>
+                {[summary.origin, summary.destination].filter(Boolean).join(" -> ")}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+
+        <View style={styles.checkoutInfoGrid}>
+          <CheckoutInfoPill icon={CalendarCheck} label="Fecha" value={summary.date} />
+          <CheckoutInfoPill icon={Clock3} label="Hora" value={summary.time} />
+          <CheckoutInfoPill icon={User} label="Personas" value={`${summary.travelers}`} />
+          <CheckoutInfoPill icon={CreditCard} label="Total" value={money(summary.totalPrice)} />
+        </View>
+
+        <View style={styles.checkoutNativePanel}>
+          <Text style={styles.sectionTitle}>Cliente principal</Text>
+          <View style={styles.checkoutFormGrid}>
+            <CheckoutInput label="Nombre" value={firstName} onChangeText={setFirstName} error={errors.firstName} />
+            <CheckoutInput label="Apellido" value={lastName} onChangeText={setLastName} error={errors.lastName} />
+          </View>
+          <CheckoutInput label="Email" value={email} onChangeText={setEmail} error={errors.email} keyboardType="email-address" />
+          <CheckoutInput label="Telefono" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+        </View>
+
+        <View style={styles.checkoutNativePanel}>
+          <Text style={styles.sectionTitle}>Recogida y notas</Text>
+          <CheckoutInput
+            label={summary.flowType === "transfer" ? "Punto principal" : "Hotel o punto de recogida"}
+            value={pickupLocation}
+            onChangeText={setPickupLocation}
+            error={errors.pickupLocation}
+          />
+          <CheckoutInput
+            label="Notas especiales"
+            value={specialRequirements}
+            onChangeText={setSpecialRequirements}
+            multiline
+          />
+        </View>
+
+        <View style={styles.checkoutPayCard}>
+          <View style={styles.checkoutPayHeader}>
+            <ShieldCheck size={22} color={colors.green} />
+            <View style={styles.checkoutSummaryText}>
+              <Text style={styles.checkoutPayTitle}>Pago seguro</Text>
+              <Text style={styles.checkoutPayText}>Tarjeta, wallet o metodo disponible segun Stripe/checkout web.</Text>
+            </View>
+          </View>
+          <View style={styles.productCheckoutRow}>
+            <View>
+              <Text style={styles.checkoutPayTotalLabel}>Total a pagar</Text>
+              <Text style={styles.checkoutPayTotalValue}>{money(summary.totalPrice)}</Text>
+            </View>
+            <ActionButton label="Pagar" icon={CreditCard} onPress={validateAndPay} />
+          </View>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+function CheckoutInfoPill({ icon: Icon, label, value }: { icon: IconType; label: string; value: string }) {
+  return (
+    <View style={styles.checkoutInfoPill}>
+      <Icon size={18} color={colors.skyDark} />
+      <View style={styles.checkoutSummaryText}>
+        <Text style={styles.checkoutInfoLabel}>{label}</Text>
+        <Text style={styles.checkoutInfoValue}>{value}</Text>
+      </View>
+    </View>
+  );
+}
+
+function CheckoutInput({
+  label,
+  value,
+  onChangeText,
+  error,
+  keyboardType,
+  multiline
+}: {
+  label: string;
+  value: string;
+  onChangeText: (value: string) => void;
+  error?: string;
+  keyboardType?: "default" | "email-address" | "phone-pad";
+  multiline?: boolean;
+}) {
+  return (
+    <View style={styles.checkoutInputGroup}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        keyboardType={keyboardType}
+        multiline={multiline}
+        style={[styles.checkoutNativeInput, multiline ? styles.checkoutNativeTextarea : null, error ? styles.checkoutNativeInputError : null]}
+      />
+      {error ? <Text style={styles.checkoutErrorText}>{error}</Text> : null}
     </View>
   );
 }
@@ -1908,7 +2163,7 @@ const styles = StyleSheet.create({
   },
   checkoutScreen: {
     flex: 1,
-    backgroundColor: colors.card
+    backgroundColor: colors.surface
   },
   checkoutTopbar: {
     minHeight: 58,
@@ -1942,6 +2197,207 @@ const styles = StyleSheet.create({
   checkoutWebview: {
     flex: 1,
     backgroundColor: colors.card
+  },
+  appCheckoutContent: {
+    gap: 14,
+    padding: 16,
+    paddingBottom: 34,
+    backgroundColor: colors.surface
+  },
+  appCheckoutHero: {
+    gap: 10,
+    borderRadius: 8,
+    backgroundColor: colors.ink,
+    padding: 16
+  },
+  checkoutStepRow: {
+    flexDirection: "row",
+    gap: 8
+  },
+  checkoutStep: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.lineOnDark,
+    paddingHorizontal: 10,
+    paddingVertical: 6
+  },
+  checkoutStepActive: {
+    borderRadius: 999,
+    backgroundColor: colors.sky,
+    paddingHorizontal: 10,
+    paddingVertical: 6
+  },
+  checkoutStepText: {
+    color: colors.mutedOnDark,
+    fontSize: 11,
+    fontWeight: "900"
+  },
+  checkoutStepTextActive: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: "900"
+  },
+  appCheckoutTitle: {
+    color: colors.white,
+    fontSize: 28,
+    lineHeight: 33,
+    fontWeight: "900"
+  },
+  appCheckoutSubtitle: {
+    color: colors.mutedOnDark,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "700"
+  },
+  checkoutSummaryCard: {
+    flexDirection: "row",
+    gap: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 12,
+    ...shadows.card
+  },
+  checkoutSummaryImage: {
+    width: 78,
+    height: 78,
+    borderRadius: 8,
+    backgroundColor: colors.line
+  },
+  checkoutTransferIcon: {
+    width: 78,
+    height: 78,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.skyDark
+  },
+  checkoutSummaryText: {
+    flex: 1,
+    minWidth: 0,
+    gap: 3
+  },
+  checkoutSummaryType: {
+    color: colors.skyDark,
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  checkoutSummaryTitle: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 21,
+    fontWeight: "900"
+  },
+  checkoutSummaryMeta: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700"
+  },
+  checkoutInfoGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10
+  },
+  checkoutInfoPill: {
+    flexGrow: 1,
+    flexBasis: "47%",
+    minHeight: 64,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 12
+  },
+  checkoutInfoLabel: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  checkoutInfoValue: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  checkoutNativePanel: {
+    gap: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 14
+  },
+  checkoutFormGrid: {
+    flexDirection: "row",
+    gap: 10
+  },
+  checkoutInputGroup: {
+    flex: 1,
+    gap: 6
+  },
+  checkoutNativeInput: {
+    minHeight: 48,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.surface,
+    color: colors.text,
+    paddingHorizontal: 12,
+    fontSize: 14,
+    fontWeight: "800"
+  },
+  checkoutNativeTextarea: {
+    minHeight: 86,
+    paddingTop: 12,
+    textAlignVertical: "top"
+  },
+  checkoutNativeInputError: {
+    borderColor: "#f87171",
+    backgroundColor: "#fff1f2"
+  },
+  checkoutErrorText: {
+    color: "#b91c1c",
+    fontSize: 12,
+    fontWeight: "800"
+  },
+  checkoutPayCard: {
+    gap: 14,
+    borderRadius: 8,
+    backgroundColor: colors.ink,
+    padding: 16,
+    ...shadows.card
+  },
+  checkoutPayHeader: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "flex-start"
+  },
+  checkoutPayTitle: {
+    color: colors.white,
+    fontSize: 17,
+    fontWeight: "900"
+  },
+  checkoutPayText: {
+    color: colors.mutedOnDark,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "700"
+  },
+  checkoutPayTotalLabel: {
+    color: colors.mutedOnDark,
+    fontSize: 12,
+    fontWeight: "800"
+  },
+  checkoutPayTotalValue: {
+    color: colors.white,
+    fontSize: 24,
+    fontWeight: "900"
   },
   hero: {
     minHeight: 480,

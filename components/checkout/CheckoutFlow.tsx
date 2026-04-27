@@ -86,6 +86,14 @@ export type CheckoutPageParams = {
   displayTotalPrice?: string;
   agencyDirectPercent?: string;
   pricingMode?: string;
+  mobileCheckout?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  travelerName?: string;
+  pickupLocation?: string;
+  specialRequirements?: string;
 };
 
 
@@ -526,32 +534,32 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
     [t]
   );
 
-  const [activeStep, setActiveStep] = useState(0);
+  const [activeStep, setActiveStep] = useState(initialParams.mobileCheckout === "1" ? 2 : 0);
 
   const [contact, setContact] = useState<ContactState>({
 
-    firstName: "",
+    firstName: initialParams.firstName ?? "",
 
-    lastName: "",
+    lastName: initialParams.lastName ?? "",
 
-    email: "",
+    email: initialParams.email ?? "",
 
-    phone: ""
+    phone: initialParams.phone ?? ""
 
   });
 
-  const [paymentEmailField, setPaymentEmailField] = useState("");
+  const [paymentEmailField, setPaymentEmailField] = useState(initialParams.email ?? "");
 
-  const [travelerName, setTravelerName] = useState("");
+  const [travelerName, setTravelerName] = useState(initialParams.travelerName ?? "");
 
   const [pickupPreference, setPickupPreference] = useState<"pickup" | "later">("pickup");
   const [flightNumber, setFlightNumber] = useState(initialParams.flightNumber ?? "");
   const isTransferFlow = initialParams.flowType === "transfer";
-  const [pickupLocation, setPickupLocation] = useState("");
+  const [pickupLocation, setPickupLocation] = useState(initialParams.pickupLocation ?? "");
 
   const [language, setLanguage] = useState(languageOptions[0]);
 
-  const [specialRequirements, setSpecialRequirements] = useState("");
+  const [specialRequirements, setSpecialRequirements] = useState(initialParams.specialRequirements ?? "");
 
   const [phoneCountry, setPhoneCountry] = useState(phoneCountries[0]);
 
@@ -577,7 +585,9 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
 
   const [savedPayment, setSavedPayment] = useState<SavedPayment | null>(null);
 
-  const [completedSteps, setCompletedSteps] = useState([false, false, false]);
+  const [completedSteps, setCompletedSteps] = useState(
+    initialParams.mobileCheckout === "1" ? [true, true, false] : [false, false, false]
+  );
 
   const [sessionExpired, setSessionExpired] = useState(false);
 
@@ -1195,6 +1205,11 @@ export default function CheckoutFlow({ initialParams }: { initialParams: Checkou
     setActiveStep(nextStep);
 
   };
+
+  useEffect(() => {
+    if (initialParams.mobileCheckout !== "1" || activeStep !== 2) return;
+    void triggerPaymentIntent();
+  }, [activeStep, initialParams.mobileCheckout]);
 
 ;
 

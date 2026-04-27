@@ -50,7 +50,15 @@ export default function CheckoutContent() {
       displayTourPrice: get("displayTourPrice"),
       displayTotalPrice: get("displayTotalPrice"),
       agencyDirectPercent: get("agencyDirectPercent"),
-      pricingMode: get("pricingMode")
+      pricingMode: get("pricingMode"),
+      mobileCheckout: get("mobileCheckout"),
+      firstName: get("firstName"),
+      lastName: get("lastName"),
+      email: get("email"),
+      phone: get("phone"),
+      travelerName: get("travelerName"),
+      pickupLocation: get("pickupLocation"),
+      specialRequirements: get("specialRequirements")
     };
   }, [searchParams]);
 
