@@ -14,9 +14,11 @@
       "backgroundColor": "#06111f"
     },
     "ios": {
+      "bundleIdentifier": "com.proactivitis.app",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.proactivitis.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#06111f"
