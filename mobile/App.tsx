@@ -824,7 +824,8 @@ function TransfersScreen({
 
   return (
     <View style={styles.transferScreen}>
-      <ImageBackground source={{ uri: heroImage }} style={styles.transferHero} imageStyle={styles.transferHeroImage}>
+      <View style={styles.transferHero}>
+        <Image source={{ uri: heroImage }} style={styles.transferHeroImage} resizeMode="cover" />
         <View style={styles.transferHeroOverlay} />
         <View style={styles.transferHeroContent}>
           <Text style={styles.transferHeroEyebrow}>Traslados privados</Text>
@@ -833,7 +834,7 @@ function TransfersScreen({
             Origen, destino y tarifas vienen del sistema de Proactivitis. La app solo adapta el flujo a movil.
           </Text>
         </View>
-      </ImageBackground>
+      </View>
 
       <View style={styles.transferSearchPanel}>
         <View style={styles.tripTypeRow}>
@@ -1438,10 +1439,17 @@ const styles = StyleSheet.create({
   transferHero: {
     minHeight: 360,
     justifyContent: "flex-end",
-    overflow: "hidden"
+    overflow: "hidden",
+    backgroundColor: colors.ink
   },
   transferHeroImage: {
-    resizeMode: "cover"
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    width: "100%",
+    height: "100%"
   },
   transferHeroOverlay: {
     ...StyleSheet.absoluteFillObject,

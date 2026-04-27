@@ -3,7 +3,7 @@
     "name": "Proactivitis",
     "slug": "proactivitis-mobile",
     "scheme": "proactivitis",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -19,6 +19,7 @@
     },
     "android": {
       "package": "com.proactivitis.app",
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#06111f"
@@ -28,6 +29,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "df33ad49-5972-46f7-ad09-3feded5b52a8"
+      }
     }
   }
 }
