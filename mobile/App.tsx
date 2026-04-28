@@ -181,6 +181,39 @@ const openUrl = (url: string) => {
 
 const whatsappUrl = (message: string) => `${links.whatsapp}?text=${encodeURIComponent(message)}`;
 
+const policyLinks: Array<{ title: string; subtitle: string; url: string; icon: IconType }> = [
+  {
+    title: "Politica de privacidad",
+    subtitle: "Como protegemos datos, cuenta y reservas.",
+    url: links.privacy,
+    icon: ShieldCheck
+  },
+  {
+    title: "Terminos y condiciones",
+    subtitle: "Reglas de uso, reservas, pagos y responsabilidades.",
+    url: links.terms,
+    icon: CreditCard
+  },
+  {
+    title: "Cookies y tecnologias",
+    subtitle: "Uso de cookies en la web y servicios conectados.",
+    url: links.cookies,
+    icon: Compass
+  },
+  {
+    title: "Informacion legal",
+    subtitle: "Datos legales, contacto y notificaciones formales.",
+    url: links.legalInformation,
+    icon: MessageCircle
+  },
+  {
+    title: "Cancelaciones y reembolsos",
+    subtitle: "Aplican los terminos y la politica indicada en cada producto.",
+    url: links.terms,
+    icon: CalendarCheck
+  }
+];
+
 const absoluteImageUrl = (url?: string | null) => {
   if (!url) return fallbackTourImage;
   if (url.startsWith("http")) return url;
@@ -1546,6 +1579,8 @@ function CheckoutScreen({
           <InputField label="Notas especiales" value={notes} onChangeText={setNotes} multiline />
         </View>
 
+        <PolicyLinksPanel compact />
+
         <View style={styles.payPanel}>
           <View style={styles.rowBetween}>
             <View>
@@ -1566,6 +1601,9 @@ function CheckoutScreen({
               )
             }
           />
+          <Text style={styles.checkoutLegalText}>
+            Al continuar aceptas los terminos, la politica de privacidad y las reglas de cancelacion aplicables al producto.
+          </Text>
           {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
         </View>
       </ScrollView>
@@ -1676,6 +1714,7 @@ function ProfileScreen({
           <LinkRow icon={MessageCircle} title="WhatsApp" subtitle="Soporte directo" onPress={() => openUrl(links.whatsapp)} />
           <LinkRow icon={Compass} title="Web" subtitle="proactivitis.com" onPress={() => openUrl(links.home)} />
         </View>
+        <PolicyLinksPanel />
       </View>
     );
   }
@@ -1694,6 +1733,7 @@ function ProfileScreen({
         <ActionButton label={mode === "login" ? "Entrar" : "Crear cuenta"} icon={LogIn} onPress={submit} />
         {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
       </View>
+      <PolicyLinksPanel />
     </View>
   );
 }
@@ -2064,6 +2104,28 @@ function InfoPill({ icon: Icon, label, value }: { icon: IconType; label: string;
       <View style={styles.flexText}>
         <Text style={styles.infoLabel}>{label}</Text>
         <Text style={styles.infoValue}>{value}</Text>
+      </View>
+    </View>
+  );
+}
+
+function PolicyLinksPanel({ compact = false }: { compact?: boolean }) {
+  return (
+    <View style={styles.formPanel}>
+      <Text style={styles.sectionTitle}>Politicas y legal</Text>
+      <Text style={styles.smallMuted}>
+        Accesos visibles para privacidad, terminos, cookies, informacion legal y cancelaciones.
+      </Text>
+      <View style={compact ? styles.policyCompactList : styles.cardStack}>
+        {policyLinks.map((item) => (
+          <LinkRow
+            key={item.title}
+            icon={item.icon}
+            title={item.title}
+            subtitle={item.subtitle}
+            onPress={() => openUrl(item.url)}
+          />
+        ))}
       </View>
     </View>
   );
@@ -2552,6 +2614,9 @@ const styles = StyleSheet.create({
   },
   cardStack: {
     gap: 14
+  },
+  policyCompactList: {
+    gap: 8
   },
   tourCard: {
     overflow: "hidden",
@@ -3383,6 +3448,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.ink,
     padding: 16
+  },
+  checkoutLegalText: {
+    color: colors.mutedOnDark,
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 17
   },
   feedbackText: {
     color: colors.skyDark,
