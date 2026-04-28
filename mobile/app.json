@@ -36,7 +36,14 @@
       }
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.proactivitis.app",
+          "enableGooglePay": true
+        }
+      ]
     ]
   }
 }

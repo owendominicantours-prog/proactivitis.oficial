@@ -2,6 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import type { ComponentType, ReactNode } from "react";
 import { Component, useEffect, useMemo, useRef, useState } from "react";
 import * as SecureStore from "expo-secure-store";
+import { StripeProvider, useStripe } from "@stripe/stripe-react-native";
 import {
   BackHandler,
   Dimensions,
@@ -53,6 +54,9 @@ import {
 import {
   buildCheckoutUrl,
   buildTourCheckoutUrl,
+  confirmMobileBooking,
+  createMobilePaymentIntent,
+  fetchMobileConfig,
   fetchMobileTours,
   fetchMobileTransferRoutes,
   fetchMobileUser,
@@ -494,6 +498,52 @@ const addCheckoutContactParams = ({
 };
 
 export default function App() {
+  const [stripePublishableKey, setStripePublishableKey] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    fetchMobileConfig()
+      .then((config) => {
+        if (active) setStripePublishableKey(config.stripePublishableKey ?? "");
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return (
+    <StripeProvider
+      publishableKey={stripePublishableKey}
+      merchantIdentifier="merchant.com.proactivitis.app"
+      urlScheme="proactivitis"
+    >
+      <StripeDeepLinkHandler />
+      <MobileApp stripeReady={Boolean(stripePublishableKey)} />
+    </StripeProvider>
+  );
+}
+
+function StripeDeepLinkHandler() {
+  const { handleURLCallback } = useStripe();
+
+  useEffect(() => {
+    const handleDeepLink = async (url: string | null) => {
+      if (url) await handleURLCallback(url);
+    };
+
+    void Linking.getInitialURL().then(handleDeepLink);
+    const subscription = Linking.addEventListener("url", (event) => {
+      void handleDeepLink(event.url);
+    });
+
+    return () => subscription.remove();
+  }, [handleURLCallback]);
+
+  return null;
+}
+
+function MobileApp({ stripeReady }: { stripeReady: boolean }) {
   const scrollRef = useRef<ScrollView>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("home");
   const [query, setQuery] = useState("");
@@ -601,6 +651,7 @@ export default function App() {
         <CheckoutScreen
           url={checkoutUrl}
           session={mobileSession}
+          stripeReady={stripeReady}
           onClose={() => setCheckoutUrl(null)}
         />
       );
@@ -1545,12 +1596,15 @@ function TransfersScreen({
 function CheckoutScreen({
   url,
   session,
+  stripeReady,
   onClose
 }: {
   url: string;
   session: MobileSession | null;
+  stripeReady: boolean;
   onClose: () => void;
 }) {
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const summary = useMemo(() => readCheckoutSummary(url), [url]);
   const nameParts = (session?.user.name ?? "").trim().split(/\s+/).filter(Boolean);
   const [firstName, setFirstName] = useState(nameParts[0] ?? "");
@@ -1561,16 +1615,90 @@ function CheckoutScreen({
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
-  const continueToPay = () => {
+  const validateCheckout = () => {
     const nextErrors: Record<string, string> = {};
     if (!firstName.trim()) nextErrors.firstName = "Indica el nombre.";
     if (!lastName.trim()) nextErrors.lastName = "Indica el apellido.";
     if (!email.trim() || !email.includes("@")) nextErrors.email = "Indica un email valido.";
     if (!pickupLocation.trim()) nextErrors.pickupLocation = "Indica hotel o punto de recogida.";
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length) return;
+    return !Object.keys(nextErrors).length;
+  };
 
+  const buildPaymentPayload = () => {
+    const params = readUrlParams(url);
+    const payload: Record<string, string | number | null | undefined> = {};
+    params.forEach((value, key) => {
+      payload[key] = value;
+    });
+    payload.flowType = summary.flowType;
+    payload.tourTitle = payload.tourTitle ?? summary.title;
+    payload.firstName = firstName.trim();
+    payload.lastName = lastName.trim();
+    payload.email = email.trim().toLowerCase();
+    payload.phone = phone.trim();
+    payload.pickupPreference = "pickup";
+    payload.pickupLocation = pickupLocation.trim();
+    payload.specialRequirements = notes.trim();
+    payload.paymentOption = "now";
+    payload.totalPrice = payload.totalPrice ?? String(summary.totalPrice);
+    return payload;
+  };
+
+  const continueToPay = async () => {
+    if (paymentLoading) return;
+    if (!validateCheckout()) return;
+    if (!stripeReady) {
+      setFeedback("Stripe aun no esta configurado en esta build. Revisa NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.");
+      return;
+    }
+
+    setPaymentLoading(true);
+    setFeedback("Preparando pago seguro...");
+    try {
+      const intent = await createMobilePaymentIntent(buildPaymentPayload(), session?.token);
+      if (!intent.clientSecret) {
+        throw new Error("Stripe no devolvio client secret para abrir el pago.");
+      }
+
+      const { error: initError } = await initPaymentSheet({
+        merchantDisplayName: "Proactivitis",
+        paymentIntentClientSecret: intent.clientSecret,
+        returnURL: "proactivitis://stripe-redirect",
+        allowsDelayedPaymentMethods: false,
+        defaultBillingDetails: {
+          name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+          email: email.trim().toLowerCase(),
+          phone: phone.trim() || undefined
+        }
+      });
+
+      if (initError) throw new Error(initError.message);
+
+      setFeedback("Abriendo pago seguro...");
+      const { error: paymentError } = await presentPaymentSheet();
+      if (paymentError) {
+        setFeedback(paymentError.message ?? "El pago fue cancelado o no se completo.");
+        return;
+      }
+
+      await confirmMobileBooking({
+        bookingId: intent.bookingId,
+        paymentIntentId: intent.paymentIntentId,
+        token: session?.token
+      });
+      setFeedback("Pago confirmado. Tu reserva quedo registrada en Proactivitis.");
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "No se pudo completar el pago.");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  const openWebCheckout = () => {
+    if (!validateCheckout()) return;
     const checkout = addCheckoutContactParams({
       checkoutUrl: url,
       firstName,
@@ -1580,7 +1708,7 @@ function CheckoutScreen({
       pickupLocation,
       specialRequirements: notes
     });
-    setFeedback("Abriendo checkout seguro de Proactivitis...");
+    setFeedback("Abriendo checkout web de Proactivitis...");
     openUrl(checkout);
   };
 
@@ -1679,15 +1807,21 @@ function CheckoutScreen({
         <View style={styles.payPanel}>
           <View style={styles.checkoutSecureNote}>
             <ShieldCheck size={18} color={colors.skySoft} />
-            <Text style={styles.checkoutSecureText}>Pago protegido y confirmacion por Proactivitis.</Text>
+            <Text style={styles.checkoutSecureText}>Pago nativo protegido por Stripe y confirmacion por Proactivitis.</Text>
           </View>
           <View style={styles.rowBetween}>
             <View>
               <Text style={styles.checkoutPayLabel}>Total a pagar</Text>
               <Text style={styles.checkoutTotal}>{money(summary.totalPrice)}</Text>
             </View>
-            <ActionButton label="Pagar seguro" icon={CreditCard} onPress={continueToPay} />
+            <ActionButton label={paymentLoading ? "Procesando..." : "Pagar con Stripe"} icon={CreditCard} onPress={continueToPay} />
           </View>
+          <ActionButton
+            label="Abrir checkout web"
+            icon={CreditCard}
+            variant="outlineDark"
+            onPress={openWebCheckout}
+          />
           <ActionButton
             label="Confirmar por WhatsApp"
             icon={MessageCircle}
