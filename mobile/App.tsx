@@ -1101,19 +1101,18 @@ function TransfersScreen({
   onSaveQuote: (quote: SavedQuote) => void;
   onOpenCheckout: (url: string) => void;
 }) {
-  const firstRoute = fallbackTransferRoutes[0];
   const [routes, setRoutes] = useState<MobileTransferRoute[]>(fallbackTransferRoutes);
-  const [originQuery, setOriginQuery] = useState(firstRoute?.origin.name ?? "");
-  const [destinationQuery, setDestinationQuery] = useState(firstRoute?.destination.name ?? "");
+  const [originQuery, setOriginQuery] = useState("");
+  const [destinationQuery, setDestinationQuery] = useState("");
   const [originOptions, setOriginOptions] = useState<LocationSummary[]>([]);
   const [destinationOptions, setDestinationOptions] = useState<LocationSummary[]>([]);
   const [originLoading, setOriginLoading] = useState(false);
   const [destinationLoading, setDestinationLoading] = useState(false);
   const [originSearchError, setOriginSearchError] = useState<string | null>(null);
   const [destinationSearchError, setDestinationSearchError] = useState<string | null>(null);
-  const [origin, setOrigin] = useState<LocationSummary | null>(firstRoute?.origin ?? null);
-  const [destination, setDestination] = useState<LocationSummary | null>(firstRoute?.destination ?? null);
-  const [selectedRouteId, setSelectedRouteId] = useState(firstRoute?.id ?? "");
+  const [origin, setOrigin] = useState<LocationSummary | null>(null);
+  const [destination, setDestination] = useState<LocationSummary | null>(null);
+  const [selectedRouteId, setSelectedRouteId] = useState("");
   const [passengers, setPassengers] = useState(2);
   const [tripType, setTripType] = useState<TripType>("one-way");
   const [departureDate, setDepartureDate] = useState(tomorrow());
@@ -1145,12 +1144,6 @@ function TransfersScreen({
       .then((items) => {
         if (!active || !items.length) return;
         setRoutes(items);
-        const route = items[0];
-        setOrigin(route.origin);
-        setDestination(route.destination);
-        setOriginQuery(route.origin.name);
-        setDestinationQuery(route.destination.name);
-        setSelectedRouteId(route.id);
       })
       .catch(() => undefined);
     return () => {
@@ -1315,12 +1308,21 @@ function TransfersScreen({
           <Text style={styles.eyebrow}>Traslados privados</Text>
           <Text style={styles.heroTitle}>Busca tu ruta real</Text>
           <Text style={styles.heroSubtitle}>
-            Selecciona hoteles o aeropuertos de Proactivitis para calcular tarifa y reservar.
+            Escribe tu aeropuerto, hotel o zona. La app te muestra coincidencias antes de calcular.
           </Text>
         </View>
       </ImageBackground>
 
       <View style={styles.transferPanel}>
+        <View style={styles.transferSearchIntro}>
+          <View style={styles.transferSearchIcon}>
+            <Search size={20} color={colors.skyDark} />
+          </View>
+          <View style={styles.flexText}>
+            <Text style={styles.transferSearchTitle}>Elige origen y destino</Text>
+            <Text style={styles.transferSearchCopy}>No dejamos una ruta marcada por defecto para que reserves exactamente donde necesitas.</Text>
+          </View>
+        </View>
         <View style={styles.segmentRow}>
           <SegmentButton label="Solo ida" active={tripType === "one-way"} onPress={() => setTripType("one-way")} />
           <SegmentButton label="Ida y vuelta" active={tripType === "round-trip"} onPress={() => setTripType("round-trip")} />
@@ -1332,7 +1334,7 @@ function TransfersScreen({
           selected={origin}
           loading={originLoading}
           options={originOptions}
-          placeholder="Busca aeropuerto u hotel"
+          placeholder="Ej: Aeropuerto Punta Cana"
           onChange={(value) => {
             setOriginQuery(value);
             setOrigin(null);
@@ -1355,7 +1357,7 @@ function TransfersScreen({
           selected={destination}
           loading={destinationLoading}
           options={destinationOptions}
-          placeholder="Busca hotel o zona"
+          placeholder="Ej: hotel, villa o zona"
           onChange={(value) => {
             setDestinationQuery(value);
             setDestination(null);
@@ -1380,8 +1382,10 @@ function TransfersScreen({
               style={[styles.routeShortcut, route.id === selectedRouteId ? styles.routeShortcutActive : null]}
               onPress={() => selectRoute(route)}
             >
-              <Text style={styles.routeTitle}>{route.destination.name}</Text>
-              <Text style={styles.routeMeta}>{route.origin.name}</Text>
+              <Text style={styles.routeMeta}>Origen</Text>
+              <Text style={styles.routeTitle} numberOfLines={1}>{route.origin.name}</Text>
+              <Text style={styles.routeMeta}>Destino</Text>
+              <Text style={styles.routeTitle} numberOfLines={1}>{route.destination.name}</Text>
               <Text style={styles.routePrice}>Desde {money(route.priceFrom)}</Text>
             </Pressable>
           ))}
@@ -3146,6 +3150,35 @@ const styles = StyleSheet.create({
     padding: 16,
     ...shadows.card
   },
+  transferSearchIntro: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+    backgroundColor: colors.skySoft,
+    padding: 12
+  },
+  transferSearchIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.white
+  },
+  transferSearchTitle: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "900"
+  },
+  transferSearchCopy: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 17
+  },
   segmentRow: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -3223,12 +3256,12 @@ const styles = StyleSheet.create({
     paddingRight: 8
   },
   routeShortcut: {
-    width: 210,
+    width: 220,
     gap: 6,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.line,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.card,
     padding: 12
   },
   routeShortcutActive: {
