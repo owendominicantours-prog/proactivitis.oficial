@@ -55,6 +55,7 @@ import {
   fetchTransferLocations,
   fetchTransferQuote,
   fetchMobileTours,
+  fetchMobileTransferRoutes,
   buildTourCheckoutUrl,
   getApiBaseUrl,
   confirmMobileBooking,
@@ -66,12 +67,14 @@ import {
   type LocationSummary,
   type MobileSession,
   type MobilePaymentIntentPayload,
+  type MobileTransferRoute,
   type MobileTour,
   type MobileTourItineraryStop,
   type MobileTourOption,
   type QuoteVehicle
 } from "./src/api";
 import { staticMobileTours } from "./src/staticTours";
+import { staticMobileTransferRoutes } from "./src/staticTransfers";
 import { colors, links, shadows } from "./src/theme";
 
 type TabKey = "home" | "tours" | "transfers" | "trips" | "profile";
@@ -421,13 +424,18 @@ export default function App() {
   const renderScreen = () => {
     if (checkoutUrl) {
       return (
-        <CheckoutScreen
-          url={checkoutUrl}
-          session={mobileSession}
-          stripeReady={stripeReady}
-          onSessionChange={updateMobileSession}
-          onClose={() => setCheckoutUrl(null)}
-        />
+        <ScreenErrorBoundary
+          resetKey={checkoutUrl}
+          fallback={<CheckoutFallbackScreen onClose={() => setCheckoutUrl(null)} />}
+        >
+          <CheckoutScreen
+            url={checkoutUrl}
+            session={mobileSession}
+            stripeReady={stripeReady}
+            onSessionChange={updateMobileSession}
+            onClose={() => setCheckoutUrl(null)}
+          />
+        </ScreenErrorBoundary>
       );
     }
 
@@ -954,8 +962,7 @@ type CheckoutSummary = {
 };
 
 const readCheckoutSummary = (checkoutUrl: string): CheckoutSummary => {
-  const parsed = new URL(checkoutUrl);
-  const params = parsed.searchParams;
+  const params = readUrlParams(checkoutUrl);
   const flowType = params.get("type") === "transfer" ? "transfer" : "tour";
   const adults = Number(params.get("adults") ?? params.get("passengers") ?? 1);
   const youth = Number(params.get("youth") ?? 0);
@@ -980,6 +987,15 @@ const readCheckoutSummary = (checkoutUrl: string): CheckoutSummary => {
     tripType: params.get("tripType"),
     checkoutUrl
   };
+};
+
+const readUrlParams = (href: string) => {
+  try {
+    return new URL(href).searchParams;
+  } catch {
+    const query = href.includes("?") ? href.split("?").slice(1).join("?") : href;
+    return new URLSearchParams(query);
+  }
 };
 
 const addCheckoutContactParams = ({
@@ -1032,7 +1048,7 @@ const buildMobilePaymentPayload = ({
   pickupLocation: string;
   specialRequirements: string;
 }): MobilePaymentIntentPayload => {
-  const params = new URL(checkoutUrl).searchParams;
+  const params = readUrlParams(checkoutUrl);
   const flowType = params.get("type") === "transfer" ? "transfer" : "tour";
   const dateTime = checkoutParam(params, "dateTime");
   return {
@@ -1328,6 +1344,30 @@ function CheckoutInfoPill({ icon: Icon, label, value }: { icon: IconType; label:
   );
 }
 
+function CheckoutFallbackScreen({ onClose }: { onClose: () => void }) {
+  return (
+    <View style={styles.checkoutScreen}>
+      <View style={styles.checkoutTopbar}>
+        <Pressable style={styles.checkoutClose} onPress={onClose}>
+          <ArrowLeft size={20} color={colors.text} />
+          <Text style={styles.checkoutCloseText}>Volver</Text>
+        </Pressable>
+        <Text style={styles.checkoutTitle}>Reserva</Text>
+      </View>
+      <View style={styles.checkoutSuccessScreen}>
+        <View style={styles.checkoutSuccessIcon}>
+          <ShieldCheck size={38} color={colors.white} />
+        </View>
+        <Text style={styles.checkoutSuccessTitle}>Terminemos tu reserva por soporte</Text>
+        <Text style={styles.checkoutSuccessText}>
+          No cerramos la app: si el pago nativo no abre en este dispositivo, el equipo confirma la ruta y te envia el enlace seguro.
+        </Text>
+        <ActionButton label="Abrir WhatsApp" icon={MessageCircle} onPress={() => openUrl(links.whatsapp)} />
+      </View>
+    </View>
+  );
+}
+
 function CheckoutInput({
   label,
   value,
@@ -1393,6 +1433,19 @@ const routeLocation = (routeId: string, name: string, type: "origin" | "destinat
   zoneName: "Punta Cana"
 });
 
+const catalogFallbackTransferRoutes: MobileTransferRoute[] = transferRoutes.map((route) => ({
+  id: route.id,
+  origin: routeLocation(route.id, route.origin, "origin"),
+  destination: routeLocation(route.id, route.destination, "destination"),
+  priceFrom: route.priceFrom,
+  currency: "USD",
+  zoneLabel: route.duration
+}));
+
+const fallbackMobileTransferRoutes: MobileTransferRoute[] = staticMobileTransferRoutes.length
+  ? staticMobileTransferRoutes
+  : catalogFallbackTransferRoutes;
+
 const isLocalTransferLocation = (location: LocationSummary | null) =>
   Boolean(location?.id.startsWith("local-") || location?.id.startsWith("route-"));
 
@@ -1419,18 +1472,19 @@ function TransfersScreen({
   onSaveQuote: (quote: SavedQuote) => void;
   onOpenCheckout: (url: string) => void;
 }) {
-  const defaultRoute = transferRoutes[0];
-  const [originQuery, setOriginQuery] = useState(defaultRoute?.origin ?? "");
-  const [destinationQuery, setDestinationQuery] = useState(defaultRoute?.destination ?? "");
+  const defaultRoute = fallbackMobileTransferRoutes[0];
+  const [mobileTransferRoutes, setMobileTransferRoutes] = useState<MobileTransferRoute[]>(fallbackMobileTransferRoutes);
+  const [originQuery, setOriginQuery] = useState(defaultRoute?.origin.name ?? "");
+  const [destinationQuery, setDestinationQuery] = useState(defaultRoute?.destination.name ?? "");
   const [originOptions, setOriginOptions] = useState<LocationSummary[]>([]);
   const [destinationOptions, setDestinationOptions] = useState<LocationSummary[]>([]);
   const [originLoading, setOriginLoading] = useState(false);
   const [destinationLoading, setDestinationLoading] = useState(false);
   const [selectedOrigin, setSelectedOrigin] = useState<LocationSummary | null>(
-    defaultRoute ? routeLocation(defaultRoute.id, defaultRoute.origin, "origin") : null
+    defaultRoute?.origin ?? null
   );
   const [selectedDestination, setSelectedDestination] = useState<LocationSummary | null>(
-    defaultRoute ? routeLocation(defaultRoute.id, defaultRoute.destination, "destination") : null
+    defaultRoute?.destination ?? null
   );
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(defaultRoute?.id ?? null);
   const [passengers, setPassengers] = useState(2);
@@ -1450,15 +1504,36 @@ function TransfersScreen({
   const roundTripMultiplier = tripType === "round-trip" ? 1.9 : 1;
   const selectedVehicle = vehicles.find((vehicle) => vehicle.id === selectedVehicleId) ?? vehicles[0] ?? null;
   const selectedPrice = selectedVehicle ? Math.round(selectedVehicle.price * roundTripMultiplier) : null;
-  const selectedRoute = transferRoutes.find((route) => route.id === selectedRouteId) ?? null;
+  const selectedRoute = mobileTransferRoutes.find((route) => route.id === selectedRouteId) ?? null;
   const routeSuggestions = useMemo(() => {
     const query = `${originQuery} ${destinationQuery}`.trim().toLowerCase();
-    if (!query) return transferRoutes.slice(0, 4);
-    const matches = transferRoutes.filter((route) =>
-      `${route.origin} ${route.destination}`.toLowerCase().includes(query)
+    if (!query) return mobileTransferRoutes.slice(0, 6);
+    const matches = mobileTransferRoutes.filter((route) =>
+      `${route.origin.name} ${route.destination.name} ${route.zoneLabel ?? ""}`.toLowerCase().includes(query)
     );
-    return (matches.length ? matches : transferRoutes).slice(0, 4);
-  }, [destinationQuery, originQuery]);
+    return (matches.length ? matches : mobileTransferRoutes).slice(0, 6);
+  }, [destinationQuery, mobileTransferRoutes, originQuery]);
+
+  useEffect(() => {
+    let active = true;
+    fetchMobileTransferRoutes()
+      .then((routes) => {
+        if (!active || !routes.length) return;
+        setMobileTransferRoutes(routes);
+        const firstRoute = routes[0];
+        setSelectedRouteId(firstRoute.id);
+        setSelectedOrigin(firstRoute.origin);
+        setSelectedDestination(firstRoute.destination);
+        setOriginQuery(firstRoute.origin.name);
+        setDestinationQuery(firstRoute.destination.name);
+        setVehicles([]);
+        setSelectedVehicleId(null);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (selectedOrigin?.name === originQuery || originQuery.trim().length < 2) {
@@ -1534,12 +1609,12 @@ function TransfersScreen({
     setSelectedVehicleId(null);
   };
 
-  const selectPopularRoute = (route: (typeof transferRoutes)[number]) => {
+  const selectPopularRoute = (route: MobileTransferRoute) => {
     setSelectedRouteId(route.id);
-    setSelectedOrigin(routeLocation(route.id, route.origin, "origin"));
-    setSelectedDestination(routeLocation(route.id, route.destination, "destination"));
-    setOriginQuery(route.origin);
-    setDestinationQuery(route.destination);
+    setSelectedOrigin(route.origin);
+    setSelectedDestination(route.destination);
+    setOriginQuery(route.origin.name);
+    setDestinationQuery(route.destination.name);
     setOriginOptions([]);
     setDestinationOptions([]);
     setVehicles([]);
@@ -1708,8 +1783,8 @@ function TransfersScreen({
                 style={[styles.routeShortcutCard, route.id === selectedRouteId ? styles.routeShortcutCardActive : null]}
                 onPress={() => selectPopularRoute(route)}
               >
-                <Text style={styles.routeShortcutTitle}>{route.destination}</Text>
-                <Text style={styles.routeShortcutMeta}>{route.origin}</Text>
+                <Text style={styles.routeShortcutTitle}>{route.destination.name}</Text>
+                <Text style={styles.routeShortcutMeta}>{route.origin.name}</Text>
                 <Text style={styles.routeShortcutPrice}>Desde {money(route.priceFrom)}</Text>
               </Pressable>
             ))}

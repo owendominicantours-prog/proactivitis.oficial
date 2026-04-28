@@ -31,6 +31,7 @@
     "tours:sync-seo-competitor-prices": "ts-node --project tsconfig.seed.json scripts/syncSeoOnlyCompetitorPrices.ts",
     "tours:translate-seo-only": "ts-node --project tsconfig.seed.json scripts/translateSeoOnlyTours.ts",
     "mobile:generate-tours": "node scripts/generateMobileStaticTours.cjs",
+    "mobile:generate-transfers": "node scripts/generateMobileStaticTransfers.cjs",
     "translate:tours": "cross-env TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' ts-node scripts/translateTours.ts",
     "postinstall": "prisma generate"
   },

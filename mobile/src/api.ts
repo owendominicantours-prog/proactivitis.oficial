@@ -28,6 +28,15 @@ export type QuoteResponse = {
   vehicles: QuoteVehicle[];
 };
 
+export type MobileTransferRoute = {
+  id: string;
+  origin: LocationSummary;
+  destination: LocationSummary;
+  priceFrom: number;
+  currency?: string;
+  zoneLabel?: string | null;
+};
+
 export type MobileUser = {
   id: string;
   email: string;
@@ -182,6 +191,11 @@ export const fetchTransferQuote = async ({
       passengers
     })
   });
+
+export const fetchMobileTransferRoutes = async () => {
+  const data = await jsonFetch<{ routes: MobileTransferRoute[] }>("/api/mobile/transfers");
+  return data.routes ?? [];
+};
 
 export const fetchMobileTours = async () => {
   const data = await jsonFetch<{ tours: MobileTour[] }>("/api/mobile/tours?limit=50");
