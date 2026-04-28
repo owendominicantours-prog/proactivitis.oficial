@@ -653,20 +653,23 @@ function HomeScreen({
       <ImageBackground source={{ uri: absoluteImageUrl(homeHeroImage) }} style={styles.hero} imageStyle={styles.heroImage as StyleProp<ImageStyle>}>
         <View style={styles.heroOverlay} />
         <View style={styles.heroContent}>
-          <Image source={require("./assets/proactivitis-logo.png")} style={styles.logo as StyleProp<ImageStyle>} resizeMode="contain" />
-          <Text style={styles.eyebrow}>Tours, transfers y planes privados</Text>
-          <Text style={styles.heroTitle}>Vive Republica Dominicana sin improvisar</Text>
+          <View style={styles.logoGlow}>
+            <Image source={require("./assets/proactivitis-logo.png")} style={styles.logo as StyleProp<ImageStyle>} resizeMode="contain" />
+          </View>
+          <Text style={styles.eyebrow}>🌴 Tours, transfers y planes privados</Text>
+          <Text style={styles.heroTitle}>Tu viaje en RD, claro y sin estres</Text>
           <Text style={styles.heroSubtitle}>
-            Elige experiencias con fotos reales, cotiza tu traslado y reserva con soporte local 24/7 desde Proactivitis.
+            Elige tours con fotos reales, cotiza tu traslado y reserva con ayuda local 24/7. Aqui vienes a disfrutar, nosotros organizamos lo dificil.
           </Text>
+          <Text style={styles.heroHumanNote}>✨ Recomendado para familias, parejas y grupos que quieren reservar sin vueltas.</Text>
           <View style={styles.heroTrustRow}>
-            <Text style={styles.heroTrustPill}>Fotos reales</Text>
-            <Text style={styles.heroTrustPill}>Precio claro</Text>
-            <Text style={styles.heroTrustPill}>Soporte local</Text>
+            <Text style={styles.heroTrustPill}>📸 Fotos reales</Text>
+            <Text style={styles.heroTrustPill}>💵 Precio claro</Text>
+            <Text style={styles.heroTrustPill}>💬 Soporte humano</Text>
           </View>
           <View style={styles.heroActions}>
-            <ActionButton label="Explorar tours" icon={Compass} onPress={onOpenTours} />
-            <ActionButton label="Transfer privado" icon={Car} variant="outline" onPress={onOpenTransfers} />
+            <ActionButton label="Ver tours 🔥" icon={Compass} onPress={onOpenTours} />
+            <ActionButton label="Buscar transfer 🚘" icon={Car} variant="outline" onPress={onOpenTransfers} />
           </View>
         </View>
       </ImageBackground>
@@ -682,25 +685,25 @@ function HomeScreen({
 
       <View style={styles.homeBookingGrid}>
         <Pressable style={styles.homeBookingCard} onPress={onOpenTours}>
-          <Compass size={24} color={colors.skyDark} />
-          <Text style={styles.homeBookingTitle}>Tours publicados</Text>
-          <Text style={styles.homeBookingText}>Fotos, opciones y precios sincronizados con la web.</Text>
+          <Text style={styles.homeBookingEmoji}>🏝️</Text>
+          <Text style={styles.homeBookingTitle}>Tours que se sienten reales</Text>
+          <Text style={styles.homeBookingText}>Fotos, opciones y precios conectados a la web. Ves antes de reservar.</Text>
         </Pressable>
         <Pressable style={styles.homeBookingCard} onPress={onOpenTransfers}>
-          <Car size={24} color={colors.skyDark} />
-          <Text style={styles.homeBookingTitle}>Transfer real</Text>
-          <Text style={styles.homeBookingText}>Busca hoteles y aeropuertos reales antes de reservar.</Text>
+          <Text style={styles.homeBookingEmoji}>🚘</Text>
+          <Text style={styles.homeBookingTitle}>Transfer sin adivinar</Text>
+          <Text style={styles.homeBookingText}>Busca hoteles y aeropuertos reales, elige la ruta y confirma sin enredos.</Text>
         </Pressable>
       </View>
 
-      <SectionHeader title="Recomendados" actionLabel="Ver todos" onPress={onOpenTours} />
+      <SectionHeader title="🔥 Recomendados" actionLabel="Ver todos" onPress={onOpenTours} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
         {tours.slice(0, 5).map((tour) => (
           <FeaturedTourCard key={tour.id} tour={tour} onPress={() => onReserveTour(tour)} />
         ))}
       </ScrollView>
 
-      <SectionHeader title="Categorias" actionLabel="Explorar" onPress={onOpenTours} />
+      <SectionHeader title="🧭 Categorias" actionLabel="Explorar" onPress={onOpenTours} />
       <View style={styles.categoryGrid}>
         {tourCategories.filter((item) => item !== "Todos").map((item) => (
           <Pressable key={item} style={styles.categoryCard} onPress={onOpenTours}>
@@ -710,7 +713,7 @@ function HomeScreen({
         ))}
       </View>
 
-      <SectionHeader title="Rutas populares" actionLabel="Cotizar" onPress={onOpenTransfers} />
+      <SectionHeader title="🚐 Rutas populares" actionLabel="Cotizar" onPress={onOpenTransfers} />
       <View style={styles.homeRouteGrid}>
         {homePopularTransferCards.map((route) => (
           <Pressable key={route.id} style={styles.homeRouteCard} onPress={onOpenTransfers}>
@@ -731,7 +734,7 @@ function HomeScreen({
         <View style={styles.flexText}>
           <Text style={styles.noticeTitle}>Reserva con respaldo local</Text>
           <Text style={styles.noticeText}>
-            Completas los datos en la app y finalizas con el checkout seguro de Proactivitis.
+            Completa tus datos en la app y finaliza con el checkout seguro de Proactivitis. Si necesitas ayuda, te hablamos como personas.
           </Text>
         </View>
       </View>
@@ -2182,6 +2185,18 @@ const styles = StyleSheet.create({
     padding: 22,
     paddingBottom: 34
   },
+  logoGlow: {
+    alignSelf: "flex-start",
+    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    shadowColor: "#ffffff",
+    shadowOpacity: 0.55,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 8
+  },
   logo: {
     width: 218,
     height: 86
@@ -2202,16 +2217,31 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     color: colors.white,
-    fontSize: 36,
-    lineHeight: 41,
+    fontSize: 38,
+    lineHeight: 43,
     fontWeight: "900",
-    letterSpacing: 0
+    letterSpacing: 0,
+    textShadowColor: "rgba(6,17,31,0.72)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 10
   },
   heroSubtitle: {
     color: "#dbeafe",
     fontSize: 16,
     lineHeight: 24,
-    fontWeight: "600"
+    fontWeight: "700",
+    textShadowColor: "rgba(6,17,31,0.7)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 8
+  },
+  heroHumanNote: {
+    color: colors.white,
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: "900",
+    textShadowColor: "rgba(6,17,31,0.7)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 8
   },
   heroTrustRow: {
     flexDirection: "row",
@@ -2271,6 +2301,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     padding: 13,
     ...shadows.card
+  },
+  homeBookingEmoji: {
+    fontSize: 26,
+    lineHeight: 31
   },
   homeBookingTitle: {
     color: colors.text,
