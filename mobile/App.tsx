@@ -43,6 +43,8 @@ import {
 import {
   featuredTours,
   tourCategories,
+  transferRoutes,
+  transferVehicles,
   trustStats,
   type Tour,
   type TourCategory
@@ -1095,6 +1097,48 @@ function MetaPill({ icon: Icon, label }: { icon: IconType; label: string }) {
   );
 }
 
+const slugifyTransferValue = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "transfer";
+
+const localLocation = (name: string, type: "origin" | "destination"): LocationSummary => ({
+  id: `local-${type}-${slugifyTransferValue(name)}`,
+  name: name.trim(),
+  slug: slugifyTransferValue(name),
+  type: type === "origin" ? "Origen" : "Destino",
+  zoneName: "Proactivitis"
+});
+
+const routeLocation = (routeId: string, name: string, type: "origin" | "destination"): LocationSummary => ({
+  id: `route-${type}-${routeId}`,
+  name,
+  slug: slugifyTransferValue(name),
+  type: type === "origin" ? "Origen popular" : "Destino popular",
+  zoneName: "Punta Cana"
+});
+
+const isLocalTransferLocation = (location: LocationSummary | null) =>
+  Boolean(location?.id.startsWith("local-") || location?.id.startsWith("route-"));
+
+const fallbackQuoteVehicles = (basePrice: number, passengers: number): QuoteVehicle[] =>
+  transferVehicles
+    .map((vehicle) => {
+      const maxPax = vehicle.id === "sedan" ? 3 : vehicle.id === "suv" ? 5 : 8;
+      return {
+        id: `local-${vehicle.id}`,
+        name: vehicle.name,
+        category: vehicle.capacity,
+        minPax: 1,
+        maxPax,
+        price: Math.round(basePrice * vehicle.baseMultiplier),
+        imageUrl: null
+      };
+    })
+    .filter((vehicle) => passengers <= vehicle.maxPax);
+
 function TransfersScreen({
   onSaveQuote,
   onOpenCheckout
@@ -1102,14 +1146,20 @@ function TransfersScreen({
   onSaveQuote: (quote: SavedQuote) => void;
   onOpenCheckout: (url: string) => void;
 }) {
-  const [originQuery, setOriginQuery] = useState("");
-  const [destinationQuery, setDestinationQuery] = useState("");
+  const defaultRoute = transferRoutes[0];
+  const [originQuery, setOriginQuery] = useState(defaultRoute?.origin ?? "");
+  const [destinationQuery, setDestinationQuery] = useState(defaultRoute?.destination ?? "");
   const [originOptions, setOriginOptions] = useState<LocationSummary[]>([]);
   const [destinationOptions, setDestinationOptions] = useState<LocationSummary[]>([]);
   const [originLoading, setOriginLoading] = useState(false);
   const [destinationLoading, setDestinationLoading] = useState(false);
-  const [selectedOrigin, setSelectedOrigin] = useState<LocationSummary | null>(null);
-  const [selectedDestination, setSelectedDestination] = useState<LocationSummary | null>(null);
+  const [selectedOrigin, setSelectedOrigin] = useState<LocationSummary | null>(
+    defaultRoute ? routeLocation(defaultRoute.id, defaultRoute.origin, "origin") : null
+  );
+  const [selectedDestination, setSelectedDestination] = useState<LocationSummary | null>(
+    defaultRoute ? routeLocation(defaultRoute.id, defaultRoute.destination, "destination") : null
+  );
+  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(defaultRoute?.id ?? null);
   const [passengers, setPassengers] = useState(2);
   const [tripType, setTripType] = useState<TripType>("one-way");
   const [departureDate, setDepartureDate] = useState(() => {
@@ -1127,6 +1177,15 @@ function TransfersScreen({
   const roundTripMultiplier = tripType === "round-trip" ? 1.9 : 1;
   const selectedVehicle = vehicles.find((vehicle) => vehicle.id === selectedVehicleId) ?? vehicles[0] ?? null;
   const selectedPrice = selectedVehicle ? Math.round(selectedVehicle.price * roundTripMultiplier) : null;
+  const selectedRoute = transferRoutes.find((route) => route.id === selectedRouteId) ?? null;
+  const routeSuggestions = useMemo(() => {
+    const query = `${originQuery} ${destinationQuery}`.trim().toLowerCase();
+    if (!query) return transferRoutes.slice(0, 4);
+    const matches = transferRoutes.filter((route) =>
+      `${route.origin} ${route.destination}`.toLowerCase().includes(query)
+    );
+    return (matches.length ? matches : transferRoutes).slice(0, 4);
+  }, [destinationQuery, originQuery]);
 
   useEffect(() => {
     if (selectedOrigin?.name === originQuery || originQuery.trim().length < 2) {
@@ -1188,6 +1247,7 @@ function TransfersScreen({
     setSelectedOrigin(location);
     setOriginQuery(location.name);
     setOriginOptions([]);
+    setSelectedRouteId(null);
     setVehicles([]);
     setSelectedVehicleId(null);
   };
@@ -1196,13 +1256,31 @@ function TransfersScreen({
     setSelectedDestination(location);
     setDestinationQuery(location.name);
     setDestinationOptions([]);
+    setSelectedRouteId(null);
     setVehicles([]);
     setSelectedVehicleId(null);
   };
 
+  const selectPopularRoute = (route: (typeof transferRoutes)[number]) => {
+    setSelectedRouteId(route.id);
+    setSelectedOrigin(routeLocation(route.id, route.origin, "origin"));
+    setSelectedDestination(routeLocation(route.id, route.destination, "destination"));
+    setOriginQuery(route.origin);
+    setDestinationQuery(route.destination);
+    setOriginOptions([]);
+    setDestinationOptions([]);
+    setVehicles([]);
+    setSelectedVehicleId(null);
+    setQuoteError(null);
+  };
+
   const quoteRoute = async () => {
-    if (!selectedOrigin || !selectedDestination) {
-      setQuoteError("Selecciona origen y destino desde los resultados de la web.");
+    const origin = selectedOrigin ?? (originQuery.trim() ? localLocation(originQuery, "origin") : null);
+    const destination =
+      selectedDestination ?? (destinationQuery.trim() ? localLocation(destinationQuery, "destination") : null);
+
+    if (!origin || !destination) {
+      setQuoteError("Indica origen y destino para buscar la tarifa.");
       return;
     }
     if (tripType === "round-trip" && (!returnDate || !returnTime)) {
@@ -1210,23 +1288,40 @@ function TransfersScreen({
       return;
     }
 
+    setSelectedOrigin(origin);
+    setSelectedDestination(destination);
     setQuoteLoading(true);
     setQuoteError(null);
+    const basePrice = selectedRoute?.priceFrom ?? 45;
+    const canUseWebQuote = !isLocalTransferLocation(origin) && !isLocalTransferLocation(destination);
+
     try {
-      const data = await fetchTransferQuote({
-        originId: selectedOrigin.id,
-        destinationId: selectedDestination.id,
-        passengers
-      });
-      setVehicles(data.vehicles);
-      setSelectedVehicleId(data.vehicles[0]?.id ?? null);
-      if (!data.vehicles.length) {
-        setQuoteError("La web no devolvio vehiculos disponibles para esa ruta.");
+      if (canUseWebQuote) {
+        const data = await fetchTransferQuote({
+          originId: origin.id,
+          destinationId: destination.id,
+          passengers
+        });
+        if (data.vehicles.length) {
+          setVehicles(data.vehicles);
+          setSelectedVehicleId(data.vehicles[0]?.id ?? null);
+          return;
+        }
+      }
+
+      const fallbackVehicles = fallbackQuoteVehicles(basePrice, passengers);
+      setVehicles(fallbackVehicles);
+      setSelectedVehicleId(fallbackVehicles[0]?.id ?? null);
+      if (!fallbackVehicles.length) {
+        setQuoteError("Para ese grupo necesitamos confirmar un vehiculo especial por WhatsApp.");
       }
     } catch (error) {
-      setVehicles([]);
-      setSelectedVehicleId(null);
-      setQuoteError(error instanceof Error ? error.message : "No se pudo calcular la tarifa.");
+      const fallbackVehicles = fallbackQuoteVehicles(basePrice, passengers);
+      setVehicles(fallbackVehicles);
+      setSelectedVehicleId(fallbackVehicles[0]?.id ?? null);
+      if (!fallbackVehicles.length) {
+        setQuoteError(error instanceof Error ? error.message : "No se pudo calcular la tarifa.");
+      }
     } finally {
       setQuoteLoading(false);
     }
@@ -1324,6 +1419,30 @@ function TransfersScreen({
           onSelect={selectDestination}
         />
 
+        <View style={styles.routeShortcutSection}>
+          <View style={styles.routeShortcutHeader}>
+            <Text style={styles.fieldLabel}>Rutas populares</Text>
+            <Text style={styles.routeShortcutHint}>Toca una ruta y cotiza</Text>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.routeShortcutList}
+          >
+            {routeSuggestions.map((route) => (
+              <Pressable
+                key={route.id}
+                style={[styles.routeShortcutCard, route.id === selectedRouteId ? styles.routeShortcutCardActive : null]}
+                onPress={() => selectPopularRoute(route)}
+              >
+                <Text style={styles.routeShortcutTitle}>{route.destination}</Text>
+                <Text style={styles.routeShortcutMeta}>{route.origin}</Text>
+                <Text style={styles.routeShortcutPrice}>Desde {money(route.priceFrom)}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+
         <View style={styles.transferDateGrid}>
           <View style={styles.transferDateField}>
             <Text style={styles.fieldLabel}>Fecha salida</Text>
@@ -1365,7 +1484,6 @@ function TransfersScreen({
         </View>
 
         <ActionButton label={quoteLoading ? "Buscando..." : "Buscar tarifa"} icon={Search} onPress={quoteRoute} />
-        <Text style={styles.apiHint}>API: {getApiBaseUrl()}</Text>
       </View>
 
       {quoteError ? (
@@ -1400,6 +1518,9 @@ function TransfersScreen({
           <Text style={styles.quoteMetaWeb}>
             {selectedVehicle.name} | {passengers} pax | {tripType === "round-trip" ? "ida y vuelta" : "solo ida"}
           </Text>
+          {isLocalTransferLocation(selectedOrigin) || isLocalTransferLocation(selectedDestination) ? (
+            <Text style={styles.quoteMetaWeb}>Tarifa estimada en app. El equipo puede confirmar ajustes antes del pago.</Text>
+          ) : null}
           <View style={styles.quoteActions}>
             <ActionButton label="Guardar" icon={CalendarCheck} onPress={saveSelectedQuote} />
             <ActionButton label="WhatsApp" icon={MessageCircle} variant="outlineDark" onPress={requestSelectedTransfer} />
@@ -2001,6 +2122,53 @@ const styles = StyleSheet.create({
   },
   tripTypeButtonTextActive: {
     color: colors.white
+  },
+  routeShortcutSection: {
+    gap: 9
+  },
+  routeShortcutHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10
+  },
+  routeShortcutHint: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: "800"
+  },
+  routeShortcutList: {
+    gap: 10,
+    paddingRight: 4
+  },
+  routeShortcutCard: {
+    width: 210,
+    gap: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.surface,
+    padding: 12
+  },
+  routeShortcutCardActive: {
+    borderColor: colors.sky,
+    backgroundColor: colors.skySoft
+  },
+  routeShortcutTitle: {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "900"
+  },
+  routeShortcutMeta: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "700"
+  },
+  routeShortcutPrice: {
+    color: colors.skyDark,
+    fontSize: 13,
+    fontWeight: "900"
   },
   locationField: {
     gap: 7
