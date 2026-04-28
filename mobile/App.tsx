@@ -2187,15 +2187,18 @@ const styles = StyleSheet.create({
   },
   logoGlow: {
     alignSelf: "flex-start",
-    borderRadius: 18,
-    backgroundColor: "rgba(255,255,255,0.9)",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    shadowColor: "#ffffff",
-    shadowOpacity: 0.55,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 8
+    overflow: "hidden",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.42)",
+    backgroundColor: "rgba(255,255,255,0.68)",
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    shadowColor: "#06111f",
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6
   },
   logo: {
     width: 218,
