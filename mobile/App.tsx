@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import type { ComponentType, ReactNode } from "react";
-import { Component, useEffect, useMemo, useRef, useState } from "react";
+import { Component, createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import {
   BackHandler,
@@ -12,12 +12,13 @@ import {
   SafeAreaView,
   ScrollView,
   StyleSheet,
-  Text,
+  Text as RNText,
   TextInput,
   View,
   type ImageStyle,
   type KeyboardTypeOptions,
-  type StyleProp
+  type StyleProp,
+  type TextProps
 } from "react-native";
 import {
   ArrowLeft,
@@ -80,6 +81,261 @@ import { colors, links, shadows } from "./src/theme";
 type TabKey = "home" | "tours" | "transfers" | "zones" | "profile";
 type TripType = "one-way" | "round-trip";
 type IconType = ComponentType<{ size?: number; color?: string; strokeWidth?: number; fill?: string }>;
+type AppLanguage = "es" | "en";
+
+type LanguageContextValue = {
+  language: AppLanguage;
+  setLanguage: (language: AppLanguage) => void;
+};
+
+const languageOptions: Array<{ code: AppLanguage; title: string; subtitle: string }> = [
+  { code: "es", title: "Espanol", subtitle: "Usar la app en espanol" },
+  { code: "en", title: "English", subtitle: "Use the app in English" }
+];
+
+const languageContext = createContext<LanguageContextValue>({
+  language: "es",
+  setLanguage: () => undefined
+});
+
+const englishText: Record<string, string> = {
+  "Espanol": "Spanish",
+  "Usar la app en espanol": "Use the app in Spanish",
+  "Elige tu idioma": "Choose your language",
+  "Puedes cambiarlo luego desde Perfil.": "You can change it later from Profile.",
+  "Continuar": "Continue",
+  "Idioma": "Language",
+  "Cambiar idioma": "Change language",
+  "Idioma de la app": "App language",
+  "La app recordara tu preferencia para futuras visitas.": "The app will remember your choice for future visits.",
+  "Inicio": "Home",
+  "Tours": "Tours",
+  "Transfer": "Transfer",
+  "Zonas": "Areas",
+  "Perfil": "Profile",
+  "Traslados privados": "Private transfers",
+  "Busca tu ruta real": "Find your real route",
+  "Escribe tu aeropuerto, hotel o zona. La app te muestra coincidencias antes de calcular.":
+    "Enter your airport, hotel, or area. The app shows matches before calculating.",
+  "Elige origen y destino": "Choose pickup and drop-off",
+  "No dejamos una ruta marcada por defecto para que reserves exactamente donde necesitas.":
+    "We do not preselect a route, so you book exactly what you need.",
+  "Solo ida": "One way",
+  "Ida y vuelta": "Round trip",
+  "Origen": "Pickup",
+  "Destino": "Drop-off",
+  "Ej: Aeropuerto Punta Cana": "Ex: Punta Cana Airport",
+  "Ej: hotel, villa o zona": "Ex: hotel, villa, or area",
+  "Rutas populares": "Popular routes",
+  "Fecha salida": "Departure date",
+  "Hora": "Time",
+  "Fecha regreso": "Return date",
+  "Hora regreso": "Return time",
+  "Pasajeros": "Passengers",
+  "Buscar tarifa": "Search fare",
+  "Buscando...": "Searching...",
+  "Vehiculos disponibles": "Available vehicles",
+  "Reservar": "Book",
+  "Reservar ahora": "Book now",
+  "Guardar ruta": "Save route",
+  "Busca y selecciona origen y destino desde la lista real.": "Search and select pickup and drop-off from the real list.",
+  "Origen y destino deben ser diferentes.": "Pickup and drop-off must be different.",
+  "Selecciona el hotel o aeropuerto exacto antes de cotizar.": "Select the exact hotel or airport before quoting.",
+  "Indica fecha y hora de regreso.": "Add return date and time.",
+  "No hay vehiculos disponibles para ese grupo.": "No vehicles are available for that group.",
+  "No se pudo calcular la tarifa real.": "The live fare could not be calculated.",
+  "No encontramos coincidencias. Prueba con hotel, aeropuerto o zona.": "No matches found. Try a hotel, airport, or area.",
+  "Reserva": "Booking",
+  "Reserva segura": "Secure booking",
+  "Confirma tu experiencia en minutos": "Confirm your experience in minutes",
+  "Revisa el producto, deja tus datos y continua al pago seguro de Proactivitis.":
+    "Review your product, enter your details, and continue to secure Proactivitis payment.",
+  "Datos": "Details",
+  "Recogida": "Pickup",
+  "Pago": "Payment",
+  "Transfer privado": "Private transfer",
+  "Tour": "Tour",
+  "Fecha": "Date",
+  "Personas": "People",
+  "Total": "Total",
+  "Datos de contacto": "Contact details",
+  "Nombre": "First name",
+  "Apellido": "Last name",
+  "Email": "Email",
+  "Telefono": "Phone",
+  "Recogida y preferencias": "Pickup and preferences",
+  "Punto principal": "Main pickup point",
+  "Hotel o punto de recogida": "Hotel or pickup point",
+  "Notas especiales": "Special notes",
+  "Pago nativo protegido por Stripe y confirmacion por Proactivitis.":
+    "Native payment protected by Stripe and confirmed by Proactivitis.",
+  "Total a pagar": "Total to pay",
+  "Pagar con Stripe": "Pay with Stripe",
+  "Procesando...": "Processing...",
+  "Abrir checkout web": "Open web checkout",
+  "Confirmar por WhatsApp": "Confirm by WhatsApp",
+  "Volver": "Back",
+  "Indica el nombre.": "Enter your first name.",
+  "Indica el apellido.": "Enter your last name.",
+  "Indica un email valido.": "Enter a valid email.",
+  "Indica hotel o punto de recogida.": "Enter hotel or pickup point.",
+  "Stripe nativo no esta disponible en la vista web. Usa checkout web o prueba en Android/iOS.":
+    "Native Stripe is not available in web view. Use web checkout or test on Android/iOS.",
+  "Stripe aun no esta configurado en esta build. Revisa NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.":
+    "Stripe is not configured in this build yet. Check NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.",
+  "Preparando pago seguro...": "Preparing secure payment...",
+  "Stripe no devolvio client secret para abrir el pago.": "Stripe did not return a client secret to open payment.",
+  "Abriendo pago seguro...": "Opening secure payment...",
+  "El pago fue cancelado o no se completo.": "The payment was canceled or not completed.",
+  "Pago confirmado. Tu reserva quedo registrada en Proactivitis.": "Payment confirmed. Your booking is registered with Proactivitis.",
+  "No se pudo completar el pago.": "The payment could not be completed.",
+  "Abriendo checkout web de Proactivitis...": "Opening Proactivitis web checkout...",
+  "Cuenta": "Account",
+  "Perfil Proactivitis": "Proactivitis Profile",
+  "Tus reservas quedan asociadas a este correo.": "Your bookings are linked to this email.",
+  "Cliente Proactivitis": "Proactivitis Customer",
+  "Cerrar sesion": "Sign out",
+  "WhatsApp": "WhatsApp",
+  "Soporte directo": "Direct support",
+  "Web": "Website",
+  "Entra a Proactivitis": "Sign in to Proactivitis",
+  "Conecta tus datos con la base real de la web.": "Connect your details with the live website database.",
+  "Entrar": "Sign in",
+  "Crear cuenta": "Create account",
+  "Password": "Password",
+  "Conectando...": "Connecting...",
+  "No se pudo entrar.": "Could not sign in.",
+  "Viajes guardados": "Saved trips",
+  "Todavia no hay planes guardados": "No saved plans yet",
+  "Cotiza un transfer o marca tours como favoritos.": "Quote a transfer or mark tours as favorites.",
+  "Cotizar transfer": "Quote transfer",
+  "Ver tours": "View tours",
+  "Transfer guardado": "Saved transfer",
+  "Continuar pago": "Continue payment",
+  "Tours favoritos": "Favorite tours",
+  "Ciudades": "Cities",
+  "Elige donde quieres vivir la experiencia": "Choose where you want the experience",
+  "Entra por ciudad y mira solo los tours disponibles en esa zona.": "Enter by city and see only tours available in that area.",
+  "Todos los destinos": "All destinations",
+  "Ver todo el catalogo": "View full catalog",
+  "Ciudad": "City",
+  "Cambiar ciudad": "Change city",
+  "Ciudad seleccionada": "Selected city",
+  "Tours filtrados por ciudad. Puedes reservar el tour o cotizar transfer para llegar comodo.":
+    "Tours filtered by city. You can book the tour or quote a transfer to arrive comfortably.",
+  "Todas": "All",
+  "Todas las ciudades": "All cities",
+  "No hay tours en esta zona": "No tours in this area",
+  "Prueba otra zona o revisa el catalogo completo.": "Try another area or view the full catalog.",
+  "Experiencias reales de la web, fotos del producto, detalles claros y checkout dentro de la app.":
+    "Live website experiences, product photos, clear details, and checkout inside the app.",
+  "Catalogo Proactivitis": "Proactivitis catalog",
+  "ðŸŒ´ Catalogo Proactivitis": "Proactivitis catalog",
+  "Tours listos para reservar": "Tours ready to book",
+  "ðŸ“¸ Galeria": "Gallery",
+  "âš¡ Reserva rapida": "Fast booking",
+  "ðŸ’¬ Soporte humano": "Human support",
+  "Buscar Saona, buggy, parasailing...": "Search Saona, buggy, parasailing...",
+  "Actualizando productos...": "Updating products...",
+  "Todos los planes": "All plans",
+  "Conectado": "Connected",
+  "Cerrar": "Close",
+  "fotos": "photos",
+  "Politica de privacidad": "Privacy Policy",
+  "Como protegemos datos, cuenta y reservas.": "How we protect data, accounts, and bookings.",
+  "Terminos y condiciones": "Terms and Conditions",
+  "Reglas de uso, reservas, pagos y responsabilidades.": "Rules for use, bookings, payments, and responsibilities.",
+  "Cookies": "Cookies",
+  "Uso de cookies y tecnologias similares.": "Use of cookies and similar technologies.",
+  "Informacion legal": "Legal information",
+  "Empresa, contacto y datos de operacion.": "Company, contact, and operating details.",
+  "Ver politicas": "View policies",
+  "Error de pantalla": "Screen error",
+  "La app encontro un problema en esta vista. Vuelve y prueba otra vez.": "The app found a problem in this view. Go back and try again.",
+  "Volver al inicio": "Back to home",
+  "Todos": "All",
+  "Agua": "Water",
+  "Aventura": "Adventure",
+  "Cultura": "Culture",
+  "Premium": "Premium",
+  "Ver tours 🔥": "View tours 🔥",
+  "Buscar transfer 🚘": "Find transfer 🚘",
+  "🔥 Recomendados": "🔥 Recommended",
+  "Ver todos": "View all",
+  "🧭 Categorias": "🧭 Categories",
+  "Explorar": "Explore",
+  "🚐 Rutas populares": "🚐 Popular routes",
+  "Cotizar": "Quote",
+  "Duracion": "Duration",
+  "Zona": "Area",
+  "Confirmacion segura": "Secure confirmation",
+  "Punto de encuentro": "Meeting point",
+  "Instrucciones": "Instructions",
+  "Idiomas": "Languages",
+  "Horarios": "Times",
+  "Dias": "Days",
+  "Capacidad": "Capacity",
+  "Edad minima": "Minimum age",
+  "Nivel fisico": "Physical level",
+  "Accesibilidad": "Accessibility",
+  "Requisitos": "Requirements",
+  "Cancelacion": "Cancellation",
+  "Incluye": "Included",
+  "No incluido": "Not included",
+  "Adultos": "Adults",
+  "Ver tour": "View tour",
+  "Experiencia Proactivitis": "Proactivitis experience",
+  "Recogida disponible segun zona": "Pickup available depending on area",
+  "Experiencia confirmada por Proactivitis.": "Experience confirmed by Proactivitis.",
+  "Fecha pendiente": "Date pending",
+  "Hora pendiente": "Time pending",
+  "Cookies y tecnologias": "Cookies and technologies",
+  "Uso de cookies en la web y servicios conectados.": "Cookie use on the website and connected services.",
+  "Datos legales, contacto y notificaciones formales.": "Legal details, contact, and formal notices.",
+  "Cancelaciones y reembolsos": "Cancellations and refunds",
+  "Aplican los terminos y la politica indicada en cada producto.": "Terms and the policy shown on each product apply."
+};
+
+const translateText = (value: string, language: AppLanguage) => {
+  if (language === "es") return value;
+  const exact = englishText[value];
+  if (exact) return exact;
+
+  return value
+    .replace(/^(\d+) ciudades$/, "$1 cities")
+    .replace(/^(\d+) experiencias conectadas$/, "$1 connected experiences")
+    .replace(/^(\d+) experiencias$/, "$1 experiences")
+    .replace(/^(\d+) tours$/, "$1 tours")
+    .replace(/^(\d+) fotos$/, "$1 photos")
+    .replace(/^Desde /, "From ")
+    .replace(/ experiencias$/, " experiences")
+    .replace(/ tours$/, " tours");
+};
+
+const translateChildren = (children: ReactNode, language: AppLanguage): ReactNode => {
+  if (typeof children === "string") return translateText(children, language);
+  if (Array.isArray(children)) {
+    if (children.every((child) => typeof child === "string" || typeof child === "number")) {
+      return translateText(children.join(""), language);
+    }
+    return children.map((child) => translateChildren(child, language));
+  }
+  return children;
+};
+
+function useLanguage() {
+  return useContext(languageContext);
+}
+
+function useTranslate() {
+  const { language } = useLanguage();
+  return (value?: string | null) => (value ? translateText(value, language) : value);
+}
+
+function Text({ children, ...props }: TextProps) {
+  const { language } = useLanguage();
+  return <RNText {...props}>{translateChildren(children, language)}</RNText>;
+}
 
 declare const process:
   | {
@@ -206,6 +462,7 @@ const fallbackTourImage = "https://proactivitis.com/fototours/fotosimple.jpg";
 const mobileSessionStorageKey = "proactivitis_mobile_session";
 const transferDraftStorageKey = "proactivitis_transfer_draft";
 const checkoutDraftStorageKey = "proactivitis_checkout_draft";
+const languageStorageKey = "proactivitis_language";
 const appBuildLabel = "Version 1.0.5 | Android 6";
 const windowHeight = Dimensions.get("window").height;
 
@@ -318,6 +575,8 @@ const writeStoredJson = async (key: string, value: unknown | null) => {
   }
   await SecureStore.setItemAsync(key, JSON.stringify(value)).catch(() => undefined);
 };
+
+const isAppLanguage = (value: unknown): value is AppLanguage => value === "es" || value === "en";
 
 const fallbackBySlug = new Map(featuredTours.map((tour) => [tour.slug, tour]));
 const fallbackById = new Map(featuredTours.map((tour) => [tour.id, tour]));
@@ -560,9 +819,19 @@ const buildStripePublishableKey = normalizeStripePublishableKey(process?.env?.EX
 
 export default function App() {
   const [stripePublishableKey, setStripePublishableKey] = useState(buildStripePublishableKey);
+  const [language, setLanguageState] = useState<AppLanguage | null>(null);
+  const [languageReady, setLanguageReady] = useState(false);
 
   useEffect(() => {
     let active = true;
+    readStoredJson<{ language: AppLanguage }>(languageStorageKey)
+      .then((stored) => {
+        if (active && isAppLanguage(stored?.language)) setLanguageState(stored.language);
+      })
+      .finally(() => {
+        if (active) setLanguageReady(true);
+      });
+
     fetchMobileConfig()
       .then((config) => {
         const configKey = normalizeStripePublishableKey(config.stripePublishableKey);
@@ -574,11 +843,85 @@ export default function App() {
     };
   }, []);
 
+  const updateLanguage = (nextLanguage: AppLanguage) => {
+    setLanguageState(nextLanguage);
+    void writeStoredJson(languageStorageKey, { language: nextLanguage });
+  };
+
+  const currentLanguage = language ?? "es";
+
   return (
-    <AppStripeProvider publishableKey={stripePublishableKey}>
-      <StripeDeepLinkHandler />
-      <MobileApp stripeReady={Boolean(stripePublishableKey)} />
-    </AppStripeProvider>
+    <languageContext.Provider value={{ language: currentLanguage, setLanguage: updateLanguage }}>
+      <AppStripeProvider publishableKey={stripePublishableKey}>
+        <StripeDeepLinkHandler />
+        {languageReady ? (
+          language ? (
+            <MobileApp stripeReady={Boolean(stripePublishableKey)} />
+          ) : (
+            <LanguageGate onSelect={updateLanguage} />
+          )
+        ) : (
+          <SafeAreaView style={styles.safeArea}>
+            <StatusBar style="light" />
+            <View style={styles.languageScreen} />
+          </SafeAreaView>
+        )}
+      </AppStripeProvider>
+    </languageContext.Provider>
+  );
+}
+
+function LanguageGate({ onSelect }: { onSelect: (language: AppLanguage) => void }) {
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar style="light" />
+      <View style={styles.languageScreen}>
+        <View style={styles.languageCard}>
+          <View style={styles.languageIcon}>
+            <Compass size={30} color={colors.white} />
+          </View>
+          <Text style={styles.languageTitle}>Elige tu idioma</Text>
+          <Text style={styles.languageSubtitle}>Puedes cambiarlo luego desde Perfil.</Text>
+          <LanguageSelector onSelect={onSelect} />
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+function LanguageSelector({
+  selected,
+  onSelect
+}: {
+  selected?: AppLanguage;
+  onSelect: (language: AppLanguage) => void;
+}) {
+  const { language } = useLanguage();
+
+  return (
+    <View style={styles.languageOptions}>
+      {languageOptions.map((option) => {
+        const active = selected ? selected === option.code : language === option.code;
+        return (
+          <Pressable
+            key={option.code}
+            style={[styles.languageOption, active ? styles.languageOptionActive : null]}
+            onPress={() => onSelect(option.code)}
+          >
+            <View style={[styles.languageBadge, active ? styles.languageBadgeActive : null]}>
+              <Text style={[styles.languageBadgeText, active ? styles.languageBadgeTextActive : null]}>
+                {option.code.toUpperCase()}
+              </Text>
+            </View>
+            <View style={styles.flexText}>
+              <Text style={styles.languageOptionTitle}>{option.title}</Text>
+              <Text style={styles.languageOptionSubtitle}>{option.subtitle}</Text>
+            </View>
+            {active ? <CheckCircle2 size={22} color={colors.green} /> : null}
+          </Pressable>
+        );
+      })}
+    </View>
   );
 }
 
@@ -951,6 +1294,8 @@ function ToursScreen({
   onFavorite: (tourId: string) => void;
   onReserve: (tour: AppTour) => void;
 }) {
+  const tr = useTranslate();
+
   return (
     <View style={styles.screen}>
       <View style={styles.toursHeroPanel}>
@@ -970,7 +1315,7 @@ function ToursScreen({
         <TextInput
           value={query}
           onChangeText={onQueryChange}
-          placeholder="Buscar Saona, buggy, parasailing..."
+          placeholder={tr("Buscar Saona, buggy, parasailing...") ?? undefined}
           placeholderTextColor={colors.muted}
           style={styles.searchInput}
         />
@@ -2187,6 +2532,7 @@ function ProfileScreen({
   onReserveTour: (tour: AppTour) => void;
   onOpenCheckout: (url: string) => void;
 }) {
+  const { language, setLanguage } = useLanguage();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -2222,6 +2568,11 @@ function ProfileScreen({
           <LinkRow icon={MessageCircle} title="WhatsApp" subtitle="Soporte directo" onPress={() => openUrl(links.whatsapp)} />
           <LinkRow icon={Compass} title="Web" subtitle="proactivitis.com" onPress={() => openUrl(links.home)} />
         </View>
+        <View style={styles.formPanel}>
+          <Text style={styles.sectionTitle}>Idioma de la app</Text>
+          <Text style={styles.smallMuted}>La app recordara tu preferencia para futuras visitas.</Text>
+          <LanguageSelector selected={language} onSelect={setLanguage} />
+        </View>
         <TripPlanSection
           quote={quote}
           favoriteTours={favoriteTours}
@@ -2249,6 +2600,11 @@ function ProfileScreen({
         <InputField label="Password" value={password} onChangeText={setPassword} secureTextEntry />
         <ActionButton label={mode === "login" ? "Entrar" : "Crear cuenta"} icon={LogIn} onPress={submit} />
         {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
+      </View>
+      <View style={styles.formPanel}>
+        <Text style={styles.sectionTitle}>Idioma de la app</Text>
+        <Text style={styles.smallMuted}>La app recordara tu preferencia para futuras visitas.</Text>
+        <LanguageSelector selected={language} onSelect={setLanguage} />
       </View>
       <TripPlanSection
         quote={quote}
@@ -2348,6 +2704,8 @@ function LocationSearchInput({
   onChange: (value: string) => void;
   onSelect: (location: LocationSummary) => void;
 }) {
+  const tr = useTranslate();
+
   return (
     <View style={styles.fieldBlock}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -2356,7 +2714,7 @@ function LocationSearchInput({
         <TextInput
           value={value}
           onChangeText={onChange}
-          placeholder={placeholder}
+          placeholder={tr(placeholder) ?? undefined}
           placeholderTextColor={colors.muted}
           style={styles.locationInput}
         />
@@ -2398,13 +2756,15 @@ function InputField({
   secureTextEntry?: boolean;
   multiline?: boolean;
 }) {
+  const tr = useTranslate();
+
   return (
     <View style={styles.fieldBlock}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
-        placeholder={placeholder}
+        placeholder={tr(placeholder) ?? undefined}
         placeholderTextColor={colors.muted}
         keyboardType={keyboardType}
         secureTextEntry={secureTextEntry}
@@ -2770,6 +3130,88 @@ const styles = StyleSheet.create({
   appShell: {
     flex: 1,
     backgroundColor: colors.surface
+  },
+  languageScreen: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: colors.ink,
+    padding: 18
+  },
+  languageCard: {
+    gap: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.lineOnDark,
+    backgroundColor: colors.card,
+    padding: 18
+  },
+  languageIcon: {
+    width: 58,
+    height: 58,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    backgroundColor: colors.skyDark
+  },
+  languageTitle: {
+    color: colors.text,
+    fontSize: 28,
+    lineHeight: 33,
+    fontWeight: "900"
+  },
+  languageSubtitle: {
+    color: colors.muted,
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: "700"
+  },
+  languageOptions: {
+    gap: 10
+  },
+  languageOption: {
+    minHeight: 74,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 12
+  },
+  languageOptionActive: {
+    borderColor: colors.green,
+    backgroundColor: "#f0fdf4"
+  },
+  languageBadge: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    backgroundColor: colors.skySoft
+  },
+  languageBadgeActive: {
+    backgroundColor: colors.green
+  },
+  languageBadgeText: {
+    color: colors.skyDark,
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  languageBadgeTextActive: {
+    color: colors.white
+  },
+  languageOptionTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "900"
+  },
+  languageOptionSubtitle: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "700"
   },
   scrollContent: {
     paddingBottom: 104,
