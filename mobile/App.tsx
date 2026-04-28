@@ -73,7 +73,7 @@ import { staticMobileTours } from "./src/staticTours";
 import { staticMobileTransferRoutes } from "./src/staticTransfers";
 import { colors, links, shadows } from "./src/theme";
 
-type TabKey = "home" | "tours" | "transfers" | "trips" | "profile";
+type TabKey = "home" | "tours" | "transfers" | "zones" | "profile";
 type TripType = "one-way" | "round-trip";
 type IconType = ComponentType<{ size?: number; color?: string; strokeWidth?: number; fill?: string }>;
 
@@ -230,6 +230,8 @@ const tomorrow = () => {
 };
 
 const joinValues = (values?: string[] | null) => (values?.filter(Boolean).join(", ") ?? "");
+
+const tourZoneLabel = (tour: AppTour) => tour.location.trim() || "Republica Dominicana";
 
 const readStoredMobileSession = async () => {
   const raw = await SecureStore.getItemAsync(mobileSessionStorageKey).catch(() => null);
@@ -619,28 +621,39 @@ export default function App() {
         <TransfersScreen
           onSaveQuote={(quote) => {
             setSavedQuote(quote);
-            setActiveTab("trips");
+            setActiveTab("profile");
           }}
           onOpenCheckout={openCheckout}
         />
       );
     }
 
-    if (activeTab === "trips") {
+    if (activeTab === "zones") {
       return (
-        <TripsScreen
-          quote={savedQuote}
-          favoriteTours={favoriteTours}
-          onOpenTransfers={() => setActiveTab("transfers")}
-          onOpenTours={() => setActiveTab("tours")}
+        <ZonesScreen
+          tours={tours}
+          favorites={favorites}
+          onFavorite={toggleFavorite}
           onReserveTour={setActiveProduct}
-          onOpenCheckout={openCheckout}
+          onOpenTransfers={() => setActiveTab("transfers")}
         />
       );
     }
 
     if (activeTab === "profile") {
-      return <ProfileScreen session={mobileSession} onSessionChange={updateMobileSession} />;
+      return (
+        <ProfileScreen
+          session={mobileSession}
+          quote={savedQuote}
+          favoriteTours={favoriteTours}
+          onSessionChange={updateMobileSession}
+          onOpenTransfers={() => setActiveTab("transfers")}
+          onOpenTours={() => setActiveTab("tours")}
+          onFavorite={toggleFavorite}
+          onReserveTour={setActiveProduct}
+          onOpenCheckout={openCheckout}
+        />
+      );
     }
 
     return (
@@ -1686,11 +1699,81 @@ function CheckoutScreen({
   );
 }
 
-function TripsScreen({
+function ZonesScreen({
+  tours,
+  favorites,
+  onFavorite,
+  onReserveTour,
+  onOpenTransfers
+}: {
+  tours: AppTour[];
+  favorites: Set<string>;
+  onFavorite: (tourId: string) => void;
+  onReserveTour: (tour: AppTour) => void;
+  onOpenTransfers: () => void;
+}) {
+  const zones = useMemo(() => {
+    const values = Array.from(new Set(tours.map(tourZoneLabel))).sort((a, b) => a.localeCompare(b));
+    return ["Todas", ...values];
+  }, [tours]);
+  const [zone, setZone] = useState("Todas");
+  const zoneTours = useMemo(
+    () => (zone === "Todas" ? tours : tours.filter((tour) => tourZoneLabel(tour) === zone)),
+    [tours, zone]
+  );
+
+  useEffect(() => {
+    if (zone !== "Todas" && !zones.includes(zone)) setZone("Todas");
+  }, [zone, zones]);
+
+  return (
+    <View style={styles.screen}>
+      <ScreenHeader
+        eyebrow="Zonas"
+        title="Explora por zona"
+        description="Filtra tours por ubicacion y combina tu experiencia con transfer privado cuando lo necesites."
+      />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
+        {zones.map((item) => (
+          <Chip key={item} label={item} active={item === zone} onPress={() => setZone(item)} />
+        ))}
+      </ScrollView>
+      <View style={styles.toursResultBar}>
+        <View style={styles.flexText}>
+          <Text style={styles.resultSummaryText}>{zoneTours.length} experiencias</Text>
+          <Text style={styles.toursResultMeta}>{zone === "Todas" ? "Todas las zonas" : zone}</Text>
+        </View>
+        <ActionButton label="Transfer" icon={Car} onPress={onOpenTransfers} />
+      </View>
+      {zoneTours.length ? (
+        <View style={styles.cardStack}>
+          {zoneTours.map((tour) => (
+            <TourCard
+              key={tour.id}
+              tour={tour}
+              favorite={favorites.has(tour.id)}
+              onFavorite={() => onFavorite(tour.id)}
+              onReserve={() => onReserveTour(tour)}
+            />
+          ))}
+        </View>
+      ) : (
+        <View style={styles.emptyState}>
+          <MapPin size={34} color={colors.skyDark} />
+          <Text style={styles.emptyTitle}>No hay tours en esta zona</Text>
+          <Text style={styles.smallMuted}>Prueba otra zona o revisa el catalogo completo.</Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+function TripPlanSection({
   quote,
   favoriteTours,
   onOpenTransfers,
   onOpenTours,
+  onFavorite,
   onReserveTour,
   onOpenCheckout
 }: {
@@ -1698,16 +1781,13 @@ function TripsScreen({
   favoriteTours: AppTour[];
   onOpenTransfers: () => void;
   onOpenTours: () => void;
+  onFavorite: (tourId: string) => void;
   onReserveTour: (tour: AppTour) => void;
   onOpenCheckout: (url: string) => void;
 }) {
   return (
-    <View style={styles.screen}>
-      <ScreenHeader
-        eyebrow="Reservas"
-        title="Tu plan de viaje"
-        description="Guarda rutas y tours favoritos antes de cerrar la reserva."
-      />
+    <View style={styles.cardStack}>
+      <Text style={styles.sectionTitle}>Viajes guardados</Text>
       {!quote && !favoriteTours.length ? (
         <View style={styles.emptyState}>
           <CalendarCheck size={34} color={colors.skyDark} />
@@ -1737,7 +1817,7 @@ function TripsScreen({
               key={tour.id}
               tour={tour}
               favorite
-              onFavorite={() => undefined}
+              onFavorite={() => onFavorite(tour.id)}
               onReserve={() => onReserveTour(tour)}
             />
           ))}
@@ -1749,10 +1829,24 @@ function TripsScreen({
 
 function ProfileScreen({
   session,
-  onSessionChange
+  quote,
+  favoriteTours,
+  onSessionChange,
+  onOpenTransfers,
+  onOpenTours,
+  onFavorite,
+  onReserveTour,
+  onOpenCheckout
 }: {
   session: MobileSession | null;
+  quote: SavedQuote | null;
+  favoriteTours: AppTour[];
   onSessionChange: (session: MobileSession | null) => void;
+  onOpenTransfers: () => void;
+  onOpenTours: () => void;
+  onFavorite: (tourId: string) => void;
+  onReserveTour: (tour: AppTour) => void;
+  onOpenCheckout: (url: string) => void;
 }) {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
@@ -1789,6 +1883,15 @@ function ProfileScreen({
           <LinkRow icon={MessageCircle} title="WhatsApp" subtitle="Soporte directo" onPress={() => openUrl(links.whatsapp)} />
           <LinkRow icon={Compass} title="Web" subtitle="proactivitis.com" onPress={() => openUrl(links.home)} />
         </View>
+        <TripPlanSection
+          quote={quote}
+          favoriteTours={favoriteTours}
+          onOpenTransfers={onOpenTransfers}
+          onOpenTours={onOpenTours}
+          onFavorite={onFavorite}
+          onReserveTour={onReserveTour}
+          onOpenCheckout={onOpenCheckout}
+        />
         <PolicyLinksPanel />
       </View>
     );
@@ -1808,6 +1911,15 @@ function ProfileScreen({
         <ActionButton label={mode === "login" ? "Entrar" : "Crear cuenta"} icon={LogIn} onPress={submit} />
         {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
       </View>
+      <TripPlanSection
+        quote={quote}
+        favoriteTours={favoriteTours}
+        onOpenTransfers={onOpenTransfers}
+        onOpenTours={onOpenTours}
+        onFavorite={onFavorite}
+        onReserveTour={onReserveTour}
+        onOpenCheckout={onOpenCheckout}
+      />
       <PolicyLinksPanel />
     </View>
   );
@@ -2293,7 +2405,7 @@ function TabBar({ activeTab, onChange }: { activeTab: TabKey; onChange: (tab: Ta
     { key: "home", label: "Inicio", icon: Home },
     { key: "tours", label: "Tours", icon: Compass },
     { key: "transfers", label: "Transfer", icon: Car },
-    { key: "trips", label: "Viaje", icon: CalendarCheck },
+    { key: "zones", label: "Zonas", icon: MapPin },
     { key: "profile", label: "Perfil", icon: User }
   ];
   return (
