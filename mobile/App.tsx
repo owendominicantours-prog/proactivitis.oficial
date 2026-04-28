@@ -3714,7 +3714,7 @@ const styles = StyleSheet.create({
     fontWeight: "800"
   },
   checkoutTotal: {
-    color: colors.text,
+    color: "#22c55e",
     fontSize: 28,
     fontWeight: "900"
   },

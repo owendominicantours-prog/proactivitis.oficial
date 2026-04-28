@@ -125,33 +125,41 @@ if (-not (Test-WebApi)) {
   Write-Host "Web/API local ya esta corriendo en 3000." -ForegroundColor Green
 }
 
+$metroPort = 8081
+$metroPortsToClear = @(8081, 8082, 8083)
+
+function Stop-MetroPorts {
+  Write-Host "Cerrando Metro viejo en puertos 8081, 8082 y 8083..." -ForegroundColor Yellow
+  try {
+    $metroProcesses = Get-NetTCPConnection -LocalPort $metroPortsToClear -State Listen -ErrorAction SilentlyContinue |
+      Select-Object -ExpandProperty OwningProcess -Unique
+
+    foreach ($processId in $metroProcesses) {
+      if ($processId -and $processId -ne $PID) {
+        Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+        Write-Host "Proceso cerrado: $processId" -ForegroundColor DarkGray
+      }
+    }
+  } catch {
+    Write-Host "No pude revisar todos los puertos Metro. Si Expo pregunta por otro puerto, cierra la ventana vieja y repite." -ForegroundColor Yellow
+  }
+
+  Start-Sleep -Seconds 2
+}
+
 function Test-Metro {
   try {
-    $response = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:8081/status" -TimeoutSec 2
+    $response = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$metroPort/status" -TimeoutSec 2
     return $response.Content -match "packager-status:running"
   } catch {
     return $false
   }
 }
 
-if (Test-Metro) {
-  Write-Host "Reiniciando Metro para cargar variables nuevas..." -ForegroundColor Yellow
-  try {
-    $metroProcesses = Get-NetTCPConnection -LocalPort 8081 -State Listen -ErrorAction SilentlyContinue |
-      Select-Object -ExpandProperty OwningProcess -Unique
-    foreach ($processId in $metroProcesses) {
-      if ($processId -and $processId -ne $PID) {
-        Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
-      }
-    }
-  } catch {
-    Write-Host "No pude cerrar Metro automaticamente. Si falla, cierra la ventana vieja de Metro y repite." -ForegroundColor Yellow
-  }
-  Start-Sleep -Seconds 2
-}
+Stop-MetroPorts
 
-Write-Host "Abriendo Metro en otra ventana..." -ForegroundColor Cyan
-$metroCommand = "cd `"$PSScriptRoot`"; `$env:EXPO_PUBLIC_API_BASE_URL='$apiBaseUrl'; `$env:EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY='$stripePublishableKey'; npx expo start --localhost --clear"
+Write-Host "Abriendo Metro en puerto $metroPort..." -ForegroundColor Cyan
+$metroCommand = "cd `"$PSScriptRoot`"; `$env:EXPO_PUBLIC_API_BASE_URL='$apiBaseUrl'; `$env:EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY='$stripePublishableKey'; npx expo start --localhost --clear --port $metroPort"
 Start-Process powershell -WorkingDirectory $PSScriptRoot -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $metroCommand
 
 $metroReady = $false
@@ -167,17 +175,20 @@ if (-not $metroReady) {
   Write-Host "Metro aun no responde. Si ves pantalla roja, espera a que Metro termine y presiona Reload." -ForegroundColor Yellow
 }
 
-Write-Host "Compilando APK debug para MuMu. La primera vez puede tardar varios minutos." -ForegroundColor Yellow
-
 $env:NODE_ENV = "development"
-Push-Location (Join-Path $PSScriptRoot "android")
-try {
-  .\gradlew.bat app:assembleDebug -x lint -x test -PreactNativeDevServerPort=8081 -PreactNativeArchitectures=x86_64 --console=plain
-} finally {
-  Pop-Location
-}
-
 $apk = Join-Path $PSScriptRoot "android\app\build\outputs\apk\debug\app-debug.apk"
+
+if (Test-Path $apk) {
+  Write-Host "Usando APK debug existente. Los cambios JS se ven con Metro en vivo." -ForegroundColor Green
+} else {
+  Write-Host "No existe APK debug. Compilando una vez para MuMu." -ForegroundColor Yellow
+  Push-Location (Join-Path $PSScriptRoot "android")
+  try {
+    .\gradlew.bat app:assembleDebug -x lint -x test -PreactNativeDevServerPort=$metroPort -PreactNativeArchitectures=x86_64 --console=plain
+  } finally {
+    Pop-Location
+  }
+}
 if (-not (Test-Path $apk)) {
   Write-Host "No se genero el APK debug: $apk" -ForegroundColor Red
   exit 1
@@ -185,7 +196,7 @@ if (-not (Test-Path $apk)) {
 
 Write-Host "Instalando APK en MuMu..." -ForegroundColor Cyan
 & $adb -s $device install -r $apk | Out-Host
-& $adb -s $device reverse tcp:8081 tcp:8081 | Out-Null
+& $adb -s $device reverse tcp:$metroPort tcp:$metroPort | Out-Null
 
 Write-Host "Abriendo Proactivitis en MuMu..." -ForegroundColor Cyan
 & $adb -s $device shell monkey -p com.proactivitis.app -c android.intent.category.LAUNCHER 1 | Out-Host
