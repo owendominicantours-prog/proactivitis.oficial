@@ -81,6 +81,12 @@ type TabKey = "home" | "tours" | "transfers" | "zones" | "profile";
 type TripType = "one-way" | "round-trip";
 type IconType = ComponentType<{ size?: number; color?: string; strokeWidth?: number; fill?: string }>;
 
+declare const process:
+  | {
+      env?: Record<string, string | undefined>;
+    }
+  | undefined;
+
 class ScreenErrorBoundary extends Component<
   { children: ReactNode; fallback: ReactNode; resetKey: string },
   { hasError: boolean }
@@ -497,14 +503,22 @@ const addCheckoutContactParams = ({
   }
 };
 
+const normalizeStripePublishableKey = (value?: string | null) => {
+  const key = value?.trim();
+  return key && key.startsWith("pk_") ? key : "";
+};
+
+const buildStripePublishableKey = normalizeStripePublishableKey(process?.env?.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+
 export default function App() {
-  const [stripePublishableKey, setStripePublishableKey] = useState("");
+  const [stripePublishableKey, setStripePublishableKey] = useState(buildStripePublishableKey);
 
   useEffect(() => {
     let active = true;
     fetchMobileConfig()
       .then((config) => {
-        if (active) setStripePublishableKey(config.stripePublishableKey ?? "");
+        const configKey = normalizeStripePublishableKey(config.stripePublishableKey);
+        if (active && configKey) setStripePublishableKey(configKey);
       })
       .catch(() => undefined);
     return () => {

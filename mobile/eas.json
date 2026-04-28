@@ -11,7 +11,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://proactivitis.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://proactivitis.com",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_51O95bAIbnx7AUk1qBdTAIlSDvHd8WjRlwDZ9dAsKH9O1NF1VbgqGfggtZpmF0qWfzIB25mK1UAd7RRcdgmTMAS1h00Oj1ZgLVc"
       }
     },
     "preview": {
@@ -20,13 +21,15 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://proactivitis.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://proactivitis.com",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_51O95bAIbnx7AUk1qBdTAIlSDvHd8WjRlwDZ9dAsKH9O1NF1VbgqGfggtZpmF0qWfzIB25mK1UAd7RRcdgmTMAS1h00Oj1ZgLVc"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://proactivitis.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://proactivitis.com",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_51O95bAIbnx7AUk1qBdTAIlSDvHd8WjRlwDZ9dAsKH9O1NF1VbgqGfggtZpmF0qWfzIB25mK1UAd7RRcdgmTMAS1h00Oj1ZgLVc"
       }
     }
   },
