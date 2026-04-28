@@ -110,11 +110,10 @@ export async function POST(request: NextRequest) {
       return json({ error: "Origen o destino no encontrados." }, { status: 404 });
     }
 
-    const [zoneAId, zoneBId] = [origin.zoneId, destination.zoneId].sort((a, b) => a.localeCompare(b));
     const route =
       (await findRouteWithFallback(
-        zoneAId,
-        zoneBId,
+        origin.zoneId,
+        destination.zoneId,
         origin.zone?.slug ?? undefined,
         destination.zone?.slug ?? undefined
       ));

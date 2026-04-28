@@ -2,7 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import type { ComponentType, ReactNode } from "react";
 import { Component, useEffect, useMemo, useRef, useState } from "react";
 import * as SecureStore from "expo-secure-store";
-import { initStripe, useStripe } from "@stripe/stripe-react-native";
+import { StripeProvider, useStripe } from "@stripe/stripe-react-native";
 import {
   Image,
   ImageBackground,
@@ -45,7 +45,6 @@ import {
   featuredTours,
   tourCategories,
   transferRoutes,
-  transferVehicles,
   trustStats,
   type Tour,
   type TourCategory
@@ -145,7 +144,7 @@ type AppTour = Tour & {
 const heroImage =
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
 const fallbackTourImage = "https://proactivitis.com/fototours/fotosimple.jpg";
-const appBuildLabel = "Version 1.0.2 | Android 3";
+const appBuildLabel = "Version 1.0.3 | Android 4";
 const mobileSessionStorageKey = "proactivitis_mobile_session";
 
 const money = (value: number) => `US$${Math.round(value)}`;
@@ -319,6 +318,7 @@ export default function App() {
   const [savedQuote, setSavedQuote] = useState<SavedQuote | null>(null);
   const [mobileSession, setMobileSession] = useState<MobileSession | null>(null);
   const [stripeReady, setStripeReady] = useState(false);
+  const [stripePublishableKey, setStripePublishableKey] = useState("");
 
   const updateMobileSession = (session: MobileSession | null) => {
     setMobileSession(session);
@@ -329,14 +329,10 @@ export default function App() {
     let active = true;
 
     fetchMobileConfig()
-      .then(async (config) => {
+      .then((config) => {
         if (!active || !config.stripePublishableKey) return;
-        await initStripe({
-          publishableKey: config.stripePublishableKey,
-          merchantIdentifier: "merchant.com.proactivitis.app",
-          urlScheme: "proactivitis"
-        });
-        if (active) setStripeReady(true);
+        setStripePublishableKey(config.stripePublishableKey);
+        setStripeReady(Platform.OS !== "web");
       })
       .catch(() => {
         if (active) setStripeReady(false);
@@ -506,7 +502,7 @@ export default function App() {
     );
   };
 
-  return (
+  const appContent = (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
       <View style={styles.appShell}>
@@ -521,6 +517,19 @@ export default function App() {
       </View>
     </SafeAreaView>
   );
+
+  if (!stripePublishableKey || Platform.OS === "web") return appContent;
+
+  return (
+    <StripeProvider
+      publishableKey={stripePublishableKey}
+      merchantIdentifier="merchant.com.proactivitis.app"
+      urlScheme="proactivitis"
+      setReturnUrlSchemeOnAndroid
+    >
+      {appContent}
+    </StripeProvider>
+  );
 }
 
 function HomeScreen({
@@ -534,6 +543,9 @@ function HomeScreen({
   onReserveTour: (tour: AppTour) => void;
   tours: AppTour[];
 }) {
+  const homeRoutes = fallbackMobileTransferRoutes.slice(0, 4);
+  const activeCategories = tourCategories.filter((item) => item !== "Todos").slice(0, 4);
+
   return (
     <View style={styles.screen}>
       <ImageBackground source={{ uri: heroImage }} style={styles.hero} imageStyle={styles.heroImage}>
@@ -561,12 +573,60 @@ function HomeScreen({
         ))}
       </View>
 
+      <View style={styles.homeBookingPanel}>
+        <Text style={styles.sectionTitle}>Reserva real desde la app</Text>
+        <View style={styles.homeBookingGrid}>
+          <Pressable style={styles.homeBookingCard} onPress={onOpenTours}>
+            <View style={styles.homeBookingIcon}>
+              <Compass size={22} color={colors.skyDark} />
+            </View>
+            <Text style={styles.homeBookingTitle}>Tours publicados</Text>
+            <Text style={styles.homeBookingText}>Productos, fotos, precios y opciones sincronizados con la web.</Text>
+          </Pressable>
+          <Pressable style={styles.homeBookingCard} onPress={onOpenTransfers}>
+            <View style={styles.homeBookingIcon}>
+              <Car size={22} color={colors.skyDark} />
+            </View>
+            <Text style={styles.homeBookingTitle}>Transfer privado</Text>
+            <Text style={styles.homeBookingText}>Busca hoteles y aeropuertos reales para cotizar la ruta.</Text>
+          </Pressable>
+        </View>
+      </View>
+
       <SectionHeader title="Recomendados" actionLabel="Ver todos" onPress={onOpenTours} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
         {tours.slice(0, 4).map((tour) => (
           <FeaturedTourCard key={tour.id} tour={tour} onPress={() => onReserveTour(tour)} />
         ))}
       </ScrollView>
+
+      <SectionHeader title="Categorias" actionLabel="Explorar" onPress={onOpenTours} />
+      <View style={styles.homeCategoryGrid}>
+        {activeCategories.map((item) => (
+          <Pressable key={item} style={styles.homeCategoryCard} onPress={onOpenTours}>
+            <Text style={styles.homeCategoryTitle}>{item}</Text>
+            <Text style={styles.homeCategoryText}>Ver experiencias disponibles</Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <SectionHeader title="Rutas de transfer" actionLabel="Cotizar" onPress={onOpenTransfers} />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
+        {homeRoutes.map((route) => (
+          <Pressable key={route.id} style={styles.homeRouteCard} onPress={onOpenTransfers}>
+            <Text style={styles.homeRouteTitle}>{route.destination.name}</Text>
+            <Text style={styles.homeRouteText}>{route.origin.name}</Text>
+            <Text style={styles.homeRoutePrice}>Desde {money(route.priceFrom)}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      <View style={styles.homeStepsPanel}>
+        <Text style={styles.sectionTitle}>Como funciona</Text>
+        <HomeStep icon={Search} title="Busca" text="Elige tour o transfer con datos reales de Proactivitis." />
+        <HomeStep icon={CreditCard} title="Reserva" text="Completa tus datos y paga seguro desde la app." />
+        <HomeStep icon={ShieldCheck} title="Viaja" text="Recibes confirmacion y soporte local por WhatsApp." />
+      </View>
 
       <View style={styles.noticePanel}>
         <ShieldCheck size={22} color={colors.skyDark} />
@@ -576,6 +636,28 @@ function HomeScreen({
             Nuestro equipo verifica cada detalle y te acompaña antes, durante y despues de la actividad.
           </Text>
         </View>
+      </View>
+    </View>
+  );
+}
+
+function HomeStep({
+  icon: Icon,
+  title,
+  text
+}: {
+  icon: IconType;
+  title: string;
+  text: string;
+}) {
+  return (
+    <View style={styles.homeStepRow}>
+      <View style={styles.homeStepIcon}>
+        <Icon size={18} color={colors.skyDark} />
+      </View>
+      <View style={styles.checkoutSummaryText}>
+        <Text style={styles.homeStepTitle}>{title}</Text>
+        <Text style={styles.homeStepText}>{text}</Text>
       </View>
     </View>
   );
@@ -1417,14 +1499,6 @@ const slugifyTransferValue = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || "transfer";
 
-const localLocation = (name: string, type: "origin" | "destination"): LocationSummary => ({
-  id: `local-${type}-${slugifyTransferValue(name)}`,
-  name: name.trim(),
-  slug: slugifyTransferValue(name),
-  type: type === "origin" ? "Origen" : "Destino",
-  zoneName: "Proactivitis"
-});
-
 const routeLocation = (routeId: string, name: string, type: "origin" | "destination"): LocationSummary => ({
   id: `route-${type}-${routeId}`,
   name,
@@ -1448,22 +1522,6 @@ const fallbackMobileTransferRoutes: MobileTransferRoute[] = staticMobileTransfer
 
 const isLocalTransferLocation = (location: LocationSummary | null) =>
   Boolean(location?.id.startsWith("local-") || location?.id.startsWith("route-"));
-
-const fallbackQuoteVehicles = (basePrice: number, passengers: number): QuoteVehicle[] =>
-  transferVehicles
-    .map((vehicle) => {
-      const maxPax = vehicle.id === "sedan" ? 3 : vehicle.id === "suv" ? 5 : 8;
-      return {
-        id: `local-${vehicle.id}`,
-        name: vehicle.name,
-        category: vehicle.capacity,
-        minPax: 1,
-        maxPax,
-        price: Math.round(basePrice * vehicle.baseMultiplier),
-        imageUrl: null
-      };
-    })
-    .filter((vehicle) => passengers <= vehicle.maxPax);
 
 function TransfersScreen({
   onSaveQuote,
@@ -1504,7 +1562,6 @@ function TransfersScreen({
   const roundTripMultiplier = tripType === "round-trip" ? 1.9 : 1;
   const selectedVehicle = vehicles.find((vehicle) => vehicle.id === selectedVehicleId) ?? vehicles[0] ?? null;
   const selectedPrice = selectedVehicle ? Math.round(selectedVehicle.price * roundTripMultiplier) : null;
-  const selectedRoute = mobileTransferRoutes.find((route) => route.id === selectedRouteId) ?? null;
   const routeSuggestions = useMemo(() => {
     const query = `${originQuery} ${destinationQuery}`.trim().toLowerCase();
     if (!query) return mobileTransferRoutes.slice(0, 6);
@@ -1623,12 +1680,19 @@ function TransfersScreen({
   };
 
   const quoteRoute = async () => {
-    const origin = selectedOrigin ?? (originQuery.trim() ? localLocation(originQuery, "origin") : null);
-    const destination =
-      selectedDestination ?? (destinationQuery.trim() ? localLocation(destinationQuery, "destination") : null);
+    const origin = selectedOrigin;
+    const destination = selectedDestination;
 
     if (!origin || !destination) {
-      setQuoteError("Indica origen y destino para buscar la tarifa.");
+      setQuoteError("Selecciona origen y destino desde la lista de hoteles o aeropuertos reales.");
+      return;
+    }
+    if (origin.id === destination.id) {
+      setQuoteError("Origen y destino deben ser diferentes.");
+      return;
+    }
+    if (isLocalTransferLocation(origin) || isLocalTransferLocation(destination)) {
+      setQuoteError("Esta ruta necesita una ubicacion real de Proactivitis. Busca el hotel o aeropuerto y selecciona una opcion.");
       return;
     }
     if (tripType === "round-trip" && (!returnDate || !returnTime)) {
@@ -1640,36 +1704,26 @@ function TransfersScreen({
     setSelectedDestination(destination);
     setQuoteLoading(true);
     setQuoteError(null);
-    const basePrice = selectedRoute?.priceFrom ?? 45;
-    const canUseWebQuote = !isLocalTransferLocation(origin) && !isLocalTransferLocation(destination);
 
     try {
-      if (canUseWebQuote) {
-        const data = await fetchTransferQuote({
-          originId: origin.id,
-          destinationId: destination.id,
-          passengers
-        });
-        if (data.vehicles.length) {
-          setVehicles(data.vehicles);
-          setSelectedVehicleId(data.vehicles[0]?.id ?? null);
-          return;
-        }
+      const data = await fetchTransferQuote({
+        originId: origin.id,
+        destinationId: destination.id,
+        passengers
+      });
+      if (data.vehicles.length) {
+        setVehicles(data.vehicles);
+        setSelectedVehicleId(data.vehicles[0]?.id ?? null);
+        return;
       }
 
-      const fallbackVehicles = fallbackQuoteVehicles(basePrice, passengers);
-      setVehicles(fallbackVehicles);
-      setSelectedVehicleId(fallbackVehicles[0]?.id ?? null);
-      if (!fallbackVehicles.length) {
-        setQuoteError("Para ese grupo necesitamos confirmar un vehiculo especial por WhatsApp.");
-      }
+      setVehicles([]);
+      setSelectedVehicleId(null);
+      setQuoteError("No hay vehiculos disponibles para esa cantidad de pasajeros.");
     } catch (error) {
-      const fallbackVehicles = fallbackQuoteVehicles(basePrice, passengers);
-      setVehicles(fallbackVehicles);
-      setSelectedVehicleId(fallbackVehicles[0]?.id ?? null);
-      if (!fallbackVehicles.length) {
-        setQuoteError(error instanceof Error ? error.message : "No se pudo calcular la tarifa.");
-      }
+      setVehicles([]);
+      setSelectedVehicleId(null);
+      setQuoteError(error instanceof Error ? error.message : "No se pudo calcular la tarifa real.");
     } finally {
       setQuoteLoading(false);
     }
@@ -3457,6 +3511,49 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     marginTop: 2
   },
+  homeBookingPanel: {
+    gap: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 14,
+    ...shadows.card
+  },
+  homeBookingGrid: {
+    flexDirection: "row",
+    gap: 10
+  },
+  homeBookingCard: {
+    flex: 1,
+    minHeight: 142,
+    gap: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.surface,
+    padding: 12
+  },
+  homeBookingIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.skySoft
+  },
+  homeBookingTitle: {
+    color: colors.text,
+    fontSize: 15,
+    lineHeight: 19,
+    fontWeight: "900"
+  },
+  homeBookingText: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700"
+  },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -3494,6 +3591,96 @@ const styles = StyleSheet.create({
   featuredBody: {
     gap: 7,
     padding: 13
+  },
+  homeCategoryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10
+  },
+  homeCategoryCard: {
+    width: "48%",
+    minHeight: 86,
+    gap: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 13,
+    ...shadows.card
+  },
+  homeCategoryTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "900"
+  },
+  homeCategoryText: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700"
+  },
+  homeRouteCard: {
+    width: 232,
+    gap: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 14,
+    ...shadows.card
+  },
+  homeRouteTitle: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: "900"
+  },
+  homeRouteText: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700"
+  },
+  homeRoutePrice: {
+    color: colors.skyDark,
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  homeStepsPanel: {
+    gap: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 14,
+    ...shadows.card
+  },
+  homeStepRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    paddingTop: 12
+  },
+  homeStepIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.skySoft
+  },
+  homeStepTitle: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  homeStepText: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700"
   },
   featuredMeta: {
     color: colors.skyDark,
