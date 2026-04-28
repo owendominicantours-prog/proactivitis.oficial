@@ -38,7 +38,7 @@ const FOOTER_STRUCTURE: SectionDefinition[] = [
   },
   {
     key: "legal",
-    hrefs: ["/legal/terms", "/legal/privacy", "/legal/cookies", "/legal/information"]
+    hrefs: ["/legal/terms", "/legal/privacy", "/legal/cookies", "/legal/information", "/account-deletion"]
   }
 ];
 
@@ -130,7 +130,15 @@ export function PublicFooter() {
     title: copy[section.key].title,
     links: section.hrefs.map((href, index) => ({
       href,
-      label: copy[section.key].links[index]
+      label:
+        copy[section.key].links[index] ??
+        (href === "/account-deletion"
+          ? locale === "en"
+            ? "Delete account"
+            : locale === "fr"
+              ? "Supprimer le compte"
+              : "Eliminar cuenta"
+          : href)
     }))
   }));
 

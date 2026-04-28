@@ -70,6 +70,7 @@ export async function GET(request: Request) {
         email: true,
         name: true,
         role: true,
+        accountStatus: true,
         CustomerPayment: {
           select: {
             method: true,
@@ -93,7 +94,7 @@ export async function GET(request: Request) {
       }
     });
 
-    if (!user) {
+    if (!user || user.accountStatus === "DELETED") {
       return withCors(NextResponse.json({ error: "Sesion expirada." }, { status: 401 }));
     }
 

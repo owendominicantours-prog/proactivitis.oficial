@@ -15,6 +15,9 @@ export const Footer = () => (
         <Link href="/terms" className="hover:text-brand">
           Términos
         </Link>
+        <Link href="/account-deletion" className="hover:text-brand">
+          Eliminar cuenta
+        </Link>
       </div>
     </div>
   </footer>

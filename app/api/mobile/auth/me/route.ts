@@ -16,12 +16,13 @@ export async function GET(request: Request) {
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, email: true, name: true, role: true }
+      select: { id: true, email: true, name: true, role: true, accountStatus: true }
     });
-    if (!user) {
+    if (!user || user.accountStatus === "DELETED") {
       return NextResponse.json({ error: "Sesion expirada." }, { status: 401 });
     }
-    return NextResponse.json({ user });
+    const { accountStatus: _accountStatus, ...safeUser } = user;
+    return NextResponse.json({ user: safeUser });
   } catch {
     return NextResponse.json({ error: "Sesion expirada." }, { status: 401 });
   }

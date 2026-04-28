@@ -4,6 +4,7 @@ import { Component, createContext, useCallback, useContext, useEffect, useMemo, 
 import * as SecureStore from "expo-secure-store";
 import {
   BackHandler,
+  Alert,
   AppState,
   Dimensions,
   Image,
@@ -60,6 +61,7 @@ import {
   buildTourCheckoutUrl,
   confirmMobileBooking,
   createMobilePaymentIntent,
+  deleteMobileAccount,
   fetchMobileConfig,
   fetchMobileCustomerSummary,
   fetchMobileTours,
@@ -1050,6 +1052,12 @@ const policyLinks: Array<{ title: string; subtitle: string; url: string; icon: I
     subtitle: "Aplican los terminos y la politica indicada en cada producto.",
     url: links.terms,
     icon: CalendarCheck
+  },
+  {
+    title: "Eliminar cuenta",
+    subtitle: "Solicitud oficial de eliminacion de cuenta y datos de la app.",
+    url: links.accountDeletion,
+    icon: User
   }
 ];
 
@@ -3821,6 +3829,8 @@ function ProfileScreen({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [deleteFeedback, setDeleteFeedback] = useState<string | null>(null);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [customerSummary, setCustomerSummary] = useState<MobileCustomerSummary | null>(null);
   const [customerLoading, setCustomerLoading] = useState(false);
   const [customerError, setCustomerError] = useState<string | null>(null);
@@ -3875,6 +3885,35 @@ function ProfileScreen({
     }
   };
 
+  const confirmDeleteAccount = () => {
+    if (!session?.token || deletingAccount) return;
+    Alert.alert(
+      "Eliminar cuenta",
+      "Se cerrara tu cuenta de cliente, sesiones, preferencias y metodos de pago guardados. Podemos retener registros de reservas y pagos cuando sea necesario.",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: () => {
+            setDeletingAccount(true);
+            setDeleteFeedback("Procesando eliminacion...");
+            deleteMobileAccount(session.token)
+              .then(() => {
+                void writeStoredJson(checkoutDraftStorageKey, null);
+                void writeStoredJson(transferDraftStorageKey, null);
+                onSessionChange(null);
+              })
+              .catch((error) => {
+                setDeleteFeedback(error instanceof Error ? error.message : "No se pudo eliminar la cuenta.");
+              })
+              .finally(() => setDeletingAccount(false));
+          }
+        }
+      ]
+    );
+  };
+
   if (session) {
     return (
       <View style={styles.screen}>
@@ -3892,6 +3931,25 @@ function ProfileScreen({
           <Text style={styles.sectionTitle}>Idioma de la app</Text>
           <Text style={styles.smallMuted}>La app recordara tu preferencia para futuras visitas.</Text>
           <LanguageSelector selected={language} onSelect={setLanguage} />
+        </View>
+        <View style={styles.formPanel}>
+          <Text style={styles.sectionTitle}>Cuenta y datos</Text>
+          <Text style={styles.smallMuted}>
+            Puedes eliminar tu cuenta de cliente desde la app. Tambien existe una pagina web oficial para solicitarlo sin instalar la app.
+          </Text>
+          <ActionButton
+            label={deletingAccount ? "Eliminando..." : "Eliminar cuenta"}
+            icon={User}
+            variant="outlineDark"
+            onPress={confirmDeleteAccount}
+          />
+          <ActionButton
+            label="Pagina web de eliminacion"
+            icon={ShieldCheck}
+            variant="outlineDark"
+            onPress={() => openUrl(links.accountDeletion)}
+          />
+          {deleteFeedback ? <Text style={styles.feedbackText}>{deleteFeedback}</Text> : null}
         </View>
         <TripPlanSection
           quote={quote}

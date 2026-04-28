@@ -270,6 +270,16 @@ export const fetchMobileUser = (token: string) =>
     headers: authHeader(token)
   });
 
+export const deleteMobileAccount = (token: string) =>
+  jsonFetch<{ ok: boolean; error?: string }>("/api/mobile/auth/delete", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(token)
+    },
+    body: JSON.stringify({})
+  });
+
 export const fetchMobileCustomerSummary = (token: string) =>
   jsonFetch<MobileCustomerSummary>("/api/mobile/customer/summary", {
     headers: authHeader(token)
