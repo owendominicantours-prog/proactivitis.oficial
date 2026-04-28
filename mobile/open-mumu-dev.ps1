@@ -66,7 +66,9 @@ foreach ($line in $deviceLines) {
 
 $env:ANDROID_SERIAL = $device
 $apiBaseUrl = "http://10.0.2.2:3000"
+$stripePublishableKey = "pk_live_51O95bAIbnx7AUk1qBdTAIlSDvHd8WjRlwDZ9dAsKH9O1NF1VbgqGfggtZpmF0qWfzIB25mK1UAd7RRcdgmTMAS1h00Oj1ZgLVc"
 $env:EXPO_PUBLIC_API_BASE_URL = $apiBaseUrl
+$env:EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY = $stripePublishableKey
 
 $sdkDir = $env:ANDROID_HOME
 if (-not $sdkDir) {
@@ -88,6 +90,7 @@ Write-Host "Android SDK: $sdkDirForGradle" -ForegroundColor DarkGray
 
 Write-Host "Usando MuMu: $device" -ForegroundColor Green
 Write-Host "API para MuMu: $apiBaseUrl" -ForegroundColor Green
+Write-Host "Stripe publishable key: configurada" -ForegroundColor Green
 Write-Host "Dispositivos finales:" -ForegroundColor Cyan
 & $adb devices | Out-Host
 
@@ -131,25 +134,37 @@ function Test-Metro {
   }
 }
 
-if (-not (Test-Metro)) {
-  Write-Host "Abriendo Metro en otra ventana..." -ForegroundColor Cyan
-  $metroCommand = "cd `"$PSScriptRoot`"; `$env:EXPO_PUBLIC_API_BASE_URL='$apiBaseUrl'; npx expo start --localhost --clear"
-  Start-Process powershell -WorkingDirectory $PSScriptRoot -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $metroCommand
-
-  $metroReady = $false
-  for ($i = 1; $i -le 45; $i++) {
-    if (Test-Metro) {
-      $metroReady = $true
-      break
+if (Test-Metro) {
+  Write-Host "Reiniciando Metro para cargar variables nuevas..." -ForegroundColor Yellow
+  try {
+    $metroProcesses = Get-NetTCPConnection -LocalPort 8081 -State Listen -ErrorAction SilentlyContinue |
+      Select-Object -ExpandProperty OwningProcess -Unique
+    foreach ($processId in $metroProcesses) {
+      if ($processId -and $processId -ne $PID) {
+        Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+      }
     }
-    Start-Sleep -Seconds 1
+  } catch {
+    Write-Host "No pude cerrar Metro automaticamente. Si falla, cierra la ventana vieja de Metro y repite." -ForegroundColor Yellow
   }
+  Start-Sleep -Seconds 2
+}
 
-  if (-not $metroReady) {
-    Write-Host "Metro aun no responde. Si ves pantalla roja, espera a que Metro termine y presiona Reload." -ForegroundColor Yellow
+Write-Host "Abriendo Metro en otra ventana..." -ForegroundColor Cyan
+$metroCommand = "cd `"$PSScriptRoot`"; `$env:EXPO_PUBLIC_API_BASE_URL='$apiBaseUrl'; `$env:EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY='$stripePublishableKey'; npx expo start --localhost --clear"
+Start-Process powershell -WorkingDirectory $PSScriptRoot -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $metroCommand
+
+$metroReady = $false
+for ($i = 1; $i -le 45; $i++) {
+  if (Test-Metro) {
+    $metroReady = $true
+    break
   }
-} else {
-  Write-Host "Metro ya esta corriendo en 8081." -ForegroundColor Green
+  Start-Sleep -Seconds 1
+}
+
+if (-not $metroReady) {
+  Write-Host "Metro aun no responde. Si ves pantalla roja, espera a que Metro termine y presiona Reload." -ForegroundColor Yellow
 }
 
 Write-Host "Compilando APK debug para MuMu. La primera vez puede tardar varios minutos." -ForegroundColor Yellow
