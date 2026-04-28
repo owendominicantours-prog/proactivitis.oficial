@@ -203,9 +203,17 @@ const englishText: Record<string, string> = {
   "Web": "Website",
   "Entra a Proactivitis": "Sign in to Proactivitis",
   "Conecta tus datos con la base real de la web.": "Connect your details with the live website database.",
+  "Accede a tus reservas": "Access your bookings",
+  "Inicia sesion para guardar tus datos, revisar planes y continuar reservas desde cualquier dispositivo.":
+    "Sign in to save your details, review plans, and continue bookings from any device.",
+  "Tu perfil de viaje": "Your travel profile",
+  "Tus reservas, favoritos y preferencias quedan guardados en tu cuenta.":
+    "Your bookings, favorites, and preferences stay saved in your account.",
   "Entrar": "Sign in",
   "Crear cuenta": "Create account",
   "Password": "Password",
+  "Contrasena": "Password",
+  "O usa email": "Or use email",
   "Conectando...": "Connecting...",
   "No se pudo entrar.": "Could not sign in.",
   "Viajes guardados": "Saved trips",
@@ -336,7 +344,30 @@ const englishText: Record<string, string> = {
   "Cancelacion flexible": "Flexible cancellation",
   "No reembolsable": "Non-refundable",
   "Confirmacion inmediata": "Instant confirmation",
-  "Confirmacion manual": "Manual confirmation"
+  "Confirmacion manual": "Manual confirmation",
+  "Continuar con Google": "Continue with Google",
+  "Abriendo Google...": "Opening Google...",
+  "Vuelve a la app cuando Google termine.": "Return to the app when Google finishes.",
+  "No se pudo abrir Google.": "Could not open Google.",
+  "Experiencias y traslados en Republica Dominicana": "Experiences and transfers in the Dominican Republic",
+  "Descubre Republica Dominicana con reservas claras": "Discover the Dominican Republic with clear bookings",
+  "Reserva tours, traslados privados y planes seleccionados con precios transparentes, fotos reales y asistencia local en varios idiomas.":
+    "Book tours, private transfers, and selected plans with transparent prices, real photos, and local assistance in multiple languages.",
+  "Atencion para familias, parejas, grupos y viajeros que prefieren organizar todo antes de llegar.":
+    "Support for families, couples, groups, and travelers who prefer to organize everything before arrival.",
+  "Fotos verificadas": "Verified photos",
+  "Precio transparente": "Transparent price",
+  "Asistencia 24/7": "24/7 assistance",
+  "Explorar tours": "Explore tours",
+  "Cotizar traslado": "Quote transfer",
+  "Experiencias seleccionadas": "Selected experiences",
+  "Actividades con detalles, fotos y precios conectados al catalogo web.":
+    "Activities with details, photos, and prices connected to the web catalog.",
+  "Busca aeropuertos, hoteles y zonas reales para calcular tu ruta antes de reservar.":
+    "Search real airports, hotels, and areas to calculate your route before booking.",
+  "Reserva con asistencia local": "Book with local assistance",
+  "Completa tus datos en la app y finaliza con checkout seguro. Si necesitas ayuda, nuestro equipo te acompana antes y durante tu experiencia.":
+    "Enter your details in the app and finish with secure checkout. If you need help, our team supports you before and during your experience."
 };
 
 const frenchText: Record<string, string> = {
@@ -445,9 +476,17 @@ const frenchText: Record<string, string> = {
   "Web": "Web",
   "Entra a Proactivitis": "Connectez-vous a Proactivitis",
   "Conecta tus datos con la base real de la web.": "Connectez vos donnees avec la base reelle du site web.",
+  "Accede a tus reservas": "Accedez a vos reservations",
+  "Inicia sesion para guardar tus datos, revisar planes y continuar reservas desde cualquier dispositivo.":
+    "Connectez-vous pour sauvegarder vos donnees, revoir vos plans et continuer vos reservations depuis n'importe quel appareil.",
+  "Tu perfil de viaje": "Votre profil de voyage",
+  "Tus reservas, favoritos y preferencias quedan guardados en tu cuenta.":
+    "Vos reservations, favoris et preferences restent sauvegardes dans votre compte.",
   "Entrar": "Connexion",
   "Crear cuenta": "Creer un compte",
   "Password": "Mot de passe",
+  "Contrasena": "Mot de passe",
+  "O usa email": "Ou utilisez l'email",
   "Conectando...": "Connexion...",
   "No se pudo entrar.": "Connexion impossible.",
   "Viajes guardados": "Voyages sauvegardes",
@@ -578,7 +617,30 @@ const frenchText: Record<string, string> = {
   "Cancelacion flexible": "Annulation flexible",
   "No reembolsable": "Non remboursable",
   "Confirmacion inmediata": "Confirmation immediate",
-  "Confirmacion manual": "Confirmation manuelle"
+  "Confirmacion manual": "Confirmation manuelle",
+  "Continuar con Google": "Continuer avec Google",
+  "Abriendo Google...": "Ouverture de Google...",
+  "Vuelve a la app cuando Google termine.": "Revenez dans l'app quand Google termine.",
+  "No se pudo abrir Google.": "Impossible d'ouvrir Google.",
+  "Experiencias y traslados en Republica Dominicana": "Experiences et transferts en Republique dominicaine",
+  "Descubre Republica Dominicana con reservas claras": "Decouvrez la Republique dominicaine avec des reservations claires",
+  "Reserva tours, traslados privados y planes seleccionados con precios transparentes, fotos reales y asistencia local en varios idiomas.":
+    "Reservez tours, transferts prives et plans selectionnes avec prix transparents, photos reelles et assistance locale en plusieurs langues.",
+  "Atencion para familias, parejas, grupos y viajeros que prefieren organizar todo antes de llegar.":
+    "Assistance pour familles, couples, groupes et voyageurs qui preferent tout organiser avant leur arrivee.",
+  "Fotos verificadas": "Photos verifiees",
+  "Precio transparente": "Prix transparent",
+  "Asistencia 24/7": "Assistance 24/7",
+  "Explorar tours": "Explorer les tours",
+  "Cotizar traslado": "Devis transfert",
+  "Experiencias seleccionadas": "Experiences selectionnees",
+  "Actividades con detalles, fotos y precios conectados al catalogo web.":
+    "Activites avec details, photos et prix connectes au catalogue web.",
+  "Busca aeropuertos, hoteles y zonas reales para calcular tu ruta antes de reservar.":
+    "Cherchez de vrais aeroports, hotels et zones pour calculer votre trajet avant de reserver.",
+  "Reserva con asistencia local": "Reservation avec assistance locale",
+  "Completa tus datos en la app y finaliza con checkout seguro. Si necesitas ayuda, nuestro equipo te acompana antes y durante tu experiencia.":
+    "Completez vos donnees dans l'app et finalisez avec un checkout securise. Si vous avez besoin d'aide, notre equipe vous accompagne avant et pendant votre experience."
 };
 
 const languageDictionaries: Record<Exclude<AppLanguage, "es">, Record<string, string>> = {
@@ -779,6 +841,8 @@ const money = (value: number) =>
 const openUrl = (url: string) => {
   void Linking.openURL(url).catch(() => undefined);
 };
+
+const googleLoginUrl = () => `${getApiBaseUrl().replace(/\/$/, "")}/mobile-auth/google`;
 
 const whatsappUrl = (message: string) => `${links.whatsapp}?text=${encodeURIComponent(message)}`;
 
@@ -1059,6 +1123,24 @@ const readUrlParams = (href: string) => {
   }
 };
 
+const readMobileAuthSession = (href: string): MobileSession | null => {
+  if (!href.startsWith("proactivitis://auth")) return null;
+  const params = readUrlParams(href);
+  const token = params.get("token") ?? "";
+  const id = params.get("userId") ?? "";
+  const email = params.get("email") ?? "";
+  if (!token || !id || !email) return null;
+  return {
+    token,
+    user: {
+      id,
+      email,
+      name: params.get("name"),
+      role: params.get("role")
+    }
+  };
+};
+
 const paramNumber = (params: URLSearchParams, key: string, fallback = 0) => {
   const value = Number(params.get(key) ?? fallback);
   return Number.isFinite(value) ? value : fallback;
@@ -1260,6 +1342,21 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
     setMobileSession(session);
     void writeStoredMobileSession(session);
   };
+
+  useEffect(() => {
+    const handleUrl = (url: string | null) => {
+      if (!url) return;
+      const nextSession = readMobileAuthSession(url);
+      if (!nextSession) return;
+      setMobileSession(nextSession);
+      void writeStoredMobileSession(nextSession);
+      setActiveTab("profile");
+    };
+
+    void Linking.getInitialURL().then(handleUrl);
+    const subscription = Linking.addEventListener("url", (event) => handleUrl(event.url));
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -1481,20 +1578,20 @@ function HomeScreen({
       <ImageBackground source={{ uri: absoluteImageUrl(homeHeroImage) }} style={styles.hero} imageStyle={styles.heroImage as StyleProp<ImageStyle>}>
         <View style={styles.heroOverlay} />
         <View style={styles.heroContent}>
-          <Text style={styles.eyebrow}>🌴 Tours, transfers y planes privados</Text>
-          <Text style={styles.heroTitle}>Tu viaje en RD, claro y sin estres</Text>
+          <Text style={styles.eyebrow}>Experiencias y traslados en Republica Dominicana</Text>
+          <Text style={styles.heroTitle}>Descubre Republica Dominicana con reservas claras</Text>
           <Text style={styles.heroSubtitle}>
-            Elige tours con fotos reales, cotiza tu traslado y reserva con ayuda local 24/7. Aqui vienes a disfrutar, nosotros organizamos lo dificil.
+            Reserva tours, traslados privados y planes seleccionados con precios transparentes, fotos reales y asistencia local en varios idiomas.
           </Text>
-          <Text style={styles.heroHumanNote}>✨ Recomendado para familias, parejas y grupos que quieren reservar sin vueltas.</Text>
+          <Text style={styles.heroHumanNote}>Atencion para familias, parejas, grupos y viajeros que prefieren organizar todo antes de llegar.</Text>
           <View style={styles.heroTrustRow}>
-            <Text style={styles.heroTrustPill}>📸 Fotos reales</Text>
-            <Text style={styles.heroTrustPill}>💵 Precio claro</Text>
-            <Text style={styles.heroTrustPill}>💬 Soporte humano</Text>
+            <Text style={styles.heroTrustPill}>Fotos verificadas</Text>
+            <Text style={styles.heroTrustPill}>Precio transparente</Text>
+            <Text style={styles.heroTrustPill}>Asistencia 24/7</Text>
           </View>
           <View style={styles.heroActions}>
-            <ActionButton label="Ver tours 🔥" icon={Compass} onPress={onOpenTours} />
-            <ActionButton label="Buscar transfer 🚘" icon={Car} variant="outline" onPress={onOpenTransfers} />
+            <ActionButton label="Explorar tours" icon={Compass} onPress={onOpenTours} />
+            <ActionButton label="Cotizar traslado" icon={Car} variant="outline" onPress={onOpenTransfers} />
           </View>
         </View>
       </ImageBackground>
@@ -1511,13 +1608,13 @@ function HomeScreen({
       <View style={styles.homeBookingGrid}>
         <Pressable style={styles.homeBookingCard} onPress={onOpenTours}>
           <Text style={styles.homeBookingEmoji}>🏝️</Text>
-          <Text style={styles.homeBookingTitle}>Tours que se sienten reales</Text>
-          <Text style={styles.homeBookingText}>Fotos, opciones y precios conectados a la web. Ves antes de reservar.</Text>
+          <Text style={styles.homeBookingTitle}>Experiencias seleccionadas</Text>
+          <Text style={styles.homeBookingText}>Actividades con detalles, fotos y precios conectados al catalogo web.</Text>
         </Pressable>
         <Pressable style={styles.homeBookingCard} onPress={onOpenTransfers}>
           <Text style={styles.homeBookingEmoji}>🚘</Text>
-          <Text style={styles.homeBookingTitle}>Transfer sin adivinar</Text>
-          <Text style={styles.homeBookingText}>Busca hoteles y aeropuertos reales, elige la ruta y confirma sin enredos.</Text>
+          <Text style={styles.homeBookingTitle}>Traslados privados</Text>
+          <Text style={styles.homeBookingText}>Busca aeropuertos, hoteles y zonas reales para calcular tu ruta antes de reservar.</Text>
         </Pressable>
       </View>
 
@@ -1557,9 +1654,9 @@ function HomeScreen({
       <View style={styles.noticePanel}>
         <ShieldCheck size={22} color={colors.skyDark} />
         <View style={styles.flexText}>
-          <Text style={styles.noticeTitle}>Reserva con respaldo local</Text>
+          <Text style={styles.noticeTitle}>Reserva con asistencia local</Text>
           <Text style={styles.noticeText}>
-            Completa tus datos en la app y finaliza con el checkout seguro de Proactivitis. Si necesitas ayuda, te hablamos como personas.
+            Completa tus datos en la app y finaliza con checkout seguro. Si necesitas ayuda, nuestro equipo te acompana antes y durante tu experiencia.
           </Text>
         </View>
       </View>
@@ -2868,10 +2965,20 @@ function ProfileScreen({
     }
   };
 
+  const openGoogleLogin = async () => {
+    setFeedback("Abriendo Google...");
+    try {
+      await Linking.openURL(googleLoginUrl());
+      setFeedback("Vuelve a la app cuando Google termine.");
+    } catch {
+      setFeedback("No se pudo abrir Google.");
+    }
+  };
+
   if (session) {
     return (
       <View style={styles.screen}>
-        <ScreenHeader eyebrow="Cuenta" title="Perfil Proactivitis" description="Tus reservas quedan asociadas a este correo." />
+        <ScreenHeader eyebrow="Cuenta" title="Tu perfil de viaje" description="Tus reservas, favoritos y preferencias quedan guardados en tu cuenta." />
         <View style={styles.savedCard}>
           <User size={28} color={colors.skyDark} />
           <Text style={styles.savedTitle}>{session.user.name || "Cliente Proactivitis"}</Text>
@@ -2904,15 +3011,21 @@ function ProfileScreen({
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader eyebrow="Cuenta" title="Entra a Proactivitis" description="Conecta tus datos con la base real de la web." />
+      <ScreenHeader eyebrow="Cuenta" title="Accede a tus reservas" description="Inicia sesion para guardar tus datos, revisar planes y continuar reservas desde cualquier dispositivo." />
       <View style={styles.formPanel}>
+        <GoogleLoginButton onPress={openGoogleLogin} />
+        <View style={styles.formDivider}>
+          <View style={styles.formDividerLine} />
+          <Text style={styles.formDividerText}>O usa email</Text>
+          <View style={styles.formDividerLine} />
+        </View>
         <View style={styles.segmentRow}>
           <SegmentButton label="Entrar" active={mode === "login"} onPress={() => setMode("login")} />
           <SegmentButton label="Crear cuenta" active={mode === "register"} onPress={() => setMode("register")} />
         </View>
         {mode === "register" ? <InputField label="Nombre" value={name} onChangeText={setName} /> : null}
         <InputField label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
-        <InputField label="Password" value={password} onChangeText={setPassword} secureTextEntry />
+        <InputField label="Contrasena" value={password} onChangeText={setPassword} secureTextEntry />
         <ActionButton label={mode === "login" ? "Entrar" : "Crear cuenta"} icon={LogIn} onPress={submit} />
         {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
       </View>
@@ -3155,6 +3268,17 @@ function ActionButton({
       >
         {label}
       </Text>
+    </Pressable>
+  );
+}
+
+function GoogleLoginButton({ onPress }: { onPress: () => void }) {
+  return (
+    <Pressable style={styles.googleButton} onPress={onPress}>
+      <View style={styles.googleMark}>
+        <Text style={styles.googleMarkText}>G</Text>
+      </View>
+      <Text style={styles.googleButtonText}>Continuar con Google</Text>
     </Pressable>
   );
 }
@@ -5015,6 +5139,23 @@ const styles = StyleSheet.create({
     padding: 14,
     ...shadows.card
   },
+  formDivider: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 2
+  },
+  formDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.line
+  },
+  formDividerText: {
+    color: colors.muted,
+    fontSize: 10,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
   payPanel: {
     gap: 12,
     borderRadius: 8,
@@ -5241,6 +5382,38 @@ const styles = StyleSheet.create({
   },
   actionButtonTextDark: {
     color: colors.skyDark
+  },
+  googleButton: {
+    minHeight: 52,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10
+  },
+  googleMark: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.line
+  },
+  googleMarkText: {
+    color: "#4285F4",
+    fontSize: 16,
+    fontWeight: "900"
+  },
+  googleButtonText: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "900"
   },
   tabBar: {
     position: "absolute",
