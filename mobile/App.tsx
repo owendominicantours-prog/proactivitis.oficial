@@ -172,10 +172,40 @@ type CheckoutSummary = {
   vehicle?: string | null;
 };
 
+type TransferDraft = {
+  originQuery: string;
+  destinationQuery: string;
+  origin: LocationSummary | null;
+  destination: LocationSummary | null;
+  selectedRouteId: string;
+  passengers: number;
+  tripType: TripType;
+  departureDate: string;
+  departureTime: string;
+  returnDate: string;
+  returnTime: string;
+  vehicles?: QuoteVehicle[];
+  selectedVehicleId?: string | null;
+  savedAt: number;
+};
+
+type CheckoutDraft = {
+  url: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  pickupLocation: string;
+  notes: string;
+  savedAt: number;
+};
+
 const heroImage =
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
 const fallbackTourImage = "https://proactivitis.com/fototours/fotosimple.jpg";
 const mobileSessionStorageKey = "proactivitis_mobile_session";
+const transferDraftStorageKey = "proactivitis_transfer_draft";
+const checkoutDraftStorageKey = "proactivitis_checkout_draft";
 const appBuildLabel = "Version 1.0.5 | Android 6";
 const windowHeight = Dimensions.get("window").height;
 
@@ -269,6 +299,24 @@ const writeStoredMobileSession = async (session: MobileSession | null) => {
     return;
   }
   await SecureStore.setItemAsync(mobileSessionStorageKey, JSON.stringify(session)).catch(() => undefined);
+};
+
+const readStoredJson = async <T,>(key: string) => {
+  const raw = await SecureStore.getItemAsync(key).catch(() => null);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+};
+
+const writeStoredJson = async (key: string, value: unknown | null) => {
+  if (!value) {
+    await SecureStore.deleteItemAsync(key).catch(() => undefined);
+    return;
+  }
+  await SecureStore.setItemAsync(key, JSON.stringify(value)).catch(() => undefined);
 };
 
 const fallbackBySlug = new Map(featuredTours.map((tour) => [tour.slug, tour]));
@@ -1239,6 +1287,7 @@ function TransfersScreen({
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
 
   const roundTripMultiplier = tripType === "round-trip" ? 1.9 : 1;
   const selectedVehicle = vehicles.find((vehicle) => vehicle.id === selectedVehicleId) ?? vehicles[0] ?? null;
@@ -1272,6 +1321,77 @@ function TransfersScreen({
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    readStoredJson<TransferDraft>(transferDraftStorageKey)
+      .then((draft) => {
+        if (!active || !draft) return;
+        setOriginQuery(draft.originQuery ?? "");
+        setDestinationQuery(draft.destinationQuery ?? "");
+        setOrigin(draft.origin ?? null);
+        setDestination(draft.destination ?? null);
+        setSelectedRouteId(draft.selectedRouteId ?? "");
+        setPassengers(draft.passengers || 2);
+        setTripType(draft.tripType === "round-trip" ? "round-trip" : "one-way");
+        setDepartureDate(draft.departureDate || tomorrow());
+        setDepartureTime(draft.departureTime || "10:00");
+        setReturnDate(draft.returnDate ?? "");
+        setReturnTime(draft.returnTime ?? "");
+        setVehicles(Array.isArray(draft.vehicles) ? draft.vehicles : []);
+        setSelectedVehicleId(draft.selectedVehicleId ?? null);
+      })
+      .finally(() => {
+        if (active) setDraftReady(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    const hasDraft =
+      Boolean(originQuery.trim()) ||
+      Boolean(destinationQuery.trim()) ||
+      Boolean(origin) ||
+      Boolean(destination) ||
+      vehicles.length > 0;
+
+    if (!hasDraft) {
+      void writeStoredJson(transferDraftStorageKey, null);
+      return;
+    }
+
+    void writeStoredJson(transferDraftStorageKey, {
+      originQuery,
+      destinationQuery,
+      origin,
+      destination,
+      selectedRouteId,
+      passengers,
+      tripType,
+      departureDate,
+      departureTime,
+      returnDate,
+      returnTime,
+      savedAt: Date.now()
+    } satisfies TransferDraft);
+  }, [
+    departureDate,
+    departureTime,
+    destination,
+    destinationQuery,
+    draftReady,
+    origin,
+    originQuery,
+    passengers,
+    returnDate,
+    returnTime,
+    selectedRouteId,
+    tripType,
+    vehicles.length
+  ]);
 
   useEffect(() => {
     if (origin?.name === originQuery || originQuery.trim().length < 2) {
@@ -1580,6 +1700,54 @@ function CheckoutScreen({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<string | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    readStoredJson<CheckoutDraft>(checkoutDraftStorageKey)
+      .then((draft) => {
+        if (!active || !draft || draft.url !== url) return;
+        setFirstName(draft.firstName ?? "");
+        setLastName(draft.lastName ?? "");
+        setEmail(draft.email ?? "");
+        setPhone(draft.phone ?? "");
+        setPickupLocation(draft.pickupLocation ?? "");
+        setNotes(draft.notes ?? "");
+      })
+      .finally(() => {
+        if (active) setDraftReady(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [url]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    const hasDraft =
+      Boolean(firstName.trim()) ||
+      Boolean(lastName.trim()) ||
+      Boolean(email.trim()) ||
+      Boolean(phone.trim()) ||
+      Boolean(pickupLocation.trim()) ||
+      Boolean(notes.trim());
+
+    if (!hasDraft) {
+      void writeStoredJson(checkoutDraftStorageKey, null);
+      return;
+    }
+
+    void writeStoredJson(checkoutDraftStorageKey, {
+      url,
+      firstName,
+      lastName,
+      email,
+      phone,
+      pickupLocation,
+      notes,
+      savedAt: Date.now()
+    } satisfies CheckoutDraft);
+  }, [draftReady, email, firstName, lastName, notes, phone, pickupLocation, url]);
 
   const validateCheckout = () => {
     const nextErrors: Record<string, string> = {};
@@ -1657,6 +1825,8 @@ function CheckoutScreen({
         paymentIntentId: intent.paymentIntentId,
         token: session?.token
       });
+      void writeStoredJson(checkoutDraftStorageKey, null);
+      void writeStoredJson(transferDraftStorageKey, null);
       setFeedback("Pago confirmado. Tu reserva quedo registrada en Proactivitis.");
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "No se pudo completar el pago.");
