@@ -3,6 +3,7 @@ import type { ComponentType, ReactNode } from "react";
 import { Component, useEffect, useMemo, useRef, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import {
+  Dimensions,
   Image,
   ImageBackground,
   Linking,
@@ -164,6 +165,7 @@ const heroImage =
 const fallbackTourImage = "https://proactivitis.com/fototours/fotosimple.jpg";
 const mobileSessionStorageKey = "proactivitis_mobile_session";
 const appBuildLabel = "Version 1.0.5 | Android 6";
+const windowHeight = Dimensions.get("window").height;
 
 const money = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -802,19 +804,30 @@ function ProductScreen({
   const pricePerPerson = selectedOption?.pricePerPerson ?? tour.price;
   const totalPrice =
     selectedOption?.basePrice && selectedOption.baseCapacity ? selectedOption.basePrice : pricePerPerson * adults;
+  const shortDescription = tour.description || tour.fullDescription || "Experiencia confirmada por Proactivitis.";
+  const detailDescription = tour.fullDescription || tour.description;
+  const quickFacts = [
+    { icon: Clock3, label: "Duracion", value: tour.duration },
+    { icon: MapPin, label: "Zona", value: tour.location },
+    { icon: Car, label: "Recogida", value: tour.pickup },
+    { icon: ShieldCheck, label: "Reserva", value: tour.confirmationType ?? "Confirmacion segura" }
+  ].filter((item) => item.value.trim().length > 0);
 
   useEffect(() => {
     setSelectedImage(galleryImages[0] ?? tour.image);
   }, [tour.id, galleryImages, tour.image]);
 
   const infoRows = [
-    { label: "Recogida", value: tour.pickup },
     { label: "Punto de encuentro", value: tour.meetingPoint ?? "" },
+    { label: "Instrucciones", value: tour.meetingInstructions ?? "" },
     { label: "Idiomas", value: joinValues(tour.languages) },
     { label: "Horarios", value: joinValues(tour.timeOptions) },
     { label: "Dias", value: joinValues(tour.operatingDays) },
     { label: "Capacidad", value: tour.capacity ? `${tour.capacity} personas` : "" },
     { label: "Edad minima", value: tour.minAge ? `${tour.minAge}+` : "" },
+    { label: "Nivel fisico", value: tour.physicalLevel ?? "" },
+    { label: "Accesibilidad", value: tour.accessibility ?? "" },
+    { label: "Requisitos", value: tour.requirements ?? "" },
     { label: "Cancelacion", value: tour.cancellationPolicy ?? "" }
   ].filter((item) => item.value.trim().length > 0);
 
@@ -845,11 +858,16 @@ function ProductScreen({
     <View style={styles.productScreen}>
       <View style={styles.productHero}>
         <Pressable style={styles.productImageButton} onPress={() => setGalleryOpen(true)}>
-          <VisualPlaceholder icon={ImageIcon} title="Galeria del tour" subtitle={`${galleryImages.length} fotos disponibles`} dark />
+          <RemoteImage uri={selectedImage} style={styles.productHeroImage} />
         </Pressable>
+        <View pointerEvents="none" style={styles.productOverlay} />
         <Pressable style={styles.backButton} onPress={onBack}>
           <ArrowLeft size={20} color={colors.white} />
           <Text style={styles.backButtonText}>Volver</Text>
+        </Pressable>
+        <Pressable style={styles.galleryFloatingButton} onPress={() => setGalleryOpen(true)}>
+          <ImageIcon size={16} color={colors.white} />
+          <Text style={styles.galleryFloatingText}>{galleryImages.length} fotos</Text>
         </Pressable>
         <View style={styles.productHeroContent}>
           <Text style={styles.eyebrow}>{tour.category}</Text>
@@ -863,8 +881,35 @@ function ProductScreen({
       </View>
 
       <View style={styles.productPanel}>
-        <Text style={styles.productPrice}>Desde {money(tour.price)}</Text>
-        <Text style={styles.bodyText}>{tour.fullDescription || tour.description}</Text>
+        <View style={styles.productBookingCard}>
+          <View style={styles.flexText}>
+            <Text style={styles.productPriceLabel}>Desde</Text>
+            <Text style={styles.productPrice}>{money(tour.price)}</Text>
+            <Text style={styles.smallMuted}>por persona, con datos sincronizados desde la web.</Text>
+          </View>
+          <ActionButton label="Reservar" icon={CreditCard} onPress={startCheckout} />
+        </View>
+
+        <View style={styles.productIntroCard}>
+          <Text style={styles.sectionTitle}>Lo que vas a vivir</Text>
+          <Text style={styles.productLead}>{shortDescription}</Text>
+          {tour.highlights.length ? (
+            <View style={styles.highlightStrip}>
+              {tour.highlights.slice(0, 4).map((highlight) => (
+                <View key={highlight} style={styles.highlightPill}>
+                  <CheckCircle2 size={14} color={colors.green} />
+                  <Text style={styles.highlightText}>{highlight}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </View>
+
+        <View style={styles.productQuickGrid}>
+          {quickFacts.map((fact) => (
+            <ProductFact key={fact.label} icon={fact.icon} label={fact.label} value={fact.value} />
+          ))}
+        </View>
 
         <View style={styles.gallerySection}>
           <View style={styles.rowBetween}>
@@ -881,17 +926,25 @@ function ProductScreen({
                   setGalleryOpen(true);
                 }}
               >
-                <View style={styles.galleryThumbPlaceholder}>
-                  <ImageIcon size={20} color={colors.skyDark} />
-                  <Text style={styles.galleryThumbText}>Foto {index + 1}</Text>
+                <RemoteImage uri={image} style={styles.galleryThumbImage} />
+                <View style={styles.galleryThumbOverlay}>
+                  <Text style={styles.galleryThumbText}>{index + 1}</Text>
                 </View>
               </Pressable>
             ))}
           </ScrollView>
         </View>
 
+        {detailDescription ? (
+          <View style={styles.listPanel}>
+            <Text style={styles.sectionTitle}>Descripcion</Text>
+            <Text style={styles.bodyText}>{detailDescription}</Text>
+          </View>
+        ) : null}
+
         {infoRows.length ? (
-          <View style={styles.infoGrid}>
+          <View style={styles.listPanel}>
+            <Text style={styles.sectionTitle}>Detalles importantes</Text>
             {infoRows.map((row) => (
               <View key={row.label} style={styles.infoRow}>
                 <Text style={styles.infoLabel}>{row.label}</Text>
@@ -939,7 +992,13 @@ function ProductScreen({
         ) : null}
 
         <View style={styles.checkoutBox}>
-          <Text style={styles.sectionTitle}>Reservar</Text>
+          <View style={styles.rowBetween}>
+            <View style={styles.flexText}>
+              <Text style={styles.sectionTitle}>Reservar</Text>
+              <Text style={styles.smallMuted}>Elige fecha, hora y cantidad de adultos.</Text>
+            </View>
+            <Text style={styles.checkoutBadge}>Pago seguro</Text>
+          </View>
           <View style={styles.dateGrid}>
             <InputField label="Fecha" value={date} onChangeText={setDate} />
             <InputField label="Hora" value={time} onChangeText={setTime} />
@@ -1623,6 +1682,7 @@ function GalleryViewer({
             style={[styles.viewerThumb, item === image ? styles.viewerThumbActive : null]}
             onPress={() => onSelect(item)}
           >
+            <RemoteImage uri={item} style={styles.fillImage} />
             <View style={styles.viewerThumbLabel}>
               <Text style={styles.viewerThumbText}>{index + 1}</Text>
             </View>
@@ -1926,6 +1986,18 @@ function MetaItem({ icon: Icon, label }: { icon: IconType; label: string }) {
   );
 }
 
+function ProductFact({ icon: Icon, label, value }: { icon: IconType; label: string; value: string }) {
+  return (
+    <View style={styles.productFact}>
+      <View style={styles.productFactIcon}>
+        <Icon size={18} color={colors.skyDark} />
+      </View>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text style={styles.productFactValue}>{value}</Text>
+    </View>
+  );
+}
+
 function InfoList({ title, items }: { title: string; items: string[] }) {
   if (!items.length) return null;
   return (
@@ -1986,11 +2058,20 @@ function RemoteImage({
   style: any;
   resizeMode?: "cover" | "contain";
 }) {
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [uri]);
+
   return (
     <Image
-      source={{ uri: absoluteImageUrl(uri) }}
+      source={{ uri: failed ? fallbackTourImage : absoluteImageUrl(uri) }}
       style={style}
       resizeMode={resizeMode}
+      onError={() => {
+        if (!failed) setFailed(true);
+      }}
     />
   );
 }
@@ -2421,13 +2502,17 @@ const styles = StyleSheet.create({
     paddingBottom: 18
   },
   productHero: {
-    minHeight: 380,
+    minHeight: 430,
     justifyContent: "flex-end",
     overflow: "hidden",
     backgroundColor: colors.ink
   },
   productImageButton: {
     ...StyleSheet.absoluteFillObject
+  },
+  productHeroImage: {
+    width: "100%",
+    height: "100%"
   },
   productImage: {
     width: "100%",
@@ -2476,7 +2561,7 @@ const styles = StyleSheet.create({
   },
   productOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(6,17,31,0.56)"
+    backgroundColor: "rgba(6,17,31,0.34)"
   },
   backButton: {
     position: "absolute",
@@ -2498,10 +2583,30 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "900"
   },
+  galleryFloatingButton: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    zIndex: 2,
+    minHeight: 42,
+    borderRadius: 999,
+    backgroundColor: "rgba(15, 23, 42, 0.72)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.22)",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    paddingHorizontal: 12
+  },
+  galleryFloatingText: {
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: "900"
+  },
   productHeroContent: {
     gap: 12,
     padding: 20,
-    paddingBottom: 34
+    paddingBottom: 42
   },
   productTitle: {
     color: colors.white,
@@ -2531,7 +2636,15 @@ const styles = StyleSheet.create({
   productPanel: {
     gap: 18,
     marginHorizontal: 16,
-    marginTop: -22,
+    marginTop: -32,
+    paddingBottom: 6
+  },
+  productBookingCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 12,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.line,
@@ -2539,21 +2652,101 @@ const styles = StyleSheet.create({
     padding: 16,
     ...shadows.card
   },
+  productIntroCard: {
+    gap: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 16,
+    ...shadows.card
+  },
+  productPriceLabel: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
   productPrice: {
     color: colors.skyDark,
-    fontSize: 18,
+    fontSize: 30,
+    fontWeight: "900"
+  },
+  productLead: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 23,
+    fontWeight: "700"
+  },
+  highlightStrip: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  highlightPill: {
+    maxWidth: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 999,
+    backgroundColor: "#f0fdf4",
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
+  highlightText: {
+    flexShrink: 1,
+    color: colors.text,
+    fontSize: 12,
+    fontWeight: "800"
+  },
+  productQuickGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10
+  },
+  productFact: {
+    width: "48%",
+    minHeight: 122,
+    gap: 7,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 13,
+    ...shadows.card
+  },
+  productFactIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.skySoft
+  },
+  productFactValue: {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 18,
     fontWeight: "900"
   },
   gallerySection: {
-    gap: 10
+    gap: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 14,
+    ...shadows.card
   },
   galleryList: {
     gap: 10,
     paddingRight: 8
   },
   galleryThumb: {
-    width: 98,
-    height: 74,
+    width: 112,
+    height: 86,
     overflow: "hidden",
     borderRadius: 8,
     borderWidth: 2,
@@ -2562,15 +2755,24 @@ const styles = StyleSheet.create({
   galleryThumbActive: {
     borderColor: colors.sky
   },
-  galleryThumbPlaceholder: {
-    flex: 1,
+  galleryThumbImage: {
+    width: "100%",
+    height: "100%"
+  },
+  galleryThumbOverlay: {
+    position: "absolute",
+    right: 6,
+    bottom: 6,
+    minWidth: 24,
+    minHeight: 24,
+    borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
-    gap: 4,
-    backgroundColor: colors.skySoft
+    backgroundColor: "rgba(15,23,42,0.72)",
+    paddingHorizontal: 7
   },
   galleryThumbText: {
-    color: colors.skyDark,
+    color: colors.white,
     fontSize: 11,
     fontWeight: "900"
   },
@@ -2605,7 +2807,13 @@ const styles = StyleSheet.create({
     fontWeight: "800"
   },
   listPanel: {
-    gap: 10
+    gap: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 14,
+    ...shadows.card
   },
   bulletRow: {
     flexDirection: "row",
@@ -2655,8 +2863,23 @@ const styles = StyleSheet.create({
   checkoutBox: {
     gap: 12,
     borderRadius: 8,
-    backgroundColor: colors.surface,
-    padding: 14
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 14,
+    ...shadows.card
+  },
+  checkoutBadge: {
+    color: colors.green,
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    borderRadius: 999,
+    backgroundColor: "#f0fdf4",
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    paddingHorizontal: 10,
+    paddingVertical: 6
   },
   dateGrid: {
     flexDirection: "row",
@@ -3035,6 +3258,7 @@ const styles = StyleSheet.create({
   },
   galleryViewer: {
     flex: 1,
+    minHeight: windowHeight,
     gap: 14,
     backgroundColor: colors.ink,
     padding: 14,
@@ -3079,10 +3303,16 @@ const styles = StyleSheet.create({
     borderColor: colors.sky
   },
   viewerThumbLabel: {
-    flex: 1,
+    position: "absolute",
+    right: 5,
+    bottom: 5,
+    minWidth: 24,
+    minHeight: 24,
+    borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.12)"
+    backgroundColor: "rgba(15,23,42,0.72)",
+    paddingHorizontal: 7
   },
   viewerThumbText: {
     color: colors.white,
