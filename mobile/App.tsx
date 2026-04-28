@@ -1729,7 +1729,12 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
           url={checkoutUrl}
           session={mobileSession}
           stripeReady={stripeReady}
+          onSessionChange={updateMobileSession}
           onClose={() => setCheckoutUrl(null)}
+          onOpenProfile={() => {
+            setCheckoutUrl(null);
+            setActiveTab("profile");
+          }}
         />
       );
     }
@@ -2996,12 +3001,16 @@ function CheckoutScreen({
   url,
   session,
   stripeReady,
-  onClose
+  onSessionChange,
+  onClose,
+  onOpenProfile
 }: {
   url: string;
   session: MobileSession | null;
   stripeReady: boolean;
+  onSessionChange: (session: MobileSession | null) => void;
   onClose: () => void;
+  onOpenProfile: () => void;
 }) {
   const { initPaymentSheet, presentPaymentSheet, nativeStripeAvailable } = useAppStripe();
   const summary = useMemo(() => readCheckoutSummary(url), [url]);
@@ -3020,6 +3029,12 @@ function CheckoutScreen({
   const [feedback, setFeedback] = useState<string | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [draftReady, setDraftReady] = useState(false);
+  const [confirmedBooking, setConfirmedBooking] = useState<{
+    bookingId: string;
+    orderCode?: string;
+    ticketUrl?: string;
+    eticketPdfUrl?: string;
+  } | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -3192,14 +3207,23 @@ function CheckoutScreen({
         return;
       }
 
-      await confirmMobileBooking({
+      const confirmed = await confirmMobileBooking({
         bookingId: intent.bookingId,
         paymentIntentId: intent.paymentIntentId,
         token: session?.token
       });
+      if (confirmed.token && confirmed.user) {
+        onSessionChange({ token: confirmed.token, user: confirmed.user });
+      }
+      setConfirmedBooking({
+        bookingId: confirmed.bookingId ?? intent.bookingId,
+        orderCode: confirmed.orderCode,
+        ticketUrl: confirmed.ticketUrl,
+        eticketPdfUrl: confirmed.eticketPdfUrl
+      });
       void writeStoredJson(checkoutDraftStorageKey, null);
       void writeStoredJson(transferDraftStorageKey, null);
-      setFeedback("Pago confirmado. Tu reserva quedo registrada en Proactivitis.");
+      setFeedback("Pago confirmado. Tu e-ticket fue enviado por correo y tu cuenta quedo lista en la app.");
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "No se pudo completar el pago.");
     } finally {
@@ -3381,6 +3405,23 @@ function CheckoutScreen({
             }
           />
           {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
+          {confirmedBooking ? (
+            <View style={styles.confirmedActions}>
+              <View style={styles.confirmedBadge}>
+                <CheckCircle2 size={18} color={colors.green} />
+                <Text style={styles.confirmedText}>
+                  {confirmedBooking.orderCode ? `Reserva ${confirmedBooking.orderCode}` : "Reserva confirmada"}
+                </Text>
+              </View>
+              <ActionButton
+                label="Ver e-ticket"
+                icon={CalendarCheck}
+                variant="outlineDark"
+                onPress={() => openUrl(confirmedBooking.ticketUrl ?? confirmedBooking.eticketPdfUrl ?? customerUrl("/customer/reservations"))}
+              />
+              <ActionButton label="Ir a mi cuenta" icon={User} variant="outlineDark" onPress={onOpenProfile} />
+            </View>
+          ) : null}
         </View>
 
         <PolicyLinksPanel compact />
@@ -6616,6 +6657,23 @@ const styles = StyleSheet.create({
     color: colors.skyDark,
     fontSize: 13,
     fontWeight: "800"
+  },
+  confirmedActions: {
+    gap: 10,
+    borderRadius: 8,
+    backgroundColor: colors.white,
+    padding: 12
+  },
+  confirmedBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8
+  },
+  confirmedText: {
+    flex: 1,
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "900"
   },
   galleryViewer: {
     flex: 1,

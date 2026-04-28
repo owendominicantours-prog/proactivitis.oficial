@@ -1,5 +1,6 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { encode } from "next-auth/jwt";
+import jwt from "jsonwebtoken";
 import { BookingStatusEnum } from "@/lib/types/booking";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
@@ -334,10 +335,19 @@ export async function POST(request: NextRequest) {
   const response = NextResponse.json({
     ok: true,
     bookingId,
+    orderCode,
+    ticketUrl,
+    eticketPdfUrl: `${baseUrl}/api/bookings/${bookingId}/eticket`,
+    token: jwt.sign(
+      { userId: booking.User.id, email: booking.User.email },
+      process.env.JWT_SECRET ?? process.env.NEXTAUTH_SECRET ?? "proactivitis-default",
+      { expiresIn: "30d" }
+    ),
     user: {
       id: booking.User.id,
       email: booking.User.email,
-      name: booking.User.name
+      name: booking.User.name,
+      role: booking.User.role
     }
   });
 

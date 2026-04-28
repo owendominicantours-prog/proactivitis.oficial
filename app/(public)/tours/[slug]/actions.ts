@@ -1,6 +1,7 @@
 "use server";
 
 import type Stripe from "stripe";
+import bcrypt from "bcrypt";
 import { BookingSourceEnum, BookingStatusEnum } from "@/lib/types/booking";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -110,7 +111,11 @@ export async function createBookingAction(formData: FormData) {
           id: randomUUID(),
           email: customerEmail.trim().toLowerCase(),
           name: customerName.trim(),
-          password: randomUUID()
+          password: await bcrypt.hash(randomUUID(), 12),
+          role: "CUSTOMER",
+          supplierApproved: false,
+          agencyApproved: false,
+          accountStatus: "APPROVED"
         },
         update: {
           name: customerName.trim()

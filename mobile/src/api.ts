@@ -416,7 +416,16 @@ export const confirmMobileBooking = ({
   paymentIntentId?: string | null;
   token?: string | null;
 }) =>
-  jsonFetch<{ ok: boolean; error?: string }>("/api/session/create", {
+  jsonFetch<{
+    ok: boolean;
+    error?: string;
+    bookingId?: string;
+    orderCode?: string;
+    ticketUrl?: string;
+    eticketPdfUrl?: string;
+    token?: string;
+    user?: MobileUser;
+  }>("/api/session/create", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

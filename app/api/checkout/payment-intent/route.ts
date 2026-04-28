@@ -2,6 +2,7 @@
 
 import type Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcrypt";
 import { BookingSourceEnum, BookingStatusEnum } from "@/lib/types/booking";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -215,7 +216,11 @@ const ensureCustomerSession = async (name: string, email: string, mobileUserId?:
         id: randomUUID(),
         email: email.toLowerCase(),
         name,
-        password: randomUUID()
+        password: await bcrypt.hash(randomUUID(), 12),
+        role: "CUSTOMER",
+        supplierApproved: false,
+        agencyApproved: false,
+        accountStatus: "APPROVED"
       },
       update: {
         name
