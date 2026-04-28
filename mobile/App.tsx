@@ -2186,16 +2186,7 @@ const styles = StyleSheet.create({
     paddingBottom: 34
   },
   logoGlow: {
-    alignSelf: "flex-start",
-    borderRadius: 14,
-    backgroundColor: "rgba(224,244,255,0.22)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    shadowColor: "#ffffff",
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 2
+    alignSelf: "flex-start"
   },
   logo: {
     width: 218,
