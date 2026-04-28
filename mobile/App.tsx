@@ -351,8 +351,14 @@ const englishText: Record<string, string> = {
   "No se pudo abrir Google.": "Could not open Google.",
   "Experiencias y traslados en Republica Dominicana": "Experiences and transfers in the Dominican Republic",
   "Descubre Republica Dominicana con reservas claras": "Discover the Dominican Republic with clear bookings",
+  "Republica Dominicana, bien organizada": "Dominican Republic, well organized",
+  "Tours y traslados en Republica Dominicana": "Tours and transfers in the Dominican Republic",
   "Reserva tours, traslados privados y planes seleccionados con precios transparentes, fotos reales y asistencia local en varios idiomas.":
     "Book tours, private transfers, and selected plans with transparent prices, real photos, and local assistance in multiple languages.",
+  "Tours, traslados privados y planes seleccionados con precios claros y asistencia local.":
+    "Tours, private transfers, and selected plans with clear prices and local assistance.",
+  "Reserva experiencias seleccionadas y traslados privados con precios claros.":
+    "Book selected experiences and private transfers with clear prices.",
   "Atencion para familias, parejas, grupos y viajeros que prefieren organizar todo antes de llegar.":
     "Support for families, couples, groups, and travelers who prefer to organize everything before arrival.",
   "Fotos verificadas": "Verified photos",
@@ -624,8 +630,14 @@ const frenchText: Record<string, string> = {
   "No se pudo abrir Google.": "Impossible d'ouvrir Google.",
   "Experiencias y traslados en Republica Dominicana": "Experiences et transferts en Republique dominicaine",
   "Descubre Republica Dominicana con reservas claras": "Decouvrez la Republique dominicaine avec des reservations claires",
+  "Republica Dominicana, bien organizada": "Republique dominicaine, bien organisee",
+  "Tours y traslados en Republica Dominicana": "Tours et transferts en Republique dominicaine",
   "Reserva tours, traslados privados y planes seleccionados con precios transparentes, fotos reales y asistencia local en varios idiomas.":
     "Reservez tours, transferts prives et plans selectionnes avec prix transparents, photos reelles et assistance locale en plusieurs langues.",
+  "Tours, traslados privados y planes seleccionados con precios claros y asistencia local.":
+    "Tours, transferts prives et plans selectionnes avec prix clairs et assistance locale.",
+  "Reserva experiencias seleccionadas y traslados privados con precios claros.":
+    "Reservez des experiences selectionnees et des transferts prives avec prix clairs.",
   "Atencion para familias, parejas, grupos y viajeros que prefieren organizar todo antes de llegar.":
     "Assistance pour familles, couples, groupes et voyageurs qui preferent tout organiser avant leur arrivee.",
   "Fotos verificadas": "Photos verifiees",
@@ -1581,15 +1593,13 @@ function HomeScreen({
       <ImageBackground source={{ uri: absoluteImageUrl(homeHeroImage) }} style={styles.hero} imageStyle={styles.heroImage as StyleProp<ImageStyle>}>
         <View style={styles.heroOverlay} />
         <View style={styles.heroContent}>
-          <Text style={styles.eyebrow}>Experiencias y traslados en Republica Dominicana</Text>
-          <Text style={styles.heroTitle}>Descubre Republica Dominicana con reservas claras</Text>
+          <Text style={styles.eyebrow}>Experiencias y traslados</Text>
+          <Text style={styles.heroTitle}>Tours y traslados en Republica Dominicana</Text>
           <Text style={styles.heroSubtitle}>
-            Reserva tours, traslados privados y planes seleccionados con precios transparentes, fotos reales y asistencia local en varios idiomas.
+            Reserva experiencias seleccionadas y traslados privados con precios claros.
           </Text>
-          <Text style={styles.heroHumanNote}>Atencion para familias, parejas, grupos y viajeros que prefieren organizar todo antes de llegar.</Text>
           <View style={styles.heroTrustRow}>
             <Text style={styles.heroTrustPill}>Fotos verificadas</Text>
-            <Text style={styles.heroTrustPill}>Precio transparente</Text>
             <Text style={styles.heroTrustPill}>Asistencia 24/7</Text>
           </View>
           <View style={styles.heroActions}>
@@ -3686,16 +3696,16 @@ const styles = StyleSheet.create({
   },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(6, 17, 31, 0.48)"
+    backgroundColor: "rgba(6, 17, 31, 0.38)"
   },
   heroContent: {
-    gap: 13,
+    gap: 11,
     padding: 22,
     paddingBottom: 34
   },
   eyebrow: {
     color: colors.skySoft,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "900",
     letterSpacing: 0,
     textTransform: "uppercase"
@@ -3709,8 +3719,8 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     color: colors.white,
-    fontSize: 38,
-    lineHeight: 43,
+    fontSize: 31,
+    lineHeight: 35,
     fontWeight: "900",
     letterSpacing: 0,
     textShadowColor: "rgba(6,17,31,0.72)",
@@ -3719,8 +3729,8 @@ const styles = StyleSheet.create({
   },
   heroSubtitle: {
     color: "#dbeafe",
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 15,
+    lineHeight: 21,
     fontWeight: "700",
     textShadowColor: "rgba(6,17,31,0.7)",
     textShadowOffset: { width: 0, height: 1 },
@@ -3749,8 +3759,8 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 12,
     fontWeight: "900",
-    paddingHorizontal: 10,
-    paddingVertical: 7
+    paddingHorizontal: 11,
+    paddingVertical: 8
   },
   heroActions: {
     gap: 10
