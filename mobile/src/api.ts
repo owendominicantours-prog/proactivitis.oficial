@@ -112,7 +112,8 @@ export type MobileTour = {
 
 const getBrowserLocalApiBaseUrl = () => {
   if (typeof window === "undefined") return null;
-  const host = window.location.hostname;
+  const host = window.location?.hostname;
+  if (!host) return null;
   if (host === "localhost" || host === "127.0.0.1") {
     return "http://localhost:3000";
   }
@@ -216,6 +217,11 @@ export const fetchTransferQuote = async ({
 export const fetchMobileTransferRoutes = async () => {
   const data = await jsonFetch<{ routes: MobileTransferRoute[] }>("/api/mobile/transfers");
   return data.routes ?? [];
+};
+
+export const fetchMobileTransferLocations = async () => {
+  const data = await jsonFetch<{ locations: LocationSummary[] }>("/api/mobile/transfer-locations");
+  return data.locations ?? [];
 };
 
 export const fetchMobileTours = async () => {

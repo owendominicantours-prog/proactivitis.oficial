@@ -57,9 +57,9 @@ import {
   createMobilePaymentIntent,
   fetchMobileConfig,
   fetchMobileTours,
+  fetchMobileTransferLocations,
   fetchMobileTransferRoutes,
   fetchMobileUser,
-  fetchTransferLocations,
   fetchTransferQuote,
   getApiBaseUrl,
   loginMobileUser,
@@ -407,17 +407,17 @@ const mergeLocations = (...groups: LocationSummary[][]) => {
   return merged;
 };
 
-const routeLocationMatches = (routes: MobileTransferRoute[], query: string) => {
+const collectRouteLocations = (routes: MobileTransferRoute[]) =>
+  mergeLocations(routes.map((route) => route.origin), routes.map((route) => route.destination));
+
+const transferLocationMatches = (locations: LocationSummary[], query: string) => {
   const normalizedQuery = normalizeLocationSearch(query);
   if (normalizedQuery.length < 2) return [];
-  return mergeLocations(
-    routes.map((route) => route.origin),
-    routes.map((route) => route.destination)
-  )
+  return mergeLocations(locations)
     .filter((location) =>
       normalizeLocationSearch(`${location.name} ${location.zoneName ?? ""} ${location.type}`).includes(normalizedQuery)
     )
-    .slice(0, 7);
+    .slice(0, 9);
 };
 
 const readUrlParams = (href: string) => {
@@ -1203,6 +1203,7 @@ function TransfersScreen({
   onOpenCheckout: (url: string) => void;
 }) {
   const [routes, setRoutes] = useState<MobileTransferRoute[]>(fallbackTransferRoutes);
+  const [availableLocations, setAvailableLocations] = useState<LocationSummary[]>(() => collectRouteLocations(fallbackTransferRoutes));
   const [originQuery, setOriginQuery] = useState("");
   const [destinationQuery, setDestinationQuery] = useState("");
   const [originOptions, setOriginOptions] = useState<LocationSummary[]>([]);
@@ -1245,6 +1246,12 @@ function TransfersScreen({
       .then((items) => {
         if (!active || !items.length) return;
         setRoutes(items);
+        setAvailableLocations((current) => mergeLocations(current, collectRouteLocations(items)));
+      })
+      .catch(() => undefined);
+    fetchMobileTransferLocations()
+      .then((items) => {
+        if (active && items.length) setAvailableLocations((current) => mergeLocations(items, current));
       })
       .catch(() => undefined);
     return () => {
@@ -1259,31 +1266,14 @@ function TransfersScreen({
       setOriginSearchError(null);
       return;
     }
-    let active = true;
-    const localMatches = routeLocationMatches(routes, originQuery);
+    const localMatches = transferLocationMatches(availableLocations, originQuery);
     setOriginOptions(localMatches);
-    setOriginLoading(true);
+    setOriginLoading(false);
     setOriginSearchError(null);
-    const timer = setTimeout(() => {
-      fetchTransferLocations(originQuery)
-        .then((items) => {
-          if (active) setOriginOptions(mergeLocations(items, localMatches).slice(0, 7));
-        })
-        .catch((error) => {
-          if (active) {
-            setOriginOptions(localMatches);
-            setOriginSearchError(error instanceof Error ? error.message : "No se pudo buscar origen.");
-          }
-        })
-        .finally(() => {
-          if (active) setOriginLoading(false);
-        });
-    }, 280);
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
-  }, [originQuery, origin?.name, routes]);
+    if (!localMatches.length && originQuery.trim().length >= 3) {
+      setOriginSearchError("No encontramos coincidencias. Prueba con hotel, aeropuerto o zona.");
+    }
+  }, [availableLocations, originQuery, origin?.name]);
 
   useEffect(() => {
     if (destination?.name === destinationQuery || destinationQuery.trim().length < 2) {
@@ -1292,31 +1282,14 @@ function TransfersScreen({
       setDestinationSearchError(null);
       return;
     }
-    let active = true;
-    const localMatches = routeLocationMatches(routes, destinationQuery);
+    const localMatches = transferLocationMatches(availableLocations, destinationQuery);
     setDestinationOptions(localMatches);
-    setDestinationLoading(true);
+    setDestinationLoading(false);
     setDestinationSearchError(null);
-    const timer = setTimeout(() => {
-      fetchTransferLocations(destinationQuery)
-        .then((items) => {
-          if (active) setDestinationOptions(mergeLocations(items, localMatches).slice(0, 7));
-        })
-        .catch((error) => {
-          if (active) {
-            setDestinationOptions(localMatches);
-            setDestinationSearchError(error instanceof Error ? error.message : "No se pudo buscar destino.");
-          }
-        })
-        .finally(() => {
-          if (active) setDestinationLoading(false);
-        });
-    }, 280);
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
-  }, [destinationQuery, destination?.name, routes]);
+    if (!localMatches.length && destinationQuery.trim().length >= 3) {
+      setDestinationSearchError("No encontramos coincidencias. Prueba con hotel, aeropuerto o zona.");
+    }
+  }, [availableLocations, destinationQuery, destination?.name]);
 
   const resetQuote = () => {
     setVehicles([]);
