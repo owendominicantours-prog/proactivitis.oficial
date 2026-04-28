@@ -45,6 +45,7 @@ import {
   featuredTours,
   tourCategories,
   transferRoutes,
+  transferVehicles,
   trustStats,
   type Tour
 } from "./src/catalog";
@@ -309,6 +310,33 @@ const catalogTransferRoutes: MobileTransferRoute[] = transferRoutes.map((route) 
 }));
 
 const fallbackTransferRoutes = staticMobileTransferRoutes.length ? staticMobileTransferRoutes : catalogTransferRoutes;
+
+const homePopularTransferCards = [
+  {
+    id: "home-puj",
+    code: "PUJ",
+    airport: "Punta Cana Airport",
+    destination: "Bavaro y Cap Cana",
+    priceFrom: 35,
+    vehicle: transferVehicles[0]
+  },
+  {
+    id: "home-sdq",
+    code: "SDQ",
+    airport: "Aeropuerto Santo Domingo",
+    destination: "Santo Domingo y Bayahibe",
+    priceFrom: 150,
+    vehicle: transferVehicles[1]
+  },
+  {
+    id: "home-lrm",
+    code: "LRM",
+    airport: "Aeropuerto La Romana",
+    destination: "La Romana y Bayahibe",
+    priceFrom: 94,
+    vehicle: transferVehicles[2]
+  }
+];
 
 const normalizeLocationSearch = (value: string) =>
   value
@@ -675,15 +703,20 @@ function HomeScreen({
       </View>
 
       <SectionHeader title="Rutas populares" actionLabel="Cotizar" onPress={onOpenTransfers} />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
-        {fallbackTransferRoutes.slice(0, 5).map((route) => (
-          <Pressable key={route.id} style={styles.routeCard} onPress={onOpenTransfers}>
-            <Text style={styles.routeTitle}>{route.destination.name}</Text>
-            <Text style={styles.routeMeta}>{route.origin.name}</Text>
+      <View style={styles.homeRouteGrid}>
+        {homePopularTransferCards.map((route) => (
+          <Pressable key={route.id} style={styles.homeRouteCard} onPress={onOpenTransfers}>
+            <Text style={styles.homeRouteCode}>{route.code}</Text>
+            <Text style={styles.homeRouteAirport} numberOfLines={2}>{route.airport}</Text>
+            <Text style={styles.homeRouteDestination} numberOfLines={2}>{route.destination}</Text>
+            <View style={styles.homeVehiclePill}>
+              <Car size={13} color={colors.skyDark} />
+              <Text style={styles.homeVehicleText} numberOfLines={1}>{route.vehicle.name}</Text>
+            </View>
             <Text style={styles.routePrice}>Desde {money(route.priceFrom)}</Text>
           </Pressable>
         ))}
-      </ScrollView>
+      </View>
 
       <View style={styles.noticePanel}>
         <ShieldCheck size={22} color={colors.skyDark} />
@@ -2301,6 +2334,56 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 12,
     fontWeight: "700"
+  },
+  homeRouteGrid: {
+    flexDirection: "row",
+    gap: 8
+  },
+  homeRouteCard: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: 172,
+    gap: 7,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 11,
+    ...shadows.card
+  },
+  homeRouteCode: {
+    color: colors.text,
+    fontSize: 22,
+    lineHeight: 26,
+    fontWeight: "900"
+  },
+  homeRouteAirport: {
+    color: colors.text,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "900"
+  },
+  homeRouteDestination: {
+    color: colors.muted,
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: "700"
+  },
+  homeVehiclePill: {
+    minHeight: 28,
+    maxWidth: "100%",
+    borderRadius: 999,
+    backgroundColor: colors.skySoft,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 8
+  },
+  homeVehicleText: {
+    flexShrink: 1,
+    color: colors.skyDark,
+    fontSize: 11,
+    fontWeight: "900"
   },
   routeCard: {
     width: 230,
