@@ -3,6 +3,7 @@ import type { ComponentType, ReactNode } from "react";
 import { Component, useEffect, useMemo, useRef, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import {
+  BackHandler,
   Dimensions,
   Image,
   ImageBackground,
@@ -535,6 +536,26 @@ export default function App() {
     });
   }, [activeTab, activeProduct?.id, checkoutUrl]);
 
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      if (checkoutUrl) {
+        setCheckoutUrl(null);
+        return true;
+      }
+      if (activeProduct) {
+        setActiveProduct(null);
+        return true;
+      }
+      if (activeTab !== "home") {
+        setActiveTab("home");
+        return true;
+      }
+      return false;
+    });
+
+    return () => subscription.remove();
+  }, [activeProduct, activeTab, checkoutUrl]);
+
   const filteredTours = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     return tours.filter((tour) => {
@@ -912,6 +933,16 @@ function ProductScreen({
   useEffect(() => {
     setSelectedImage(galleryImages[0] ?? tour.image);
   }, [tour.id, galleryImages, tour.image]);
+
+  useEffect(() => {
+    if (!galleryOpen) return;
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      setGalleryOpen(false);
+      return true;
+    });
+
+    return () => subscription.remove();
+  }, [galleryOpen]);
 
   const infoRows = [
     { label: "Punto de encuentro", value: tour.meetingPoint ?? "" },
