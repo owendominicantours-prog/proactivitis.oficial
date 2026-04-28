@@ -81,7 +81,7 @@ import { colors, links, shadows } from "./src/theme";
 type TabKey = "home" | "tours" | "transfers" | "zones" | "profile";
 type TripType = "one-way" | "round-trip";
 type IconType = ComponentType<{ size?: number; color?: string; strokeWidth?: number; fill?: string }>;
-type AppLanguage = "es" | "en";
+type AppLanguage = "es" | "en" | "fr";
 
 type LanguageContextValue = {
   language: AppLanguage;
@@ -90,7 +90,8 @@ type LanguageContextValue = {
 
 const languageOptions: Array<{ code: AppLanguage; title: string; subtitle: string }> = [
   { code: "es", title: "Espanol", subtitle: "Usar la app en espanol" },
-  { code: "en", title: "English", subtitle: "Use the app in English" }
+  { code: "en", title: "English", subtitle: "Use the app in English" },
+  { code: "fr", title: "Frances", subtitle: "Usar la app en frances" }
 ];
 
 const languageContext = createContext<LanguageContextValue>({
@@ -101,6 +102,8 @@ const languageContext = createContext<LanguageContextValue>({
 const englishText: Record<string, string> = {
   "Espanol": "Spanish",
   "Usar la app en espanol": "Use the app in Spanish",
+  "Frances": "French",
+  "Usar la app en frances": "Use the app in French",
   "Elige tu idioma": "Choose your language",
   "Puedes cambiarlo luego desde Perfil.": "You can change it later from Profile.",
   "Continuar": "Continue",
@@ -321,13 +324,285 @@ const englishText: Record<string, string> = {
   "Uso de cookies en la web y servicios conectados.": "Cookie use on the website and connected services.",
   "Datos legales, contacto y notificaciones formales.": "Legal details, contact, and formal notices.",
   "Cancelaciones y reembolsos": "Cancellations and refunds",
-  "Aplican los terminos y la politica indicada en cada producto.": "Terms and the policy shown on each product apply."
+  "Aplican los terminos y la politica indicada en cada producto.": "Terms and the policy shown on each product apply.",
+  "Desde": "From",
+  "Opciones": "Options",
+  "Ajusta la cantidad": "Adjust quantity",
+  "Legal y politicas": "Legal and policies",
+  "Politicas y legal": "Policies and legal",
+  "Accesos visibles para privacidad, terminos, cookies, informacion legal y cancelaciones.":
+    "Visible access to privacy, terms, cookies, legal information, and cancellations.",
+  "Cancelacion gratuita": "Free cancellation",
+  "Cancelacion flexible": "Flexible cancellation",
+  "No reembolsable": "Non-refundable",
+  "Confirmacion inmediata": "Instant confirmation",
+  "Confirmacion manual": "Manual confirmation"
+};
+
+const frenchText: Record<string, string> = {
+  "Espanol": "Espagnol",
+  "Usar la app en espanol": "Utiliser l'app en espagnol",
+  "English": "Anglais",
+  "Use the app in English": "Utiliser l'app en anglais",
+  "Frances": "Francais",
+  "Usar la app en frances": "Utiliser l'app en francais",
+  "Elige tu idioma": "Choisissez votre langue",
+  "Puedes cambiarlo luego desde Perfil.": "Vous pourrez le changer ensuite depuis Profil.",
+  "Continuar": "Continuer",
+  "Idioma": "Langue",
+  "Cambiar idioma": "Changer de langue",
+  "Idioma de la app": "Langue de l'app",
+  "La app recordara tu preferencia para futuras visitas.": "L'app gardera votre preference pour les prochaines visites.",
+  "Inicio": "Accueil",
+  "Tours": "Tours",
+  "Transfer": "Transfert",
+  "Zonas": "Zones",
+  "Perfil": "Profil",
+  "Traslados privados": "Transferts prives",
+  "Busca tu ruta real": "Trouvez votre vrai trajet",
+  "Escribe tu aeropuerto, hotel o zona. La app te muestra coincidencias antes de calcular.":
+    "Ecrivez votre aeroport, hotel ou zone. L'app affiche les resultats avant le calcul.",
+  "Elige origen y destino": "Choisissez depart et arrivee",
+  "No dejamos una ruta marcada por defecto para que reserves exactamente donde necesitas.":
+    "Aucun trajet n'est preselectionne afin de reserver exactement ce qu'il vous faut.",
+  "Solo ida": "Aller simple",
+  "Ida y vuelta": "Aller-retour",
+  "Origen": "Depart",
+  "Destino": "Arrivee",
+  "Ej: Aeropuerto Punta Cana": "Ex: aeroport de Punta Cana",
+  "Ej: hotel, villa o zona": "Ex: hotel, villa ou zone",
+  "Rutas populares": "Trajets populaires",
+  "Fecha salida": "Date de depart",
+  "Hora": "Heure",
+  "Fecha regreso": "Date de retour",
+  "Hora regreso": "Heure de retour",
+  "Pasajeros": "Passagers",
+  "Buscar tarifa": "Chercher le tarif",
+  "Buscando...": "Recherche...",
+  "Vehiculos disponibles": "Vehicules disponibles",
+  "Reservar": "Reserver",
+  "Reservar ahora": "Reserver maintenant",
+  "Guardar ruta": "Sauvegarder le trajet",
+  "Busca y selecciona origen y destino desde la lista real.": "Cherchez et choisissez depart et arrivee dans la liste reelle.",
+  "Origen y destino deben ser diferentes.": "Le depart et l'arrivee doivent etre differents.",
+  "Selecciona el hotel o aeropuerto exacto antes de cotizar.": "Choisissez l'hotel ou l'aeroport exact avant le devis.",
+  "Indica fecha y hora de regreso.": "Ajoutez la date et l'heure de retour.",
+  "No hay vehiculos disponibles para ese grupo.": "Aucun vehicule disponible pour ce groupe.",
+  "No se pudo calcular la tarifa real.": "Impossible de calculer le tarif reel.",
+  "No encontramos coincidencias. Prueba con hotel, aeropuerto o zona.": "Aucun resultat. Essayez un hotel, aeroport ou zone.",
+  "Reserva": "Reservation",
+  "Reserva segura": "Reservation securisee",
+  "Confirma tu experiencia en minutos": "Confirmez votre experience en quelques minutes",
+  "Revisa el producto, deja tus datos y continua al pago seguro de Proactivitis.":
+    "Verifiez le produit, ajoutez vos donnees et continuez vers le paiement securise Proactivitis.",
+  "Datos": "Infos",
+  "Recogida": "Prise en charge",
+  "Pago": "Paiement",
+  "Transfer privado": "Transfert prive",
+  "Tour": "Tour",
+  "Fecha": "Date",
+  "Personas": "Personnes",
+  "Total": "Total",
+  "Datos de contacto": "Coordonnees",
+  "Nombre": "Prenom",
+  "Apellido": "Nom",
+  "Email": "Email",
+  "Telefono": "Telephone",
+  "Recogida y preferencias": "Prise en charge et preferences",
+  "Punto principal": "Point principal",
+  "Hotel o punto de recogida": "Hotel ou point de prise en charge",
+  "Notas especiales": "Notes speciales",
+  "Pago nativo protegido por Stripe y confirmacion por Proactivitis.":
+    "Paiement natif protege par Stripe et confirmation par Proactivitis.",
+  "Total a pagar": "Total a payer",
+  "Pagar con Stripe": "Payer avec Stripe",
+  "Procesando...": "Traitement...",
+  "Abrir checkout web": "Ouvrir le checkout web",
+  "Confirmar por WhatsApp": "Confirmer par WhatsApp",
+  "Volver": "Retour",
+  "Indica el nombre.": "Ajoutez le prenom.",
+  "Indica el apellido.": "Ajoutez le nom.",
+  "Indica un email valido.": "Ajoutez un email valide.",
+  "Indica hotel o punto de recogida.": "Ajoutez l'hotel ou le point de prise en charge.",
+  "Stripe nativo no esta disponible en la vista web. Usa checkout web o prueba en Android/iOS.":
+    "Stripe natif n'est pas disponible dans la vue web. Utilisez le checkout web ou testez sur Android/iOS.",
+  "Stripe aun no esta configurado en esta build. Revisa NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.":
+    "Stripe n'est pas encore configure dans cette build. Verifiez NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.",
+  "Preparando pago seguro...": "Preparation du paiement securise...",
+  "Stripe no devolvio client secret para abrir el pago.": "Stripe n'a pas renvoye le client secret pour ouvrir le paiement.",
+  "Abriendo pago seguro...": "Ouverture du paiement securise...",
+  "El pago fue cancelado o no se completo.": "Le paiement a ete annule ou n'a pas abouti.",
+  "Pago confirmado. Tu reserva quedo registrada en Proactivitis.": "Paiement confirme. Votre reservation est enregistree chez Proactivitis.",
+  "No se pudo completar el pago.": "Impossible de completer le paiement.",
+  "Abriendo checkout web de Proactivitis...": "Ouverture du checkout web Proactivitis...",
+  "Cuenta": "Compte",
+  "Perfil Proactivitis": "Profil Proactivitis",
+  "Tus reservas quedan asociadas a este correo.": "Vos reservations seront liees a cet email.",
+  "Cliente Proactivitis": "Client Proactivitis",
+  "Cerrar sesion": "Se deconnecter",
+  "WhatsApp": "WhatsApp",
+  "Soporte directo": "Assistance directe",
+  "Web": "Web",
+  "Entra a Proactivitis": "Connectez-vous a Proactivitis",
+  "Conecta tus datos con la base real de la web.": "Connectez vos donnees avec la base reelle du site web.",
+  "Entrar": "Connexion",
+  "Crear cuenta": "Creer un compte",
+  "Password": "Mot de passe",
+  "Conectando...": "Connexion...",
+  "No se pudo entrar.": "Connexion impossible.",
+  "Viajes guardados": "Voyages sauvegardes",
+  "Todavia no hay planes guardados": "Aucun plan sauvegarde pour le moment",
+  "Cotiza un transfer o marca tours como favoritos.": "Demandez un devis de transfert ou marquez des tours comme favoris.",
+  "Cotizar transfer": "Devis transfert",
+  "Ver tours": "Voir les tours",
+  "Transfer guardado": "Transfert sauvegarde",
+  "Continuar pago": "Continuer le paiement",
+  "Tours favoritos": "Tours favoris",
+  "Ciudades": "Villes",
+  "Elige donde quieres vivir la experiencia": "Choisissez ou vivre l'experience",
+  "Entra por ciudad y mira solo los tours disponibles en esa zona.": "Entrez par ville et voyez seulement les tours disponibles dans cette zone.",
+  "Todos los destinos": "Toutes les destinations",
+  "Ver todo el catalogo": "Voir tout le catalogue",
+  "Ciudad": "Ville",
+  "Cambiar ciudad": "Changer de ville",
+  "Ciudad seleccionada": "Ville selectionnee",
+  "Tours filtrados por ciudad. Puedes reservar el tour o cotizar transfer para llegar comodo.":
+    "Tours filtres par ville. Vous pouvez reserver le tour ou demander un transfert pour arriver facilement.",
+  "Todas": "Toutes",
+  "Todas las ciudades": "Toutes les villes",
+  "No hay tours en esta zona": "Aucun tour dans cette zone",
+  "Prueba otra zona o revisa el catalogo completo.": "Essayez une autre zone ou consultez tout le catalogue.",
+  "Experiencias reales de la web, fotos del producto, detalles claros y checkout dentro de la app.":
+    "Experiences reelles du site, photos du produit, details clairs et checkout dans l'app.",
+  "Catalogo Proactivitis": "Catalogue Proactivitis",
+  "Tours listos para reservar": "Tours prets a reserver",
+  "Galeria": "Galerie",
+  "Reserva rapida": "Reservation rapide",
+  "Soporte humano": "Assistance humaine",
+  "Buscar Saona, buggy, parasailing...": "Chercher Saona, buggy, parasailing...",
+  "Actualizando productos...": "Mise a jour des produits...",
+  "Todos los planes": "Tous les plans",
+  "Conectado": "Connecte",
+  "Cerrar": "Fermer",
+  "fotos": "photos",
+  "Politica de privacidad": "Politique de confidentialite",
+  "Como protegemos datos, cuenta y reservas.": "Comment nous protegeons les donnees, le compte et les reservations.",
+  "Terminos y condiciones": "Conditions generales",
+  "Reglas de uso, reservas, pagos y responsabilidades.": "Regles d'utilisation, reservations, paiements et responsabilites.",
+  "Cookies": "Cookies",
+  "Uso de cookies y tecnologias similares.": "Utilisation de cookies et technologies similaires.",
+  "Informacion legal": "Information legale",
+  "Empresa, contacto y datos de operacion.": "Entreprise, contact et donnees d'operation.",
+  "Ver politicas": "Voir les politiques",
+  "Error de pantalla": "Erreur d'ecran",
+  "La app encontro un problema en esta vista. Vuelve y prueba otra vez.": "L'app a trouve un probleme dans cette vue. Revenez et essayez encore.",
+  "Volver al inicio": "Retour a l'accueil",
+  "Todos": "Tous",
+  "Agua": "Eau",
+  "Aventura": "Aventure",
+  "Cultura": "Culture",
+  "Premium": "Premium",
+  "Ver tours 🔥": "Voir les tours 🔥",
+  "Buscar transfer 🚘": "Chercher un transfert 🚘",
+  "🌴 Tours, transfers y planes privados": "🌴 Tours, transferts et plans prives",
+  "Tu viaje en RD, claro y sin estres": "Votre voyage en RD, clair et sans stress",
+  "Elige tours con fotos reales, cotiza tu traslado y reserva con ayuda local 24/7. Aqui vienes a disfrutar, nosotros organizamos lo dificil.":
+    "Choisissez des tours avec de vraies photos, demandez votre transfert et reservez avec une aide locale 24/7. Vous profitez, nous organisons le reste.",
+  "✨ Recomendado para familias, parejas y grupos que quieren reservar sin vueltas.":
+    "✨ Recommande pour familles, couples et groupes qui veulent reserver simplement.",
+  "📸 Fotos reales": "📸 Photos reelles",
+  "💵 Precio claro": "💵 Prix clair",
+  "💬 Soporte humano": "💬 Assistance humaine",
+  "Transfers": "Transferts",
+  "Soporte": "Assistance",
+  "Idiomas": "Langues",
+  "Tours que se sienten reales": "Des tours qui semblent reels",
+  "Fotos, opciones y precios conectados a la web. Ves antes de reservar.":
+    "Photos, options et prix connectes au site. Vous voyez avant de reserver.",
+  "Transfer sin adivinar": "Transfert sans deviner",
+  "Busca hoteles y aeropuertos reales, elige la ruta y confirma sin enredos.":
+    "Cherchez de vrais hotels et aeroports, choisissez le trajet et confirmez sans confusion.",
+  "Ver experiencias": "Voir les experiences",
+  "Reserva con respaldo local": "Reservation avec soutien local",
+  "Completa tus datos en la app y finaliza con el checkout seguro de Proactivitis. Si necesitas ayuda, te hablamos como personas.":
+    "Completez vos donnees dans l'app et terminez avec le checkout securise Proactivitis. Si vous avez besoin d'aide, de vraies personnes vous repondent.",
+  "Aeropuerto Santo Domingo": "Aeroport de Saint-Domingue",
+  "Aeropuerto La Romana": "Aeroport de La Romana",
+  "Bavaro y Cap Cana": "Bavaro et Cap Cana",
+  "Santo Domingo y Bayahibe": "Saint-Domingue et Bayahibe",
+  "La Romana y Bayahibe": "La Romana et Bayahibe",
+  "La pantalla no cargo bien": "L'ecran ne s'est pas bien charge",
+  "La app sigue abierta. Vuelve al inicio o confirma la reserva por WhatsApp.":
+    "L'app reste ouverte. Revenez a l'accueil ou confirmez la reservation par WhatsApp.",
+  "🔥 Recomendados": "🔥 Recommandes",
+  "Ver todos": "Voir tout",
+  "🧭 Categorias": "🧭 Categories",
+  "Explorar": "Explorer",
+  "🚐 Rutas populares": "🚐 Trajets populaires",
+  "Cotizar": "Devis",
+  "Duracion": "Duree",
+  "Zona": "Zone",
+  "Confirmacion segura": "Confirmation securisee",
+  "Punto de encuentro": "Point de rencontre",
+  "Instrucciones": "Instructions",
+  "Horarios": "Horaires",
+  "Dias": "Jours",
+  "Capacidad": "Capacite",
+  "Edad minima": "Age minimum",
+  "Nivel fisico": "Niveau physique",
+  "Accesibilidad": "Accessibilite",
+  "Requisitos": "Exigences",
+  "Cancelacion": "Annulation",
+  "Incluye": "Inclus",
+  "No incluido": "Non inclus",
+  "Adultos": "Adultes",
+  "Ver tour": "Voir le tour",
+  "Experiencia Proactivitis": "Experience Proactivitis",
+  "Recogida disponible segun zona": "Prise en charge disponible selon la zone",
+  "Experiencia confirmada por Proactivitis.": "Experience confirmee par Proactivitis.",
+  "Fecha pendiente": "Date en attente",
+  "Hora pendiente": "Heure en attente",
+  "Cookies y tecnologias": "Cookies et technologies",
+  "Uso de cookies en la web y servicios conectados.": "Utilisation de cookies sur le site et les services connectes.",
+  "Datos legales, contacto y notificaciones formales.": "Donnees legales, contact et notifications formelles.",
+  "Cancelaciones y reembolsos": "Annulations et remboursements",
+  "Aplican los terminos y la politica indicada en cada producto.": "Les conditions et la politique indiquees sur chaque produit s'appliquent.",
+  "Desde": "A partir de",
+  "Opciones": "Options",
+  "Ajusta la cantidad": "Ajuster la quantite",
+  "Legal y politicas": "Legal et politiques",
+  "Politicas y legal": "Politiques et legal",
+  "Accesos visibles para privacidad, terminos, cookies, informacion legal y cancelaciones.":
+    "Acces visible a la confidentialite, aux conditions, cookies, informations legales et annulations.",
+  "Cancelacion gratuita": "Annulation gratuite",
+  "Cancelacion flexible": "Annulation flexible",
+  "No reembolsable": "Non remboursable",
+  "Confirmacion inmediata": "Confirmation immediate",
+  "Confirmacion manual": "Confirmation manuelle"
+};
+
+const languageDictionaries: Record<Exclude<AppLanguage, "es">, Record<string, string>> = {
+  en: englishText,
+  fr: frenchText
 };
 
 const translateText = (value: string, language: AppLanguage) => {
   if (language === "es") return value;
-  const exact = englishText[value];
+  const dictionary = languageDictionaries[language];
+  const exact = dictionary[value];
   if (exact) return exact;
+
+  if (language === "fr") {
+    return value
+      .replace(/^(\d+) ciudades$/, "$1 villes")
+      .replace(/^(\d+) experiencias conectadas$/, "$1 experiences connectees")
+      .replace(/^(\d+) experiencias$/, "$1 experiences")
+      .replace(/^(\d+) tours$/, "$1 tours")
+      .replace(/^(\d+) fotos$/, "$1 photos")
+      .replace(/^Desde /, "A partir de ")
+      .replace(/ experiencias$/, " experiences")
+      .replace(/ tours$/, " tours");
+  }
 
   return value
     .replace(/^(\d+) ciudades$/, "$1 cities")
@@ -491,7 +766,7 @@ const mobileSessionStorageKey = "proactivitis_mobile_session";
 const transferDraftStorageKey = "proactivitis_transfer_draft";
 const checkoutDraftStorageKey = "proactivitis_checkout_draft";
 const languageStorageKey = "proactivitis_language";
-const appBuildLabel = "Version 1.0.5 | Android 6";
+const appBuildLabel = "Version 1.0.6 | Android 6";
 const windowHeight = Dimensions.get("window").height;
 
 const money = (value: number) =>
@@ -604,7 +879,7 @@ const writeStoredJson = async (key: string, value: unknown | null) => {
   await SecureStore.setItemAsync(key, JSON.stringify(value)).catch(() => undefined);
 };
 
-const isAppLanguage = (value: unknown): value is AppLanguage => value === "es" || value === "en";
+const isAppLanguage = (value: unknown): value is AppLanguage => value === "es" || value === "en" || value === "fr";
 
 const fallbackBySlug = new Map(featuredTours.map((tour) => [tour.slug, tour]));
 const fallbackById = new Map(featuredTours.map((tour) => [tour.id, tour]));
@@ -630,6 +905,20 @@ const toMobileTourPayload = (tour: Tour): MobileTour => ({
 });
 
 const mapCatalogTour = (tour: Tour): AppTour => mapMobileTour(toMobileTourPayload(tour));
+
+const productValueLabels: Record<string, string> = {
+  free_cancellation: "Cancelacion gratuita",
+  flexible_cancellation: "Cancelacion flexible",
+  non_refundable: "No reembolsable",
+  instant_confirmation: "Confirmacion inmediata",
+  manual_confirmation: "Confirmacion manual"
+};
+
+const normalizeProductValue = (value?: string | null) => {
+  const text = value?.trim();
+  if (!text) return text;
+  return productValueLabels[text.toLowerCase()] ?? text;
+};
 
 const mapMobileTour = (tour: MobileTour): AppTour => {
   const fallback = fallbackBySlug.get(tour.slug) ?? fallbackById.get(tour.id);
@@ -661,12 +950,12 @@ const mapMobileTour = (tour: MobileTour): AppTour => {
     meetingPoint: tour.meetingPoint,
     meetingInstructions: tour.meetingInstructions,
     requirements: tour.requirements,
-    cancellationPolicy: tour.cancellationPolicy,
+    cancellationPolicy: normalizeProductValue(tour.cancellationPolicy),
     terms: tour.terms,
     physicalLevel: tour.physicalLevel,
     minAge: tour.minAge,
     accessibility: tour.accessibility,
-    confirmationType: tour.confirmationType,
+    confirmationType: normalizeProductValue(tour.confirmationType),
     capacity: tour.capacity,
     webTour: tour
   };
@@ -1192,9 +1481,6 @@ function HomeScreen({
       <ImageBackground source={{ uri: absoluteImageUrl(homeHeroImage) }} style={styles.hero} imageStyle={styles.heroImage as StyleProp<ImageStyle>}>
         <View style={styles.heroOverlay} />
         <View style={styles.heroContent}>
-          <View style={styles.logoGlow}>
-            <Image source={require("./assets/proactivitis-logo.png")} style={styles.logo as StyleProp<ImageStyle>} resizeMode="contain" />
-          </View>
           <Text style={styles.eyebrow}>🌴 Tours, transfers y planes privados</Text>
           <Text style={styles.heroTitle}>Tu viaje en RD, claro y sin estres</Text>
           <Text style={styles.heroSubtitle}>
@@ -3274,13 +3560,6 @@ const styles = StyleSheet.create({
     gap: 13,
     padding: 22,
     paddingBottom: 34
-  },
-  logoGlow: {
-    alignSelf: "flex-start"
-  },
-  logo: {
-    width: 218,
-    height: 86
   },
   eyebrow: {
     color: colors.skySoft,
