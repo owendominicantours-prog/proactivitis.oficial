@@ -67,10 +67,52 @@ foreach ($line in $deviceLines) {
 $env:ANDROID_SERIAL = $device
 $env:EXPO_PUBLIC_API_BASE_URL = "https://proactivitis.com"
 
+$sdkDir = $env:ANDROID_HOME
+if (-not $sdkDir) {
+  $sdkDir = $env:ANDROID_SDK_ROOT
+}
+if (-not $sdkDir) {
+  $sdkDir = Join-Path $env:LOCALAPPDATA "Android\Sdk"
+}
+if (-not (Test-Path $sdkDir)) {
+  Write-Host "No encontre el Android SDK en $sdkDir" -ForegroundColor Red
+  Write-Host "Abre Android Studio y confirma que Android SDK este instalado." -ForegroundColor Red
+  exit 1
+}
+
+$localProperties = Join-Path $PSScriptRoot "android\local.properties"
+$sdkDirForGradle = $sdkDir.Replace("\", "/")
+Set-Content -Path $localProperties -Value "sdk.dir=$sdkDirForGradle" -Encoding ASCII
+Write-Host "Android SDK: $sdkDirForGradle" -ForegroundColor DarkGray
+
 Write-Host "Usando MuMu: $device" -ForegroundColor Green
 Write-Host "Dispositivos finales:" -ForegroundColor Cyan
 & $adb devices | Out-Host
-Write-Host "Instalando/abriendo la app local. La primera vez puede tardar varios minutos." -ForegroundColor Yellow
-Write-Host "Cuando termine, deja esta ventana abierta para ver cambios en vivo." -ForegroundColor Green
+Write-Host "Compilando APK debug para MuMu. La primera vez puede tardar varios minutos." -ForegroundColor Yellow
 
-npx expo run:android
+$env:NODE_ENV = "development"
+Push-Location (Join-Path $PSScriptRoot "android")
+try {
+  .\gradlew.bat app:assembleDebug -x lint -x test -PreactNativeDevServerPort=8081 -PreactNativeArchitectures=x86_64 --console=plain
+} finally {
+  Pop-Location
+}
+
+$apk = Join-Path $PSScriptRoot "android\app\build\outputs\apk\debug\app-debug.apk"
+if (-not (Test-Path $apk)) {
+  Write-Host "No se genero el APK debug: $apk" -ForegroundColor Red
+  exit 1
+}
+
+Write-Host "Instalando APK en MuMu..." -ForegroundColor Cyan
+& $adb -s $device install -r $apk | Out-Host
+& $adb -s $device reverse tcp:8081 tcp:8081 | Out-Null
+
+Write-Host "Abriendo Proactivitis en MuMu..." -ForegroundColor Cyan
+& $adb -s $device shell monkey -p com.proactivitis.app -c android.intent.category.LAUNCHER 1 | Out-Host
+
+Write-Host ""
+Write-Host "Listo. Ahora se abre Metro en esta ventana." -ForegroundColor Green
+Write-Host "Deja esta ventana abierta; los cambios JS se refrescan en MuMu." -ForegroundColor Green
+
+npx expo start --localhost --clear
