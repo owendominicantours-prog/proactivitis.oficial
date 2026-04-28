@@ -227,8 +227,12 @@ export const fetchMobileTransferLocations = async () => {
   return data.locations ?? [];
 };
 
-export const fetchMobileTours = async () => {
-  const data = await jsonFetch<{ tours: MobileTour[] }>("/api/mobile/tours?limit=50");
+export const fetchMobileTours = async (locale = "es") => {
+  const params = new URLSearchParams({
+    limit: "50",
+    locale
+  });
+  const data = await jsonFetch<{ tours: MobileTour[] }>(`/api/mobile/tours?${params.toString()}`);
   return data.tours ?? [];
 };
 

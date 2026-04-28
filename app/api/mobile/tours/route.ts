@@ -44,7 +44,7 @@ const sanitizeText = (value?: string | null) => {
   return textReplacements.reduce((text, [from, to]) => text.replaceAll(from, to), decoded).trim();
 };
 
-const formatDuration = (value?: string | null) => {
+const formatDuration = (value?: string | null, translatedUnit?: string | null) => {
   const raw = sanitizeText(value);
   if (!raw) return "Duracion variable";
 
@@ -53,6 +53,7 @@ const formatDuration = (value?: string | null) => {
     const durationValue = parsed?.value ? String(parsed.value).trim() : "";
     const durationUnit = parsed?.unit ? sanitizeText(parsed.unit).toLowerCase() : "";
     if (!durationValue) return "Duracion variable";
+    if (translatedUnit) return `${durationValue} ${sanitizeText(translatedUnit)}`.trim();
     if (durationUnit.includes("min")) return `${durationValue} min`;
     if (durationUnit.includes("dia") || durationUnit.includes("d\u00eda") || durationUnit.includes("day")) {
       return `${durationValue} dias`;
@@ -130,6 +131,8 @@ const parseItineraryStops = (value?: string | null) =>
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const limit = Math.min(Math.max(Number(url.searchParams.get("limit") ?? 24), 1), 50);
+  const localeParam = sanitizeText(url.searchParams.get("locale")).toLowerCase();
+  const locale = localeParam === "en" || localeParam === "fr" ? localeParam : "es";
 
   const tours = await prisma.tour.findMany({
     where: { status: "published" },
@@ -185,28 +188,49 @@ export async function GET(request: NextRequest) {
           imageUrl: true,
           isDefault: true
         }
+      },
+      translations: {
+        where: { locale },
+        take: 1,
+        select: {
+          title: true,
+          subtitle: true,
+          shortDescription: true,
+          description: true,
+          includesList: true,
+          notIncludedList: true,
+          itineraryStops: true,
+          highlights: true,
+          durationUnit: true
+        }
       }
     }
   });
 
   const response = NextResponse.json({
     tours: tours.map((tour) => {
+      const translation = locale === "es" ? null : tour.translations[0];
       const gallery = parseGallery(tour.gallery).map(toAbsoluteUrl);
       const image = toAbsoluteUrl(tour.heroImage ?? gallery[0]);
-      const includesList = parseJsonList(tour.includesList);
-      const notIncludedList = parseJsonList(tour.notIncludedList);
+      const translatedIncludes = parseJsonList(translation?.includesList);
+      const translatedNotIncluded = parseJsonList(translation?.notIncludedList);
+      const translatedHighlights = parseJsonList(translation?.highlights);
+      const translatedItinerary = parseJsonList(translation?.itineraryStops);
+      const includesList = translatedIncludes.length ? translatedIncludes : parseJsonList(tour.includesList);
+      const notIncludedList = translatedNotIncluded.length ? translatedNotIncluded : parseJsonList(tour.notIncludedList);
+      const itineraryStops = parseItineraryStops(tour.adminNote);
       return {
         id: tour.id,
         productId: tour.productId,
         slug: tour.slug,
-        title: sanitizeText(tour.title),
-        subtitle: sanitizeText(tour.subtitle),
-        description: sanitizeText(tour.shortDescription ?? tour.description),
-        fullDescription: sanitizeText(tour.description),
+        title: sanitizeText(translation?.title ?? tour.title),
+        subtitle: sanitizeText(translation?.subtitle ?? tour.subtitle),
+        description: sanitizeText(translation?.shortDescription ?? tour.shortDescription ?? tour.description),
+        fullDescription: sanitizeText(translation?.description ?? tour.description),
         price: tour.price,
         priceChild: tour.priceChild,
         priceYouth: tour.priceYouth,
-        duration: formatDuration(tour.duration),
+        duration: formatDuration(tour.duration, translation?.durationUnit),
         category: sanitizeText(tour.category ?? "Tours"),
         location: sanitizeText(tour.location),
         languages: normalizeLanguages(tour.language),
@@ -225,13 +249,13 @@ export async function GET(request: NextRequest) {
         capacity: tour.capacity,
         includes: includesList.length ? includesList : tour.includes ? [sanitizeText(tour.includes)] : [],
         notIncluded: notIncludedList,
-        highlights: parseJsonList(tour.highlights),
+        highlights: translatedHighlights.length ? translatedHighlights : parseJsonList(tour.highlights),
         image,
         gallery: gallery.length ? gallery : [image],
-        itinerary: parseItineraryStops(tour.adminNote).map((stop) => ({
+        itinerary: itineraryStops.map((stop, index) => ({
           time: sanitizeText(stop.time),
-          title: sanitizeText(stop.title),
-          description: sanitizeText(stop.description)
+          title: sanitizeText(translatedItinerary[index] ?? stop.title),
+          description: translatedItinerary[index] ? "" : sanitizeText(stop.description)
         })),
         checkoutUrl: `${PROACTIVITIS_URL}/checkout`,
         options: tour.options.map((option) => ({

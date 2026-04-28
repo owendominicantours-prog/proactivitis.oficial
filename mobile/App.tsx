@@ -926,6 +926,7 @@ function LanguageSelector({
 }
 
 function MobileApp({ stripeReady }: { stripeReady: boolean }) {
+  const { language } = useLanguage();
   const scrollRef = useRef<ScrollView>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("home");
   const [query, setQuery] = useState("");
@@ -957,7 +958,7 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
       })
       .catch(() => undefined);
 
-    fetchMobileTours()
+    fetchMobileTours(language)
       .then((items) => {
         if (active && items.length) setTours(items.map(mapMobileTour));
       })
@@ -971,7 +972,7 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     if (checkoutUrl) return;
