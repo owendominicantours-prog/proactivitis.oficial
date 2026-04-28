@@ -231,7 +231,17 @@ const tomorrow = () => {
 
 const joinValues = (values?: string[] | null) => (values?.filter(Boolean).join(", ") ?? "");
 
-const tourZoneLabel = (tour: AppTour) => tour.location.trim() || "Republica Dominicana";
+const ignoredCityParts = new Set(["dominican republic", "republica dominicana"]);
+
+const tourCityLabels = (tour: AppTour) => {
+  const parts = tour.location
+    .split(/[\/,|]/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .filter((part) => !ignoredCityParts.has(normalizeLocationSearch(part)));
+  const cities = parts.length ? parts : [tour.location.trim() || "Republica Dominicana"];
+  return Array.from(new Set(cities));
+};
 
 const readStoredMobileSession = async () => {
   const raw = await SecureStore.getItemAsync(mobileSessionStorageKey).catch(() => null);
@@ -1712,42 +1722,99 @@ function ZonesScreen({
   onReserveTour: (tour: AppTour) => void;
   onOpenTransfers: () => void;
 }) {
-  const zones = useMemo(() => {
-    const values = Array.from(new Set(tours.map(tourZoneLabel))).sort((a, b) => a.localeCompare(b));
-    return ["Todas", ...values];
+  const cityFilters = useMemo(() => {
+    const cityMap = new Map<string, { city: string; count: number; image: string; sample: string }>();
+    tours.forEach((tour) => {
+      tourCityLabels(tour).forEach((city) => {
+        const current = cityMap.get(city);
+        cityMap.set(city, {
+          city,
+          count: (current?.count ?? 0) + 1,
+          image: current?.image ?? tour.image,
+          sample: current?.sample ?? tour.title
+        });
+      });
+    });
+    return Array.from(cityMap.values()).sort((a, b) => b.count - a.count || a.city.localeCompare(b.city));
   }, [tours]);
-  const [zone, setZone] = useState("Todas");
-  const zoneTours = useMemo(
-    () => (zone === "Todas" ? tours : tours.filter((tour) => tourZoneLabel(tour) === zone)),
-    [tours, zone]
+  const [city, setCity] = useState<string | null>(null);
+  const cityTours = useMemo(
+    () => (!city || city === "Todas" ? tours : tours.filter((tour) => tourCityLabels(tour).includes(city))),
+    [city, tours]
   );
 
   useEffect(() => {
-    if (zone !== "Todas" && !zones.includes(zone)) setZone("Todas");
-  }, [zone, zones]);
+    if (city && city !== "Todas" && !cityFilters.some((item) => item.city === city)) setCity(null);
+  }, [city, cityFilters]);
+
+  if (!city) {
+    return (
+      <View style={styles.screen}>
+        <ScreenHeader
+          eyebrow="Ciudades"
+          title="Elige donde quieres vivir la experiencia"
+          description="Entra por ciudad y mira solo los tours disponibles en esa zona."
+        />
+        <View style={styles.toursResultBar}>
+          <View style={styles.flexText}>
+            <Text style={styles.resultSummaryText}>{cityFilters.length} ciudades</Text>
+            <Text style={styles.toursResultMeta}>{tours.length} experiencias conectadas</Text>
+          </View>
+          <ActionButton label="Transfer" icon={Car} onPress={onOpenTransfers} />
+        </View>
+        <View style={styles.cityGrid}>
+          <Pressable style={[styles.cityCard, styles.cityCardWide]} onPress={() => setCity("Todas")}>
+            <RemoteImage uri={tours[0]?.image ?? fallbackTourImage} style={styles.cityCardImage} />
+            <View style={styles.cityCardOverlay} />
+            <View style={styles.cityCardBody}>
+              <Text style={styles.cityCardKicker}>Todos los destinos</Text>
+              <Text style={styles.cityCardTitle}>Ver todo el catalogo</Text>
+              <Text style={styles.cityCardCount}>{tours.length} experiencias</Text>
+            </View>
+          </Pressable>
+          {cityFilters.map((item) => (
+            <Pressable key={item.city} style={styles.cityCard} onPress={() => setCity(item.city)}>
+              <RemoteImage uri={item.image} style={styles.cityCardImage} />
+              <View style={styles.cityCardOverlay} />
+              <View style={styles.cityCardBody}>
+                <Text style={styles.cityCardKicker}>Ciudad</Text>
+                <Text style={styles.cityCardTitle} numberOfLines={2}>{item.city}</Text>
+                <Text style={styles.cityCardCount}>{item.count} tours</Text>
+              </View>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.screen}>
+      <Pressable style={styles.zoneBackButton} onPress={() => setCity(null)}>
+        <ArrowLeft size={18} color={colors.skyDark} />
+        <Text style={styles.zoneBackText}>Cambiar ciudad</Text>
+      </Pressable>
       <ScreenHeader
-        eyebrow="Zonas"
-        title="Explora por zona"
-        description="Filtra tours por ubicacion y combina tu experiencia con transfer privado cuando lo necesites."
+        eyebrow="Ciudad seleccionada"
+        title={city === "Todas" ? "Todos los destinos" : city}
+        description="Tours filtrados por ciudad. Puedes reservar el tour o cotizar transfer para llegar comodo."
       />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
-        {zones.map((item) => (
-          <Chip key={item} label={item} active={item === zone} onPress={() => setZone(item)} />
+        <Chip label="Todas" active={city === "Todas"} onPress={() => setCity("Todas")} />
+        {cityFilters.map((item) => (
+          <Chip key={item.city} label={item.city} active={item.city === city} onPress={() => setCity(item.city)} />
         ))}
       </ScrollView>
       <View style={styles.toursResultBar}>
         <View style={styles.flexText}>
-          <Text style={styles.resultSummaryText}>{zoneTours.length} experiencias</Text>
-          <Text style={styles.toursResultMeta}>{zone === "Todas" ? "Todas las zonas" : zone}</Text>
+          <Text style={styles.resultSummaryText}>{cityTours.length} experiencias</Text>
+          <Text style={styles.toursResultMeta}>{city === "Todas" ? "Todas las ciudades" : city}</Text>
         </View>
         <ActionButton label="Transfer" icon={Car} onPress={onOpenTransfers} />
       </View>
-      {zoneTours.length ? (
+      {cityTours.length ? (
         <View style={styles.cardStack}>
-          {zoneTours.map((tour) => (
+          {cityTours.map((tour) => (
             <TourCard
               key={tour.id}
               tour={tour}
@@ -2664,6 +2731,74 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 12,
     fontWeight: "700"
+  },
+  cityGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10
+  },
+  cityCard: {
+    width: "48%",
+    minHeight: 168,
+    overflow: "hidden",
+    borderRadius: 8,
+    backgroundColor: colors.ink,
+    ...shadows.card
+  },
+  cityCardWide: {
+    width: "100%",
+    minHeight: 178
+  },
+  cityCardImage: {
+    ...StyleSheet.absoluteFillObject
+  },
+  cityCardOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(6,17,31,0.45)"
+  },
+  cityCardBody: {
+    flex: 1,
+    justifyContent: "flex-end",
+    gap: 5,
+    padding: 12
+  },
+  cityCardKicker: {
+    color: colors.skySoft,
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  cityCardTitle: {
+    color: colors.white,
+    fontSize: 20,
+    lineHeight: 24,
+    fontWeight: "900"
+  },
+  cityCardCount: {
+    alignSelf: "flex-start",
+    overflow: "hidden",
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    color: colors.skyDark,
+    fontSize: 11,
+    fontWeight: "900",
+    paddingHorizontal: 8,
+    paddingVertical: 5
+  },
+  zoneBackButton: {
+    alignSelf: "flex-start",
+    minHeight: 38,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    borderRadius: 999,
+    backgroundColor: colors.skySoft,
+    paddingHorizontal: 12
+  },
+  zoneBackText: {
+    color: colors.skyDark,
+    fontSize: 13,
+    fontWeight: "900"
   },
   homeRouteGrid: {
     flexDirection: "row",
