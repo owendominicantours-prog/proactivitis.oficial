@@ -56,6 +56,76 @@ export type MobileConfig = {
   appUrl: string;
 };
 
+export type MobileCustomerBooking = {
+  id: string;
+  bookingCode?: string | null;
+  status: string;
+  flowType?: string | null;
+  title: string;
+  travelDate: string;
+  startTime?: string | null;
+  returnTravelDate?: string | null;
+  returnStartTime?: string | null;
+  totalAmount: number;
+  paymentStatus?: string | null;
+  pickup?: string | null;
+  hotel?: string | null;
+  originAirport?: string | null;
+  vehicleName?: string | null;
+  passengers?: number | null;
+  tourSlug?: string | null;
+  tourImage?: string | null;
+  hasReview: boolean;
+};
+
+export type MobileCustomerNotification = {
+  id: string;
+  title: string;
+  message?: string | null;
+  type?: string | null;
+  isRead: boolean;
+  bookingId?: string | null;
+  createdAt: string;
+};
+
+export type MobileCustomerSummary = {
+  user: MobileUser;
+  metrics: {
+    totalBookings: number;
+    upcoming: number;
+    completed: number;
+    pendingReviews: number;
+    unreadNotifications: number;
+    totalPaid: number;
+  };
+  payment: {
+    method?: string | null;
+    brand?: string | null;
+    last4?: string | null;
+    hasStripeCustomer: boolean;
+    hasSavedMethod: boolean;
+    updatedAt?: string | null;
+  } | null;
+  preference: {
+    preferredCountries: string[];
+    preferredDestinations: string[];
+    preferredProductTypes: string[];
+    discountEligible: boolean;
+    completedAt?: string | null;
+    consentMarketing: boolean;
+  } | null;
+  bookings: MobileCustomerBooking[];
+  pendingReviews: Array<{
+    bookingId: string;
+    bookingCode?: string | null;
+    title: string;
+    flowType?: string | null;
+    travelDate: string;
+    tourSlug?: string | null;
+  }>;
+  notifications: MobileCustomerNotification[];
+};
+
 export type MobileTourOption = {
   id: string;
   name: string;
@@ -75,6 +145,14 @@ export type MobileTourItineraryStop = {
   description?: string | null;
 };
 
+export type MobileTourOffer = {
+  id: string;
+  title: string;
+  description?: string | null;
+  discountType: "PERCENT" | "AMOUNT" | string;
+  discountValue: number;
+};
+
 export type MobileTour = {
   id: string;
   slug: string;
@@ -86,6 +164,7 @@ export type MobileTour = {
   price: number;
   priceChild?: number | null;
   priceYouth?: number | null;
+  activeOffer?: MobileTourOffer | null;
   duration: string;
   category: string;
   location: string;
@@ -191,6 +270,11 @@ export const fetchMobileUser = (token: string) =>
     headers: authHeader(token)
   });
 
+export const fetchMobileCustomerSummary = (token: string) =>
+  jsonFetch<MobileCustomerSummary>("/api/mobile/customer/summary", {
+    headers: authHeader(token)
+  });
+
 export const fetchTransferLocations = async (query: string) => {
   const data = await jsonFetch<{ locations: LocationSummary[] }>(
     `/api/transfers/v2/locations?query=${encodeURIComponent(query.trim())}`
@@ -245,28 +329,53 @@ export const buildTourCheckoutUrl = ({
   tour,
   option,
   adults = 2,
+  youth = 0,
+  child = 0,
   date = todayPlus(1),
-  time = "09:00"
+  time = "09:00",
+  totalPrice,
+  tourPrice
 }: {
   tour: MobileTour;
   option?: MobileTourOption | null;
   adults?: number;
+  youth?: number;
+  child?: number;
   date?: string;
   time?: string;
+  totalPrice?: number;
+  tourPrice?: number;
 }) => {
-  const pricePerPerson = option?.pricePerPerson ?? tour.price;
-  const totalPrice = option?.basePrice && option.baseCapacity ? option.basePrice : pricePerPerson * adults;
+  const travelers = Math.max(1, adults + youth + child);
+  const adultPrice = option?.pricePerPerson ?? tour.price;
+  const computedTotal =
+    totalPrice ??
+    (option?.basePrice
+      ? option.baseCapacity
+        ? option.basePrice + Math.max(0, travelers - option.baseCapacity) * (option.extraPricePerPerson ?? option.pricePerPerson ?? tour.price)
+        : option.basePrice
+      : adultPrice * travelers);
+  const pricePerPerson = tourPrice ?? computedTotal / travelers;
   const params = new URLSearchParams();
   params.set("tourId", tour.id);
   params.set("tourTitle", tour.title);
   params.set("tourImage", tour.image);
+  params.set("tourLocation", tour.location);
   params.set("tourPrice", String(pricePerPerson));
-  params.set("totalPrice", String(totalPrice));
+  params.set("totalPrice", String(computedTotal));
   params.set("date", date);
   params.set("time", time);
   params.set("adults", String(adults));
-  params.set("youth", "0");
-  params.set("child", "0");
+  params.set("youth", String(youth));
+  params.set("child", String(child));
+  if (tour.priceYouth) params.set("tourPriceYouth", String(tour.priceYouth));
+  if (tour.priceChild) params.set("tourPriceChild", String(tour.priceChild));
+  if (tour.activeOffer) {
+    params.set("offerId", tour.activeOffer.id);
+    params.set("offerTitle", tour.activeOffer.title);
+    params.set("offerDiscountType", tour.activeOffer.discountType);
+    params.set("offerDiscountValue", String(tour.activeOffer.discountValue));
+  }
   if (option) {
     params.set("tourOptionId", option.id);
     params.set("tourOptionName", option.name);

@@ -1,13 +1,15 @@
 import { StatusBar } from "expo-status-bar";
 import type { ComponentType, ReactNode } from "react";
-import { Component, createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Component, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import {
   BackHandler,
+  AppState,
   Dimensions,
   Image,
   ImageBackground,
   Linking,
+  Modal,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -32,9 +34,11 @@ import {
   Home,
   Image as ImageIcon,
   LogIn,
+  Mail,
   MapPin,
   MessageCircle,
   Minus,
+  Phone,
   Plane,
   Plus,
   Search,
@@ -57,17 +61,21 @@ import {
   confirmMobileBooking,
   createMobilePaymentIntent,
   fetchMobileConfig,
+  fetchMobileCustomerSummary,
   fetchMobileTours,
   fetchMobileTransferLocations,
   fetchMobileTransferRoutes,
   fetchMobileUser,
+  fetchTransferLocations,
   fetchTransferQuote,
   getApiBaseUrl,
   loginMobileUser,
   registerMobileUser,
   type LocationSummary,
+  type MobileCustomerSummary,
   type MobileSession,
   type MobileTour,
+  type MobileTourOffer,
   type MobileTourItineraryStop,
   type MobileTourOption,
   type MobileTransferRoute,
@@ -161,6 +169,28 @@ const englishText: Record<string, string> = {
   "Fecha": "Date",
   "Personas": "People",
   "Total": "Total",
+  "Elige fecha": "Choose date",
+  "Elige hora": "Choose time",
+  "Manana": "Tomorrow",
+  "Tu seleccion": "Your selection",
+  "Selecciona una fecha": "Select a date",
+  "Selecciona una hora": "Select a time",
+  "El precio se actualiza antes de continuar.": "The price updates before continuing.",
+  "Selecciona una fecha, una hora y la cantidad de personas.": "Select a date, a time, and the number of people.",
+  "Toca la fecha para abrir el calendario y elegir cualquier dia futuro.":
+    "Tap the date to open the calendar and choose any future day.",
+  "Elige el horario que prefieres para esta experiencia.": "Choose the time you prefer for this experience.",
+  "por adulto, con datos sincronizados desde la web.": "per adult, synced from the website.",
+  "Adulto": "Adult",
+  "Adolescente": "Youth",
+  "Adolescentes": "Youth",
+  "Nino": "Child",
+  "Ninos": "Children",
+  "aplicado. Ahorras": "applied. You save",
+  "Fecha de la experiencia": "Experience date",
+  "Puedes reservar para una fecha mas futura.": "You can book for a later future date.",
+  "Mes anterior": "Previous month",
+  "Mes siguiente": "Next month",
   "Datos de contacto": "Contact details",
   "Nombre": "First name",
   "Apellido": "Last name",
@@ -169,6 +199,15 @@ const englishText: Record<string, string> = {
   "Recogida y preferencias": "Pickup and preferences",
   "Punto principal": "Main pickup point",
   "Hotel o punto de recogida": "Hotel or pickup point",
+  "Busca tu hotel o escribe un punto de recogida": "Search your hotel or type a pickup point",
+  "Ej: hotel, villa o punto de encuentro": "Ex: hotel, villa, or meeting point",
+  "Selecciona un hotel de la lista o deja escrito tu punto de recogida.":
+    "Select a hotel from the list or leave your pickup point typed.",
+  "Hotel seleccionado de la lista real.": "Hotel selected from the real list.",
+  "No lo vemos en la lista de hoteles de esta zona. Usaremos lo que escribiste como punto de recogida.":
+    "We do not see it in this area's hotel list. We will use what you typed as the pickup point.",
+  "No pudimos buscar hoteles ahora. Usaremos lo que escribiste como punto de recogida.":
+    "We could not search hotels right now. We will use what you typed as the pickup point.",
   "Notas especiales": "Special notes",
   "Pago nativo protegido por Stripe y confirmacion por Proactivitis.":
     "Native payment protected by Stripe and confirmed by Proactivitis.",
@@ -194,6 +233,16 @@ const englishText: Record<string, string> = {
   "No se pudo completar el pago.": "The payment could not be completed.",
   "Abriendo checkout web de Proactivitis...": "Opening Proactivitis web checkout...",
   "Cuenta": "Account",
+  "Contacto y soporte": "Contact and support",
+  "Habla con Proactivitis antes o despues de reservar.": "Talk to Proactivitis before or after booking.",
+  "Respuesta rapida para reservas": "Fast help for bookings",
+  "Llamar ahora": "Call now",
+  "Atencion directa": "Direct support",
+  "Soporte por correo": "Email support",
+  "Fotos y novedades": "Photos and updates",
+  "Videos y recomendaciones": "Videos and recommendations",
+  "Formulario web": "Web form",
+  "Enviar mensaje desde la web": "Send a message from the website",
   "Perfil Proactivitis": "Proactivitis Profile",
   "Tus reservas quedan asociadas a este correo.": "Your bookings are linked to this email.",
   "Cliente Proactivitis": "Proactivitis Customer",
@@ -209,6 +258,36 @@ const englishText: Record<string, string> = {
   "Tu perfil de viaje": "Your travel profile",
   "Tus reservas, favoritos y preferencias quedan guardados en tu cuenta.":
     "Your bookings, favorites, and preferences stay saved in your account.",
+  "Centro de cliente": "Customer center",
+  "Cargando tus reservas, pagos y notificaciones...": "Loading your bookings, payments, and notifications...",
+  "No pudimos cargar tu cuenta ahora mismo.": "We could not load your account right now.",
+  "Abrir portal web": "Open web portal",
+  "Reservas, pagos, resenas y avisos de tu cuenta.": "Bookings, payments, reviews, and account alerts.",
+  "Proximas": "Upcoming",
+  "Completadas": "Completed",
+  "Resenas": "Reviews",
+  "Pagado": "Paid",
+  "Proxima actividad": "Next activity",
+  "Completada": "Completed",
+  "Cancelada": "Canceled",
+  "Pendiente": "Pending",
+  "Confirmada": "Confirmed",
+  "Sin reservas todavia": "No bookings yet",
+  "Cuando reserves, tu historial aparecera aqui.": "When you book, your history will appear here.",
+  "Mis reservas": "My bookings",
+  "reservas en tu historial": "bookings in your history",
+  "Aun no tienes reservas registradas": "You do not have registered bookings yet",
+  "Tarjetas guardadas": "Saved cards",
+  "Tarjeta": "Card",
+  "Agrega una tarjeta para reservar mas rapido": "Add a card to book faster",
+  "Resenas pendientes": "Pending reviews",
+  "Comparte tu experiencia en": "Share your experience in",
+  "Cuando completes un tour o traslado podras dejar tu opinion":
+    "When you complete a tour or transfer, you can leave your review",
+  "Datos y preferencias": "Details and preferences",
+  "Completa tus gustos de viaje": "Complete your travel preferences",
+  "Preferencias guardadas": "Saved preferences",
+  "Ultimo aviso": "Latest alert",
   "Entrar": "Sign in",
   "Crear cuenta": "Create account",
   "Password": "Password",
@@ -440,6 +519,28 @@ const frenchText: Record<string, string> = {
   "Fecha": "Date",
   "Personas": "Personnes",
   "Total": "Total",
+  "Elige fecha": "Choisir la date",
+  "Elige hora": "Choisir l'heure",
+  "Manana": "Demain",
+  "Tu seleccion": "Votre selection",
+  "Selecciona una fecha": "Choisissez une date",
+  "Selecciona una hora": "Choisissez une heure",
+  "El precio se actualiza antes de continuar.": "Le prix se met a jour avant de continuer.",
+  "Selecciona una fecha, una hora y la cantidad de personas.": "Choisissez une date, une heure et le nombre de personnes.",
+  "Toca la fecha para abrir el calendario y elegir cualquier dia futuro.":
+    "Touchez la date pour ouvrir le calendrier et choisir un jour futur.",
+  "Elige el horario que prefieres para esta experiencia.": "Choisissez l'horaire que vous preferez pour cette experience.",
+  "por adulto, con datos sincronizados desde la web.": "par adulte, synchronise depuis le site web.",
+  "Adulto": "Adulte",
+  "Adolescente": "Adolescent",
+  "Adolescentes": "Adolescents",
+  "Nino": "Enfant",
+  "Ninos": "Enfants",
+  "aplicado. Ahorras": "applique. Vous economisez",
+  "Fecha de la experiencia": "Date de l'experience",
+  "Puedes reservar para una fecha mas futura.": "Vous pouvez reserver pour une date future plus lointaine.",
+  "Mes anterior": "Mois precedent",
+  "Mes siguiente": "Mois suivant",
   "Datos de contacto": "Coordonnees",
   "Nombre": "Prenom",
   "Apellido": "Nom",
@@ -448,6 +549,15 @@ const frenchText: Record<string, string> = {
   "Recogida y preferencias": "Prise en charge et preferences",
   "Punto principal": "Point principal",
   "Hotel o punto de recogida": "Hotel ou point de prise en charge",
+  "Busca tu hotel o escribe un punto de recogida": "Cherchez votre hotel ou ecrivez un point de prise en charge",
+  "Ej: hotel, villa o punto de encuentro": "Ex: hotel, villa ou point de rencontre",
+  "Selecciona un hotel de la lista o deja escrito tu punto de recogida.":
+    "Selectionnez un hotel dans la liste ou laissez votre point de prise en charge ecrit.",
+  "Hotel seleccionado de la lista real.": "Hotel selectionne dans la liste reelle.",
+  "No lo vemos en la lista de hoteles de esta zona. Usaremos lo que escribiste como punto de recogida.":
+    "Nous ne le voyons pas dans la liste d'hotels de cette zone. Nous utiliserons le point ecrit.",
+  "No pudimos buscar hoteles ahora. Usaremos lo que escribiste como punto de recogida.":
+    "Impossible de chercher les hotels maintenant. Nous utiliserons le point ecrit.",
   "Notas especiales": "Notes speciales",
   "Pago nativo protegido por Stripe y confirmacion por Proactivitis.":
     "Paiement natif protege par Stripe et confirmation par Proactivitis.",
@@ -473,6 +583,16 @@ const frenchText: Record<string, string> = {
   "No se pudo completar el pago.": "Impossible de completer le paiement.",
   "Abriendo checkout web de Proactivitis...": "Ouverture du checkout web Proactivitis...",
   "Cuenta": "Compte",
+  "Contacto y soporte": "Contact et assistance",
+  "Habla con Proactivitis antes o despues de reservar.": "Parlez avec Proactivitis avant ou apres la reservation.",
+  "Respuesta rapida para reservas": "Aide rapide pour les reservations",
+  "Llamar ahora": "Appeler maintenant",
+  "Atencion directa": "Assistance directe",
+  "Soporte por correo": "Assistance par email",
+  "Fotos y novedades": "Photos et nouveautes",
+  "Videos y recomendaciones": "Videos et recommandations",
+  "Formulario web": "Formulaire web",
+  "Enviar mensaje desde la web": "Envoyer un message depuis le site",
   "Perfil Proactivitis": "Profil Proactivitis",
   "Tus reservas quedan asociadas a este correo.": "Vos reservations seront liees a cet email.",
   "Cliente Proactivitis": "Client Proactivitis",
@@ -488,6 +608,36 @@ const frenchText: Record<string, string> = {
   "Tu perfil de viaje": "Votre profil de voyage",
   "Tus reservas, favoritos y preferencias quedan guardados en tu cuenta.":
     "Vos reservations, favoris et preferences restent sauvegardes dans votre compte.",
+  "Centro de cliente": "Espace client",
+  "Cargando tus reservas, pagos y notificaciones...": "Chargement de vos reservations, paiements et notifications...",
+  "No pudimos cargar tu cuenta ahora mismo.": "Impossible de charger votre compte pour le moment.",
+  "Abrir portal web": "Ouvrir le portail web",
+  "Reservas, pagos, resenas y avisos de tu cuenta.": "Reservations, paiements, avis et alertes de votre compte.",
+  "Proximas": "A venir",
+  "Completadas": "Terminees",
+  "Resenas": "Avis",
+  "Pagado": "Paye",
+  "Proxima actividad": "Prochaine activite",
+  "Completada": "Terminee",
+  "Cancelada": "Annulee",
+  "Pendiente": "En attente",
+  "Confirmada": "Confirmee",
+  "Sin reservas todavia": "Aucune reservation pour le moment",
+  "Cuando reserves, tu historial aparecera aqui.": "Quand vous reservez, votre historique apparaitra ici.",
+  "Mis reservas": "Mes reservations",
+  "reservas en tu historial": "reservations dans votre historique",
+  "Aun no tienes reservas registradas": "Vous n'avez pas encore de reservations enregistrees",
+  "Tarjetas guardadas": "Cartes sauvegardees",
+  "Tarjeta": "Carte",
+  "Agrega una tarjeta para reservar mas rapido": "Ajoutez une carte pour reserver plus vite",
+  "Resenas pendientes": "Avis en attente",
+  "Comparte tu experiencia en": "Partagez votre experience sur",
+  "Cuando completes un tour o traslado podras dejar tu opinion":
+    "Quand vous terminez un tour ou transfert, vous pourrez laisser votre avis",
+  "Datos y preferencias": "Donnees et preferences",
+  "Completa tus gustos de viaje": "Completez vos preferences de voyage",
+  "Preferencias guardadas": "Preferences sauvegardees",
+  "Ultimo aviso": "Derniere alerte",
   "Entrar": "Connexion",
   "Crear cuenta": "Creer un compte",
   "Password": "Mot de passe",
@@ -753,6 +903,9 @@ type AppTour = {
   location: string;
   duration: string;
   price: number;
+  priceChild?: number | null;
+  priceYouth?: number | null;
+  activeOffer?: MobileTourOffer | null;
   rating: number;
   reviews: number;
   pickup: string;
@@ -802,6 +955,7 @@ type CheckoutSummary = {
   totalPrice: number;
   origin?: string | null;
   destination?: string | null;
+  tourLocation?: string | null;
   vehicle?: string | null;
 };
 
@@ -850,11 +1004,19 @@ const money = (value: number) =>
     maximumFractionDigits: 0
   }).format(value);
 
+const shortDate = (value?: string | null) => {
+  if (!value) return "Fecha pendiente";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Fecha pendiente";
+  return new Intl.DateTimeFormat("es-DO", { day: "2-digit", month: "short", year: "numeric" }).format(date);
+};
+
 const openUrl = (url: string) => {
   void Linking.openURL(url).catch(() => undefined);
 };
 
 const googleLoginUrl = () => `${getApiBaseUrl().replace(/\/$/, "")}/mobile-auth/google`;
+const customerUrl = (path: string) => `${getApiBaseUrl().replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
 
 const whatsappUrl = (message: string) => `${links.whatsapp}?text=${encodeURIComponent(message)}`;
 
@@ -903,6 +1065,42 @@ const uniqueImages = (items: Array<string | null | undefined>) =>
 const tomorrow = () => {
   const date = new Date(Date.now() + 24 * 60 * 60 * 1000);
   return date.toISOString().slice(0, 10);
+};
+
+const addDays = (days: number) => {
+  const date = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+  return date.toISOString().slice(0, 10);
+};
+
+const shortPickerDate = (value: string, locale = "es-DO") => {
+  const date = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat(locale, { weekday: "short", day: "2-digit", month: "short" }).format(date);
+};
+
+const parseDateKey = (value: string) => {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, (month || 1) - 1, day || 1, 12);
+};
+
+const toDateKey = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+const monthStart = (value: string | Date) => {
+  const date = typeof value === "string" ? parseDateKey(value) : value;
+  return new Date(date.getFullYear(), date.getMonth(), 1, 12);
+};
+
+const addCalendarMonths = (date: Date, months: number) => new Date(date.getFullYear(), date.getMonth() + months, 1, 12);
+
+const calendarMonthDays = (month: Date) => {
+  const firstDay = monthStart(month);
+  const mondayOffset = (firstDay.getDay() + 6) % 7;
+  const gridStart = new Date(firstDay.getFullYear(), firstDay.getMonth(), 1 - mondayOffset, 12);
+  return Array.from(
+    { length: 42 },
+    (_, index) => new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + index, 12)
+  );
 };
 
 const joinValues = (values?: string[] | null) => (values?.filter(Boolean).join(", ") ?? "");
@@ -996,6 +1194,24 @@ const normalizeProductValue = (value?: string | null) => {
   return productValueLabels[text.toLowerCase()] ?? text;
 };
 
+const applyOfferDiscount = (total: number, offer?: MobileTourOffer | null) => {
+  if (!offer || offer.discountValue <= 0) return { total, savings: 0 };
+  const rawSavings =
+    offer.discountType === "PERCENT" ? total * (Math.min(offer.discountValue, 95) / 100) : offer.discountValue;
+  const savings = Math.min(total, Math.round(rawSavings * 100) / 100);
+  return {
+    total: Math.max(0, Math.round((total - savings) * 100) / 100),
+    savings
+  };
+};
+
+const offerLabel = (offer?: MobileTourOffer | null) => {
+  if (!offer) return null;
+  return offer.discountType === "PERCENT"
+    ? `${offer.discountValue}% OFF`
+    : `${money(offer.discountValue)} OFF`;
+};
+
 const mapMobileTour = (tour: MobileTour): AppTour => {
   const fallback = fallbackBySlug.get(tour.slug) ?? fallbackById.get(tour.id);
   const image = absoluteImageUrl(tour.image || fallback?.image);
@@ -1008,6 +1224,9 @@ const mapMobileTour = (tour: MobileTour): AppTour => {
     location: tour.location || fallback?.location || "Republica Dominicana",
     duration: tour.duration || fallback?.duration || "A confirmar",
     price: Number(tour.price || fallback?.price || 0),
+    priceChild: tour.priceChild,
+    priceYouth: tour.priceYouth,
+    activeOffer: tour.activeOffer ?? null,
     rating: fallback?.rating ?? 4.9,
     reviews: fallback?.reviews ?? 0,
     pickup: tour.pickup || fallback?.pickup || "Recogida disponible segun zona",
@@ -1129,6 +1348,30 @@ const transferLocationMatches = (locations: LocationSummary[], query: string) =>
     .slice(0, 9);
 };
 
+const tourZoneParts = (value?: string | null) =>
+  (value ?? "")
+    .split(/[\/,|]/)
+    .map((part) => normalizeLocationSearch(part))
+    .filter((part) => part.length > 2 && !ignoredCityParts.has(part));
+
+const pickupHotelMatchesForTour = (locations: LocationSummary[], query: string, tourLocation?: string | null) => {
+  const normalizedQuery = normalizeLocationSearch(query);
+  if (normalizedQuery.length < 2) return [];
+  const zoneParts = tourZoneParts(tourLocation);
+  return mergeLocations(locations)
+    .filter((location) => location.type === "HOTEL")
+    .filter((location) =>
+      normalizeLocationSearch(`${location.name} ${location.zoneName ?? ""}`).includes(normalizedQuery)
+    )
+    .filter((location) => {
+      if (!zoneParts.length) return true;
+      const zoneText = normalizeLocationSearch(`${location.name} ${location.zoneName ?? ""}`);
+      const zoneName = normalizeLocationSearch(location.zoneName ?? "");
+      return zoneParts.some((part) => zoneText.includes(part) || (zoneName.length > 2 && part.includes(zoneName)));
+    })
+    .slice(0, 7);
+};
+
 const readUrlParams = (href: string) => {
   try {
     return new URL(href).searchParams;
@@ -1186,6 +1429,7 @@ const readCheckoutSummary = (url: string): CheckoutSummary => {
     totalPrice,
     origin: params.get("originLabel") ?? params.get("origin"),
     destination: params.get("originHotelName") ?? params.get("hotelSlug"),
+    tourLocation: params.get("tourLocation"),
     vehicle: params.get("vehicleCategory")
   };
 };
@@ -1358,6 +1602,20 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
     void writeStoredMobileSession(session);
   };
 
+  const refreshLiveTours = useCallback(() => {
+    setToursLoading(true);
+    fetchMobileTours(language)
+      .then((items) => {
+        setTours(items.map(mapMobileTour));
+      })
+      .catch(() => {
+        setTours(fallbackTours);
+      })
+      .finally(() => {
+        setToursLoading(false);
+      });
+  }, [language]);
+
   useEffect(() => {
     const handleUrl = (url: string | null) => {
       if (!url) return;
@@ -1389,7 +1647,7 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
 
     fetchMobileTours(language)
       .then((items) => {
-        if (active && items.length) setTours(items.map(mapMobileTour));
+        if (active) setTours(items.map(mapMobileTour));
       })
       .catch(() => {
         if (active) setTours(fallbackTours);
@@ -1402,6 +1660,13 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
       active = false;
     };
   }, [language]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") refreshLiveTours();
+    });
+    return () => subscription.remove();
+  }, [refreshLiveTours]);
 
   useEffect(() => {
     if (checkoutUrl) return;
@@ -1470,7 +1735,14 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
     }
 
     if (activeProduct) {
-      return <ProductScreen tour={activeProduct} onBack={() => setActiveProduct(null)} onCheckout={openCheckout} />;
+      return (
+        <ProductScreen
+          tour={activeProduct}
+          onBack={() => setActiveProduct(null)}
+          onCheckout={openCheckout}
+          onScrollTo={(y) => scrollRef.current?.scrollTo({ y, animated: true })}
+        />
+      );
     }
 
     if (activeTab === "tours") {
@@ -1539,10 +1811,12 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
     );
   };
 
+  const fullBleedTop = !checkoutUrl && (activeTab === "home" || activeTab === "transfers" || Boolean(activeProduct));
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="light" />
-      <View style={styles.appShell}>
+    <View style={styles.appRoot}>
+      <StatusBar style="light" translucent backgroundColor="transparent" />
+      <View style={[styles.appShell, fullBleedTop ? null : styles.appShellSafeTop]}>
         {checkoutUrl ? (
           <ScreenErrorBoundary
             resetKey={screenResetKey}
@@ -1570,7 +1844,7 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
         )}
         {!checkoutUrl && !activeProduct ? <TabBar activeTab={activeTab} onChange={setActiveTab} /> : null}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -1589,7 +1863,7 @@ function HomeScreen({
   const homeHeroImage = heroTour?.image ?? heroImage;
 
   return (
-    <View style={styles.screen}>
+    <View style={styles.homeScreen}>
       <ImageBackground source={{ uri: absoluteImageUrl(homeHeroImage) }} style={styles.hero} imageStyle={styles.heroImage as StyleProp<ImageStyle>}>
         <View style={styles.heroOverlay} />
         <View style={styles.heroContent}>
@@ -1678,6 +1952,7 @@ function HomeScreen({
           </Text>
         </View>
       </View>
+      <ContactPanel compact />
     </View>
   );
 }
@@ -1787,28 +2062,163 @@ function ToursScreen({
   );
 }
 
+function CalendarPickerModal({
+  visible,
+  selectedDate,
+  month,
+  locale,
+  onMonthChange,
+  onSelect,
+  onClose
+}: {
+  visible: boolean;
+  selectedDate: string;
+  month: Date;
+  locale: string;
+  onMonthChange: (month: Date) => void;
+  onSelect: (date: string) => void;
+  onClose: () => void;
+}) {
+  const minDate = parseDateKey(tomorrow());
+  const maxDate = parseDateKey(addDays(730));
+  const currentMonth = monthStart(month);
+  const selectedDateKey = selectedDate;
+  const cells = calendarMonthDays(currentMonth);
+  const monthLabel = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(currentMonth);
+  const weekdayLabels = Array.from({ length: 7 }, (_, index) =>
+    new Intl.DateTimeFormat(locale, { weekday: "short" }).format(new Date(2026, 0, 5 + index, 12))
+  );
+  const canGoPrevious = currentMonth.getTime() > monthStart(minDate).getTime();
+  const canGoNext = currentMonth.getTime() < monthStart(maxDate).getTime();
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <View style={styles.calendarBackdrop}>
+        <Pressable style={styles.calendarBackdropTap} onPress={onClose} />
+        <View style={styles.calendarSheet}>
+          <View style={styles.rowBetween}>
+            <View style={styles.flexText}>
+              <Text style={styles.sectionTitle}>Selecciona una fecha</Text>
+              <Text style={styles.smallMuted}>Puedes reservar para una fecha mas futura.</Text>
+            </View>
+            <Pressable style={styles.calendarCloseButton} onPress={onClose}>
+              <Text style={styles.calendarCloseText}>Cerrar</Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.calendarMonthBar}>
+            <Pressable
+              style={[styles.calendarNavButton, !canGoPrevious ? styles.calendarNavButtonDisabled : null]}
+              onPress={() => canGoPrevious && onMonthChange(addCalendarMonths(currentMonth, -1))}
+            >
+              <ArrowLeft size={18} color={canGoPrevious ? colors.skyDark : colors.muted} />
+              <Text style={[styles.calendarNavText, !canGoPrevious ? styles.calendarNavTextDisabled : null]}>
+                Mes anterior
+              </Text>
+            </Pressable>
+            <Text style={styles.calendarMonthTitle}>{monthLabel}</Text>
+            <Pressable
+              style={[styles.calendarNavButton, !canGoNext ? styles.calendarNavButtonDisabled : null]}
+              onPress={() => canGoNext && onMonthChange(addCalendarMonths(currentMonth, 1))}
+            >
+              <Text style={[styles.calendarNavText, !canGoNext ? styles.calendarNavTextDisabled : null]}>
+                Mes siguiente
+              </Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.calendarWeekRow}>
+            {weekdayLabels.map((day) => (
+              <Text key={day} style={styles.calendarWeekText}>{day}</Text>
+            ))}
+          </View>
+
+          <View style={styles.calendarGrid}>
+            {cells.map((cell) => {
+              const key = toDateKey(cell);
+              const isSelected = key === selectedDateKey;
+              const isOtherMonth = cell.getMonth() !== currentMonth.getMonth();
+              const disabled = cell.getTime() < minDate.getTime() || cell.getTime() > maxDate.getTime();
+              return (
+                <Pressable
+                  key={key}
+                  style={[
+                    styles.calendarDay,
+                    isOtherMonth ? styles.calendarDayOtherMonth : null,
+                    disabled ? styles.calendarDayDisabled : null,
+                    isSelected ? styles.calendarDaySelected : null
+                  ]}
+                  disabled={disabled}
+                  onPress={() => onSelect(key)}
+                >
+                  <Text
+                    style={[
+                      styles.calendarDayText,
+                      isOtherMonth ? styles.calendarDayTextMuted : null,
+                      disabled ? styles.calendarDayTextDisabled : null,
+                      isSelected ? styles.calendarDayTextSelected : null
+                    ]}
+                  >
+                    {cell.getDate()}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 function ProductScreen({
   tour,
   onBack,
-  onCheckout
+  onCheckout,
+  onScrollTo
 }: {
   tour: AppTour;
   onBack: () => void;
   onCheckout: (url: string) => void;
+  onScrollTo: (y: number) => void;
 }) {
+  const { language } = useLanguage();
+  const dateLocale = language === "en" ? "en-US" : language === "fr" ? "fr-FR" : "es-DO";
+  const productPanelY = useRef(0);
+  const bookingFormY = useRef(0);
   const galleryImages = useMemo(() => tour.gallery.slice(0, 10), [tour.gallery]);
   const [selectedImage, setSelectedImage] = useState(galleryImages[0] ?? tour.image);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [adults, setAdults] = useState(2);
+  const [youth, setYouth] = useState(0);
+  const [child, setChild] = useState(0);
   const [date, setDate] = useState(tomorrow());
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(() => monthStart(tomorrow()));
   const [time, setTime] = useState("09:00");
   const [selectedOptionId, setSelectedOptionId] = useState(
     tour.options.find((option) => option.isDefault)?.id ?? tour.options[0]?.id ?? null
   );
   const selectedOption = tour.options.find((option) => option.id === selectedOptionId) ?? null;
-  const pricePerPerson = selectedOption?.pricePerPerson ?? tour.price;
-  const totalPrice =
-    selectedOption?.basePrice && selectedOption.baseCapacity ? selectedOption.basePrice : pricePerPerson * adults;
+  const totalTravelers = Math.max(1, adults + youth + child);
+  const adultPrice = selectedOption?.pricePerPerson ?? tour.price;
+  const youthPrice = selectedOption?.pricePerPerson ?? tour.priceYouth ?? tour.price;
+  const childPrice = selectedOption?.pricePerPerson ?? tour.priceChild ?? tour.priceYouth ?? tour.price;
+  const subtotal =
+    selectedOption?.basePrice && selectedOption.baseCapacity
+      ? selectedOption.basePrice +
+        Math.max(0, totalTravelers - selectedOption.baseCapacity) *
+          (selectedOption.extraPricePerPerson ?? selectedOption.pricePerPerson ?? tour.price)
+      : selectedOption?.basePrice
+        ? selectedOption.basePrice
+        : adults * adultPrice + youth * youthPrice + child * childPrice;
+  const offerPricing = applyOfferDiscount(subtotal, tour.activeOffer);
+  const totalPrice = offerPricing.total;
+  const pricePerPerson = totalPrice / totalTravelers;
+  const timeOptions = useMemo(() => {
+    const cleanOptions = tour.timeOptions.map((item) => item.trim()).filter(Boolean).slice(0, 6);
+    return cleanOptions.length ? cleanOptions : ["08:00", "09:00", "10:00", "13:00", "15:00"];
+  }, [tour.timeOptions]);
   const shortDescription = tour.description || tour.fullDescription || "Experiencia confirmada por Proactivitis.";
   const detailDescription = tour.fullDescription || tour.description;
   const quickFacts = [
@@ -1852,10 +2262,24 @@ function ProductScreen({
         tour: tour.webTour,
         option: selectedOption,
         adults,
+        youth,
+        child,
         date,
-        time
+        time,
+        totalPrice,
+        tourPrice: pricePerPerson
       })
     );
+  };
+
+  const scrollToBookingForm = () => {
+    onScrollTo(Math.max(0, productPanelY.current + bookingFormY.current - 18));
+  };
+
+  const openCalendar = () => {
+    setCalendarMonth(monthStart(date));
+    setCalendarOpen(true);
+    scrollToBookingForm();
   };
 
   if (galleryOpen) {
@@ -1895,14 +2319,25 @@ function ProductScreen({
         </View>
       </View>
 
-      <View style={styles.productPanel}>
+      <View
+        style={styles.productPanel}
+        onLayout={(event) => {
+          productPanelY.current = event.nativeEvent.layout.y;
+        }}
+      >
         <View style={styles.productBookingCard}>
           <View style={styles.flexText}>
             <Text style={styles.productPriceLabel}>Desde</Text>
-            <Text style={styles.productPrice}>{money(tour.price)}</Text>
-            <Text style={styles.smallMuted}>por persona, con datos sincronizados desde la web.</Text>
+            {tour.activeOffer ? <Text style={styles.productOldPrice}>{money(tour.price)}</Text> : null}
+            <Text style={styles.productPrice}>{money(applyOfferDiscount(tour.price, tour.activeOffer).total)}</Text>
+            <Text style={styles.smallMuted}>por adulto, con datos sincronizados desde la web.</Text>
+            {tour.activeOffer ? (
+              <View style={styles.offerBadge}>
+                <Text style={styles.offerBadgeText}>{offerLabel(tour.activeOffer)}</Text>
+              </View>
+            ) : null}
           </View>
-          <ActionButton label="Reservar" icon={CreditCard} onPress={startCheckout} />
+          <ActionButton label="Reservar" icon={CreditCard} onPress={scrollToBookingForm} />
         </View>
 
         <View style={styles.productIntroCard}>
@@ -2006,28 +2441,133 @@ function ProductScreen({
           </View>
         ) : null}
 
-        <View style={styles.checkoutBox}>
+        <View
+          style={styles.checkoutBox}
+          onLayout={(event) => {
+            bookingFormY.current = event.nativeEvent.layout.y;
+          }}
+        >
           <View style={styles.rowBetween}>
             <View style={styles.flexText}>
               <Text style={styles.sectionTitle}>Reservar</Text>
-              <Text style={styles.smallMuted}>Elige fecha, hora y cantidad de adultos.</Text>
+              <Text style={styles.smallMuted}>Selecciona una fecha, una hora y la cantidad de personas.</Text>
             </View>
             <Text style={styles.checkoutBadge}>Pago seguro</Text>
           </View>
-          <View style={styles.dateGrid}>
-            <InputField label="Fecha" value={date} onChangeText={setDate} />
-            <InputField label="Hora" value={time} onChangeText={setTime} />
+
+          <View style={styles.bookingSelectionSummary}>
+            <View style={styles.bookingSelectionIcon}>
+              <CalendarCheck size={18} color={colors.white} />
+            </View>
+            <View style={styles.flexText}>
+              <Text style={styles.bookingSelectionLabel}>Tu seleccion</Text>
+              <Text style={styles.bookingSelectionValue}>{shortPickerDate(date, dateLocale)} | {time} | {totalTravelers} pax</Text>
+            </View>
           </View>
-          <Stepper label="Adultos" value={adults} min={1} max={20} onChange={setAdults} />
+
+          <View style={styles.priceTierPanel}>
+            <View style={styles.priceTierRow}>
+              <Text style={styles.priceTierLabel}>Adulto</Text>
+              <Text style={styles.priceTierValue}>{money(adultPrice)}</Text>
+            </View>
+            <View style={styles.priceTierRow}>
+              <Text style={styles.priceTierLabel}>Adolescente</Text>
+              <Text style={styles.priceTierValue}>{money(youthPrice)}</Text>
+            </View>
+            <View style={styles.priceTierRow}>
+              <Text style={styles.priceTierLabel}>Nino</Text>
+              <Text style={styles.priceTierValue}>{money(childPrice)}</Text>
+            </View>
+          </View>
+
+          {tour.activeOffer ? (
+            <View style={styles.offerPanel}>
+              <Text style={styles.offerPanelTitle}>{tour.activeOffer.title}</Text>
+              <Text style={styles.offerPanelText}>
+                {offerLabel(tour.activeOffer)} aplicado. Ahorras {money(offerPricing.savings)} en esta reserva.
+              </Text>
+            </View>
+          ) : null}
+
+          <View style={styles.bookingStepBlock}>
+            <View style={styles.bookingStepHeader}>
+              <Text style={styles.bookingStepNumber}>1</Text>
+              <View style={styles.flexText}>
+                <Text style={styles.fieldLabel}>Selecciona una fecha</Text>
+                <Text style={styles.smallMuted}>Toca la fecha para abrir el calendario y elegir cualquier dia futuro.</Text>
+              </View>
+            </View>
+            <Pressable style={styles.bookingDateButton} onPress={openCalendar}>
+              <CalendarCheck size={18} color={colors.skyDark} />
+              <View style={styles.flexText}>
+                <Text style={styles.bookingDateLabel}>Fecha de la experiencia</Text>
+                <Text style={styles.bookingDateValue}>{shortPickerDate(date, dateLocale)}</Text>
+              </View>
+            </Pressable>
+          </View>
+
+          <View style={styles.bookingStepBlock}>
+            <View style={styles.bookingStepHeader}>
+              <Text style={styles.bookingStepNumber}>2</Text>
+              <View style={styles.flexText}>
+                <Text style={styles.fieldLabel}>Selecciona una hora</Text>
+                <Text style={styles.smallMuted}>Elige el horario que prefieres para esta experiencia.</Text>
+              </View>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.bookingChipRow}>
+              {timeOptions.map((item) => (
+                <Pressable
+                  key={item}
+                  style={[styles.bookingChoiceChip, item === time ? styles.bookingChoiceChipActive : null]}
+                  onPress={() => {
+                    setTime(item);
+                    scrollToBookingForm();
+                  }}
+                >
+                  <Clock3 size={14} color={item === time ? colors.white : colors.skyDark} />
+                  <Text style={[styles.bookingChoiceText, item === time ? styles.bookingChoiceTextActive : null]}>
+                    {item}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+
+          <View style={styles.bookingStepBlock}>
+            <View style={styles.bookingStepHeader}>
+              <Text style={styles.bookingStepNumber}>3</Text>
+              <View style={styles.flexText}>
+                <Text style={styles.fieldLabel}>Personas</Text>
+                <Text style={styles.smallMuted}>El precio se actualiza antes de continuar.</Text>
+              </View>
+            </View>
+            <Stepper label="Adultos" value={adults} min={1} max={20} onChange={setAdults} />
+            <Stepper label="Adolescentes" value={youth} min={0} max={20} onChange={setYouth} />
+            <Stepper label="Ninos" value={child} min={0} max={20} onChange={setChild} />
+          </View>
+
           <View style={styles.rowBetween}>
             <View>
-              <Text style={styles.smallMuted}>Total</Text>
+              <Text style={styles.smallMuted}>{offerPricing.savings > 0 ? `Antes ${money(subtotal)}` : "Total"}</Text>
               <Text style={styles.checkoutTotal}>{money(totalPrice)}</Text>
             </View>
             <ActionButton label="Continuar" icon={CreditCard} onPress={startCheckout} />
           </View>
         </View>
       </View>
+      <CalendarPickerModal
+        visible={calendarOpen}
+        selectedDate={date}
+        month={calendarMonth}
+        locale={dateLocale}
+        onMonthChange={setCalendarMonth}
+        onClose={() => setCalendarOpen(false)}
+        onSelect={(nextDate) => {
+          setDate(nextDate);
+          setCalendarOpen(false);
+          scrollToBookingForm();
+        }}
+      />
     </View>
   );
 }
@@ -2471,6 +3011,10 @@ function CheckoutScreen({
   const [email, setEmail] = useState(session?.user.email ?? "");
   const [phone, setPhone] = useState("");
   const [pickupLocation, setPickupLocation] = useState(summary.destination ?? "");
+  const [pickupSelected, setPickupSelected] = useState<LocationSummary | null>(null);
+  const [pickupOptions, setPickupOptions] = useState<LocationSummary[]>([]);
+  const [pickupLoading, setPickupLoading] = useState(false);
+  const [pickupInfo, setPickupInfo] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -2523,6 +3067,59 @@ function CheckoutScreen({
       savedAt: Date.now()
     } satisfies CheckoutDraft);
   }, [draftReady, email, firstName, lastName, notes, phone, pickupLocation, url]);
+
+  useEffect(() => {
+    if (summary.flowType !== "tour") {
+      setPickupOptions([]);
+      setPickupLoading(false);
+      setPickupInfo(null);
+      return;
+    }
+
+    const query = pickupLocation.trim();
+    if (pickupSelected?.name === query) {
+      setPickupOptions([]);
+      setPickupLoading(false);
+      setPickupInfo("Hotel seleccionado de la lista real.");
+      return;
+    }
+
+    if (query.length < 2) {
+      setPickupOptions([]);
+      setPickupLoading(false);
+      setPickupInfo(null);
+      return;
+    }
+
+    let active = true;
+    const timer = setTimeout(() => {
+      setPickupLoading(true);
+      fetchTransferLocations(query)
+        .then((locations) => {
+          if (!active) return;
+          const matches = pickupHotelMatchesForTour(locations, query, summary.tourLocation);
+          setPickupOptions(matches);
+          setPickupInfo(
+            matches.length
+              ? "Selecciona un hotel de la lista o deja escrito tu punto de recogida."
+              : "No lo vemos en la lista de hoteles de esta zona. Usaremos lo que escribiste como punto de recogida."
+          );
+        })
+        .catch(() => {
+          if (!active) return;
+          setPickupOptions([]);
+          setPickupInfo("No pudimos buscar hoteles ahora. Usaremos lo que escribiste como punto de recogida.");
+        })
+        .finally(() => {
+          if (active) setPickupLoading(false);
+        });
+    }, 220);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [pickupLocation, pickupSelected?.name, summary.flowType, summary.tourLocation]);
 
   const validateCheckout = () => {
     const nextErrors: Record<string, string> = {};
@@ -2708,12 +3305,48 @@ function CheckoutScreen({
 
         <View style={styles.formPanel}>
           <Text style={styles.sectionTitle}>Recogida y preferencias</Text>
-          <InputField
-            label={summary.flowType === "transfer" ? "Punto principal" : "Hotel o punto de recogida"}
-            value={pickupLocation}
-            onChangeText={setPickupLocation}
-            error={errors.pickupLocation}
-          />
+          {summary.flowType === "tour" ? (
+            <View style={styles.cardStack}>
+              <LocationSearchInput
+                label="Busca tu hotel o escribe un punto de recogida"
+                icon={MapPin}
+                value={pickupLocation}
+                selected={pickupSelected}
+                loading={pickupLoading}
+                options={pickupOptions}
+                placeholder="Ej: hotel, villa o punto de encuentro"
+                onChange={(value) => {
+                  setPickupLocation(value);
+                  setPickupSelected(null);
+                  setErrors((current) => {
+                    const next = { ...current };
+                    delete next.pickupLocation;
+                    return next;
+                  });
+                }}
+                onSelect={(location) => {
+                  setPickupSelected(location);
+                  setPickupLocation(location.name);
+                  setPickupOptions([]);
+                  setPickupInfo("Hotel seleccionado de la lista real.");
+                  setErrors((current) => {
+                    const next = { ...current };
+                    delete next.pickupLocation;
+                    return next;
+                  });
+                }}
+                error={errors.pickupLocation}
+              />
+              {pickupInfo ? <Text style={styles.pickupHelperText}>{pickupInfo}</Text> : null}
+            </View>
+          ) : (
+            <InputField
+              label="Punto principal"
+              value={pickupLocation}
+              onChangeText={setPickupLocation}
+              error={errors.pickupLocation}
+            />
+          )}
           <InputField label="Notas especiales" value={notes} onChangeText={setNotes} multiline />
         </View>
 
@@ -2941,6 +3574,185 @@ function TripPlanSection({
   );
 }
 
+const bookingStatusLabel = (status?: string | null) => {
+  if (status === "COMPLETED") return "Completada";
+  if (status === "CANCELLED") return "Cancelada";
+  if (status === "PENDING") return "Pendiente";
+  return "Confirmada";
+};
+
+function CustomerStat({
+  label,
+  value,
+  icon: Icon
+}: {
+  label: string;
+  value: string | number;
+  icon: IconType;
+}) {
+  return (
+    <View style={styles.customerStat}>
+      <Icon size={16} color={colors.skyDark} />
+      <Text style={styles.customerStatValue}>{value}</Text>
+      <Text style={styles.customerStatLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function CustomerHubRow({
+  icon: Icon,
+  title,
+  subtitle,
+  onPress
+}: {
+  icon: IconType;
+  title: string;
+  subtitle: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable style={styles.customerHubRow} onPress={onPress}>
+      <View style={styles.customerHubIcon}>
+        <Icon size={17} color={colors.skyDark} />
+      </View>
+      <View style={styles.flexText}>
+        <Text style={styles.customerHubRowTitle}>{title}</Text>
+        <Text style={styles.customerHubRowText} numberOfLines={2}>
+          {subtitle}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
+function CustomerAccountHub({
+  summary,
+  loading,
+  error
+}: {
+  summary: MobileCustomerSummary | null;
+  loading: boolean;
+  error: string | null;
+}) {
+  const t = useTranslate();
+  const tr = (value: string) => t(value) || value;
+
+  if (loading && !summary) {
+    return (
+      <View style={styles.formPanel}>
+        <Text style={styles.sectionTitle}>Centro de cliente</Text>
+        <Text style={styles.smallMuted}>Cargando tus reservas, pagos y notificaciones...</Text>
+      </View>
+    );
+  }
+
+  if (!summary) {
+    return (
+      <View style={styles.formPanel}>
+        <Text style={styles.sectionTitle}>Centro de cliente</Text>
+        <Text style={styles.smallMuted}>{error || "No pudimos cargar tu cuenta ahora mismo."}</Text>
+        <ActionButton label="Abrir portal web" icon={Compass} variant="outlineDark" onPress={() => openUrl(customerUrl("/customer"))} />
+      </View>
+    );
+  }
+
+  const latestBooking = summary.bookings[0] ?? null;
+  const latestNotification = summary.notifications[0] ?? null;
+  const paymentLabel =
+    summary.payment?.hasSavedMethod && summary.payment.last4
+      ? `${summary.payment.brand || tr("Tarjeta")} **** ${summary.payment.last4}`
+      : tr("Agrega una tarjeta para reservar mas rapido");
+  const preferenceLabel = summary.preference?.completedAt
+    ? [
+        ...summary.preference.preferredDestinations.slice(0, 2),
+        ...summary.preference.preferredProductTypes.slice(0, 1)
+      ]
+        .filter(Boolean)
+        .join(", ") || tr("Preferencias guardadas")
+    : tr("Completa tus gustos de viaje");
+
+  return (
+    <View style={styles.formPanel}>
+      <View style={styles.rowBetween}>
+        <View style={styles.flexText}>
+          <Text style={styles.sectionTitle}>Centro de cliente</Text>
+          <Text style={styles.smallMuted}>Reservas, pagos, resenas y avisos de tu cuenta.</Text>
+        </View>
+        {summary.metrics.unreadNotifications ? (
+          <View style={styles.customerBadge}>
+            <Text style={styles.customerBadgeText}>{summary.metrics.unreadNotifications}</Text>
+          </View>
+        ) : null}
+      </View>
+
+      <View style={styles.customerStatsGrid}>
+        <CustomerStat label="Proximas" value={summary.metrics.upcoming} icon={CalendarCheck} />
+        <CustomerStat label="Completadas" value={summary.metrics.completed} icon={CheckCircle2} />
+        <CustomerStat label="Resenas" value={summary.metrics.pendingReviews} icon={Star} />
+        <CustomerStat label="Pagado" value={money(summary.metrics.totalPaid)} icon={CreditCard} />
+      </View>
+
+      <View style={styles.customerFocusBox}>
+        <Text style={styles.customerFocusLabel}>Proxima actividad</Text>
+        {latestBooking ? (
+          <>
+            <Text style={styles.customerFocusTitle} numberOfLines={2}>{latestBooking.title}</Text>
+            <Text style={styles.customerFocusText}>
+              {tr(bookingStatusLabel(latestBooking.status))} | {shortDate(latestBooking.travelDate)} | {money(latestBooking.totalAmount)}
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text style={styles.customerFocusTitle}>Sin reservas todavia</Text>
+            <Text style={styles.customerFocusText}>Cuando reserves, tu historial aparecera aqui.</Text>
+          </>
+        )}
+      </View>
+
+      <View style={styles.customerHubRows}>
+        <CustomerHubRow
+          icon={CalendarCheck}
+          title="Mis reservas"
+          subtitle={latestBooking ? `${summary.metrics.totalBookings} ${tr("reservas en tu historial")}` : "Aun no tienes reservas registradas"}
+          onPress={() => openUrl(customerUrl("/customer/reservations"))}
+        />
+        <CustomerHubRow
+          icon={CreditCard}
+          title="Tarjetas guardadas"
+          subtitle={paymentLabel}
+          onPress={() => openUrl(customerUrl("/customer/payments"))}
+        />
+        <CustomerHubRow
+          icon={Star}
+          title="Resenas pendientes"
+          subtitle={
+            summary.pendingReviews[0]
+              ? `${tr("Comparte tu experiencia en")} ${summary.pendingReviews[0].title}`
+              : "Cuando completes un tour o traslado podras dejar tu opinion"
+          }
+          onPress={() => openUrl(customerUrl("/customer/reservations"))}
+        />
+        <CustomerHubRow
+          icon={User}
+          title="Datos y preferencias"
+          subtitle={preferenceLabel}
+          onPress={() => openUrl(customerUrl("/customer/preferences"))}
+        />
+      </View>
+
+      {latestNotification ? (
+        <View style={styles.customerNotice}>
+          <Text style={styles.customerFocusLabel}>Ultimo aviso</Text>
+          <Text style={styles.customerHubRowTitle}>{latestNotification.title}</Text>
+          {latestNotification.message ? (
+            <Text style={styles.customerHubRowText} numberOfLines={2}>{latestNotification.message}</Text>
+          ) : null}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 function ProfileScreen({
   session,
   quote,
@@ -2968,6 +3780,35 @@ function ProfileScreen({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [customerSummary, setCustomerSummary] = useState<MobileCustomerSummary | null>(null);
+  const [customerLoading, setCustomerLoading] = useState(false);
+  const [customerError, setCustomerError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!session?.token) {
+      setCustomerSummary(null);
+      setCustomerError(null);
+      return;
+    }
+
+    let active = true;
+    setCustomerLoading(true);
+    setCustomerError(null);
+    fetchMobileCustomerSummary(session.token)
+      .then((summary) => {
+        if (active) setCustomerSummary(summary);
+      })
+      .catch((error) => {
+        if (active) setCustomerError(error instanceof Error ? error.message : "No se pudo cargar tu cuenta.");
+      })
+      .finally(() => {
+        if (active) setCustomerLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [session?.token]);
 
   const submit = async () => {
     setFeedback("Conectando...");
@@ -3004,10 +3845,8 @@ function ProfileScreen({
           <Text style={styles.smallMuted}>{appBuildLabel}</Text>
           <ActionButton label="Cerrar sesion" icon={User} variant="outlineDark" onPress={() => onSessionChange(null)} />
         </View>
-        <View style={styles.cardStack}>
-          <LinkRow icon={MessageCircle} title="WhatsApp" subtitle="Soporte directo" onPress={() => openUrl(links.whatsapp)} />
-          <LinkRow icon={Compass} title="Web" subtitle="proactivitis.com" onPress={() => openUrl(links.home)} />
-        </View>
+        <CustomerAccountHub summary={customerSummary} loading={customerLoading} error={customerError} />
+        <ContactPanel />
         <View style={styles.formPanel}>
           <Text style={styles.sectionTitle}>Idioma de la app</Text>
           <Text style={styles.smallMuted}>La app recordara tu preferencia para futuras visitas.</Text>
@@ -3061,6 +3900,7 @@ function ProfileScreen({
         onReserveTour={onReserveTour}
         onOpenCheckout={onOpenCheckout}
       />
+      <ContactPanel />
       <PolicyLinksPanel />
     </View>
   );
@@ -3187,6 +4027,7 @@ function InputField({
   label,
   value,
   onChangeText,
+  onFocus,
   placeholder,
   error,
   keyboardType,
@@ -3196,6 +4037,7 @@ function InputField({
   label: string;
   value: string;
   onChangeText: (value: string) => void;
+  onFocus?: () => void;
   placeholder?: string;
   error?: string;
   keyboardType?: KeyboardTypeOptions;
@@ -3210,6 +4052,7 @@ function InputField({
       <TextInput
         value={value}
         onChangeText={onChangeText}
+        onFocus={onFocus}
         placeholder={tr(placeholder) ?? undefined}
         placeholderTextColor={colors.muted}
         keyboardType={keyboardType}
@@ -3370,6 +4213,7 @@ function TourCard({
   onFavorite: () => void;
   onReserve: () => void;
 }) {
+  const offerAdultPrice = applyOfferDiscount(tour.price, tour.activeOffer).total;
   return (
     <Pressable style={styles.tourCard} onPress={onReserve}>
       <View style={styles.tourImageWrap}>
@@ -3377,6 +4221,7 @@ function TourCard({
         <View style={styles.tourImageOverlay} />
         <View style={styles.tourTopRow}>
           <Text style={styles.tourCategoryBadge}>{tour.category}</Text>
+          {tour.activeOffer ? <Text style={styles.tourOfferBadge}>{offerLabel(tour.activeOffer)}</Text> : null}
           <Pressable style={styles.favoriteButton} onPress={onFavorite}>
             <Heart size={18} color={favorite ? colors.green : colors.white} fill={favorite ? colors.green : "transparent"} />
           </Pressable>
@@ -3397,7 +4242,8 @@ function TourCard({
         <View style={styles.tourFooter}>
           <View>
             <Text style={styles.tourPriceLabel}>Desde</Text>
-            <Text style={styles.tourPrice}>{money(tour.price)}</Text>
+            {tour.activeOffer ? <Text style={styles.tourOldPrice}>{money(tour.price)}</Text> : null}
+            <Text style={styles.tourPrice}>{money(offerAdultPrice)}</Text>
           </View>
           <ActionButton label="Ver tour" icon={CreditCard} onPress={onReserve} />
         </View>
@@ -3458,6 +4304,60 @@ function InfoPill({ icon: Icon, label, value }: { icon: IconType; label: string;
       <View style={styles.flexText}>
         <Text style={styles.infoLabel}>{label}</Text>
         <Text style={styles.infoValue}>{value}</Text>
+      </View>
+    </View>
+  );
+}
+
+function ContactPanel({ compact = false }: { compact?: boolean }) {
+  return (
+    <View style={compact ? styles.contactPanelCompact : styles.formPanel}>
+      <View style={styles.contactHeader}>
+        <View style={styles.contactIcon}>
+          <MessageCircle size={20} color={colors.white} />
+        </View>
+        <View style={styles.flexText}>
+          <Text style={styles.sectionTitle}>Contacto y soporte</Text>
+          <Text style={styles.smallMuted}>Habla con Proactivitis antes o despues de reservar.</Text>
+        </View>
+      </View>
+      <View style={styles.contactGrid}>
+        <LinkRow
+          icon={MessageCircle}
+          title="WhatsApp"
+          subtitle="Respuesta rapida para reservas"
+          onPress={() => openUrl(links.whatsapp)}
+        />
+        <LinkRow
+          icon={Phone}
+          title="Llamar ahora"
+          subtitle="+1 829 475 6298"
+          onPress={() => openUrl(links.phone)}
+        />
+        <LinkRow
+          icon={Mail}
+          title="Email"
+          subtitle="support@proactivitis.com"
+          onPress={() => openUrl(links.email)}
+        />
+        <LinkRow
+          icon={ImageIcon}
+          title="Instagram"
+          subtitle="Fotos y novedades"
+          onPress={() => openUrl(links.instagram)}
+        />
+        <LinkRow
+          icon={MessageCircle}
+          title="TikTok"
+          subtitle="Videos y recomendaciones"
+          onPress={() => openUrl(links.tiktok)}
+        />
+        <LinkRow
+          icon={Compass}
+          title="Formulario web"
+          subtitle="Enviar mensaje desde la web"
+          onPress={() => openUrl(links.contact)}
+        />
       </View>
     </View>
   );
@@ -3580,6 +4480,10 @@ function TabBar({ activeTab, onChange }: { activeTab: TabKey; onChange: (tab: Ta
 }
 
 const styles = StyleSheet.create({
+  appRoot: {
+    flex: 1,
+    backgroundColor: colors.ink
+  },
   safeArea: {
     flex: 1,
     backgroundColor: colors.ink
@@ -3587,6 +4491,9 @@ const styles = StyleSheet.create({
   appShell: {
     flex: 1,
     backgroundColor: colors.surface
+  },
+  appShellSafeTop: {
+    paddingTop: 24
   },
   languageScreen: {
     flex: 1,
@@ -3678,6 +4585,11 @@ const styles = StyleSheet.create({
     gap: 18,
     padding: 16
   },
+  homeScreen: {
+    gap: 18,
+    paddingHorizontal: 16,
+    paddingBottom: 16
+  },
   flexText: {
     flex: 1,
     minWidth: 0,
@@ -3688,7 +4600,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     overflow: "hidden",
     marginHorizontal: -16,
-    marginTop: -16,
     backgroundColor: colors.ink
   },
   heroImage: {
@@ -4230,6 +5141,109 @@ const styles = StyleSheet.create({
   cardStack: {
     gap: 14
   },
+  customerStatsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  customerStat: {
+    width: "48%",
+    minHeight: 82,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.surface,
+    gap: 5,
+    padding: 11
+  },
+  customerStatValue: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "900"
+  },
+  customerStatLabel: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  customerBadge: {
+    minWidth: 28,
+    height: 28,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.green,
+    paddingHorizontal: 8
+  },
+  customerBadgeText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  customerFocusBox: {
+    gap: 5,
+    borderRadius: 8,
+    backgroundColor: colors.ink,
+    padding: 13
+  },
+  customerFocusLabel: {
+    color: colors.mutedOnDark,
+    fontSize: 10,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  customerFocusTitle: {
+    color: colors.white,
+    fontSize: 17,
+    lineHeight: 21,
+    fontWeight: "900"
+  },
+  customerFocusText: {
+    color: colors.skySoft,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "800"
+  },
+  customerHubRows: {
+    gap: 8
+  },
+  customerHubRow: {
+    minHeight: 64,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.white,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 11
+  },
+  customerHubIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.skySoft
+  },
+  customerHubRowTitle: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  customerHubRowText: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700"
+  },
+  customerNotice: {
+    gap: 5,
+    borderRadius: 8,
+    backgroundColor: colors.skySoft,
+    padding: 12
+  },
   policyCompactList: {
     gap: 8
   },
@@ -4263,6 +5277,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    flexWrap: "wrap",
     gap: 10
   },
   tourCategoryBadge: {
@@ -4270,6 +5285,17 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "rgba(255,255,255,0.92)",
     color: colors.skyDark,
+    fontSize: 11,
+    fontWeight: "900",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    textTransform: "uppercase"
+  },
+  tourOfferBadge: {
+    overflow: "hidden",
+    borderRadius: 999,
+    backgroundColor: "#f0fdf4",
+    color: colors.green,
     fontSize: 11,
     fontWeight: "900",
     paddingHorizontal: 10,
@@ -4371,6 +5397,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "900",
     textTransform: "uppercase"
+  },
+  tourOldPrice: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "900",
+    textDecorationLine: "line-through"
   },
   tourPrice: {
     color: colors.text,
@@ -4532,6 +5564,21 @@ const styles = StyleSheet.create({
     padding: 16,
     ...shadows.card
   },
+  offerBadge: {
+    alignSelf: "flex-start",
+    borderRadius: 999,
+    backgroundColor: "#f0fdf4",
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    paddingHorizontal: 10,
+    paddingVertical: 5
+  },
+  offerBadgeText: {
+    color: colors.green,
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
   productIntroCard: {
     gap: 12,
     borderRadius: 8,
@@ -4546,6 +5593,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "900",
     textTransform: "uppercase"
+  },
+  productOldPrice: {
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: "900",
+    textDecorationLine: "line-through"
   },
   productPrice: {
     color: colors.skyDark,
@@ -4765,6 +5818,265 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10
   },
+  bookingSelectionSummary: {
+    minHeight: 64,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 11,
+    borderRadius: 8,
+    backgroundColor: colors.ink,
+    padding: 12
+  },
+  bookingSelectionIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.sky
+  },
+  bookingSelectionLabel: {
+    color: colors.mutedOnDark,
+    fontSize: 10,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  bookingSelectionValue: {
+    color: colors.white,
+    fontSize: 17,
+    lineHeight: 21,
+    fontWeight: "900"
+  },
+  bookingStepBlock: {
+    gap: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.surface,
+    padding: 12
+  },
+  priceTierPanel: {
+    gap: 8,
+    borderRadius: 8,
+    backgroundColor: colors.surface,
+    padding: 12
+  },
+  priceTierRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10
+  },
+  priceTierLabel: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  priceTierValue: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  offerPanel: {
+    gap: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    backgroundColor: "#f0fdf4",
+    padding: 12
+  },
+  offerPanelTitle: {
+    color: colors.green,
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  offerPanelText: {
+    color: colors.text,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "800"
+  },
+  bookingStepHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10
+  },
+  bookingStepNumber: {
+    width: 26,
+    height: 26,
+    overflow: "hidden",
+    borderRadius: 999,
+    backgroundColor: colors.sky,
+    color: colors.white,
+    textAlign: "center",
+    lineHeight: 26,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  bookingDateButton: {
+    minHeight: 58,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+    backgroundColor: colors.white,
+    padding: 12
+  },
+  bookingDateLabel: {
+    color: colors.muted,
+    fontSize: 10,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  bookingDateValue: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: "900"
+  },
+  bookingChipRow: {
+    gap: 8,
+    paddingRight: 8
+  },
+  bookingChoiceChip: {
+    minHeight: 38,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.white,
+    paddingHorizontal: 12
+  },
+  bookingChoiceChipActive: {
+    borderColor: colors.sky,
+    backgroundColor: colors.sky
+  },
+  bookingChoiceText: {
+    color: colors.skyDark,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  bookingChoiceTextActive: {
+    color: colors.white
+  },
+  calendarBackdrop: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(6,17,31,0.55)"
+  },
+  calendarBackdropTap: {
+    ...StyleSheet.absoluteFillObject
+  },
+  calendarSheet: {
+    gap: 14,
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    backgroundColor: colors.card,
+    padding: 16,
+    paddingBottom: 24
+  },
+  calendarCloseButton: {
+    minHeight: 34,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surface,
+    paddingHorizontal: 12
+  },
+  calendarCloseText: {
+    color: colors.skyDark,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  calendarMonthBar: {
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8
+  },
+  calendarMonthTitle: {
+    flex: 1,
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "900",
+    textAlign: "center",
+    textTransform: "capitalize"
+  },
+  calendarNavButton: {
+    minHeight: 36,
+    minWidth: 78,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    borderRadius: 8,
+    backgroundColor: colors.skySoft,
+    paddingHorizontal: 8
+  },
+  calendarNavButtonDisabled: {
+    backgroundColor: colors.surface
+  },
+  calendarNavText: {
+    color: colors.skyDark,
+    fontSize: 10,
+    fontWeight: "900"
+  },
+  calendarNavTextDisabled: {
+    color: colors.muted
+  },
+  calendarWeekRow: {
+    flexDirection: "row",
+    gap: 5
+  },
+  calendarWeekText: {
+    flex: 1,
+    color: colors.muted,
+    fontSize: 10,
+    fontWeight: "900",
+    textAlign: "center",
+    textTransform: "uppercase"
+  },
+  calendarGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 5
+  },
+  calendarDay: {
+    width: "13.45%",
+    aspectRatio: 1,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surface
+  },
+  calendarDayOtherMonth: {
+    backgroundColor: colors.white
+  },
+  calendarDayDisabled: {
+    opacity: 0.45
+  },
+  calendarDaySelected: {
+    backgroundColor: colors.sky
+  },
+  calendarDayText: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  calendarDayTextMuted: {
+    color: colors.muted
+  },
+  calendarDayTextDisabled: {
+    color: colors.muted
+  },
+  calendarDayTextSelected: {
+    color: colors.white
+  },
   fieldBlock: {
     flex: 1,
     gap: 7
@@ -4794,6 +6106,12 @@ const styles = StyleSheet.create({
   inputError: {
     color: "#b91c1c",
     fontSize: 12,
+    fontWeight: "800"
+  },
+  pickupHelperText: {
+    color: colors.skyDark,
+    fontSize: 12,
+    lineHeight: 17,
     fontWeight: "800"
   },
   checkoutTotal: {
@@ -5177,6 +6495,31 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     padding: 14,
     ...shadows.card
+  },
+  contactPanelCompact: {
+    gap: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 14,
+    ...shadows.card
+  },
+  contactHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 11
+  },
+  contactIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.skyDark
+  },
+  contactGrid: {
+    gap: 8
   },
   formDivider: {
     flexDirection: "row",

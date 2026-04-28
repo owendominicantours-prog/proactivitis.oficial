@@ -37,7 +37,10 @@ export const links = {
   privacy: "https://proactivitis.com/legal/privacy",
   cookies: "https://proactivitis.com/legal/cookies",
   legalInformation: "https://proactivitis.com/legal/information",
+  contact: "https://proactivitis.com/contact",
   whatsapp: "https://wa.me/18294756298",
+  phone: "tel:+18294756298",
+  email: "mailto:support@proactivitis.com",
   instagram: "https://www.instagram.com/proactivitis",
   facebook: "https://www.facebook.com/proactivitis",
   tiktok: "https://www.tiktok.com/@proactivitis"

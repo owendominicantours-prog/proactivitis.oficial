@@ -173,6 +173,22 @@ export async function GET(request: NextRequest) {
       adminNote: true,
       heroImage: true,
       gallery: true,
+      OfferTours: {
+        where: { Offer: { active: true } },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: {
+          Offer: {
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              discountType: true,
+              discountValue: true
+            }
+          }
+        }
+      },
       options: {
         where: { active: true },
         orderBy: { sortOrder: "asc" },
@@ -219,6 +235,14 @@ export async function GET(request: NextRequest) {
       const includesList = translatedIncludes.length ? translatedIncludes : parseJsonList(tour.includesList);
       const notIncludedList = translatedNotIncluded.length ? translatedNotIncluded : parseJsonList(tour.notIncludedList);
       const itineraryStops = parseItineraryStops(tour.adminNote);
+      const activeOffer =
+        tour.OfferTours.map((entry) => entry.Offer)
+          .filter(Boolean)
+          .sort((a, b) => {
+            const aSavings = a.discountType === "PERCENT" ? tour.price * (a.discountValue / 100) : a.discountValue;
+            const bSavings = b.discountType === "PERCENT" ? tour.price * (b.discountValue / 100) : b.discountValue;
+            return bSavings - aSavings;
+          })[0] ?? null;
       return {
         id: tour.id,
         productId: tour.productId,
@@ -230,6 +254,15 @@ export async function GET(request: NextRequest) {
         price: tour.price,
         priceChild: tour.priceChild,
         priceYouth: tour.priceYouth,
+        activeOffer: activeOffer
+          ? {
+              id: activeOffer.id,
+              title: sanitizeText(activeOffer.title),
+              description: sanitizeText(activeOffer.description),
+              discountType: activeOffer.discountType,
+              discountValue: activeOffer.discountValue
+            }
+          : null,
         duration: formatDuration(tour.duration, translation?.durationUnit),
         category: sanitizeText(tour.category ?? "Tours"),
         location: sanitizeText(tour.location),
@@ -274,6 +307,6 @@ export async function GET(request: NextRequest) {
     })
   });
 
-  response.headers.set("Cache-Control", "public, s-maxage=120, stale-while-revalidate=600");
+  response.headers.set("Cache-Control", "public, s-maxage=30, stale-while-revalidate=120");
   return withCors(response);
 }
