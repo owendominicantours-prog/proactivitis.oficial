@@ -1541,11 +1541,25 @@ function CheckoutScreen({
       </View>
       <ScrollView contentContainerStyle={styles.checkoutContent} showsVerticalScrollIndicator={false}>
         <View style={styles.checkoutHero}>
-          <Text style={styles.eyebrowDark}>Checkout nativo</Text>
-          <Text style={styles.checkoutHeroTitle}>Completa tus datos sin que la app se cierre</Text>
+          <Text style={styles.eyebrowDark}>Reserva segura</Text>
+          <Text style={styles.checkoutHeroTitle}>Confirma tu experiencia en minutos</Text>
           <Text style={styles.bodyText}>
-            La reserva usa el checkout seguro de Proactivitis al final para procesar el pago.
+            Revisa el producto, deja tus datos y continua al pago seguro de Proactivitis.
           </Text>
+          <View style={styles.checkoutStepRow}>
+            <View style={styles.checkoutStep}>
+              <Text style={styles.checkoutStepNumber}>1</Text>
+              <Text style={styles.checkoutStepText}>Datos</Text>
+            </View>
+            <View style={styles.checkoutStep}>
+              <Text style={styles.checkoutStepNumber}>2</Text>
+              <Text style={styles.checkoutStepText}>Recogida</Text>
+            </View>
+            <View style={styles.checkoutStep}>
+              <Text style={styles.checkoutStepNumber}>3</Text>
+              <Text style={styles.checkoutStepText}>Pago</Text>
+            </View>
+          </View>
         </View>
 
         <View style={styles.summaryCard}>
@@ -1576,7 +1590,7 @@ function CheckoutScreen({
         </View>
 
         <View style={styles.formPanel}>
-          <Text style={styles.sectionTitle}>Cliente principal</Text>
+          <Text style={styles.sectionTitle}>Datos de contacto</Text>
           <View style={styles.dateGrid}>
             <InputField label="Nombre" value={firstName} onChangeText={setFirstName} error={errors.firstName} />
             <InputField label="Apellido" value={lastName} onChangeText={setLastName} error={errors.lastName} />
@@ -1592,7 +1606,7 @@ function CheckoutScreen({
         </View>
 
         <View style={styles.formPanel}>
-          <Text style={styles.sectionTitle}>Recogida y notas</Text>
+          <Text style={styles.sectionTitle}>Recogida y preferencias</Text>
           <InputField
             label={summary.flowType === "transfer" ? "Punto principal" : "Hotel o punto de recogida"}
             value={pickupLocation}
@@ -1602,12 +1616,14 @@ function CheckoutScreen({
           <InputField label="Notas especiales" value={notes} onChangeText={setNotes} multiline />
         </View>
 
-        <PolicyLinksPanel compact />
-
         <View style={styles.payPanel}>
+          <View style={styles.checkoutSecureNote}>
+            <ShieldCheck size={18} color={colors.skySoft} />
+            <Text style={styles.checkoutSecureText}>Pago protegido y confirmacion por Proactivitis.</Text>
+          </View>
           <View style={styles.rowBetween}>
             <View>
-              <Text style={styles.smallMuted}>Total a pagar</Text>
+              <Text style={styles.checkoutPayLabel}>Total a pagar</Text>
               <Text style={styles.checkoutTotal}>{money(summary.totalPrice)}</Text>
             </View>
             <ActionButton label="Pagar seguro" icon={CreditCard} onPress={continueToPay} />
@@ -1624,11 +1640,10 @@ function CheckoutScreen({
               )
             }
           />
-          <Text style={styles.checkoutLegalText}>
-            Al continuar aceptas los terminos, la politica de privacidad y las reglas de cancelacion aplicables al producto.
-          </Text>
           {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
         </View>
+
+        <PolicyLinksPanel compact />
       </ScrollView>
     </View>
   );
@@ -2144,6 +2159,26 @@ function InfoPill({ icon: Icon, label, value }: { icon: IconType; label: string;
 }
 
 function PolicyLinksPanel({ compact = false }: { compact?: boolean }) {
+  if (compact) {
+    return (
+      <View style={styles.policyMiniPanel}>
+        <Text style={styles.policyMiniTitle}>Legal y politicas</Text>
+        <Text style={styles.policyMiniText}>Consulta estos enlaces cuando necesites revisar privacidad, terminos o cancelaciones.</Text>
+        <View style={styles.policyMiniGrid}>
+          {policyLinks.map((item) => (
+            <Pressable key={item.title} style={styles.policyMiniLink} onPress={() => openUrl(item.url)}>
+              <item.icon size={13} color={colors.skyDark} />
+              <Text style={styles.policyMiniLabel} numberOfLines={2}>{item.title}</Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={styles.policyMiniNotice}>
+          Al continuar aceptas los terminos, privacidad y reglas de cancelacion aplicables al producto.
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.formPanel}>
       <Text style={styles.sectionTitle}>Politicas y legal</Text>
@@ -3594,6 +3629,30 @@ const styles = StyleSheet.create({
     lineHeight: 29,
     fontWeight: "900"
   },
+  checkoutStepRow: {
+    flexDirection: "row",
+    gap: 8
+  },
+  checkoutStep: {
+    flex: 1,
+    minHeight: 52,
+    borderRadius: 8,
+    backgroundColor: colors.skySoft,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 3,
+    padding: 8
+  },
+  checkoutStepNumber: {
+    color: colors.skyDark,
+    fontSize: 15,
+    fontWeight: "900"
+  },
+  checkoutStepText: {
+    color: colors.text,
+    fontSize: 11,
+    fontWeight: "900"
+  },
   summaryCard: {
     flexDirection: "row",
     gap: 12,
@@ -3656,11 +3715,73 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ink,
     padding: 16
   },
-  checkoutLegalText: {
-    color: colors.mutedOnDark,
+  checkoutSecureNote: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 8,
+    backgroundColor: "rgba(14,165,233,0.15)",
+    padding: 10
+  },
+  checkoutSecureText: {
+    flex: 1,
+    color: colors.skySoft,
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: "900",
     lineHeight: 17
+  },
+  checkoutPayLabel: {
+    color: colors.mutedOnDark,
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  policyMiniPanel: {
+    gap: 8,
+    paddingHorizontal: 4,
+    paddingTop: 2,
+    paddingBottom: 12
+  },
+  policyMiniTitle: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  policyMiniText: {
+    color: colors.muted,
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: "700"
+  },
+  policyMiniGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  policyMiniLink: {
+    width: "48%",
+    minHeight: 34,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 8,
+    backgroundColor: colors.card,
+    paddingHorizontal: 8,
+    paddingVertical: 7
+  },
+  policyMiniLabel: {
+    flex: 1,
+    color: colors.skyDark,
+    fontSize: 11,
+    fontWeight: "900",
+    lineHeight: 14
+  },
+  policyMiniNotice: {
+    color: colors.muted,
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: "700"
   },
   feedbackText: {
     color: colors.skyDark,
