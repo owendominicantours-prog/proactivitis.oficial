@@ -55,6 +55,15 @@ if (-not $device) {
   exit 1
 }
 
+$deviceLines = (& $adb devices) | Where-Object { $_ -match "\sdevice$" }
+foreach ($line in $deviceLines) {
+  $serial = ($line -split "\s+")[0]
+  if ($serial -like "emulator-*" -and $serial -ne $device) {
+    Write-Host "Quitando alias ADB conflictivo: $serial" -ForegroundColor Yellow
+    & $adb disconnect $serial | Out-Host
+  }
+}
+
 $env:ANDROID_SERIAL = $device
 $env:EXPO_PUBLIC_API_BASE_URL = "https://proactivitis.com"
 
