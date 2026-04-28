@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import type { ComponentType, ReactNode } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Component, useEffect, useMemo, useRef, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import {
   Image,
@@ -74,6 +74,31 @@ type TabKey = "home" | "tours" | "transfers" | "trips" | "profile";
 type TripType = "one-way" | "round-trip";
 type IconType = ComponentType<{ size?: number; color?: string; strokeWidth?: number; fill?: string }>;
 
+class ScreenErrorBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode; resetKey: string },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidUpdate(previousProps: { resetKey: string }) {
+    if (previousProps.resetKey !== this.props.resetKey && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
+  }
+
+  componentDidCatch(error: unknown) {
+    console.warn("Mobile screen failed", error);
+  }
+
+  render() {
+    return this.state.hasError ? this.props.fallback : this.props.children;
+  }
+}
+
 type AppTour = {
   id: string;
   slug: string;
@@ -138,7 +163,7 @@ const heroImage =
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
 const fallbackTourImage = "https://proactivitis.com/fototours/fotosimple.jpg";
 const mobileSessionStorageKey = "proactivitis_mobile_session";
-const appBuildLabel = "Version 1.0.4 | Android 5";
+const appBuildLabel = "Version 1.0.5 | Android 6";
 
 const money = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -440,6 +465,8 @@ export default function App() {
     setCheckoutUrl(url);
   };
 
+  const screenResetKey = checkoutUrl ?? activeProduct?.id ?? activeTab;
+
   const renderScreen = () => {
     if (checkoutUrl) {
       return (
@@ -515,10 +542,28 @@ export default function App() {
       <StatusBar style="light" />
       <View style={styles.appShell}>
         {checkoutUrl ? (
-          renderScreen()
+          <ScreenErrorBoundary
+            resetKey={screenResetKey}
+            fallback={<CrashFallbackScreen onBack={() => setCheckoutUrl(null)} />}
+          >
+            {renderScreen()}
+          </ScreenErrorBoundary>
         ) : (
           <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            {renderScreen()}
+            <ScreenErrorBoundary
+              resetKey={screenResetKey}
+              fallback={
+                <CrashFallbackScreen
+                  onBack={() => {
+                    setCheckoutUrl(null);
+                    setActiveProduct(null);
+                    setActiveTab("home");
+                  }}
+                />
+              }
+            >
+              {renderScreen()}
+            </ScreenErrorBoundary>
           </ScrollView>
         )}
         {!checkoutUrl && !activeProduct ? <TabBar activeTab={activeTab} onChange={setActiveTab} /> : null}
@@ -619,6 +664,27 @@ function HomeScreen({
   );
 }
 
+function CrashFallbackScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <View style={styles.screen}>
+      <View style={styles.emptyState}>
+        <ShieldCheck size={34} color={colors.skyDark} />
+        <Text style={styles.emptyTitle}>La pantalla no cargo bien</Text>
+        <Text style={styles.smallMuted}>
+          La app sigue abierta. Vuelve al inicio o confirma la reserva por WhatsApp.
+        </Text>
+        <ActionButton label="Volver al inicio" icon={Home} onPress={onBack} />
+        <ActionButton
+          label="WhatsApp"
+          icon={MessageCircle}
+          variant="outlineDark"
+          onPress={() => openUrl(links.whatsapp)}
+        />
+      </View>
+    </View>
+  );
+}
+
 function ToursScreen({
   query,
   category,
@@ -691,7 +757,8 @@ function ProductScreen({
   onBack: () => void;
   onCheckout: (url: string) => void;
 }) {
-  const [selectedImage, setSelectedImage] = useState(tour.gallery[0] ?? tour.image);
+  const galleryImages = useMemo(() => tour.gallery.slice(0, 10), [tour.gallery]);
+  const [selectedImage, setSelectedImage] = useState(galleryImages[0] ?? tour.image);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [adults, setAdults] = useState(2);
   const [date, setDate] = useState(tomorrow());
@@ -705,8 +772,8 @@ function ProductScreen({
     selectedOption?.basePrice && selectedOption.baseCapacity ? selectedOption.basePrice : pricePerPerson * adults;
 
   useEffect(() => {
-    setSelectedImage(tour.gallery[0] ?? tour.image);
-  }, [tour.id, tour.gallery, tour.image]);
+    setSelectedImage(galleryImages[0] ?? tour.image);
+  }, [tour.id, galleryImages, tour.image]);
 
   const infoRows = [
     { label: "Recogida", value: tour.pickup },
@@ -734,7 +801,7 @@ function ProductScreen({
   if (galleryOpen) {
     return (
       <GalleryViewer
-        images={tour.gallery}
+        images={galleryImages}
         image={selectedImage}
         onSelect={setSelectedImage}
         onClose={() => setGalleryOpen(false)}
@@ -746,9 +813,8 @@ function ProductScreen({
     <View style={styles.productScreen}>
       <View style={styles.productHero}>
         <Pressable style={styles.productImageButton} onPress={() => setGalleryOpen(true)}>
-          <RemoteImage uri={selectedImage} style={styles.productImage} />
+          <VisualPlaceholder icon={ImageIcon} title="Galeria del tour" subtitle={`${galleryImages.length} fotos disponibles`} dark />
         </Pressable>
-        <View style={styles.productOverlay} />
         <Pressable style={styles.backButton} onPress={onBack}>
           <ArrowLeft size={20} color={colors.white} />
           <Text style={styles.backButtonText}>Volver</Text>
@@ -771,10 +837,10 @@ function ProductScreen({
         <View style={styles.gallerySection}>
           <View style={styles.rowBetween}>
             <Text style={styles.sectionTitle}>Galeria</Text>
-            <Text style={styles.smallMuted}>{tour.gallery.length} fotos</Text>
+            <Text style={styles.smallMuted}>{galleryImages.length} fotos</Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.galleryList}>
-            {tour.gallery.map((image) => (
+            {galleryImages.map((image, index) => (
               <Pressable
                 key={image}
                 style={[styles.galleryThumb, image === selectedImage ? styles.galleryThumbActive : null]}
@@ -783,7 +849,10 @@ function ProductScreen({
                   setGalleryOpen(true);
                 }}
               >
-                <RemoteImage uri={image} style={styles.fillImage} />
+                <View style={styles.galleryThumbPlaceholder}>
+                  <ImageIcon size={20} color={colors.skyDark} />
+                  <Text style={styles.galleryThumbText}>Foto {index + 1}</Text>
+                </View>
               </Pressable>
             ))}
           </ScrollView>
@@ -1270,7 +1339,9 @@ function CheckoutScreen({
 
         <View style={styles.summaryCard}>
           {summary.flowType === "tour" ? (
-            <RemoteImage uri={summary.image} style={styles.summaryImage} />
+            <View style={styles.summaryIcon}>
+              <ImageIcon size={30} color={colors.white} />
+            </View>
           ) : (
             <View style={styles.summaryIcon}>
               <Car size={30} color={colors.white} />
@@ -1494,16 +1565,40 @@ function GalleryViewer({
       </View>
       <RemoteImage uri={image} style={styles.galleryLarge} resizeMode="contain" />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.galleryList}>
-        {images.map((item) => (
+        {images.map((item, index) => (
           <Pressable
             key={item}
             style={[styles.viewerThumb, item === image ? styles.viewerThumbActive : null]}
             onPress={() => onSelect(item)}
           >
-            <RemoteImage uri={item} style={styles.fillImage} />
+            <View style={styles.viewerThumbLabel}>
+              <Text style={styles.viewerThumbText}>{index + 1}</Text>
+            </View>
           </Pressable>
         ))}
       </ScrollView>
+    </View>
+  );
+}
+
+function VisualPlaceholder({
+  icon: Icon,
+  title,
+  subtitle,
+  dark = false
+}: {
+  icon: IconType;
+  title: string;
+  subtitle: string;
+  dark?: boolean;
+}) {
+  return (
+    <View style={[styles.visualPlaceholder, dark ? styles.visualPlaceholderDark : null]}>
+      <View style={[styles.visualIcon, dark ? styles.visualIconDark : null]}>
+        <Icon size={28} color={dark ? colors.white : colors.skyDark} />
+      </View>
+      <Text style={[styles.visualTitle, dark ? styles.visualTitleDark : null]}>{title}</Text>
+      <Text style={[styles.visualSubtitle, dark ? styles.visualSubtitleDark : null]}>{subtitle}</Text>
     </View>
   );
 }
@@ -2283,6 +2378,47 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%"
   },
+  visualPlaceholder: {
+    flex: 1,
+    minHeight: 120,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: colors.skySoft,
+    padding: 16
+  },
+  visualPlaceholderDark: {
+    backgroundColor: colors.ink
+  },
+  visualIcon: {
+    width: 58,
+    height: 58,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.card
+  },
+  visualIconDark: {
+    backgroundColor: "rgba(255,255,255,0.14)"
+  },
+  visualTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "900",
+    textAlign: "center"
+  },
+  visualTitleDark: {
+    color: colors.white
+  },
+  visualSubtitle: {
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  visualSubtitleDark: {
+    color: colors.mutedOnDark
+  },
   productOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(6,17,31,0.56)"
@@ -2370,6 +2506,18 @@ const styles = StyleSheet.create({
   },
   galleryThumbActive: {
     borderColor: colors.sky
+  },
+  galleryThumbPlaceholder: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    backgroundColor: colors.skySoft
+  },
+  galleryThumbText: {
+    color: colors.skyDark,
+    fontSize: 11,
+    fontWeight: "900"
   },
   fillImage: {
     width: "100%",
@@ -2874,6 +3022,17 @@ const styles = StyleSheet.create({
   },
   viewerThumbActive: {
     borderColor: colors.sky
+  },
+  viewerThumbLabel: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.12)"
+  },
+  viewerThumbText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: "900"
   },
   emptyState: {
     gap: 12,

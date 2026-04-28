@@ -119,18 +119,39 @@ const getBrowserLocalApiBaseUrl = () => {
   return null;
 };
 
+const normalizeApiBaseUrl = (value?: string | null) => {
+  const candidate = value?.trim();
+  if (!candidate || candidate === "undefined" || candidate === "null") return null;
+  if (!/^https?:\/\//i.test(candidate)) return null;
+  try {
+    const parsed = new URL(candidate);
+    if (!parsed.hostname || parsed.hostname === "undefined") return null;
+    return parsed.origin;
+  } catch {
+    return null;
+  }
+};
+
 export const getApiBaseUrl = () =>
-  process?.env?.EXPO_PUBLIC_API_BASE_URL ||
-  getBrowserLocalApiBaseUrl() ||
+  normalizeApiBaseUrl(process?.env?.EXPO_PUBLIC_API_BASE_URL) ||
+  normalizeApiBaseUrl(getBrowserLocalApiBaseUrl()) ||
   "https://proactivitis.com";
 
 const jsonFetch = async <T>(path: string, init?: RequestInit) => {
   const baseUrl = getApiBaseUrl().replace(/\/$/, "");
-  const response = await fetch(`${baseUrl}${path}`, init);
-  const body = await response.json().catch(() => null);
-  if (!response.ok) {
-    throw new Error(body?.error ?? "No se pudo conectar con Proactivitis.");
+  const endpoint = `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+  let response: Response;
+  try {
+    response = await fetch(endpoint, init);
+  } catch (error) {
+    throw new Error(
+      error instanceof Error
+        ? `No se pudo conectar con Proactivitis (${baseUrl}): ${error.message}`
+        : `No se pudo conectar con Proactivitis (${baseUrl}).`
+    );
   }
+  const body = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(body?.error ?? "No se pudo conectar con Proactivitis.");
   return body as T;
 };
 
