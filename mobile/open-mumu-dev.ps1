@@ -68,7 +68,9 @@ $env:ANDROID_SERIAL = $device
 $env:EXPO_PUBLIC_API_BASE_URL = "https://proactivitis.com"
 
 Write-Host "Usando MuMu: $device" -ForegroundColor Green
+Write-Host "Dispositivos finales:" -ForegroundColor Cyan
+& $adb devices | Out-Host
 Write-Host "Instalando/abriendo la app local. La primera vez puede tardar varios minutos." -ForegroundColor Yellow
 Write-Host "Cuando termine, deja esta ventana abierta para ver cambios en vivo." -ForegroundColor Green
 
-npx expo run:android --device $device
+npx expo run:android
