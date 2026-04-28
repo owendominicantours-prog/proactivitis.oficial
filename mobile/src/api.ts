@@ -41,23 +41,46 @@ export type MobileTourOption = {
   isDefault?: boolean;
 };
 
+export type MobileTourItineraryStop = {
+  time: string;
+  title: string;
+  description?: string | null;
+};
+
 export type MobileTour = {
   id: string;
   slug: string;
+  productId?: string | null;
   title: string;
   subtitle?: string | null;
   description: string;
   fullDescription?: string | null;
   price: number;
+  priceChild?: number | null;
+  priceYouth?: number | null;
   duration: string;
   category: string;
   location: string;
+  languages?: string[];
+  timeOptions?: string[];
+  operatingDays?: string[];
   pickup?: string | null;
+  meetingPoint?: string | null;
+  meetingInstructions?: string | null;
+  requirements?: string | null;
   cancellationPolicy?: string | null;
+  terms?: string | null;
+  physicalLevel?: string | null;
+  minAge?: number | null;
+  accessibility?: string | null;
+  confirmationType?: string | null;
+  capacity?: number | null;
   includes: string[];
+  notIncluded?: string[];
   highlights: string[];
   image: string;
   gallery: string[];
+  itinerary?: MobileTourItineraryStop[];
   options: MobileTourOption[];
 };
 
@@ -112,7 +135,7 @@ export const fetchTransferQuote = async ({
   });
 
 export const fetchMobileTours = async () => {
-  const data = await jsonFetch<{ tours: MobileTour[] }>("/api/mobile/tours?limit=30");
+  const data = await jsonFetch<{ tours: MobileTour[] }>("/api/mobile/tours?limit=50");
   return data.tours ?? [];
 };
 

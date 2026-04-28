@@ -56,9 +56,11 @@ import {
   getApiBaseUrl,
   type LocationSummary,
   type MobileTour,
+  type MobileTourItineraryStop,
   type MobileTourOption,
   type QuoteVehicle
 } from "./src/api";
+import { staticMobileTours } from "./src/staticTours";
 import { colors, links, shadows } from "./src/theme";
 
 type TabKey = "home" | "tours" | "transfers" | "trips" | "profile";
@@ -105,9 +107,25 @@ type AppTour = Tour & {
   webTour?: MobileTour;
   options?: MobileTourOption[];
   includes?: string[];
+  notIncluded?: string[];
   gallery?: string[];
   fullDescription?: string | null;
   cancellationPolicy?: string | null;
+  priceChild?: number | null;
+  priceYouth?: number | null;
+  languages?: string[];
+  timeOptions?: string[];
+  operatingDays?: string[];
+  meetingPoint?: string | null;
+  meetingInstructions?: string | null;
+  requirements?: string | null;
+  terms?: string | null;
+  physicalLevel?: string | null;
+  minAge?: number | null;
+  accessibility?: string | null;
+  confirmationType?: string | null;
+  capacity?: number | null;
+  itinerary?: MobileTourItineraryStop[];
 };
 
 const heroImage =
@@ -121,6 +139,8 @@ const tourImageSource = (uri?: string | null) => ({ uri: uri?.trim() || fallback
 
 const uniqueImages = (items: Array<string | null | undefined>) =>
   Array.from(new Set(items.map((item) => item?.trim()).filter((item): item is string => Boolean(item))));
+
+const joinValues = (items?: string[]) => items?.map((item) => item.trim()).filter(Boolean).join(", ") || "";
 
 const openUrl = (href: string) => {
   void Linking.openURL(href);
@@ -153,19 +173,67 @@ const toAppTour = (tour: MobileTour): AppTour => ({
   webTour: tour,
   options: tour.options,
   includes: tour.includes,
+  notIncluded: tour.notIncluded ?? [],
   gallery: uniqueImages([tour.image, ...tour.gallery]),
   fullDescription: tour.fullDescription,
-  cancellationPolicy: tour.cancellationPolicy
+  cancellationPolicy: tour.cancellationPolicy,
+  priceChild: tour.priceChild,
+  priceYouth: tour.priceYouth,
+  languages: tour.languages ?? [],
+  timeOptions: tour.timeOptions ?? [],
+  operatingDays: tour.operatingDays ?? [],
+  meetingPoint: tour.meetingPoint,
+  meetingInstructions: tour.meetingInstructions,
+  requirements: tour.requirements,
+  terms: tour.terms,
+  physicalLevel: tour.physicalLevel,
+  minAge: tour.minAge,
+  accessibility: tour.accessibility,
+  confirmationType: tour.confirmationType,
+  capacity: tour.capacity,
+  itinerary: tour.itinerary ?? []
 });
 
-const fallbackTours: AppTour[] = featuredTours.map((tour) => ({
+const catalogFallbackTours: AppTour[] = featuredTours.map((tour) => ({
   ...tour,
   options: [],
   includes: [],
+  notIncluded: [],
   gallery: [tour.image],
   fullDescription: tour.description,
-  cancellationPolicy: null
+  cancellationPolicy: null,
+  itinerary: []
 }));
+
+const fallbackTours: AppTour[] = staticMobileTours.length ? staticMobileTours.map(toAppTour) : catalogFallbackTours;
+const fallbackToursBySlug = new Map(fallbackTours.map((tour) => [tour.slug, tour]));
+
+const mergeWebTourWithFallback = (tour: MobileTour): AppTour => {
+  const next = toAppTour(tour);
+  const fallback = fallbackToursBySlug.get(next.slug);
+  if (!fallback) return next;
+  return {
+    ...fallback,
+    ...next,
+    options: next.options?.length ? next.options : fallback.options,
+    includes: next.includes?.length ? next.includes : fallback.includes,
+    notIncluded: next.notIncluded?.length ? next.notIncluded : fallback.notIncluded,
+    gallery: next.gallery && next.gallery.length > 1 ? next.gallery : fallback.gallery,
+    fullDescription: next.fullDescription || fallback.fullDescription,
+    cancellationPolicy: next.cancellationPolicy || fallback.cancellationPolicy,
+    languages: next.languages?.length ? next.languages : fallback.languages,
+    timeOptions: next.timeOptions?.length ? next.timeOptions : fallback.timeOptions,
+    operatingDays: next.operatingDays?.length ? next.operatingDays : fallback.operatingDays,
+    meetingPoint: next.meetingPoint || fallback.meetingPoint,
+    meetingInstructions: next.meetingInstructions || fallback.meetingInstructions,
+    requirements: next.requirements || fallback.requirements,
+    terms: next.terms || fallback.terms,
+    physicalLevel: next.physicalLevel || fallback.physicalLevel,
+    accessibility: next.accessibility || fallback.accessibility,
+    confirmationType: next.confirmationType || fallback.confirmationType,
+    itinerary: next.itinerary?.length ? next.itinerary : fallback.itinerary
+  };
+};
 
 const toMobileTourPayload = (tour: AppTour): MobileTour => ({
   id: tour.id,
@@ -175,15 +243,31 @@ const toMobileTourPayload = (tour: AppTour): MobileTour => ({
   description: tour.description,
   fullDescription: tour.fullDescription ?? tour.description,
   price: tour.price,
+  priceChild: tour.priceChild ?? null,
+  priceYouth: tour.priceYouth ?? null,
   duration: tour.duration,
   category: tour.category,
   location: tour.location,
+  languages: tour.languages ?? [],
+  timeOptions: tour.timeOptions ?? [],
+  operatingDays: tour.operatingDays ?? [],
   pickup: tour.pickup,
+  meetingPoint: tour.meetingPoint ?? null,
+  meetingInstructions: tour.meetingInstructions ?? null,
+  requirements: tour.requirements ?? null,
   cancellationPolicy: tour.cancellationPolicy ?? null,
+  terms: tour.terms ?? null,
+  physicalLevel: tour.physicalLevel ?? null,
+  minAge: tour.minAge ?? null,
+  accessibility: tour.accessibility ?? null,
+  confirmationType: tour.confirmationType ?? null,
+  capacity: tour.capacity ?? null,
   includes: tour.includes ?? [],
+  notIncluded: tour.notIncluded ?? [],
   highlights: tour.highlights,
   image: tour.image,
   gallery: tour.gallery?.length ? tour.gallery : [tour.image],
+  itinerary: tour.itinerary ?? [],
   options: tour.options ?? []
 });
 
@@ -204,7 +288,7 @@ export default function App() {
     fetchMobileTours()
       .then((items) => {
         if (active && items.length) {
-          setTours(items.map(toAppTour));
+          setTours(items.map(mergeWebTourWithFallback));
         }
       })
       .catch(() => {
@@ -500,6 +584,24 @@ function ProductScreen({
   const checkoutPrice = selectedOption?.pricePerPerson ?? tour.price;
   const totalPrice =
     selectedOption?.basePrice && selectedOption.baseCapacity ? selectedOption.basePrice : checkoutPrice * adults;
+  const includedItems = tour.includes?.length ? tour.includes : tour.highlights;
+  const notIncludedItems = tour.notIncluded ?? [];
+  const productInfoRows = [
+    { label: "Recogida", value: tour.pickup ?? "" },
+    { label: "Punto de encuentro", value: tour.meetingPoint ?? "" },
+    { label: "Instrucciones", value: tour.meetingInstructions ?? "" },
+    { label: "Idiomas", value: joinValues(tour.languages) },
+    { label: "Horarios", value: joinValues(tour.timeOptions) },
+    { label: "Dias de operacion", value: joinValues(tour.operatingDays) },
+    { label: "Capacidad", value: tour.capacity ? `${tour.capacity} personas` : "" },
+    { label: "Edad minima", value: tour.minAge ? `${tour.minAge}+` : "" },
+    { label: "Nivel fisico", value: tour.physicalLevel ?? "" },
+    { label: "Accesibilidad", value: tour.accessibility ?? "" },
+    { label: "Confirmacion", value: tour.confirmationType ?? "" },
+    { label: "Requisitos", value: tour.requirements ?? "" },
+    { label: "Cancelacion", value: tour.cancellationPolicy ?? "" },
+    { label: "Terminos", value: tour.terms ?? "" }
+  ].filter((item) => item.value.trim().length > 0);
 
   useEffect(() => {
     setSelectedImage(galleryImages[0] ?? fallbackTourImage);
@@ -570,10 +672,21 @@ function ProductScreen({
 
         <Text style={styles.productDescription}>{tour.fullDescription ?? tour.description}</Text>
 
+        {productInfoRows.length ? (
+          <View style={styles.productSection}>
+            <Text style={styles.sectionTitle}>Informacion del producto</Text>
+            <View style={styles.productInfoList}>
+              {productInfoRows.map((item) => (
+                <ProductInfoRow key={item.label} label={item.label} value={item.value} />
+              ))}
+            </View>
+          </View>
+        ) : null}
+
         <View style={styles.productSection}>
           <Text style={styles.sectionTitle}>Incluye</Text>
           <View style={styles.checkList}>
-            {(tour.includes?.length ? tour.includes : tour.highlights).slice(0, 6).map((item) => (
+            {includedItems.map((item) => (
               <View key={item} style={styles.checkItem}>
                 <CheckCircle2 size={17} color={colors.green} />
                 <Text style={styles.checkText}>{item}</Text>
@@ -581,6 +694,38 @@ function ProductScreen({
             ))}
           </View>
         </View>
+
+        {notIncludedItems.length ? (
+          <View style={styles.productSection}>
+            <Text style={styles.sectionTitle}>No incluido</Text>
+            <View style={styles.checkList}>
+              {notIncludedItems.map((item) => (
+                <View key={item} style={styles.checkItem}>
+                  <Minus size={17} color={colors.muted} />
+                  <Text style={styles.checkText}>{item}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : null}
+
+        {tour.itinerary?.length ? (
+          <View style={styles.productSection}>
+            <Text style={styles.sectionTitle}>Itinerario</Text>
+            <View style={styles.itineraryList}>
+              {tour.itinerary.map((stop, index) => (
+                <View key={`${stop.time}-${stop.title}-${index}`} style={styles.itineraryItem}>
+                  <View style={styles.itineraryDot} />
+                  <View style={styles.itineraryBody}>
+                    {stop.time ? <Text style={styles.itineraryTime}>{stop.time}</Text> : null}
+                    <Text style={styles.itineraryTitle}>{stop.title}</Text>
+                    {stop.description ? <Text style={styles.itineraryText}>{stop.description}</Text> : null}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : null}
 
         {tour.options?.length ? (
           <View style={styles.productSection}>
@@ -642,6 +787,15 @@ function ProductScreen({
           </View>
         </View>
       </View>
+    </View>
+  );
+}
+
+function ProductInfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.productInfoRow}>
+      <Text style={styles.productInfoLabel}>{label}</Text>
+      <Text style={styles.productInfoValue}>{value}</Text>
     </View>
   );
 }
@@ -2159,6 +2313,32 @@ const styles = StyleSheet.create({
   productSection: {
     gap: 11
   },
+  productInfoList: {
+    overflow: "hidden",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.surface
+  },
+  productInfoRow: {
+    gap: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+    paddingHorizontal: 12,
+    paddingVertical: 11
+  },
+  productInfoLabel: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  productInfoValue: {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "700"
+  },
   checkList: {
     gap: 9
   },
@@ -2203,6 +2383,44 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 13,
     lineHeight: 18,
+    fontWeight: "600"
+  },
+  itineraryList: {
+    gap: 12
+  },
+  itineraryItem: {
+    flexDirection: "row",
+    gap: 10
+  },
+  itineraryDot: {
+    width: 10,
+    height: 10,
+    marginTop: 5,
+    borderRadius: 999,
+    backgroundColor: colors.sky
+  },
+  itineraryBody: {
+    flex: 1,
+    gap: 3,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+    paddingBottom: 12
+  },
+  itineraryTime: {
+    color: colors.skyDark,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  itineraryTitle: {
+    color: colors.text,
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: "900"
+  },
+  itineraryText: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 19,
     fontWeight: "600"
   },
   bookingPanel: {

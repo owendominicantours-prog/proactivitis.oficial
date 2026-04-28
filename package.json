@@ -30,6 +30,7 @@
     "tours:rewrite-seo-only-copy": "ts-node --project tsconfig.seed.json scripts/rewriteSeoOnlyCommercialCopy.ts",
     "tours:sync-seo-competitor-prices": "ts-node --project tsconfig.seed.json scripts/syncSeoOnlyCompetitorPrices.ts",
     "tours:translate-seo-only": "ts-node --project tsconfig.seed.json scripts/translateSeoOnlyTours.ts",
+    "mobile:generate-tours": "node scripts/generateMobileStaticTours.cjs",
     "translate:tours": "cross-env TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' ts-node scripts/translateTours.ts",
     "postinstall": "prisma generate"
   },
