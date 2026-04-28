@@ -260,6 +260,34 @@ const englishText: Record<string, string> = {
   "Premium": "Premium",
   "Ver tours 🔥": "View tours 🔥",
   "Buscar transfer 🚘": "Find transfer 🚘",
+  "ðŸŒ´ Tours, transfers y planes privados": "Tours, transfers, and private plans",
+  "Tu viaje en RD, claro y sin estres": "Your DR trip, clear and stress-free",
+  "Elige tours con fotos reales, cotiza tu traslado y reserva con ayuda local 24/7. Aqui vienes a disfrutar, nosotros organizamos lo dificil.":
+    "Choose tours with real photos, quote your transfer, and book with 24/7 local help. You come to enjoy; we organize the hard part.",
+  "âœ¨ Recomendado para familias, parejas y grupos que quieren reservar sin vueltas.":
+    "Recommended for families, couples, and groups who want a simple booking experience.",
+  "ðŸ“¸ Fotos reales": "Real photos",
+  "ðŸ’µ Precio claro": "Clear price",
+  "Transfers": "Transfers",
+  "Soporte": "Support",
+  "Tours que se sienten reales": "Tours that feel real",
+  "Fotos, opciones y precios conectados a la web. Ves antes de reservar.":
+    "Photos, options, and prices connected to the website. See before you book.",
+  "Transfer sin adivinar": "Transfers without guessing",
+  "Busca hoteles y aeropuertos reales, elige la ruta y confirma sin enredos.":
+    "Search real hotels and airports, choose your route, and confirm without confusion.",
+  "Ver experiencias": "View experiences",
+  "Reserva con respaldo local": "Book with local support",
+  "Completa tus datos en la app y finaliza con el checkout seguro de Proactivitis. Si necesitas ayuda, te hablamos como personas.":
+    "Enter your details in the app and finish with Proactivitis secure checkout. If you need help, real people will assist you.",
+  "Aeropuerto Santo Domingo": "Santo Domingo Airport",
+  "Aeropuerto La Romana": "La Romana Airport",
+  "Bavaro y Cap Cana": "Bavaro and Cap Cana",
+  "Santo Domingo y Bayahibe": "Santo Domingo and Bayahibe",
+  "La Romana y Bayahibe": "La Romana and Bayahibe",
+  "La pantalla no cargo bien": "This screen did not load correctly",
+  "La app sigue abierta. Vuelve al inicio o confirma la reserva por WhatsApp.":
+    "The app is still open. Go back home or confirm your booking by WhatsApp.",
   "🔥 Recomendados": "🔥 Recommended",
   "Ver todos": "View all",
   "🧭 Categorias": "🧭 Categories",
