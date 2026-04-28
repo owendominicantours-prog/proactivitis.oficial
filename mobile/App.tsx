@@ -645,20 +645,28 @@ function HomeScreen({
   onReserveTour: (tour: AppTour) => void;
   tours: AppTour[];
 }) {
+  const heroTour = tours.find((tour) => tour.title.toLowerCase().includes("saona")) ?? tours[0];
+  const homeHeroImage = heroTour?.image ?? heroImage;
+
   return (
     <View style={styles.screen}>
-      <ImageBackground source={{ uri: heroImage }} style={styles.hero} imageStyle={styles.heroImage as StyleProp<ImageStyle>}>
+      <ImageBackground source={{ uri: absoluteImageUrl(homeHeroImage) }} style={styles.hero} imageStyle={styles.heroImage as StyleProp<ImageStyle>}>
         <View style={styles.heroOverlay} />
         <View style={styles.heroContent}>
           <Image source={require("./assets/proactivitis-logo.png")} style={styles.logo as StyleProp<ImageStyle>} resizeMode="contain" />
-          <Text style={styles.eyebrow}>Tours y transfers privados</Text>
-          <Text style={styles.heroTitle}>Reserva Republica Dominicana desde la app</Text>
+          <Text style={styles.eyebrow}>Tours, transfers y planes privados</Text>
+          <Text style={styles.heroTitle}>Vive Republica Dominicana sin improvisar</Text>
           <Text style={styles.heroSubtitle}>
-            Productos reales, rutas reales y soporte local conectado a Proactivitis.
+            Elige experiencias con fotos reales, cotiza tu traslado y reserva con soporte local 24/7 desde Proactivitis.
           </Text>
+          <View style={styles.heroTrustRow}>
+            <Text style={styles.heroTrustPill}>Fotos reales</Text>
+            <Text style={styles.heroTrustPill}>Precio claro</Text>
+            <Text style={styles.heroTrustPill}>Soporte local</Text>
+          </View>
           <View style={styles.heroActions}>
-            <ActionButton label="Buscar tours" icon={Compass} onPress={onOpenTours} />
-            <ActionButton label="Cotizar transfer" icon={Car} variant="outline" onPress={onOpenTransfers} />
+            <ActionButton label="Explorar tours" icon={Compass} onPress={onOpenTours} />
+            <ActionButton label="Transfer privado" icon={Car} variant="outline" onPress={onOpenTransfers} />
           </View>
         </View>
       </ImageBackground>
@@ -2155,7 +2163,7 @@ const styles = StyleSheet.create({
     gap: 4
   },
   hero: {
-    minHeight: 490,
+    minHeight: 560,
     justifyContent: "flex-end",
     overflow: "hidden",
     marginHorizontal: -16,
@@ -2167,16 +2175,16 @@ const styles = StyleSheet.create({
   },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(6, 17, 31, 0.66)"
+    backgroundColor: "rgba(6, 17, 31, 0.48)"
   },
   heroContent: {
-    gap: 14,
+    gap: 13,
     padding: 22,
-    paddingBottom: 30
+    paddingBottom: 34
   },
   logo: {
-    width: 154,
-    height: 64
+    width: 218,
+    height: 86
   },
   eyebrow: {
     color: colors.skySoft,
@@ -2204,6 +2212,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontWeight: "600"
+  },
+  heroTrustRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  heroTrustPill: {
+    overflow: "hidden",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.28)",
+    backgroundColor: "rgba(15,23,42,0.42)",
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "900",
+    paddingHorizontal: 10,
+    paddingVertical: 7
   },
   heroActions: {
     gap: 10
