@@ -88,6 +88,37 @@ Write-Host "Android SDK: $sdkDirForGradle" -ForegroundColor DarkGray
 Write-Host "Usando MuMu: $device" -ForegroundColor Green
 Write-Host "Dispositivos finales:" -ForegroundColor Cyan
 & $adb devices | Out-Host
+
+function Test-Metro {
+  try {
+    $response = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:8081/status" -TimeoutSec 2
+    return $response.Content -match "packager-status:running"
+  } catch {
+    return $false
+  }
+}
+
+if (-not (Test-Metro)) {
+  Write-Host "Abriendo Metro en otra ventana..." -ForegroundColor Cyan
+  $metroCommand = "cd `"$PSScriptRoot`"; `$env:EXPO_PUBLIC_API_BASE_URL='https://proactivitis.com'; npx expo start --localhost --clear"
+  Start-Process powershell -WorkingDirectory $PSScriptRoot -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $metroCommand
+
+  $metroReady = $false
+  for ($i = 1; $i -le 45; $i++) {
+    if (Test-Metro) {
+      $metroReady = $true
+      break
+    }
+    Start-Sleep -Seconds 1
+  }
+
+  if (-not $metroReady) {
+    Write-Host "Metro aun no responde. Si ves pantalla roja, espera a que Metro termine y presiona Reload." -ForegroundColor Yellow
+  }
+} else {
+  Write-Host "Metro ya esta corriendo en 8081." -ForegroundColor Green
+}
+
 Write-Host "Compilando APK debug para MuMu. La primera vez puede tardar varios minutos." -ForegroundColor Yellow
 
 $env:NODE_ENV = "development"
@@ -112,7 +143,5 @@ Write-Host "Abriendo Proactivitis en MuMu..." -ForegroundColor Cyan
 & $adb -s $device shell monkey -p com.proactivitis.app -c android.intent.category.LAUNCHER 1 | Out-Host
 
 Write-Host ""
-Write-Host "Listo. Ahora se abre Metro en esta ventana." -ForegroundColor Green
-Write-Host "Deja esta ventana abierta; los cambios JS se refrescan en MuMu." -ForegroundColor Green
-
-npx expo start --localhost --clear
+Write-Host "Listo. Deja abierta la ventana de Metro para ver cambios en vivo." -ForegroundColor Green
+Write-Host "Si MuMu muestra pantalla roja vieja, toca Reload o presiona R en Metro." -ForegroundColor Green
