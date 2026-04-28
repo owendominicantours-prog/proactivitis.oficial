@@ -28,6 +28,23 @@ export type QuoteResponse = {
   vehicles: QuoteVehicle[];
 };
 
+export type MobileUser = {
+  id: string;
+  email: string;
+  name?: string | null;
+  role?: string | null;
+};
+
+export type MobileSession = {
+  token: string;
+  user: MobileUser;
+};
+
+export type MobileConfig = {
+  stripePublishableKey: string;
+  appUrl: string;
+};
+
 export type MobileTourOption = {
   id: string;
   name: string;
@@ -108,6 +125,38 @@ const jsonFetch = async <T>(path: string, init?: RequestInit) => {
   return body as T;
 };
 
+const authHeader = (token?: string | null): Record<string, string> =>
+  token ? { Authorization: `Bearer ${token}` } : {};
+
+export const fetchMobileConfig = () => jsonFetch<MobileConfig>("/api/mobile/config");
+
+export const loginMobileUser = ({ email, password }: { email: string; password: string }) =>
+  jsonFetch<MobileSession>("/api/mobile/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
+
+export const registerMobileUser = ({
+  name,
+  email,
+  password
+}: {
+  name: string;
+  email: string;
+  password: string;
+}) =>
+  jsonFetch<MobileSession>("/api/mobile/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password })
+  });
+
+export const fetchMobileUser = (token: string) =>
+  jsonFetch<{ user: MobileUser }>("/api/mobile/auth/me", {
+    headers: authHeader(token)
+  });
+
 export const fetchTransferLocations = async (query: string) => {
   const data = await jsonFetch<{ locations: LocationSummary[] }>(
     `/api/transfers/v2/locations?query=${encodeURIComponent(query.trim())}`
@@ -181,6 +230,43 @@ export const buildTourCheckoutUrl = ({
   }
   return `${getApiBaseUrl().replace(/\/$/, "")}/checkout?${params.toString()}`;
 };
+
+export type MobilePaymentIntentPayload = Record<string, string | number | null | undefined>;
+
+export type MobilePaymentIntentResponse = {
+  bookingId: string;
+  amount: number;
+  paymentIntentId: string;
+  clientSecret: string | null;
+};
+
+export const createMobilePaymentIntent = (payload: MobilePaymentIntentPayload, token?: string | null) =>
+  jsonFetch<MobilePaymentIntentResponse>("/api/checkout/payment-intent", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(token)
+    },
+    body: JSON.stringify(payload)
+  });
+
+export const confirmMobileBooking = ({
+  bookingId,
+  paymentIntentId,
+  token
+}: {
+  bookingId: string;
+  paymentIntentId?: string | null;
+  token?: string | null;
+}) =>
+  jsonFetch<{ ok: boolean; error?: string }>("/api/session/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(token)
+    },
+    body: JSON.stringify({ bookingId, paymentIntentId })
+  });
 
 export const buildCheckoutUrl = ({
   origin,

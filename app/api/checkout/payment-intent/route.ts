@@ -10,6 +10,7 @@ import { getStripe } from "@/lib/stripe";
 import { randomUUID } from "crypto";
 import jwt from "jsonwebtoken";
 import { revalidatePath } from "next/cache";
+import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 
 type PaymentIntentPayload = {
   tourId?: string;
@@ -179,7 +180,28 @@ const generateBookingCode = async () => {
   throw new Error("No se pudo generar un código de reserva único. Intenta nuevamente.");
 };
 
-const ensureCustomerSession = async (name: string, email: string) => {
+const getMobileSessionUser = async (request: NextRequest) => {
+  const authorization = request.headers.get("authorization") ?? "";
+  const token = authorization.startsWith("Bearer ") ? authorization.slice("Bearer ".length).trim() : "";
+  if (!token) return null;
+
+  try {
+    const secret = process.env.JWT_SECRET ?? process.env.NEXTAUTH_SECRET ?? "proactivitis-default";
+    const decoded = jwt.verify(token, secret) as { userId?: string; email?: string };
+    if (!decoded.userId) return null;
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, role: true }
+    });
+    return user ? { id: user.id, role: user.role } : null;
+  } catch {
+    return null;
+  }
+};
+
+const ensureCustomerSession = async (name: string, email: string, mobileUserId?: string | null) => {
+  if (mobileUserId) return mobileUserId;
+
   const session = await getServerSession(authOptions);
   const sessionUser = (session?.user as { id?: string } | null) ?? null;
   if (sessionUser?.id) {
@@ -220,11 +242,19 @@ export async function POST(request: NextRequest) {
   try {
     const payload = (await request.json().catch(() => ({}))) as PaymentIntentPayload;
     const session = await getServerSession(authOptions);
-    const sessionUser = (session?.user as { id?: string; role?: string } | null) ?? null;
+    const mobileSessionUser = await getMobileSessionUser(request);
+    const sessionUser = ((session?.user as { id?: string; role?: string } | null) ?? mobileSessionUser) ?? null;
     const tourId = payload.tourId;
 
     const transferTourFallback = process.env.TRANSFER_TOUR_ID ?? process.env.NEXT_PUBLIC_TRANSFER_TOUR_ID;
-    const resolvedTourId = tourId ?? (payload.flowType === "transfer" ? transferTourFallback : undefined);
+    let resolvedTourId = tourId ?? (payload.flowType === "transfer" ? transferTourFallback : undefined);
+    if (!resolvedTourId && payload.flowType === "transfer") {
+      const transferTour = await prisma.tour.findUnique({
+        where: { slug: HIDDEN_TRANSFER_SLUG },
+        select: { id: true }
+      });
+      resolvedTourId = transferTour?.id;
+    }
     if (!resolvedTourId) {
       return NextResponse.json(
         { error: "Necesitamos saber qué tour o transfer estás reservando." },
@@ -382,7 +412,7 @@ export async function POST(request: NextRequest) {
 
   let userId: string;
   try {
-    userId = await ensureCustomerSession(customerName, customerEmail);
+    userId = await ensureCustomerSession(customerName, customerEmail, sessionUser?.id);
   } catch (error) {
     console.error("Error creando sesión temporal", error);
     return NextResponse.json({ error: "No pudimos iniciar tu sesión. Intenta nuevamente." }, { status: 500 });
@@ -523,6 +553,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({
     bookingId: booking.id,
     amount: finalTotalAmount,
+    paymentIntentId: paymentIntent.id,
     clientSecret: paymentIntent.client_secret ?? null
   });
   } catch (error) {

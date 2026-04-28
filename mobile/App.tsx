@@ -1,6 +1,8 @@
 import { StatusBar } from "expo-status-bar";
 import type { ComponentType, ReactNode } from "react";
-import { Component, createElement, useEffect, useMemo, useRef, useState } from "react";
+import { Component, useEffect, useMemo, useRef, useState } from "react";
+import * as SecureStore from "expo-secure-store";
+import { initStripe, useStripe } from "@stripe/stripe-react-native";
 import {
   Image,
   ImageBackground,
@@ -16,7 +18,6 @@ import {
   type ImageStyle,
   type StyleProp
 } from "react-native";
-import WebView from "react-native-webview";
 import {
   ArrowLeft,
   CalendarCheck,
@@ -56,7 +57,15 @@ import {
   fetchMobileTours,
   buildTourCheckoutUrl,
   getApiBaseUrl,
+  confirmMobileBooking,
+  createMobilePaymentIntent,
+  fetchMobileConfig,
+  fetchMobileUser,
+  loginMobileUser,
+  registerMobileUser,
   type LocationSummary,
+  type MobileSession,
+  type MobilePaymentIntentPayload,
   type MobileTour,
   type MobileTourItineraryStop,
   type MobileTourOption,
@@ -134,6 +143,7 @@ const heroImage =
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
 const fallbackTourImage = "https://proactivitis.com/fototours/fotosimple.jpg";
 const appBuildLabel = "Version 1.0.2 | Android 3";
+const mobileSessionStorageKey = "proactivitis_mobile_session";
 
 const money = (value: number) => `US$${Math.round(value)}`;
 
@@ -149,6 +159,26 @@ const openUrl = (href: string) => {
 };
 
 const whatsappUrl = (message: string) => `${links.whatsapp}?text=${encodeURIComponent(message)}`;
+
+const readStoredMobileSession = async () => {
+  if (Platform.OS === "web") return null;
+  const raw = await SecureStore.getItemAsync(mobileSessionStorageKey).catch(() => null);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as MobileSession;
+  } catch {
+    return null;
+  }
+};
+
+const writeStoredMobileSession = async (session: MobileSession | null) => {
+  if (Platform.OS === "web") return;
+  if (!session) {
+    await SecureStore.deleteItemAsync(mobileSessionStorageKey).catch(() => undefined);
+    return;
+  }
+  await SecureStore.setItemAsync(mobileSessionStorageKey, JSON.stringify(session)).catch(() => undefined);
+};
 
 const normalizeTourCategory = (category?: string | null): Exclude<TourCategory, "Todos"> => {
   const value = (category ?? "").toLowerCase();
@@ -284,6 +314,47 @@ export default function App() {
   const [activeProduct, setActiveProduct] = useState<AppTour | null>(null);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [savedQuote, setSavedQuote] = useState<SavedQuote | null>(null);
+  const [mobileSession, setMobileSession] = useState<MobileSession | null>(null);
+  const [stripeReady, setStripeReady] = useState(false);
+
+  const updateMobileSession = (session: MobileSession | null) => {
+    setMobileSession(session);
+    void writeStoredMobileSession(session);
+  };
+
+  useEffect(() => {
+    let active = true;
+
+    fetchMobileConfig()
+      .then(async (config) => {
+        if (!active || !config.stripePublishableKey) return;
+        await initStripe({
+          publishableKey: config.stripePublishableKey,
+          merchantIdentifier: "merchant.com.proactivitis.app",
+          urlScheme: "proactivitis"
+        });
+        if (active) setStripeReady(true);
+      })
+      .catch(() => {
+        if (active) setStripeReady(false);
+      });
+
+    readStoredMobileSession()
+      .then(async (storedSession) => {
+        if (!active || !storedSession?.token) return;
+        try {
+          const { user } = await fetchMobileUser(storedSession.token);
+          if (active) setMobileSession({ token: storedSession.token, user });
+        } catch {
+          if (active) updateMobileSession(null);
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -349,7 +420,15 @@ export default function App() {
 
   const renderScreen = () => {
     if (checkoutUrl) {
-      return <CheckoutScreen url={checkoutUrl} onClose={() => setCheckoutUrl(null)} />;
+      return (
+        <CheckoutScreen
+          url={checkoutUrl}
+          session={mobileSession}
+          stripeReady={stripeReady}
+          onSessionChange={updateMobileSession}
+          onClose={() => setCheckoutUrl(null)}
+        />
+      );
     }
 
     if (activeProduct) {
@@ -406,7 +485,7 @@ export default function App() {
     }
 
     if (activeTab === "profile") {
-      return <ProfileScreen />;
+      return <ProfileScreen session={mobileSession} onSessionChange={updateMobileSession} />;
     }
 
     return (
@@ -453,10 +532,10 @@ function HomeScreen({
         <View style={styles.heroOverlay} />
         <View style={styles.heroContent}>
           <Image source={require("./assets/proactivitis-logo.png")} style={styles.logo} resizeMode="contain" />
-          <Text style={styles.eyebrow}>Tours, transfers y soporte local</Text>
-          <Text style={styles.heroTitle}>Reserva Republica Dominicana sin friccion</Text>
+          <Text style={styles.eyebrow}>Tours, transfers y pagos seguros</Text>
+          <Text style={styles.heroTitle}>Reserva Republica Dominicana desde tu telefono</Text>
           <Text style={styles.heroSubtitle}>
-            La app movil mantiene el mismo enfoque de la web: opciones claras, precios visibles y contacto humano.
+            Elige la experiencia, confirma tus datos y paga seguro sin salir de la app.
           </Text>
           <View style={styles.heroActions}>
             <ActionButton label="Buscar tours" icon={Compass} onPress={onOpenTours} />
@@ -484,9 +563,9 @@ function HomeScreen({
       <View style={styles.noticePanel}>
         <ShieldCheck size={22} color={colors.skyDark} />
         <View style={styles.noticeTextBlock}>
-          <Text style={styles.noticeTitle}>Confirmacion asistida</Text>
+          <Text style={styles.noticeTitle}>Reserva con respaldo local</Text>
           <Text style={styles.noticeText}>
-            Los botones de reserva abren los flujos reales de Proactivitis y WhatsApp para cerrar disponibilidad.
+            Nuestro equipo verifica cada detalle y te acompaña antes, durante y despues de la actividad.
           </Text>
         </View>
       </View>
@@ -543,7 +622,7 @@ function ToursScreen({
       <View style={styles.resultSummary}>
         <SlidersHorizontal size={18} color={colors.skyDark} />
         <Text style={styles.resultSummaryText}>
-          {loading ? "Cargando productos desde la web..." : `${tours.length} experiencias disponibles`}
+          {loading ? "Actualizando experiencias..." : `${tours.length} experiencias disponibles`}
         </Text>
       </View>
 
@@ -576,6 +655,7 @@ function ProductScreen({
     [tour]
   );
   const [selectedImage, setSelectedImage] = useState(galleryImages[0] ?? fallbackTourImage);
+  const [galleryOpenImage, setGalleryOpenImage] = useState<string | null>(null);
   const [adults, setAdults] = useState(2);
   const [date, setDate] = useState(() => new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
   const [time, setTime] = useState("09:00");
@@ -622,10 +702,26 @@ function ProductScreen({
     );
   };
 
+  if (galleryOpenImage) {
+    return (
+      <MobileGalleryViewer
+        images={galleryImages}
+        image={galleryOpenImage}
+        onSelect={(image) => {
+          setSelectedImage(image);
+          setGalleryOpenImage(image);
+        }}
+        onClose={() => setGalleryOpenImage(null)}
+      />
+    );
+  }
+
   return (
     <View style={styles.productScreen}>
       <View style={styles.productHero}>
-        <RemoteTourImage uri={selectedImage} style={styles.productHeroImage} />
+        <Pressable style={styles.productHeroImageButton} onPress={() => setGalleryOpenImage(selectedImage)}>
+          <RemoteTourImage uri={selectedImage} style={styles.productHeroImage} />
+        </Pressable>
         <View style={styles.productHeroOverlay} />
         <Pressable style={styles.backButton} onPress={onBack}>
           <ArrowLeft size={20} color={colors.white} />
@@ -662,7 +758,10 @@ function ProductScreen({
                   <Pressable
                     key={`${image}-${index}`}
                     style={[styles.galleryThumb, active ? styles.galleryThumbActive : null]}
-                    onPress={() => setSelectedImage(image)}
+                    onPress={() => {
+                      setSelectedImage(image);
+                      setGalleryOpenImage(image);
+                    }}
                   >
                     <RemoteTourImage uri={image} style={styles.galleryThumbImage} />
                   </Pressable>
@@ -768,7 +867,7 @@ function ProductScreen({
           <View style={styles.passengerRow}>
             <View>
               <Text style={styles.fieldLabel}>Adultos</Text>
-              <Text style={styles.helperText}>Se envia al checkout web existente</Text>
+              <Text style={styles.helperText}>Tu reserva queda conectada al sistema de Proactivitis</Text>
             </View>
             <View style={styles.stepper}>
               <Pressable style={styles.stepperButton} onPress={() => setAdults(Math.max(1, adults - 1))}>
@@ -785,10 +884,46 @@ function ProductScreen({
               <Text style={styles.fromText}>Total estimado</Text>
               <Text style={styles.tourPrice}>{money(totalPrice)}</Text>
             </View>
-            <ActionButton label="Checkout" icon={CreditCard} onPress={startCheckout} />
+            <ActionButton label="Reservar" icon={CreditCard} onPress={startCheckout} />
           </View>
         </View>
       </View>
+    </View>
+  );
+}
+
+function MobileGalleryViewer({
+  images,
+  image,
+  onSelect,
+  onClose
+}: {
+  images: string[];
+  image: string;
+  onSelect: (image: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <View style={styles.galleryViewerScreen}>
+      <View style={styles.galleryViewerTopbar}>
+        <Pressable style={styles.checkoutClose} onPress={onClose}>
+          <ArrowLeft size={20} color={colors.white} />
+          <Text style={styles.galleryViewerBackText}>Galeria</Text>
+        </Pressable>
+        <Text style={styles.galleryViewerCount}>{images.length} fotos</Text>
+      </View>
+      <RemoteTourImage uri={image} style={styles.galleryViewerImage} resizeMode="contain" />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.galleryViewerThumbs}>
+        {images.map((item, index) => (
+          <Pressable
+            key={`${item}-${index}`}
+            style={[styles.galleryViewerThumb, item === image ? styles.galleryViewerThumbActive : null]}
+            onPress={() => onSelect(item)}
+          >
+            <RemoteTourImage uri={item} style={styles.galleryThumbImage} />
+          </Pressable>
+        ))}
+      </ScrollView>
     </View>
   );
 }
@@ -878,39 +1013,104 @@ const addCheckoutContactParams = ({
   return parsed.toString();
 };
 
-function CheckoutPaymentFrame({ url }: { url: string }) {
-  if (Platform.OS === "web") {
-    return (
-      <View style={styles.checkoutWebview}>
-        {createElement("iframe", {
-          src: url,
-          title: "Checkout Proactivitis",
-          allow: "payment *; fullscreen *",
-          style: {
-            border: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: colors.card
-          }
-        })}
-      </View>
-    );
-  }
-  return <WebView source={{ uri: url }} style={styles.checkoutWebview} startInLoadingState />;
-}
+const checkoutParam = (params: URLSearchParams, key: string) => params.get(key) ?? undefined;
 
-function CheckoutScreen({ url, onClose }: { url: string; onClose: () => void }) {
+const buildMobilePaymentPayload = ({
+  checkoutUrl,
+  firstName,
+  lastName,
+  email,
+  phone,
+  pickupLocation,
+  specialRequirements
+}: {
+  checkoutUrl: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  pickupLocation: string;
+  specialRequirements: string;
+}): MobilePaymentIntentPayload => {
+  const params = new URL(checkoutUrl).searchParams;
+  const flowType = params.get("type") === "transfer" ? "transfer" : "tour";
+  const dateTime = checkoutParam(params, "dateTime");
+  return {
+    tourId: checkoutParam(params, "tourId"),
+    tourTitle: checkoutParam(params, "tourTitle") ?? checkoutParam(params, "vehicleName"),
+    tourImage: checkoutParam(params, "tourImage"),
+    tourPrice: checkoutParam(params, "tourPrice") ?? checkoutParam(params, "price"),
+    tourOptionId: checkoutParam(params, "tourOptionId"),
+    tourOptionName: checkoutParam(params, "tourOptionName"),
+    tourOptionType: checkoutParam(params, "tourOptionType"),
+    tourOptionPrice: checkoutParam(params, "tourOptionPrice"),
+    tourOptionBasePrice: checkoutParam(params, "tourOptionBasePrice"),
+    tourOptionBaseCapacity: checkoutParam(params, "tourOptionBaseCapacity"),
+    tourOptionExtraPricePerPerson: checkoutParam(params, "tourOptionExtraPricePerPerson"),
+    date: checkoutParam(params, "date") ?? dateTime?.split("T")[0],
+    time: checkoutParam(params, "time") ?? dateTime?.split("T")[1],
+    adults: Number(params.get("adults") ?? params.get("passengers") ?? 1),
+    youth: Number(params.get("youth") ?? 0),
+    child: Number(params.get("child") ?? 0),
+    firstName: firstName.trim(),
+    lastName: lastName.trim(),
+    email: email.trim().toLowerCase(),
+    phone: phone.trim(),
+    pickupPreference: "pickup",
+    pickupLocation: pickupLocation.trim(),
+    specialRequirements: specialRequirements.trim(),
+    language: "Español",
+    flowType,
+    tripType: checkoutParam(params, "tripType"),
+    returnDatetime: checkoutParam(params, "returnDatetime"),
+    hotelSlug: checkoutParam(params, "hotelSlug"),
+    originHotelName: checkoutParam(params, "originHotelName") ?? checkoutParam(params, "destination"),
+    origin: checkoutParam(params, "origin"),
+    vehicleId: checkoutParam(params, "vehicleId"),
+    vehicleName: checkoutParam(params, "vehicleName"),
+    vehicleCategory: checkoutParam(params, "vehicleCategory"),
+    totalPrice:
+      checkoutParam(params, "displayTotalPrice") ?? checkoutParam(params, "totalPrice") ?? checkoutParam(params, "price"),
+    paymentOption: "now"
+  };
+};
+
+const splitName = (name?: string | null) => {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] ?? "",
+    lastName: parts.slice(1).join(" ")
+  };
+};
+
+function CheckoutScreen({
+  url,
+  session,
+  stripeReady,
+  onSessionChange,
+  onClose
+}: {
+  url: string;
+  session: MobileSession | null;
+  stripeReady: boolean;
+  onSessionChange: (session: MobileSession | null) => void;
+  onClose: () => void;
+}) {
   const summary = useMemo(() => readCheckoutSummary(url), [url]);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
+  const initialName = splitName(session?.user.name);
+  const [firstName, setFirstName] = useState(initialName.firstName);
+  const [lastName, setLastName] = useState(initialName.lastName);
+  const [email, setEmail] = useState(session?.user.email ?? "");
   const [phone, setPhone] = useState("");
   const [pickupLocation, setPickupLocation] = useState(summary.destination ?? "");
   const [specialRequirements, setSpecialRequirements] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [paymentFeedback, setPaymentFeedback] = useState<string | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [confirmedBookingId, setConfirmedBookingId] = useState<string | null>(null);
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
-  const validateAndPay = () => {
+  const validateAndPay = async () => {
     const nextErrors: Record<string, string> = {};
     if (!firstName.trim()) nextErrors.firstName = "Indica el nombre.";
     if (!lastName.trim()) nextErrors.lastName = "Indica el apellido.";
@@ -918,8 +1118,9 @@ function CheckoutScreen({ url, onClose }: { url: string; onClose: () => void }) 
     if (!pickupLocation.trim()) nextErrors.pickupLocation = "Indica hotel o punto de recogida.";
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
-    setPaymentUrl(
-      addCheckoutContactParams({
+
+    if (Platform.OS === "web") {
+      const webCheckoutUrl = addCheckoutContactParams({
         checkoutUrl: url,
         firstName,
         lastName,
@@ -927,21 +1128,89 @@ function CheckoutScreen({ url, onClose }: { url: string; onClose: () => void }) 
         phone,
         pickupLocation,
         specialRequirements
-      })
-    );
+      });
+      setPaymentFeedback("En Android el pago abre nativo. En esta vista web abrimos el checkout seguro.");
+      openUrl(webCheckoutUrl);
+      return;
+    }
+
+    if (!stripeReady) {
+      setPaymentFeedback("El pago seguro se esta preparando. Intenta otra vez en unos segundos.");
+      return;
+    }
+
+    setPaymentLoading(true);
+    setPaymentFeedback("Preparando tu pago seguro...");
+
+    try {
+      const payload = buildMobilePaymentPayload({
+        checkoutUrl: url,
+        firstName,
+        lastName,
+        email,
+        phone,
+        pickupLocation,
+        specialRequirements
+      });
+      const intent = await createMobilePaymentIntent(payload, session?.token);
+      if (!intent.clientSecret) {
+        throw new Error("Stripe no devolvio el pago seguro.");
+      }
+
+      const initResult = await initPaymentSheet({
+        merchantDisplayName: "Proactivitis",
+        paymentIntentClientSecret: intent.clientSecret,
+        returnURL: "proactivitis://stripe-redirect",
+        defaultBillingDetails: {
+          name: `${firstName} ${lastName}`.trim(),
+          email: email.trim(),
+          phone: phone.trim() || undefined
+        }
+      });
+      if (initResult.error) {
+        throw new Error(initResult.error.message);
+      }
+
+      const paymentResult = await presentPaymentSheet();
+      if (paymentResult.error) {
+        throw new Error(paymentResult.error.message);
+      }
+
+      await confirmMobileBooking({
+        bookingId: intent.bookingId,
+        paymentIntentId: intent.paymentIntentId,
+        token: session?.token
+      });
+      setConfirmedBookingId(intent.bookingId);
+      setPaymentFeedback("Reserva confirmada. Te enviamos el comprobante por correo.");
+    } catch (error) {
+      setPaymentFeedback(error instanceof Error ? error.message : "No pudimos completar el pago.");
+    } finally {
+      setPaymentLoading(false);
+    }
   };
 
-  if (paymentUrl) {
+  if (confirmedBookingId) {
     return (
       <View style={styles.checkoutScreen}>
         <View style={styles.checkoutTopbar}>
-          <Pressable style={styles.checkoutClose} onPress={() => setPaymentUrl(null)}>
+          <Pressable style={styles.checkoutClose} onPress={onClose}>
             <ArrowLeft size={20} color={colors.text} />
-            <Text style={styles.checkoutCloseText}>Datos</Text>
+            <Text style={styles.checkoutCloseText}>Inicio</Text>
           </Pressable>
-          <Text style={styles.checkoutTitle}>Pago seguro</Text>
+          <Text style={styles.checkoutTitle}>Reserva confirmada</Text>
         </View>
-        <CheckoutPaymentFrame url={paymentUrl} />
+        <View style={styles.checkoutSuccessScreen}>
+          <View style={styles.checkoutSuccessIcon}>
+            <CheckCircle2 size={42} color={colors.white} />
+          </View>
+          <Text style={styles.checkoutSuccessTitle}>Tu experiencia esta reservada</Text>
+          <Text style={styles.checkoutSuccessText}>
+            Guardamos la reserva real en Proactivitis y enviamos el comprobante a {email.trim()}.
+          </Text>
+          <Text style={styles.checkoutSuccessCode}>Referencia {confirmedBookingId.slice(-8).toUpperCase()}</Text>
+          <ActionButton label="Hablar por WhatsApp" icon={MessageCircle} onPress={() => openUrl(links.whatsapp)} />
+        </View>
       </View>
     );
   }
@@ -962,13 +1231,13 @@ function CheckoutScreen({ url, onClose }: { url: string; onClose: () => void }) 
             <View style={styles.checkoutStepActive}>
               <Text style={styles.checkoutStepTextActive}>1 Datos</Text>
             </View>
-            <View style={styles.checkoutStep}>
-              <Text style={styles.checkoutStepText}>2 Pago</Text>
+            <View style={styles.checkoutStepActive}>
+              <Text style={styles.checkoutStepTextActive}>2 Pago nativo</Text>
             </View>
           </View>
-          <Text style={styles.appCheckoutTitle}>Confirma tu reserva</Text>
+          <Text style={styles.appCheckoutTitle}>Reserva sin salir de la app</Text>
           <Text style={styles.appCheckoutSubtitle}>
-            Datos claros antes de pagar. El pago final se procesa en el checkout seguro de Proactivitis.
+            Creamos tu reserva real, conectada a Proactivitis, y abrimos el pago seguro de Stripe en modo nativo.
           </Text>
         </View>
 
@@ -1030,7 +1299,7 @@ function CheckoutScreen({ url, onClose }: { url: string; onClose: () => void }) 
             <ShieldCheck size={22} color={colors.green} />
             <View style={styles.checkoutSummaryText}>
               <Text style={styles.checkoutPayTitle}>Pago seguro</Text>
-              <Text style={styles.checkoutPayText}>Tarjeta, wallet o metodo disponible segun Stripe/checkout web.</Text>
+              <Text style={styles.checkoutPayText}>Tarjeta o wallet disponible con Stripe. La reserva queda confirmada al pagar.</Text>
             </View>
           </View>
           <View style={styles.productCheckoutRow}>
@@ -1038,8 +1307,9 @@ function CheckoutScreen({ url, onClose }: { url: string; onClose: () => void }) 
               <Text style={styles.checkoutPayTotalLabel}>Total a pagar</Text>
               <Text style={styles.checkoutPayTotalValue}>{money(summary.totalPrice)}</Text>
             </View>
-            <ActionButton label="Pagar" icon={CreditCard} onPress={validateAndPay} />
+            <ActionButton label={paymentLoading ? "Procesando..." : "Pagar"} icon={CreditCard} onPress={validateAndPay} />
           </View>
+          {paymentFeedback ? <Text style={styles.checkoutFeedbackText}>{paymentFeedback}</Text> : null}
         </View>
       </ScrollView>
     </View>
@@ -1064,7 +1334,8 @@ function CheckoutInput({
   onChangeText,
   error,
   keyboardType,
-  multiline
+  multiline,
+  secureTextEntry
 }: {
   label: string;
   value: string;
@@ -1072,6 +1343,7 @@ function CheckoutInput({
   error?: string;
   keyboardType?: "default" | "email-address" | "phone-pad";
   multiline?: boolean;
+  secureTextEntry?: boolean;
 }) {
   return (
     <View style={styles.checkoutInputGroup}>
@@ -1081,6 +1353,7 @@ function CheckoutInput({
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         multiline={multiline}
+        secureTextEntry={secureTextEntry}
         style={[styles.checkoutNativeInput, multiline ? styles.checkoutNativeTextarea : null, error ? styles.checkoutNativeInputError : null]}
       />
       {error ? <Text style={styles.checkoutErrorText}>{error}</Text> : null}
@@ -1366,7 +1639,7 @@ function TransfersScreen({
     if (!selectedOrigin || !selectedDestination || !selectedVehicle || selectedPrice === null) return;
     openUrl(
       whatsappUrl(
-        `Hola Proactivitis. Quiero confirmar un transfer ${selectedOrigin.name} -> ${selectedDestination.name}. Vehiculo: ${selectedVehicle.name}. Pasajeros: ${passengers}. Tipo: ${tripType}. Precio web/app: ${money(selectedPrice)}.`
+        `Hola Proactivitis. Quiero confirmar un transfer ${selectedOrigin.name} -> ${selectedDestination.name}. Vehiculo: ${selectedVehicle.name}. Pasajeros: ${passengers}. Tipo: ${tripType}. Total: ${money(selectedPrice)}.`
       )
     );
   };
@@ -1377,9 +1650,9 @@ function TransfersScreen({
         <View style={styles.transferHeroOverlay} />
         <View style={styles.transferHeroContent}>
           <Text style={styles.transferHeroEyebrow}>Traslados privados</Text>
-          <Text style={styles.transferHeroTitle}>Busca tu ruta como en la web</Text>
+          <Text style={styles.transferHeroTitle}>Cotiza tu transfer privado</Text>
           <Text style={styles.transferHeroText}>
-            Origen, destino y tarifas vienen del sistema de Proactivitis. La app solo adapta el flujo a movil.
+            Elige origen, destino, pasajeros y vehiculo. Puedes reservar y pagar desde la app.
           </Text>
         </View>
       </View>
@@ -1470,7 +1743,7 @@ function TransfersScreen({
         <View style={styles.passengerRow}>
           <View>
             <Text style={styles.fieldLabel}>Pasajeros</Text>
-            <Text style={styles.helperText}>La web filtrara vehiculos por capacidad</Text>
+            <Text style={styles.helperText}>Mostramos vehiculos segun capacidad y ruta</Text>
           </View>
           <View style={styles.stepper}>
             <Pressable style={styles.stepperButton} onPress={() => setPassengers(Math.max(1, passengers - 1))}>
@@ -1513,13 +1786,13 @@ function TransfersScreen({
 
       {selectedVehicle && selectedPrice !== null ? (
         <View style={styles.quotePanelWeb}>
-          <Text style={styles.quoteLabelWeb}>Cotizacion desde la web</Text>
+          <Text style={styles.quoteLabelWeb}>Cotizacion lista</Text>
           <Text style={styles.quotePriceWeb}>{money(selectedPrice)}</Text>
           <Text style={styles.quoteMetaWeb}>
             {selectedVehicle.name} | {passengers} pax | {tripType === "round-trip" ? "ida y vuelta" : "solo ida"}
           </Text>
           {isLocalTransferLocation(selectedOrigin) || isLocalTransferLocation(selectedDestination) ? (
-            <Text style={styles.quoteMetaWeb}>Tarifa estimada en app. El equipo puede confirmar ajustes antes del pago.</Text>
+            <Text style={styles.quoteMetaWeb}>Tarifa estimada. Si hace falta ajustar algo, el equipo te contacta antes del servicio.</Text>
           ) : null}
           <View style={styles.quoteActions}>
             <ActionButton label="Guardar" icon={CalendarCheck} onPress={saveSelectedQuote} />
@@ -1552,7 +1825,7 @@ function TransferFallbackScreen() {
         <View style={{ flex: 1 }}>
           <Text style={styles.noticeTitle}>Ruta por soporte directo</Text>
           <Text style={styles.noticeText}>
-            Envia origen, destino, pasajeros y fecha. El equipo confirma la tarifa con el mismo sistema de la web.
+            Envia origen, destino, pasajeros y fecha. Confirmamos disponibilidad y te ayudamos a reservar.
           </Text>
         </View>
       </View>
@@ -1729,13 +2002,44 @@ function TripsScreen({
   );
 }
 
-function ProfileScreen() {
+function ProfileScreen({
+  session,
+  onSessionChange
+}: {
+  session: MobileSession | null;
+  onSessionChange: (session: MobileSession | null) => void;
+}) {
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState(session?.user.email ?? "");
+  const [password, setPassword] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authMessage, setAuthMessage] = useState<string | null>(null);
+
+  const submitAuth = async () => {
+    setAuthLoading(true);
+    setAuthMessage(null);
+    try {
+      const nextSession =
+        mode === "login"
+          ? await loginMobileUser({ email, password })
+          : await registerMobileUser({ name, email, password });
+      onSessionChange(nextSession);
+      setPassword("");
+      setAuthMessage("Cuenta conectada. Tus reservas quedaran sincronizadas.");
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message : "No pudimos conectar tu cuenta.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   return (
     <View style={styles.screen}>
       <ScreenHeader
-        eyebrow="Cuenta y soporte"
-        title="Asistencia Proactivitis"
-        description="Accesos rapidos para hablar con el equipo, ver redes y continuar en la web."
+        eyebrow="Cuenta Proactivitis"
+        title={session ? "Tus reservas conectadas" : "Entra y reserva mas rapido"}
+        description="Tu cuenta, reservas, pagos y comprobantes quedan sincronizados con Proactivitis."
       />
 
       <View style={styles.profileCard}>
@@ -1743,16 +2047,46 @@ function ProfileScreen() {
           <User size={28} color={colors.white} />
         </View>
         <View style={styles.profileText}>
-          <Text style={styles.profileName}>Cliente invitado</Text>
-          <Text style={styles.profileMeta}>Login y reservas sincronizadas entran en la proxima fase.</Text>
+          <Text style={styles.profileName}>{session?.user.name || session?.user.email || "Cliente invitado"}</Text>
+          <Text style={styles.profileMeta}>
+            {session
+              ? "Sesión activa. Tus próximas reservas se guardan en tu cuenta."
+              : "Conecta tu cuenta para pagar, recibir comprobantes y mantener tus reservas a mano."}
+          </Text>
           <Text style={styles.profileBuild}>{appBuildLabel}</Text>
         </View>
       </View>
 
+      {session ? (
+        <View style={styles.authPanel}>
+          <Text style={styles.sectionTitle}>Cuenta activa</Text>
+          <Text style={styles.authHelp}>Correo: {session.user.email}</Text>
+          <ActionButton label="Cerrar sesion" icon={User} variant="outlineDark" onPress={() => onSessionChange(null)} />
+        </View>
+      ) : (
+        <View style={styles.authPanel}>
+          <View style={styles.tripTypeRow}>
+            <TripTypeButton label="Entrar" active={mode === "login"} onPress={() => setMode("login")} />
+            <TripTypeButton label="Crear cuenta" active={mode === "register"} onPress={() => setMode("register")} />
+          </View>
+          {mode === "register" ? (
+            <CheckoutInput label="Nombre" value={name} onChangeText={setName} />
+          ) : null}
+          <CheckoutInput label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
+          <CheckoutInput label="Contraseña" value={password} onChangeText={setPassword} secureTextEntry />
+          <ActionButton
+            label={authLoading ? "Conectando..." : mode === "login" ? "Entrar" : "Crear cuenta"}
+            icon={User}
+            onPress={submitAuth}
+          />
+          {authMessage ? <Text style={styles.authMessage}>{authMessage}</Text> : null}
+        </View>
+      )}
+
       <View style={styles.linkStack}>
         <LinkRow icon={MessageCircle} title="WhatsApp 24/7" subtitle="+1 829 475 6298" onPress={() => openUrl(links.whatsapp)} />
-        <LinkRow icon={ExternalLink} title="Web Proactivitis" subtitle="Abrir catalogo completo" onPress={() => openUrl(links.home)} />
-        <LinkRow icon={CreditCard} title="Pagos seguros" subtitle="Stripe, PayPal y tarjetas en la web" onPress={() => openUrl(links.home)} />
+        <LinkRow icon={ExternalLink} title="Proactivitis" subtitle="Catalogo completo y soporte ampliado" onPress={() => openUrl(links.home)} />
+        <LinkRow icon={CreditCard} title="Pagos seguros" subtitle="Stripe nativo conectado a tu reserva" onPress={() => openUrl(links.home)} />
       </View>
 
       <View style={styles.socialPanel}>
@@ -1779,7 +2113,7 @@ function TabBar({ activeTab, onChange }: { activeTab: TabKey; onChange: (tab: Ta
     { key: "tours", label: "Tours", icon: Compass },
     { key: "transfers", label: "Transfer", icon: Car },
     { key: "trips", label: "Reservas", icon: CalendarCheck },
-    { key: "profile", label: "Soporte", icon: User }
+    { key: "profile", label: "Cuenta", icon: User }
   ];
 
   return (
@@ -2354,6 +2688,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: colors.ink
   },
+  productHeroImageButton: {
+    ...StyleSheet.absoluteFillObject
+  },
   productHeroImage: {
     position: "absolute",
     top: 0,
@@ -2366,6 +2703,50 @@ const styles = StyleSheet.create({
   productHeroOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(6, 17, 31, 0.58)"
+  },
+  galleryViewerScreen: {
+    flex: 1,
+    gap: 14,
+    backgroundColor: colors.ink,
+    padding: 14,
+    paddingTop: 18
+  },
+  galleryViewerTopbar: {
+    minHeight: 46,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12
+  },
+  galleryViewerBackText: {
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  galleryViewerCount: {
+    color: colors.mutedOnDark,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  galleryViewerImage: {
+    flex: 1,
+    width: "100%",
+    minHeight: 360
+  },
+  galleryViewerThumbs: {
+    gap: 10,
+    paddingBottom: 8
+  },
+  galleryViewerThumb: {
+    width: 82,
+    height: 64,
+    overflow: "hidden",
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.16)"
+  },
+  galleryViewerThumbActive: {
+    borderColor: colors.sky
   },
   backButton: {
     position: "absolute",
@@ -2833,6 +3214,12 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: "700"
   },
+  checkoutFeedbackText: {
+    color: colors.mutedOnDark,
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: "700"
+  },
   checkoutPayTotalLabel: {
     color: colors.mutedOnDark,
     fontSize: 12,
@@ -2841,6 +3228,41 @@ const styles = StyleSheet.create({
   checkoutPayTotalValue: {
     color: colors.white,
     fontSize: 24,
+    fontWeight: "900"
+  },
+  checkoutSuccessScreen: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 16,
+    padding: 24,
+    backgroundColor: colors.surface
+  },
+  checkoutSuccessIcon: {
+    width: 86,
+    height: 86,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.green
+  },
+  checkoutSuccessTitle: {
+    color: colors.text,
+    fontSize: 26,
+    lineHeight: 31,
+    fontWeight: "900",
+    textAlign: "center"
+  },
+  checkoutSuccessText: {
+    color: colors.muted,
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: "700",
+    textAlign: "center"
+  },
+  checkoutSuccessCode: {
+    color: colors.skyDark,
+    fontSize: 13,
     fontWeight: "900"
   },
   hero: {
@@ -3534,6 +3956,27 @@ const styles = StyleSheet.create({
     color: colors.skySoft,
     fontSize: 12,
     fontWeight: "900"
+  },
+  authPanel: {
+    gap: 12,
+    borderRadius: 8,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.line,
+    padding: 15,
+    ...shadows.card
+  },
+  authHelp: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: "700"
+  },
+  authMessage: {
+    color: colors.skyDark,
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: "800"
   },
   linkStack: {
     gap: 10

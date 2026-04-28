@@ -34,6 +34,10 @@
       "eas": {
         "projectId": "df33ad49-5972-46f7-ad09-3feded5b52a8"
       }
-    }
+    },
+    "plugins": [
+      "@stripe/stripe-react-native",
+      "expo-secure-store"
+    ]
   }
 }
