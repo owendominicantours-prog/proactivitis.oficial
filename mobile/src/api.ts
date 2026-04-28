@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 declare const process:
   | {
       env?: Record<string, string | undefined>;
@@ -111,6 +113,7 @@ export type MobileTour = {
 };
 
 const getBrowserLocalApiBaseUrl = () => {
+  if (Platform.OS !== "web") return null;
   if (typeof window === "undefined") return null;
   const host = window.location?.hostname;
   if (!host) return null;
