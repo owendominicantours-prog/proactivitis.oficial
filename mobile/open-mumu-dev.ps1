@@ -65,7 +65,8 @@ foreach ($line in $deviceLines) {
 }
 
 $env:ANDROID_SERIAL = $device
-$env:EXPO_PUBLIC_API_BASE_URL = "https://proactivitis.com"
+$apiBaseUrl = "http://10.0.2.2:3000"
+$env:EXPO_PUBLIC_API_BASE_URL = $apiBaseUrl
 
 $sdkDir = $env:ANDROID_HOME
 if (-not $sdkDir) {
@@ -86,8 +87,40 @@ Set-Content -Path $localProperties -Value "sdk.dir=$sdkDirForGradle" -Encoding A
 Write-Host "Android SDK: $sdkDirForGradle" -ForegroundColor DarkGray
 
 Write-Host "Usando MuMu: $device" -ForegroundColor Green
+Write-Host "API para MuMu: $apiBaseUrl" -ForegroundColor Green
 Write-Host "Dispositivos finales:" -ForegroundColor Cyan
 & $adb devices | Out-Host
+
+function Test-WebApi {
+  try {
+    $response = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:3000/api/transfers/v2/locations?query=punta" -TimeoutSec 4
+    return $response.StatusCode -eq 200
+  } catch {
+    return $false
+  }
+}
+
+if (-not (Test-WebApi)) {
+  Write-Host "Abriendo web local/API en otra ventana..." -ForegroundColor Cyan
+  $rootDir = Resolve-Path (Join-Path $PSScriptRoot "..")
+  $webCommand = "cd `"$rootDir`"; npm run dev"
+  Start-Process powershell -WorkingDirectory $rootDir -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $webCommand
+
+  $webReady = $false
+  for ($i = 1; $i -le 60; $i++) {
+    if (Test-WebApi) {
+      $webReady = $true
+      break
+    }
+    Start-Sleep -Seconds 1
+  }
+
+  if (-not $webReady) {
+    Write-Host "La web/API local aun no responde. Transfer puede tardar hasta que Next termine de arrancar." -ForegroundColor Yellow
+  }
+} else {
+  Write-Host "Web/API local ya esta corriendo en 3000." -ForegroundColor Green
+}
 
 function Test-Metro {
   try {
@@ -100,7 +133,7 @@ function Test-Metro {
 
 if (-not (Test-Metro)) {
   Write-Host "Abriendo Metro en otra ventana..." -ForegroundColor Cyan
-  $metroCommand = "cd `"$PSScriptRoot`"; `$env:EXPO_PUBLIC_API_BASE_URL='https://proactivitis.com'; npx expo start --localhost --clear"
+  $metroCommand = "cd `"$PSScriptRoot`"; `$env:EXPO_PUBLIC_API_BASE_URL='$apiBaseUrl'; npx expo start --localhost --clear"
   Start-Process powershell -WorkingDirectory $PSScriptRoot -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $metroCommand
 
   $metroReady = $false

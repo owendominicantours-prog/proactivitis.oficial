@@ -308,6 +308,38 @@ const catalogTransferRoutes: MobileTransferRoute[] = transferRoutes.map((route) 
 
 const fallbackTransferRoutes = staticMobileTransferRoutes.length ? staticMobileTransferRoutes : catalogTransferRoutes;
 
+const normalizeLocationSearch = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+const mergeLocations = (...groups: LocationSummary[][]) => {
+  const seen = new Set<string>();
+  const merged: LocationSummary[] = [];
+  groups.flat().forEach((location) => {
+    const key = location.id || `${location.name}-${location.type}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    merged.push(location);
+  });
+  return merged;
+};
+
+const routeLocationMatches = (routes: MobileTransferRoute[], query: string) => {
+  const normalizedQuery = normalizeLocationSearch(query);
+  if (normalizedQuery.length < 2) return [];
+  return mergeLocations(
+    routes.map((route) => route.origin),
+    routes.map((route) => route.destination)
+  )
+    .filter((location) =>
+      normalizeLocationSearch(`${location.name} ${location.zoneName ?? ""} ${location.type}`).includes(normalizedQuery)
+    )
+    .slice(0, 7);
+};
+
 const readUrlParams = (href: string) => {
   try {
     return new URL(href).searchParams;
@@ -941,6 +973,8 @@ function TransfersScreen({
   const [destinationOptions, setDestinationOptions] = useState<LocationSummary[]>([]);
   const [originLoading, setOriginLoading] = useState(false);
   const [destinationLoading, setDestinationLoading] = useState(false);
+  const [originSearchError, setOriginSearchError] = useState<string | null>(null);
+  const [destinationSearchError, setDestinationSearchError] = useState<string | null>(null);
   const [origin, setOrigin] = useState<LocationSummary | null>(firstRoute?.origin ?? null);
   const [destination, setDestination] = useState<LocationSummary | null>(firstRoute?.destination ?? null);
   const [selectedRouteId, setSelectedRouteId] = useState(firstRoute?.id ?? "");
@@ -992,17 +1026,24 @@ function TransfersScreen({
     if (origin?.name === originQuery || originQuery.trim().length < 2) {
       setOriginOptions([]);
       setOriginLoading(false);
+      setOriginSearchError(null);
       return;
     }
     let active = true;
+    const localMatches = routeLocationMatches(routes, originQuery);
+    setOriginOptions(localMatches);
     setOriginLoading(true);
+    setOriginSearchError(null);
     const timer = setTimeout(() => {
       fetchTransferLocations(originQuery)
         .then((items) => {
-          if (active) setOriginOptions(items);
+          if (active) setOriginOptions(mergeLocations(items, localMatches).slice(0, 7));
         })
-        .catch(() => {
-          if (active) setOriginOptions([]);
+        .catch((error) => {
+          if (active) {
+            setOriginOptions(localMatches);
+            setOriginSearchError(error instanceof Error ? error.message : "No se pudo buscar origen.");
+          }
         })
         .finally(() => {
           if (active) setOriginLoading(false);
@@ -1012,23 +1053,30 @@ function TransfersScreen({
       active = false;
       clearTimeout(timer);
     };
-  }, [originQuery, origin?.name]);
+  }, [originQuery, origin?.name, routes]);
 
   useEffect(() => {
     if (destination?.name === destinationQuery || destinationQuery.trim().length < 2) {
       setDestinationOptions([]);
       setDestinationLoading(false);
+      setDestinationSearchError(null);
       return;
     }
     let active = true;
+    const localMatches = routeLocationMatches(routes, destinationQuery);
+    setDestinationOptions(localMatches);
     setDestinationLoading(true);
+    setDestinationSearchError(null);
     const timer = setTimeout(() => {
       fetchTransferLocations(destinationQuery)
         .then((items) => {
-          if (active) setDestinationOptions(items);
+          if (active) setDestinationOptions(mergeLocations(items, localMatches).slice(0, 7));
         })
-        .catch(() => {
-          if (active) setDestinationOptions([]);
+        .catch((error) => {
+          if (active) {
+            setDestinationOptions(localMatches);
+            setDestinationSearchError(error instanceof Error ? error.message : "No se pudo buscar destino.");
+          }
         })
         .finally(() => {
           if (active) setDestinationLoading(false);
@@ -1038,7 +1086,7 @@ function TransfersScreen({
       active = false;
       clearTimeout(timer);
     };
-  }, [destinationQuery, destination?.name]);
+  }, [destinationQuery, destination?.name, routes]);
 
   const resetQuote = () => {
     setVehicles([]);
@@ -1158,9 +1206,11 @@ function TransfersScreen({
             setOrigin(item);
             setOriginQuery(item.name);
             setOriginOptions([]);
+            setOriginSearchError(null);
             setSelectedRouteId("");
             resetQuote();
           }}
+          error={originSearchError}
         />
         <LocationSearchInput
           label="Destino"
@@ -1179,9 +1229,11 @@ function TransfersScreen({
             setDestination(item);
             setDestinationQuery(item.name);
             setDestinationOptions([]);
+            setDestinationSearchError(null);
             setSelectedRouteId("");
             resetQuote();
           }}
+          error={destinationSearchError}
         />
 
         <Text style={styles.fieldLabel}>Rutas populares</Text>
@@ -1610,6 +1662,7 @@ function LocationSearchInput({
   selected,
   loading,
   options,
+  error,
   placeholder,
   onChange,
   onSelect
@@ -1620,6 +1673,7 @@ function LocationSearchInput({
   selected: LocationSummary | null;
   loading: boolean;
   options: LocationSummary[];
+  error?: string | null;
   placeholder: string;
   onChange: (value: string) => void;
   onSelect: (location: LocationSummary) => void;
@@ -1650,6 +1704,7 @@ function LocationSearchInput({
           ))}
         </View>
       ) : null}
+      {error ? <Text style={styles.inputError}>{error}</Text> : null}
     </View>
   );
 }
