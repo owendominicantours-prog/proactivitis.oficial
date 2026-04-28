@@ -819,11 +819,18 @@ function ToursScreen({
 }) {
   return (
     <View style={styles.screen}>
-      <ScreenHeader
-        eyebrow="Catalogo"
-        title="Tours con precio claro"
-        description="Explora productos reales de la web, revisa fotos y reserva desde la app."
-      />
+      <View style={styles.toursHeroPanel}>
+        <Text style={styles.eyebrowDark}>🌴 Catalogo Proactivitis</Text>
+        <Text style={styles.toursHeroTitle}>Tours listos para reservar</Text>
+        <Text style={styles.toursHeroCopy}>
+          Experiencias reales de la web, fotos del producto, detalles claros y checkout dentro de la app.
+        </Text>
+        <View style={styles.toursTrustRow}>
+          <Text style={styles.toursTrustPill}>📸 Galeria</Text>
+          <Text style={styles.toursTrustPill}>⚡ Reserva rapida</Text>
+          <Text style={styles.toursTrustPill}>💬 Soporte humano</Text>
+        </View>
+      </View>
       <View style={styles.searchBox}>
         <Search size={18} color={colors.muted} />
         <TextInput
@@ -839,22 +846,34 @@ function ToursScreen({
           <Chip key={item} label={item} active={item === category} onPress={() => onCategoryChange(item)} />
         ))}
       </ScrollView>
-      <View style={styles.resultSummary}>
-        <Text style={styles.resultSummaryText}>
-          {loading ? "Actualizando productos..." : `${tours.length} experiencias disponibles`}
-        </Text>
+      <View style={styles.toursResultBar}>
+        <View>
+          <Text style={styles.resultSummaryText}>{loading ? "Actualizando productos..." : `${tours.length} experiencias`}</Text>
+          <Text style={styles.toursResultMeta}>{category === "Todos" ? "Todos los planes" : category}</Text>
+        </View>
+        <View style={styles.toursLiveBadge}>
+          <CheckCircle2 size={14} color={colors.green} />
+          <Text style={styles.toursLiveText}>Conectado</Text>
+        </View>
       </View>
-      <View style={styles.cardStack}>
-        {tours.map((tour) => (
-          <TourCard
-            key={tour.id}
-            tour={tour}
-            favorite={favorites.has(tour.id)}
-            onFavorite={() => onFavorite(tour.id)}
-            onReserve={() => onReserve(tour)}
-          />
-        ))}
-      </View>
+      {tours.length ? (
+        <View style={styles.cardStack}>
+          {tours.map((tour) => (
+            <TourCard
+              key={tour.id}
+              tour={tour}
+              favorite={favorites.has(tour.id)}
+              onFavorite={() => onFavorite(tour.id)}
+              onReserve={() => onReserve(tour)}
+            />
+          ))}
+        </View>
+      ) : (
+        <View style={styles.toursEmptyPanel}>
+          <Text style={styles.sectionTitle}>No encontramos ese tour</Text>
+          <Text style={styles.bodyText}>Prueba con Saona, buggy, catamaran o limpia el filtro para ver todo el catalogo.</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -2033,23 +2052,34 @@ function TourCard({
 }) {
   return (
     <Pressable style={styles.tourCard} onPress={onReserve}>
-      <RemoteImage uri={tour.image} style={styles.tourImage} />
-      <View style={styles.tourBody}>
-        <View style={styles.rowBetween}>
-          <Text style={styles.featuredMeta}>{tour.category}</Text>
+      <View style={styles.tourImageWrap}>
+        <RemoteImage uri={tour.image} style={styles.tourImage} />
+        <View style={styles.tourImageOverlay} />
+        <View style={styles.tourTopRow}>
+          <Text style={styles.tourCategoryBadge}>{tour.category}</Text>
           <Pressable style={styles.favoriteButton} onPress={onFavorite}>
-            <Heart size={18} color={favorite ? colors.green : colors.muted} fill={favorite ? colors.green : "transparent"} />
+            <Heart size={18} color={favorite ? colors.green : colors.white} fill={favorite ? colors.green : "transparent"} />
           </Pressable>
         </View>
+        <View style={styles.tourRatingBadge}>
+          <Star size={13} color={colors.amber} fill={colors.amber} />
+          <Text style={styles.tourRatingText}>{tour.rating}</Text>
+        </View>
+      </View>
+      <View style={styles.tourBody}>
         <Text style={styles.tourTitle}>{tour.title}</Text>
         <Text style={styles.bodyText} numberOfLines={2}>{tour.description}</Text>
         <View style={styles.metaRow}>
           <MetaItem icon={MapPin} label={tour.location} />
           <MetaItem icon={Clock3} label={tour.duration} />
+          <MetaItem icon={Car} label={tour.pickup} />
         </View>
-        <View style={styles.rowBetween}>
-          <Text style={styles.priceText}>Desde {money(tour.price)}</Text>
-          <ActionButton label="Ver" icon={CreditCard} onPress={onReserve} />
+        <View style={styles.tourFooter}>
+          <View>
+            <Text style={styles.tourPriceLabel}>Desde</Text>
+            <Text style={styles.tourPrice}>{money(tour.price)}</Text>
+          </View>
+          <ActionButton label="Ver tour" icon={CreditCard} onPress={onReserve} />
         </View>
       </View>
     </Pressable>
@@ -2564,6 +2594,44 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22
   },
+  toursHeroPanel: {
+    gap: 11,
+    overflow: "hidden",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+    backgroundColor: colors.white,
+    padding: 17,
+    ...shadows.card
+  },
+  toursHeroTitle: {
+    color: colors.text,
+    fontSize: 31,
+    lineHeight: 35,
+    fontWeight: "900",
+    letterSpacing: 0
+  },
+  toursHeroCopy: {
+    color: colors.muted,
+    fontSize: 15,
+    fontWeight: "700",
+    lineHeight: 22
+  },
+  toursTrustRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  toursTrustPill: {
+    overflow: "hidden",
+    borderRadius: 999,
+    backgroundColor: colors.skySoft,
+    color: colors.skyDark,
+    fontSize: 12,
+    fontWeight: "900",
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
   searchBox: {
     minHeight: 52,
     borderRadius: 8,
@@ -2616,6 +2684,45 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "900"
   },
+  toursResultBar: {
+    minHeight: 64,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    padding: 13
+  },
+  toursResultMeta: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "800"
+  },
+  toursLiveBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    borderRadius: 999,
+    backgroundColor: "#f0fdf4",
+    paddingHorizontal: 9,
+    paddingVertical: 6
+  },
+  toursLiveText: {
+    color: colors.green,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  toursEmptyPanel: {
+    gap: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 16
+  },
   cardStack: {
     gap: 14
   },
@@ -2630,14 +2737,61 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     ...shadows.card
   },
-  tourImage: {
-    width: "100%",
-    height: 210,
+  tourImageWrap: {
+    height: 226,
+    overflow: "hidden",
     backgroundColor: colors.line
   },
+  tourImage: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: colors.line
+  },
+  tourImageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(6,17,31,0.2)"
+  },
+  tourTopRow: {
+    position: "absolute",
+    top: 12,
+    left: 12,
+    right: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10
+  },
+  tourCategoryBadge: {
+    overflow: "hidden",
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.92)",
+    color: colors.skyDark,
+    fontSize: 11,
+    fontWeight: "900",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    textTransform: "uppercase"
+  },
+  tourRatingBadge: {
+    position: "absolute",
+    left: 12,
+    bottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    borderRadius: 999,
+    backgroundColor: "rgba(6,17,31,0.78)",
+    paddingHorizontal: 10,
+    paddingVertical: 6
+  },
+  tourRatingText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "900"
+  },
   tourBody: {
-    gap: 10,
-    padding: 14
+    gap: 11,
+    padding: 15
   },
   tourTitle: {
     color: colors.text,
@@ -2682,7 +2836,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.surface
+    backgroundColor: "rgba(6,17,31,0.5)"
   },
   metaRow: {
     flexDirection: "row",
@@ -2692,12 +2846,32 @@ const styles = StyleSheet.create({
   metaItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5
+    gap: 5,
+    maxWidth: "100%"
   },
   metaLabel: {
+    flexShrink: 1,
     color: colors.muted,
     fontSize: 12,
     fontWeight: "800"
+  },
+  tourFooter: {
+    minHeight: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12
+  },
+  tourPriceLabel: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  tourPrice: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: "900"
   },
   productScreen: {
     backgroundColor: colors.surface,
