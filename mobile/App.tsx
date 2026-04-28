@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
-import type { ComponentType } from "react";
-import { createElement, useEffect, useMemo, useRef, useState } from "react";
+import type { ComponentType, ReactNode } from "react";
+import { Component, createElement, useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
   ImageBackground,
@@ -65,6 +65,31 @@ type TabKey = "home" | "tours" | "transfers" | "trips" | "profile";
 type TripType = "one-way" | "round-trip";
 
 type IconType = ComponentType<{ size?: number; color?: string; strokeWidth?: number; fill?: string }>;
+
+class ScreenErrorBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode; resetKey: string },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidUpdate(previousProps: { resetKey: string }) {
+    if (previousProps.resetKey !== this.props.resetKey && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
+  }
+
+  componentDidCatch(error: unknown) {
+    console.warn("Mobile screen render failed", error);
+  }
+
+  render() {
+    return this.state.hasError ? this.props.fallback : this.props.children;
+  }
+}
 
 type SavedQuote = {
   origin: LocationSummary;
@@ -272,10 +297,12 @@ export default function App() {
 
     if (activeTab === "transfers") {
       return (
-        <TransfersScreen
-          onSaveQuote={saveQuote}
-          onOpenCheckout={setCheckoutUrl}
-        />
+        <ScreenErrorBoundary resetKey={activeTab} fallback={<TransferFallbackScreen />}>
+          <TransfersScreen
+            onSaveQuote={saveQuote}
+            onOpenCheckout={setCheckoutUrl}
+          />
+        </ScreenErrorBoundary>
       );
     }
 
@@ -1098,7 +1125,6 @@ function TransfersScreen({
   return (
     <View style={styles.transferScreen}>
       <View style={styles.transferHero}>
-        <Image source={{ uri: heroImage }} style={styles.transferHeroImage} resizeMode="cover" />
         <View style={styles.transferHeroOverlay} />
         <View style={styles.transferHeroContent}>
           <Text style={styles.transferHeroEyebrow}>Traslados privados</Text>
@@ -1235,6 +1261,32 @@ function TripTypeButton({ label, active, onPress }: { label: string; active: boo
     <Pressable style={[styles.tripTypeButton, active ? styles.tripTypeButtonActive : null]} onPress={onPress}>
       <Text style={[styles.tripTypeButtonText, active ? styles.tripTypeButtonTextActive : null]}>{label}</Text>
     </Pressable>
+  );
+}
+
+function TransferFallbackScreen() {
+  return (
+    <View style={styles.screen}>
+      <ScreenHeader
+        eyebrow="Traslados privados"
+        title="Transfer disponible"
+        description="Si Android no abre el cotizador, confirma la ruta por WhatsApp mientras revisamos el log del dispositivo."
+      />
+      <View style={styles.noticePanel}>
+        <ShieldCheck size={20} color={colors.skyDark} />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.noticeTitle}>Ruta por soporte directo</Text>
+          <Text style={styles.noticeText}>
+            Envia origen, destino, pasajeros y fecha. El equipo confirma la tarifa con el mismo sistema de la web.
+          </Text>
+        </View>
+      </View>
+      <ActionButton
+        label="Abrir WhatsApp"
+        icon={MessageCircle}
+        onPress={() => openUrl(links.whatsapp)}
+      />
+    </View>
   );
 }
 
@@ -1598,14 +1650,20 @@ function TourCard({
   onReserve: () => void;
 }) {
   return (
-    <View style={styles.tourCard}>
+    <Pressable style={styles.tourCard} onPress={onReserve}>
       <RemoteTourImage uri={tour.image} style={styles.tourImage} />
       <View style={styles.tourBody}>
         <View style={styles.tourTopRow}>
           <View style={styles.categoryBadge}>
             <Text style={styles.categoryBadgeText}>{tour.category}</Text>
           </View>
-          <Pressable style={styles.favoriteButton} onPress={onFavorite}>
+          <Pressable
+            style={styles.favoriteButton}
+            onPress={(event) => {
+              event.stopPropagation();
+              onFavorite();
+            }}
+          >
             <Heart
               size={20}
               color={favorite ? "#ef4444" : colors.muted}
@@ -1635,7 +1693,7 @@ function TourCard({
           <ActionButton label="Reservar" icon={ExternalLink} onPress={onReserve} />
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
