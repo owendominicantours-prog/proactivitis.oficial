@@ -1,13 +1,11 @@
 import { StatusBar } from "expo-status-bar";
 import type { ComponentType, ReactNode } from "react";
-import { Component, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as SecureStore from "expo-secure-store";
-import { StripeProvider, useStripe } from "@stripe/stripe-react-native";
 import {
   Image,
   ImageBackground,
   Linking,
-  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -16,6 +14,7 @@ import {
   TextInput,
   View,
   type ImageStyle,
+  type KeyboardTypeOptions,
   type StyleProp
 } from "react-native";
 import {
@@ -26,9 +25,10 @@ import {
   Clock3,
   Compass,
   CreditCard,
-  ExternalLink,
   Heart,
   Home,
+  Image as ImageIcon,
+  LogIn,
   MapPin,
   MessageCircle,
   Minus,
@@ -36,7 +36,6 @@ import {
   Plus,
   Search,
   ShieldCheck,
-  SlidersHorizontal,
   Star,
   User
 } from "lucide-react-native";
@@ -46,30 +45,25 @@ import {
   tourCategories,
   transferRoutes,
   trustStats,
-  type Tour,
-  type TourCategory
+  type Tour
 } from "./src/catalog";
 import {
   buildCheckoutUrl,
-  fetchTransferLocations,
-  fetchTransferQuote,
+  buildTourCheckoutUrl,
   fetchMobileTours,
   fetchMobileTransferRoutes,
-  buildTourCheckoutUrl,
-  getApiBaseUrl,
-  confirmMobileBooking,
-  createMobilePaymentIntent,
-  fetchMobileConfig,
   fetchMobileUser,
+  fetchTransferLocations,
+  fetchTransferQuote,
+  getApiBaseUrl,
   loginMobileUser,
   registerMobileUser,
   type LocationSummary,
   type MobileSession,
-  type MobilePaymentIntentPayload,
-  type MobileTransferRoute,
   type MobileTour,
   type MobileTourItineraryStop,
   type MobileTourOption,
+  type MobileTransferRoute,
   type QuoteVehicle
 } from "./src/api";
 import { staticMobileTours } from "./src/staticTours";
@@ -78,33 +72,43 @@ import { colors, links, shadows } from "./src/theme";
 
 type TabKey = "home" | "tours" | "transfers" | "trips" | "profile";
 type TripType = "one-way" | "round-trip";
-
 type IconType = ComponentType<{ size?: number; color?: string; strokeWidth?: number; fill?: string }>;
 
-class ScreenErrorBoundary extends Component<
-  { children: ReactNode; fallback: ReactNode; resetKey: string },
-  { hasError: boolean }
-> {
-  state = { hasError: false };
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidUpdate(previousProps: { resetKey: string }) {
-    if (previousProps.resetKey !== this.props.resetKey && this.state.hasError) {
-      this.setState({ hasError: false });
-    }
-  }
-
-  componentDidCatch(error: unknown) {
-    console.warn("Mobile screen render failed", error);
-  }
-
-  render() {
-    return this.state.hasError ? this.props.fallback : this.props.children;
-  }
-}
+type AppTour = {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  location: string;
+  duration: string;
+  price: number;
+  rating: number;
+  reviews: number;
+  pickup: string;
+  image: string;
+  description: string;
+  fullDescription?: string | null;
+  highlights: string[];
+  includes: string[];
+  notIncluded: string[];
+  gallery: string[];
+  options: MobileTourOption[];
+  itinerary: MobileTourItineraryStop[];
+  languages: string[];
+  timeOptions: string[];
+  operatingDays: string[];
+  meetingPoint?: string | null;
+  meetingInstructions?: string | null;
+  requirements?: string | null;
+  cancellationPolicy?: string | null;
+  terms?: string | null;
+  physicalLevel?: string | null;
+  minAge?: number | null;
+  accessibility?: string | null;
+  confirmationType?: string | null;
+  capacity?: number | null;
+  webTour: MobileTour;
+};
 
 type SavedQuote = {
   origin: LocationSummary;
@@ -116,54 +120,56 @@ type SavedQuote = {
   checkoutUrl: string;
 };
 
-type AppTour = Tour & {
-  webTour?: MobileTour;
-  options?: MobileTourOption[];
-  includes?: string[];
-  notIncluded?: string[];
-  gallery?: string[];
-  fullDescription?: string | null;
-  cancellationPolicy?: string | null;
-  priceChild?: number | null;
-  priceYouth?: number | null;
-  languages?: string[];
-  timeOptions?: string[];
-  operatingDays?: string[];
-  meetingPoint?: string | null;
-  meetingInstructions?: string | null;
-  requirements?: string | null;
-  terms?: string | null;
-  physicalLevel?: string | null;
-  minAge?: number | null;
-  accessibility?: string | null;
-  confirmationType?: string | null;
-  capacity?: number | null;
-  itinerary?: MobileTourItineraryStop[];
+type CheckoutSummary = {
+  flowType: "tour" | "transfer";
+  title: string;
+  image?: string | null;
+  optionName?: string | null;
+  date: string;
+  time: string;
+  travelers: number;
+  totalPrice: number;
+  origin?: string | null;
+  destination?: string | null;
+  vehicle?: string | null;
 };
 
 const heroImage =
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
 const fallbackTourImage = "https://proactivitis.com/fototours/fotosimple.jpg";
-const appBuildLabel = "Version 1.0.3 | Android 4";
 const mobileSessionStorageKey = "proactivitis_mobile_session";
+const appBuildLabel = "Version 1.0.4 | Android 5";
 
-const money = (value: number) => `US$${Math.round(value)}`;
+const money = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0
+  }).format(value);
 
-const tourImageSource = (uri?: string | null) => ({ uri: uri?.trim() || fallbackTourImage });
-
-const uniqueImages = (items: Array<string | null | undefined>) =>
-  Array.from(new Set(items.map((item) => item?.trim()).filter((item): item is string => Boolean(item))));
-
-const joinValues = (items?: string[]) => items?.map((item) => item.trim()).filter(Boolean).join(", ") || "";
-
-const openUrl = (href: string) => {
-  void Linking.openURL(href);
+const openUrl = (url: string) => {
+  void Linking.openURL(url).catch(() => undefined);
 };
 
 const whatsappUrl = (message: string) => `${links.whatsapp}?text=${encodeURIComponent(message)}`;
 
+const absoluteImageUrl = (url?: string | null) => {
+  if (!url) return fallbackTourImage;
+  if (url.startsWith("http")) return url;
+  return `${getApiBaseUrl().replace(/\/$/, "")}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
+const uniqueImages = (items: Array<string | null | undefined>) =>
+  Array.from(new Set(items.filter((item): item is string => Boolean(item)))).map(absoluteImageUrl);
+
+const tomorrow = () => {
+  const date = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  return date.toISOString().slice(0, 10);
+};
+
+const joinValues = (values?: string[] | null) => (values?.filter(Boolean).join(", ") ?? "");
+
 const readStoredMobileSession = async () => {
-  if (Platform.OS === "web") return null;
   const raw = await SecureStore.getItemAsync(mobileSessionStorageKey).catch(() => null);
   if (!raw) return null;
   try {
@@ -174,7 +180,6 @@ const readStoredMobileSession = async () => {
 };
 
 const writeStoredMobileSession = async (session: MobileSession | null) => {
-  if (Platform.OS === "web") return;
   if (!session) {
     await SecureStore.deleteItemAsync(mobileSessionStorageKey).catch(() => undefined);
     return;
@@ -182,134 +187,184 @@ const writeStoredMobileSession = async (session: MobileSession | null) => {
   await SecureStore.setItemAsync(mobileSessionStorageKey, JSON.stringify(session)).catch(() => undefined);
 };
 
-const normalizeTourCategory = (category?: string | null): Exclude<TourCategory, "Todos"> => {
-  const value = (category ?? "").toLowerCase();
-  if (value.includes("agua") || value.includes("boat") || value.includes("snork") || value.includes("sail")) return "Agua";
-  if (value.includes("cultura") || value.includes("hist")) return "Cultura";
-  if (value.includes("premium") || value.includes("luxury") || value.includes("vip")) return "Premium";
-  return "Aventura";
-};
+const fallbackBySlug = new Map(featuredTours.map((tour) => [tour.slug, tour]));
+const fallbackById = new Map(featuredTours.map((tour) => [tour.id, tour]));
 
-const toAppTour = (tour: MobileTour): AppTour => ({
+const toMobileTourPayload = (tour: Tour): MobileTour => ({
   id: tour.id,
   slug: tour.slug,
   title: tour.title,
-  category: normalizeTourCategory(tour.category),
-  location: tour.location,
-  duration: tour.duration,
-  price: tour.price,
-  rating: 4.9,
-  reviews: Math.max(1, tour.highlights.length * 18),
-  pickup: tour.pickup ?? "Pickup segun disponibilidad",
-  image: tour.image,
   description: tour.description,
-  highlights: tour.highlights.length ? tour.highlights : tour.includes.slice(0, 3),
-  webTour: tour,
-  options: tour.options,
-  includes: tour.includes,
-  notIncluded: tour.notIncluded ?? [],
-  gallery: uniqueImages([tour.image, ...tour.gallery]),
-  fullDescription: tour.fullDescription,
-  cancellationPolicy: tour.cancellationPolicy,
-  priceChild: tour.priceChild,
-  priceYouth: tour.priceYouth,
-  languages: tour.languages ?? [],
-  timeOptions: tour.timeOptions ?? [],
-  operatingDays: tour.operatingDays ?? [],
-  meetingPoint: tour.meetingPoint,
-  meetingInstructions: tour.meetingInstructions,
-  requirements: tour.requirements,
-  terms: tour.terms,
-  physicalLevel: tour.physicalLevel,
-  minAge: tour.minAge,
-  accessibility: tour.accessibility,
-  confirmationType: tour.confirmationType,
-  capacity: tour.capacity,
-  itinerary: tour.itinerary ?? []
-});
-
-const catalogFallbackTours: AppTour[] = featuredTours.map((tour) => ({
-  ...tour,
-  options: [],
-  includes: [],
-  notIncluded: [],
-  gallery: [tour.image],
   fullDescription: tour.description,
-  cancellationPolicy: null,
-  itinerary: []
-}));
-
-const fallbackTours: AppTour[] = staticMobileTours.length ? staticMobileTours.map(toAppTour) : catalogFallbackTours;
-const fallbackToursBySlug = new Map(fallbackTours.map((tour) => [tour.slug, tour]));
-
-const mergeWebTourWithFallback = (tour: MobileTour): AppTour => {
-  const next = toAppTour(tour);
-  const fallback = fallbackToursBySlug.get(next.slug);
-  if (!fallback) return next;
-  return {
-    ...fallback,
-    ...next,
-    options: next.options?.length ? next.options : fallback.options,
-    includes: next.includes?.length ? next.includes : fallback.includes,
-    notIncluded: next.notIncluded?.length ? next.notIncluded : fallback.notIncluded,
-    gallery: next.gallery && next.gallery.length > 1 ? next.gallery : fallback.gallery,
-    fullDescription: next.fullDescription || fallback.fullDescription,
-    cancellationPolicy: next.cancellationPolicy || fallback.cancellationPolicy,
-    languages: next.languages?.length ? next.languages : fallback.languages,
-    timeOptions: next.timeOptions?.length ? next.timeOptions : fallback.timeOptions,
-    operatingDays: next.operatingDays?.length ? next.operatingDays : fallback.operatingDays,
-    meetingPoint: next.meetingPoint || fallback.meetingPoint,
-    meetingInstructions: next.meetingInstructions || fallback.meetingInstructions,
-    requirements: next.requirements || fallback.requirements,
-    terms: next.terms || fallback.terms,
-    physicalLevel: next.physicalLevel || fallback.physicalLevel,
-    accessibility: next.accessibility || fallback.accessibility,
-    confirmationType: next.confirmationType || fallback.confirmationType,
-    itinerary: next.itinerary?.length ? next.itinerary : fallback.itinerary
-  };
-};
-
-const toMobileTourPayload = (tour: AppTour): MobileTour => ({
-  id: tour.id,
-  slug: tour.slug,
-  title: tour.title,
-  subtitle: null,
-  description: tour.description,
-  fullDescription: tour.fullDescription ?? tour.description,
   price: tour.price,
-  priceChild: tour.priceChild ?? null,
-  priceYouth: tour.priceYouth ?? null,
   duration: tour.duration,
   category: tour.category,
   location: tour.location,
-  languages: tour.languages ?? [],
-  timeOptions: tour.timeOptions ?? [],
-  operatingDays: tour.operatingDays ?? [],
   pickup: tour.pickup,
-  meetingPoint: tour.meetingPoint ?? null,
-  meetingInstructions: tour.meetingInstructions ?? null,
-  requirements: tour.requirements ?? null,
-  cancellationPolicy: tour.cancellationPolicy ?? null,
-  terms: tour.terms ?? null,
-  physicalLevel: tour.physicalLevel ?? null,
-  minAge: tour.minAge ?? null,
-  accessibility: tour.accessibility ?? null,
-  confirmationType: tour.confirmationType ?? null,
-  capacity: tour.capacity ?? null,
-  includes: tour.includes ?? [],
-  notIncluded: tour.notIncluded ?? [],
+  includes: tour.highlights,
+  notIncluded: [],
   highlights: tour.highlights,
   image: tour.image,
-  gallery: tour.gallery?.length ? tour.gallery : [tour.image],
-  itinerary: tour.itinerary ?? [],
-  options: tour.options ?? []
+  gallery: [tour.image],
+  options: [],
+  itinerary: []
 });
+
+const mapCatalogTour = (tour: Tour): AppTour => mapMobileTour(toMobileTourPayload(tour));
+
+const mapMobileTour = (tour: MobileTour): AppTour => {
+  const fallback = fallbackBySlug.get(tour.slug) ?? fallbackById.get(tour.id);
+  const image = absoluteImageUrl(tour.image || fallback?.image);
+  const gallery = uniqueImages([tour.image, ...(tour.gallery ?? []), fallback?.image]);
+  return {
+    id: tour.id,
+    slug: tour.slug,
+    title: tour.title || fallback?.title || "Experiencia Proactivitis",
+    category: tour.category || fallback?.category || "Aventura",
+    location: tour.location || fallback?.location || "Republica Dominicana",
+    duration: tour.duration || fallback?.duration || "A confirmar",
+    price: Number(tour.price || fallback?.price || 0),
+    rating: fallback?.rating ?? 4.9,
+    reviews: fallback?.reviews ?? 0,
+    pickup: tour.pickup || fallback?.pickup || "Recogida disponible segun zona",
+    image,
+    description: tour.description || fallback?.description || "Experiencia confirmada por Proactivitis.",
+    fullDescription: tour.fullDescription,
+    highlights: tour.highlights?.length ? tour.highlights : fallback?.highlights ?? [],
+    includes: tour.includes?.length ? tour.includes : tour.highlights ?? fallback?.highlights ?? [],
+    notIncluded: tour.notIncluded ?? [],
+    gallery: gallery.length ? gallery : [image],
+    options: tour.options ?? [],
+    itinerary: tour.itinerary ?? [],
+    languages: tour.languages ?? [],
+    timeOptions: tour.timeOptions ?? [],
+    operatingDays: tour.operatingDays ?? [],
+    meetingPoint: tour.meetingPoint,
+    meetingInstructions: tour.meetingInstructions,
+    requirements: tour.requirements,
+    cancellationPolicy: tour.cancellationPolicy,
+    terms: tour.terms,
+    physicalLevel: tour.physicalLevel,
+    minAge: tour.minAge,
+    accessibility: tour.accessibility,
+    confirmationType: tour.confirmationType,
+    capacity: tour.capacity,
+    webTour: tour
+  };
+};
+
+const fallbackTours = staticMobileTours.length
+  ? staticMobileTours.map(mapMobileTour)
+  : featuredTours.map(mapCatalogTour);
+
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "transfer";
+
+const routeLocation = (routeId: string, name: string, type: "origin" | "destination"): LocationSummary => ({
+  id: `route-${type}-${routeId}`,
+  name,
+  slug: slugify(name),
+  type: type === "origin" ? "Origen popular" : "Destino popular",
+  zoneName: "Punta Cana"
+});
+
+const catalogTransferRoutes: MobileTransferRoute[] = transferRoutes.map((route) => ({
+  id: route.id,
+  origin: routeLocation(route.id, route.origin, "origin"),
+  destination: routeLocation(route.id, route.destination, "destination"),
+  priceFrom: route.priceFrom,
+  currency: "USD",
+  zoneLabel: route.duration
+}));
+
+const fallbackTransferRoutes = staticMobileTransferRoutes.length ? staticMobileTransferRoutes : catalogTransferRoutes;
+
+const readUrlParams = (href: string) => {
+  try {
+    return new URL(href).searchParams;
+  } catch {
+    const query = href.includes("?") ? href.split("?").slice(1).join("?") : href;
+    return new URLSearchParams(query);
+  }
+};
+
+const paramNumber = (params: URLSearchParams, key: string, fallback = 0) => {
+  const value = Number(params.get(key) ?? fallback);
+  return Number.isFinite(value) ? value : fallback;
+};
+
+const readCheckoutSummary = (url: string): CheckoutSummary => {
+  const params = readUrlParams(url);
+  const flowType = params.get("type") === "transfer" ? "transfer" : "tour";
+  const travelers = Math.max(
+    1,
+    paramNumber(params, "adults", paramNumber(params, "passengers", 1)) +
+      paramNumber(params, "youth") +
+      paramNumber(params, "child")
+  );
+  const totalPrice =
+    paramNumber(params, "displayTotalPrice") || paramNumber(params, "totalPrice") || paramNumber(params, "price");
+  return {
+    flowType,
+    title:
+      flowType === "transfer"
+        ? params.get("vehicleName") ?? "Transfer privado"
+        : params.get("tourTitle") ?? "Tour Proactivitis",
+    image: params.get("tourImage"),
+    optionName: params.get("tourOptionName"),
+    date: params.get("date") ?? params.get("dateTime")?.split("T")[0] ?? "Fecha pendiente",
+    time: params.get("time") ?? params.get("dateTime")?.split("T")[1] ?? "Hora pendiente",
+    travelers,
+    totalPrice,
+    origin: params.get("originLabel") ?? params.get("origin"),
+    destination: params.get("originHotelName") ?? params.get("hotelSlug"),
+    vehicle: params.get("vehicleCategory")
+  };
+};
+
+const addCheckoutContactParams = ({
+  checkoutUrl,
+  firstName,
+  lastName,
+  email,
+  phone,
+  pickupLocation,
+  specialRequirements
+}: {
+  checkoutUrl: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  pickupLocation: string;
+  specialRequirements: string;
+}) => {
+  try {
+    const parsed = new URL(checkoutUrl);
+    const params = parsed.searchParams;
+    params.set("mobileCheckout", "1");
+    params.set("firstName", firstName.trim());
+    params.set("lastName", lastName.trim());
+    params.set("email", email.trim().toLowerCase());
+    if (phone.trim()) params.set("phone", phone.trim());
+    params.set("travelerName", `${firstName} ${lastName}`.trim());
+    if (pickupLocation.trim()) params.set("pickupLocation", pickupLocation.trim());
+    if (specialRequirements.trim()) params.set("specialRequirements", specialRequirements.trim());
+    return parsed.toString();
+  } catch {
+    return checkoutUrl;
+  }
+};
 
 export default function App() {
   const scrollRef = useRef<ScrollView>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("home");
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<TourCategory>("Todos");
+  const [category, setCategory] = useState("Todos");
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [tours, setTours] = useState<AppTour[]>(fallbackTours);
   const [toursLoading, setToursLoading] = useState(true);
@@ -317,8 +372,6 @@ export default function App() {
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [savedQuote, setSavedQuote] = useState<SavedQuote | null>(null);
   const [mobileSession, setMobileSession] = useState<MobileSession | null>(null);
-  const [stripeReady, setStripeReady] = useState(false);
-  const [stripePublishableKey, setStripePublishableKey] = useState("");
 
   const updateMobileSession = (session: MobileSession | null) => {
     setMobileSession(session);
@@ -327,17 +380,6 @@ export default function App() {
 
   useEffect(() => {
     let active = true;
-
-    fetchMobileConfig()
-      .then((config) => {
-        if (!active || !config.stripePublishableKey) return;
-        setStripePublishableKey(config.stripePublishableKey);
-        setStripeReady(Platform.OS !== "web");
-      })
-      .catch(() => {
-        if (active) setStripeReady(false);
-      });
-
     readStoredMobileSession()
       .then(async (storedSession) => {
         if (!active || !storedSession?.token) return;
@@ -350,27 +392,17 @@ export default function App() {
       })
       .catch(() => undefined);
 
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let active = true;
     fetchMobileTours()
       .then((items) => {
-        if (active && items.length) {
-          setTours(items.map(mergeWebTourWithFallback));
-        }
+        if (active && items.length) setTours(items.map(mapMobileTour));
       })
       .catch(() => {
-        if (active) {
-          setTours(fallbackTours);
-        }
+        if (active) setTours(fallbackTours);
       })
       .finally(() => {
         if (active) setToursLoading(false);
       });
+
     return () => {
       active = false;
     };
@@ -381,16 +413,14 @@ export default function App() {
     requestAnimationFrame(() => {
       scrollRef.current?.scrollTo({ y: 0, animated: false });
     });
-  }, [activeProduct?.id, activeTab, checkoutUrl]);
+  }, [activeTab, activeProduct?.id, checkoutUrl]);
 
   const filteredTours = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+    const normalized = query.trim().toLowerCase();
     return tours.filter((tour) => {
-      const matchesCategory = category === "Todos" || tour.category === category;
-      const matchesQuery =
-        !normalizedQuery ||
-        `${tour.title} ${tour.location} ${tour.description}`.toLowerCase().includes(normalizedQuery);
-      return matchesCategory && matchesQuery;
+      const categoryMatch = category === "Todos" || tour.category === category;
+      const text = `${tour.title} ${tour.location} ${tour.description}`.toLowerCase();
+      return categoryMatch && (!normalized || text.includes(normalized));
     });
   }, [category, query, tours]);
 
@@ -399,53 +429,30 @@ export default function App() {
   const toggleFavorite = (tourId: string) => {
     setFavorites((current) => {
       const next = new Set(current);
-      if (next.has(tourId)) {
-        next.delete(tourId);
-      } else {
-        next.add(tourId);
-      }
+      if (next.has(tourId)) next.delete(tourId);
+      else next.add(tourId);
       return next;
     });
   };
 
-  const reserveTour = (tour: AppTour) => {
-    setActiveProduct(tour);
-  };
-
-  const saveQuote = (quote: SavedQuote) => {
-    setSavedQuote(quote);
-    setActiveTab("trips");
+  const openCheckout = (url: string) => {
+    setActiveProduct(null);
+    setCheckoutUrl(url);
   };
 
   const renderScreen = () => {
     if (checkoutUrl) {
       return (
-        <ScreenErrorBoundary
-          resetKey={checkoutUrl}
-          fallback={<CheckoutFallbackScreen onClose={() => setCheckoutUrl(null)} />}
-        >
-          <CheckoutScreen
-            url={checkoutUrl}
-            session={mobileSession}
-            stripeReady={stripeReady}
-            onSessionChange={updateMobileSession}
-            onClose={() => setCheckoutUrl(null)}
-          />
-        </ScreenErrorBoundary>
+        <CheckoutScreen
+          url={checkoutUrl}
+          session={mobileSession}
+          onClose={() => setCheckoutUrl(null)}
+        />
       );
     }
 
     if (activeProduct) {
-      return (
-        <ProductScreen
-          tour={activeProduct}
-          onBack={() => setActiveProduct(null)}
-          onCheckout={(url) => {
-            setActiveProduct(null);
-            setCheckoutUrl(url);
-          }}
-        />
-      );
+      return <ProductScreen tour={activeProduct} onBack={() => setActiveProduct(null)} onCheckout={openCheckout} />;
     }
 
     if (activeTab === "tours") {
@@ -455,23 +462,24 @@ export default function App() {
           category={category}
           tours={filteredTours}
           favorites={favorites}
+          loading={toursLoading}
           onQueryChange={setQuery}
           onCategoryChange={setCategory}
           onFavorite={toggleFavorite}
-          onReserve={reserveTour}
-          loading={toursLoading}
+          onReserve={setActiveProduct}
         />
       );
     }
 
     if (activeTab === "transfers") {
       return (
-        <ScreenErrorBoundary resetKey={activeTab} fallback={<TransferFallbackScreen />}>
-          <TransfersScreen
-            onSaveQuote={saveQuote}
-            onOpenCheckout={setCheckoutUrl}
-          />
-        </ScreenErrorBoundary>
+        <TransfersScreen
+          onSaveQuote={(quote) => {
+            setSavedQuote(quote);
+            setActiveTab("trips");
+          }}
+          onOpenCheckout={openCheckout}
+        />
       );
     }
 
@@ -482,8 +490,8 @@ export default function App() {
           favoriteTours={favoriteTours}
           onOpenTransfers={() => setActiveTab("transfers")}
           onOpenTours={() => setActiveTab("tours")}
-          onReserveTour={reserveTour}
-          onOpenCheckout={setCheckoutUrl}
+          onReserveTour={setActiveProduct}
+          onOpenCheckout={openCheckout}
         />
       );
     }
@@ -496,13 +504,13 @@ export default function App() {
       <HomeScreen
         onOpenTours={() => setActiveTab("tours")}
         onOpenTransfers={() => setActiveTab("transfers")}
-        onReserveTour={reserveTour}
+        onReserveTour={setActiveProduct}
         tours={tours}
       />
     );
   };
 
-  const appContent = (
+  return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
       <View style={styles.appShell}>
@@ -517,19 +525,6 @@ export default function App() {
       </View>
     </SafeAreaView>
   );
-
-  if (!stripePublishableKey || Platform.OS === "web") return appContent;
-
-  return (
-    <StripeProvider
-      publishableKey={stripePublishableKey}
-      merchantIdentifier="merchant.com.proactivitis.app"
-      urlScheme="proactivitis"
-      setReturnUrlSchemeOnAndroid
-    >
-      {appContent}
-    </StripeProvider>
-  );
 }
 
 function HomeScreen({
@@ -543,19 +538,16 @@ function HomeScreen({
   onReserveTour: (tour: AppTour) => void;
   tours: AppTour[];
 }) {
-  const homeRoutes = fallbackMobileTransferRoutes.slice(0, 4);
-  const activeCategories = tourCategories.filter((item) => item !== "Todos").slice(0, 4);
-
   return (
     <View style={styles.screen}>
-      <ImageBackground source={{ uri: heroImage }} style={styles.hero} imageStyle={styles.heroImage}>
+      <ImageBackground source={{ uri: heroImage }} style={styles.hero} imageStyle={styles.heroImage as StyleProp<ImageStyle>}>
         <View style={styles.heroOverlay} />
         <View style={styles.heroContent}>
-          <Image source={require("./assets/proactivitis-logo.png")} style={styles.logo} resizeMode="contain" />
-          <Text style={styles.eyebrow}>Tours, transfers y pagos seguros</Text>
-          <Text style={styles.heroTitle}>Reserva Republica Dominicana desde tu telefono</Text>
+          <Image source={require("./assets/proactivitis-logo.png")} style={styles.logo as StyleProp<ImageStyle>} resizeMode="contain" />
+          <Text style={styles.eyebrow}>Tours y transfers privados</Text>
+          <Text style={styles.heroTitle}>Reserva Republica Dominicana desde la app</Text>
           <Text style={styles.heroSubtitle}>
-            Elige la experiencia, confirma tus datos y paga seguro sin salir de la app.
+            Productos reales, rutas reales y soporte local conectado a Proactivitis.
           </Text>
           <View style={styles.heroActions}>
             <ActionButton label="Buscar tours" icon={Compass} onPress={onOpenTours} />
@@ -573,91 +565,55 @@ function HomeScreen({
         ))}
       </View>
 
-      <View style={styles.homeBookingPanel}>
-        <Text style={styles.sectionTitle}>Reserva real desde la app</Text>
-        <View style={styles.homeBookingGrid}>
-          <Pressable style={styles.homeBookingCard} onPress={onOpenTours}>
-            <View style={styles.homeBookingIcon}>
-              <Compass size={22} color={colors.skyDark} />
-            </View>
-            <Text style={styles.homeBookingTitle}>Tours publicados</Text>
-            <Text style={styles.homeBookingText}>Productos, fotos, precios y opciones sincronizados con la web.</Text>
-          </Pressable>
-          <Pressable style={styles.homeBookingCard} onPress={onOpenTransfers}>
-            <View style={styles.homeBookingIcon}>
-              <Car size={22} color={colors.skyDark} />
-            </View>
-            <Text style={styles.homeBookingTitle}>Transfer privado</Text>
-            <Text style={styles.homeBookingText}>Busca hoteles y aeropuertos reales para cotizar la ruta.</Text>
-          </Pressable>
-        </View>
+      <View style={styles.homeBookingGrid}>
+        <Pressable style={styles.homeBookingCard} onPress={onOpenTours}>
+          <Compass size={24} color={colors.skyDark} />
+          <Text style={styles.homeBookingTitle}>Tours publicados</Text>
+          <Text style={styles.homeBookingText}>Fotos, opciones y precios sincronizados con la web.</Text>
+        </Pressable>
+        <Pressable style={styles.homeBookingCard} onPress={onOpenTransfers}>
+          <Car size={24} color={colors.skyDark} />
+          <Text style={styles.homeBookingTitle}>Transfer real</Text>
+          <Text style={styles.homeBookingText}>Busca hoteles y aeropuertos reales antes de reservar.</Text>
+        </Pressable>
       </View>
 
       <SectionHeader title="Recomendados" actionLabel="Ver todos" onPress={onOpenTours} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
-        {tours.slice(0, 4).map((tour) => (
+        {tours.slice(0, 5).map((tour) => (
           <FeaturedTourCard key={tour.id} tour={tour} onPress={() => onReserveTour(tour)} />
         ))}
       </ScrollView>
 
       <SectionHeader title="Categorias" actionLabel="Explorar" onPress={onOpenTours} />
-      <View style={styles.homeCategoryGrid}>
-        {activeCategories.map((item) => (
-          <Pressable key={item} style={styles.homeCategoryCard} onPress={onOpenTours}>
-            <Text style={styles.homeCategoryTitle}>{item}</Text>
-            <Text style={styles.homeCategoryText}>Ver experiencias disponibles</Text>
+      <View style={styles.categoryGrid}>
+        {tourCategories.filter((item) => item !== "Todos").map((item) => (
+          <Pressable key={item} style={styles.categoryCard} onPress={onOpenTours}>
+            <Text style={styles.categoryTitle}>{item}</Text>
+            <Text style={styles.categoryText}>Ver experiencias</Text>
           </Pressable>
         ))}
       </View>
 
-      <SectionHeader title="Rutas de transfer" actionLabel="Cotizar" onPress={onOpenTransfers} />
+      <SectionHeader title="Rutas populares" actionLabel="Cotizar" onPress={onOpenTransfers} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
-        {homeRoutes.map((route) => (
-          <Pressable key={route.id} style={styles.homeRouteCard} onPress={onOpenTransfers}>
-            <Text style={styles.homeRouteTitle}>{route.destination.name}</Text>
-            <Text style={styles.homeRouteText}>{route.origin.name}</Text>
-            <Text style={styles.homeRoutePrice}>Desde {money(route.priceFrom)}</Text>
+        {fallbackTransferRoutes.slice(0, 5).map((route) => (
+          <Pressable key={route.id} style={styles.routeCard} onPress={onOpenTransfers}>
+            <Text style={styles.routeTitle}>{route.destination.name}</Text>
+            <Text style={styles.routeMeta}>{route.origin.name}</Text>
+            <Text style={styles.routePrice}>Desde {money(route.priceFrom)}</Text>
           </Pressable>
         ))}
       </ScrollView>
 
-      <View style={styles.homeStepsPanel}>
-        <Text style={styles.sectionTitle}>Como funciona</Text>
-        <HomeStep icon={Search} title="Busca" text="Elige tour o transfer con datos reales de Proactivitis." />
-        <HomeStep icon={CreditCard} title="Reserva" text="Completa tus datos y paga seguro desde la app." />
-        <HomeStep icon={ShieldCheck} title="Viaja" text="Recibes confirmacion y soporte local por WhatsApp." />
-      </View>
-
       <View style={styles.noticePanel}>
         <ShieldCheck size={22} color={colors.skyDark} />
-        <View style={styles.noticeTextBlock}>
+        <View style={styles.flexText}>
           <Text style={styles.noticeTitle}>Reserva con respaldo local</Text>
           <Text style={styles.noticeText}>
-            Nuestro equipo verifica cada detalle y te acompaña antes, durante y despues de la actividad.
+            Completas los datos en la app y finalizas con el checkout seguro de Proactivitis.
           </Text>
         </View>
-      </View>
-    </View>
-  );
-}
-
-function HomeStep({
-  icon: Icon,
-  title,
-  text
-}: {
-  icon: IconType;
-  title: string;
-  text: string;
-}) {
-  return (
-    <View style={styles.homeStepRow}>
-      <View style={styles.homeStepIcon}>
-        <Icon size={18} color={colors.skyDark} />
-      </View>
-      <View style={styles.checkoutSummaryText}>
-        <Text style={styles.homeStepTitle}>{title}</Text>
-        <Text style={styles.homeStepText}>{text}</Text>
       </View>
     </View>
   );
@@ -675,12 +631,12 @@ function ToursScreen({
   onReserve
 }: {
   query: string;
-  category: TourCategory;
+  category: string;
   tours: AppTour[];
   favorites: Set<string>;
   loading: boolean;
   onQueryChange: (value: string) => void;
-  onCategoryChange: (value: TourCategory) => void;
+  onCategoryChange: (value: string) => void;
   onFavorite: (tourId: string) => void;
   onReserve: (tour: AppTour) => void;
 }) {
@@ -689,9 +645,8 @@ function ToursScreen({
       <ScreenHeader
         eyebrow="Catalogo"
         title="Tours con precio claro"
-        description="Filtra por experiencia, revisa lo incluido y continua a la reserva real."
+        description="Explora productos reales de la web, revisa fotos y reserva desde la app."
       />
-
       <View style={styles.searchBox}>
         <Search size={18} color={colors.muted} />
         <TextInput
@@ -702,20 +657,16 @@ function ToursScreen({
           style={styles.searchInput}
         />
       </View>
-
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
         {tourCategories.map((item) => (
           <Chip key={item} label={item} active={item === category} onPress={() => onCategoryChange(item)} />
         ))}
       </ScrollView>
-
       <View style={styles.resultSummary}>
-        <SlidersHorizontal size={18} color={colors.skyDark} />
         <Text style={styles.resultSummaryText}>
-          {loading ? "Actualizando experiencias..." : `${tours.length} experiencias disponibles`}
+          {loading ? "Actualizando productos..." : `${tours.length} experiencias disponibles`}
         </Text>
       </View>
-
       <View style={styles.cardStack}>
         {tours.map((tour) => (
           <TourCard
@@ -740,50 +691,38 @@ function ProductScreen({
   onBack: () => void;
   onCheckout: (url: string) => void;
 }) {
-  const galleryImages = useMemo(
-    () => uniqueImages([tour.image, ...(tour.gallery ?? []), ...(tour.webTour?.gallery ?? [])]),
-    [tour]
-  );
-  const [selectedImage, setSelectedImage] = useState(galleryImages[0] ?? fallbackTourImage);
-  const [galleryOpenImage, setGalleryOpenImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState(tour.gallery[0] ?? tour.image);
+  const [galleryOpen, setGalleryOpen] = useState(false);
   const [adults, setAdults] = useState(2);
-  const [date, setDate] = useState(() => new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+  const [date, setDate] = useState(tomorrow());
   const [time, setTime] = useState("09:00");
   const [selectedOptionId, setSelectedOptionId] = useState(
-    tour.options?.find((option) => option.isDefault)?.id ?? tour.options?.[0]?.id ?? null
+    tour.options.find((option) => option.isDefault)?.id ?? tour.options[0]?.id ?? null
   );
-  const selectedOption = tour.options?.find((option) => option.id === selectedOptionId) ?? null;
-  const checkoutPrice = selectedOption?.pricePerPerson ?? tour.price;
+  const selectedOption = tour.options.find((option) => option.id === selectedOptionId) ?? null;
+  const pricePerPerson = selectedOption?.pricePerPerson ?? tour.price;
   const totalPrice =
-    selectedOption?.basePrice && selectedOption.baseCapacity ? selectedOption.basePrice : checkoutPrice * adults;
-  const includedItems = tour.includes?.length ? tour.includes : tour.highlights;
-  const notIncludedItems = tour.notIncluded ?? [];
-  const productInfoRows = [
-    { label: "Recogida", value: tour.pickup ?? "" },
-    { label: "Punto de encuentro", value: tour.meetingPoint ?? "" },
-    { label: "Instrucciones", value: tour.meetingInstructions ?? "" },
-    { label: "Idiomas", value: joinValues(tour.languages) },
-    { label: "Horarios", value: joinValues(tour.timeOptions) },
-    { label: "Dias de operacion", value: joinValues(tour.operatingDays) },
-    { label: "Capacidad", value: tour.capacity ? `${tour.capacity} personas` : "" },
-    { label: "Edad minima", value: tour.minAge ? `${tour.minAge}+` : "" },
-    { label: "Nivel fisico", value: tour.physicalLevel ?? "" },
-    { label: "Accesibilidad", value: tour.accessibility ?? "" },
-    { label: "Confirmacion", value: tour.confirmationType ?? "" },
-    { label: "Requisitos", value: tour.requirements ?? "" },
-    { label: "Cancelacion", value: tour.cancellationPolicy ?? "" },
-    { label: "Terminos", value: tour.terms ?? "" }
-  ].filter((item) => item.value.trim().length > 0);
+    selectedOption?.basePrice && selectedOption.baseCapacity ? selectedOption.basePrice : pricePerPerson * adults;
 
   useEffect(() => {
-    setSelectedImage(galleryImages[0] ?? fallbackTourImage);
-  }, [galleryImages, tour.id]);
+    setSelectedImage(tour.gallery[0] ?? tour.image);
+  }, [tour.id, tour.gallery, tour.image]);
+
+  const infoRows = [
+    { label: "Recogida", value: tour.pickup },
+    { label: "Punto de encuentro", value: tour.meetingPoint ?? "" },
+    { label: "Idiomas", value: joinValues(tour.languages) },
+    { label: "Horarios", value: joinValues(tour.timeOptions) },
+    { label: "Dias", value: joinValues(tour.operatingDays) },
+    { label: "Capacidad", value: tour.capacity ? `${tour.capacity} personas` : "" },
+    { label: "Edad minima", value: tour.minAge ? `${tour.minAge}+` : "" },
+    { label: "Cancelacion", value: tour.cancellationPolicy ?? "" }
+  ].filter((item) => item.value.trim().length > 0);
 
   const startCheckout = () => {
-    const webTour = tour.webTour ?? toMobileTourPayload(tour);
     onCheckout(
       buildTourCheckoutUrl({
-        tour: webTour,
+        tour: tour.webTour,
         option: selectedOption,
         adults,
         date,
@@ -792,16 +731,13 @@ function ProductScreen({
     );
   };
 
-  if (galleryOpenImage) {
+  if (galleryOpen) {
     return (
-      <MobileGalleryViewer
-        images={galleryImages}
-        image={galleryOpenImage}
-        onSelect={(image) => {
-          setSelectedImage(image);
-          setGalleryOpenImage(image);
-        }}
-        onClose={() => setGalleryOpenImage(null)}
+      <GalleryViewer
+        images={tour.gallery}
+        image={selectedImage}
+        onSelect={setSelectedImage}
+        onClose={() => setGalleryOpen(false)}
       />
     );
   }
@@ -809,18 +745,18 @@ function ProductScreen({
   return (
     <View style={styles.productScreen}>
       <View style={styles.productHero}>
-        <Pressable style={styles.productHeroImageButton} onPress={() => setGalleryOpenImage(selectedImage)}>
-          <RemoteTourImage uri={selectedImage} style={styles.productHeroImage} />
+        <Pressable style={styles.productImageButton} onPress={() => setGalleryOpen(true)}>
+          <RemoteImage uri={selectedImage} style={styles.productImage} />
         </Pressable>
-        <View style={styles.productHeroOverlay} />
+        <View style={styles.productOverlay} />
         <Pressable style={styles.backButton} onPress={onBack}>
           <ArrowLeft size={20} color={colors.white} />
           <Text style={styles.backButtonText}>Volver</Text>
         </Pressable>
         <View style={styles.productHeroContent}>
-          <Text style={styles.transferHeroEyebrow}>{tour.category}</Text>
+          <Text style={styles.eyebrow}>{tour.category}</Text>
           <Text style={styles.productTitle}>{tour.title}</Text>
-          <View style={styles.productMetaRow}>
+          <View style={styles.metaRow}>
             <MetaPill icon={MapPin} label={tour.location} />
             <MetaPill icon={Clock3} label={tour.duration} />
             <MetaPill icon={Star} label={`${tour.rating}`} />
@@ -830,698 +766,96 @@ function ProductScreen({
 
       <View style={styles.productPanel}>
         <Text style={styles.productPrice}>Desde {money(tour.price)}</Text>
+        <Text style={styles.bodyText}>{tour.fullDescription || tour.description}</Text>
 
-        {galleryImages.length > 1 ? (
-          <View style={styles.productGallerySection}>
-            <View style={styles.productGalleryHeader}>
-              <Text style={styles.sectionTitle}>Galeria</Text>
-              <Text style={styles.galleryCount}>{galleryImages.length} fotos</Text>
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.productGalleryList}
-            >
-              {galleryImages.map((image, index) => {
-                const active = image === selectedImage;
-                return (
-                  <Pressable
-                    key={`${image}-${index}`}
-                    style={[styles.galleryThumb, active ? styles.galleryThumbActive : null]}
-                    onPress={() => {
-                      setSelectedImage(image);
-                      setGalleryOpenImage(image);
-                    }}
-                  >
-                    <RemoteTourImage uri={image} style={styles.galleryThumbImage} />
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
+        <View style={styles.gallerySection}>
+          <View style={styles.rowBetween}>
+            <Text style={styles.sectionTitle}>Galeria</Text>
+            <Text style={styles.smallMuted}>{tour.gallery.length} fotos</Text>
           </View>
-        ) : null}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.galleryList}>
+            {tour.gallery.map((image) => (
+              <Pressable
+                key={image}
+                style={[styles.galleryThumb, image === selectedImage ? styles.galleryThumbActive : null]}
+                onPress={() => {
+                  setSelectedImage(image);
+                  setGalleryOpen(true);
+                }}
+              >
+                <RemoteImage uri={image} style={styles.fillImage} />
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
 
-        <Text style={styles.productDescription}>{tour.fullDescription ?? tour.description}</Text>
-
-        {productInfoRows.length ? (
-          <View style={styles.productSection}>
-            <Text style={styles.sectionTitle}>Informacion del producto</Text>
-            <View style={styles.productInfoList}>
-              {productInfoRows.map((item) => (
-                <ProductInfoRow key={item.label} label={item.label} value={item.value} />
-              ))}
-            </View>
-          </View>
-        ) : null}
-
-        <View style={styles.productSection}>
-          <Text style={styles.sectionTitle}>Incluye</Text>
-          <View style={styles.checkList}>
-            {includedItems.map((item) => (
-              <View key={item} style={styles.checkItem}>
-                <CheckCircle2 size={17} color={colors.green} />
-                <Text style={styles.checkText}>{item}</Text>
+        {infoRows.length ? (
+          <View style={styles.infoGrid}>
+            {infoRows.map((row) => (
+              <View key={row.label} style={styles.infoRow}>
+                <Text style={styles.infoLabel}>{row.label}</Text>
+                <Text style={styles.infoValue}>{row.value}</Text>
               </View>
             ))}
           </View>
-        </View>
-
-        {notIncludedItems.length ? (
-          <View style={styles.productSection}>
-            <Text style={styles.sectionTitle}>No incluido</Text>
-            <View style={styles.checkList}>
-              {notIncludedItems.map((item) => (
-                <View key={item} style={styles.checkItem}>
-                  <Minus size={17} color={colors.muted} />
-                  <Text style={styles.checkText}>{item}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
         ) : null}
 
-        {tour.itinerary?.length ? (
-          <View style={styles.productSection}>
+        <InfoList title="Incluye" items={tour.includes.length ? tour.includes : tour.highlights} />
+        <InfoList title="No incluido" items={tour.notIncluded} />
+
+        {tour.itinerary.length ? (
+          <View style={styles.listPanel}>
             <Text style={styles.sectionTitle}>Itinerario</Text>
-            <View style={styles.itineraryList}>
-              {tour.itinerary.map((stop, index) => (
-                <View key={`${stop.time}-${stop.title}-${index}`} style={styles.itineraryItem}>
-                  <View style={styles.itineraryDot} />
-                  <View style={styles.itineraryBody}>
-                    {stop.time ? <Text style={styles.itineraryTime}>{stop.time}</Text> : null}
-                    <Text style={styles.itineraryTitle}>{stop.title}</Text>
-                    {stop.description ? <Text style={styles.itineraryText}>{stop.description}</Text> : null}
-                  </View>
+            {tour.itinerary.map((stop, index) => (
+              <View key={`${stop.title}-${index}`} style={styles.timelineRow}>
+                <Text style={styles.timelineTime}>{stop.time}</Text>
+                <View style={styles.flexText}>
+                  <Text style={styles.timelineTitle}>{stop.title}</Text>
+                  {stop.description ? <Text style={styles.smallMuted}>{stop.description}</Text> : null}
                 </View>
-              ))}
-            </View>
+              </View>
+            ))}
           </View>
         ) : null}
 
-        {tour.options?.length ? (
-          <View style={styles.productSection}>
+        {tour.options.length ? (
+          <View style={styles.listPanel}>
             <Text style={styles.sectionTitle}>Opciones</Text>
-            <View style={styles.optionList}>
-              {tour.options.map((option) => {
-                const active = option.id === selectedOptionId;
-                return (
-                  <Pressable
-                    key={option.id}
-                    style={[styles.optionCard, active ? styles.optionCardActive : null]}
-                    onPress={() => setSelectedOptionId(option.id)}
-                  >
-                    <Text style={styles.optionName}>{option.name}</Text>
-                    <Text style={styles.optionMeta}>
-                      {option.pricePerPerson ? `${money(option.pricePerPerson)} por persona` : "Precio segun grupo"}
-                    </Text>
-                    {option.description ? <Text style={styles.optionDescription}>{option.description}</Text> : null}
-                  </Pressable>
-                );
-              })}
-            </View>
+            {tour.options.map((option) => (
+              <Pressable
+                key={option.id}
+                style={[styles.optionRow, option.id === selectedOptionId ? styles.optionRowActive : null]}
+                onPress={() => setSelectedOptionId(option.id)}
+              >
+                <View style={styles.flexText}>
+                  <Text style={styles.optionTitle}>{option.name}</Text>
+                  {option.description ? <Text style={styles.smallMuted}>{option.description}</Text> : null}
+                </View>
+                <Text style={styles.optionPrice}>{money(option.pricePerPerson ?? option.basePrice ?? tour.price)}</Text>
+              </Pressable>
+            ))}
           </View>
         ) : null}
 
-        <View style={styles.bookingPanel}>
-          <Text style={styles.sectionTitle}>Reservar en la app</Text>
-          <View style={styles.transferDateGrid}>
-            <View style={styles.transferDateField}>
-              <Text style={styles.fieldLabel}>Fecha</Text>
-              <TextInput value={date} onChangeText={setDate} style={styles.transferInput} />
-            </View>
-            <View style={styles.transferDateField}>
-              <Text style={styles.fieldLabel}>Hora</Text>
-              <TextInput value={time} onChangeText={setTime} style={styles.transferInput} />
-            </View>
+        <View style={styles.checkoutBox}>
+          <Text style={styles.sectionTitle}>Reservar</Text>
+          <View style={styles.dateGrid}>
+            <InputField label="Fecha" value={date} onChangeText={setDate} />
+            <InputField label="Hora" value={time} onChangeText={setTime} />
           </View>
-          <View style={styles.passengerRow}>
+          <Stepper label="Adultos" value={adults} min={1} max={20} onChange={setAdults} />
+          <View style={styles.rowBetween}>
             <View>
-              <Text style={styles.fieldLabel}>Adultos</Text>
-              <Text style={styles.helperText}>Tu reserva queda conectada al sistema de Proactivitis</Text>
+              <Text style={styles.smallMuted}>Total</Text>
+              <Text style={styles.checkoutTotal}>{money(totalPrice)}</Text>
             </View>
-            <View style={styles.stepper}>
-              <Pressable style={styles.stepperButton} onPress={() => setAdults(Math.max(1, adults - 1))}>
-                <Minus size={18} color={colors.text} />
-              </Pressable>
-              <Text style={styles.stepperValue}>{adults}</Text>
-              <Pressable style={styles.stepperButton} onPress={() => setAdults(Math.min(12, adults + 1))}>
-                <Plus size={18} color={colors.text} />
-              </Pressable>
-            </View>
-          </View>
-          <View style={styles.productCheckoutRow}>
-            <View>
-              <Text style={styles.fromText}>Total estimado</Text>
-              <Text style={styles.tourPrice}>{money(totalPrice)}</Text>
-            </View>
-            <ActionButton label="Reservar" icon={CreditCard} onPress={startCheckout} />
+            <ActionButton label="Continuar" icon={CreditCard} onPress={startCheckout} />
           </View>
         </View>
       </View>
     </View>
   );
 }
-
-function MobileGalleryViewer({
-  images,
-  image,
-  onSelect,
-  onClose
-}: {
-  images: string[];
-  image: string;
-  onSelect: (image: string) => void;
-  onClose: () => void;
-}) {
-  return (
-    <View style={styles.galleryViewerScreen}>
-      <View style={styles.galleryViewerTopbar}>
-        <Pressable style={styles.checkoutClose} onPress={onClose}>
-          <ArrowLeft size={20} color={colors.white} />
-          <Text style={styles.galleryViewerBackText}>Galeria</Text>
-        </Pressable>
-        <Text style={styles.galleryViewerCount}>{images.length} fotos</Text>
-      </View>
-      <RemoteTourImage uri={image} style={styles.galleryViewerImage} resizeMode="contain" />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.galleryViewerThumbs}>
-        {images.map((item, index) => (
-          <Pressable
-            key={`${item}-${index}`}
-            style={[styles.galleryViewerThumb, item === image ? styles.galleryViewerThumbActive : null]}
-            onPress={() => onSelect(item)}
-          >
-            <RemoteTourImage uri={item} style={styles.galleryThumbImage} />
-          </Pressable>
-        ))}
-      </ScrollView>
-    </View>
-  );
-}
-
-function ProductInfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.productInfoRow}>
-      <Text style={styles.productInfoLabel}>{label}</Text>
-      <Text style={styles.productInfoValue}>{value}</Text>
-    </View>
-  );
-}
-
-type CheckoutSummary = {
-  flowType: "tour" | "transfer";
-  title: string;
-  image: string | null;
-  optionName: string | null;
-  date: string;
-  time: string;
-  travelers: number;
-  totalPrice: number;
-  origin: string | null;
-  destination: string | null;
-  vehicle: string | null;
-  tripType: string | null;
-  checkoutUrl: string;
-};
-
-const readCheckoutSummary = (checkoutUrl: string): CheckoutSummary => {
-  const params = readUrlParams(checkoutUrl);
-  const flowType = params.get("type") === "transfer" ? "transfer" : "tour";
-  const adults = Number(params.get("adults") ?? params.get("passengers") ?? 1);
-  const youth = Number(params.get("youth") ?? 0);
-  const child = Number(params.get("child") ?? 0);
-  const travelers = Math.max(1, adults + youth + child);
-  const totalPrice = Number(params.get("displayTotalPrice") ?? params.get("totalPrice") ?? params.get("price") ?? 0);
-  return {
-    flowType,
-    title:
-      flowType === "transfer"
-        ? params.get("vehicleName") ?? "Transfer privado Proactivitis"
-        : params.get("tourTitle") ?? "Tour Proactivitis",
-    image: params.get("tourImage"),
-    optionName: params.get("tourOptionName"),
-    date: params.get("date") ?? "Fecha pendiente",
-    time: params.get("time") ?? "Hora pendiente",
-    travelers,
-    totalPrice,
-    origin: params.get("originLabel") ?? params.get("origin"),
-    destination: params.get("originHotelName") ?? params.get("hotelSlug"),
-    vehicle: params.get("vehicleCategory"),
-    tripType: params.get("tripType"),
-    checkoutUrl
-  };
-};
-
-const readUrlParams = (href: string) => {
-  try {
-    return new URL(href).searchParams;
-  } catch {
-    const query = href.includes("?") ? href.split("?").slice(1).join("?") : href;
-    return new URLSearchParams(query);
-  }
-};
-
-const addCheckoutContactParams = ({
-  checkoutUrl,
-  firstName,
-  lastName,
-  email,
-  phone,
-  pickupLocation,
-  specialRequirements
-}: {
-  checkoutUrl: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  pickupLocation: string;
-  specialRequirements: string;
-}) => {
-  const parsed = new URL(checkoutUrl);
-  const params = parsed.searchParams;
-  params.set("mobileCheckout", "1");
-  params.set("firstName", firstName.trim());
-  params.set("lastName", lastName.trim());
-  params.set("email", email.trim());
-  if (phone.trim()) params.set("phone", phone.trim());
-  const travelerName = `${firstName} ${lastName}`.trim();
-  if (travelerName) params.set("travelerName", travelerName);
-  if (pickupLocation.trim()) params.set("pickupLocation", pickupLocation.trim());
-  if (specialRequirements.trim()) params.set("specialRequirements", specialRequirements.trim());
-  return parsed.toString();
-};
-
-const checkoutParam = (params: URLSearchParams, key: string) => params.get(key) ?? undefined;
-
-const buildMobilePaymentPayload = ({
-  checkoutUrl,
-  firstName,
-  lastName,
-  email,
-  phone,
-  pickupLocation,
-  specialRequirements
-}: {
-  checkoutUrl: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  pickupLocation: string;
-  specialRequirements: string;
-}): MobilePaymentIntentPayload => {
-  const params = readUrlParams(checkoutUrl);
-  const flowType = params.get("type") === "transfer" ? "transfer" : "tour";
-  const dateTime = checkoutParam(params, "dateTime");
-  return {
-    tourId: checkoutParam(params, "tourId"),
-    tourTitle: checkoutParam(params, "tourTitle") ?? checkoutParam(params, "vehicleName"),
-    tourImage: checkoutParam(params, "tourImage"),
-    tourPrice: checkoutParam(params, "tourPrice") ?? checkoutParam(params, "price"),
-    tourOptionId: checkoutParam(params, "tourOptionId"),
-    tourOptionName: checkoutParam(params, "tourOptionName"),
-    tourOptionType: checkoutParam(params, "tourOptionType"),
-    tourOptionPrice: checkoutParam(params, "tourOptionPrice"),
-    tourOptionBasePrice: checkoutParam(params, "tourOptionBasePrice"),
-    tourOptionBaseCapacity: checkoutParam(params, "tourOptionBaseCapacity"),
-    tourOptionExtraPricePerPerson: checkoutParam(params, "tourOptionExtraPricePerPerson"),
-    date: checkoutParam(params, "date") ?? dateTime?.split("T")[0],
-    time: checkoutParam(params, "time") ?? dateTime?.split("T")[1],
-    adults: Number(params.get("adults") ?? params.get("passengers") ?? 1),
-    youth: Number(params.get("youth") ?? 0),
-    child: Number(params.get("child") ?? 0),
-    firstName: firstName.trim(),
-    lastName: lastName.trim(),
-    email: email.trim().toLowerCase(),
-    phone: phone.trim(),
-    pickupPreference: "pickup",
-    pickupLocation: pickupLocation.trim(),
-    specialRequirements: specialRequirements.trim(),
-    language: "Español",
-    flowType,
-    tripType: checkoutParam(params, "tripType"),
-    returnDatetime: checkoutParam(params, "returnDatetime"),
-    hotelSlug: checkoutParam(params, "hotelSlug"),
-    originHotelName: checkoutParam(params, "originHotelName") ?? checkoutParam(params, "destination"),
-    origin: checkoutParam(params, "origin"),
-    vehicleId: checkoutParam(params, "vehicleId"),
-    vehicleName: checkoutParam(params, "vehicleName"),
-    vehicleCategory: checkoutParam(params, "vehicleCategory"),
-    totalPrice:
-      checkoutParam(params, "displayTotalPrice") ?? checkoutParam(params, "totalPrice") ?? checkoutParam(params, "price"),
-    paymentOption: "now"
-  };
-};
-
-const splitName = (name?: string | null) => {
-  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
-  return {
-    firstName: parts[0] ?? "",
-    lastName: parts.slice(1).join(" ")
-  };
-};
-
-function CheckoutScreen({
-  url,
-  session,
-  stripeReady,
-  onSessionChange,
-  onClose
-}: {
-  url: string;
-  session: MobileSession | null;
-  stripeReady: boolean;
-  onSessionChange: (session: MobileSession | null) => void;
-  onClose: () => void;
-}) {
-  const summary = useMemo(() => readCheckoutSummary(url), [url]);
-  const initialName = splitName(session?.user.name);
-  const [firstName, setFirstName] = useState(initialName.firstName);
-  const [lastName, setLastName] = useState(initialName.lastName);
-  const [email, setEmail] = useState(session?.user.email ?? "");
-  const [phone, setPhone] = useState("");
-  const [pickupLocation, setPickupLocation] = useState(summary.destination ?? "");
-  const [specialRequirements, setSpecialRequirements] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [paymentFeedback, setPaymentFeedback] = useState<string | null>(null);
-  const [paymentLoading, setPaymentLoading] = useState(false);
-  const [confirmedBookingId, setConfirmedBookingId] = useState<string | null>(null);
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
-
-  const validateAndPay = async () => {
-    const nextErrors: Record<string, string> = {};
-    if (!firstName.trim()) nextErrors.firstName = "Indica el nombre.";
-    if (!lastName.trim()) nextErrors.lastName = "Indica el apellido.";
-    if (!email.trim() || !email.includes("@")) nextErrors.email = "Indica un email valido.";
-    if (!pickupLocation.trim()) nextErrors.pickupLocation = "Indica hotel o punto de recogida.";
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length) return;
-
-    if (Platform.OS === "web") {
-      const webCheckoutUrl = addCheckoutContactParams({
-        checkoutUrl: url,
-        firstName,
-        lastName,
-        email,
-        phone,
-        pickupLocation,
-        specialRequirements
-      });
-      setPaymentFeedback("En Android el pago abre nativo. En esta vista web abrimos el checkout seguro.");
-      openUrl(webCheckoutUrl);
-      return;
-    }
-
-    if (!stripeReady) {
-      setPaymentFeedback("El pago seguro se esta preparando. Intenta otra vez en unos segundos.");
-      return;
-    }
-
-    setPaymentLoading(true);
-    setPaymentFeedback("Preparando tu pago seguro...");
-
-    try {
-      const payload = buildMobilePaymentPayload({
-        checkoutUrl: url,
-        firstName,
-        lastName,
-        email,
-        phone,
-        pickupLocation,
-        specialRequirements
-      });
-      const intent = await createMobilePaymentIntent(payload, session?.token);
-      if (!intent.clientSecret) {
-        throw new Error("Stripe no devolvio el pago seguro.");
-      }
-
-      const initResult = await initPaymentSheet({
-        merchantDisplayName: "Proactivitis",
-        paymentIntentClientSecret: intent.clientSecret,
-        returnURL: "proactivitis://stripe-redirect",
-        defaultBillingDetails: {
-          name: `${firstName} ${lastName}`.trim(),
-          email: email.trim(),
-          phone: phone.trim() || undefined
-        }
-      });
-      if (initResult.error) {
-        throw new Error(initResult.error.message);
-      }
-
-      const paymentResult = await presentPaymentSheet();
-      if (paymentResult.error) {
-        throw new Error(paymentResult.error.message);
-      }
-
-      await confirmMobileBooking({
-        bookingId: intent.bookingId,
-        paymentIntentId: intent.paymentIntentId,
-        token: session?.token
-      });
-      setConfirmedBookingId(intent.bookingId);
-      setPaymentFeedback("Reserva confirmada. Te enviamos el comprobante por correo.");
-    } catch (error) {
-      setPaymentFeedback(error instanceof Error ? error.message : "No pudimos completar el pago.");
-    } finally {
-      setPaymentLoading(false);
-    }
-  };
-
-  if (confirmedBookingId) {
-    return (
-      <View style={styles.checkoutScreen}>
-        <View style={styles.checkoutTopbar}>
-          <Pressable style={styles.checkoutClose} onPress={onClose}>
-            <ArrowLeft size={20} color={colors.text} />
-            <Text style={styles.checkoutCloseText}>Inicio</Text>
-          </Pressable>
-          <Text style={styles.checkoutTitle}>Reserva confirmada</Text>
-        </View>
-        <View style={styles.checkoutSuccessScreen}>
-          <View style={styles.checkoutSuccessIcon}>
-            <CheckCircle2 size={42} color={colors.white} />
-          </View>
-          <Text style={styles.checkoutSuccessTitle}>Tu experiencia esta reservada</Text>
-          <Text style={styles.checkoutSuccessText}>
-            Guardamos la reserva real en Proactivitis y enviamos el comprobante a {email.trim()}.
-          </Text>
-          <Text style={styles.checkoutSuccessCode}>Referencia {confirmedBookingId.slice(-8).toUpperCase()}</Text>
-          <ActionButton label="Hablar por WhatsApp" icon={MessageCircle} onPress={() => openUrl(links.whatsapp)} />
-        </View>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.checkoutScreen}>
-      <View style={styles.checkoutTopbar}>
-        <Pressable style={styles.checkoutClose} onPress={onClose}>
-          <ArrowLeft size={20} color={colors.text} />
-          <Text style={styles.checkoutCloseText}>Volver</Text>
-        </Pressable>
-        <Text style={styles.checkoutTitle}>Reserva en la app</Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.appCheckoutContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.appCheckoutHero}>
-          <View style={styles.checkoutStepRow}>
-            <View style={styles.checkoutStepActive}>
-              <Text style={styles.checkoutStepTextActive}>1 Datos</Text>
-            </View>
-            <View style={styles.checkoutStepActive}>
-              <Text style={styles.checkoutStepTextActive}>2 Pago nativo</Text>
-            </View>
-          </View>
-          <Text style={styles.appCheckoutTitle}>Reserva sin salir de la app</Text>
-          <Text style={styles.appCheckoutSubtitle}>
-            Creamos tu reserva real, conectada a Proactivitis, y abrimos el pago seguro de Stripe en modo nativo.
-          </Text>
-        </View>
-
-        <View style={styles.checkoutSummaryCard}>
-          {summary.flowType === "tour" ? (
-            <RemoteTourImage uri={summary.image} style={styles.checkoutSummaryImage} />
-          ) : (
-            <View style={styles.checkoutTransferIcon}>
-              <Car size={28} color={colors.white} />
-            </View>
-          )}
-          <View style={styles.checkoutSummaryText}>
-            <Text style={styles.checkoutSummaryType}>{summary.flowType === "transfer" ? "Transfer privado" : "Tour"}</Text>
-            <Text style={styles.checkoutSummaryTitle}>{summary.title}</Text>
-            {summary.optionName ? <Text style={styles.checkoutSummaryMeta}>Opcion: {summary.optionName}</Text> : null}
-            {summary.origin || summary.destination ? (
-              <Text style={styles.checkoutSummaryMeta}>
-                {[summary.origin, summary.destination].filter(Boolean).join(" -> ")}
-              </Text>
-            ) : null}
-          </View>
-        </View>
-
-        <View style={styles.checkoutInfoGrid}>
-          <CheckoutInfoPill icon={CalendarCheck} label="Fecha" value={summary.date} />
-          <CheckoutInfoPill icon={Clock3} label="Hora" value={summary.time} />
-          <CheckoutInfoPill icon={User} label="Personas" value={`${summary.travelers}`} />
-          <CheckoutInfoPill icon={CreditCard} label="Total" value={money(summary.totalPrice)} />
-        </View>
-
-        <View style={styles.checkoutNativePanel}>
-          <Text style={styles.sectionTitle}>Cliente principal</Text>
-          <View style={styles.checkoutFormGrid}>
-            <CheckoutInput label="Nombre" value={firstName} onChangeText={setFirstName} error={errors.firstName} />
-            <CheckoutInput label="Apellido" value={lastName} onChangeText={setLastName} error={errors.lastName} />
-          </View>
-          <CheckoutInput label="Email" value={email} onChangeText={setEmail} error={errors.email} keyboardType="email-address" />
-          <CheckoutInput label="Telefono" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-        </View>
-
-        <View style={styles.checkoutNativePanel}>
-          <Text style={styles.sectionTitle}>Recogida y notas</Text>
-          <CheckoutInput
-            label={summary.flowType === "transfer" ? "Punto principal" : "Hotel o punto de recogida"}
-            value={pickupLocation}
-            onChangeText={setPickupLocation}
-            error={errors.pickupLocation}
-          />
-          <CheckoutInput
-            label="Notas especiales"
-            value={specialRequirements}
-            onChangeText={setSpecialRequirements}
-            multiline
-          />
-        </View>
-
-        <View style={styles.checkoutPayCard}>
-          <View style={styles.checkoutPayHeader}>
-            <ShieldCheck size={22} color={colors.green} />
-            <View style={styles.checkoutSummaryText}>
-              <Text style={styles.checkoutPayTitle}>Pago seguro</Text>
-              <Text style={styles.checkoutPayText}>Tarjeta o wallet disponible con Stripe. La reserva queda confirmada al pagar.</Text>
-            </View>
-          </View>
-          <View style={styles.productCheckoutRow}>
-            <View>
-              <Text style={styles.checkoutPayTotalLabel}>Total a pagar</Text>
-              <Text style={styles.checkoutPayTotalValue}>{money(summary.totalPrice)}</Text>
-            </View>
-            <ActionButton label={paymentLoading ? "Procesando..." : "Pagar"} icon={CreditCard} onPress={validateAndPay} />
-          </View>
-          {paymentFeedback ? <Text style={styles.checkoutFeedbackText}>{paymentFeedback}</Text> : null}
-        </View>
-      </ScrollView>
-    </View>
-  );
-}
-
-function CheckoutInfoPill({ icon: Icon, label, value }: { icon: IconType; label: string; value: string }) {
-  return (
-    <View style={styles.checkoutInfoPill}>
-      <Icon size={18} color={colors.skyDark} />
-      <View style={styles.checkoutSummaryText}>
-        <Text style={styles.checkoutInfoLabel}>{label}</Text>
-        <Text style={styles.checkoutInfoValue}>{value}</Text>
-      </View>
-    </View>
-  );
-}
-
-function CheckoutFallbackScreen({ onClose }: { onClose: () => void }) {
-  return (
-    <View style={styles.checkoutScreen}>
-      <View style={styles.checkoutTopbar}>
-        <Pressable style={styles.checkoutClose} onPress={onClose}>
-          <ArrowLeft size={20} color={colors.text} />
-          <Text style={styles.checkoutCloseText}>Volver</Text>
-        </Pressable>
-        <Text style={styles.checkoutTitle}>Reserva</Text>
-      </View>
-      <View style={styles.checkoutSuccessScreen}>
-        <View style={styles.checkoutSuccessIcon}>
-          <ShieldCheck size={38} color={colors.white} />
-        </View>
-        <Text style={styles.checkoutSuccessTitle}>Terminemos tu reserva por soporte</Text>
-        <Text style={styles.checkoutSuccessText}>
-          No cerramos la app: si el pago nativo no abre en este dispositivo, el equipo confirma la ruta y te envia el enlace seguro.
-        </Text>
-        <ActionButton label="Abrir WhatsApp" icon={MessageCircle} onPress={() => openUrl(links.whatsapp)} />
-      </View>
-    </View>
-  );
-}
-
-function CheckoutInput({
-  label,
-  value,
-  onChangeText,
-  error,
-  keyboardType,
-  multiline,
-  secureTextEntry
-}: {
-  label: string;
-  value: string;
-  onChangeText: (value: string) => void;
-  error?: string;
-  keyboardType?: "default" | "email-address" | "phone-pad";
-  multiline?: boolean;
-  secureTextEntry?: boolean;
-}) {
-  return (
-    <View style={styles.checkoutInputGroup}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        keyboardType={keyboardType}
-        multiline={multiline}
-        secureTextEntry={secureTextEntry}
-        style={[styles.checkoutNativeInput, multiline ? styles.checkoutNativeTextarea : null, error ? styles.checkoutNativeInputError : null]}
-      />
-      {error ? <Text style={styles.checkoutErrorText}>{error}</Text> : null}
-    </View>
-  );
-}
-
-function MetaPill({ icon: Icon, label }: { icon: IconType; label: string }) {
-  return (
-    <View style={styles.metaPill}>
-      <Icon size={14} color={colors.white} />
-      <Text style={styles.metaPillText}>{label}</Text>
-    </View>
-  );
-}
-
-const slugifyTransferValue = (value: string) =>
-  value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "transfer";
-
-const routeLocation = (routeId: string, name: string, type: "origin" | "destination"): LocationSummary => ({
-  id: `route-${type}-${routeId}`,
-  name,
-  slug: slugifyTransferValue(name),
-  type: type === "origin" ? "Origen popular" : "Destino popular",
-  zoneName: "Punta Cana"
-});
-
-const catalogFallbackTransferRoutes: MobileTransferRoute[] = transferRoutes.map((route) => ({
-  id: route.id,
-  origin: routeLocation(route.id, route.origin, "origin"),
-  destination: routeLocation(route.id, route.destination, "destination"),
-  priceFrom: route.priceFrom,
-  currency: "USD",
-  zoneLabel: route.duration
-}));
-
-const fallbackMobileTransferRoutes: MobileTransferRoute[] = staticMobileTransferRoutes.length
-  ? staticMobileTransferRoutes
-  : catalogFallbackTransferRoutes;
-
-const isLocalTransferLocation = (location: LocationSummary | null) =>
-  Boolean(location?.id.startsWith("local-") || location?.id.startsWith("route-"));
 
 function TransfersScreen({
   onSaveQuote,
@@ -1530,27 +864,20 @@ function TransfersScreen({
   onSaveQuote: (quote: SavedQuote) => void;
   onOpenCheckout: (url: string) => void;
 }) {
-  const defaultRoute = fallbackMobileTransferRoutes[0];
-  const [mobileTransferRoutes, setMobileTransferRoutes] = useState<MobileTransferRoute[]>(fallbackMobileTransferRoutes);
-  const [originQuery, setOriginQuery] = useState(defaultRoute?.origin.name ?? "");
-  const [destinationQuery, setDestinationQuery] = useState(defaultRoute?.destination.name ?? "");
+  const firstRoute = fallbackTransferRoutes[0];
+  const [routes, setRoutes] = useState<MobileTransferRoute[]>(fallbackTransferRoutes);
+  const [originQuery, setOriginQuery] = useState(firstRoute?.origin.name ?? "");
+  const [destinationQuery, setDestinationQuery] = useState(firstRoute?.destination.name ?? "");
   const [originOptions, setOriginOptions] = useState<LocationSummary[]>([]);
   const [destinationOptions, setDestinationOptions] = useState<LocationSummary[]>([]);
   const [originLoading, setOriginLoading] = useState(false);
   const [destinationLoading, setDestinationLoading] = useState(false);
-  const [selectedOrigin, setSelectedOrigin] = useState<LocationSummary | null>(
-    defaultRoute?.origin ?? null
-  );
-  const [selectedDestination, setSelectedDestination] = useState<LocationSummary | null>(
-    defaultRoute?.destination ?? null
-  );
-  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(defaultRoute?.id ?? null);
+  const [origin, setOrigin] = useState<LocationSummary | null>(firstRoute?.origin ?? null);
+  const [destination, setDestination] = useState<LocationSummary | null>(firstRoute?.destination ?? null);
+  const [selectedRouteId, setSelectedRouteId] = useState(firstRoute?.id ?? "");
   const [passengers, setPassengers] = useState(2);
   const [tripType, setTripType] = useState<TripType>("one-way");
-  const [departureDate, setDepartureDate] = useState(() => {
-    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    return tomorrow.toISOString().slice(0, 10);
-  });
+  const [departureDate, setDepartureDate] = useState(tomorrow());
   const [departureTime, setDepartureTime] = useState("10:00");
   const [returnDate, setReturnDate] = useState("");
   const [returnTime, setReturnTime] = useState("");
@@ -1562,29 +889,29 @@ function TransfersScreen({
   const roundTripMultiplier = tripType === "round-trip" ? 1.9 : 1;
   const selectedVehicle = vehicles.find((vehicle) => vehicle.id === selectedVehicleId) ?? vehicles[0] ?? null;
   const selectedPrice = selectedVehicle ? Math.round(selectedVehicle.price * roundTripMultiplier) : null;
+
   const routeSuggestions = useMemo(() => {
-    const query = `${originQuery} ${destinationQuery}`.trim().toLowerCase();
-    if (!query) return mobileTransferRoutes.slice(0, 6);
-    const matches = mobileTransferRoutes.filter((route) =>
-      `${route.origin.name} ${route.destination.name} ${route.zoneLabel ?? ""}`.toLowerCase().includes(query)
-    );
-    return (matches.length ? matches : mobileTransferRoutes).slice(0, 6);
-  }, [destinationQuery, mobileTransferRoutes, originQuery]);
+    const text = `${originQuery} ${destinationQuery}`.trim().toLowerCase();
+    const matches = text
+      ? routes.filter((route) =>
+          `${route.origin.name} ${route.destination.name} ${route.zoneLabel ?? ""}`.toLowerCase().includes(text)
+        )
+      : routes;
+    return matches.slice(0, 8);
+  }, [destinationQuery, originQuery, routes]);
 
   useEffect(() => {
     let active = true;
     fetchMobileTransferRoutes()
-      .then((routes) => {
-        if (!active || !routes.length) return;
-        setMobileTransferRoutes(routes);
-        const firstRoute = routes[0];
-        setSelectedRouteId(firstRoute.id);
-        setSelectedOrigin(firstRoute.origin);
-        setSelectedDestination(firstRoute.destination);
-        setOriginQuery(firstRoute.origin.name);
-        setDestinationQuery(firstRoute.destination.name);
-        setVehicles([]);
-        setSelectedVehicleId(null);
+      .then((items) => {
+        if (!active || !items.length) return;
+        setRoutes(items);
+        const route = items[0];
+        setOrigin(route.origin);
+        setDestination(route.destination);
+        setOriginQuery(route.origin.name);
+        setDestinationQuery(route.destination.name);
+        setSelectedRouteId(route.id);
       })
       .catch(() => undefined);
     return () => {
@@ -1593,15 +920,14 @@ function TransfersScreen({
   }, []);
 
   useEffect(() => {
-    if (selectedOrigin?.name === originQuery || originQuery.trim().length < 2) {
+    if (origin?.name === originQuery || originQuery.trim().length < 2) {
       setOriginOptions([]);
       setOriginLoading(false);
       return;
     }
-
     let active = true;
     setOriginLoading(true);
-    const timeout = setTimeout(() => {
+    const timer = setTimeout(() => {
       fetchTransferLocations(originQuery)
         .then((items) => {
           if (active) setOriginOptions(items);
@@ -1612,24 +938,22 @@ function TransfersScreen({
         .finally(() => {
           if (active) setOriginLoading(false);
         });
-    }, 300);
-
+    }, 280);
     return () => {
       active = false;
-      clearTimeout(timeout);
+      clearTimeout(timer);
     };
-  }, [originQuery, selectedOrigin]);
+  }, [originQuery, origin?.name]);
 
   useEffect(() => {
-    if (selectedDestination?.name === destinationQuery || destinationQuery.trim().length < 2) {
+    if (destination?.name === destinationQuery || destinationQuery.trim().length < 2) {
       setDestinationOptions([]);
       setDestinationLoading(false);
       return;
     }
-
     let active = true;
     setDestinationLoading(true);
-    const timeout = setTimeout(() => {
+    const timer = setTimeout(() => {
       fetchTransferLocations(destinationQuery)
         .then((items) => {
           if (active) setDestinationOptions(items);
@@ -1640,86 +964,58 @@ function TransfersScreen({
         .finally(() => {
           if (active) setDestinationLoading(false);
         });
-    }, 300);
-
+    }, 280);
     return () => {
       active = false;
-      clearTimeout(timeout);
+      clearTimeout(timer);
     };
-  }, [destinationQuery, selectedDestination]);
+  }, [destinationQuery, destination?.name]);
 
-  const selectOrigin = (location: LocationSummary) => {
-    setSelectedOrigin(location);
-    setOriginQuery(location.name);
-    setOriginOptions([]);
-    setSelectedRouteId(null);
-    setVehicles([]);
-    setSelectedVehicleId(null);
-  };
-
-  const selectDestination = (location: LocationSummary) => {
-    setSelectedDestination(location);
-    setDestinationQuery(location.name);
-    setDestinationOptions([]);
-    setSelectedRouteId(null);
-    setVehicles([]);
-    setSelectedVehicleId(null);
-  };
-
-  const selectPopularRoute = (route: MobileTransferRoute) => {
-    setSelectedRouteId(route.id);
-    setSelectedOrigin(route.origin);
-    setSelectedDestination(route.destination);
-    setOriginQuery(route.origin.name);
-    setDestinationQuery(route.destination.name);
-    setOriginOptions([]);
-    setDestinationOptions([]);
+  const resetQuote = () => {
     setVehicles([]);
     setSelectedVehicleId(null);
     setQuoteError(null);
   };
 
-  const quoteRoute = async () => {
-    const origin = selectedOrigin;
-    const destination = selectedDestination;
+  const selectRoute = (route: MobileTransferRoute) => {
+    setSelectedRouteId(route.id);
+    setOrigin(route.origin);
+    setDestination(route.destination);
+    setOriginQuery(route.origin.name);
+    setDestinationQuery(route.destination.name);
+    setOriginOptions([]);
+    setDestinationOptions([]);
+    resetQuote();
+  };
 
+  const quoteRoute = async () => {
     if (!origin || !destination) {
-      setQuoteError("Selecciona origen y destino desde la lista de hoteles o aeropuertos reales.");
+      setQuoteError("Busca y selecciona origen y destino desde la lista real.");
       return;
     }
     if (origin.id === destination.id) {
       setQuoteError("Origen y destino deben ser diferentes.");
       return;
     }
-    if (isLocalTransferLocation(origin) || isLocalTransferLocation(destination)) {
-      setQuoteError("Esta ruta necesita una ubicacion real de Proactivitis. Busca el hotel o aeropuerto y selecciona una opcion.");
+    if (origin.id.startsWith("route-") || destination.id.startsWith("route-")) {
+      setQuoteError("Selecciona el hotel o aeropuerto exacto antes de cotizar.");
       return;
     }
     if (tripType === "round-trip" && (!returnDate || !returnTime)) {
-      setQuoteError("Para ida y vuelta indica fecha y hora de regreso.");
+      setQuoteError("Indica fecha y hora de regreso.");
       return;
     }
-
-    setSelectedOrigin(origin);
-    setSelectedDestination(destination);
     setQuoteLoading(true);
     setQuoteError(null);
-
     try {
       const data = await fetchTransferQuote({
         originId: origin.id,
         destinationId: destination.id,
         passengers
       });
-      if (data.vehicles.length) {
-        setVehicles(data.vehicles);
-        setSelectedVehicleId(data.vehicles[0]?.id ?? null);
-        return;
-      }
-
-      setVehicles([]);
-      setSelectedVehicleId(null);
-      setQuoteError("No hay vehiculos disponibles para esa cantidad de pasajeros.");
+      setVehicles(data.vehicles);
+      setSelectedVehicleId(data.vehicles[0]?.id ?? null);
+      if (!data.vehicles.length) setQuoteError("No hay vehiculos disponibles para ese grupo.");
     } catch (error) {
       setVehicles([]);
       setSelectedVehicleId(null);
@@ -1730,17 +1026,17 @@ function TransfersScreen({
   };
 
   const buildSavedQuote = (vehicle: QuoteVehicle, price: number): SavedQuote | null => {
-    if (!selectedOrigin || !selectedDestination) return null;
+    if (!origin || !destination) return null;
     return {
-      origin: selectedOrigin,
-      destination: selectedDestination,
+      origin,
+      destination,
       vehicle,
       passengers,
       tripType,
       price,
       checkoutUrl: buildCheckoutUrl({
-        origin: selectedOrigin,
-        destination: selectedDestination,
+        origin,
+        destination,
         vehicle,
         passengers,
         price,
@@ -1753,306 +1049,301 @@ function TransfersScreen({
     };
   };
 
-  const openCheckout = (vehicle: QuoteVehicle, price: number) => {
+  const reserveVehicle = (vehicle: QuoteVehicle, price: number) => {
     const quote = buildSavedQuote(vehicle, price);
     if (quote) onOpenCheckout(quote.checkoutUrl);
   };
 
-  const saveSelectedQuote = () => {
-    if (!selectedVehicle || selectedPrice === null) return;
-    const quote = buildSavedQuote(selectedVehicle, selectedPrice);
-    if (quote) onSaveQuote(quote);
-  };
-
-  const requestSelectedTransfer = () => {
-    if (!selectedOrigin || !selectedDestination || !selectedVehicle || selectedPrice === null) return;
-    openUrl(
-      whatsappUrl(
-        `Hola Proactivitis. Quiero confirmar un transfer ${selectedOrigin.name} -> ${selectedDestination.name}. Vehiculo: ${selectedVehicle.name}. Pasajeros: ${passengers}. Tipo: ${tripType}. Total: ${money(selectedPrice)}.`
-      )
-    );
-  };
-
   return (
     <View style={styles.transferScreen}>
-      <View style={styles.transferHero}>
-        <View style={styles.transferHeroOverlay} />
+      <ImageBackground source={{ uri: heroImage }} style={styles.transferHero} imageStyle={styles.heroImage as StyleProp<ImageStyle>}>
+        <View style={styles.heroOverlay} />
         <View style={styles.transferHeroContent}>
-          <Text style={styles.transferHeroEyebrow}>Traslados privados</Text>
-          <Text style={styles.transferHeroTitle}>Cotiza tu transfer privado</Text>
-          <Text style={styles.transferHeroText}>
-            Elige origen, destino, pasajeros y vehiculo. Puedes reservar y pagar desde la app.
+          <Text style={styles.eyebrow}>Traslados privados</Text>
+          <Text style={styles.heroTitle}>Busca tu ruta real</Text>
+          <Text style={styles.heroSubtitle}>
+            Selecciona hoteles o aeropuertos de Proactivitis para calcular tarifa y reservar.
           </Text>
         </View>
-      </View>
+      </ImageBackground>
 
-      <View style={styles.transferSearchPanel}>
-        <View style={styles.tripTypeRow}>
-          <TripTypeButton label="Solo ida" active={tripType === "one-way"} onPress={() => setTripType("one-way")} />
-          <TripTypeButton label="Ida y vuelta" active={tripType === "round-trip"} onPress={() => setTripType("round-trip")} />
+      <View style={styles.transferPanel}>
+        <View style={styles.segmentRow}>
+          <SegmentButton label="Solo ida" active={tripType === "one-way"} onPress={() => setTripType("one-way")} />
+          <SegmentButton label="Ida y vuelta" active={tripType === "round-trip"} onPress={() => setTripType("round-trip")} />
         </View>
-
         <LocationSearchInput
           label="Origen"
           icon={Plane}
           value={originQuery}
-          placeholder="Ej: PUJ Airport"
+          selected={origin}
           loading={originLoading}
           options={originOptions}
-          selected={selectedOrigin}
+          placeholder="Busca aeropuerto u hotel"
           onChange={(value) => {
             setOriginQuery(value);
-            setSelectedOrigin(null);
+            setOrigin(null);
+            resetQuote();
           }}
-          onSelect={selectOrigin}
+          onSelect={(item) => {
+            setOrigin(item);
+            setOriginQuery(item.name);
+            setOriginOptions([]);
+            setSelectedRouteId("");
+            resetQuote();
+          }}
         />
         <LocationSearchInput
           label="Destino"
           icon={MapPin}
           value={destinationQuery}
-          placeholder="Ej: Hard Rock, Barcelo, Cap Cana"
+          selected={destination}
           loading={destinationLoading}
           options={destinationOptions}
-          selected={selectedDestination}
+          placeholder="Busca hotel o zona"
           onChange={(value) => {
             setDestinationQuery(value);
-            setSelectedDestination(null);
+            setDestination(null);
+            resetQuote();
           }}
-          onSelect={selectDestination}
+          onSelect={(item) => {
+            setDestination(item);
+            setDestinationQuery(item.name);
+            setDestinationOptions([]);
+            setSelectedRouteId("");
+            resetQuote();
+          }}
         />
 
-        <View style={styles.routeShortcutSection}>
-          <View style={styles.routeShortcutHeader}>
-            <Text style={styles.fieldLabel}>Rutas populares</Text>
-            <Text style={styles.routeShortcutHint}>Toca una ruta y cotiza</Text>
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.routeShortcutList}
-          >
-            {routeSuggestions.map((route) => (
-              <Pressable
-                key={route.id}
-                style={[styles.routeShortcutCard, route.id === selectedRouteId ? styles.routeShortcutCardActive : null]}
-                onPress={() => selectPopularRoute(route)}
-              >
-                <Text style={styles.routeShortcutTitle}>{route.destination.name}</Text>
-                <Text style={styles.routeShortcutMeta}>{route.origin.name}</Text>
-                <Text style={styles.routeShortcutPrice}>Desde {money(route.priceFrom)}</Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-        </View>
+        <Text style={styles.fieldLabel}>Rutas populares</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.routeList}>
+          {routeSuggestions.map((route) => (
+            <Pressable
+              key={route.id}
+              style={[styles.routeShortcut, route.id === selectedRouteId ? styles.routeShortcutActive : null]}
+              onPress={() => selectRoute(route)}
+            >
+              <Text style={styles.routeTitle}>{route.destination.name}</Text>
+              <Text style={styles.routeMeta}>{route.origin.name}</Text>
+              <Text style={styles.routePrice}>Desde {money(route.priceFrom)}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
 
-        <View style={styles.transferDateGrid}>
-          <View style={styles.transferDateField}>
-            <Text style={styles.fieldLabel}>Fecha salida</Text>
-            <TextInput value={departureDate} onChangeText={setDepartureDate} style={styles.transferInput} />
-          </View>
-          <View style={styles.transferDateField}>
-            <Text style={styles.fieldLabel}>Hora</Text>
-            <TextInput value={departureTime} onChangeText={setDepartureTime} style={styles.transferInput} />
-          </View>
+        <View style={styles.dateGrid}>
+          <InputField label="Fecha salida" value={departureDate} onChangeText={setDepartureDate} />
+          <InputField label="Hora" value={departureTime} onChangeText={setDepartureTime} />
         </View>
-
         {tripType === "round-trip" ? (
-          <View style={styles.transferDateGrid}>
-            <View style={styles.transferDateField}>
-              <Text style={styles.fieldLabel}>Fecha regreso</Text>
-              <TextInput value={returnDate} onChangeText={setReturnDate} placeholder="YYYY-MM-DD" style={styles.transferInput} />
-            </View>
-            <View style={styles.transferDateField}>
-              <Text style={styles.fieldLabel}>Hora regreso</Text>
-              <TextInput value={returnTime} onChangeText={setReturnTime} placeholder="HH:MM" style={styles.transferInput} />
-            </View>
+          <View style={styles.dateGrid}>
+            <InputField label="Fecha regreso" value={returnDate} onChangeText={setReturnDate} placeholder="YYYY-MM-DD" />
+            <InputField label="Hora regreso" value={returnTime} onChangeText={setReturnTime} placeholder="HH:MM" />
           </View>
         ) : null}
-
-        <View style={styles.passengerRow}>
-          <View>
-            <Text style={styles.fieldLabel}>Pasajeros</Text>
-            <Text style={styles.helperText}>Mostramos vehiculos segun capacidad y ruta</Text>
-          </View>
-          <View style={styles.stepper}>
-            <Pressable style={styles.stepperButton} onPress={() => setPassengers(Math.max(1, passengers - 1))}>
-              <Minus size={18} color={colors.text} />
-            </Pressable>
-            <Text style={styles.stepperValue}>{passengers}</Text>
-            <Pressable style={styles.stepperButton} onPress={() => setPassengers(Math.min(14, passengers + 1))}>
-              <Plus size={18} color={colors.text} />
-            </Pressable>
-          </View>
-        </View>
-
+        <Stepper label="Pasajeros" value={passengers} min={1} max={14} onChange={setPassengers} />
         <ActionButton label={quoteLoading ? "Buscando..." : "Buscar tarifa"} icon={Search} onPress={quoteRoute} />
       </View>
 
       {quoteError ? (
-        <View style={styles.transferError}>
-          <Text style={styles.transferErrorText}>{quoteError}</Text>
+        <View style={styles.errorPanel}>
+          <Text style={styles.errorText}>{quoteError}</Text>
         </View>
       ) : null}
 
-      {vehicles.length > 0 ? (
-        <View style={styles.transferResults}>
+      {vehicles.length ? (
+        <View style={styles.resultsPanel}>
           <Text style={styles.sectionTitle}>Vehiculos disponibles</Text>
           {vehicles.map((vehicle) => {
-            const finalPrice = Math.round(vehicle.price * roundTripMultiplier);
+            const price = Math.round(vehicle.price * roundTripMultiplier);
+            const active = vehicle.id === selectedVehicle?.id;
             return (
-              <TransferVehicleResult
+              <Pressable
                 key={vehicle.id}
-                vehicle={vehicle}
-                price={finalPrice}
-                active={vehicle.id === selectedVehicle?.id}
-                onSelect={() => setSelectedVehicleId(vehicle.id)}
-                onCheckout={() => openCheckout(vehicle, finalPrice)}
-              />
+                style={[styles.vehicleCard, active ? styles.vehicleCardActive : null]}
+                onPress={() => setSelectedVehicleId(vehicle.id)}
+              >
+                {vehicle.imageUrl ? (
+                  <Image source={{ uri: absoluteImageUrl(vehicle.imageUrl) }} style={styles.vehicleImage as StyleProp<ImageStyle>} resizeMode="contain" />
+                ) : (
+                  <View style={styles.vehicleIcon}>
+                    <Car size={24} color={colors.skyDark} />
+                  </View>
+                )}
+                <View style={styles.flexText}>
+                  <Text style={styles.vehicleName}>{vehicle.name}</Text>
+                  <Text style={styles.smallMuted}>
+                    {vehicle.category} | {vehicle.minPax}-{vehicle.maxPax} pax
+                  </Text>
+                </View>
+                <View style={styles.vehiclePriceBlock}>
+                  <Text style={styles.vehiclePrice}>{money(price)}</Text>
+                  <Pressable style={styles.smallButton} onPress={() => reserveVehicle(vehicle, price)}>
+                    <Text style={styles.smallButtonText}>Reservar</Text>
+                  </Pressable>
+                </View>
+              </Pressable>
             );
           })}
+          {selectedVehicle && selectedPrice !== null ? (
+            <View style={styles.quoteActions}>
+              <ActionButton
+                label="Guardar ruta"
+                icon={CalendarCheck}
+                variant="outlineDark"
+                onPress={() => {
+                  const quote = buildSavedQuote(selectedVehicle, selectedPrice);
+                  if (quote) onSaveQuote(quote);
+                }}
+              />
+              <ActionButton
+                label="Reservar ahora"
+                icon={CreditCard}
+                onPress={() => reserveVehicle(selectedVehicle, selectedPrice)}
+              />
+            </View>
+          ) : null}
         </View>
       ) : null}
+    </View>
+  );
+}
 
-      {selectedVehicle && selectedPrice !== null ? (
-        <View style={styles.quotePanelWeb}>
-          <Text style={styles.quoteLabelWeb}>Cotizacion lista</Text>
-          <Text style={styles.quotePriceWeb}>{money(selectedPrice)}</Text>
-          <Text style={styles.quoteMetaWeb}>
-            {selectedVehicle.name} | {passengers} pax | {tripType === "round-trip" ? "ida y vuelta" : "solo ida"}
+function CheckoutScreen({
+  url,
+  session,
+  onClose
+}: {
+  url: string;
+  session: MobileSession | null;
+  onClose: () => void;
+}) {
+  const summary = useMemo(() => readCheckoutSummary(url), [url]);
+  const nameParts = (session?.user.name ?? "").trim().split(/\s+/).filter(Boolean);
+  const [firstName, setFirstName] = useState(nameParts[0] ?? "");
+  const [lastName, setLastName] = useState(nameParts.slice(1).join(" "));
+  const [email, setEmail] = useState(session?.user.email ?? "");
+  const [phone, setPhone] = useState("");
+  const [pickupLocation, setPickupLocation] = useState(summary.destination ?? "");
+  const [notes, setNotes] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  const continueToPay = () => {
+    const nextErrors: Record<string, string> = {};
+    if (!firstName.trim()) nextErrors.firstName = "Indica el nombre.";
+    if (!lastName.trim()) nextErrors.lastName = "Indica el apellido.";
+    if (!email.trim() || !email.includes("@")) nextErrors.email = "Indica un email valido.";
+    if (!pickupLocation.trim()) nextErrors.pickupLocation = "Indica hotel o punto de recogida.";
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) return;
+
+    const checkout = addCheckoutContactParams({
+      checkoutUrl: url,
+      firstName,
+      lastName,
+      email,
+      phone,
+      pickupLocation,
+      specialRequirements: notes
+    });
+    setFeedback("Abriendo checkout seguro de Proactivitis...");
+    openUrl(checkout);
+  };
+
+  return (
+    <View style={styles.checkoutScreen}>
+      <View style={styles.checkoutTopbar}>
+        <Pressable style={styles.backSoft} onPress={onClose}>
+          <ArrowLeft size={20} color={colors.text} />
+          <Text style={styles.backSoftText}>Volver</Text>
+        </Pressable>
+        <Text style={styles.checkoutTitle}>Reserva</Text>
+      </View>
+      <ScrollView contentContainerStyle={styles.checkoutContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.checkoutHero}>
+          <Text style={styles.eyebrowDark}>Checkout nativo</Text>
+          <Text style={styles.checkoutHeroTitle}>Completa tus datos sin que la app se cierre</Text>
+          <Text style={styles.bodyText}>
+            La reserva usa el checkout seguro de Proactivitis al final para procesar el pago.
           </Text>
-          {isLocalTransferLocation(selectedOrigin) || isLocalTransferLocation(selectedDestination) ? (
-            <Text style={styles.quoteMetaWeb}>Tarifa estimada. Si hace falta ajustar algo, el equipo te contacta antes del servicio.</Text>
-          ) : null}
-          <View style={styles.quoteActions}>
-            <ActionButton label="Guardar" icon={CalendarCheck} onPress={saveSelectedQuote} />
-            <ActionButton label="WhatsApp" icon={MessageCircle} variant="outlineDark" onPress={requestSelectedTransfer} />
+        </View>
+
+        <View style={styles.summaryCard}>
+          {summary.flowType === "tour" ? (
+            <RemoteImage uri={summary.image} style={styles.summaryImage} />
+          ) : (
+            <View style={styles.summaryIcon}>
+              <Car size={30} color={colors.white} />
+            </View>
+          )}
+          <View style={styles.flexText}>
+            <Text style={styles.summaryType}>{summary.flowType === "transfer" ? "Transfer privado" : "Tour"}</Text>
+            <Text style={styles.summaryTitle}>{summary.title}</Text>
+            {summary.optionName ? <Text style={styles.smallMuted}>{summary.optionName}</Text> : null}
+            {summary.origin || summary.destination ? (
+              <Text style={styles.smallMuted}>{[summary.origin, summary.destination].filter(Boolean).join(" -> ")}</Text>
+            ) : null}
           </View>
         </View>
-      ) : null}
-    </View>
-  );
-}
 
-function TripTypeButton({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
-  return (
-    <Pressable style={[styles.tripTypeButton, active ? styles.tripTypeButtonActive : null]} onPress={onPress}>
-      <Text style={[styles.tripTypeButtonText, active ? styles.tripTypeButtonTextActive : null]}>{label}</Text>
-    </Pressable>
-  );
-}
-
-function TransferFallbackScreen() {
-  return (
-    <View style={styles.screen}>
-      <ScreenHeader
-        eyebrow="Traslados privados"
-        title="Transfer disponible"
-        description="Si Android no abre el cotizador, confirma la ruta por WhatsApp mientras revisamos el log del dispositivo."
-      />
-      <View style={styles.noticePanel}>
-        <ShieldCheck size={20} color={colors.skyDark} />
-        <View style={{ flex: 1 }}>
-          <Text style={styles.noticeTitle}>Ruta por soporte directo</Text>
-          <Text style={styles.noticeText}>
-            Envia origen, destino, pasajeros y fecha. Confirmamos disponibilidad y te ayudamos a reservar.
-          </Text>
+        <View style={styles.infoGrid}>
+          <InfoPill icon={CalendarCheck} label="Fecha" value={summary.date} />
+          <InfoPill icon={Clock3} label="Hora" value={summary.time} />
+          <InfoPill icon={User} label="Personas" value={`${summary.travelers}`} />
+          <InfoPill icon={CreditCard} label="Total" value={money(summary.totalPrice)} />
         </View>
-      </View>
-      <ActionButton
-        label="Abrir WhatsApp"
-        icon={MessageCircle}
-        onPress={() => openUrl(links.whatsapp)}
-      />
-    </View>
-  );
-}
 
-function LocationSearchInput({
-  label,
-  icon: Icon,
-  value,
-  placeholder,
-  loading,
-  options,
-  selected,
-  onChange,
-  onSelect
-}: {
-  label: string;
-  icon: IconType;
-  value: string;
-  placeholder: string;
-  loading: boolean;
-  options: LocationSummary[];
-  selected: LocationSummary | null;
-  onChange: (value: string) => void;
-  onSelect: (location: LocationSummary) => void;
-}) {
-  return (
-    <View style={styles.locationField}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      <View style={[styles.locationInputShell, selected ? styles.locationInputShellSelected : null]}>
-        <Icon size={18} color={selected ? colors.green : colors.skyDark} />
-        <TextInput
-          value={value}
-          onChangeText={onChange}
-          placeholder={placeholder}
-          placeholderTextColor={colors.muted}
-          style={styles.locationInput}
-        />
-        {loading ? <Text style={styles.loadingText}>...</Text> : null}
-      </View>
-      {options.length > 0 ? (
-        <View style={styles.locationOptions}>
-          {options.slice(0, 6).map((location) => (
-            <Pressable key={location.id} style={styles.locationOption} onPress={() => onSelect(location)}>
-              <Text style={styles.locationOptionName}>{location.name}</Text>
-              <Text style={styles.locationOptionMeta}>
-                {location.zoneName ?? "Proactivitis"} | {location.type}
-              </Text>
-            </Pressable>
-          ))}
+        <View style={styles.formPanel}>
+          <Text style={styles.sectionTitle}>Cliente principal</Text>
+          <View style={styles.dateGrid}>
+            <InputField label="Nombre" value={firstName} onChangeText={setFirstName} error={errors.firstName} />
+            <InputField label="Apellido" value={lastName} onChangeText={setLastName} error={errors.lastName} />
+          </View>
+          <InputField
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            error={errors.email}
+            keyboardType="email-address"
+          />
+          <InputField label="Telefono" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
         </View>
-      ) : null}
+
+        <View style={styles.formPanel}>
+          <Text style={styles.sectionTitle}>Recogida y notas</Text>
+          <InputField
+            label={summary.flowType === "transfer" ? "Punto principal" : "Hotel o punto de recogida"}
+            value={pickupLocation}
+            onChangeText={setPickupLocation}
+            error={errors.pickupLocation}
+          />
+          <InputField label="Notas especiales" value={notes} onChangeText={setNotes} multiline />
+        </View>
+
+        <View style={styles.payPanel}>
+          <View style={styles.rowBetween}>
+            <View>
+              <Text style={styles.smallMuted}>Total a pagar</Text>
+              <Text style={styles.checkoutTotal}>{money(summary.totalPrice)}</Text>
+            </View>
+            <ActionButton label="Pagar seguro" icon={CreditCard} onPress={continueToPay} />
+          </View>
+          <ActionButton
+            label="Confirmar por WhatsApp"
+            icon={MessageCircle}
+            variant="outlineDark"
+            onPress={() =>
+              openUrl(
+                whatsappUrl(
+                  `Hola Proactivitis. Quiero reservar ${summary.title}. Fecha ${summary.date}, total ${money(summary.totalPrice)}.`
+                )
+              )
+            }
+          />
+          {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
+        </View>
+      </ScrollView>
     </View>
-  );
-}
-
-function TransferVehicleResult({
-  vehicle,
-  price,
-  active,
-  onSelect,
-  onCheckout
-}: {
-  vehicle: QuoteVehicle;
-  price: number;
-  active: boolean;
-  onSelect: () => void;
-  onCheckout: () => void;
-}) {
-  const vehicleImage = vehicle.imageUrl
-    ? vehicle.imageUrl.startsWith("http")
-      ? vehicle.imageUrl
-      : `${getApiBaseUrl().replace(/\/$/, "")}${vehicle.imageUrl}`
-    : null;
-
-  return (
-    <Pressable style={[styles.webVehicleCard, active ? styles.webVehicleCardActive : null]} onPress={onSelect}>
-      {vehicleImage ? <Image source={{ uri: vehicleImage }} style={styles.webVehicleImage} resizeMode="contain" /> : null}
-      <View style={styles.webVehicleText}>
-        <Text style={styles.webVehicleName}>{vehicle.name}</Text>
-        <Text style={styles.webVehicleMeta}>
-          {vehicle.category} | {vehicle.minPax}-{vehicle.maxPax} pax
-        </Text>
-      </View>
-      <View style={styles.webVehiclePriceBlock}>
-        <Text style={styles.webVehiclePrice}>{money(price)}</Text>
-        <Pressable style={styles.checkoutMiniButton} onPress={onCheckout}>
-          <Text style={styles.checkoutMiniButtonText}>Reservar</Text>
-        </Pressable>
-      </View>
-    </Pressable>
   );
 }
 
@@ -2076,54 +1367,40 @@ function TripsScreen({
       <ScreenHeader
         eyebrow="Reservas"
         title="Tu plan de viaje"
-        description="Guarda cotizaciones y tours favoritos antes de cerrar la reserva."
+        description="Guarda rutas y tours favoritos antes de cerrar la reserva."
       />
-
-      {!quote && favoriteTours.length === 0 ? (
+      {!quote && !favoriteTours.length ? (
         <View style={styles.emptyState}>
           <CalendarCheck size={34} color={colors.skyDark} />
-          <Text style={styles.emptyTitle}>Aun no tienes planes guardados</Text>
-          <Text style={styles.emptyText}>Cotiza un transfer o marca tours como favoritos para construir tu itinerario.</Text>
-          <View style={styles.emptyActions}>
-            <ActionButton label="Cotizar transfer" icon={Car} onPress={onOpenTransfers} />
-            <ActionButton label="Explorar tours" icon={Compass} variant="outlineDark" onPress={onOpenTours} />
-          </View>
+          <Text style={styles.emptyTitle}>Todavia no hay planes guardados</Text>
+          <Text style={styles.smallMuted}>Cotiza un transfer o marca tours como favoritos.</Text>
+          <ActionButton label="Cotizar transfer" icon={Car} onPress={onOpenTransfers} />
+          <ActionButton label="Ver tours" icon={Compass} variant="outlineDark" onPress={onOpenTours} />
         </View>
       ) : null}
-
       {quote ? (
         <View style={styles.savedCard}>
-          <Text style={styles.savedLabel}>Transfer guardado</Text>
+          <Text style={styles.sectionTitle}>Transfer guardado</Text>
           <Text style={styles.savedTitle}>
             {quote.origin.name} {"->"} {quote.destination.name}
           </Text>
-          <Text style={styles.savedMeta}>
-            {quote.vehicle.name} | {quote.passengers} pax | {quote.tripType === "round-trip" ? "ida y vuelta" : "solo ida"}
+          <Text style={styles.smallMuted}>
+            {quote.vehicle.name} | {quote.passengers} pax | {money(quote.price)}
           </Text>
-          <Text style={styles.savedPrice}>{money(quote.price)}</Text>
-          <View style={styles.quoteActions}>
-            <ActionButton label="Continuar pago" icon={CreditCard} onPress={() => onOpenCheckout(quote.checkoutUrl)} />
-            <ActionButton
-              label="Pedir confirmacion"
-              icon={MessageCircle}
-              variant="outlineDark"
-              onPress={() =>
-                openUrl(
-                  whatsappUrl(
-                    `Hola Proactivitis. Quiero confirmar mi transfer guardado: ${quote.origin.name} -> ${quote.destination.name}, ${quote.vehicle.name}, ${quote.passengers} pasajeros.`
-                  )
-                )
-              }
-            />
-          </View>
+          <ActionButton label="Continuar pago" icon={CreditCard} onPress={() => onOpenCheckout(quote.checkoutUrl)} />
         </View>
       ) : null}
-
-      {favoriteTours.length > 0 ? (
+      {favoriteTours.length ? (
         <View style={styles.cardStack}>
           <Text style={styles.sectionTitle}>Tours favoritos</Text>
           {favoriteTours.map((tour) => (
-            <CompactTourRow key={tour.id} tour={tour} onPress={() => onReserveTour(tour)} />
+            <TourCard
+              key={tour.id}
+              tour={tour}
+              favorite
+              onFavorite={() => undefined}
+              onReserve={() => onReserveTour(tour)}
+            />
           ))}
         </View>
       ) : null}
@@ -2140,209 +1417,257 @@ function ProfileScreen({
 }) {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState(session?.user.email ?? "");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authMessage, setAuthMessage] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
-  const submitAuth = async () => {
-    setAuthLoading(true);
-    setAuthMessage(null);
+  const submit = async () => {
+    setFeedback("Conectando...");
     try {
       const nextSession =
         mode === "login"
           ? await loginMobileUser({ email, password })
           : await registerMobileUser({ name, email, password });
       onSessionChange(nextSession);
-      setPassword("");
-      setAuthMessage("Cuenta conectada. Tus reservas quedaran sincronizadas.");
+      setFeedback(null);
     } catch (error) {
-      setAuthMessage(error instanceof Error ? error.message : "No pudimos conectar tu cuenta.");
-    } finally {
-      setAuthLoading(false);
+      setFeedback(error instanceof Error ? error.message : "No se pudo entrar.");
     }
   };
 
-  return (
-    <View style={styles.screen}>
-      <ScreenHeader
-        eyebrow="Cuenta Proactivitis"
-        title={session ? "Tus reservas conectadas" : "Entra y reserva mas rapido"}
-        description="Tu cuenta, reservas, pagos y comprobantes quedan sincronizados con Proactivitis."
-      />
-
-      <View style={styles.profileCard}>
-        <View style={styles.avatar}>
-          <User size={28} color={colors.white} />
-        </View>
-        <View style={styles.profileText}>
-          <Text style={styles.profileName}>{session?.user.name || session?.user.email || "Cliente invitado"}</Text>
-          <Text style={styles.profileMeta}>
-            {session
-              ? "Sesión activa. Tus próximas reservas se guardan en tu cuenta."
-              : "Conecta tu cuenta para pagar, recibir comprobantes y mantener tus reservas a mano."}
-          </Text>
-          <Text style={styles.profileBuild}>{appBuildLabel}</Text>
-        </View>
-      </View>
-
-      {session ? (
-        <View style={styles.authPanel}>
-          <Text style={styles.sectionTitle}>Cuenta activa</Text>
-          <Text style={styles.authHelp}>Correo: {session.user.email}</Text>
+  if (session) {
+    return (
+      <View style={styles.screen}>
+        <ScreenHeader eyebrow="Cuenta" title="Perfil Proactivitis" description="Tus reservas quedan asociadas a este correo." />
+        <View style={styles.savedCard}>
+          <User size={28} color={colors.skyDark} />
+          <Text style={styles.savedTitle}>{session.user.name || "Cliente Proactivitis"}</Text>
+          <Text style={styles.smallMuted}>{session.user.email}</Text>
+          <Text style={styles.smallMuted}>{appBuildLabel}</Text>
           <ActionButton label="Cerrar sesion" icon={User} variant="outlineDark" onPress={() => onSessionChange(null)} />
         </View>
-      ) : (
-        <View style={styles.authPanel}>
-          <View style={styles.tripTypeRow}>
-            <TripTypeButton label="Entrar" active={mode === "login"} onPress={() => setMode("login")} />
-            <TripTypeButton label="Crear cuenta" active={mode === "register"} onPress={() => setMode("register")} />
-          </View>
-          {mode === "register" ? (
-            <CheckoutInput label="Nombre" value={name} onChangeText={setName} />
-          ) : null}
-          <CheckoutInput label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
-          <CheckoutInput label="Contraseña" value={password} onChangeText={setPassword} secureTextEntry />
-          <ActionButton
-            label={authLoading ? "Conectando..." : mode === "login" ? "Entrar" : "Crear cuenta"}
-            icon={User}
-            onPress={submitAuth}
-          />
-          {authMessage ? <Text style={styles.authMessage}>{authMessage}</Text> : null}
+        <View style={styles.cardStack}>
+          <LinkRow icon={MessageCircle} title="WhatsApp" subtitle="Soporte directo" onPress={() => openUrl(links.whatsapp)} />
+          <LinkRow icon={Compass} title="Web" subtitle="proactivitis.com" onPress={() => openUrl(links.home)} />
         </View>
-      )}
-
-      <View style={styles.linkStack}>
-        <LinkRow icon={MessageCircle} title="WhatsApp 24/7" subtitle="+1 829 475 6298" onPress={() => openUrl(links.whatsapp)} />
-        <LinkRow icon={ExternalLink} title="Proactivitis" subtitle="Catalogo completo y soporte ampliado" onPress={() => openUrl(links.home)} />
-        <LinkRow icon={CreditCard} title="Pagos seguros" subtitle="Stripe nativo conectado a tu reserva" onPress={() => openUrl(links.home)} />
       </View>
+    );
+  }
 
-      <View style={styles.socialPanel}>
-        <Text style={styles.sectionTitle}>Redes oficiales</Text>
-        <View style={styles.socialButtons}>
-          <Pressable style={styles.socialButton} onPress={() => openUrl(links.instagram)}>
-            <Text style={styles.socialText}>Instagram</Text>
-          </Pressable>
-          <Pressable style={styles.socialButton} onPress={() => openUrl(links.facebook)}>
-            <Text style={styles.socialText}>Facebook</Text>
-          </Pressable>
-          <Pressable style={styles.socialButton} onPress={() => openUrl(links.tiktok)}>
-            <Text style={styles.socialText}>TikTok</Text>
-          </Pressable>
+  return (
+    <View style={styles.screen}>
+      <ScreenHeader eyebrow="Cuenta" title="Entra a Proactivitis" description="Conecta tus datos con la base real de la web." />
+      <View style={styles.formPanel}>
+        <View style={styles.segmentRow}>
+          <SegmentButton label="Entrar" active={mode === "login"} onPress={() => setMode("login")} />
+          <SegmentButton label="Crear cuenta" active={mode === "register"} onPress={() => setMode("register")} />
         </View>
+        {mode === "register" ? <InputField label="Nombre" value={name} onChangeText={setName} /> : null}
+        <InputField label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
+        <InputField label="Password" value={password} onChangeText={setPassword} secureTextEntry />
+        <ActionButton label={mode === "login" ? "Entrar" : "Crear cuenta"} icon={LogIn} onPress={submit} />
+        {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
       </View>
     </View>
   );
 }
 
-function TabBar({ activeTab, onChange }: { activeTab: TabKey; onChange: (tab: TabKey) => void }) {
-  const tabs: { key: TabKey; label: string; icon: IconType }[] = [
-    { key: "home", label: "Inicio", icon: Home },
-    { key: "tours", label: "Tours", icon: Compass },
-    { key: "transfers", label: "Transfer", icon: Car },
-    { key: "trips", label: "Reservas", icon: CalendarCheck },
-    { key: "profile", label: "Cuenta", icon: User }
-  ];
-
+function GalleryViewer({
+  images,
+  image,
+  onSelect,
+  onClose
+}: {
+  images: string[];
+  image: string;
+  onSelect: (image: string) => void;
+  onClose: () => void;
+}) {
   return (
-    <View style={styles.tabBar}>
-      {tabs.map((tab) => {
-        const active = tab.key === activeTab;
-        const Icon = tab.icon;
-        return (
-          <Pressable key={tab.key} style={styles.tabButton} onPress={() => onChange(tab.key)}>
-            <Icon size={21} color={active ? colors.sky : colors.muted} strokeWidth={active ? 2.8 : 2.2} />
-            <Text style={[styles.tabLabel, active ? styles.tabLabelActive : null]}>{tab.label}</Text>
+    <View style={styles.galleryViewer}>
+      <View style={styles.galleryTopbar}>
+        <Pressable style={styles.backSoftDark} onPress={onClose}>
+          <ArrowLeft size={20} color={colors.white} />
+          <Text style={styles.backSoftDarkText}>Cerrar</Text>
+        </Pressable>
+        <Text style={styles.galleryCounter}>{images.length} fotos</Text>
+      </View>
+      <RemoteImage uri={image} style={styles.galleryLarge} resizeMode="contain" />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.galleryList}>
+        {images.map((item) => (
+          <Pressable
+            key={item}
+            style={[styles.viewerThumb, item === image ? styles.viewerThumbActive : null]}
+            onPress={() => onSelect(item)}
+          >
+            <RemoteImage uri={item} style={styles.fillImage} />
           </Pressable>
-        );
-      })}
+        ))}
+      </ScrollView>
     </View>
   );
 }
 
-function ScreenHeader({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
-  return (
-    <View style={styles.screenHeader}>
-      <Image source={require("./assets/proactivitis-logo.png")} style={styles.headerLogo} resizeMode="contain" />
-      <Text style={styles.eyebrowDark}>{eyebrow}</Text>
-      <Text style={styles.screenTitle}>{title}</Text>
-      <Text style={styles.screenDescription}>{description}</Text>
-    </View>
-  );
-}
-
-function SectionHeader({
-  title,
-  actionLabel,
-  onPress
+function LocationSearchInput({
+  label,
+  icon: Icon,
+  value,
+  selected,
+  loading,
+  options,
+  placeholder,
+  onChange,
+  onSelect
 }: {
-  title: string;
-  actionLabel: string;
-  onPress: () => void;
+  label: string;
+  icon: IconType;
+  value: string;
+  selected: LocationSummary | null;
+  loading: boolean;
+  options: LocationSummary[];
+  placeholder: string;
+  onChange: (value: string) => void;
+  onSelect: (location: LocationSummary) => void;
 }) {
   return (
-    <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <Pressable onPress={onPress}>
-        <Text style={styles.sectionAction}>{actionLabel}</Text>
-      </Pressable>
+    <View style={styles.fieldBlock}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <View style={[styles.locationInputShell, selected ? styles.locationInputSelected : null]}>
+        <Icon size={18} color={selected ? colors.green : colors.skyDark} />
+        <TextInput
+          value={value}
+          onChangeText={onChange}
+          placeholder={placeholder}
+          placeholderTextColor={colors.muted}
+          style={styles.locationInput}
+        />
+        {loading ? <Text style={styles.loadingText}>...</Text> : null}
+      </View>
+      {options.length ? (
+        <View style={styles.optionList}>
+          {options.slice(0, 7).map((option) => (
+            <Pressable key={option.id} style={styles.locationOption} onPress={() => onSelect(option)}>
+              <Text style={styles.locationOptionTitle}>{option.name}</Text>
+              <Text style={styles.smallMuted}>
+                {option.zoneName ?? "Proactivitis"} | {option.type}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }
 
-function RemoteTourImage({
-  uri,
-  style,
-  resizeMode = "cover"
+function InputField({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  error,
+  keyboardType,
+  secureTextEntry,
+  multiline
 }: {
-  uri?: string | null;
-  style: StyleProp<ImageStyle>;
-  resizeMode?: "cover" | "contain";
+  label: string;
+  value: string;
+  onChangeText: (value: string) => void;
+  placeholder?: string;
+  error?: string;
+  keyboardType?: KeyboardTypeOptions;
+  secureTextEntry?: boolean;
+  multiline?: boolean;
 }) {
-  const [failed, setFailed] = useState(false);
   return (
-    <Image
-      source={tourImageSource(failed ? null : uri)}
-      style={style}
-      resizeMode={resizeMode}
-      onError={() => setFailed(true)}
-    />
+    <View style={styles.fieldBlock}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={colors.muted}
+        keyboardType={keyboardType}
+        secureTextEntry={secureTextEntry}
+        multiline={multiline}
+        style={[styles.textInput, multiline ? styles.textArea : null]}
+      />
+      {error ? <Text style={styles.inputError}>{error}</Text> : null}
+    </View>
+  );
+}
+
+function Stepper({
+  label,
+  value,
+  min,
+  max,
+  onChange
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <View style={styles.stepperRow}>
+      <View>
+        <Text style={styles.fieldLabel}>{label}</Text>
+        <Text style={styles.smallMuted}>Ajusta la cantidad</Text>
+      </View>
+      <View style={styles.stepper}>
+        <Pressable style={styles.stepperButton} onPress={() => onChange(Math.max(min, value - 1))}>
+          <Minus size={18} color={colors.text} />
+        </Pressable>
+        <Text style={styles.stepperValue}>{value}</Text>
+        <Pressable style={styles.stepperButton} onPress={() => onChange(Math.min(max, value + 1))}>
+          <Plus size={18} color={colors.text} />
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
 function ActionButton({
   label,
   icon: Icon,
-  variant = "primary",
-  onPress
+  onPress,
+  variant = "primary"
 }: {
   label: string;
   icon: IconType;
-  variant?: "primary" | "outline" | "outlineDark";
   onPress: () => void;
+  variant?: "primary" | "outline" | "outlineDark";
 }) {
-  const outline = variant === "outline" || variant === "outlineDark";
   const darkOutline = variant === "outlineDark";
+  const lightOutline = variant === "outline";
   return (
     <Pressable
       style={[
         styles.actionButton,
-        outline ? styles.actionButtonOutline : styles.actionButtonPrimary,
+        variant === "primary" ? styles.actionButtonPrimary : null,
+        lightOutline ? styles.actionButtonOutline : null,
         darkOutline ? styles.actionButtonOutlineDark : null
       ]}
       onPress={onPress}
     >
-      <Icon size={18} color={outline ? (darkOutline ? colors.skyDark : colors.white) : colors.white} strokeWidth={2.6} />
+      <Icon size={18} color={variant === "primary" || lightOutline ? colors.white : colors.skyDark} />
       <Text
         style={[
           styles.actionButtonText,
-          outline ? styles.actionButtonTextOutline : null,
-          darkOutline ? styles.actionButtonTextOutlineDark : null
+          darkOutline ? styles.actionButtonTextDark : null
         ]}
       >
         {label}
       </Text>
+    </Pressable>
+  );
+}
+
+function SegmentButton({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+  return (
+    <Pressable style={[styles.segmentButton, active ? styles.segmentButtonActive : null]} onPress={onPress}>
+      <Text style={[styles.segmentText, active ? styles.segmentTextActive : null]}>{label}</Text>
     </Pressable>
   );
 }
@@ -2355,19 +1680,40 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
   );
 }
 
+function SectionHeader({ title, actionLabel, onPress }: { title: string; actionLabel: string; onPress: () => void }) {
+  return (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <Pressable onPress={onPress}>
+        <Text style={styles.sectionAction}>{actionLabel}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function ScreenHeader({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
+  return (
+    <View style={styles.screenHeader}>
+      <Text style={styles.eyebrowDark}>{eyebrow}</Text>
+      <Text style={styles.screenTitle}>{title}</Text>
+      <Text style={styles.screenDescription}>{description}</Text>
+    </View>
+  );
+}
+
 function FeaturedTourCard({ tour, onPress }: { tour: AppTour; onPress: () => void }) {
   return (
     <Pressable style={styles.featuredCard} onPress={onPress}>
-      <RemoteTourImage uri={tour.image} style={styles.featuredImage} />
+      <RemoteImage uri={tour.image} style={styles.featuredImage} />
       <View style={styles.featuredBody}>
         <Text style={styles.featuredMeta}>{tour.location}</Text>
         <Text style={styles.featuredTitle} numberOfLines={2}>
           {tour.title}
         </Text>
-        <View style={styles.priceRow}>
+        <View style={styles.rowBetween}>
           <Text style={styles.priceText}>Desde {money(tour.price)}</Text>
           <View style={styles.ratingPill}>
-            <Star size={13} color={colors.amberDark} fill={colors.amber} />
+            <Star size={13} color={colors.amberDark} fill={colors.amberDark} />
             <Text style={styles.ratingText}>{tour.rating}</Text>
           </View>
         </View>
@@ -2389,64 +1735,35 @@ function TourCard({
 }) {
   return (
     <Pressable style={styles.tourCard} onPress={onReserve}>
-      <RemoteTourImage uri={tour.image} style={styles.tourImage} />
+      <RemoteImage uri={tour.image} style={styles.tourImage} />
       <View style={styles.tourBody}>
-        <View style={styles.tourTopRow}>
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryBadgeText}>{tour.category}</Text>
-          </View>
-          <Pressable
-            style={styles.favoriteButton}
-            onPress={(event) => {
-              event.stopPropagation();
-              onFavorite();
-            }}
-          >
-            <Heart
-              size={20}
-              color={favorite ? "#ef4444" : colors.muted}
-              fill={favorite ? "#ef4444" : "transparent"}
-            />
+        <View style={styles.rowBetween}>
+          <Text style={styles.featuredMeta}>{tour.category}</Text>
+          <Pressable style={styles.favoriteButton} onPress={onFavorite}>
+            <Heart size={18} color={favorite ? colors.green : colors.muted} fill={favorite ? colors.green : "transparent"} />
           </Pressable>
         </View>
         <Text style={styles.tourTitle}>{tour.title}</Text>
-        <Text style={styles.tourDescription}>{tour.description}</Text>
-        <View style={styles.tourMetaGrid}>
+        <Text style={styles.bodyText} numberOfLines={2}>{tour.description}</Text>
+        <View style={styles.metaRow}>
           <MetaItem icon={MapPin} label={tour.location} />
           <MetaItem icon={Clock3} label={tour.duration} />
-          <MetaItem icon={Star} label={`${tour.rating} (${tour.reviews})`} />
         </View>
-        <View style={styles.highlightsRow}>
-          {tour.highlights.slice(0, 3).map((highlight) => (
-            <Text key={highlight} style={styles.highlightPill}>
-              {highlight}
-            </Text>
-          ))}
-        </View>
-        <View style={styles.tourFooter}>
-          <View>
-            <Text style={styles.fromText}>Desde</Text>
-            <Text style={styles.tourPrice}>{money(tour.price)}</Text>
-          </View>
-          <ActionButton label="Reservar" icon={ExternalLink} onPress={onReserve} />
+        <View style={styles.rowBetween}>
+          <Text style={styles.priceText}>Desde {money(tour.price)}</Text>
+          <ActionButton label="Ver" icon={CreditCard} onPress={onReserve} />
         </View>
       </View>
     </Pressable>
   );
 }
 
-function CompactTourRow({ tour, onPress }: { tour: AppTour; onPress: () => void }) {
+function MetaPill({ icon: Icon, label }: { icon: IconType; label: string }) {
   return (
-    <Pressable style={styles.compactRow} onPress={onPress}>
-      <RemoteTourImage uri={tour.image} style={styles.compactImage} />
-      <View style={styles.compactText}>
-        <Text style={styles.compactTitle}>{tour.title}</Text>
-        <Text style={styles.compactMeta}>
-          {tour.location} | Desde {money(tour.price)}
-        </Text>
-      </View>
-      <ExternalLink size={18} color={colors.skyDark} />
-    </Pressable>
+    <View style={styles.metaPill}>
+      <Icon size={14} color={colors.white} />
+      <Text style={styles.metaPillText}>{label}</Text>
+    </View>
   );
 }
 
@@ -2455,6 +1772,33 @@ function MetaItem({ icon: Icon, label }: { icon: IconType; label: string }) {
     <View style={styles.metaItem}>
       <Icon size={14} color={colors.skyDark} />
       <Text style={styles.metaLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function InfoList({ title, items }: { title: string; items: string[] }) {
+  if (!items.length) return null;
+  return (
+    <View style={styles.listPanel}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {items.map((item) => (
+        <View key={item} style={styles.bulletRow}>
+          <CheckCircle2 size={17} color={colors.green} />
+          <Text style={styles.bodyText}>{item}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function InfoPill({ icon: Icon, label, value }: { icon: IconType; label: string; value: string }) {
+  return (
+    <View style={styles.infoPill}>
+      <Icon size={18} color={colors.skyDark} />
+      <View style={styles.flexText}>
+        <Text style={styles.infoLabel}>{label}</Text>
+        <Text style={styles.infoValue}>{value}</Text>
+      </View>
     </View>
   );
 }
@@ -2475,12 +1819,52 @@ function LinkRow({
       <View style={styles.linkIcon}>
         <Icon size={20} color={colors.skyDark} />
       </View>
-      <View style={styles.linkText}>
+      <View style={styles.flexText}>
         <Text style={styles.linkTitle}>{title}</Text>
-        <Text style={styles.linkSubtitle}>{subtitle}</Text>
+        <Text style={styles.smallMuted}>{subtitle}</Text>
       </View>
-      <ExternalLink size={18} color={colors.muted} />
     </Pressable>
+  );
+}
+
+function RemoteImage({
+  uri,
+  style,
+  resizeMode = "cover"
+}: {
+  uri?: string | null;
+  style: any;
+  resizeMode?: "cover" | "contain";
+}) {
+  return (
+    <Image
+      source={{ uri: absoluteImageUrl(uri) }}
+      style={style}
+      resizeMode={resizeMode}
+    />
+  );
+}
+
+function TabBar({ activeTab, onChange }: { activeTab: TabKey; onChange: (tab: TabKey) => void }) {
+  const tabs: Array<{ key: TabKey; label: string; icon: IconType }> = [
+    { key: "home", label: "Inicio", icon: Home },
+    { key: "tours", label: "Tours", icon: Compass },
+    { key: "transfers", label: "Transfer", icon: Car },
+    { key: "trips", label: "Viaje", icon: CalendarCheck },
+    { key: "profile", label: "Perfil", icon: User }
+  ];
+  return (
+    <View style={styles.tabBar}>
+      {tabs.map(({ key, label, icon: Icon }) => {
+        const active = key === activeTab;
+        return (
+          <Pressable key={key} style={styles.tabButton} onPress={() => onChange(key)}>
+            <Icon size={20} color={active ? colors.sky : colors.muted} />
+            <Text style={[styles.tabLabel, active ? styles.tabLabelActive : null]}>{label}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
   );
 }
 
@@ -2501,238 +1885,71 @@ const styles = StyleSheet.create({
     gap: 18,
     padding: 16
   },
-  transferScreen: {
-    gap: 16,
-    paddingBottom: 16,
-    backgroundColor: colors.surface
+  flexText: {
+    flex: 1,
+    minWidth: 0,
+    gap: 4
   },
-  transferHero: {
-    minHeight: 360,
+  hero: {
+    minHeight: 490,
     justifyContent: "flex-end",
     overflow: "hidden",
+    marginHorizontal: -16,
+    marginTop: -16,
     backgroundColor: colors.ink
   },
-  transferHeroImage: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    width: "100%",
-    height: "100%"
+  heroImage: {
+    resizeMode: "cover"
   },
-  transferHeroOverlay: {
+  heroOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(15, 23, 42, 0.66)"
+    backgroundColor: "rgba(6, 17, 31, 0.66)"
   },
-  transferHeroContent: {
-    gap: 10,
-    padding: 20,
-    paddingBottom: 44
+  heroContent: {
+    gap: 14,
+    padding: 22,
+    paddingBottom: 30
   },
-  transferHeroEyebrow: {
-    color: "rgba(255, 255, 255, 0.76)",
+  logo: {
+    width: 154,
+    height: 64
+  },
+  eyebrow: {
+    color: colors.skySoft,
     fontSize: 12,
     fontWeight: "900",
     letterSpacing: 0,
     textTransform: "uppercase"
   },
-  transferHeroTitle: {
+  eyebrowDark: {
+    color: colors.skyDark,
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0,
+    textTransform: "uppercase"
+  },
+  heroTitle: {
     color: colors.white,
     fontSize: 36,
     lineHeight: 41,
     fontWeight: "900",
     letterSpacing: 0
   },
-  transferHeroText: {
-    color: "rgba(255, 255, 255, 0.92)",
-    fontSize: 15,
-    lineHeight: 22
+  heroSubtitle: {
+    color: "#dbeafe",
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: "600"
   },
-  transferSearchPanel: {
-    gap: 14,
-    marginHorizontal: 16,
-    marginTop: -34,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.card,
-    padding: 16,
-    ...shadows.card
-  },
-  tripTypeRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 9
-  },
-  tripTypeButton: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.card,
-    paddingHorizontal: 13,
-    paddingVertical: 8
-  },
-  tripTypeButtonActive: {
-    borderColor: "#059669",
-    backgroundColor: "#059669"
-  },
-  tripTypeButtonText: {
-    color: colors.muted,
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  tripTypeButtonTextActive: {
-    color: colors.white
-  },
-  routeShortcutSection: {
-    gap: 9
-  },
-  routeShortcutHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  heroActions: {
     gap: 10
   },
-  routeShortcutHint: {
-    color: colors.muted,
-    fontSize: 11,
-    fontWeight: "800"
-  },
-  routeShortcutList: {
-    gap: 10,
-    paddingRight: 4
-  },
-  routeShortcutCard: {
-    width: 210,
-    gap: 5,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.surface,
-    padding: 12
-  },
-  routeShortcutCardActive: {
-    borderColor: colors.sky,
-    backgroundColor: colors.skySoft
-  },
-  routeShortcutTitle: {
-    color: colors.text,
-    fontSize: 14,
-    lineHeight: 18,
-    fontWeight: "900"
-  },
-  routeShortcutMeta: {
-    color: colors.muted,
-    fontSize: 12,
-    fontWeight: "700"
-  },
-  routeShortcutPrice: {
-    color: colors.skyDark,
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  locationField: {
-    gap: 7
-  },
-  locationInputShell: {
-    minHeight: 54,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.surface,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 12
-  },
-  locationInputShellSelected: {
-    borderColor: "#86efac",
-    backgroundColor: "#f0fdf4"
-  },
-  locationInput: {
-    flex: 1,
-    minWidth: 0,
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: "700"
-  },
-  loadingText: {
-    color: colors.muted,
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  locationOptions: {
-    overflow: "hidden",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.card
-  },
-  locationOption: {
-    gap: 3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  locationOptionName: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: "900"
-  },
-  locationOptionMeta: {
-    color: colors.muted,
-    fontSize: 12,
-    fontWeight: "700"
-  },
-  transferDateGrid: {
+  statsRow: {
     flexDirection: "row",
     gap: 10
   },
-  transferDateField: {
+  statBox: {
     flex: 1,
-    gap: 7
-  },
-  transferInput: {
-    minHeight: 48,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.surface,
-    color: colors.text,
-    paddingHorizontal: 12,
-    fontSize: 14,
-    fontWeight: "800"
-  },
-  apiHint: {
-    color: colors.muted,
-    fontSize: 10,
-    fontWeight: "700"
-  },
-  transferError: {
-    marginHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#fecaca",
-    backgroundColor: "#fff1f2",
-    padding: 13
-  },
-  transferErrorText: {
-    color: "#991b1b",
-    fontSize: 13,
-    fontWeight: "800",
-    lineHeight: 18
-  },
-  transferResults: {
-    gap: 12,
-    marginHorizontal: 16
-  },
-  webVehicleCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.line,
@@ -2740,76 +1957,318 @@ const styles = StyleSheet.create({
     padding: 12,
     ...shadows.card
   },
-  webVehicleCardActive: {
-    borderColor: colors.sky,
-    backgroundColor: "#f0f9ff"
-  },
-  webVehicleImage: {
-    width: 58,
-    height: 42
-  },
-  webVehicleText: {
-    flex: 1,
-    gap: 3
-  },
-  webVehicleName: {
+  statValue: {
     color: colors.text,
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "900"
   },
-  webVehicleMeta: {
+  statLabel: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase"
+  },
+  homeBookingGrid: {
+    flexDirection: "row",
+    gap: 10
+  },
+  homeBookingCard: {
+    flex: 1,
+    minHeight: 140,
+    gap: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 13,
+    ...shadows.card
+  },
+  homeBookingTitle: {
+    color: colors.text,
+    fontSize: 15,
+    lineHeight: 19,
+    fontWeight: "900"
+  },
+  homeBookingText: {
     color: colors.muted,
     fontSize: 12,
+    lineHeight: 17,
     fontWeight: "700"
   },
-  webVehiclePriceBlock: {
-    alignItems: "flex-end",
-    gap: 7
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12
   },
-  webVehiclePrice: {
+  sectionTitle: {
     color: colors.text,
     fontSize: 20,
     fontWeight: "900"
   },
-  checkoutMiniButton: {
-    borderRadius: 999,
-    backgroundColor: colors.sky,
-    paddingHorizontal: 10,
-    paddingVertical: 6
-  },
-  checkoutMiniButtonText: {
-    color: colors.white,
-    fontSize: 11,
+  sectionAction: {
+    color: colors.skyDark,
+    fontSize: 13,
     fontWeight: "900"
   },
-  quotePanelWeb: {
-    gap: 12,
-    marginHorizontal: 16,
+  horizontalList: {
+    gap: 14,
+    paddingRight: 16
+  },
+  featuredCard: {
+    width: 260,
+    overflow: "hidden",
     borderRadius: 8,
-    backgroundColor: colors.ink,
-    padding: 18,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
     ...shadows.card
   },
-  quoteLabelWeb: {
-    color: "#93c5fd",
-    fontSize: 12,
+  featuredImage: {
+    width: "100%",
+    height: 150,
+    backgroundColor: colors.line
+  },
+  featuredBody: {
+    gap: 8,
+    padding: 13
+  },
+  featuredMeta: {
+    color: colors.skyDark,
+    fontSize: 11,
     fontWeight: "900",
     textTransform: "uppercase"
   },
-  quotePriceWeb: {
-    color: colors.white,
-    fontSize: 42,
+  featuredTitle: {
+    color: colors.text,
+    fontSize: 17,
+    lineHeight: 21,
     fontWeight: "900"
   },
-  quoteMetaWeb: {
-    color: colors.mutedOnDark,
-    fontSize: 14,
+  categoryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10
+  },
+  categoryCard: {
+    width: "48%",
+    minHeight: 82,
+    gap: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 13,
+    ...shadows.card
+  },
+  categoryTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "900"
+  },
+  categoryText: {
+    color: colors.muted,
+    fontSize: 12,
     fontWeight: "700"
   },
-  productScreen: {
-    gap: 0,
-    paddingBottom: 18,
+  routeCard: {
+    width: 230,
+    gap: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 14,
+    ...shadows.card
+  },
+  routeTitle: {
+    color: colors.text,
+    fontSize: 15,
+    lineHeight: 19,
+    fontWeight: "900"
+  },
+  routeMeta: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700"
+  },
+  routePrice: {
+    color: colors.skyDark,
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  noticePanel: {
+    flexDirection: "row",
+    gap: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+    backgroundColor: colors.skySoft,
+    padding: 15
+  },
+  noticeTitle: {
+    color: colors.skyDark,
+    fontSize: 15,
+    fontWeight: "900"
+  },
+  noticeText: {
+    color: colors.text,
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: "700"
+  },
+  screenHeader: {
+    gap: 7,
+    paddingTop: 8
+  },
+  screenTitle: {
+    color: colors.text,
+    fontSize: 32,
+    lineHeight: 37,
+    fontWeight: "900",
+    letterSpacing: 0
+  },
+  screenDescription: {
+    color: colors.muted,
+    fontSize: 15,
+    lineHeight: 22
+  },
+  searchBox: {
+    minHeight: 52,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 14
+  },
+  searchInput: {
+    flex: 1,
+    minWidth: 0,
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "700"
+  },
+  chipsRow: {
+    gap: 9,
+    paddingRight: 16
+  },
+  chip: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    paddingHorizontal: 14,
+    paddingVertical: 9
+  },
+  chipActive: {
+    borderColor: colors.sky,
+    backgroundColor: colors.sky
+  },
+  chipText: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  chipTextActive: {
+    color: colors.white
+  },
+  resultSummary: {
+    borderRadius: 8,
+    backgroundColor: colors.skySoft,
+    padding: 12
+  },
+  resultSummaryText: {
+    color: colors.skyDark,
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  cardStack: {
+    gap: 14
+  },
+  tourCard: {
+    overflow: "hidden",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    ...shadows.card
+  },
+  tourImage: {
+    width: "100%",
+    height: 210,
+    backgroundColor: colors.line
+  },
+  tourBody: {
+    gap: 10,
+    padding: 14
+  },
+  tourTitle: {
+    color: colors.text,
+    fontSize: 21,
+    lineHeight: 25,
+    fontWeight: "900"
+  },
+  bodyText: {
+    color: colors.muted,
+    fontSize: 14,
+    lineHeight: 21,
+    fontWeight: "600"
+  },
+  rowBetween: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12
+  },
+  priceText: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "900"
+  },
+  ratingPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    borderRadius: 999,
+    backgroundColor: "#fff7dc",
+    paddingHorizontal: 8,
+    paddingVertical: 4
+  },
+  ratingText: {
+    color: colors.amberDark,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  favoriteButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: colors.surface
+  },
+  metaRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  metaItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5
+  },
+  metaLabel: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "800"
+  },
+  productScreen: {
+    backgroundColor: colors.surface,
+    paddingBottom: 18
   },
   productHero: {
     minHeight: 380,
@@ -2817,65 +2276,16 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: colors.ink
   },
-  productHeroImageButton: {
+  productImageButton: {
     ...StyleSheet.absoluteFillObject
   },
-  productHeroImage: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
+  productImage: {
     width: "100%",
     height: "100%"
   },
-  productHeroOverlay: {
+  productOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(6, 17, 31, 0.58)"
-  },
-  galleryViewerScreen: {
-    flex: 1,
-    gap: 14,
-    backgroundColor: colors.ink,
-    padding: 14,
-    paddingTop: 18
-  },
-  galleryViewerTopbar: {
-    minHeight: 46,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12
-  },
-  galleryViewerBackText: {
-    color: colors.white,
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  galleryViewerCount: {
-    color: colors.mutedOnDark,
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  galleryViewerImage: {
-    flex: 1,
-    width: "100%",
-    minHeight: 360
-  },
-  galleryViewerThumbs: {
-    gap: 10,
-    paddingBottom: 8
-  },
-  galleryViewerThumb: {
-    width: 82,
-    height: 64,
-    overflow: "hidden",
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: "rgba(255,255,255,0.16)"
-  },
-  galleryViewerThumbActive: {
-    borderColor: colors.sky
+    backgroundColor: "rgba(6,17,31,0.56)"
   },
   backButton: {
     position: "absolute",
@@ -2908,11 +2318,6 @@ const styles = StyleSheet.create({
     lineHeight: 39,
     fontWeight: "900",
     letterSpacing: 0
-  },
-  productMetaRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8
   },
   metaPill: {
     minHeight: 31,
@@ -2948,23 +2353,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "900"
   },
-  productGallerySection: {
-    gap: 11
+  gallerySection: {
+    gap: 10
   },
-  productGalleryHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12
-  },
-  galleryCount: {
-    color: colors.muted,
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  productGalleryList: {
+  galleryList: {
     gap: 10,
-    paddingRight: 4
+    paddingRight: 8
   },
   galleryThumb: {
     width: 98,
@@ -2972,238 +2366,404 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: "transparent",
-    backgroundColor: colors.line
+    borderColor: colors.line
   },
   galleryThumbActive: {
     borderColor: colors.sky
   },
-  galleryThumbImage: {
+  fillImage: {
     width: "100%",
     height: "100%"
   },
-  productDescription: {
-    color: colors.text,
-    fontSize: 15,
-    lineHeight: 23,
-    fontWeight: "600"
+  smallMuted: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700"
   },
-  productSection: {
-    gap: 11
+  infoGrid: {
+    gap: 10
   },
-  productInfoList: {
-    overflow: "hidden",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.surface
-  },
-  productInfoRow: {
+  infoRow: {
     gap: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
-    paddingHorizontal: 12,
-    paddingVertical: 11
+    borderRadius: 8,
+    backgroundColor: colors.surface,
+    padding: 12
   },
-  productInfoLabel: {
+  infoLabel: {
     color: colors.muted,
     fontSize: 11,
     fontWeight: "900",
     textTransform: "uppercase"
   },
-  productInfoValue: {
+  infoValue: {
     color: colors.text,
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "700"
+    fontSize: 13,
+    fontWeight: "800"
   },
-  checkList: {
-    gap: 9
+  listPanel: {
+    gap: 10
   },
-  checkItem: {
+  bulletRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 9
   },
-  checkText: {
-    flex: 1,
+  timelineRow: {
+    flexDirection: "row",
+    gap: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    paddingTop: 10
+  },
+  timelineTime: {
+    width: 56,
+    color: colors.skyDark,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  timelineTitle: {
     color: colors.text,
     fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "700"
+    fontWeight: "900"
   },
-  optionList: {
+  optionRow: {
+    flexDirection: "row",
+    gap: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    padding: 12
+  },
+  optionRowActive: {
+    borderColor: colors.sky,
+    backgroundColor: colors.skySoft
+  },
+  optionTitle: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  optionPrice: {
+    color: colors.skyDark,
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  checkoutBox: {
+    gap: 12,
+    borderRadius: 8,
+    backgroundColor: colors.surface,
+    padding: 14
+  },
+  dateGrid: {
+    flexDirection: "row",
     gap: 10
   },
-  optionCard: {
-    gap: 5,
+  fieldBlock: {
+    flex: 1,
+    gap: 7
+  },
+  fieldLabel: {
+    color: colors.text,
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  textInput: {
+    minHeight: 50,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.surface,
+    color: colors.text,
+    paddingHorizontal: 12,
+    fontSize: 14,
+    fontWeight: "800"
+  },
+  textArea: {
+    minHeight: 94,
+    paddingTop: 12,
+    textAlignVertical: "top"
+  },
+  inputError: {
+    color: "#b91c1c",
+    fontSize: 12,
+    fontWeight: "800"
+  },
+  checkoutTotal: {
+    color: colors.text,
+    fontSize: 28,
+    fontWeight: "900"
+  },
+  transferScreen: {
+    gap: 16,
+    paddingBottom: 16,
+    backgroundColor: colors.surface
+  },
+  transferHero: {
+    minHeight: 330,
+    justifyContent: "flex-end",
+    overflow: "hidden",
+    backgroundColor: colors.ink
+  },
+  transferHeroContent: {
+    gap: 12,
+    padding: 20,
+    paddingBottom: 38
+  },
+  transferPanel: {
+    gap: 14,
+    marginHorizontal: 16,
+    marginTop: -32,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 16,
+    ...shadows.card
+  },
+  segmentRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 9
+  },
+  segmentButton: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    paddingHorizontal: 13,
+    paddingVertical: 8
+  },
+  segmentButtonActive: {
+    borderColor: colors.sky,
+    backgroundColor: colors.sky
+  },
+  segmentText: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  segmentTextActive: {
+    color: colors.white
+  },
+  locationInputShell: {
+    minHeight: 54,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.surface,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 12
+  },
+  locationInputSelected: {
+    borderColor: "#86efac",
+    backgroundColor: "#f0fdf4"
+  },
+  locationInput: {
+    flex: 1,
+    minWidth: 0,
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "800"
+  },
+  loadingText: {
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  optionList: {
+    overflow: "hidden",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card
+  },
+  locationOption: {
+    gap: 3,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  locationOptionTitle: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  routeList: {
+    gap: 10,
+    paddingRight: 8
+  },
+  routeShortcut: {
+    width: 210,
+    gap: 6,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.line,
     backgroundColor: colors.surface,
     padding: 12
   },
-  optionCardActive: {
+  routeShortcutActive: {
     borderColor: colors.sky,
     backgroundColor: colors.skySoft
   },
-  optionName: {
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: "900"
-  },
-  optionMeta: {
-    color: colors.skyDark,
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  optionDescription: {
-    color: colors.muted,
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: "600"
-  },
-  itineraryList: {
-    gap: 12
-  },
-  itineraryItem: {
-    flexDirection: "row",
-    gap: 10
-  },
-  itineraryDot: {
-    width: 10,
-    height: 10,
-    marginTop: 5,
-    borderRadius: 999,
-    backgroundColor: colors.sky
-  },
-  itineraryBody: {
-    flex: 1,
-    gap: 3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
-    paddingBottom: 12
-  },
-  itineraryTime: {
-    color: colors.skyDark,
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  itineraryTitle: {
-    color: colors.text,
-    fontSize: 15,
-    lineHeight: 20,
-    fontWeight: "900"
-  },
-  itineraryText: {
-    color: colors.muted,
-    fontSize: 13,
-    lineHeight: 19,
-    fontWeight: "600"
-  },
-  bookingPanel: {
-    gap: 14,
-    borderRadius: 8,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.line,
-    padding: 14
-  },
-  productCheckoutRow: {
+  stepperRow: {
+    minHeight: 64,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12
+  },
+  stepper: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10
+  },
+  stepperButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card
+  },
+  stepperValue: {
+    minWidth: 26,
+    textAlign: "center",
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "900"
+  },
+  errorPanel: {
+    marginHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#fecaca",
+    backgroundColor: "#fff1f2",
+    padding: 13
+  },
+  errorText: {
+    color: "#991b1b",
+    fontSize: 13,
+    fontWeight: "800",
+    lineHeight: 18
+  },
+  resultsPanel: {
+    gap: 12,
+    marginHorizontal: 16
+  },
+  vehicleCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 12,
+    ...shadows.card
+  },
+  vehicleCardActive: {
+    borderColor: colors.sky,
+    backgroundColor: "#f0f9ff"
+  },
+  vehicleImage: {
+    width: 56,
+    height: 42
+  },
+  vehicleIcon: {
+    width: 54,
+    height: 42,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.skySoft
+  },
+  vehicleName: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "900"
+  },
+  vehiclePriceBlock: {
+    alignItems: "flex-end",
+    gap: 7
+  },
+  vehiclePrice: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "900"
+  },
+  smallButton: {
+    borderRadius: 999,
+    backgroundColor: colors.sky,
+    paddingHorizontal: 10,
+    paddingVertical: 6
+  },
+  smallButtonText: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: "900"
+  },
+  quoteActions: {
+    gap: 10
   },
   checkoutScreen: {
     flex: 1,
     backgroundColor: colors.surface
   },
   checkoutTopbar: {
-    minHeight: 58,
+    minHeight: 62,
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
     backgroundColor: colors.card,
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 12
+    justifyContent: "space-between",
+    paddingHorizontal: 14
   },
-  checkoutClose: {
-    minHeight: 40,
-    borderRadius: 999,
+  backSoft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 8
+    gap: 7,
+    minHeight: 42
   },
-  checkoutCloseText: {
+  backSoftText: {
     color: colors.text,
     fontSize: 13,
     fontWeight: "900"
   },
   checkoutTitle: {
-    flex: 1,
     color: colors.text,
     fontSize: 16,
     fontWeight: "900"
   },
-  checkoutWebview: {
-    flex: 1,
-    backgroundColor: colors.card
-  },
-  appCheckoutContent: {
+  checkoutContent: {
     gap: 14,
     padding: 16,
-    paddingBottom: 34,
-    backgroundColor: colors.surface
+    paddingBottom: 36
   },
-  appCheckoutHero: {
-    gap: 10,
+  checkoutHero: {
+    gap: 8,
     borderRadius: 8,
-    backgroundColor: colors.ink,
-    padding: 16
-  },
-  checkoutStepRow: {
-    flexDirection: "row",
-    gap: 8
-  },
-  checkoutStep: {
-    borderRadius: 999,
     borderWidth: 1,
-    borderColor: colors.lineOnDark,
-    paddingHorizontal: 10,
-    paddingVertical: 6
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 16,
+    ...shadows.card
   },
-  checkoutStepActive: {
-    borderRadius: 999,
-    backgroundColor: colors.sky,
-    paddingHorizontal: 10,
-    paddingVertical: 6
-  },
-  checkoutStepText: {
-    color: colors.mutedOnDark,
-    fontSize: 11,
+  checkoutHeroTitle: {
+    color: colors.text,
+    fontSize: 24,
+    lineHeight: 29,
     fontWeight: "900"
   },
-  checkoutStepTextActive: {
-    color: colors.white,
-    fontSize: 11,
-    fontWeight: "900"
-  },
-  appCheckoutTitle: {
-    color: colors.white,
-    fontSize: 28,
-    lineHeight: 33,
-    fontWeight: "900"
-  },
-  appCheckoutSubtitle: {
-    color: colors.mutedOnDark,
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "700"
-  },
-  checkoutSummaryCard: {
+  summaryCard: {
     flexDirection: "row",
     gap: 12,
     borderRadius: 8,
@@ -3213,52 +2773,34 @@ const styles = StyleSheet.create({
     padding: 12,
     ...shadows.card
   },
-  checkoutSummaryImage: {
-    width: 78,
-    height: 78,
+  summaryImage: {
+    width: 82,
+    height: 82,
     borderRadius: 8,
     backgroundColor: colors.line
   },
-  checkoutTransferIcon: {
-    width: 78,
-    height: 78,
+  summaryIcon: {
+    width: 82,
+    height: 82,
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.skyDark
   },
-  checkoutSummaryText: {
-    flex: 1,
-    minWidth: 0,
-    gap: 3
-  },
-  checkoutSummaryType: {
+  summaryType: {
     color: colors.skyDark,
     fontSize: 11,
     fontWeight: "900",
     textTransform: "uppercase"
   },
-  checkoutSummaryTitle: {
+  summaryTitle: {
     color: colors.text,
-    fontSize: 16,
+    fontSize: 17,
     lineHeight: 21,
     fontWeight: "900"
   },
-  checkoutSummaryMeta: {
-    color: colors.muted,
-    fontSize: 12,
-    lineHeight: 17,
-    fontWeight: "700"
-  },
-  checkoutInfoGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  checkoutInfoPill: {
-    flexGrow: 1,
-    flexBasis: "47%",
-    minHeight: 64,
+  infoPill: {
+    minHeight: 56,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.line,
@@ -3268,190 +2810,125 @@ const styles = StyleSheet.create({
     gap: 10,
     padding: 12
   },
-  checkoutInfoLabel: {
-    color: colors.muted,
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  checkoutInfoValue: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: "900"
-  },
-  checkoutNativePanel: {
+  formPanel: {
     gap: 12,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.line,
     backgroundColor: colors.card,
-    padding: 14
+    padding: 14,
+    ...shadows.card
   },
-  checkoutFormGrid: {
-    flexDirection: "row",
-    gap: 10
+  payPanel: {
+    gap: 12,
+    borderRadius: 8,
+    backgroundColor: colors.ink,
+    padding: 16
   },
-  checkoutInputGroup: {
+  feedbackText: {
+    color: colors.skyDark,
+    fontSize: 13,
+    fontWeight: "800"
+  },
+  galleryViewer: {
     flex: 1,
-    gap: 6
+    gap: 14,
+    backgroundColor: colors.ink,
+    padding: 14,
+    paddingTop: 18
   },
-  checkoutNativeInput: {
-    minHeight: 48,
+  galleryTopbar: {
+    minHeight: 46,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12
+  },
+  backSoftDark: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7
+  },
+  backSoftDarkText: {
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  galleryCounter: {
+    color: colors.mutedOnDark,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  galleryLarge: {
+    flex: 1,
+    width: "100%",
+    minHeight: 360
+  },
+  viewerThumb: {
+    width: 82,
+    height: 64,
+    overflow: "hidden",
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.16)"
+  },
+  viewerThumbActive: {
+    borderColor: colors.sky
+  },
+  emptyState: {
+    gap: 12,
+    alignItems: "center",
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.line,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.card,
+    padding: 18,
+    ...shadows.card
+  },
+  emptyTitle: {
     color: colors.text,
-    paddingHorizontal: 12,
-    fontSize: 14,
-    fontWeight: "800"
+    fontSize: 18,
+    fontWeight: "900",
+    textAlign: "center"
   },
-  checkoutNativeTextarea: {
-    minHeight: 86,
-    paddingTop: 12,
-    textAlignVertical: "top"
-  },
-  checkoutNativeInputError: {
-    borderColor: "#f87171",
-    backgroundColor: "#fff1f2"
-  },
-  checkoutErrorText: {
-    color: "#b91c1c",
-    fontSize: 12,
-    fontWeight: "800"
-  },
-  checkoutPayCard: {
-    gap: 14,
+  savedCard: {
+    gap: 10,
     borderRadius: 8,
-    backgroundColor: colors.ink,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
     padding: 16,
     ...shadows.card
   },
-  checkoutPayHeader: {
-    flexDirection: "row",
-    gap: 10,
-    alignItems: "flex-start"
-  },
-  checkoutPayTitle: {
-    color: colors.white,
-    fontSize: 17,
-    fontWeight: "900"
-  },
-  checkoutPayText: {
-    color: colors.mutedOnDark,
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: "700"
-  },
-  checkoutFeedbackText: {
-    color: colors.mutedOnDark,
-    fontSize: 13,
-    lineHeight: 19,
-    fontWeight: "700"
-  },
-  checkoutPayTotalLabel: {
-    color: colors.mutedOnDark,
-    fontSize: 12,
-    fontWeight: "800"
-  },
-  checkoutPayTotalValue: {
-    color: colors.white,
-    fontSize: 24,
-    fontWeight: "900"
-  },
-  checkoutSuccessScreen: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 16,
-    padding: 24,
-    backgroundColor: colors.surface
-  },
-  checkoutSuccessIcon: {
-    width: 86,
-    height: 86,
-    borderRadius: 999,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.green
-  },
-  checkoutSuccessTitle: {
+  savedTitle: {
     color: colors.text,
-    fontSize: 26,
-    lineHeight: 31,
-    fontWeight: "900",
-    textAlign: "center"
-  },
-  checkoutSuccessText: {
-    color: colors.muted,
-    fontSize: 15,
-    lineHeight: 22,
-    fontWeight: "700",
-    textAlign: "center"
-  },
-  checkoutSuccessCode: {
-    color: colors.skyDark,
-    fontSize: 13,
+    fontSize: 18,
+    lineHeight: 23,
     fontWeight: "900"
   },
-  hero: {
-    minHeight: 480,
-    overflow: "hidden",
-    borderRadius: 0,
-    justifyContent: "flex-end",
-    marginHorizontal: -16,
-    marginTop: -16
+  linkRow: {
+    minHeight: 64,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
+    padding: 12
   },
-  heroImage: {
-    resizeMode: "cover"
+  linkIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.skySoft
   },
-  heroOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(6, 17, 31, 0.68)"
-  },
-  heroContent: {
-    gap: 14,
-    padding: 22,
-    paddingBottom: 28
-  },
-  logo: {
-    width: 154,
-    height: 64
-  },
-  headerLogo: {
-    width: 132,
-    height: 52,
-    marginBottom: 6
-  },
-  eyebrow: {
-    color: colors.skySoft,
-    fontSize: 12,
-    fontWeight: "900",
-    letterSpacing: 0,
-    textTransform: "uppercase"
-  },
-  eyebrowDark: {
-    color: colors.skyDark,
-    fontSize: 12,
-    fontWeight: "900",
-    letterSpacing: 0,
-    textTransform: "uppercase"
-  },
-  heroTitle: {
-    color: colors.white,
-    fontSize: 37,
-    lineHeight: 42,
-    fontWeight: "900",
-    letterSpacing: 0
-  },
-  heroSubtitle: {
-    color: "#dbeafe",
-    fontSize: 16,
-    lineHeight: 24
-  },
-  heroActions: {
-    gap: 10,
-    marginTop: 4
+  linkTitle: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "900"
   },
   actionButton: {
     minHeight: 50,
@@ -3467,10 +2944,11 @@ const styles = StyleSheet.create({
   },
   actionButtonOutline: {
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.72)",
-    backgroundColor: "rgba(255, 255, 255, 0.1)"
+    borderColor: "rgba(255,255,255,0.72)",
+    backgroundColor: "rgba(255,255,255,0.1)"
   },
   actionButtonOutlineDark: {
+    borderWidth: 1,
     borderColor: colors.line,
     backgroundColor: colors.card
   },
@@ -3479,855 +2957,38 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "900"
   },
-  actionButtonTextOutline: {
-    color: colors.white
-  },
-  actionButtonTextOutlineDark: {
+  actionButtonTextDark: {
     color: colors.skyDark
-  },
-  statsRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 2
-  },
-  statBox: {
-    flex: 1,
-    borderRadius: 8,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-    padding: 12,
-    ...shadows.card
-  },
-  statValue: {
-    color: colors.text,
-    fontSize: 17,
-    fontWeight: "900"
-  },
-  statLabel: {
-    color: colors.muted,
-    fontSize: 11,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    marginTop: 2
-  },
-  homeBookingPanel: {
-    gap: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.card,
-    padding: 14,
-    ...shadows.card
-  },
-  homeBookingGrid: {
-    flexDirection: "row",
-    gap: 10
-  },
-  homeBookingCard: {
-    flex: 1,
-    minHeight: 142,
-    gap: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.surface,
-    padding: 12
-  },
-  homeBookingIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.skySoft
-  },
-  homeBookingTitle: {
-    color: colors.text,
-    fontSize: 15,
-    lineHeight: 19,
-    fontWeight: "900"
-  },
-  homeBookingText: {
-    color: colors.muted,
-    fontSize: 12,
-    lineHeight: 17,
-    fontWeight: "700"
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 4
-  },
-  sectionTitle: {
-    color: colors.text,
-    fontSize: 20,
-    fontWeight: "900"
-  },
-  sectionAction: {
-    color: colors.skyDark,
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  horizontalList: {
-    gap: 14,
-    paddingRight: 16
-  },
-  featuredCard: {
-    width: 258,
-    overflow: "hidden",
-    borderRadius: 8,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-    ...shadows.card
-  },
-  featuredImage: {
-    height: 150,
-    width: "100%",
-    backgroundColor: colors.line
-  },
-  featuredBody: {
-    gap: 7,
-    padding: 13
-  },
-  homeCategoryGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  homeCategoryCard: {
-    width: "48%",
-    minHeight: 86,
-    gap: 5,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.card,
-    padding: 13,
-    ...shadows.card
-  },
-  homeCategoryTitle: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: "900"
-  },
-  homeCategoryText: {
-    color: colors.muted,
-    fontSize: 12,
-    lineHeight: 17,
-    fontWeight: "700"
-  },
-  homeRouteCard: {
-    width: 232,
-    gap: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.card,
-    padding: 14,
-    ...shadows.card
-  },
-  homeRouteTitle: {
-    color: colors.text,
-    fontSize: 16,
-    lineHeight: 20,
-    fontWeight: "900"
-  },
-  homeRouteText: {
-    color: colors.muted,
-    fontSize: 12,
-    lineHeight: 17,
-    fontWeight: "700"
-  },
-  homeRoutePrice: {
-    color: colors.skyDark,
-    fontSize: 14,
-    fontWeight: "900"
-  },
-  homeStepsPanel: {
-    gap: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.card,
-    padding: 14,
-    ...shadows.card
-  },
-  homeStepRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-    paddingTop: 12
-  },
-  homeStepIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.skySoft
-  },
-  homeStepTitle: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: "900"
-  },
-  homeStepText: {
-    color: colors.muted,
-    fontSize: 12,
-    lineHeight: 17,
-    fontWeight: "700"
-  },
-  featuredMeta: {
-    color: colors.skyDark,
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  featuredTitle: {
-    color: colors.text,
-    fontSize: 17,
-    lineHeight: 21,
-    fontWeight: "900"
-  },
-  priceRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 2
-  },
-  priceText: {
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: "900"
-  },
-  ratingPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    borderRadius: 999,
-    backgroundColor: "#fff7dc",
-    paddingHorizontal: 8,
-    paddingVertical: 4
-  },
-  ratingText: {
-    color: colors.amberDark,
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  noticePanel: {
-    flexDirection: "row",
-    gap: 12,
-    borderRadius: 8,
-    backgroundColor: colors.skySoft,
-    padding: 15,
-    borderWidth: 1,
-    borderColor: "#bae6fd"
-  },
-  noticeTextBlock: {
-    flex: 1,
-    gap: 4
-  },
-  noticeTitle: {
-    color: colors.skyDark,
-    fontSize: 15,
-    fontWeight: "900"
-  },
-  noticeText: {
-    color: colors.text,
-    fontSize: 13,
-    lineHeight: 19,
-    fontWeight: "600"
-  },
-  screenHeader: {
-    gap: 7,
-    paddingTop: 8
-  },
-  screenTitle: {
-    color: colors.text,
-    fontSize: 32,
-    lineHeight: 37,
-    fontWeight: "900",
-    letterSpacing: 0
-  },
-  screenDescription: {
-    color: colors.muted,
-    fontSize: 15,
-    lineHeight: 22
-  },
-  searchBox: {
-    minHeight: 52,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.card,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 14
-  },
-  searchInput: {
-    flex: 1,
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: "600",
-    minWidth: 0
-  },
-  chipsRow: {
-    gap: 9,
-    paddingRight: 16
-  },
-  chip: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.card,
-    paddingHorizontal: 14,
-    paddingVertical: 9
-  },
-  chipActive: {
-    borderColor: colors.sky,
-    backgroundColor: colors.sky
-  },
-  chipText: {
-    color: colors.text,
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  chipTextActive: {
-    color: colors.white
-  },
-  resultSummary: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    borderRadius: 8,
-    backgroundColor: colors.skySoft,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  resultSummaryText: {
-    color: colors.skyDark,
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  cardStack: {
-    gap: 14
-  },
-  tourCard: {
-    overflow: "hidden",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.card,
-    ...shadows.card
-  },
-  tourImage: {
-    height: 205,
-    width: "100%",
-    backgroundColor: colors.line
-  },
-  tourBody: {
-    gap: 11,
-    padding: 15
-  },
-  tourTopRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between"
-  },
-  categoryBadge: {
-    borderRadius: 999,
-    backgroundColor: colors.skySoft,
-    paddingHorizontal: 10,
-    paddingVertical: 5
-  },
-  categoryBadgeText: {
-    color: colors.skyDark,
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  favoriteButton: {
-    width: 38,
-    height: 38,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 999,
-    backgroundColor: colors.surface
-  },
-  tourTitle: {
-    color: colors.text,
-    fontSize: 22,
-    lineHeight: 27,
-    fontWeight: "900"
-  },
-  tourDescription: {
-    color: colors.muted,
-    fontSize: 14,
-    lineHeight: 20
-  },
-  tourMetaGrid: {
-    gap: 8
-  },
-  metaItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7
-  },
-  metaLabel: {
-    color: colors.text,
-    fontSize: 13,
-    fontWeight: "700"
-  },
-  highlightsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 7
-  },
-  highlightPill: {
-    overflow: "hidden",
-    borderRadius: 999,
-    backgroundColor: colors.surface,
-    color: colors.muted,
-    fontSize: 11,
-    fontWeight: "800",
-    paddingHorizontal: 9,
-    paddingVertical: 5
-  },
-  tourFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12
-  },
-  fromText: {
-    color: colors.muted,
-    fontSize: 12,
-    fontWeight: "800"
-  },
-  tourPrice: {
-    color: colors.text,
-    fontSize: 24,
-    fontWeight: "900"
-  },
-  formPanel: {
-    gap: 14,
-    borderRadius: 8,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-    padding: 14,
-    ...shadows.card
-  },
-  fieldLabel: {
-    color: colors.text,
-    fontSize: 13,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  routeList: {
-    gap: 9
-  },
-  routeOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 11,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    padding: 12,
-    backgroundColor: colors.surface
-  },
-  routeOptionActive: {
-    borderColor: colors.sky,
-    backgroundColor: colors.skyDark
-  },
-  routeIcon: {
-    width: 36,
-    height: 36,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.16)"
-  },
-  routeText: {
-    flex: 1,
-    gap: 3
-  },
-  routeTitle: {
-    color: colors.text,
-    fontSize: 14,
-    lineHeight: 19,
-    fontWeight: "900"
-  },
-  routeTitleActive: {
-    color: colors.white
-  },
-  routeMeta: {
-    color: colors.muted,
-    fontSize: 12,
-    fontWeight: "700"
-  },
-  routeMetaActive: {
-    color: "#dbeafe"
-  },
-  vehicleGrid: {
-    flexDirection: "row",
-    gap: 9
-  },
-  vehicleCard: {
-    flex: 1,
-    gap: 6,
-    minHeight: 110,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.surface,
-    padding: 10
-  },
-  vehicleCardActive: {
-    borderColor: colors.sky,
-    backgroundColor: colors.skyDark
-  },
-  vehicleName: {
-    color: colors.text,
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  vehicleNameActive: {
-    color: colors.white
-  },
-  vehicleCapacity: {
-    color: colors.muted,
-    fontSize: 11,
-    fontWeight: "700"
-  },
-  vehicleCapacityActive: {
-    color: "#dbeafe"
-  },
-  segmentRow: {
-    flexDirection: "row",
-    borderRadius: 8,
-    backgroundColor: colors.surface,
-    padding: 4
-  },
-  segmentButton: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 8,
-    minHeight: 40
-  },
-  segmentButtonActive: {
-    backgroundColor: colors.text
-  },
-  segmentText: {
-    color: colors.muted,
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  segmentTextActive: {
-    color: colors.white
-  },
-  passengerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12
-  },
-  helperText: {
-    color: colors.muted,
-    fontSize: 12,
-    marginTop: 2
-  },
-  stepper: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    overflow: "hidden"
-  },
-  stepperButton: {
-    width: 42,
-    height: 42,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.surface
-  },
-  stepperValue: {
-    width: 44,
-    textAlign: "center",
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: "900"
-  },
-  quotePanel: {
-    gap: 16,
-    borderRadius: 8,
-    backgroundColor: colors.ink,
-    padding: 18,
-    ...shadows.card
-  },
-  quoteLabel: {
-    color: "#93c5fd",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  quotePrice: {
-    color: colors.white,
-    fontSize: 42,
-    fontWeight: "900",
-    marginTop: 3
-  },
-  quoteMeta: {
-    color: colors.mutedOnDark,
-    fontSize: 14,
-    marginTop: 2
-  },
-  quoteActions: {
-    gap: 10
-  },
-  emptyState: {
-    alignItems: "center",
-    gap: 12,
-    borderRadius: 8,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-    padding: 22,
-    ...shadows.card
-  },
-  emptyTitle: {
-    color: colors.text,
-    fontSize: 20,
-    textAlign: "center",
-    fontWeight: "900"
-  },
-  emptyText: {
-    color: colors.muted,
-    textAlign: "center",
-    fontSize: 14,
-    lineHeight: 20
-  },
-  emptyActions: {
-    alignSelf: "stretch",
-    gap: 10,
-    marginTop: 4
-  },
-  savedCard: {
-    gap: 8,
-    borderRadius: 8,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-    padding: 16,
-    ...shadows.card
-  },
-  savedLabel: {
-    color: colors.green,
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  savedTitle: {
-    color: colors.text,
-    fontSize: 20,
-    lineHeight: 25,
-    fontWeight: "900"
-  },
-  savedMeta: {
-    color: colors.muted,
-    fontSize: 13,
-    fontWeight: "700"
-  },
-  savedPrice: {
-    color: colors.text,
-    fontSize: 30,
-    fontWeight: "900",
-    marginBottom: 6
-  },
-  compactRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    borderRadius: 8,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-    padding: 10
-  },
-  compactImage: {
-    width: 74,
-    height: 74,
-    borderRadius: 8,
-    backgroundColor: colors.line
-  },
-  compactText: {
-    flex: 1,
-    gap: 4
-  },
-  compactTitle: {
-    color: colors.text,
-    fontSize: 15,
-    lineHeight: 19,
-    fontWeight: "900"
-  },
-  compactMeta: {
-    color: colors.muted,
-    fontSize: 12,
-    fontWeight: "700"
-  },
-  profileCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 13,
-    borderRadius: 8,
-    backgroundColor: colors.ink,
-    padding: 16
-  },
-  avatar: {
-    width: 58,
-    height: 58,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 999,
-    backgroundColor: colors.sky
-  },
-  profileText: {
-    flex: 1,
-    gap: 4
-  },
-  profileName: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: "900"
-  },
-  profileMeta: {
-    color: colors.mutedOnDark,
-    fontSize: 13,
-    lineHeight: 18
-  },
-  profileBuild: {
-    color: colors.skySoft,
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  authPanel: {
-    gap: 12,
-    borderRadius: 8,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-    padding: 15,
-    ...shadows.card
-  },
-  authHelp: {
-    color: colors.muted,
-    fontSize: 13,
-    lineHeight: 19,
-    fontWeight: "700"
-  },
-  authMessage: {
-    color: colors.skyDark,
-    fontSize: 13,
-    lineHeight: 19,
-    fontWeight: "800"
-  },
-  linkStack: {
-    gap: 10
-  },
-  linkRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    borderRadius: 8,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-    padding: 13
-  },
-  linkIcon: {
-    width: 42,
-    height: 42,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 999,
-    backgroundColor: colors.skySoft
-  },
-  linkText: {
-    flex: 1,
-    gap: 3
-  },
-  linkTitle: {
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: "900"
-  },
-  linkSubtitle: {
-    color: colors.muted,
-    fontSize: 12,
-    fontWeight: "700"
-  },
-  socialPanel: {
-    gap: 12,
-    borderRadius: 8,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-    padding: 15
-  },
-  socialButtons: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  socialButton: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: colors.line,
-    paddingHorizontal: 13,
-    paddingVertical: 9,
-    backgroundColor: colors.surface
-  },
-  socialText: {
-    color: colors.text,
-    fontSize: 13,
-    fontWeight: "900"
   },
   tabBar: {
     position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    minHeight: 74,
+    left: 12,
+    right: 12,
+    bottom: 14,
+    minHeight: 66,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.card,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-    backgroundColor: "rgba(255, 255, 255, 0.98)",
-    paddingBottom: 8,
-    paddingTop: 8
+    paddingHorizontal: 8,
+    ...shadows.card
   },
   tabButton: {
     flex: 1,
+    minHeight: 54,
     alignItems: "center",
     justifyContent: "center",
-    gap: 4
+    gap: 3
   },
   tabLabel: {
     color: colors.muted,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "900"
   },
   tabLabelActive: {
-    color: colors.skyDark
+    color: colors.sky
   }
 });
