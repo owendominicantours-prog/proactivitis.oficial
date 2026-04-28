@@ -434,7 +434,7 @@ const readCheckoutSummary = (url: string): CheckoutSummary => {
       flowType === "transfer"
         ? params.get("vehicleName") ?? "Transfer privado"
         : params.get("tourTitle") ?? "Tour Proactivitis",
-    image: params.get("tourImage"),
+    image: params.get("tourImage") ?? params.get("vehicleImage"),
     optionName: params.get("tourOptionName"),
     date: params.get("date") ?? params.get("dateTime")?.split("T")[0] ?? "Fecha pendiente",
     time: params.get("time") ?? params.get("dateTime")?.split("T")[1] ?? "Hora pendiente",
@@ -1563,7 +1563,13 @@ function CheckoutScreen({
         </View>
 
         <View style={styles.summaryCard}>
-          {summary.flowType === "tour" ? (
+          {summary.image ? (
+            <Image
+              source={{ uri: absoluteImageUrl(summary.image) }}
+              style={styles.summaryImage as StyleProp<ImageStyle>}
+              resizeMode="cover"
+            />
+          ) : summary.flowType === "tour" ? (
             <View style={styles.summaryIcon}>
               <ImageIcon size={30} color={colors.white} />
             </View>

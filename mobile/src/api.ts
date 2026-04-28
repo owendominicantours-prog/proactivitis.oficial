@@ -335,6 +335,7 @@ export const buildCheckoutUrl = ({
   params.set("vehicleId", vehicle.id);
   params.set("vehicleName", vehicle.name);
   params.set("vehicleCategory", vehicle.category);
+  if (vehicle.imageUrl) params.set("vehicleImage", vehicle.imageUrl);
   params.set("price", price.toFixed(2));
   params.set("passengers", String(passengers));
   params.set("adults", String(passengers));
