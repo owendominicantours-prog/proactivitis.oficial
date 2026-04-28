@@ -2,7 +2,6 @@ import { StatusBar } from "expo-status-bar";
 import type { ComponentType, ReactNode } from "react";
 import { Component, useEffect, useMemo, useRef, useState } from "react";
 import * as SecureStore from "expo-secure-store";
-import { StripeProvider, useStripe } from "@stripe/stripe-react-native";
 import {
   BackHandler,
   Dimensions,
@@ -75,6 +74,7 @@ import {
 } from "./src/api";
 import { staticMobileTours } from "./src/staticTours";
 import { staticMobileTransferRoutes } from "./src/staticTransfers";
+import { AppStripeProvider, StripeDeepLinkHandler, useAppStripe } from "./src/stripe";
 import { colors, links, shadows } from "./src/theme";
 
 type TabKey = "home" | "tours" | "transfers" | "zones" | "profile";
@@ -513,34 +513,11 @@ export default function App() {
   }, []);
 
   return (
-    <StripeProvider
-      publishableKey={stripePublishableKey}
-      merchantIdentifier="merchant.com.proactivitis.app"
-      urlScheme="proactivitis"
-    >
+    <AppStripeProvider publishableKey={stripePublishableKey}>
       <StripeDeepLinkHandler />
       <MobileApp stripeReady={Boolean(stripePublishableKey)} />
-    </StripeProvider>
+    </AppStripeProvider>
   );
-}
-
-function StripeDeepLinkHandler() {
-  const { handleURLCallback } = useStripe();
-
-  useEffect(() => {
-    const handleDeepLink = async (url: string | null) => {
-      if (url) await handleURLCallback(url);
-    };
-
-    void Linking.getInitialURL().then(handleDeepLink);
-    const subscription = Linking.addEventListener("url", (event) => {
-      void handleDeepLink(event.url);
-    });
-
-    return () => subscription.remove();
-  }, [handleURLCallback]);
-
-  return null;
 }
 
 function MobileApp({ stripeReady }: { stripeReady: boolean }) {
@@ -1604,7 +1581,7 @@ function CheckoutScreen({
   stripeReady: boolean;
   onClose: () => void;
 }) {
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const { initPaymentSheet, presentPaymentSheet, nativeStripeAvailable } = useAppStripe();
   const summary = useMemo(() => readCheckoutSummary(url), [url]);
   const nameParts = (session?.user.name ?? "").trim().split(/\s+/).filter(Boolean);
   const [firstName, setFirstName] = useState(nameParts[0] ?? "");
@@ -1650,6 +1627,10 @@ function CheckoutScreen({
   const continueToPay = async () => {
     if (paymentLoading) return;
     if (!validateCheckout()) return;
+    if (!nativeStripeAvailable) {
+      setFeedback("Stripe nativo no esta disponible en la vista web. Usa checkout web o prueba en Android/iOS.");
+      return;
+    }
     if (!stripeReady) {
       setFeedback("Stripe aun no esta configurado en esta build. Revisa NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.");
       return;
