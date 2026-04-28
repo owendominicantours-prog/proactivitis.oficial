@@ -1062,6 +1062,7 @@ const homePopularTransferCards = [
     airport: "Punta Cana Airport",
     destination: "Bavaro y Cap Cana",
     priceFrom: 35,
+    image: "/transfer/sedan.png",
     vehicle: transferVehicles[0]
   },
   {
@@ -1070,6 +1071,7 @@ const homePopularTransferCards = [
     airport: "Aeropuerto Santo Domingo",
     destination: "Santo Domingo y Bayahibe",
     priceFrom: 150,
+    image: "/transfer/suv.png",
     vehicle: transferVehicles[1]
   },
   {
@@ -1078,6 +1080,7 @@ const homePopularTransferCards = [
     airport: "Aeropuerto La Romana",
     destination: "La Romana y Bayahibe",
     priceFrom: 94,
+    image: "/transfer/mini%20van.png",
     vehicle: transferVehicles[2]
   }
 ];
@@ -1639,7 +1642,12 @@ function HomeScreen({
       <View style={styles.homeRouteGrid}>
         {homePopularTransferCards.map((route) => (
           <Pressable key={route.id} style={styles.homeRouteCard} onPress={onOpenTransfers}>
-            <Text style={styles.homeRouteCode}>{route.code}</Text>
+            <View style={styles.homeRouteTopRow}>
+              <Text style={styles.homeRouteCode}>{route.code}</Text>
+              <View style={styles.homeRouteImageWrap}>
+                <RemoteImage uri={route.image} style={styles.homeRouteImage} resizeMode="contain" />
+              </View>
+            </View>
             <Text style={styles.homeRouteAirport} numberOfLines={2}>{route.airport}</Text>
             <Text style={styles.homeRouteDestination} numberOfLines={2}>{route.destination}</Text>
             <View style={styles.homeVehiclePill}>
@@ -3953,7 +3961,7 @@ const styles = StyleSheet.create({
   homeRouteCard: {
     flex: 1,
     minWidth: 0,
-    minHeight: 172,
+    minHeight: 184,
     gap: 7,
     borderRadius: 8,
     borderWidth: 1,
@@ -3962,11 +3970,32 @@ const styles = StyleSheet.create({
     padding: 11,
     ...shadows.card
   },
+  homeRouteTopRow: {
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 6
+  },
   homeRouteCode: {
+    flexShrink: 0,
     color: colors.text,
     fontSize: 22,
     lineHeight: 26,
     fontWeight: "900"
+  },
+  homeRouteImageWrap: {
+    width: 58,
+    height: 40,
+    overflow: "hidden",
+    borderRadius: 8,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.line
+  },
+  homeRouteImage: {
+    width: "100%",
+    height: "100%"
   },
   homeRouteAirport: {
     color: colors.text,
