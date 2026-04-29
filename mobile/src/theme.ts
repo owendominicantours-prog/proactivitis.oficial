@@ -22,10 +22,10 @@ export const colors = {
 export const shadows = {
   card: {
     shadowColor: "#0f172a",
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 4
+    shadowOpacity: 0.1,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5
   }
 };
 

@@ -20,6 +20,10 @@
     "android": {
       "package": "com.proactivitis.app",
       "versionCode": 7,
+      "permissions": [
+        "INTERNET",
+        "VIBRATE"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#06111f"
@@ -43,7 +47,8 @@
           "merchantIdentifier": "merchant.com.proactivitis.app",
           "enableGooglePay": true
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }

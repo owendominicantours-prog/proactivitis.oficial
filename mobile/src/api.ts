@@ -6,12 +6,18 @@ declare const process:
     }
   | undefined;
 
+declare const __DEV__: boolean | undefined;
+
+const isDevelopmentRuntime = typeof __DEV__ !== "undefined" ? __DEV__ : process?.env?.NODE_ENV !== "production";
+const isNativeRuntime = Platform.OS === "android" || Platform.OS === "ios";
+
 export type LocationSummary = {
   id: string;
   name: string;
   slug: string;
   type: string;
   zoneName: string | null;
+  zoneId?: string | null;
 };
 
 export type QuoteVehicle = {
@@ -209,6 +215,7 @@ const normalizeApiBaseUrl = (value?: string | null) => {
   try {
     const parsed = new URL(candidate);
     if (!parsed.hostname || parsed.hostname === "undefined") return null;
+    if (isNativeRuntime && !isDevelopmentRuntime && parsed.protocol !== "https:") return null;
     return parsed.origin;
   } catch {
     return null;
@@ -223,10 +230,18 @@ export const getApiBaseUrl = () =>
 const jsonFetch = async <T>(path: string, init?: RequestInit) => {
   const baseUrl = getApiBaseUrl().replace(/\/$/, "");
   const endpoint = `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+  const headers = {
+    "X-Proactivitis-Client": "mobile",
+    "X-Proactivitis-Platform": Platform.OS,
+    ...((init?.headers as Record<string, string> | undefined) ?? {})
+  };
   let response: Response;
   try {
-    response = await fetch(endpoint, init);
+    response = await fetch(endpoint, { ...init, headers });
   } catch (error) {
+    if (!isDevelopmentRuntime) {
+      throw new Error("No se pudo conectar con Proactivitis de forma segura.");
+    }
     throw new Error(
       error instanceof Error
         ? `No se pudo conectar con Proactivitis (${baseUrl}): ${error.message}`
@@ -283,6 +298,113 @@ export const deleteMobileAccount = (token: string) =>
 export const fetchMobileCustomerSummary = (token: string) =>
   jsonFetch<MobileCustomerSummary>("/api/mobile/customer/summary", {
     headers: authHeader(token)
+  });
+
+export const updateMobileCustomerProfile = ({
+  token,
+  name
+}: {
+  token: string;
+  name: string;
+}) =>
+  jsonFetch<{ user: MobileUser }>("/api/mobile/customer/profile", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(token)
+    },
+    body: JSON.stringify({ name })
+  });
+
+export const saveMobileCustomerPreferences = ({
+  token,
+  destinations,
+  productTypes,
+  consentMarketing
+}: {
+  token: string;
+  destinations: string[];
+  productTypes: string[];
+  consentMarketing: boolean;
+}) =>
+  jsonFetch<{ ok: boolean; preference: MobileCustomerSummary["preference"] }>("/api/mobile/customer/preferences", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(token)
+    },
+    body: JSON.stringify({
+      countries: ["dominican-republic"],
+      destinations,
+      productTypes,
+      consentMarketing
+    })
+  });
+
+export const createMobileCustomerSetupIntent = (token: string) =>
+  jsonFetch<{ clientSecret: string }>("/api/mobile/customer/payment/setup-intent", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(token)
+    },
+    body: JSON.stringify({})
+  });
+
+export const saveMobileCustomerPayment = ({
+  token,
+  setupIntentId
+}: {
+  token: string;
+  setupIntentId: string;
+}) =>
+  jsonFetch<{ payment: MobileCustomerSummary["payment"] }>("/api/mobile/customer/payment/save", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(token)
+    },
+    body: JSON.stringify({ setupIntentId })
+  });
+
+export const submitMobileCustomerReview = ({
+  token,
+  bookingId,
+  rating,
+  title,
+  body,
+  locale = "es"
+}: {
+  token: string;
+  bookingId: string;
+  rating: number;
+  title?: string;
+  body: string;
+  locale?: string;
+}) =>
+  jsonFetch<{ ok: boolean }>("/api/mobile/customer/reviews", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(token)
+    },
+    body: JSON.stringify({ bookingId, rating, title, body, locale })
+  });
+
+export const markMobileNotificationsRead = ({
+  token,
+  notificationId
+}: {
+  token: string;
+  notificationId?: string;
+}) =>
+  jsonFetch<{ ok: boolean }>("/api/mobile/customer/notifications/read", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(token)
+    },
+    body: JSON.stringify({ notificationId })
   });
 
 export const fetchTransferLocations = async (query: string) => {

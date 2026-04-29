@@ -1,5 +1,5 @@
-import { Suspense } from "react";
-import Link from "next/link";
+import { Suspense, type ComponentProps } from "react";
+import NextLink from "next/link";
 import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import StructuredData from "@/components/schema/StructuredData";
 import { allLandings } from "@/data/transfer-landings";
@@ -38,6 +38,26 @@ type DiscoveryItem = {
   tag: string;
   badges: string[];
 };
+
+function Link({ href, rel, prefetch, ...props }: ComponentProps<typeof NextLink>) {
+  const hrefString =
+    typeof href === "string"
+      ? href
+      : typeof href === "object" && href && "pathname" in href
+        ? `${href.pathname ?? ""}${href.query ? "?" : ""}`
+        : "";
+  const isProDiscoveryStateUrl = hrefString.includes("/prodiscovery?");
+  const mergedRel = isProDiscoveryStateUrl ? [rel, "nofollow"].filter(Boolean).join(" ") : rel;
+
+  return (
+    <NextLink
+      {...props}
+      href={href}
+      rel={mergedRel || undefined}
+      prefetch={isProDiscoveryStateUrl ? false : prefetch}
+    />
+  );
+}
 
 type DiscoveryCopy = {
   title: string;
@@ -673,7 +693,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
     if (Number.isFinite(nextMinRating) && nextMinRating > 0) params.set("minRating", String(nextMinRating));
     if (nextSort !== "recommended") params.set("sort", nextSort);
     if (targetPage && targetPage > 1) params.set("page", String(targetPage));
-    const compareList = compareOverride ?? compareIds;
+    const compareList = compareOverride ?? [];
     if (compareList.length > 0) params.set("compare", compareList.join(","));
     const qs = params.toString();
     return qs ? `${localePrefix(locale)}/prodiscovery?${qs}` : `${localePrefix(locale)}/prodiscovery`;
@@ -876,12 +896,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
         "@id": `${PROACTIVITIS_URL}#website`,
         url: PROACTIVITIS_URL,
         name: "ProDiscovery",
-        inLanguage: localeName,
-        potentialAction: {
-          "@type": "SearchAction",
-          target: `${PROACTIVITIS_URL}${localePrefix(locale)}/prodiscovery?q={search_term_string}`,
-          "query-input": "required name=search_term_string"
-        }
+        inLanguage: localeName
       },
       {
         "@type": "CollectionPage",

@@ -1,3 +1,5 @@
+import { TOUR_MARKET_INTENTS } from "@/lib/tourMarketVariants";
+
 const INDEXABLE_TRANSFER_VARIANT_IDS = new Set([
   "private-airport-transfer",
   "luxury-vip-transfer",
@@ -11,16 +13,7 @@ const INDEXABLE_TRANSFER_VARIANT_IDS = new Set([
   "direct-nonstop-transfer"
 ]);
 
-const INDEXABLE_TOUR_MARKET_INTENT_IDS = new Set([
-  "best-tour-punta-cana",
-  "tour-with-hotel-pickup",
-  "family-friendly-tour",
-  "private-tour",
-  "luxury-tour",
-  "adventure-tour",
-  "all-inclusive-tour",
-  "safe-tour-option"
-]);
+const INDEXABLE_TOUR_MARKET_INTENT_IDS = new Set(TOUR_MARKET_INTENTS.map((intent) => intent.id));
 
 export const isIndexableTransferVariant = (variantId?: string) =>
   !variantId || INDEXABLE_TRANSFER_VARIANT_IDS.has(variantId);

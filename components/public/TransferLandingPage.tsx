@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
@@ -1244,6 +1244,9 @@ export async function TransferLandingPage({
 
   const landing = await resolveLanding(landingSlug);
   if (!landing) return notFound();
+  if (landing.landingSlug !== landingSlug) {
+    permanentRedirect(locale === "es" ? `/transfer/${landing.landingSlug}` : `/${locale}/transfer/${landing.landingSlug}`);
+  }
   const localizedLanding = normalizeTextDeep(await localizeLanding(landing, locale));
 
   const [originSlugRaw, destinationSlugRaw] = landing.landingSlug.includes("-to-")

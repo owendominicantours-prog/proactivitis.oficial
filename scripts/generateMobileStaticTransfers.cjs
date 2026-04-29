@@ -13,11 +13,23 @@ const toLocationSummary = (location, zoneName) => ({
   name: location.name,
   slug: location.slug,
   type: location.type,
-  zoneName
+  zoneName,
+  zoneId: location.zoneId
+});
+
+const toVehicle = (vehicle, price) => ({
+  id: vehicle.id,
+  name: vehicle.name,
+  category: vehicle.category,
+  minPax: vehicle.minPax,
+  maxPax: vehicle.maxPax,
+  imageUrl: vehicle.imageUrl,
+  price
 });
 
 async function main() {
-  const routes = await prisma.transferRoute.findMany({
+  const [routes, locations] = await Promise.all([
+    prisma.transferRoute.findMany({
     where: {
       active: true,
       prices: {
@@ -50,9 +62,17 @@ async function main() {
       prices: {
         where: { vehicle: { active: true } },
         include: { vehicle: true }
-      }
+      },
+      overrides: true
     }
-  });
+    }),
+    prisma.transferLocation.findMany({
+      where: { active: true },
+      take: 600,
+      orderBy: [{ zone: { name: "asc" } }, { type: "asc" }, { name: "asc" }],
+      include: { zone: true }
+    })
+  ]);
 
   const payload = routes
     .map((route) => {
@@ -95,13 +115,40 @@ async function main() {
     .filter(Boolean);
 
   const outputPath = path.join(rootDir, "mobile", "src", "staticTransfers.ts");
-  const file = `import type { MobileTransferRoute } from "./api";\n\nexport const staticMobileTransferRoutes = ${JSON.stringify(
+  const locationPayload = locations.map((location) => toLocationSummary(location, location.zone?.name ?? null));
+  const pricePayload = routes.map((route) => ({
+    id: route.id,
+    zoneAId: route.zoneAId,
+    zoneBId: route.zoneBId,
+    zoneAName: route.zoneA.name,
+    zoneBName: route.zoneB.name,
+    currency: route.prices[0]?.currency ?? "USD",
+    vehicles: route.prices
+      .filter((price) => price.price > 0 && price.vehicle)
+      .map((price) => toVehicle(price.vehicle, price.price)),
+    overrides: route.overrides.map((override) => ({
+      vehicleId: override.vehicleId,
+      originLocationId: override.originLocationId,
+      destinationLocationId: override.destinationLocationId,
+      price: override.price
+    }))
+  }));
+
+  const file = `import type { LocationSummary, MobileTransferRoute } from "./api";\n\nexport const staticMobileTransferRoutes = ${JSON.stringify(
     payload,
     null,
     2
-  )} satisfies MobileTransferRoute[];\n`;
+  )} satisfies MobileTransferRoute[];\n\nexport const staticMobileTransferLocations = ${JSON.stringify(
+    locationPayload,
+    null,
+    2
+  )} satisfies LocationSummary[];\n\nexport const staticMobileTransferPriceRoutes = ${JSON.stringify(
+    pricePayload,
+    null,
+    2
+  )};\n`;
   fs.writeFileSync(outputPath, file, "utf8");
-  console.log(`Generated ${payload.length} transfer routes in ${path.relative(rootDir, outputPath)}`);
+  console.log(`Generated ${payload.length} transfer routes, ${locationPayload.length} locations and ${pricePayload.length} price routes in ${path.relative(rootDir, outputPath)}`);
 }
 
 main()

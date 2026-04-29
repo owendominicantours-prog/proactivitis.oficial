@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import type { ComponentType, ReactNode } from "react";
 import { Component, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useFonts } from "expo-font";
 import * as SecureStore from "expo-secure-store";
 import {
   BackHandler,
@@ -12,7 +13,6 @@ import {
   Linking,
   Modal,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text as RNText,
@@ -40,19 +40,20 @@ import {
   MessageCircle,
   Minus,
   Phone,
+  Pencil,
   Plane,
   Plus,
   Search,
   ShieldCheck,
   Star,
-  User
+  User,
+  X
 } from "lucide-react-native";
 
 import {
   featuredTours,
   tourCategories,
   transferRoutes,
-  transferVehicles,
   trustStats,
   type Tour
 } from "./src/catalog";
@@ -60,6 +61,7 @@ import {
   buildCheckoutUrl,
   buildTourCheckoutUrl,
   confirmMobileBooking,
+  createMobileCustomerSetupIntent,
   createMobilePaymentIntent,
   deleteMobileAccount,
   fetchMobileConfig,
@@ -72,7 +74,12 @@ import {
   fetchTransferQuote,
   getApiBaseUrl,
   loginMobileUser,
+  markMobileNotificationsRead,
   registerMobileUser,
+  saveMobileCustomerPayment,
+  saveMobileCustomerPreferences,
+  submitMobileCustomerReview,
+  updateMobileCustomerProfile,
   type LocationSummary,
   type MobileCustomerSummary,
   type MobileSession,
@@ -84,18 +91,91 @@ import {
   type QuoteVehicle
 } from "./src/api";
 import { staticMobileTours } from "./src/staticTours";
-import { staticMobileTransferRoutes } from "./src/staticTransfers";
+import {
+  staticMobileTransferLocations,
+  staticMobileTransferPriceRoutes,
+  staticMobileTransferRoutes
+} from "./src/staticTransfers";
 import { AppStripeProvider, StripeDeepLinkHandler, useAppStripe } from "./src/stripe";
 import { colors, links, shadows } from "./src/theme";
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold
+} from "@expo-google-fonts/inter";
+import {
+  Geist_400Regular,
+  Geist_600SemiBold,
+  Geist_700Bold,
+  Geist_800ExtraBold,
+  Geist_900Black
+} from "@expo-google-fonts/geist";
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 type TabKey = "home" | "tours" | "transfers" | "zones" | "profile";
 type TripType = "one-way" | "round-trip";
 type IconType = ComponentType<{ size?: number; color?: string; strokeWidth?: number; fill?: string }>;
 type AppLanguage = "es" | "en" | "fr";
 
+const appFonts = {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  Geist_400Regular,
+  Geist_600SemiBold,
+  Geist_700Bold,
+  Geist_800ExtraBold,
+  Geist_900Black
+};
+
+const fontFamily = {
+  body: "Inter_400Regular",
+  medium: "Inter_500Medium",
+  semibold: "Inter_600SemiBold",
+  bold: "Inter_700Bold",
+  heading: "Geist_700Bold",
+  headingStrong: "Geist_800ExtraBold",
+  headingBlack: "Geist_900Black"
+} as const;
+
+const resolveFontFamily = (style: TextProps["style"]) => {
+  const flattened = StyleSheet.flatten(style) as
+    | { fontFamily?: string; fontWeight?: string | number; fontSize?: number }
+    | undefined;
+
+  if (flattened?.fontFamily) return flattened.fontFamily;
+
+  const fontSize = typeof flattened?.fontSize === "number" ? flattened.fontSize : 14;
+  const rawWeight = flattened?.fontWeight ?? "400";
+  const weight =
+    typeof rawWeight === "number"
+      ? rawWeight
+      : rawWeight === "bold"
+        ? 700
+        : Number.parseInt(String(rawWeight), 10) || 400;
+
+  if (fontSize >= 24 || weight >= 900) return fontFamily.headingBlack;
+  if (fontSize >= 18 || weight >= 800) return fontFamily.headingStrong;
+  if (weight >= 700) return fontFamily.bold;
+  if (weight >= 600) return fontFamily.semibold;
+  if (weight >= 500) return fontFamily.medium;
+  return fontFamily.body;
+};
+
 type LanguageContextValue = {
   language: AppLanguage;
   setLanguage: (language: AppLanguage) => void;
+};
+
+type PrivacyConsent = {
+  essential: true;
+  personalization: boolean;
+  analytics: boolean;
+  marketing: boolean;
+  acceptedAt: string;
+  version: number;
 };
 
 const languageOptions: Array<{ code: AppLanguage; title: string; subtitle: string }> = [
@@ -127,27 +207,32 @@ const englishText: Record<string, string> = {
   "Zonas": "Areas",
   "Perfil": "Profile",
   "Traslados privados": "Private transfers",
-  "Busca tu ruta real": "Find your real route",
-  "Escribe tu aeropuerto, hotel o zona. La app te muestra coincidencias antes de calcular.":
-    "Enter your airport, hotel, or area. The app shows matches before calculating.",
+  "Reserva tu traslado privado": "Book your private transfer",
+  "Precio fijo, conductor confirmado y recogida en tu hotel o aeropuerto.":
+    "Fixed price, confirmed driver, and pickup at your hotel or airport.",
   "Elige origen y destino": "Choose pickup and drop-off",
-  "No dejamos una ruta marcada por defecto para que reserves exactamente donde necesitas.":
-    "We do not preselect a route, so you book exactly what you need.",
+  "Elige tu punto exacto de recogida.": "Choose your exact pickup point.",
+  "Busca tu hotel, aeropuerto o zona.": "Search your hotel, airport, or area.",
   "Solo ida": "One way",
   "Ida y vuelta": "Round trip",
   "Origen": "Pickup",
   "Destino": "Drop-off",
-  "Ej: Aeropuerto Punta Cana": "Ex: Punta Cana Airport",
-  "Ej: hotel, villa o zona": "Ex: hotel, villa, or area",
+  "Aeropuerto, hotel o zona": "Airport, hotel, or area",
+  "Hotel, villa o zona": "Hotel, villa, or area",
+  "Seleccionado. Puedes tocar el campo para editar.": "Selected. Tap the field to edit.",
+  "Escribiendo. Elige una sugerencia para confirmar.": "Typing. Choose a suggestion to confirm.",
+  "No encontramos ese lugar exacto. Prueba con hotel, aeropuerto o zona cercana.":
+    "We could not find that exact place. Try a hotel, airport, or nearby area.",
   "Rutas populares": "Popular routes",
   "Fecha salida": "Departure date",
   "Hora": "Time",
   "Fecha regreso": "Return date",
   "Hora regreso": "Return time",
   "Pasajeros": "Passengers",
-  "Buscar tarifa": "Search fare",
+  "Ver precio ahora": "See price now",
   "Buscando...": "Searching...",
   "Vehiculos disponibles": "Available vehicles",
+  "Vehículos disponibles": "Available vehicles",
   "Reservar": "Book",
   "Reservar ahora": "Book now",
   "Guardar ruta": "Save route",
@@ -156,12 +241,18 @@ const englishText: Record<string, string> = {
   "Selecciona el hotel o aeropuerto exacto antes de cotizar.": "Select the exact hotel or airport before quoting.",
   "Indica fecha y hora de regreso.": "Add return date and time.",
   "No hay vehiculos disponibles para ese grupo.": "No vehicles are available for that group.",
+  "No hay vehículos disponibles para ese grupo.": "No vehicles are available for that group.",
   "No se pudo calcular la tarifa real.": "The live fare could not be calculated.",
-  "No encontramos coincidencias. Prueba con hotel, aeropuerto o zona.": "No matches found. Try a hotel, airport, or area.",
+  "Precio fijo sin sorpresas": "Fixed price, no surprises",
+  "Conductor te espera con tu nombre": "Your driver waits with your name",
+  "Soporte por WhatsApp": "WhatsApp support",
+  "Pago seguro con Stripe": "Secure payment with Stripe",
+  "Confirmacion por WhatsApp": "WhatsApp confirmation",
+  "Soporte antes y después de reservar": "Support before and after booking",
   "Reserva": "Booking",
   "Reserva segura": "Secure booking",
   "Confirma tu experiencia en minutos": "Confirm your experience in minutes",
-  "Revisa el producto, deja tus datos y continua al pago seguro de Proactivitis.":
+  "Revisa tu reserva, deja tus datos y paga seguro con Proactivitis.":
     "Review your product, enter your details, and continue to secure Proactivitis payment.",
   "Datos": "Details",
   "Recogida": "Pickup",
@@ -174,12 +265,14 @@ const englishText: Record<string, string> = {
   "Elige fecha": "Choose date",
   "Elige hora": "Choose time",
   "Manana": "Tomorrow",
-  "Tu seleccion": "Your selection",
+  "Tu selección": "Your selection",
   "Selecciona una fecha": "Select a date",
   "Selecciona una hora": "Select a time",
   "El precio se actualiza antes de continuar.": "The price updates before continuing.",
-  "Selecciona una fecha, una hora y la cantidad de personas.": "Select a date, a time, and the number of people.",
-  "Toca la fecha para abrir el calendario y elegir cualquier dia futuro.":
+  "Selecciona fecha, hora y viajeros.": "Select date, time, and travelers.",
+  "Seleccionar fecha": "Select date",
+  "Seleccionar hora": "Select time",
+  "Toca la fecha para abrir el calendario y elegir cualquier día futuro.":
     "Tap the date to open the calendar and choose any future day.",
   "Elige el horario que prefieres para esta experiencia.": "Choose the time you prefer for this experience.",
   "por adulto, con datos sincronizados desde la web.": "per adult, synced from the website.",
@@ -187,17 +280,18 @@ const englishText: Record<string, string> = {
   "Adolescente": "Youth",
   "Adolescentes": "Youth",
   "Nino": "Child",
-  "Ninos": "Children",
+  "Niño": "Child",
+  "Niños": "Children",
   "aplicado. Ahorras": "applied. You save",
   "Fecha de la experiencia": "Experience date",
-  "Puedes reservar para una fecha mas futura.": "You can book for a later future date.",
+  "Puedes reservar para una fecha más futura.": "You can book for a later future date.",
   "Mes anterior": "Previous month",
   "Mes siguiente": "Next month",
   "Datos de contacto": "Contact details",
   "Nombre": "First name",
   "Apellido": "Last name",
   "Email": "Email",
-  "Telefono": "Phone",
+  "Teléfono": "Phone",
   "Recogida y preferencias": "Pickup and preferences",
   "Punto principal": "Main pickup point",
   "Hotel o punto de recogida": "Hotel or pickup point",
@@ -211,33 +305,35 @@ const englishText: Record<string, string> = {
   "No pudimos buscar hoteles ahora. Usaremos lo que escribiste como punto de recogida.":
     "We could not search hotels right now. We will use what you typed as the pickup point.",
   "Notas especiales": "Special notes",
-  "Pago nativo protegido por Stripe y confirmacion por Proactivitis.":
-    "Native payment protected by Stripe and confirmed by Proactivitis.",
+  "Pago protegido por Stripe y confirmación por Proactivitis.":
+    "Payment protected by Stripe and confirmed by Proactivitis.",
   "Total a pagar": "Total to pay",
-  "Pagar con Stripe": "Pay with Stripe",
+  "Pagar seguro con Stripe": "Pay securely with Stripe",
   "Procesando...": "Processing...",
-  "Abrir checkout web": "Open web checkout",
+  "Eliminando...": "Deleting...",
+  "Procesando eliminación...": "Processing deletion...",
+  "Pagar en navegador": "Pay in browser",
   "Confirmar por WhatsApp": "Confirm by WhatsApp",
   "Volver": "Back",
   "Indica el nombre.": "Enter your first name.",
   "Indica el apellido.": "Enter your last name.",
-  "Indica un email valido.": "Enter a valid email.",
+  "Indica un email válido.": "Enter a valid email.",
   "Indica hotel o punto de recogida.": "Enter hotel or pickup point.",
-  "Stripe nativo no esta disponible en la vista web. Usa checkout web o prueba en Android/iOS.":
+  "Stripe nativo no está disponible en la vista web. Usa checkout web o prueba en Android/iOS.":
     "Native Stripe is not available in web view. Use web checkout or test on Android/iOS.",
-  "Stripe aun no esta configurado en esta build. Revisa NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.":
+  "Stripe aún no está configurado en esta build. Revisa NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.":
     "Stripe is not configured in this build yet. Check NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.",
   "Preparando pago seguro...": "Preparing secure payment...",
-  "Stripe no devolvio client secret para abrir el pago.": "Stripe did not return a client secret to open payment.",
+  "Stripe no devolvió client secret para abrir el pago.": "Stripe did not return a client secret to open payment.",
   "Abriendo pago seguro...": "Opening secure payment...",
   "El pago fue cancelado o no se completo.": "The payment was canceled or not completed.",
-  "Pago confirmado. Tu reserva quedo registrada en Proactivitis.": "Payment confirmed. Your booking is registered with Proactivitis.",
+  "Pago confirmado. Tu reserva quedó registrada en Proactivitis.": "Payment confirmed. Your booking is registered with Proactivitis.",
   "No se pudo completar el pago.": "The payment could not be completed.",
   "Abriendo checkout web de Proactivitis...": "Opening Proactivitis web checkout...",
   "Cuenta": "Account",
   "Contacto y soporte": "Contact and support",
-  "Habla con Proactivitis antes o despues de reservar.": "Talk to Proactivitis before or after booking.",
-  "Respuesta rapida para reservas": "Fast help for bookings",
+  "Habla con Proactivitis antes o después de reservar.": "Talk to Proactivitis before or after booking.",
+  "Respuesta rápida para reservas": "Fast help for bookings",
   "Llamar ahora": "Call now",
   "Atencion directa": "Direct support",
   "Soporte por correo": "Email support",
@@ -248,14 +344,20 @@ const englishText: Record<string, string> = {
   "Perfil Proactivitis": "Proactivitis Profile",
   "Tus reservas quedan asociadas a este correo.": "Your bookings are linked to this email.",
   "Cliente Proactivitis": "Proactivitis Customer",
-  "Cerrar sesion": "Sign out",
+  "Cerrar sesión": "Sign out",
+  "Eliminar cuenta": "Delete account",
+  "Página web de eliminación": "Deletion web page",
+  "Se cerrará tu cuenta de cliente, sesiones, preferencias y métodos de pago guardados. Podemos retener registros de reservas y pagos cuando sea necesario.":
+    "Your customer account, sessions, preferences, and saved payment methods will be closed. We may retain booking and payment records when required.",
+  "Cancelar": "Cancel",
+  "Eliminar": "Delete",
   "WhatsApp": "WhatsApp",
   "Soporte directo": "Direct support",
   "Web": "Website",
   "Entra a Proactivitis": "Sign in to Proactivitis",
   "Conecta tus datos con la base real de la web.": "Connect your details with the live website database.",
   "Accede a tus reservas": "Access your bookings",
-  "Inicia sesion para guardar tus datos, revisar planes y continuar reservas desde cualquier dispositivo.":
+  "Inicia sesión para guardar tus datos, revisar planes y continuar reservas desde cualquier dispositivo.":
     "Sign in to save your details, review plans, and continue bookings from any device.",
   "Tu perfil de viaje": "Your travel profile",
   "Tus reservas, favoritos y preferencias quedan guardados en tu cuenta.":
@@ -265,6 +367,7 @@ const englishText: Record<string, string> = {
   "No pudimos cargar tu cuenta ahora mismo.": "We could not load your account right now.",
   "Abrir portal web": "Open web portal",
   "Reservas, pagos, resenas y avisos de tu cuenta.": "Bookings, payments, reviews, and account alerts.",
+  "Reservas, pagos, reseñas y avisos de tu cuenta.": "Bookings, payments, reviews, and account alerts.",
   "Proximas": "Upcoming",
   "Completadas": "Completed",
   "Resenas": "Reviews",
@@ -276,9 +379,11 @@ const englishText: Record<string, string> = {
   "Confirmada": "Confirmed",
   "Sin reservas todavia": "No bookings yet",
   "Cuando reserves, tu historial aparecera aqui.": "When you book, your history will appear here.",
+  "Cuando reserves, tu historial aparecerá aquí.": "When you book, your history will appear here.",
   "Mis reservas": "My bookings",
   "reservas en tu historial": "bookings in your history",
   "Aun no tienes reservas registradas": "You do not have registered bookings yet",
+  "Aún no tienes reservas registradas": "You do not have registered bookings yet",
   "Tarjetas guardadas": "Saved cards",
   "Tarjeta": "Card",
   "Agrega una tarjeta para reservar mas rapido": "Add a card to book faster",
@@ -309,24 +414,24 @@ const englishText: Record<string, string> = {
   "Elige donde quieres vivir la experiencia": "Choose where you want the experience",
   "Entra por ciudad y mira solo los tours disponibles en esa zona.": "Enter by city and see only tours available in that area.",
   "Todos los destinos": "All destinations",
-  "Ver todo el catalogo": "View full catalog",
+  "Ver todo el catálogo": "View full catalog",
   "Ciudad": "City",
   "Cambiar ciudad": "Change city",
   "Ciudad seleccionada": "Selected city",
-  "Tours filtrados por ciudad. Puedes reservar el tour o cotizar transfer para llegar comodo.":
+  "Tours filtrados por ciudad. Puedes reservar el tour o cotizar transfer para llegar cómodo.":
     "Tours filtered by city. You can book the tour or quote a transfer to arrive comfortably.",
   "Todas": "All",
   "Todas las ciudades": "All cities",
   "No hay tours en esta zona": "No tours in this area",
-  "Prueba otra zona o revisa el catalogo completo.": "Try another area or view the full catalog.",
+  "Prueba otra zona o revisa el catálogo completo.": "Try another area or view the full catalog.",
   "Experiencias reales de la web, fotos del producto, detalles claros y checkout dentro de la app.":
     "Live website experiences, product photos, clear details, and checkout inside the app.",
-  "Catalogo Proactivitis": "Proactivitis catalog",
-  "ðŸŒ´ Catalogo Proactivitis": "Proactivitis catalog",
+  "Catálogo Proactivitis": "Proactivitis catalog",
+  "🌴 Catálogo Proactivitis": "Proactivitis catalog",
   "Tours listos para reservar": "Tours ready to book",
-  "ðŸ“¸ Galeria": "Gallery",
-  "âš¡ Reserva rapida": "Fast booking",
-  "ðŸ’¬ Soporte humano": "Human support",
+  "📸 Galería": "Gallery",
+  "Reserva rápida": "Fast booking",
+  "💬 Soporte humano": "Human support",
   "Buscar Saona, buggy, parasailing...": "Search Saona, buggy, parasailing...",
   "Actualizando productos...": "Updating products...",
   "Todos los planes": "All plans",
@@ -341,7 +446,7 @@ const englishText: Record<string, string> = {
   "Uso de cookies y tecnologias similares.": "Use of cookies and similar technologies.",
   "Informacion legal": "Legal information",
   "Empresa, contacto y datos de operacion.": "Company, contact, and operating details.",
-  "Ver politicas": "View policies",
+  "Ver políticas": "View policies",
   "Error de pantalla": "Screen error",
   "La app encontro un problema en esta vista. Vuelve y prueba otra vez.": "The app found a problem in this view. Go back and try again.",
   "Volver al inicio": "Back to home",
@@ -349,17 +454,16 @@ const englishText: Record<string, string> = {
   "Agua": "Water",
   "Aventura": "Adventure",
   "Cultura": "Culture",
-  "Premium": "Premium",
   "Ver tours 🔥": "View tours 🔥",
   "Buscar transfer 🚘": "Find transfer 🚘",
-  "ðŸŒ´ Tours, transfers y planes privados": "Tours, transfers, and private plans",
-  "Tu viaje en RD, claro y sin estres": "Your DR trip, clear and stress-free",
-  "Elige tours con fotos reales, cotiza tu traslado y reserva con ayuda local 24/7. Aqui vienes a disfrutar, nosotros organizamos lo dificil.":
+  "🌴 Tours, transfers y planes privados": "Tours, transfers, and private plans",
+  "Tu viaje en RD, claro y sin estrés": "Your DR trip, clear and stress-free",
+  "Elige tours con fotos reales, cotiza tu traslado y reserva con ayuda local 24/7. Aquí vienes a disfrutar, nosotros organizamos lo difícil.":
     "Choose tours with real photos, quote your transfer, and book with 24/7 local help. You come to enjoy; we organize the hard part.",
-  "âœ¨ Recomendado para familias, parejas y grupos que quieren reservar sin vueltas.":
+  "✨ Recomendado para familias, parejas y grupos que quieren reservar sin vueltas.":
     "Recommended for families, couples, and groups who want a simple booking experience.",
-  "ðŸ“¸ Fotos reales": "Real photos",
-  "ðŸ’µ Precio claro": "Clear price",
+  "📸 Fotos reales": "Real photos",
+  "💵 Precio claro": "Clear price",
   "Transfers": "Transfers",
   "Soporte": "Support",
   "Tours que se sienten reales": "Tours that feel real",
@@ -393,13 +497,13 @@ const englishText: Record<string, string> = {
   "Instrucciones": "Instructions",
   "Idiomas": "Languages",
   "Horarios": "Times",
-  "Dias": "Days",
+  "Días": "Days",
   "Capacidad": "Capacity",
-  "Edad minima": "Minimum age",
-  "Nivel fisico": "Physical level",
+  "Edad mínima": "Minimum age",
+  "Nivel físico": "Physical level",
   "Accesibilidad": "Accessibility",
   "Requisitos": "Requirements",
-  "Cancelacion": "Cancellation",
+  "Cancelación": "Cancellation",
   "Incluye": "Included",
   "No incluido": "Not included",
   "Adultos": "Adults",
@@ -413,16 +517,16 @@ const englishText: Record<string, string> = {
   "Uso de cookies en la web y servicios conectados.": "Cookie use on the website and connected services.",
   "Datos legales, contacto y notificaciones formales.": "Legal details, contact, and formal notices.",
   "Cancelaciones y reembolsos": "Cancellations and refunds",
-  "Aplican los terminos y la politica indicada en cada producto.": "Terms and the policy shown on each product apply.",
+  "Aplican los términos y la política indicada en cada producto.": "Terms and the policy shown on each product apply.",
   "Desde": "From",
   "Opciones": "Options",
   "Ajusta la cantidad": "Adjust quantity",
-  "Legal y politicas": "Legal and policies",
+  "Legal y políticas": "Legal and policies",
   "Politicas y legal": "Policies and legal",
-  "Accesos visibles para privacidad, terminos, cookies, informacion legal y cancelaciones.":
+  "Accesos visibles para privacidad, términos, cookies, información legal y cancelaciones.":
     "Visible access to privacy, terms, cookies, legal information, and cancellations.",
-  "Cancelacion gratuita": "Free cancellation",
-  "Cancelacion flexible": "Flexible cancellation",
+  "Cancelación gratuita": "Free cancellation",
+  "Cancelación flexible": "Flexible cancellation",
   "No reembolsable": "Non-refundable",
   "Confirmacion inmediata": "Instant confirmation",
   "Confirmacion manual": "Manual confirmation",
@@ -434,6 +538,9 @@ const englishText: Record<string, string> = {
   "Descubre Republica Dominicana con reservas claras": "Discover the Dominican Republic with clear bookings",
   "Republica Dominicana, bien organizada": "Dominican Republic, well organized",
   "Tours y traslados en Republica Dominicana": "Tours and transfers in the Dominican Republic",
+  "Reserva traslados y tours confiables en República Dominicana": "Book trusted transfers and tours in the Dominican Republic",
+  "Precio claro, soporte humano y coordinación local desde que reservas.":
+    "Clear pricing, human support, and local coordination from the moment you book.",
   "Reserva tours, traslados privados y planes seleccionados con precios transparentes, fotos reales y asistencia local en varios idiomas.":
     "Book tours, private transfers, and selected plans with transparent prices, real photos, and local assistance in multiple languages.",
   "Tours, traslados privados y planes seleccionados con precios claros y asistencia local.":
@@ -445,14 +552,36 @@ const englishText: Record<string, string> = {
   "Fotos verificadas": "Verified photos",
   "Precio transparente": "Transparent price",
   "Asistencia 24/7": "24/7 assistance",
+  "Reservar traslado": "Book transfer",
   "Explorar tours": "Explore tours",
   "Cotizar traslado": "Quote transfer",
   "Experiencias seleccionadas": "Selected experiences",
-  "Actividades con detalles, fotos y precios conectados al catalogo web.":
+  "Actividades con detalles, fotos y precios conectados al catálogo web.":
     "Activities with details, photos, and prices connected to the web catalog.",
   "Busca aeropuertos, hoteles y zonas reales para calcular tu ruta antes de reservar.":
     "Search real airports, hotels, and areas to calculate your route before booking.",
+  "Busca tu hotel, aeropuerto o zona y ve el precio antes de reservar.":
+    "Search your hotel, airport, or area and see the price before booking.",
+  "Ver disponibilidad": "Check availability",
+  "Por qué elegir esta experiencia": "Why choose this experience",
+  "Recogida en hotel incluida": "Hotel pickup included",
+  "Fotos reales verificadas": "Verified real photos",
+  "Confirmación rápida": "Fast confirmation",
+  "Confirmación segura": "Secure confirmation",
+  "Soporte humano": "Human support",
+  "Pago seguro": "Secure payment",
+  "Galería": "Gallery",
+  "Fotos reales de la experiencia": "Real experience photos",
+  "Duración": "Duration",
+  "Descripción": "Description",
+  "Más reservado": "Most booked",
+  "Mejor precio": "Best price",
+  "Recogida incluida": "Pickup included",
+  "Premium": "Premium",
+  "Ideal familias": "Great for families",
   "Reserva con asistencia local": "Book with local assistance",
+  "Completa tus datos en la app y finaliza con checkout seguro. Si necesitas ayuda, nuestro equipo te acompaña antes y durante tu experiencia.":
+    "Enter your details in the app and finish with secure checkout. If you need help, our team supports you before and during your experience.",
   "Completa tus datos en la app y finaliza con checkout seguro. Si necesitas ayuda, nuestro equipo te acompana antes y durante tu experiencia.":
     "Enter your details in the app and finish with secure checkout. If you need help, our team supports you before and during your experience."
 };
@@ -477,27 +606,32 @@ const frenchText: Record<string, string> = {
   "Zonas": "Zones",
   "Perfil": "Profil",
   "Traslados privados": "Transferts prives",
-  "Busca tu ruta real": "Trouvez votre vrai trajet",
-  "Escribe tu aeropuerto, hotel o zona. La app te muestra coincidencias antes de calcular.":
-    "Ecrivez votre aeroport, hotel ou zone. L'app affiche les resultats avant le calcul.",
+  "Reserva tu traslado privado": "Reservez votre transfert prive",
+  "Precio fijo, conductor confirmado y recogida en tu hotel o aeropuerto.":
+    "Prix fixe, chauffeur confirme et prise en charge a votre hotel ou aeroport.",
   "Elige origen y destino": "Choisissez depart et arrivee",
-  "No dejamos una ruta marcada por defecto para que reserves exactamente donde necesitas.":
-    "Aucun trajet n'est preselectionne afin de reserver exactement ce qu'il vous faut.",
+  "Elige tu punto exacto de recogida.": "Choisissez votre point de prise en charge exact.",
+  "Busca tu hotel, aeropuerto o zona.": "Cherchez votre hotel, aeroport ou zone.",
   "Solo ida": "Aller simple",
   "Ida y vuelta": "Aller-retour",
   "Origen": "Depart",
   "Destino": "Arrivee",
-  "Ej: Aeropuerto Punta Cana": "Ex: aeroport de Punta Cana",
-  "Ej: hotel, villa o zona": "Ex: hotel, villa ou zone",
+  "Aeropuerto, hotel o zona": "Aeroport, hotel ou zone",
+  "Hotel, villa o zona": "Hotel, villa ou zone",
+  "Seleccionado. Puedes tocar el campo para editar.": "Selectionne. Touchez le champ pour modifier.",
+  "Escribiendo. Elige una sugerencia para confirmar.": "Saisie en cours. Choisissez une suggestion pour confirmer.",
+  "No encontramos ese lugar exacto. Prueba con hotel, aeropuerto o zona cercana.":
+    "Nous ne trouvons pas ce lieu exact. Essayez un hotel, aeroport ou zone proche.",
   "Rutas populares": "Trajets populaires",
   "Fecha salida": "Date de depart",
   "Hora": "Heure",
   "Fecha regreso": "Date de retour",
   "Hora regreso": "Heure de retour",
   "Pasajeros": "Passagers",
-  "Buscar tarifa": "Chercher le tarif",
+  "Ver precio ahora": "Voir le prix maintenant",
   "Buscando...": "Recherche...",
   "Vehiculos disponibles": "Vehicules disponibles",
+  "Vehículos disponibles": "Vehicules disponibles",
   "Reservar": "Reserver",
   "Reservar ahora": "Reserver maintenant",
   "Guardar ruta": "Sauvegarder le trajet",
@@ -506,13 +640,20 @@ const frenchText: Record<string, string> = {
   "Selecciona el hotel o aeropuerto exacto antes de cotizar.": "Choisissez l'hotel ou l'aeroport exact avant le devis.",
   "Indica fecha y hora de regreso.": "Ajoutez la date et l'heure de retour.",
   "No hay vehiculos disponibles para ese grupo.": "Aucun vehicule disponible pour ce groupe.",
+  "No hay vehículos disponibles para ese grupo.": "Aucun vehicule disponible pour ce groupe.",
   "No se pudo calcular la tarifa real.": "Impossible de calculer le tarif reel.",
-  "No encontramos coincidencias. Prueba con hotel, aeropuerto o zona.": "Aucun resultat. Essayez un hotel, aeroport ou zone.",
+  "Precio fijo sin sorpresas": "Prix fixe, sans surprise",
+  "Conductor te espera con tu nombre": "Le chauffeur vous attend avec votre nom",
+  "Soporte por WhatsApp": "Assistance WhatsApp",
+  "Pago seguro con Stripe": "Paiement securise avec Stripe",
+  "Confirmacion por WhatsApp": "Confirmation par WhatsApp",
+  "Confirmación por WhatsApp": "Confirmation par WhatsApp",
+  "Soporte antes y después de reservar": "Assistance avant et apres la reservation",
   "Reserva": "Reservation",
   "Reserva segura": "Reservation securisee",
   "Confirma tu experiencia en minutos": "Confirmez votre experience en quelques minutes",
-  "Revisa el producto, deja tus datos y continua al pago seguro de Proactivitis.":
-    "Verifiez le produit, ajoutez vos donnees et continuez vers le paiement securise Proactivitis.",
+  "Revisa tu reserva, deja tus datos y paga seguro con Proactivitis.":
+    "Verifiez votre reservation, ajoutez vos donnees et payez en securite avec Proactivitis.",
   "Datos": "Infos",
   "Recogida": "Prise en charge",
   "Pago": "Paiement",
@@ -524,12 +665,14 @@ const frenchText: Record<string, string> = {
   "Elige fecha": "Choisir la date",
   "Elige hora": "Choisir l'heure",
   "Manana": "Demain",
-  "Tu seleccion": "Votre selection",
+  "Tu selección": "Votre selection",
   "Selecciona una fecha": "Choisissez une date",
   "Selecciona una hora": "Choisissez une heure",
   "El precio se actualiza antes de continuar.": "Le prix se met a jour avant de continuer.",
-  "Selecciona una fecha, una hora y la cantidad de personas.": "Choisissez une date, une heure et le nombre de personnes.",
-  "Toca la fecha para abrir el calendario y elegir cualquier dia futuro.":
+  "Selecciona fecha, hora y viajeros.": "Choisissez la date, l'heure et les voyageurs.",
+  "Seleccionar fecha": "Choisir une date",
+  "Seleccionar hora": "Choisir une heure",
+  "Toca la fecha para abrir el calendario y elegir cualquier día futuro.":
     "Touchez la date pour ouvrir le calendrier et choisir un jour futur.",
   "Elige el horario que prefieres para esta experiencia.": "Choisissez l'horaire que vous preferez pour cette experience.",
   "por adulto, con datos sincronizados desde la web.": "par adulte, synchronise depuis le site web.",
@@ -537,17 +680,18 @@ const frenchText: Record<string, string> = {
   "Adolescente": "Adolescent",
   "Adolescentes": "Adolescents",
   "Nino": "Enfant",
-  "Ninos": "Enfants",
+  "Niño": "Enfant",
+  "Niños": "Enfants",
   "aplicado. Ahorras": "applique. Vous economisez",
   "Fecha de la experiencia": "Date de l'experience",
-  "Puedes reservar para una fecha mas futura.": "Vous pouvez reserver pour une date future plus lointaine.",
+  "Puedes reservar para una fecha más futura.": "Vous pouvez reserver pour une date future plus lointaine.",
   "Mes anterior": "Mois precedent",
   "Mes siguiente": "Mois suivant",
   "Datos de contacto": "Coordonnees",
   "Nombre": "Prenom",
   "Apellido": "Nom",
   "Email": "Email",
-  "Telefono": "Telephone",
+  "Teléfono": "Telephone",
   "Recogida y preferencias": "Prise en charge et preferences",
   "Punto principal": "Point principal",
   "Hotel o punto de recogida": "Hotel ou point de prise en charge",
@@ -561,33 +705,35 @@ const frenchText: Record<string, string> = {
   "No pudimos buscar hoteles ahora. Usaremos lo que escribiste como punto de recogida.":
     "Impossible de chercher les hotels maintenant. Nous utiliserons le point ecrit.",
   "Notas especiales": "Notes speciales",
-  "Pago nativo protegido por Stripe y confirmacion por Proactivitis.":
-    "Paiement natif protege par Stripe et confirmation par Proactivitis.",
+  "Pago protegido por Stripe y confirmación por Proactivitis.":
+    "Paiement protege par Stripe et confirmation par Proactivitis.",
   "Total a pagar": "Total a payer",
-  "Pagar con Stripe": "Payer avec Stripe",
+  "Pagar seguro con Stripe": "Payer en securite avec Stripe",
   "Procesando...": "Traitement...",
-  "Abrir checkout web": "Ouvrir le checkout web",
+  "Eliminando...": "Suppression...",
+  "Procesando eliminación...": "Suppression en cours...",
+  "Pagar en navegador": "Payer dans le navigateur",
   "Confirmar por WhatsApp": "Confirmer par WhatsApp",
   "Volver": "Retour",
   "Indica el nombre.": "Ajoutez le prenom.",
   "Indica el apellido.": "Ajoutez le nom.",
-  "Indica un email valido.": "Ajoutez un email valide.",
+  "Indica un email válido.": "Ajoutez un email valide.",
   "Indica hotel o punto de recogida.": "Ajoutez l'hotel ou le point de prise en charge.",
-  "Stripe nativo no esta disponible en la vista web. Usa checkout web o prueba en Android/iOS.":
+  "Stripe nativo no está disponible en la vista web. Usa checkout web o prueba en Android/iOS.":
     "Stripe natif n'est pas disponible dans la vue web. Utilisez le checkout web ou testez sur Android/iOS.",
-  "Stripe aun no esta configurado en esta build. Revisa NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.":
+  "Stripe aún no está configurado en esta build. Revisa NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.":
     "Stripe n'est pas encore configure dans cette build. Verifiez NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.",
   "Preparando pago seguro...": "Preparation du paiement securise...",
-  "Stripe no devolvio client secret para abrir el pago.": "Stripe n'a pas renvoye le client secret pour ouvrir le paiement.",
+  "Stripe no devolvió client secret para abrir el pago.": "Stripe n'a pas renvoye le client secret pour ouvrir le paiement.",
   "Abriendo pago seguro...": "Ouverture du paiement securise...",
   "El pago fue cancelado o no se completo.": "Le paiement a ete annule ou n'a pas abouti.",
-  "Pago confirmado. Tu reserva quedo registrada en Proactivitis.": "Paiement confirme. Votre reservation est enregistree chez Proactivitis.",
+  "Pago confirmado. Tu reserva quedó registrada en Proactivitis.": "Paiement confirme. Votre reservation est enregistree chez Proactivitis.",
   "No se pudo completar el pago.": "Impossible de completer le paiement.",
   "Abriendo checkout web de Proactivitis...": "Ouverture du checkout web Proactivitis...",
   "Cuenta": "Compte",
   "Contacto y soporte": "Contact et assistance",
-  "Habla con Proactivitis antes o despues de reservar.": "Parlez avec Proactivitis avant ou apres la reservation.",
-  "Respuesta rapida para reservas": "Aide rapide pour les reservations",
+  "Habla con Proactivitis antes o después de reservar.": "Parlez avec Proactivitis avant ou apres la reservation.",
+  "Respuesta rápida para reservas": "Aide rapide pour les reservations",
   "Llamar ahora": "Appeler maintenant",
   "Atencion directa": "Assistance directe",
   "Soporte por correo": "Assistance par email",
@@ -598,14 +744,20 @@ const frenchText: Record<string, string> = {
   "Perfil Proactivitis": "Profil Proactivitis",
   "Tus reservas quedan asociadas a este correo.": "Vos reservations seront liees a cet email.",
   "Cliente Proactivitis": "Client Proactivitis",
-  "Cerrar sesion": "Se deconnecter",
+  "Cerrar sesión": "Se deconnecter",
+  "Eliminar cuenta": "Supprimer le compte",
+  "Página web de eliminación": "Page web de suppression",
+  "Se cerrará tu cuenta de cliente, sesiones, preferencias y métodos de pago guardados. Podemos retener registros de reservas y pagos cuando sea necesario.":
+    "Votre compte client, vos sessions, preferences et moyens de paiement enregistres seront fermes. Nous pouvons conserver les dossiers de reservations et paiements si necessaire.",
+  "Cancelar": "Annuler",
+  "Eliminar": "Supprimer",
   "WhatsApp": "WhatsApp",
   "Soporte directo": "Assistance directe",
   "Web": "Web",
   "Entra a Proactivitis": "Connectez-vous a Proactivitis",
   "Conecta tus datos con la base real de la web.": "Connectez vos donnees avec la base reelle du site web.",
   "Accede a tus reservas": "Accedez a vos reservations",
-  "Inicia sesion para guardar tus datos, revisar planes y continuar reservas desde cualquier dispositivo.":
+  "Inicia sesión para guardar tus datos, revisar planes y continuar reservas desde cualquier dispositivo.":
     "Connectez-vous pour sauvegarder vos donnees, revoir vos plans et continuer vos reservations depuis n'importe quel appareil.",
   "Tu perfil de viaje": "Votre profil de voyage",
   "Tus reservas, favoritos y preferencias quedan guardados en tu cuenta.":
@@ -615,6 +767,7 @@ const frenchText: Record<string, string> = {
   "No pudimos cargar tu cuenta ahora mismo.": "Impossible de charger votre compte pour le moment.",
   "Abrir portal web": "Ouvrir le portail web",
   "Reservas, pagos, resenas y avisos de tu cuenta.": "Reservations, paiements, avis et alertes de votre compte.",
+  "Reservas, pagos, reseñas y avisos de tu cuenta.": "Reservations, paiements, avis et alertes de votre compte.",
   "Proximas": "A venir",
   "Completadas": "Terminees",
   "Resenas": "Avis",
@@ -626,9 +779,11 @@ const frenchText: Record<string, string> = {
   "Confirmada": "Confirmee",
   "Sin reservas todavia": "Aucune reservation pour le moment",
   "Cuando reserves, tu historial aparecera aqui.": "Quand vous reservez, votre historique apparaitra ici.",
+  "Cuando reserves, tu historial aparecerá aquí.": "Quand vous reservez, votre historique apparaitra ici.",
   "Mis reservas": "Mes reservations",
   "reservas en tu historial": "reservations dans votre historique",
   "Aun no tienes reservas registradas": "Vous n'avez pas encore de reservations enregistrees",
+  "Aún no tienes reservas registradas": "Vous n'avez pas encore de reservations enregistrees",
   "Tarjetas guardadas": "Cartes sauvegardees",
   "Tarjeta": "Carte",
   "Agrega una tarjeta para reservar mas rapido": "Ajoutez une carte pour reserver plus vite",
@@ -659,23 +814,21 @@ const frenchText: Record<string, string> = {
   "Elige donde quieres vivir la experiencia": "Choisissez ou vivre l'experience",
   "Entra por ciudad y mira solo los tours disponibles en esa zona.": "Entrez par ville et voyez seulement les tours disponibles dans cette zone.",
   "Todos los destinos": "Toutes les destinations",
-  "Ver todo el catalogo": "Voir tout le catalogue",
+  "Ver todo el catálogo": "Voir tout le catalogue",
   "Ciudad": "Ville",
   "Cambiar ciudad": "Changer de ville",
   "Ciudad seleccionada": "Ville selectionnee",
-  "Tours filtrados por ciudad. Puedes reservar el tour o cotizar transfer para llegar comodo.":
+  "Tours filtrados por ciudad. Puedes reservar el tour o cotizar transfer para llegar cómodo.":
     "Tours filtres par ville. Vous pouvez reserver le tour ou demander un transfert pour arriver facilement.",
   "Todas": "Toutes",
   "Todas las ciudades": "Toutes les villes",
   "No hay tours en esta zona": "Aucun tour dans cette zone",
-  "Prueba otra zona o revisa el catalogo completo.": "Essayez une autre zone ou consultez tout le catalogue.",
+  "Prueba otra zona o revisa el catálogo completo.": "Essayez une autre zone ou consultez tout le catalogue.",
   "Experiencias reales de la web, fotos del producto, detalles claros y checkout dentro de la app.":
     "Experiences reelles du site, photos du produit, details clairs et checkout dans l'app.",
-  "Catalogo Proactivitis": "Catalogue Proactivitis",
+  "Catálogo Proactivitis": "Catalogue Proactivitis",
   "Tours listos para reservar": "Tours prets a reserver",
-  "Galeria": "Galerie",
-  "Reserva rapida": "Reservation rapide",
-  "Soporte humano": "Assistance humaine",
+  "Reserva rápida": "Reservation rapide",
   "Buscar Saona, buggy, parasailing...": "Chercher Saona, buggy, parasailing...",
   "Actualizando productos...": "Mise a jour des produits...",
   "Todos los planes": "Tous les plans",
@@ -690,7 +843,7 @@ const frenchText: Record<string, string> = {
   "Uso de cookies y tecnologias similares.": "Utilisation de cookies et technologies similaires.",
   "Informacion legal": "Information legale",
   "Empresa, contacto y datos de operacion.": "Entreprise, contact et donnees d'operation.",
-  "Ver politicas": "Voir les politiques",
+  "Ver políticas": "Voir les politiques",
   "Error de pantalla": "Erreur d'ecran",
   "La app encontro un problema en esta vista. Vuelve y prueba otra vez.": "L'app a trouve un probleme dans cette vue. Revenez et essayez encore.",
   "Volver al inicio": "Retour a l'accueil",
@@ -698,12 +851,11 @@ const frenchText: Record<string, string> = {
   "Agua": "Eau",
   "Aventura": "Aventure",
   "Cultura": "Culture",
-  "Premium": "Premium",
   "Ver tours 🔥": "Voir les tours 🔥",
   "Buscar transfer 🚘": "Chercher un transfert 🚘",
   "🌴 Tours, transfers y planes privados": "🌴 Tours, transferts et plans prives",
-  "Tu viaje en RD, claro y sin estres": "Votre voyage en RD, clair et sans stress",
-  "Elige tours con fotos reales, cotiza tu traslado y reserva con ayuda local 24/7. Aqui vienes a disfrutar, nosotros organizamos lo dificil.":
+  "Tu viaje en RD, claro y sin estrés": "Votre voyage en RD, clair et sans stress",
+  "Elige tours con fotos reales, cotiza tu traslado y reserva con ayuda local 24/7. Aquí vienes a disfrutar, nosotros organizamos lo difícil.":
     "Choisissez des tours avec de vraies photos, demandez votre transfert et reservez avec une aide locale 24/7. Vous profitez, nous organisons le reste.",
   "✨ Recomendado para familias, parejas y grupos que quieren reservar sin vueltas.":
     "✨ Recommande pour familles, couples et groupes qui veulent reserver simplement.",
@@ -743,13 +895,13 @@ const frenchText: Record<string, string> = {
   "Punto de encuentro": "Point de rencontre",
   "Instrucciones": "Instructions",
   "Horarios": "Horaires",
-  "Dias": "Jours",
+  "Días": "Jours",
   "Capacidad": "Capacite",
-  "Edad minima": "Age minimum",
-  "Nivel fisico": "Niveau physique",
+  "Edad mínima": "Age minimum",
+  "Nivel físico": "Niveau physique",
   "Accesibilidad": "Accessibilite",
   "Requisitos": "Exigences",
-  "Cancelacion": "Annulation",
+  "Cancelación": "Annulation",
   "Incluye": "Inclus",
   "No incluido": "Non inclus",
   "Adultos": "Adultes",
@@ -763,16 +915,16 @@ const frenchText: Record<string, string> = {
   "Uso de cookies en la web y servicios conectados.": "Utilisation de cookies sur le site et les services connectes.",
   "Datos legales, contacto y notificaciones formales.": "Donnees legales, contact et notifications formelles.",
   "Cancelaciones y reembolsos": "Annulations et remboursements",
-  "Aplican los terminos y la politica indicada en cada producto.": "Les conditions et la politique indiquees sur chaque produit s'appliquent.",
+  "Aplican los términos y la política indicada en cada producto.": "Les conditions et la politique indiquees sur chaque produit s'appliquent.",
   "Desde": "A partir de",
   "Opciones": "Options",
   "Ajusta la cantidad": "Ajuster la quantite",
-  "Legal y politicas": "Legal et politiques",
+  "Legal y políticas": "Legal et politiques",
   "Politicas y legal": "Politiques et legal",
-  "Accesos visibles para privacidad, terminos, cookies, informacion legal y cancelaciones.":
+  "Accesos visibles para privacidad, términos, cookies, información legal y cancelaciones.":
     "Acces visible a la confidentialite, aux conditions, cookies, informations legales et annulations.",
-  "Cancelacion gratuita": "Annulation gratuite",
-  "Cancelacion flexible": "Annulation flexible",
+  "Cancelación gratuita": "Annulation gratuite",
+  "Cancelación flexible": "Annulation flexible",
   "No reembolsable": "Non remboursable",
   "Confirmacion inmediata": "Confirmation immediate",
   "Confirmacion manual": "Confirmation manuelle",
@@ -784,6 +936,10 @@ const frenchText: Record<string, string> = {
   "Descubre Republica Dominicana con reservas claras": "Decouvrez la Republique dominicaine avec des reservations claires",
   "Republica Dominicana, bien organizada": "Republique dominicaine, bien organisee",
   "Tours y traslados en Republica Dominicana": "Tours et transferts en Republique dominicaine",
+  "Reserva traslados y tours confiables en República Dominicana":
+    "Reservez des transferts et tours fiables en Republique dominicaine",
+  "Precio claro, soporte humano y coordinación local desde que reservas.":
+    "Prix clair, assistance humaine et coordination locale des la reservation.",
   "Reserva tours, traslados privados y planes seleccionados con precios transparentes, fotos reales y asistencia local en varios idiomas.":
     "Reservez tours, transferts prives et plans selectionnes avec prix transparents, photos reelles et assistance locale en plusieurs langues.",
   "Tours, traslados privados y planes seleccionados con precios claros y asistencia local.":
@@ -795,14 +951,36 @@ const frenchText: Record<string, string> = {
   "Fotos verificadas": "Photos verifiees",
   "Precio transparente": "Prix transparent",
   "Asistencia 24/7": "Assistance 24/7",
+  "Reservar traslado": "Reserver un transfert",
   "Explorar tours": "Explorer les tours",
   "Cotizar traslado": "Devis transfert",
   "Experiencias seleccionadas": "Experiences selectionnees",
-  "Actividades con detalles, fotos y precios conectados al catalogo web.":
+  "Actividades con detalles, fotos y precios conectados al catálogo web.":
     "Activites avec details, photos et prix connectes au catalogue web.",
   "Busca aeropuertos, hoteles y zonas reales para calcular tu ruta antes de reservar.":
     "Cherchez de vrais aeroports, hotels et zones pour calculer votre trajet avant de reserver.",
+  "Busca tu hotel, aeropuerto o zona y ve el precio antes de reservar.":
+    "Cherchez votre hotel, aeroport ou zone et voyez le prix avant de reserver.",
+  "Ver disponibilidad": "Voir les disponibilites",
+  "Por qué elegir esta experiencia": "Pourquoi choisir cette experience",
+  "Recogida en hotel incluida": "Prise en charge a l'hotel incluse",
+  "Fotos reales verificadas": "Photos reelles verifiees",
+  "Confirmación rápida": "Confirmation rapide",
+  "Confirmación segura": "Confirmation securisee",
+  "Soporte humano": "Assistance humaine",
+  "Pago seguro": "Paiement securise",
+  "Galería": "Galerie",
+  "Fotos reales de la experiencia": "Photos reelles de l'experience",
+  "Duración": "Duree",
+  "Descripción": "Description",
+  "Más reservado": "Le plus reserve",
+  "Mejor precio": "Meilleur prix",
+  "Recogida incluida": "Prise en charge incluse",
+  "Premium": "Premium",
+  "Ideal familias": "Ideal familles",
   "Reserva con asistencia local": "Reservation avec assistance locale",
+  "Completa tus datos en la app y finaliza con checkout seguro. Si necesitas ayuda, nuestro equipo te acompaña antes y durante tu experiencia.":
+    "Completez vos donnees dans l'app et finalisez avec un checkout securise. Si vous avez besoin d'aide, notre equipe vous accompagne avant et pendant votre experience.",
   "Completa tus datos en la app y finaliza con checkout seguro. Si necesitas ayuda, nuestro equipo te acompana antes y durante tu experiencia.":
     "Completez vos donnees dans l'app et finalisez avec un checkout securise. Si vous avez besoin d'aide, notre equipe vous accompagne avant et pendant votre experience."
 };
@@ -863,7 +1041,11 @@ function useTranslate() {
 
 function Text({ children, ...props }: TextProps) {
   const { language } = useLanguage();
-  return <RNText {...props}>{translateChildren(children, language)}</RNText>;
+  return (
+    <RNText {...props} style={[{ fontFamily: resolveFontFamily(props.style) }, props.style]}>
+      {translateChildren(children, language)}
+    </RNText>
+  );
 }
 
 declare const process:
@@ -991,13 +1173,21 @@ type CheckoutDraft = {
 
 const heroImage =
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
-const fallbackTourImage = "https://proactivitis.com/fototours/fotosimple.jpg";
+const transferHeroSource = require("./assets/photos/transfer-hero.jpeg");
+const fallbackTourImage =
+  "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/tours/4b7182fc-2041-4f02-a7cb-c34a56b9ae8f/temp-1771700516443/cover-1771700516443-118071monkey-land-KNCIgv5ywCaw7hyuyMYq3HYOkUjqX6.webp";
 const mobileSessionStorageKey = "proactivitis_mobile_session";
 const transferDraftStorageKey = "proactivitis_transfer_draft";
 const checkoutDraftStorageKey = "proactivitis_checkout_draft";
 const languageStorageKey = "proactivitis_language";
+const privacyConsentStorageKey = "proactivitis_privacy_consent";
+const secureStoreOptions: SecureStore.SecureStoreOptions = {
+  keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY
+};
+const privacyConsentVersion = 1;
 const appBuildLabel = "Version 1.0.6 | Android 6";
 const windowHeight = Dimensions.get("window").height;
+const windowWidth = Dimensions.get("window").width;
 
 const money = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -1022,49 +1212,69 @@ const customerUrl = (path: string) => `${getApiBaseUrl().replace(/\/$/, "")}${pa
 
 const whatsappUrl = (message: string) => `${links.whatsapp}?text=${encodeURIComponent(message)}`;
 
+type CustomerPanelSection = "overview" | "bookings" | "payments" | "reviews" | "preferences" | "notifications" | "account";
+
+const customerPanelSections: Array<{ key: CustomerPanelSection; label: string; icon: IconType }> = [
+  { key: "overview", label: "Resumen", icon: Compass },
+  { key: "bookings", label: "Reservas", icon: CalendarCheck },
+  { key: "payments", label: "Pagos", icon: CreditCard },
+  { key: "reviews", label: "Resenas", icon: Star },
+  { key: "preferences", label: "Gustos", icon: Heart },
+  { key: "notifications", label: "Avisos", icon: Mail },
+  { key: "account", label: "Cuenta", icon: User }
+];
+
+const preferenceDestinationOptions = ["Punta Cana", "Santo Domingo", "La Romana", "Bayahibe", "Samana", "Puerto Plata"];
+const preferenceProductOptions = ["Tours", "Transfers", "Aventura", "Playa", "Familia", "VIP"];
+
+const setupIntentIdFromClientSecret = (clientSecret: string) => clientSecret.split("_secret_")[0] || clientSecret;
+
 const policyLinks: Array<{ title: string; subtitle: string; url: string; icon: IconType }> = [
   {
-    title: "Politica de privacidad",
-    subtitle: "Como protegemos datos, cuenta y reservas.",
+    title: "Política de privacidad",
+    subtitle: "Cómo protegemos datos, cuenta y reservas.",
     url: links.privacy,
     icon: ShieldCheck
   },
   {
-    title: "Terminos y condiciones",
+    title: "Términos y condiciones",
     subtitle: "Reglas de uso, reservas, pagos y responsabilidades.",
     url: links.terms,
     icon: CreditCard
   },
   {
-    title: "Cookies y tecnologias",
+    title: "Cookies y tecnologías",
     subtitle: "Uso de cookies en la web y servicios conectados.",
     url: links.cookies,
     icon: Compass
   },
   {
-    title: "Informacion legal",
+    title: "Información legal",
     subtitle: "Datos legales, contacto y notificaciones formales.",
     url: links.legalInformation,
     icon: MessageCircle
   },
   {
     title: "Cancelaciones y reembolsos",
-    subtitle: "Aplican los terminos y la politica indicada en cada producto.",
+    subtitle: "Aplican los términos y la política indicada en cada producto.",
     url: links.terms,
     icon: CalendarCheck
   },
   {
     title: "Eliminar cuenta",
-    subtitle: "Solicitud oficial de eliminacion de cuenta y datos de la app.",
+    subtitle: "Solicitud oficial de eliminación de cuenta y datos de la app.",
     url: links.accountDeletion,
     icon: User
   }
 ];
 
+const sanitizeImageUrl = (value: string) => encodeURI(value.trim().replace(/\\/g, "/"));
+
 const absoluteImageUrl = (url?: string | null) => {
-  if (!url) return fallbackTourImage;
-  if (url.startsWith("http")) return url;
-  return `${getApiBaseUrl().replace(/\/$/, "")}${url.startsWith("/") ? "" : "/"}${url}`;
+  const cleanUrl = url?.trim();
+  if (!cleanUrl) return fallbackTourImage;
+  if (/^https?:\/\//i.test(cleanUrl)) return sanitizeImageUrl(cleanUrl);
+  return sanitizeImageUrl(`${getApiBaseUrl().replace(/\/$/, "")}${cleanUrl.startsWith("/") ? "" : "/"}${cleanUrl}`);
 };
 
 const uniqueImages = (items: Array<string | null | undefined>) =>
@@ -1121,12 +1331,12 @@ const tourCityLabels = (tour: AppTour) => {
     .map((part) => part.trim())
     .filter(Boolean)
     .filter((part) => !ignoredCityParts.has(normalizeLocationSearch(part)));
-  const cities = parts.length ? parts : [tour.location.trim() || "Republica Dominicana"];
+  const cities = parts.length ? parts : [tour.location.trim() || "República Dominicana"];
   return Array.from(new Set(cities));
 };
 
 const readStoredMobileSession = async () => {
-  const raw = await SecureStore.getItemAsync(mobileSessionStorageKey).catch(() => null);
+  const raw = await SecureStore.getItemAsync(mobileSessionStorageKey, secureStoreOptions).catch(() => null);
   if (!raw) return null;
   try {
     return JSON.parse(raw) as MobileSession;
@@ -1137,14 +1347,14 @@ const readStoredMobileSession = async () => {
 
 const writeStoredMobileSession = async (session: MobileSession | null) => {
   if (!session) {
-    await SecureStore.deleteItemAsync(mobileSessionStorageKey).catch(() => undefined);
+    await SecureStore.deleteItemAsync(mobileSessionStorageKey, secureStoreOptions).catch(() => undefined);
     return;
   }
-  await SecureStore.setItemAsync(mobileSessionStorageKey, JSON.stringify(session)).catch(() => undefined);
+  await SecureStore.setItemAsync(mobileSessionStorageKey, JSON.stringify(session), secureStoreOptions).catch(() => undefined);
 };
 
 const readStoredJson = async <T,>(key: string) => {
-  const raw = await SecureStore.getItemAsync(key).catch(() => null);
+  const raw = await SecureStore.getItemAsync(key, secureStoreOptions).catch(() => null);
   if (!raw) return null;
   try {
     return JSON.parse(raw) as T;
@@ -1155,10 +1365,10 @@ const readStoredJson = async <T,>(key: string) => {
 
 const writeStoredJson = async (key: string, value: unknown | null) => {
   if (!value) {
-    await SecureStore.deleteItemAsync(key).catch(() => undefined);
+    await SecureStore.deleteItemAsync(key, secureStoreOptions).catch(() => undefined);
     return;
   }
-  await SecureStore.setItemAsync(key, JSON.stringify(value)).catch(() => undefined);
+  await SecureStore.setItemAsync(key, JSON.stringify(value), secureStoreOptions).catch(() => undefined);
 };
 
 const isAppLanguage = (value: unknown): value is AppLanguage => value === "es" || value === "en" || value === "fr";
@@ -1189,11 +1399,12 @@ const toMobileTourPayload = (tour: Tour): MobileTour => ({
 const mapCatalogTour = (tour: Tour): AppTour => mapMobileTour(toMobileTourPayload(tour));
 
 const productValueLabels: Record<string, string> = {
-  free_cancellation: "Cancelacion gratuita",
-  flexible_cancellation: "Cancelacion flexible",
+  free_cancellation: "Cancelación gratuita",
+  flexible_cancellation: "Cancelación flexible",
   non_refundable: "No reembolsable",
-  instant_confirmation: "Confirmacion inmediata",
-  manual_confirmation: "Confirmacion manual"
+  instant_confirmation: "Confirmación rápida",
+  manual_confirmation: "Confirmación manual",
+  instant: "Confirmación rápida"
 };
 
 const normalizeProductValue = (value?: string | null) => {
@@ -1229,7 +1440,7 @@ const mapMobileTour = (tour: MobileTour): AppTour => {
     slug: tour.slug,
     title: tour.title || fallback?.title || "Experiencia Proactivitis",
     category: tour.category || fallback?.category || "Aventura",
-    location: tour.location || fallback?.location || "Republica Dominicana",
+    location: tour.location || fallback?.location || "República Dominicana",
     duration: tour.duration || fallback?.duration || "A confirmar",
     price: Number(tour.price || fallback?.price || 0),
     priceChild: tour.priceChild,
@@ -1292,7 +1503,95 @@ const catalogTransferRoutes: MobileTransferRoute[] = transferRoutes.map((route) 
   zoneLabel: route.duration
 }));
 
-const fallbackTransferRoutes = staticMobileTransferRoutes.length ? staticMobileTransferRoutes : catalogTransferRoutes;
+const fallbackTransferRoutes = staticMobileTransferRoutes.length
+  ? [...staticMobileTransferRoutes, ...catalogTransferRoutes]
+  : catalogTransferRoutes;
+
+const sameZone = (left?: string | null, right?: string | null) =>
+  Boolean(left && right && normalizeLocationSearch(left) === normalizeLocationSearch(right));
+
+type StaticMobileTransferPriceOverride = {
+  vehicleId: string;
+  originLocationId?: string | null;
+  destinationLocationId?: string | null;
+  price: number;
+};
+
+type StaticMobileTransferPriceRoute = {
+  id: string;
+  zoneAId: string;
+  zoneBId: string;
+  zoneAName: string;
+  zoneBName: string;
+  currency: string;
+  vehicles: QuoteVehicle[];
+  overrides: StaticMobileTransferPriceOverride[];
+};
+
+const mobileTransferPriceRoutes = staticMobileTransferPriceRoutes as StaticMobileTransferPriceRoute[];
+
+const matchesPriceRouteZone = (location: LocationSummary, zoneId: string, zoneName: string) => {
+  if (location.zoneId && location.zoneId === zoneId) return true;
+  return sameZone(location.zoneName, zoneName);
+};
+
+const findStaticPriceRoute = (origin: LocationSummary, destination: LocationSummary) =>
+  mobileTransferPriceRoutes.find(
+    (route) =>
+      (matchesPriceRouteZone(origin, route.zoneAId, route.zoneAName) &&
+        matchesPriceRouteZone(destination, route.zoneBId, route.zoneBName)) ||
+      (matchesPriceRouteZone(origin, route.zoneBId, route.zoneBName) &&
+        matchesPriceRouteZone(destination, route.zoneAId, route.zoneAName))
+  );
+
+const findStaticPriceOverride = (
+  route: StaticMobileTransferPriceRoute,
+  vehicleId: string,
+  origin: LocationSummary,
+  destination: LocationSummary
+) =>
+  route.overrides.find(
+    (override) =>
+      override.vehicleId === vehicleId &&
+      override.originLocationId === origin.id &&
+      override.destinationLocationId === destination.id
+  ) ??
+  route.overrides.find(
+    (override) =>
+      override.vehicleId === vehicleId &&
+      override.originLocationId === origin.id &&
+      !override.destinationLocationId
+  ) ??
+  route.overrides.find(
+    (override) =>
+      override.vehicleId === vehicleId &&
+      override.destinationLocationId === destination.id &&
+      !override.originLocationId
+  );
+
+const buildCatalogTransferVehicles = (
+  origin: LocationSummary,
+  destination: LocationSummary,
+  passengers: number
+): QuoteVehicle[] => {
+  const route = findStaticPriceRoute(origin, destination);
+  if (!route) return [];
+  return route.vehicles
+    .filter((vehicle) => passengers >= vehicle.minPax && passengers <= vehicle.maxPax)
+    .map((vehicle) => ({
+      id: vehicle.id,
+      name: vehicle.name,
+      category: vehicle.category,
+      minPax: vehicle.minPax,
+      maxPax: vehicle.maxPax,
+      imageUrl: vehicle.imageUrl,
+      price: findStaticPriceOverride(route, vehicle.id, origin, destination)?.price ?? vehicle.price
+    }));
+};
+
+const staticTransferVehicles = staticMobileTransferPriceRoutes.flatMap((route) => route.vehicles);
+const findTransferVehicleImage = (category: string) =>
+  staticTransferVehicles.find((vehicle) => vehicle.category.toUpperCase() === category)?.imageUrl;
 
 const homePopularTransferCards = [
   {
@@ -1301,8 +1600,8 @@ const homePopularTransferCards = [
     airport: "Punta Cana Airport",
     destination: "Bavaro y Cap Cana",
     priceFrom: 35,
-    image: "/transfer/sedan.png",
-    vehicle: transferVehicles[0]
+    image: findTransferVehicleImage("SEDAN"),
+    vehicle: { name: "Sedan privado" }
   },
   {
     id: "home-sdq",
@@ -1310,8 +1609,8 @@ const homePopularTransferCards = [
     airport: "Aeropuerto Santo Domingo",
     destination: "Santo Domingo y Bayahibe",
     priceFrom: 150,
-    image: "/transfer/suv.png",
-    vehicle: transferVehicles[1]
+    image: findTransferVehicleImage("SUV"),
+    vehicle: { name: "SUV VIP" }
   },
   {
     id: "home-lrm",
@@ -1319,8 +1618,8 @@ const homePopularTransferCards = [
     airport: "Aeropuerto La Romana",
     destination: "La Romana y Bayahibe",
     priceFrom: 94,
-    image: "/transfer/mini%20van.png",
-    vehicle: transferVehicles[2]
+    image: findTransferVehicleImage("VAN"),
+    vehicle: { name: "Mini van" }
   }
 ];
 
@@ -1330,6 +1629,75 @@ const normalizeLocationSearch = (value: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
+
+const transferSearchAliases: Record<string, string[]> = {
+  puj: ["punta", "cana", "airport", "aeropuerto"],
+  sdq: ["santo", "domingo", "airport", "aeropuerto", "las", "americas"],
+  lrm: ["romana", "airport", "aeropuerto"],
+  airport: ["aeropuerto"],
+  aeropuerto: ["airport"],
+  bavaro: ["bavaro", "bávaro", "punta", "cana"],
+  bahia: ["bahia", "principe"],
+  bávaro: ["bavaro", "punta", "cana"],
+  romana: ["la", "romana"],
+  santo: ["santo", "domingo"],
+  zona: ["area", "sector"]
+};
+
+const searchTokens = (value: string) =>
+  normalizeLocationSearch(value)
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((token) => token.length > 1);
+
+const expandSearchTokens = (tokens: string[]) =>
+  Array.from(new Set(tokens.flatMap((token) => [token, ...(transferSearchAliases[token] ?? [])]).map(normalizeLocationSearch)));
+
+const editDistance = (left: string, right: string) => {
+  if (left === right) return 0;
+  if (!left.length) return right.length;
+  if (!right.length) return left.length;
+  const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+  const current = Array(right.length + 1).fill(0);
+  for (let i = 1; i <= left.length; i += 1) {
+    current[0] = i;
+    for (let j = 1; j <= right.length; j += 1) {
+      const cost = left[i - 1] === right[j - 1] ? 0 : 1;
+      current[j] = Math.min(current[j - 1] + 1, previous[j] + 1, previous[j - 1] + cost);
+    }
+    for (let j = 0; j <= right.length; j += 1) previous[j] = current[j];
+  }
+  return previous[right.length];
+};
+
+const tokenMatchScore = (token: string, haystackTokens: string[]) => {
+  if (!token) return 0;
+  let score = 0;
+  haystackTokens.forEach((item) => {
+    if (item === token) score = Math.max(score, 12);
+    else if (item.startsWith(token) || token.startsWith(item)) score = Math.max(score, 9);
+    else if (item.includes(token) || token.includes(item)) score = Math.max(score, 7);
+    else if (token.length >= 4 && item.length >= 4 && editDistance(token, item) <= 1) score = Math.max(score, 6);
+    else if (token.length >= 6 && item.length >= 6 && editDistance(token, item) <= 2) score = Math.max(score, 5);
+  });
+  return score;
+};
+
+const transferLocationScore = (location: LocationSummary, query: string) => {
+  const queryTokens = expandSearchTokens(searchTokens(query));
+  if (!queryTokens.length) return 0;
+  const haystack = `${location.name} ${location.zoneName ?? ""} ${location.type}`;
+  const haystackTokens = searchTokens(haystack);
+  const fullText = normalizeLocationSearch(haystack);
+  const normalizedQuery = normalizeLocationSearch(query);
+  let score = fullText.includes(normalizedQuery) ? 40 : 0;
+  queryTokens.forEach((token) => {
+    score += tokenMatchScore(token, haystackTokens);
+  });
+  if (location.type.toLowerCase().includes("airport") || location.type.toLowerCase().includes("aeropuerto")) score += 3;
+  if (location.type.toLowerCase().includes("hotel")) score += 2;
+  return score;
+};
 
 const mergeLocations = (...groups: LocationSummary[][]) => {
   const seen = new Set<string>();
@@ -1346,13 +1714,16 @@ const mergeLocations = (...groups: LocationSummary[][]) => {
 const collectRouteLocations = (routes: MobileTransferRoute[]) =>
   mergeLocations(routes.map((route) => route.origin), routes.map((route) => route.destination));
 
+const fallbackTransferLocations = mergeLocations(staticMobileTransferLocations, collectRouteLocations(fallbackTransferRoutes));
+
 const transferLocationMatches = (locations: LocationSummary[], query: string) => {
   const normalizedQuery = normalizeLocationSearch(query);
   if (normalizedQuery.length < 2) return [];
   return mergeLocations(locations)
-    .filter((location) =>
-      normalizeLocationSearch(`${location.name} ${location.zoneName ?? ""} ${location.type}`).includes(normalizedQuery)
-    )
+    .map((location) => ({ location, score: transferLocationScore(location, query) }))
+    .filter((item) => item.score >= 7)
+    .sort((a, b) => b.score - a.score || a.location.name.localeCompare(b.location.name))
+    .map((item) => item.location)
     .slice(0, 9);
 };
 
@@ -1484,9 +1855,12 @@ const normalizeStripePublishableKey = (value?: string | null) => {
 const buildStripePublishableKey = normalizeStripePublishableKey(process?.env?.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 export default function App() {
+  const [fontsLoaded, fontLoadError] = useFonts(appFonts);
   const [stripePublishableKey, setStripePublishableKey] = useState(buildStripePublishableKey);
   const [language, setLanguageState] = useState<AppLanguage | null>(null);
   const [languageReady, setLanguageReady] = useState(false);
+  const [privacyConsent, setPrivacyConsent] = useState<PrivacyConsent | null>(null);
+  const [privacyReady, setPrivacyReady] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -1496,6 +1870,16 @@ export default function App() {
       })
       .finally(() => {
         if (active) setLanguageReady(true);
+      });
+
+    readStoredJson<PrivacyConsent>(privacyConsentStorageKey)
+      .then((stored) => {
+        if (active && stored?.version === privacyConsentVersion && stored.essential) {
+          setPrivacyConsent(stored);
+        }
+      })
+      .finally(() => {
+        if (active) setPrivacyReady(true);
       });
 
     fetchMobileConfig()
@@ -1514,26 +1898,46 @@ export default function App() {
     void writeStoredJson(languageStorageKey, { language: nextLanguage });
   };
 
+  const updatePrivacyConsent = (nextConsent: Omit<PrivacyConsent, "acceptedAt" | "version" | "essential">) => {
+    const consent: PrivacyConsent = {
+      essential: true,
+      personalization: nextConsent.personalization,
+      analytics: nextConsent.analytics,
+      marketing: nextConsent.marketing,
+      acceptedAt: new Date().toISOString(),
+      version: privacyConsentVersion
+    };
+    setPrivacyConsent(consent);
+    void writeStoredJson(privacyConsentStorageKey, consent);
+  };
+
   const currentLanguage = language ?? "es";
+  const appReady = languageReady && privacyReady && (fontsLoaded || Boolean(fontLoadError));
 
   return (
-    <languageContext.Provider value={{ language: currentLanguage, setLanguage: updateLanguage }}>
-      <AppStripeProvider publishableKey={stripePublishableKey}>
-        <StripeDeepLinkHandler />
-        {languageReady ? (
-          language ? (
-            <MobileApp stripeReady={Boolean(stripePublishableKey)} />
+    <SafeAreaProvider>
+      <languageContext.Provider value={{ language: currentLanguage, setLanguage: updateLanguage }}>
+        <AppStripeProvider publishableKey={stripePublishableKey}>
+          <StripeDeepLinkHandler />
+          {appReady ? (
+            language ? (
+              privacyConsent ? (
+                <MobileApp stripeReady={Boolean(stripePublishableKey)} />
+              ) : (
+                <PrivacyConsentGate onAccept={updatePrivacyConsent} />
+              )
+            ) : (
+              <LanguageGate onSelect={updateLanguage} />
+            )
           ) : (
-            <LanguageGate onSelect={updateLanguage} />
-          )
-        ) : (
-          <SafeAreaView style={styles.safeArea}>
-            <StatusBar style="light" />
-            <View style={styles.languageScreen} />
-          </SafeAreaView>
-        )}
-      </AppStripeProvider>
-    </languageContext.Provider>
+            <SafeAreaView style={styles.safeArea}>
+              <StatusBar style="light" />
+              <View style={styles.languageScreen} />
+            </SafeAreaView>
+          )}
+        </AppStripeProvider>
+      </languageContext.Provider>
+    </SafeAreaProvider>
   );
 }
 
@@ -1552,6 +1956,123 @@ function LanguageGate({ onSelect }: { onSelect: (language: AppLanguage) => void 
         </View>
       </View>
     </SafeAreaView>
+  );
+}
+
+function PrivacyConsentGate({
+  onAccept
+}: {
+  onAccept: (consent: Omit<PrivacyConsent, "acceptedAt" | "version" | "essential">) => void;
+}) {
+  const [showPreferences, setShowPreferences] = useState(false);
+  const [personalization, setPersonalization] = useState(true);
+  const [analytics, setAnalytics] = useState(true);
+  const [marketing, setMarketing] = useState(false);
+
+  const acceptAll = () => onAccept({ personalization: true, analytics: true, marketing: true });
+  const savePreferences = () => onAccept({ personalization, analytics, marketing });
+
+  if (showPreferences) {
+    return (
+      <SafeAreaView style={styles.privacySafeArea}>
+        <StatusBar style="dark" />
+        <ScrollView contentContainerStyle={styles.privacyScreen} showsVerticalScrollIndicator={false}>
+          <View style={styles.privacyTopIcon}>
+            <ShieldCheck size={28} color={colors.skyDark} />
+          </View>
+          <Text style={styles.privacyTitle}>Preferencias de privacidad</Text>
+          <Text style={styles.privacyBody}>
+            Puedes activar solo lo necesario o permitir datos adicionales para personalizar tu experiencia. Las preferencias se guardan en este dispositivo.
+          </Text>
+
+          <View style={styles.privacyOptions}>
+            <View style={styles.privacyOption}>
+              <View style={styles.flexText}>
+                <Text style={styles.privacyOptionTitle}>Necesarias</Text>
+                <Text style={styles.privacyOptionText}>Mantienen sesión, idioma, seguridad, reservas y checkout.</Text>
+              </View>
+              <Text style={styles.privacyAlwaysOn}>Siempre</Text>
+            </View>
+            <PrivacyToggle
+              title="Personalizacion"
+              text="Recuerda idioma, preferencias, favoritos y rutas para una experiencia mas fluida."
+              active={personalization}
+              onPress={() => setPersonalization((current) => !current)}
+            />
+            <PrivacyToggle
+              title="Medicion"
+              text="Nos ayuda a entender rendimiento, errores y mejoras dentro de la app."
+              active={analytics}
+              onPress={() => setAnalytics((current) => !current)}
+            />
+            <PrivacyToggle
+              title="Ofertas relevantes"
+              text="Permite mostrar promociones y recomendaciones mas utiles."
+              active={marketing}
+              onPress={() => setMarketing((current) => !current)}
+            />
+          </View>
+
+          <View style={styles.privacyActions}>
+            <ActionButton label="Guardar preferencias" icon={CheckCircle2} onPress={savePreferences} />
+            <ActionButton label="Aceptar todo" icon={ShieldCheck} variant="outlineDark" onPress={acceptAll} />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.privacySafeArea}>
+      <StatusBar style="dark" />
+      <View style={styles.privacyScreen}>
+        <View>
+          <View style={styles.privacyTopIcon}>
+            <ShieldCheck size={28} color={colors.skyDark} />
+          </View>
+          <Text style={styles.privacyTitle}>Queremos ofrecerte la mejor experiencia posible</Text>
+          <Text style={styles.privacyBody}>
+            Proactivitis utiliza almacenamiento local y tecnologias similares para proteger tu cuenta, recordar tu idioma,
+            guardar preferencias, medir el rendimiento de la app y ofrecerte tours, traslados y ofertas mas relevantes.
+            Puedes cambiar tus preferencias antes de continuar.
+          </Text>
+          <Pressable onPress={() => openUrl(links.privacy)}>
+            <Text style={styles.privacyLink}>Ver política de privacidad</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.privacyBottomActions}>
+          <ActionButton label="Aceptar y continuar" icon={CheckCircle2} onPress={acceptAll} />
+          <Pressable style={styles.privacyTextButton} onPress={() => setShowPreferences(true)}>
+            <Text style={styles.privacyTextButtonLabel}>Cambiar preferencias</Text>
+          </Pressable>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+function PrivacyToggle({
+  title,
+  text,
+  active,
+  onPress
+}: {
+  title: string;
+  text: string;
+  active: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable style={styles.privacyOption} onPress={onPress}>
+      <View style={styles.flexText}>
+        <Text style={styles.privacyOptionTitle}>{title}</Text>
+        <Text style={styles.privacyOptionText}>{text}</Text>
+      </View>
+      <View style={[styles.privacySwitch, active ? styles.privacySwitchActive : null]}>
+        <View style={[styles.privacySwitchKnob, active ? styles.privacySwitchKnobActive : null]} />
+      </View>
+    </Pressable>
   );
 }
 
@@ -1593,6 +2114,7 @@ function LanguageSelector({
 
 function MobileApp({ stripeReady }: { stripeReady: boolean }) {
   const { language } = useLanguage();
+  const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("home");
   const [query, setQuery] = useState("");
@@ -1604,6 +2126,8 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [savedQuote, setSavedQuote] = useState<SavedQuote | null>(null);
   const [mobileSession, setMobileSession] = useState<MobileSession | null>(null);
+  const [productBookingY, setProductBookingY] = useState(0);
+  const [productFloatingVisible, setProductFloatingVisible] = useState(true);
 
   const updateMobileSession = (session: MobileSession | null) => {
     setMobileSession(session);
@@ -1684,6 +2208,11 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
   }, [activeTab, activeProduct?.id, checkoutUrl]);
 
   useEffect(() => {
+    setProductBookingY(0);
+    setProductFloatingVisible(true);
+  }, [activeProduct?.id]);
+
+  useEffect(() => {
     const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
       if (checkoutUrl) {
         setCheckoutUrl(null);
@@ -1754,6 +2283,8 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
           onBack={() => setActiveProduct(null)}
           onCheckout={openCheckout}
           onScrollTo={(y) => scrollRef.current?.scrollTo({ y, animated: true })}
+          onBookingOffsetChange={setProductBookingY}
+          onFloatingBarVisibleChange={setProductFloatingVisible}
         />
       );
     }
@@ -1825,11 +2356,15 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
   };
 
   const fullBleedTop = !checkoutUrl && (activeTab === "home" || activeTab === "transfers" || Boolean(activeProduct));
+  const bottomInset = Math.max(insets.bottom, 14);
+  const topInset = Math.max(insets.top, 24);
+  const tabBarBottom = bottomInset;
+  const scrollBottomPadding = activeProduct ? 94 + bottomInset + 62 : 72 + tabBarBottom + 64;
 
   return (
     <View style={styles.appRoot}>
       <StatusBar style="light" translucent backgroundColor="transparent" />
-      <View style={[styles.appShell, fullBleedTop ? null : styles.appShellSafeTop]}>
+      <View style={[styles.appShell, fullBleedTop ? null : { paddingTop: topInset }]}>
         {checkoutUrl ? (
           <ScreenErrorBoundary
             resetKey={screenResetKey}
@@ -1838,7 +2373,15 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
             {renderScreen()}
           </ScreenErrorBoundary>
         ) : (
-          <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            ref={scrollRef}
+            contentContainerStyle={[
+              styles.scrollContent,
+              activeProduct ? styles.scrollContentWithFloatingBar : null,
+              { paddingBottom: scrollBottomPadding }
+            ]}
+            showsVerticalScrollIndicator={false}
+          >
             <ScreenErrorBoundary
               resetKey={screenResetKey}
               fallback={
@@ -1855,7 +2398,17 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
             </ScreenErrorBoundary>
           </ScrollView>
         )}
-        {!checkoutUrl && !activeProduct ? <TabBar activeTab={activeTab} onChange={setActiveTab} /> : null}
+        {!checkoutUrl && activeProduct && productFloatingVisible ? (
+          <ProductFloatingBar
+            tour={activeProduct}
+            bottomInset={bottomInset}
+            onPress={() => {
+              setProductFloatingVisible(false);
+              scrollRef.current?.scrollTo({ y: productBookingY || 620, animated: true });
+            }}
+          />
+        ) : null}
+        {!checkoutUrl && !activeProduct ? <TabBar activeTab={activeTab} onChange={setActiveTab} bottomInset={tabBarBottom} /> : null}
       </View>
     </View>
   );
@@ -1880,18 +2433,27 @@ function HomeScreen({
       <ImageBackground source={{ uri: absoluteImageUrl(homeHeroImage) }} style={styles.hero} imageStyle={styles.heroImage as StyleProp<ImageStyle>}>
         <View style={styles.heroOverlay} />
         <View style={styles.heroContent}>
+          <View style={styles.heroBrand}>
+            <View style={styles.heroBrandIconShell}>
+              <Image source={require("./assets/icon.png")} style={styles.heroBrandIcon} />
+            </View>
+            <View style={styles.flexText}>
+              <Text style={styles.heroBrandName}>Proactivitis</Text>
+              <Text style={styles.heroBrandLine}>Tours & Transfers</Text>
+            </View>
+          </View>
           <Text style={styles.eyebrow}>Experiencias y traslados</Text>
-          <Text style={styles.heroTitle}>Tours y traslados en Republica Dominicana</Text>
+          <Text style={styles.heroTitle}>Reserva traslados y tours confiables en República Dominicana</Text>
           <Text style={styles.heroSubtitle}>
-            Reserva experiencias seleccionadas y traslados privados con precios claros.
+            Precio claro, soporte humano y coordinación local desde que reservas.
           </Text>
           <View style={styles.heroTrustRow}>
             <Text style={styles.heroTrustPill}>Fotos verificadas</Text>
             <Text style={styles.heroTrustPill}>Asistencia 24/7</Text>
           </View>
           <View style={styles.heroActions}>
-            <ActionButton label="Explorar tours" icon={Compass} onPress={onOpenTours} />
-            <ActionButton label="Cotizar traslado" icon={Car} variant="outline" onPress={onOpenTransfers} />
+            <ActionButton label="Reservar traslado" icon={Car} onPress={onOpenTransfers} />
+            <ActionButton label="Explorar tours" icon={Compass} variant="outline" onPress={onOpenTours} />
           </View>
         </View>
       </ImageBackground>
@@ -1909,12 +2471,12 @@ function HomeScreen({
         <Pressable style={styles.homeBookingCard} onPress={onOpenTours}>
           <Text style={styles.homeBookingEmoji}>🏝️</Text>
           <Text style={styles.homeBookingTitle}>Experiencias seleccionadas</Text>
-          <Text style={styles.homeBookingText}>Actividades con detalles, fotos y precios conectados al catalogo web.</Text>
+          <Text style={styles.homeBookingText}>Actividades con fotos reales, horarios claros y precios actualizados.</Text>
         </Pressable>
         <Pressable style={styles.homeBookingCard} onPress={onOpenTransfers}>
           <Text style={styles.homeBookingEmoji}>🚘</Text>
           <Text style={styles.homeBookingTitle}>Traslados privados</Text>
-          <Text style={styles.homeBookingText}>Busca aeropuertos, hoteles y zonas reales para calcular tu ruta antes de reservar.</Text>
+          <Text style={styles.homeBookingText}>Busca tu hotel, aeropuerto o zona y ve el precio antes de reservar.</Text>
         </Pressable>
       </View>
 
@@ -1951,7 +2513,7 @@ function HomeScreen({
               <Car size={13} color={colors.skyDark} />
               <Text style={styles.homeVehicleText} numberOfLines={1}>{route.vehicle.name}</Text>
             </View>
-            <Text style={styles.routePrice}>Desde {money(route.priceFrom)}</Text>
+            <Text style={styles.homeRoutePrice}>Desde {money(route.priceFrom)}</Text>
           </Pressable>
         ))}
       </View>
@@ -1961,11 +2523,10 @@ function HomeScreen({
         <View style={styles.flexText}>
           <Text style={styles.noticeTitle}>Reserva con asistencia local</Text>
           <Text style={styles.noticeText}>
-            Completa tus datos en la app y finaliza con checkout seguro. Si necesitas ayuda, nuestro equipo te acompana antes y durante tu experiencia.
+            Completa tus datos en la app y finaliza con checkout seguro. Si necesitas ayuda, nuestro equipo te acompaña antes y durante tu experiencia.
           </Text>
         </View>
       </View>
-      <ContactPanel compact />
     </View>
   );
 }
@@ -2017,15 +2578,15 @@ function ToursScreen({
   return (
     <View style={styles.screen}>
       <View style={styles.toursHeroPanel}>
-        <Text style={styles.eyebrowDark}>🌴 Catalogo Proactivitis</Text>
+        <Text style={styles.eyebrowDark}>Catálogo Proactivitis</Text>
         <Text style={styles.toursHeroTitle}>Tours listos para reservar</Text>
         <Text style={styles.toursHeroCopy}>
-          Experiencias reales de la web, fotos del producto, detalles claros y checkout dentro de la app.
+          Experiencias reales, fotos del producto, detalles claros y reserva dentro de la app.
         </Text>
         <View style={styles.toursTrustRow}>
-          <Text style={styles.toursTrustPill}>📸 Galeria</Text>
-          <Text style={styles.toursTrustPill}>⚡ Reserva rapida</Text>
-          <Text style={styles.toursTrustPill}>💬 Soporte humano</Text>
+          <Text style={styles.toursTrustPill}>Galería</Text>
+          <Text style={styles.toursTrustPill}>Reserva rápida</Text>
+          <Text style={styles.toursTrustPill}>Soporte humano</Text>
         </View>
       </View>
       <View style={styles.searchBox}>
@@ -2068,7 +2629,7 @@ function ToursScreen({
       ) : (
         <View style={styles.toursEmptyPanel}>
           <Text style={styles.sectionTitle}>No encontramos ese tour</Text>
-          <Text style={styles.bodyText}>Prueba con Saona, buggy, catamaran o limpia el filtro para ver todo el catalogo.</Text>
+              <Text style={styles.bodyText}>Prueba con Saona, buggy, catamarán o limpia el filtro para ver todo el catálogo.</Text>
         </View>
       )}
     </View>
@@ -2112,7 +2673,7 @@ function CalendarPickerModal({
           <View style={styles.rowBetween}>
             <View style={styles.flexText}>
               <Text style={styles.sectionTitle}>Selecciona una fecha</Text>
-              <Text style={styles.smallMuted}>Puedes reservar para una fecha mas futura.</Text>
+              <Text style={styles.smallMuted}>Puedes reservar para una fecha más futura.</Text>
             </View>
             <Pressable style={styles.calendarCloseButton} onPress={onClose}>
               <Text style={styles.calendarCloseText}>Cerrar</Text>
@@ -2184,31 +2745,66 @@ function CalendarPickerModal({
   );
 }
 
+function ProductFloatingBar({
+  tour,
+  bottomInset,
+  onPress
+}: {
+  tour: AppTour;
+  bottomInset: number;
+  onPress: () => void;
+}) {
+  const displayPrice = applyOfferDiscount(tour.price, tour.activeOffer).total;
+  return (
+    <View style={[styles.productFloatingBar, { paddingBottom: 18 + bottomInset }]}>
+      <View style={styles.productFloatingPriceBlock}>
+        <Text style={styles.productFloatingLabel}>Desde</Text>
+        <View style={styles.productFloatingPriceRow}>
+          {tour.activeOffer ? <Text style={styles.productFloatingOldPrice}>{money(tour.price)}</Text> : null}
+          <Text style={styles.productFloatingPrice}>{money(displayPrice)}</Text>
+        </View>
+        <Text style={styles.productFloatingSub}>por adulto</Text>
+      </View>
+      <Pressable style={styles.productFloatingButton} onPress={onPress}>
+        <CalendarCheck size={20} color={colors.white} />
+        <Text style={styles.productFloatingButtonText}>Ver disponibilidad</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 function ProductScreen({
   tour,
   onBack,
   onCheckout,
-  onScrollTo
+  onScrollTo,
+  onBookingOffsetChange,
+  onFloatingBarVisibleChange
 }: {
   tour: AppTour;
   onBack: () => void;
   onCheckout: (url: string) => void;
   onScrollTo: (y: number) => void;
+  onBookingOffsetChange: (y: number) => void;
+  onFloatingBarVisibleChange: (visible: boolean) => void;
 }) {
   const { language } = useLanguage();
   const dateLocale = language === "en" ? "en-US" : language === "fr" ? "fr-FR" : "es-DO";
   const productPanelY = useRef(0);
   const bookingFormY = useRef(0);
-  const galleryImages = useMemo(() => tour.gallery.slice(0, 10), [tour.gallery]);
+  const heroCarouselRef = useRef<ScrollView>(null);
+  const galleryImages = useMemo(() => (tour.gallery.length ? tour.gallery : [tour.image]).slice(0, 18), [tour.gallery, tour.image]);
   const [selectedImage, setSelectedImage] = useState(galleryImages[0] ?? tour.image);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [adults, setAdults] = useState(2);
   const [youth, setYouth] = useState(0);
   const [child, setChild] = useState(0);
   const [date, setDate] = useState(tomorrow());
+  const [dateConfirmed, setDateConfirmed] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => monthStart(tomorrow()));
   const [time, setTime] = useState("09:00");
+  const [timeConfirmed, setTimeConfirmed] = useState(false);
   const [selectedOptionId, setSelectedOptionId] = useState(
     tour.options.find((option) => option.isDefault)?.id ?? tour.options[0]?.id ?? null
   );
@@ -2235,15 +2831,43 @@ function ProductScreen({
   const shortDescription = tour.description || tour.fullDescription || "Experiencia confirmada por Proactivitis.";
   const detailDescription = tour.fullDescription || tour.description;
   const quickFacts = [
-    { icon: Clock3, label: "Duracion", value: tour.duration },
+    { icon: Clock3, label: "Duración", value: tour.duration },
     { icon: MapPin, label: "Zona", value: tour.location },
     { icon: Car, label: "Recogida", value: tour.pickup },
-    { icon: ShieldCheck, label: "Reserva", value: tour.confirmationType ?? "Confirmacion segura" }
+    { icon: ShieldCheck, label: "Reserva", value: tour.confirmationType ?? "Confirmación segura" }
   ].filter((item) => item.value.trim().length > 0);
+  const productTrustPoints = [
+    "Recogida en hotel incluida",
+    "Fotos reales verificadas",
+    "Confirmación rápida",
+    "Soporte humano",
+    "Pago seguro"
+  ];
 
   useEffect(() => {
     setSelectedImage(galleryImages[0] ?? tour.image);
   }, [tour.id, galleryImages, tour.image]);
+
+  useEffect(() => {
+    const nextDate = tomorrow();
+    setAdults(2);
+    setYouth(0);
+    setChild(0);
+    setDate(nextDate);
+    setDateConfirmed(false);
+    setCalendarOpen(false);
+    setCalendarMonth(monthStart(nextDate));
+    setTime(timeOptions[0] ?? "09:00");
+    setTimeConfirmed(false);
+    setSelectedOptionId(tour.options.find((option) => option.isDefault)?.id ?? tour.options[0]?.id ?? null);
+  }, [timeOptions, tour.id, tour.options]);
+
+  useEffect(() => {
+    const selectedIndex = Math.max(0, galleryImages.indexOf(selectedImage));
+    requestAnimationFrame(() => {
+      heroCarouselRef.current?.scrollTo({ x: selectedIndex * windowWidth, animated: false });
+    });
+  }, [galleryImages, selectedImage]);
 
   useEffect(() => {
     if (!galleryOpen) return;
@@ -2255,18 +2879,23 @@ function ProductScreen({
     return () => subscription.remove();
   }, [galleryOpen]);
 
+  useEffect(() => {
+    onFloatingBarVisibleChange(!galleryOpen);
+    return () => onFloatingBarVisibleChange(true);
+  }, [galleryOpen, onFloatingBarVisibleChange]);
+
   const infoRows = [
     { label: "Punto de encuentro", value: tour.meetingPoint ?? "" },
     { label: "Instrucciones", value: tour.meetingInstructions ?? "" },
     { label: "Idiomas", value: joinValues(tour.languages) },
     { label: "Horarios", value: joinValues(tour.timeOptions) },
-    { label: "Dias", value: joinValues(tour.operatingDays) },
+    { label: "Días", value: joinValues(tour.operatingDays) },
     { label: "Capacidad", value: tour.capacity ? `${tour.capacity} personas` : "" },
-    { label: "Edad minima", value: tour.minAge ? `${tour.minAge}+` : "" },
-    { label: "Nivel fisico", value: tour.physicalLevel ?? "" },
+    { label: "Edad mínima", value: tour.minAge ? `${tour.minAge}+` : "" },
+    { label: "Nivel físico", value: tour.physicalLevel ?? "" },
     { label: "Accesibilidad", value: tour.accessibility ?? "" },
     { label: "Requisitos", value: tour.requirements ?? "" },
-    { label: "Cancelacion", value: tour.cancellationPolicy ?? "" }
+    { label: "Cancelación", value: tour.cancellationPolicy ?? "" }
   ].filter((item) => item.value.trim().length > 0);
 
   const startCheckout = () => {
@@ -2286,7 +2915,23 @@ function ProductScreen({
   };
 
   const scrollToBookingForm = () => {
+    onFloatingBarVisibleChange(false);
     onScrollTo(Math.max(0, productPanelY.current + bookingFormY.current - 18));
+  };
+
+  const closeGalleryAndShowAvailability = () => {
+    setGalleryOpen(false);
+    requestAnimationFrame(scrollToBookingForm);
+  };
+
+  const updateBookingOffset = () => {
+    onBookingOffsetChange(Math.max(0, productPanelY.current + bookingFormY.current - 18));
+  };
+
+  const handleHeroScrollEnd = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
+    const index = Math.round(event.nativeEvent.contentOffset.x / windowWidth);
+    const image = galleryImages[Math.min(Math.max(index, 0), galleryImages.length - 1)];
+    if (image) setSelectedImage(image);
   };
 
   const openCalendar = () => {
@@ -2295,6 +2940,10 @@ function ProductScreen({
     scrollToBookingForm();
   };
 
+  const bookingActionLabel = !dateConfirmed ? "Seleccionar fecha" : !timeConfirmed ? "Seleccionar hora" : "Continuar";
+  const bookingActionIcon = !dateConfirmed ? CalendarCheck : !timeConfirmed ? Clock3 : CreditCard;
+  const bookingActionPress = !dateConfirmed ? openCalendar : !timeConfirmed ? scrollToBookingForm : startCheckout;
+
   if (galleryOpen) {
     return (
       <GalleryViewer
@@ -2302,6 +2951,7 @@ function ProductScreen({
         image={selectedImage}
         onSelect={setSelectedImage}
         onClose={() => setGalleryOpen(false)}
+        onAvailability={closeGalleryAndShowAvailability}
       />
     );
   }
@@ -2309,18 +2959,39 @@ function ProductScreen({
   return (
     <View style={styles.productScreen}>
       <View style={styles.productHero}>
-        <Pressable style={styles.productImageButton} onPress={() => setGalleryOpen(true)}>
-          <RemoteImage uri={selectedImage} style={styles.productHeroImage} />
-        </Pressable>
+        <ScrollView
+          ref={heroCarouselRef}
+          horizontal
+          pagingEnabled
+          bounces={false}
+          showsHorizontalScrollIndicator={false}
+          style={styles.productImageButton}
+          onMomentumScrollEnd={handleHeroScrollEnd}
+        >
+          {galleryImages.map((image, index) => (
+            <Pressable key={`${image}-${index}`} style={styles.productImageSlide} onPress={() => setGalleryOpen(true)}>
+              <RemoteImage uri={image} style={styles.productHeroImage} />
+            </Pressable>
+          ))}
+        </ScrollView>
         <View pointerEvents="none" style={styles.productOverlay} />
         <Pressable style={styles.backButton} onPress={onBack}>
-          <ArrowLeft size={20} color={colors.white} />
-          <Text style={styles.backButtonText}>Volver</Text>
+          <ArrowLeft size={22} color={colors.ink} />
         </Pressable>
         <Pressable style={styles.galleryFloatingButton} onPress={() => setGalleryOpen(true)}>
-          <ImageIcon size={16} color={colors.white} />
-          <Text style={styles.galleryFloatingText}>{galleryImages.length} fotos</Text>
+          <ImageIcon size={16} color={colors.ink} />
+          <Text style={styles.galleryFloatingText}>
+            {Math.max(1, galleryImages.indexOf(selectedImage) + 1)}/{galleryImages.length}
+          </Text>
         </Pressable>
+        <View style={styles.productHeroDots}>
+          {galleryImages.slice(0, 6).map((image, index) => (
+            <View
+              key={`${image}-dot`}
+              style={[styles.productHeroDot, image === selectedImage ? styles.productHeroDotActive : null]}
+            />
+          ))}
+        </View>
         <View style={styles.productHeroContent}>
           <Text style={styles.eyebrow}>{tour.category}</Text>
           <Text style={styles.productTitle}>{tour.title}</Text>
@@ -2336,6 +3007,7 @@ function ProductScreen({
         style={styles.productPanel}
         onLayout={(event) => {
           productPanelY.current = event.nativeEvent.layout.y;
+          updateBookingOffset();
         }}
       >
         <View style={styles.productBookingCard}>
@@ -2343,14 +3015,14 @@ function ProductScreen({
             <Text style={styles.productPriceLabel}>Desde</Text>
             {tour.activeOffer ? <Text style={styles.productOldPrice}>{money(tour.price)}</Text> : null}
             <Text style={styles.productPrice}>{money(applyOfferDiscount(tour.price, tour.activeOffer).total)}</Text>
-            <Text style={styles.smallMuted}>por adulto, con datos sincronizados desde la web.</Text>
+            <Text style={styles.smallMuted}>por adulto, actualizado antes de pagar.</Text>
             {tour.activeOffer ? (
               <View style={styles.offerBadge}>
                 <Text style={styles.offerBadgeText}>{offerLabel(tour.activeOffer)}</Text>
               </View>
             ) : null}
           </View>
-          <ActionButton label="Reservar" icon={CreditCard} onPress={scrollToBookingForm} />
+          <ActionButton label="Ver disponibilidad" icon={CalendarCheck} onPress={scrollToBookingForm} />
         </View>
 
         <View style={styles.productIntroCard}>
@@ -2376,7 +3048,10 @@ function ProductScreen({
 
         <View style={styles.gallerySection}>
           <View style={styles.rowBetween}>
-            <Text style={styles.sectionTitle}>Galeria</Text>
+            <View style={styles.flexText}>
+              <Text style={styles.sectionTitle}>Galería</Text>
+              <Text style={styles.smallMuted}>Fotos reales de la experiencia</Text>
+            </View>
             <Text style={styles.smallMuted}>{galleryImages.length} fotos</Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.galleryList}>
@@ -2398,9 +3073,21 @@ function ProductScreen({
           </ScrollView>
         </View>
 
+        <View style={styles.productTrustPanel}>
+          <Text style={styles.sectionTitle}>Por qué elegir esta experiencia</Text>
+          <View style={styles.productTrustGrid}>
+            {productTrustPoints.map((point) => (
+              <View key={point} style={styles.productTrustItem}>
+                <CheckCircle2 size={16} color={colors.green} />
+                <Text style={styles.productTrustText}>{point}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
         {detailDescription ? (
           <View style={styles.listPanel}>
-            <Text style={styles.sectionTitle}>Descripcion</Text>
+            <Text style={styles.sectionTitle}>Descripción</Text>
             <Text style={styles.bodyText}>{detailDescription}</Text>
           </View>
         ) : null}
@@ -2458,12 +3145,13 @@ function ProductScreen({
           style={styles.checkoutBox}
           onLayout={(event) => {
             bookingFormY.current = event.nativeEvent.layout.y;
+            updateBookingOffset();
           }}
         >
           <View style={styles.rowBetween}>
             <View style={styles.flexText}>
               <Text style={styles.sectionTitle}>Reservar</Text>
-              <Text style={styles.smallMuted}>Selecciona una fecha, una hora y la cantidad de personas.</Text>
+              <Text style={styles.smallMuted}>Selecciona fecha, hora y viajeros.</Text>
             </View>
             <Text style={styles.checkoutBadge}>Pago seguro</Text>
           </View>
@@ -2473,7 +3161,7 @@ function ProductScreen({
               <CalendarCheck size={18} color={colors.white} />
             </View>
             <View style={styles.flexText}>
-              <Text style={styles.bookingSelectionLabel}>Tu seleccion</Text>
+              <Text style={styles.bookingSelectionLabel}>Tu selección</Text>
               <Text style={styles.bookingSelectionValue}>{shortPickerDate(date, dateLocale)} | {time} | {totalTravelers} pax</Text>
             </View>
           </View>
@@ -2488,7 +3176,7 @@ function ProductScreen({
               <Text style={styles.priceTierValue}>{money(youthPrice)}</Text>
             </View>
             <View style={styles.priceTierRow}>
-              <Text style={styles.priceTierLabel}>Nino</Text>
+              <Text style={styles.priceTierLabel}>Niño</Text>
               <Text style={styles.priceTierValue}>{money(childPrice)}</Text>
             </View>
           </View>
@@ -2507,7 +3195,7 @@ function ProductScreen({
               <Text style={styles.bookingStepNumber}>1</Text>
               <View style={styles.flexText}>
                 <Text style={styles.fieldLabel}>Selecciona una fecha</Text>
-                <Text style={styles.smallMuted}>Toca la fecha para abrir el calendario y elegir cualquier dia futuro.</Text>
+                <Text style={styles.smallMuted}>Toca la fecha para abrir el calendario y elegir cualquier día futuro.</Text>
               </View>
             </View>
             <Pressable style={styles.bookingDateButton} onPress={openCalendar}>
@@ -2534,6 +3222,7 @@ function ProductScreen({
                   style={[styles.bookingChoiceChip, item === time ? styles.bookingChoiceChipActive : null]}
                   onPress={() => {
                     setTime(item);
+                    setTimeConfirmed(true);
                     scrollToBookingForm();
                   }}
                 >
@@ -2556,7 +3245,7 @@ function ProductScreen({
             </View>
             <Stepper label="Adultos" value={adults} min={1} max={20} onChange={setAdults} />
             <Stepper label="Adolescentes" value={youth} min={0} max={20} onChange={setYouth} />
-            <Stepper label="Ninos" value={child} min={0} max={20} onChange={setChild} />
+            <Stepper label="Niños" value={child} min={0} max={20} onChange={setChild} />
           </View>
 
           <View style={styles.rowBetween}>
@@ -2564,7 +3253,7 @@ function ProductScreen({
               <Text style={styles.smallMuted}>{offerPricing.savings > 0 ? `Antes ${money(subtotal)}` : "Total"}</Text>
               <Text style={styles.checkoutTotal}>{money(totalPrice)}</Text>
             </View>
-            <ActionButton label="Continuar" icon={CreditCard} onPress={startCheckout} />
+            <ActionButton label={bookingActionLabel} icon={bookingActionIcon} onPress={bookingActionPress} />
           </View>
         </View>
       </View>
@@ -2577,6 +3266,7 @@ function ProductScreen({
         onClose={() => setCalendarOpen(false)}
         onSelect={(nextDate) => {
           setDate(nextDate);
+          setDateConfirmed(true);
           setCalendarOpen(false);
           scrollToBookingForm();
         }}
@@ -2593,7 +3283,7 @@ function TransfersScreen({
   onOpenCheckout: (url: string) => void;
 }) {
   const [routes, setRoutes] = useState<MobileTransferRoute[]>(fallbackTransferRoutes);
-  const [availableLocations, setAvailableLocations] = useState<LocationSummary[]>(() => collectRouteLocations(fallbackTransferRoutes));
+  const [availableLocations, setAvailableLocations] = useState<LocationSummary[]>(() => fallbackTransferLocations);
   const [originQuery, setOriginQuery] = useState("");
   const [destinationQuery, setDestinationQuery] = useState("");
   const [originOptions, setOriginOptions] = useState<LocationSummary[]>([]);
@@ -2615,6 +3305,7 @@ function TransfersScreen({
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [quoteNotice, setQuoteNotice] = useState<string | null>(null);
   const [draftReady, setDraftReady] = useState(false);
 
   const roundTripMultiplier = tripType === "round-trip" ? 1.9 : 1;
@@ -2622,11 +3313,19 @@ function TransfersScreen({
   const selectedPrice = selectedVehicle ? Math.round(selectedVehicle.price * roundTripMultiplier) : null;
 
   const routeSuggestions = useMemo(() => {
-    const text = `${originQuery} ${destinationQuery}`.trim().toLowerCase();
+    const text = `${originQuery} ${destinationQuery}`.trim();
     const matches = text
-      ? routes.filter((route) =>
-          `${route.origin.name} ${route.destination.name} ${route.zoneLabel ?? ""}`.toLowerCase().includes(text)
-        )
+      ? routes
+          .map((route) => ({
+            route,
+            score:
+              transferLocationScore(route.origin, text) +
+              transferLocationScore(route.destination, text) +
+              tokenMatchScore(normalizeLocationSearch(route.zoneLabel ?? ""), expandSearchTokens(searchTokens(text)))
+          }))
+          .filter((item) => item.score >= 7)
+          .sort((a, b) => b.score - a.score)
+          .map((item) => item.route)
       : routes;
     return matches.slice(0, 8);
   }, [destinationQuery, originQuery, routes]);
@@ -2733,7 +3432,7 @@ function TransfersScreen({
     setOriginLoading(false);
     setOriginSearchError(null);
     if (!localMatches.length && originQuery.trim().length >= 3) {
-      setOriginSearchError("No encontramos coincidencias. Prueba con hotel, aeropuerto o zona.");
+      setOriginSearchError("No encontramos ese lugar exacto. Prueba con hotel, aeropuerto o zona cercana.");
     }
   }, [availableLocations, originQuery, origin?.name]);
 
@@ -2749,7 +3448,7 @@ function TransfersScreen({
     setDestinationLoading(false);
     setDestinationSearchError(null);
     if (!localMatches.length && destinationQuery.trim().length >= 3) {
-      setDestinationSearchError("No encontramos coincidencias. Prueba con hotel, aeropuerto o zona.");
+      setDestinationSearchError("No encontramos ese lugar exacto. Prueba con hotel, aeropuerto o zona cercana.");
     }
   }, [availableLocations, destinationQuery, destination?.name]);
 
@@ -2757,6 +3456,7 @@ function TransfersScreen({
     setVehicles([]);
     setSelectedVehicleId(null);
     setQuoteError(null);
+    setQuoteNotice(null);
   };
 
   const selectRoute = (route: MobileTransferRoute) => {
@@ -2771,37 +3471,71 @@ function TransfersScreen({
   };
 
   const quoteRoute = async () => {
-    if (!origin || !destination) {
+    const resolvedOrigin = origin ?? transferLocationMatches(availableLocations, originQuery)[0] ?? null;
+    const resolvedDestination = destination ?? transferLocationMatches(availableLocations, destinationQuery)[0] ?? null;
+
+    if (!resolvedOrigin || !resolvedDestination) {
       setQuoteError("Busca y selecciona origen y destino desde la lista real.");
       return;
     }
-    if (origin.id === destination.id) {
+    if (!origin) {
+      setOrigin(resolvedOrigin);
+      setOriginQuery(resolvedOrigin.name);
+      setOriginOptions([]);
+    }
+    if (!destination) {
+      setDestination(resolvedDestination);
+      setDestinationQuery(resolvedDestination.name);
+      setDestinationOptions([]);
+    }
+    if (resolvedOrigin.id === resolvedDestination.id) {
       setQuoteError("Origen y destino deben ser diferentes.");
       return;
     }
-    if (origin.id.startsWith("route-") || destination.id.startsWith("route-")) {
-      setQuoteError("Selecciona el hotel o aeropuerto exacto antes de cotizar.");
-      return;
-    }
+    const usesPopularShortcut = resolvedOrigin.id.startsWith("route-") || resolvedDestination.id.startsWith("route-");
     if (tripType === "round-trip" && (!returnDate || !returnTime)) {
       setQuoteError("Indica fecha y hora de regreso.");
       return;
     }
     setQuoteLoading(true);
     setQuoteError(null);
+    setQuoteNotice(null);
+    if (usesPopularShortcut) {
+      const catalogVehicles = buildCatalogTransferVehicles(resolvedOrigin, resolvedDestination, passengers);
+      if (catalogVehicles.length) {
+        setVehicles(catalogVehicles);
+        setSelectedVehicleId(catalogVehicles[0]?.id ?? null);
+        setQuoteNotice("Tarifa real del catálogo Proactivitis cargada en la app. Puedes continuar al checkout con este precio.");
+      } else {
+        setVehicles([]);
+        setSelectedVehicleId(null);
+        setQuoteError("No hay vehículos disponibles para esa ruta.");
+      }
+      setQuoteLoading(false);
+      return;
+    }
     try {
       const data = await fetchTransferQuote({
-        originId: origin.id,
-        destinationId: destination.id,
+        originId: resolvedOrigin.id,
+        destinationId: resolvedDestination.id,
         passengers
       });
       setVehicles(data.vehicles);
       setSelectedVehicleId(data.vehicles[0]?.id ?? null);
-      if (!data.vehicles.length) setQuoteError("No hay vehiculos disponibles para ese grupo.");
+      if (!data.vehicles.length) setQuoteError("No hay vehículos disponibles para ese grupo.");
     } catch (error) {
-      setVehicles([]);
-      setSelectedVehicleId(null);
-      setQuoteError(error instanceof Error ? error.message : "No se pudo calcular la tarifa real.");
+      const fallbackVehicles = buildCatalogTransferVehicles(resolvedOrigin, resolvedDestination, passengers);
+      if (fallbackVehicles.length) {
+        setVehicles(fallbackVehicles);
+        setSelectedVehicleId(fallbackVehicles[0]?.id ?? null);
+        setQuoteNotice(
+          "Tarifa real del catálogo Proactivitis cargada en la app. Puedes continuar al checkout con este precio."
+        );
+      } else {
+        setVehicles([]);
+        setSelectedVehicleId(null);
+        setQuoteError(error instanceof Error ? error.message : "No se pudo calcular la tarifa real.");
+      }
     } finally {
       setQuoteLoading(false);
     }
@@ -2838,13 +3572,13 @@ function TransfersScreen({
 
   return (
     <View style={styles.transferScreen}>
-      <ImageBackground source={{ uri: heroImage }} style={styles.transferHero} imageStyle={styles.heroImage as StyleProp<ImageStyle>}>
+      <ImageBackground source={transferHeroSource} style={styles.transferHero} imageStyle={styles.heroImage as StyleProp<ImageStyle>}>
         <View style={styles.heroOverlay} />
         <View style={styles.transferHeroContent}>
           <Text style={styles.eyebrow}>Traslados privados</Text>
-          <Text style={styles.heroTitle}>Busca tu ruta real</Text>
+          <Text style={styles.heroTitle}>Reserva tu traslado privado</Text>
           <Text style={styles.heroSubtitle}>
-            Escribe tu aeropuerto, hotel o zona. La app te muestra coincidencias antes de calcular.
+            Precio fijo, conductor confirmado y recogida en tu hotel o aeropuerto.
           </Text>
         </View>
       </ImageBackground>
@@ -2856,7 +3590,7 @@ function TransfersScreen({
           </View>
           <View style={styles.flexText}>
             <Text style={styles.transferSearchTitle}>Elige origen y destino</Text>
-            <Text style={styles.transferSearchCopy}>No dejamos una ruta marcada por defecto para que reserves exactamente donde necesitas.</Text>
+            <Text style={styles.transferSearchCopy}>Elige tu punto exacto de recogida.</Text>
           </View>
         </View>
         <View style={styles.segmentRow}>
@@ -2870,7 +3604,7 @@ function TransfersScreen({
           selected={origin}
           loading={originLoading}
           options={originOptions}
-          placeholder="Ej: Aeropuerto Punta Cana"
+          placeholder="Aeropuerto, hotel o zona"
           onChange={(value) => {
             setOriginQuery(value);
             setOrigin(null);
@@ -2893,7 +3627,7 @@ function TransfersScreen({
           selected={destination}
           loading={destinationLoading}
           options={destinationOptions}
-          placeholder="Ej: hotel, villa o zona"
+          placeholder="Hotel, villa o zona"
           onChange={(value) => {
             setDestinationQuery(value);
             setDestination(null);
@@ -2938,7 +3672,10 @@ function TransfersScreen({
           </View>
         ) : null}
         <Stepper label="Pasajeros" value={passengers} min={1} max={14} onChange={setPassengers} />
-        <ActionButton label={quoteLoading ? "Buscando..." : "Buscar tarifa"} icon={Search} onPress={quoteRoute} />
+        <TrustMiniList
+          items={["Precio fijo sin sorpresas", "Conductor te espera con tu nombre", "Soporte por WhatsApp"]}
+        />
+        <ActionButton label={quoteLoading ? "Buscando..." : "Ver precio ahora"} icon={Search} onPress={quoteRoute} />
       </View>
 
       {quoteError ? (
@@ -2947,9 +3684,19 @@ function TransfersScreen({
         </View>
       ) : null}
 
+      {quoteNotice ? (
+        <View style={[styles.noticePanel, styles.transferNoticePanel]}>
+          <ShieldCheck size={20} color={colors.skyDark} />
+          <View style={styles.flexText}>
+            <Text style={styles.noticeTitle}>Cotización disponible</Text>
+            <Text style={styles.noticeText}>{quoteNotice}</Text>
+          </View>
+        </View>
+      ) : null}
+
       {vehicles.length ? (
         <View style={styles.resultsPanel}>
-          <Text style={styles.sectionTitle}>Vehiculos disponibles</Text>
+          <Text style={styles.sectionTitle}>Vehículos disponibles</Text>
           {vehicles.map((vehicle) => {
             const price = Math.round(vehicle.price * roundTripMultiplier);
             const active = vehicle.id === selectedVehicle?.id;
@@ -3020,6 +3767,7 @@ function CheckoutScreen({
   onClose: () => void;
   onOpenProfile: () => void;
 }) {
+  const insets = useSafeAreaInsets();
   const { initPaymentSheet, presentPaymentSheet, nativeStripeAvailable } = useAppStripe();
   const summary = useMemo(() => readCheckoutSummary(url), [url]);
   const nameParts = (session?.user.name ?? "").trim().split(/\s+/).filter(Boolean);
@@ -3148,7 +3896,7 @@ function CheckoutScreen({
     const nextErrors: Record<string, string> = {};
     if (!firstName.trim()) nextErrors.firstName = "Indica el nombre.";
     if (!lastName.trim()) nextErrors.lastName = "Indica el apellido.";
-    if (!email.trim() || !email.includes("@")) nextErrors.email = "Indica un email valido.";
+    if (!email.trim() || !email.includes("@")) nextErrors.email = "Indica un email válido.";
     if (!pickupLocation.trim()) nextErrors.pickupLocation = "Indica hotel o punto de recogida.";
     setErrors(nextErrors);
     return !Object.keys(nextErrors).length;
@@ -3178,11 +3926,11 @@ function CheckoutScreen({
     if (paymentLoading) return;
     if (!validateCheckout()) return;
     if (!nativeStripeAvailable) {
-      setFeedback("Stripe nativo no esta disponible en la vista web. Usa checkout web o prueba en Android/iOS.");
+      setFeedback("Stripe nativo no está disponible en la vista web. Usa checkout web o prueba en Android/iOS.");
       return;
     }
     if (!stripeReady) {
-      setFeedback("Stripe aun no esta configurado en esta build. Revisa NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.");
+      setFeedback("Stripe aún no está configurado en esta build. Revisa NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.");
       return;
     }
 
@@ -3191,7 +3939,7 @@ function CheckoutScreen({
     try {
       const intent = await createMobilePaymentIntent(buildPaymentPayload(), session?.token);
       if (!intent.clientSecret) {
-        throw new Error("Stripe no devolvio client secret para abrir el pago.");
+        throw new Error("Stripe no devolvió client secret para abrir el pago.");
       }
 
       const { error: initError } = await initPaymentSheet({
@@ -3231,7 +3979,7 @@ function CheckoutScreen({
       });
       void writeStoredJson(checkoutDraftStorageKey, null);
       void writeStoredJson(transferDraftStorageKey, null);
-      setFeedback("Pago confirmado. Tu e-ticket fue enviado por correo y tu cuenta quedo lista en la app.");
+      setFeedback("Pago confirmado. Tu e-ticket fue enviado por correo y tu cuenta quedó lista en la app.");
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "No se pudo completar el pago.");
     } finally {
@@ -3263,12 +4011,15 @@ function CheckoutScreen({
         </Pressable>
         <Text style={styles.checkoutTitle}>Reserva</Text>
       </View>
-      <ScrollView contentContainerStyle={styles.checkoutContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[styles.checkoutContent, { paddingBottom: 64 + Math.max(insets.bottom, 14) }]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.checkoutHero}>
           <Text style={styles.eyebrowDark}>Reserva segura</Text>
           <Text style={styles.checkoutHeroTitle}>Confirma tu experiencia en minutos</Text>
           <Text style={styles.bodyText}>
-            Revisa el producto, deja tus datos y continua al pago seguro de Proactivitis.
+            Revisa tu reserva, deja tus datos y paga seguro con Proactivitis.
           </Text>
           <View style={styles.checkoutStepRow}>
             <View style={styles.checkoutStep}>
@@ -3332,7 +4083,7 @@ function CheckoutScreen({
             error={errors.email}
             keyboardType="email-address"
           />
-          <InputField label="Telefono" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+          <InputField label="Teléfono" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
         </View>
 
         <View style={styles.formPanel}>
@@ -3385,17 +4136,21 @@ function CheckoutScreen({
         <View style={styles.payPanel}>
           <View style={styles.checkoutSecureNote}>
             <ShieldCheck size={18} color={colors.skySoft} />
-            <Text style={styles.checkoutSecureText}>Pago nativo protegido por Stripe y confirmacion por Proactivitis.</Text>
+            <Text style={styles.checkoutSecureText}>Pago protegido por Stripe y confirmación por Proactivitis.</Text>
           </View>
+          <TrustMiniList
+            dark
+            items={["Pago seguro con Stripe", "Confirmación por WhatsApp", "Soporte antes y después de reservar"]}
+          />
           <View style={styles.rowBetween}>
             <View>
               <Text style={styles.checkoutPayLabel}>Total a pagar</Text>
               <Text style={styles.checkoutTotal}>{money(summary.totalPrice)}</Text>
             </View>
-            <ActionButton label={paymentLoading ? "Procesando..." : "Pagar con Stripe"} icon={CreditCard} onPress={continueToPay} />
+            <ActionButton label={paymentLoading ? "Procesando..." : "Pagar seguro con Stripe"} icon={CreditCard} onPress={continueToPay} />
           </View>
           <ActionButton
-            label="Abrir checkout web"
+            label="Pagar en navegador"
             icon={CreditCard}
             variant="outlineDark"
             onPress={openWebCheckout}
@@ -3497,7 +4252,7 @@ function ZonesScreen({
             <View style={styles.cityCardOverlay} />
             <View style={styles.cityCardBody}>
               <Text style={styles.cityCardKicker}>Todos los destinos</Text>
-              <Text style={styles.cityCardTitle}>Ver todo el catalogo</Text>
+              <Text style={styles.cityCardTitle}>Ver todo el catálogo</Text>
               <Text style={styles.cityCardCount}>{tours.length} experiencias</Text>
             </View>
           </Pressable>
@@ -3526,7 +4281,7 @@ function ZonesScreen({
       <ScreenHeader
         eyebrow="Ciudad seleccionada"
         title={city === "Todas" ? "Todos los destinos" : city}
-        description="Tours filtrados por ciudad. Puedes reservar el tour o cotizar transfer para llegar comodo."
+        description="Tours filtrados por ciudad. Puedes reservar el tour o cotizar transfer para llegar cómodo."
       />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
         <Chip label="Todas" active={city === "Todas"} onPress={() => setCity("Todas")} />
@@ -3557,7 +4312,7 @@ function ZonesScreen({
         <View style={styles.emptyState}>
           <MapPin size={34} color={colors.skyDark} />
           <Text style={styles.emptyTitle}>No hay tours en esta zona</Text>
-          <Text style={styles.smallMuted}>Prueba otra zona o revisa el catalogo completo.</Text>
+          <Text style={styles.smallMuted}>Prueba otra zona o revisa el catálogo completo.</Text>
         </View>
       )}
     </View>
@@ -3652,17 +4407,19 @@ function CustomerHubRow({
   icon: Icon,
   title,
   subtitle,
-  onPress
+  onPress,
+  active = false
 }: {
   icon: IconType;
   title: string;
   subtitle: string;
   onPress: () => void;
+  active?: boolean;
 }) {
   return (
-    <Pressable style={styles.customerHubRow} onPress={onPress}>
-      <View style={styles.customerHubIcon}>
-        <Icon size={17} color={colors.skyDark} />
+    <Pressable style={[styles.customerHubRow, active ? styles.customerHubRowActive : null]} onPress={onPress}>
+      <View style={[styles.customerHubIcon, active ? styles.customerHubIconActive : null]}>
+        <Icon size={17} color={active ? colors.white : colors.skyDark} />
       </View>
       <View style={styles.flexText}>
         <Text style={styles.customerHubRowTitle}>{title}</Text>
@@ -3677,11 +4434,17 @@ function CustomerHubRow({
 function CustomerAccountHub({
   summary,
   loading,
-  error
+  error,
+  activeSection,
+  onSectionChange,
+  onRefresh
 }: {
   summary: MobileCustomerSummary | null;
   loading: boolean;
   error: string | null;
+  activeSection: CustomerPanelSection;
+  onSectionChange: (section: CustomerPanelSection) => void;
+  onRefresh: () => void;
 }) {
   const t = useTranslate();
   const tr = (value: string) => t(value) || value;
@@ -3700,7 +4463,7 @@ function CustomerAccountHub({
       <View style={styles.formPanel}>
         <Text style={styles.sectionTitle}>Centro de cliente</Text>
         <Text style={styles.smallMuted}>{error || "No pudimos cargar tu cuenta ahora mismo."}</Text>
-        <ActionButton label="Abrir portal web" icon={Compass} variant="outlineDark" onPress={() => openUrl(customerUrl("/customer"))} />
+        <ActionButton label="Intentar de nuevo" icon={Compass} variant="outlineDark" onPress={onRefresh} />
       </View>
     );
   }
@@ -3725,7 +4488,7 @@ function CustomerAccountHub({
       <View style={styles.rowBetween}>
         <View style={styles.flexText}>
           <Text style={styles.sectionTitle}>Centro de cliente</Text>
-          <Text style={styles.smallMuted}>Reservas, pagos, resenas y avisos de tu cuenta.</Text>
+          <Text style={styles.smallMuted}>Reservas, pagos, reseñas y avisos de tu cuenta.</Text>
         </View>
         {summary.metrics.unreadNotifications ? (
           <View style={styles.customerBadge}>
@@ -3735,14 +4498,31 @@ function CustomerAccountHub({
       </View>
 
       <View style={styles.customerStatsGrid}>
-        <CustomerStat label="Proximas" value={summary.metrics.upcoming} icon={CalendarCheck} />
+        <CustomerStat label="Próximas" value={summary.metrics.upcoming} icon={CalendarCheck} />
         <CustomerStat label="Completadas" value={summary.metrics.completed} icon={CheckCircle2} />
-        <CustomerStat label="Resenas" value={summary.metrics.pendingReviews} icon={Star} />
-        <CustomerStat label="Pagado" value={money(summary.metrics.totalPaid)} icon={CreditCard} />
+        <CustomerStat label="Reseñas" value={summary.metrics.pendingReviews} icon={Star} />
+        <CustomerStat label="Pagos registrados" value={money(summary.metrics.totalPaid)} icon={CreditCard} />
       </View>
 
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.customerPanelTabs}>
+        {customerPanelSections.map((item) => {
+          const Icon = item.icon;
+          const active = activeSection === item.key;
+          return (
+            <Pressable
+              key={item.key}
+              style={[styles.customerPanelTab, active ? styles.customerPanelTabActive : null]}
+              onPress={() => onSectionChange(item.key)}
+            >
+              <Icon size={14} color={active ? colors.white : colors.skyDark} />
+              <Text style={[styles.customerPanelTabText, active ? styles.customerPanelTabTextActive : null]}>{item.label}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
       <View style={styles.customerFocusBox}>
-        <Text style={styles.customerFocusLabel}>Proxima actividad</Text>
+        <Text style={styles.customerFocusLabel}>Próxima actividad</Text>
         {latestBooking ? (
           <>
             <Text style={styles.customerFocusTitle} numberOfLines={2}>{latestBooking.title}</Text>
@@ -3752,8 +4532,8 @@ function CustomerAccountHub({
           </>
         ) : (
           <>
-            <Text style={styles.customerFocusTitle}>Sin reservas todavia</Text>
-            <Text style={styles.customerFocusText}>Cuando reserves, tu historial aparecera aqui.</Text>
+            <Text style={styles.customerFocusTitle}>Sin reservas todavía</Text>
+            <Text style={styles.customerFocusText}>Cuando reserves, tu historial aparecerá aquí.</Text>
           </>
         )}
       </View>
@@ -3762,42 +4542,408 @@ function CustomerAccountHub({
         <CustomerHubRow
           icon={CalendarCheck}
           title="Mis reservas"
-          subtitle={latestBooking ? `${summary.metrics.totalBookings} ${tr("reservas en tu historial")}` : "Aun no tienes reservas registradas"}
-          onPress={() => openUrl(customerUrl("/customer/reservations"))}
+          subtitle={latestBooking ? `${summary.metrics.totalBookings} ${tr("reservas en tu historial")}` : "Aún no tienes reservas registradas"}
+          active={activeSection === "bookings"}
+          onPress={() => onSectionChange("bookings")}
         />
         <CustomerHubRow
           icon={CreditCard}
           title="Tarjetas guardadas"
           subtitle={paymentLabel}
-          onPress={() => openUrl(customerUrl("/customer/payments"))}
+          active={activeSection === "payments"}
+          onPress={() => onSectionChange("payments")}
         />
         <CustomerHubRow
           icon={Star}
-          title="Resenas pendientes"
+          title="Reseñas pendientes"
           subtitle={
             summary.pendingReviews[0]
               ? `${tr("Comparte tu experiencia en")} ${summary.pendingReviews[0].title}`
-              : "Cuando completes un tour o traslado podras dejar tu opinion"
+              : "Cuando completes un tour o traslado podrás dejar tu opinión"
           }
-          onPress={() => openUrl(customerUrl("/customer/reservations"))}
+          active={activeSection === "reviews"}
+          onPress={() => onSectionChange("reviews")}
         />
         <CustomerHubRow
           icon={User}
           title="Datos y preferencias"
           subtitle={preferenceLabel}
-          onPress={() => openUrl(customerUrl("/customer/preferences"))}
+          active={activeSection === "preferences" || activeSection === "account"}
+          onPress={() => onSectionChange("preferences")}
         />
       </View>
 
       {latestNotification ? (
         <View style={styles.customerNotice}>
-          <Text style={styles.customerFocusLabel}>Ultimo aviso</Text>
+          <Text style={styles.customerFocusLabel}>Último aviso</Text>
           <Text style={styles.customerHubRowTitle}>{latestNotification.title}</Text>
           {latestNotification.message ? (
             <Text style={styles.customerHubRowText} numberOfLines={2}>{latestNotification.message}</Text>
           ) : null}
         </View>
       ) : null}
+    </View>
+  );
+}
+
+const paymentStatusLabel = (status?: string | null) => {
+  const normalized = (status ?? "").toLowerCase();
+  if (normalized === "paid" || normalized === "succeeded") return "Pagado";
+  if (normalized.includes("pending") || normalized.includes("requires")) return "Pendiente de pago";
+  return status || "Por confirmar";
+};
+
+function NativeBookingCard({
+  booking,
+  pendingReview,
+  onReview
+}: {
+  booking: MobileCustomerSummary["bookings"][number];
+  pendingReview: boolean;
+  onReview: () => void;
+}) {
+  const image = booking.tourImage ? absoluteImageUrl(booking.tourImage) : null;
+  const pickup = booking.hotel || booking.pickup || booking.originAirport || "Punto por confirmar";
+  return (
+    <View style={styles.nativeBookingCard}>
+      {image ? <RemoteImage uri={image} style={styles.nativeBookingImage} /> : null}
+      <View style={styles.nativeBookingBody}>
+        <View style={styles.rowBetween}>
+          <Text style={styles.customerFocusLabel}>{booking.flowType === "transfer" ? "Transfer" : "Tour"}</Text>
+          <Text style={styles.nativeStatusPill}>{bookingStatusLabel(booking.status)}</Text>
+        </View>
+        <Text style={styles.nativeBookingTitle} numberOfLines={2}>{booking.title}</Text>
+        <Text style={styles.customerHubRowText}>
+          {shortDate(booking.travelDate)}{booking.startTime ? ` | ${booking.startTime}` : ""} | {booking.passengers ?? 1} pax
+        </Text>
+        <Text style={styles.customerHubRowText}>Recogida: {pickup}</Text>
+        <Text style={styles.customerHubRowText}>Pago: {paymentStatusLabel(booking.paymentStatus)} | {money(booking.totalAmount)}</Text>
+        {booking.bookingCode ? <Text style={styles.nativeCode}>Código {booking.bookingCode}</Text> : null}
+        <View style={styles.nativeActionsRow}>
+          <Pressable style={styles.nativeSmallButton} onPress={() => openUrl(customerUrl(`/booking/confirmed/${booking.id}`))}>
+            <Text style={styles.nativeSmallButtonText}>E-ticket</Text>
+          </Pressable>
+          <Pressable style={styles.nativeSmallButton} onPress={() => openUrl(customerUrl(`/api/bookings/${booking.id}/eticket`))}>
+            <Text style={styles.nativeSmallButtonText}>PDF</Text>
+          </Pressable>
+          {pendingReview ? (
+            <Pressable style={styles.nativeSmallButtonDark} onPress={onReview}>
+              <Text style={styles.nativeSmallButtonDarkText}>Reseñar</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function NativeBookingsPanel({
+  summary,
+  onReview
+}: {
+  summary: MobileCustomerSummary;
+  onReview: (bookingId: string) => void;
+}) {
+  const pendingIds = new Set(summary.pendingReviews.map((item) => item.bookingId));
+  return (
+    <View style={styles.formPanel}>
+      <Text style={styles.sectionTitle}>Mis reservas</Text>
+      <Text style={styles.smallMuted}>Historial real de reservas, e-tickets y datos de recogida.</Text>
+      {summary.bookings.length ? (
+        summary.bookings.map((booking) => (
+          <NativeBookingCard
+            key={booking.id}
+            booking={booking}
+            pendingReview={pendingIds.has(booking.id)}
+            onReview={() => onReview(booking.id)}
+          />
+        ))
+      ) : (
+        <Text style={styles.smallMuted}>Aún no tienes reservas. Cuando compres un tour o transfer aparecerá aquí.</Text>
+      )}
+    </View>
+  );
+}
+
+function NativeOverviewPanel({
+  summary,
+  onSectionChange
+}: {
+  summary: MobileCustomerSummary;
+  onSectionChange: (section: CustomerPanelSection) => void;
+}) {
+  const latestBooking = summary.bookings[0] ?? null;
+  return (
+    <View style={styles.formPanel}>
+      <Text style={styles.sectionTitle}>Panel nativo</Text>
+      <Text style={styles.smallMuted}>Todo lo importante de tu cuenta queda disponible dentro de la app.</Text>
+      <View style={styles.customerHubRows}>
+        <CustomerHubRow
+          icon={CalendarCheck}
+          title={latestBooking ? latestBooking.title : "Reservas y e-tickets"}
+          subtitle={latestBooking ? `${shortDate(latestBooking.travelDate)} | ${money(latestBooking.totalAmount)}` : "Aquí verás tus próximos planes y comprobantes."}
+          onPress={() => onSectionChange("bookings")}
+        />
+        <CustomerHubRow
+          icon={CreditCard}
+          title="Pago rapido"
+          subtitle={summary.payment?.hasSavedMethod ? "Tienes una tarjeta lista para futuras reservas." : "Guarda una tarjeta segura con Stripe."}
+          onPress={() => onSectionChange("payments")}
+        />
+        <CustomerHubRow
+          icon={Mail}
+          title="Avisos"
+          subtitle={summary.metrics.unreadNotifications ? `${summary.metrics.unreadNotifications} avisos sin leer` : "Todo al dia por ahora."}
+          onPress={() => onSectionChange("notifications")}
+        />
+      </View>
+    </View>
+  );
+}
+
+function NativePaymentsPanel({
+  summary,
+  saving,
+  feedback,
+  onSavePayment
+}: {
+  summary: MobileCustomerSummary;
+  saving: boolean;
+  feedback: string | null;
+  onSavePayment: () => void;
+}) {
+  const payment = summary.payment;
+  const savedLabel = payment?.hasSavedMethod && payment.last4
+    ? `${payment.brand ?? "Tarjeta"} terminada en ${payment.last4}`
+    : "No tienes una tarjeta guardada.";
+
+  return (
+    <View style={styles.formPanel}>
+      <Text style={styles.sectionTitle}>Pagos</Text>
+      <Text style={styles.smallMuted}>Guarda una tarjeta con Stripe para reservar mas rapido en la app.</Text>
+      <View style={styles.nativePaymentCard}>
+        <CreditCard size={22} color={colors.white} />
+        <View style={styles.flexText}>
+          <Text style={styles.nativePaymentTitle}>{savedLabel}</Text>
+          <Text style={styles.customerFocusText}>Stripe protege los datos de la tarjeta. Proactivitis no guarda el numero completo.</Text>
+        </View>
+      </View>
+      <ActionButton label={saving ? "Abriendo Stripe..." : "Guardar o cambiar tarjeta"} icon={CreditCard} onPress={onSavePayment} />
+      {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
+    </View>
+  );
+}
+
+function NativeReviewsPanel({
+  summary,
+  activeBookingId,
+  rating,
+  title,
+  body,
+  feedback,
+  submitting,
+  onPickBooking,
+  onRating,
+  onTitle,
+  onBody,
+  onSubmit
+}: {
+  summary: MobileCustomerSummary;
+  activeBookingId: string | null;
+  rating: number;
+  title: string;
+  body: string;
+  feedback: string | null;
+  submitting: boolean;
+  onPickBooking: (bookingId: string) => void;
+  onRating: (rating: number) => void;
+  onTitle: (title: string) => void;
+  onBody: (body: string) => void;
+  onSubmit: () => void;
+}) {
+  const activeReview = summary.pendingReviews.find((item) => item.bookingId === activeBookingId) ?? summary.pendingReviews[0] ?? null;
+
+  return (
+    <View style={styles.formPanel}>
+      <Text style={styles.sectionTitle}>Resenas</Text>
+      <Text style={styles.smallMuted}>Cuando termines una experiencia puedes dejar tu opinion sin salir de la app.</Text>
+      {summary.pendingReviews.length ? (
+        <>
+          <View style={styles.customerHubRows}>
+            {summary.pendingReviews.map((item) => (
+              <Pressable
+                key={item.bookingId}
+                style={[styles.nativeReviewChoice, activeReview?.bookingId === item.bookingId ? styles.nativeReviewChoiceActive : null]}
+                onPress={() => onPickBooking(item.bookingId)}
+              >
+                <Text style={styles.customerHubRowTitle}>{item.title}</Text>
+                <Text style={styles.customerHubRowText}>{shortDate(item.travelDate)}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <View style={styles.nativeStarsRow}>
+            {[1, 2, 3, 4, 5].map((value) => (
+              <Pressable key={value} onPress={() => onRating(value)}>
+                <Star size={30} color={colors.amberDark} fill={value <= rating ? colors.amberDark : "transparent"} />
+              </Pressable>
+            ))}
+          </View>
+          <InputField label="Titulo corto" value={title} onChangeText={onTitle} placeholder="Ej. Servicio excelente" />
+          <InputField label="Tu experiencia" value={body} onChangeText={onBody} placeholder="Cuenta que te gusto y que puede ayudar a otros viajeros." multiline />
+          <ActionButton label={submitting ? "Enviando..." : "Enviar reseña"} icon={Star} onPress={onSubmit} />
+          {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
+        </>
+      ) : (
+        <View style={styles.customerNotice}>
+          <Text style={styles.customerHubRowTitle}>No tienes reseñas pendientes</Text>
+          <Text style={styles.customerHubRowText}>Después de completar un tour o transfer, la app te activará el formulario aquí.</Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+function NativePreferencesPanel({
+  destinations,
+  productTypes,
+  consentMarketing,
+  saving,
+  feedback,
+  onToggleDestination,
+  onToggleProductType,
+  onToggleMarketing,
+  onSave
+}: {
+  destinations: string[];
+  productTypes: string[];
+  consentMarketing: boolean;
+  saving: boolean;
+  feedback: string | null;
+  onToggleDestination: (value: string) => void;
+  onToggleProductType: (value: string) => void;
+  onToggleMarketing: () => void;
+  onSave: () => void;
+}) {
+  return (
+    <View style={styles.formPanel}>
+      <Text style={styles.sectionTitle}>Gustos de viaje</Text>
+      <Text style={styles.smallMuted}>Esto alimenta recomendaciones, ofertas y experiencias dentro de la app.</Text>
+      <Text style={styles.fieldLabel}>Zonas favoritas</Text>
+      <View style={styles.nativeChipWrap}>
+        {preferenceDestinationOptions.map((item) => (
+          <Chip key={item} label={item} active={destinations.includes(item)} onPress={() => onToggleDestination(item)} />
+        ))}
+      </View>
+      <Text style={styles.fieldLabel}>Tipo de experiencia</Text>
+      <View style={styles.nativeChipWrap}>
+        {preferenceProductOptions.map((item) => (
+          <Chip key={item} label={item} active={productTypes.includes(item)} onPress={() => onToggleProductType(item)} />
+        ))}
+      </View>
+      <Pressable style={styles.nativeToggleRow} onPress={onToggleMarketing}>
+        <View style={[styles.nativeToggleDot, consentMarketing ? styles.nativeToggleDotActive : null]} />
+        <View style={styles.flexText}>
+          <Text style={styles.customerHubRowTitle}>Recibir ofertas y avisos utiles</Text>
+          <Text style={styles.customerHubRowText}>Promociones reales, recordatorios y novedades importantes.</Text>
+        </View>
+      </Pressable>
+      <ActionButton label={saving ? "Guardando..." : "Guardar preferencias"} icon={Heart} onPress={onSave} />
+      {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
+    </View>
+  );
+}
+
+function NativeNotificationsPanel({
+  summary,
+  saving,
+  onRead
+}: {
+  summary: MobileCustomerSummary;
+  saving: boolean;
+  onRead: (notificationId?: string) => void;
+}) {
+  return (
+    <View style={styles.formPanel}>
+      <View style={styles.rowBetween}>
+        <View style={styles.flexText}>
+          <Text style={styles.sectionTitle}>Avisos</Text>
+          <Text style={styles.smallMuted}>Confirmaciones, cambios y mensajes importantes.</Text>
+        </View>
+        {summary.notifications.length ? (
+          <Pressable style={styles.nativeSmallButton} onPress={() => onRead()}>
+            <Text style={styles.nativeSmallButtonText}>{saving ? "..." : "Leer todo"}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+      {summary.notifications.length ? (
+        summary.notifications.map((notification) => (
+          <Pressable
+            key={notification.id}
+            style={[styles.nativeNotification, notification.isRead ? null : styles.nativeNotificationUnread]}
+            onPress={() => onRead(notification.id)}
+          >
+            <View style={styles.rowBetween}>
+              <Text style={styles.customerHubRowTitle}>{notification.title}</Text>
+              {!notification.isRead ? <View style={styles.nativeUnreadDot} /> : null}
+            </View>
+            {notification.message ? <Text style={styles.customerHubRowText}>{notification.message}</Text> : null}
+            <Text style={styles.customerFocusLabel}>{shortDate(notification.createdAt)}</Text>
+          </Pressable>
+        ))
+      ) : (
+        <Text style={styles.smallMuted}>No tienes avisos por ahora.</Text>
+      )}
+    </View>
+  );
+}
+
+function NativeAccountPanel({
+  name,
+  email,
+  language,
+  deleteFeedback,
+  deletingAccount,
+  savingProfile,
+  profileFeedback,
+  onName,
+  onLanguage,
+  onSaveProfile,
+  onDeleteAccount
+}: {
+  name: string;
+  email: string;
+  language: AppLanguage;
+  deleteFeedback: string | null;
+  deletingAccount: boolean;
+  savingProfile: boolean;
+  profileFeedback: string | null;
+  onName: (value: string) => void;
+  onLanguage: (language: AppLanguage) => void;
+  onSaveProfile: () => void;
+  onDeleteAccount: () => void;
+}) {
+  return (
+    <View style={styles.formPanel}>
+      <Text style={styles.sectionTitle}>Cuenta</Text>
+      <Text style={styles.smallMuted}>Tu información básica, idioma y control de datos.</Text>
+      <InputField label="Nombre" value={name} onChangeText={onName} />
+      <InputField label="Email" value={email} onChangeText={() => undefined} editable={false} />
+      <ActionButton label={savingProfile ? "Guardando..." : "Guardar nombre"} icon={User} onPress={onSaveProfile} />
+      {profileFeedback ? <Text style={styles.feedbackText}>{profileFeedback}</Text> : null}
+      <View style={styles.formDivider}>
+        <View style={styles.formDividerLine} />
+        <Text style={styles.formDividerText}>Idioma</Text>
+        <View style={styles.formDividerLine} />
+      </View>
+      <LanguageSelector selected={language} onSelect={onLanguage} />
+      <View style={styles.formDivider}>
+        <View style={styles.formDividerLine} />
+        <Text style={styles.formDividerText}>Datos</Text>
+        <View style={styles.formDividerLine} />
+      </View>
+      <ActionButton label={deletingAccount ? "Eliminando..." : "Eliminar cuenta"} icon={User} variant="outlineDark" onPress={onDeleteAccount} />
+      <ActionButton label="Página web de eliminación" icon={ShieldCheck} variant="outlineDark" onPress={() => openUrl(links.accountDeletion)} />
+      {deleteFeedback ? <Text style={styles.feedbackText}>{deleteFeedback}</Text> : null}
     </View>
   );
 }
@@ -3824,6 +4970,8 @@ function ProfileScreen({
   onOpenCheckout: (url: string) => void;
 }) {
   const { language, setLanguage } = useLanguage();
+  const tr = useTranslate();
+  const { initPaymentSheet, presentPaymentSheet, nativeStripeAvailable } = useAppStripe();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -3834,32 +4982,63 @@ function ProfileScreen({
   const [customerSummary, setCustomerSummary] = useState<MobileCustomerSummary | null>(null);
   const [customerLoading, setCustomerLoading] = useState(false);
   const [customerError, setCustomerError] = useState<string | null>(null);
+  const [activeCustomerSection, setActiveCustomerSection] = useState<CustomerPanelSection>("overview");
+  const [profileName, setProfileName] = useState(session?.user.name ?? "");
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileFeedback, setProfileFeedback] = useState<string | null>(null);
+  const [paymentSaving, setPaymentSaving] = useState(false);
+  const [paymentFeedback, setPaymentFeedback] = useState<string | null>(null);
+  const [preferenceDestinations, setPreferenceDestinations] = useState<string[]>([]);
+  const [preferenceProductTypes, setPreferenceProductTypes] = useState<string[]>([]);
+  const [preferenceMarketing, setPreferenceMarketing] = useState(false);
+  const [preferenceSaving, setPreferenceSaving] = useState(false);
+  const [preferenceFeedback, setPreferenceFeedback] = useState<string | null>(null);
+  const [reviewBookingId, setReviewBookingId] = useState<string | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewTitle, setReviewTitle] = useState("");
+  const [reviewBody, setReviewBody] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewFeedback, setReviewFeedback] = useState<string | null>(null);
+  const [notificationSaving, setNotificationSaving] = useState(false);
 
-  useEffect(() => {
+  const refreshCustomerSummary = useCallback(() => {
     if (!session?.token) {
       setCustomerSummary(null);
       setCustomerError(null);
+      setCustomerLoading(false);
       return;
     }
 
-    let active = true;
     setCustomerLoading(true);
     setCustomerError(null);
-    fetchMobileCustomerSummary(session.token)
+    return fetchMobileCustomerSummary(session.token)
       .then((summary) => {
-        if (active) setCustomerSummary(summary);
+        setCustomerSummary(summary);
       })
       .catch((error) => {
-        if (active) setCustomerError(error instanceof Error ? error.message : "No se pudo cargar tu cuenta.");
+        setCustomerError(error instanceof Error ? error.message : "No se pudo cargar tu cuenta.");
       })
       .finally(() => {
-        if (active) setCustomerLoading(false);
+        setCustomerLoading(false);
       });
-
-    return () => {
-      active = false;
-    };
   }, [session?.token]);
+
+  useEffect(() => {
+    void refreshCustomerSummary();
+  }, [refreshCustomerSummary]);
+
+  useEffect(() => {
+    setProfileName(session?.user.name ?? "");
+  }, [session?.user.name]);
+
+  const preferenceDestinationKey = JSON.stringify(customerSummary?.preference?.preferredDestinations ?? []);
+  const preferenceProductKey = JSON.stringify(customerSummary?.preference?.preferredProductTypes ?? []);
+
+  useEffect(() => {
+    setPreferenceDestinations(customerSummary?.preference?.preferredDestinations ?? []);
+    setPreferenceProductTypes(customerSummary?.preference?.preferredProductTypes ?? []);
+    setPreferenceMarketing(Boolean(customerSummary?.preference?.consentMarketing));
+  }, [customerSummary?.preference?.consentMarketing, preferenceDestinationKey, preferenceProductKey]);
 
   const submit = async () => {
     setFeedback("Conectando...");
@@ -3888,16 +5067,17 @@ function ProfileScreen({
   const confirmDeleteAccount = () => {
     if (!session?.token || deletingAccount) return;
     Alert.alert(
-      "Eliminar cuenta",
-      "Se cerrara tu cuenta de cliente, sesiones, preferencias y metodos de pago guardados. Podemos retener registros de reservas y pagos cuando sea necesario.",
+      tr("Eliminar cuenta") ?? "Eliminar cuenta",
+      tr("Se cerrará tu cuenta de cliente, sesiones, preferencias y métodos de pago guardados. Podemos retener registros de reservas y pagos cuando sea necesario.") ??
+        "Se cerrará tu cuenta de cliente, sesiones, preferencias y métodos de pago guardados. Podemos retener registros de reservas y pagos cuando sea necesario.",
       [
-        { text: "Cancelar", style: "cancel" },
+        { text: tr("Cancelar") ?? "Cancelar", style: "cancel" },
         {
-          text: "Eliminar",
+          text: tr("Eliminar") ?? "Eliminar",
           style: "destructive",
           onPress: () => {
             setDeletingAccount(true);
-            setDeleteFeedback("Procesando eliminacion...");
+            setDeleteFeedback("Procesando eliminación...");
             deleteMobileAccount(session.token)
               .then(() => {
                 void writeStoredJson(checkoutDraftStorageKey, null);
@@ -3914,6 +5094,125 @@ function ProfileScreen({
     );
   };
 
+  const toggleListValue = (value: string, list: string[], setter: (next: string[]) => void) => {
+    setter(list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);
+  };
+
+  const saveProfile = async () => {
+    if (!session?.token || profileSaving) return;
+    setProfileSaving(true);
+    setProfileFeedback("Guardando perfil...");
+    try {
+      const updated = await updateMobileCustomerProfile({ token: session.token, name: profileName });
+      onSessionChange({ ...session, user: updated.user });
+      setProfileFeedback("Perfil actualizado.");
+      void refreshCustomerSummary();
+    } catch (error) {
+      setProfileFeedback(error instanceof Error ? error.message : "No se pudo actualizar tu perfil.");
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const savePreferences = async () => {
+    if (!session?.token || preferenceSaving) return;
+    setPreferenceSaving(true);
+    setPreferenceFeedback("Guardando preferencias...");
+    try {
+      await saveMobileCustomerPreferences({
+        token: session.token,
+        destinations: preferenceDestinations,
+        productTypes: preferenceProductTypes,
+        consentMarketing: preferenceMarketing
+      });
+      setPreferenceFeedback("Preferencias guardadas.");
+      void refreshCustomerSummary();
+    } catch (error) {
+      setPreferenceFeedback(error instanceof Error ? error.message : "No se pudieron guardar tus preferencias.");
+    } finally {
+      setPreferenceSaving(false);
+    }
+  };
+
+  const savePaymentMethod = async () => {
+    if (!session?.token || paymentSaving) return;
+    if (!nativeStripeAvailable) {
+      setPaymentFeedback("Stripe nativo no está disponible en esta vista. Pruébalo en Android.");
+      return;
+    }
+
+    setPaymentSaving(true);
+    setPaymentFeedback("Preparando tarjeta segura...");
+    try {
+      const setup = await createMobileCustomerSetupIntent(session.token);
+      if (!setup.clientSecret) throw new Error("Stripe no devolvió client secret.");
+      const { error: initError } = await initPaymentSheet({
+        merchantDisplayName: "Proactivitis",
+        setupIntentClientSecret: setup.clientSecret,
+        allowsDelayedPaymentMethods: false,
+        returnURL: "proactivitis://stripe-redirect"
+      });
+      if (initError) throw new Error(initError.message ?? "No se pudo abrir Stripe.");
+      const { error: presentError } = await presentPaymentSheet();
+      if (presentError) throw new Error(presentError.message ?? "La tarjeta no fue confirmada.");
+      await saveMobileCustomerPayment({
+        token: session.token,
+        setupIntentId: setupIntentIdFromClientSecret(setup.clientSecret)
+      });
+      setPaymentFeedback("Tarjeta guardada correctamente.");
+      void refreshCustomerSummary();
+    } catch (error) {
+      setPaymentFeedback(error instanceof Error ? error.message : "No se pudo guardar la tarjeta.");
+    } finally {
+      setPaymentSaving(false);
+    }
+  };
+
+  const openReviewForBooking = (bookingId: string) => {
+    setReviewBookingId(bookingId);
+    setActiveCustomerSection("reviews");
+  };
+
+  const submitReview = async () => {
+    const bookingId = reviewBookingId ?? customerSummary?.pendingReviews[0]?.bookingId ?? null;
+    if (!session?.token || !bookingId || reviewSubmitting) return;
+    setReviewSubmitting(true);
+    setReviewFeedback("Enviando reseña...");
+    try {
+      await submitMobileCustomerReview({
+        token: session.token,
+        bookingId,
+        rating: reviewRating,
+        title: reviewTitle,
+        body: reviewBody,
+        locale: language
+      });
+      setReviewFeedback("Gracias. Tu reseña quedó enviada para revisión.");
+      setReviewBookingId(null);
+      setReviewRating(5);
+      setReviewTitle("");
+      setReviewBody("");
+      void refreshCustomerSummary();
+    } catch (error) {
+      setReviewFeedback(error instanceof Error ? error.message : "No se pudo enviar tu reseña.");
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
+  const markNotificationRead = async (notificationId?: string) => {
+    if (!session?.token || notificationSaving) return;
+    setNotificationSaving(true);
+    try {
+      await markMobileNotificationsRead({ token: session.token, notificationId });
+      void refreshCustomerSummary();
+    } catch {
+      setCustomerError("No se pudo actualizar avisos.");
+    } finally {
+      setNotificationSaving(false);
+    }
+  };
+
   if (session) {
     return (
       <View style={styles.screen}>
@@ -3923,34 +5222,86 @@ function ProfileScreen({
           <Text style={styles.savedTitle}>{session.user.name || "Cliente Proactivitis"}</Text>
           <Text style={styles.smallMuted}>{session.user.email}</Text>
           <Text style={styles.smallMuted}>{appBuildLabel}</Text>
-          <ActionButton label="Cerrar sesion" icon={User} variant="outlineDark" onPress={() => onSessionChange(null)} />
+          <ActionButton label="Cerrar sesión" icon={User} variant="outlineDark" onPress={() => onSessionChange(null)} />
         </View>
-        <CustomerAccountHub summary={customerSummary} loading={customerLoading} error={customerError} />
+        <CustomerAccountHub
+          summary={customerSummary}
+          loading={customerLoading}
+          error={customerError}
+          activeSection={activeCustomerSection}
+          onSectionChange={setActiveCustomerSection}
+          onRefresh={() => void refreshCustomerSummary()}
+        />
+        {customerSummary ? (
+          <>
+            {activeCustomerSection === "overview" ? (
+              <NativeOverviewPanel summary={customerSummary} onSectionChange={setActiveCustomerSection} />
+            ) : null}
+            {activeCustomerSection === "bookings" ? (
+              <NativeBookingsPanel summary={customerSummary} onReview={openReviewForBooking} />
+            ) : null}
+            {activeCustomerSection === "payments" ? (
+              <NativePaymentsPanel
+                summary={customerSummary}
+                saving={paymentSaving}
+                feedback={paymentFeedback}
+                onSavePayment={savePaymentMethod}
+              />
+            ) : null}
+            {activeCustomerSection === "reviews" ? (
+              <NativeReviewsPanel
+                summary={customerSummary}
+                activeBookingId={reviewBookingId}
+                rating={reviewRating}
+                title={reviewTitle}
+                body={reviewBody}
+                feedback={reviewFeedback}
+                submitting={reviewSubmitting}
+                onPickBooking={setReviewBookingId}
+                onRating={setReviewRating}
+                onTitle={setReviewTitle}
+                onBody={setReviewBody}
+                onSubmit={submitReview}
+              />
+            ) : null}
+            {activeCustomerSection === "preferences" ? (
+              <NativePreferencesPanel
+                destinations={preferenceDestinations}
+                productTypes={preferenceProductTypes}
+                consentMarketing={preferenceMarketing}
+                saving={preferenceSaving}
+                feedback={preferenceFeedback}
+                onToggleDestination={(value) => toggleListValue(value, preferenceDestinations, setPreferenceDestinations)}
+                onToggleProductType={(value) => toggleListValue(value, preferenceProductTypes, setPreferenceProductTypes)}
+                onToggleMarketing={() => setPreferenceMarketing((current) => !current)}
+                onSave={savePreferences}
+              />
+            ) : null}
+            {activeCustomerSection === "notifications" ? (
+              <NativeNotificationsPanel
+                summary={customerSummary}
+                saving={notificationSaving}
+                onRead={markNotificationRead}
+              />
+            ) : null}
+            {activeCustomerSection === "account" ? (
+              <NativeAccountPanel
+                name={profileName}
+                email={session.user.email}
+                language={language}
+                deleteFeedback={deleteFeedback}
+                deletingAccount={deletingAccount}
+                savingProfile={profileSaving}
+                profileFeedback={profileFeedback}
+                onName={setProfileName}
+                onLanguage={setLanguage}
+                onSaveProfile={saveProfile}
+                onDeleteAccount={confirmDeleteAccount}
+              />
+            ) : null}
+          </>
+        ) : null}
         <ContactPanel />
-        <View style={styles.formPanel}>
-          <Text style={styles.sectionTitle}>Idioma de la app</Text>
-          <Text style={styles.smallMuted}>La app recordara tu preferencia para futuras visitas.</Text>
-          <LanguageSelector selected={language} onSelect={setLanguage} />
-        </View>
-        <View style={styles.formPanel}>
-          <Text style={styles.sectionTitle}>Cuenta y datos</Text>
-          <Text style={styles.smallMuted}>
-            Puedes eliminar tu cuenta de cliente desde la app. Tambien existe una pagina web oficial para solicitarlo sin instalar la app.
-          </Text>
-          <ActionButton
-            label={deletingAccount ? "Eliminando..." : "Eliminar cuenta"}
-            icon={User}
-            variant="outlineDark"
-            onPress={confirmDeleteAccount}
-          />
-          <ActionButton
-            label="Pagina web de eliminacion"
-            icon={ShieldCheck}
-            variant="outlineDark"
-            onPress={() => openUrl(links.accountDeletion)}
-          />
-          {deleteFeedback ? <Text style={styles.feedbackText}>{deleteFeedback}</Text> : null}
-        </View>
         <TripPlanSection
           quote={quote}
           favoriteTours={favoriteTours}
@@ -3967,7 +5318,7 @@ function ProfileScreen({
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader eyebrow="Cuenta" title="Accede a tus reservas" description="Inicia sesion para guardar tus datos, revisar planes y continuar reservas desde cualquier dispositivo." />
+      <ScreenHeader eyebrow="Cuenta" title="Accede a tus reservas" description="Inicia sesión para guardar tus datos, revisar planes y continuar reservas desde cualquier dispositivo." />
       <View style={styles.formPanel}>
         <GoogleLoginButton onPress={openGoogleLogin} />
         <View style={styles.formDivider}>
@@ -4009,37 +5360,90 @@ function GalleryViewer({
   images,
   image,
   onSelect,
-  onClose
+  onClose,
+  onAvailability
 }: {
   images: string[];
   image: string;
   onSelect: (image: string) => void;
   onClose: () => void;
+  onAvailability: () => void;
 }) {
+  const insets = useSafeAreaInsets();
+  const [showGrid, setShowGrid] = useState(false);
+  const viewerScrollRef = useRef<ScrollView>(null);
+  const selectedIndex = Math.max(0, images.indexOf(image));
+
+  useEffect(() => {
+    if (showGrid) return;
+    requestAnimationFrame(() => {
+      viewerScrollRef.current?.scrollTo({ x: selectedIndex * windowWidth, animated: false });
+    });
+  }, [selectedIndex, showGrid]);
+
+  const handleViewerScrollEnd = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
+    const index = Math.round(event.nativeEvent.contentOffset.x / windowWidth);
+    const nextImage = images[Math.min(Math.max(index, 0), images.length - 1)];
+    if (nextImage) onSelect(nextImage);
+  };
+
   return (
     <View style={styles.galleryViewer}>
-      <View style={styles.galleryTopbar}>
-        <Pressable style={styles.backSoftDark} onPress={onClose}>
-          <ArrowLeft size={20} color={colors.white} />
-          <Text style={styles.backSoftDarkText}>Cerrar</Text>
+      <View style={[styles.galleryTopbar, { paddingTop: Math.max(insets.top, 10) }]}>
+        <Pressable style={styles.galleryViewerCircleButton} onPress={onClose}>
+          <X size={24} color={colors.ink} />
         </Pressable>
-        <Text style={styles.galleryCounter}>{images.length} fotos</Text>
+        <Text style={styles.galleryCounter}>{selectedIndex + 1}/{images.length}</Text>
+        <Pressable style={styles.galleryViewerCircleButton} onPress={() => setShowGrid((current) => !current)}>
+          <ImageIcon size={23} color={colors.ink} />
+        </Pressable>
       </View>
-      <RemoteImage uri={image} style={styles.galleryLarge} resizeMode="contain" />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.galleryList}>
-        {images.map((item, index) => (
-          <Pressable
-            key={item}
-            style={[styles.viewerThumb, item === image ? styles.viewerThumbActive : null]}
-            onPress={() => onSelect(item)}
+      {showGrid ? (
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.galleryViewerGrid}>
+          {images.map((item, index) => (
+            <Pressable
+              key={`${item}-grid`}
+              style={[styles.galleryViewerGridItem, item === image ? styles.galleryViewerGridItemActive : null]}
+              onPress={() => {
+                onSelect(item);
+                setShowGrid(false);
+              }}
+            >
+              <RemoteImage uri={item} style={styles.fillImage} />
+              <View style={styles.viewerThumbLabel}>
+                <Text style={styles.viewerThumbText}>{index + 1}</Text>
+              </View>
+            </Pressable>
+          ))}
+        </ScrollView>
+      ) : (
+        <View style={styles.galleryViewerStage}>
+          <ScrollView
+            ref={viewerScrollRef}
+            horizontal
+            pagingEnabled
+            bounces={false}
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={handleViewerScrollEnd}
           >
-            <RemoteImage uri={item} style={styles.fillImage} />
-            <View style={styles.viewerThumbLabel}>
-              <Text style={styles.viewerThumbText}>{index + 1}</Text>
-            </View>
-          </Pressable>
-        ))}
-      </ScrollView>
+            {images.map((item, index) => (
+              <View key={`${item}-viewer-${index}`} style={styles.galleryViewerSlide}>
+                <RemoteImage uri={item} style={styles.galleryLarge} resizeMode="contain" />
+              </View>
+            ))}
+          </ScrollView>
+          <View style={styles.galleryViewerDots}>
+            {images.slice(0, 7).map((item) => (
+              <View key={`${item}-viewer-dot`} style={[styles.galleryViewerDot, item === image ? styles.productHeroDotActiveDark : null]} />
+            ))}
+          </View>
+        </View>
+      )}
+      <View style={[styles.galleryViewerBottom, { paddingBottom: 22 + Math.max(insets.bottom, 12) }]}>
+        <Pressable style={styles.galleryAvailabilityButton} onPress={onAvailability}>
+          <Text style={styles.galleryAvailabilityText}>Ver disponibilidad</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -4062,6 +5466,19 @@ function VisualPlaceholder({
       </View>
       <Text style={[styles.visualTitle, dark ? styles.visualTitleDark : null]}>{title}</Text>
       <Text style={[styles.visualSubtitle, dark ? styles.visualSubtitleDark : null]}>{subtitle}</Text>
+    </View>
+  );
+}
+
+function TrustMiniList({ items, dark = false }: { items: string[]; dark?: boolean }) {
+  return (
+    <View style={[styles.trustMiniList, dark ? styles.trustMiniListDark : null]}>
+      {items.map((item) => (
+        <View key={item} style={styles.trustMiniItem}>
+          <CheckCircle2 size={15} color={dark ? colors.green : colors.skyDark} />
+          <Text style={[styles.trustMiniText, dark ? styles.trustMiniTextDark : null]}>{item}</Text>
+        </View>
+      ))}
     </View>
   );
 }
@@ -4090,21 +5507,46 @@ function LocationSearchInput({
   onSelect: (location: LocationSummary) => void;
 }) {
   const tr = useTranslate();
+  const [focused, setFocused] = useState(false);
+  const hasValue = value.trim().length > 0;
+  const statusText = selected
+    ? "Seleccionado. Puedes tocar el campo para editar."
+    : hasValue && !error
+      ? "Escribiendo. Elige una sugerencia para confirmar."
+      : "";
 
   return (
     <View style={styles.fieldBlock}>
       <Text style={styles.fieldLabel}>{label}</Text>
-      <View style={[styles.locationInputShell, selected ? styles.locationInputSelected : null]}>
-        <Icon size={18} color={selected ? colors.green : colors.skyDark} />
+      <View
+        style={[
+          styles.locationInputShell,
+          selected ? styles.locationInputSelected : null,
+          focused ? styles.locationInputFocused : null
+        ]}
+      >
+        <Icon size={18} color={selected ? colors.skyDark : colors.skyDark} />
         <TextInput
           value={value}
           onChangeText={onChange}
           placeholder={tr(placeholder) ?? undefined}
           placeholderTextColor={colors.muted}
           style={styles.locationInput}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
         />
+        {selected ? (
+          <View style={styles.locationEditPill}>
+            <Pencil size={12} color={colors.skyDark} />
+          </View>
+        ) : null}
         {loading ? <Text style={styles.loadingText}>...</Text> : null}
       </View>
+      {statusText ? (
+        <Text style={[styles.locationStatusText, selected ? styles.locationStatusSelected : null]}>
+          {statusText}
+        </Text>
+      ) : null}
       {options.length ? (
         <View style={styles.optionList}>
           {options.slice(0, 7).map((option) => (
@@ -4131,7 +5573,8 @@ function InputField({
   error,
   keyboardType,
   secureTextEntry,
-  multiline
+  multiline,
+  editable = true
 }: {
   label: string;
   value: string;
@@ -4142,6 +5585,7 @@ function InputField({
   keyboardType?: KeyboardTypeOptions;
   secureTextEntry?: boolean;
   multiline?: boolean;
+  editable?: boolean;
 }) {
   const tr = useTranslate();
 
@@ -4157,7 +5601,8 @@ function InputField({
         keyboardType={keyboardType}
         secureTextEntry={secureTextEntry}
         multiline={multiline}
-        style={[styles.textInput, multiline ? styles.textArea : null]}
+        editable={editable}
+        style={[styles.textInput, multiline ? styles.textArea : null, !editable ? styles.textInputDisabled : null]}
       />
       {error ? <Text style={styles.inputError}>{error}</Text> : null}
     </View>
@@ -4260,9 +5705,17 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
 }
 
 function SectionHeader({ title, actionLabel, onPress }: { title: string; actionLabel: string; onPress: () => void }) {
+  const cleanTitle = title.includes("Recomendados")
+    ? "Recomendados"
+    : title.includes("Categorias")
+      ? "Categorias"
+      : title.includes("Rutas populares")
+        ? "Rutas populares"
+        : title;
+
   return (
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <Text style={styles.sectionTitle}>{cleanTitle}</Text>
       <Pressable onPress={onPress}>
         <Text style={styles.sectionAction}>{actionLabel}</Text>
       </Pressable>
@@ -4301,6 +5754,17 @@ function FeaturedTourCard({ tour, onPress }: { tour: AppTour; onPress: () => voi
   );
 }
 
+const tourDecisionTags = (tour: AppTour) => {
+  const tags = new Set<string>();
+  if (tour.activeOffer) tags.add("Mejor precio");
+  if (tour.rating >= 4.8) tags.add("Más reservado");
+  if (normalizeLocationSearch(tour.pickup).includes("incluye")) tags.add("Recogida incluida");
+  if (normalizeLocationSearch(tour.category).includes("premium")) tags.add("Premium");
+  if (normalizeLocationSearch(`${tour.title} ${tour.category}`).includes("familia")) tags.add("Ideal familias");
+  if (!tags.size) tags.add(tour.price <= 75 ? "Mejor precio" : "Confirmación rápida");
+  return Array.from(tags).slice(0, 3);
+};
+
 function TourCard({
   tour,
   favorite,
@@ -4332,6 +5796,11 @@ function TourCard({
       </View>
       <View style={styles.tourBody}>
         <Text style={styles.tourTitle}>{tour.title}</Text>
+        <View style={styles.tourDecisionTags}>
+          {tourDecisionTags(tour).map((tag) => (
+            <Text key={tag} style={styles.tourDecisionTag}>{tag}</Text>
+          ))}
+        </View>
         <Text style={styles.bodyText} numberOfLines={2}>{tour.description}</Text>
         <View style={styles.metaRow}>
           <MetaItem icon={MapPin} label={tour.location} />
@@ -4339,12 +5808,12 @@ function TourCard({
           <MetaItem icon={Car} label={tour.pickup} />
         </View>
         <View style={styles.tourFooter}>
-          <View>
+          <View style={styles.tourPriceBlock}>
             <Text style={styles.tourPriceLabel}>Desde</Text>
             {tour.activeOffer ? <Text style={styles.tourOldPrice}>{money(tour.price)}</Text> : null}
             <Text style={styles.tourPrice}>{money(offerAdultPrice)}</Text>
           </View>
-          <ActionButton label="Ver tour" icon={CreditCard} onPress={onReserve} />
+          <ActionButton label="Ver disponibilidad" icon={CalendarCheck} onPress={onReserve} />
         </View>
       </View>
     </Pressable>
@@ -4417,14 +5886,14 @@ function ContactPanel({ compact = false }: { compact?: boolean }) {
         </View>
         <View style={styles.flexText}>
           <Text style={styles.sectionTitle}>Contacto y soporte</Text>
-          <Text style={styles.smallMuted}>Habla con Proactivitis antes o despues de reservar.</Text>
+          <Text style={styles.smallMuted}>Habla con Proactivitis antes o después de reservar.</Text>
         </View>
       </View>
       <View style={styles.contactGrid}>
         <LinkRow
           icon={MessageCircle}
           title="WhatsApp"
-          subtitle="Respuesta rapida para reservas"
+          subtitle="Respuesta rápida para reservas"
           onPress={() => openUrl(links.whatsapp)}
         />
         <LinkRow
@@ -4466,8 +5935,8 @@ function PolicyLinksPanel({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
       <View style={styles.policyMiniPanel}>
-        <Text style={styles.policyMiniTitle}>Legal y politicas</Text>
-        <Text style={styles.policyMiniText}>Consulta estos enlaces cuando necesites revisar privacidad, terminos o cancelaciones.</Text>
+        <Text style={styles.policyMiniTitle}>Legal y políticas</Text>
+        <Text style={styles.policyMiniText}>Consulta estos enlaces cuando necesites revisar privacidad, términos o cancelaciones.</Text>
         <View style={styles.policyMiniGrid}>
           {policyLinks.map((item) => (
             <Pressable key={item.title} style={styles.policyMiniLink} onPress={() => openUrl(item.url)}>
@@ -4477,7 +5946,7 @@ function PolicyLinksPanel({ compact = false }: { compact?: boolean }) {
           ))}
         </View>
         <Text style={styles.policyMiniNotice}>
-          Al continuar aceptas los terminos, privacidad y reglas de cancelacion aplicables al producto.
+          Al continuar aceptas los términos, privacidad y reglas de cancelación aplicables al producto.
         </Text>
       </View>
     );
@@ -4485,9 +5954,9 @@ function PolicyLinksPanel({ compact = false }: { compact?: boolean }) {
 
   return (
     <View style={styles.formPanel}>
-      <Text style={styles.sectionTitle}>Politicas y legal</Text>
+      <Text style={styles.sectionTitle}>Políticas y legal</Text>
       <Text style={styles.smallMuted}>
-        Accesos visibles para privacidad, terminos, cookies, informacion legal y cancelaciones.
+        Accesos visibles para privacidad, términos, cookies, información legal y cancelaciones.
       </Text>
       <View style={compact ? styles.policyCompactList : styles.cardStack}>
         {policyLinks.map((item) => (
@@ -4538,24 +6007,42 @@ function RemoteImage({
   resizeMode?: "cover" | "contain";
 }) {
   const [failed, setFailed] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setFailed(false);
+    setLoading(true);
   }, [uri]);
 
   return (
-    <Image
-      source={{ uri: failed ? fallbackTourImage : absoluteImageUrl(uri) }}
-      style={style}
-      resizeMode={resizeMode}
-      onError={() => {
-        if (!failed) setFailed(true);
-      }}
-    />
+    <View style={[style, styles.remoteImageShell]}>
+      {loading ? (
+        <View style={styles.remoteImageSkeleton}>
+          <ImageIcon size={18} color={colors.skyDark} />
+        </View>
+      ) : null}
+      <Image
+        source={{ uri: failed ? fallbackTourImage : absoluteImageUrl(uri) }}
+        style={styles.remoteImageFill}
+        resizeMode={resizeMode}
+        onLoadEnd={() => setLoading(false)}
+        onError={() => {
+          if (!failed) setFailed(true);
+        }}
+      />
+    </View>
   );
 }
 
-function TabBar({ activeTab, onChange }: { activeTab: TabKey; onChange: (tab: TabKey) => void }) {
+function TabBar({
+  activeTab,
+  bottomInset,
+  onChange
+}: {
+  activeTab: TabKey;
+  bottomInset: number;
+  onChange: (tab: TabKey) => void;
+}) {
   const tabs: Array<{ key: TabKey; label: string; icon: IconType }> = [
     { key: "home", label: "Inicio", icon: Home },
     { key: "tours", label: "Tours", icon: Compass },
@@ -4564,7 +6051,7 @@ function TabBar({ activeTab, onChange }: { activeTab: TabKey; onChange: (tab: Ta
     { key: "profile", label: "Perfil", icon: User }
   ];
   return (
-    <View style={styles.tabBar}>
+    <View style={[styles.tabBar, { bottom: bottomInset }]}>
       {tabs.map(({ key, label, icon: Icon }) => {
         const active = key === activeTab;
         return (
@@ -4599,6 +6086,121 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.ink,
     padding: 18
+  },
+  privacySafeArea: {
+    flex: 1,
+    backgroundColor: colors.white
+  },
+  privacyScreen: {
+    flexGrow: 1,
+    justifyContent: "space-between",
+    gap: 28,
+    backgroundColor: colors.white,
+    paddingHorizontal: 22,
+    paddingTop: 36,
+    paddingBottom: 26
+  },
+  privacyTopIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.skySoft,
+    marginBottom: 18
+  },
+  privacyTitle: {
+    color: colors.ink,
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: "900",
+    letterSpacing: 0
+  },
+  privacyBody: {
+    marginTop: 18,
+    color: colors.inkSoft,
+    fontSize: 17,
+    lineHeight: 24,
+    fontWeight: "800"
+  },
+  privacyLink: {
+    alignSelf: "flex-start",
+    marginTop: 12,
+    color: colors.sky,
+    fontSize: 16,
+    fontWeight: "900",
+    textDecorationLine: "underline"
+  },
+  privacyBottomActions: {
+    gap: 16
+  },
+  privacyActions: {
+    gap: 12
+  },
+  privacyTextButton: {
+    minHeight: 48,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  privacyTextButtonLabel: {
+    color: colors.sky,
+    fontSize: 16,
+    fontWeight: "900"
+  },
+  privacyOptions: {
+    gap: 10
+  },
+  privacyOption: {
+    minHeight: 78,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.surface,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 13
+  },
+  privacyOptionTitle: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "900"
+  },
+  privacyOptionText: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "700"
+  },
+  privacyAlwaysOn: {
+    overflow: "hidden",
+    borderRadius: 999,
+    backgroundColor: colors.skySoft,
+    color: colors.skyDark,
+    fontSize: 12,
+    fontWeight: "900",
+    paddingHorizontal: 10,
+    paddingVertical: 6
+  },
+  privacySwitch: {
+    width: 50,
+    height: 30,
+    borderRadius: 999,
+    backgroundColor: "#cbd5e1",
+    justifyContent: "center",
+    paddingHorizontal: 3
+  },
+  privacySwitchActive: {
+    backgroundColor: colors.sky
+  },
+  privacySwitchKnob: {
+    width: 24,
+    height: 24,
+    borderRadius: 999,
+    backgroundColor: colors.white
+  },
+  privacySwitchKnobActive: {
+    alignSelf: "flex-end"
   },
   languageCard: {
     gap: 16,
@@ -4677,17 +6279,21 @@ const styles = StyleSheet.create({
     fontWeight: "700"
   },
   scrollContent: {
-    paddingBottom: 104,
+    paddingBottom: 150,
     backgroundColor: colors.surface
+  },
+  scrollContentWithFloatingBar: {
+    paddingBottom: 154
   },
   screen: {
     gap: 18,
-    padding: 16
+    padding: 16,
+    paddingBottom: 38
   },
   homeScreen: {
     gap: 18,
     paddingHorizontal: 16,
-    paddingBottom: 16
+    paddingBottom: 38
   },
   flexText: {
     flex: 1,
@@ -4695,7 +6301,7 @@ const styles = StyleSheet.create({
     gap: 4
   },
   hero: {
-    minHeight: 560,
+    minHeight: 500,
     justifyContent: "flex-end",
     overflow: "hidden",
     marginHorizontal: -16,
@@ -4706,12 +6312,57 @@ const styles = StyleSheet.create({
   },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(6, 17, 31, 0.38)"
+    backgroundColor: "rgba(6, 17, 31, 0.34)"
   },
   heroContent: {
     gap: 11,
-    padding: 22,
+    padding: 20,
+    paddingTop: 38,
     paddingBottom: 34
+  },
+  heroBrand: {
+    alignSelf: "flex-start",
+    maxWidth: "92%",
+    minHeight: 58,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.58)",
+    backgroundColor: "rgba(255,255,255,0.94)",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 8,
+    paddingRight: 14,
+    shadowColor: "#020617",
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 5
+  },
+  heroBrandIconShell: {
+    width: 42,
+    height: 42,
+    borderRadius: 999,
+    overflow: "hidden",
+    backgroundColor: colors.white
+  },
+  heroBrandIcon: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover"
+  },
+  heroBrandName: {
+    color: colors.ink,
+    fontSize: 15,
+    lineHeight: 18,
+    fontWeight: "900"
+  },
+  heroBrandLine: {
+    color: colors.skyDark,
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: "900",
+    textTransform: "uppercase"
   },
   eyebrow: {
     color: colors.skySoft,
@@ -4815,8 +6466,7 @@ const styles = StyleSheet.create({
     ...shadows.card
   },
   homeBookingEmoji: {
-    fontSize: 26,
-    lineHeight: 31
+    display: "none"
   },
   homeBookingTitle: {
     color: colors.text,
@@ -5072,6 +6722,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "900"
   },
+  homeRoutePrice: {
+    alignSelf: "flex-start",
+    overflow: "hidden",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#a7f3d0",
+    backgroundColor: "#ecfdf5",
+    color: "#047857",
+    fontSize: 14,
+    fontWeight: "900",
+    paddingHorizontal: 9,
+    paddingVertical: 5
+  },
   noticePanel: {
     flexDirection: "row",
     gap: 12,
@@ -5080,6 +6743,10 @@ const styles = StyleSheet.create({
     borderColor: "#bae6fd",
     backgroundColor: colors.skySoft,
     padding: 15
+  },
+  transferNoticePanel: {
+    marginHorizontal: 16,
+    marginTop: 12
   },
   noticeTitle: {
     color: colors.skyDark,
@@ -5229,6 +6896,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "900"
   },
+  tourDecisionTags: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 7
+  },
+  tourDecisionTag: {
+    overflow: "hidden",
+    borderRadius: 999,
+    backgroundColor: colors.skySoft,
+    color: colors.skyDark,
+    fontSize: 11,
+    fontWeight: "900",
+    paddingHorizontal: 9,
+    paddingVertical: 5
+  },
   toursEmptyPanel: {
     gap: 8,
     borderRadius: 8,
@@ -5318,6 +7000,10 @@ const styles = StyleSheet.create({
     gap: 10,
     padding: 11
   },
+  customerHubRowActive: {
+    borderColor: colors.sky,
+    backgroundColor: "#f0f9ff"
+  },
   customerHubIcon: {
     width: 34,
     height: 34,
@@ -5325,6 +7011,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.skySoft
+  },
+  customerHubIconActive: {
+    backgroundColor: colors.sky
   },
   customerHubRowTitle: {
     color: colors.text,
@@ -5342,6 +7031,180 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.skySoft,
     padding: 12
+  },
+  customerPanelTabs: {
+    gap: 8,
+    paddingRight: 10
+  },
+  customerPanelTab: {
+    minHeight: 38,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.white,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12
+  },
+  customerPanelTabActive: {
+    borderColor: colors.skyDark,
+    backgroundColor: colors.skyDark
+  },
+  customerPanelTabText: {
+    color: colors.skyDark,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  customerPanelTabTextActive: {
+    color: colors.white
+  },
+  nativeBookingCard: {
+    overflow: "hidden",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.white
+  },
+  nativeBookingImage: {
+    width: "100%",
+    height: 132,
+    backgroundColor: colors.line
+  },
+  nativeBookingBody: {
+    gap: 8,
+    padding: 12
+  },
+  nativeStatusPill: {
+    overflow: "hidden",
+    borderRadius: 999,
+    backgroundColor: "#ecfdf5",
+    color: colors.green,
+    fontSize: 11,
+    fontWeight: "900",
+    paddingHorizontal: 9,
+    paddingVertical: 5
+  },
+  nativeBookingTitle: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 21,
+    fontWeight: "900"
+  },
+  nativeCode: {
+    color: colors.skyDark,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  nativeActionsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  nativeSmallButton: {
+    minHeight: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12
+  },
+  nativeSmallButtonText: {
+    color: colors.skyDark,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  nativeSmallButtonDark: {
+    minHeight: 36,
+    borderRadius: 999,
+    backgroundColor: colors.ink,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12
+  },
+  nativeSmallButtonDarkText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  nativePaymentCard: {
+    minHeight: 86,
+    borderRadius: 8,
+    backgroundColor: colors.ink,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 14
+  },
+  nativePaymentTitle: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: "900"
+  },
+  nativeReviewChoice: {
+    gap: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.white,
+    padding: 11
+  },
+  nativeReviewChoiceActive: {
+    borderColor: colors.sky,
+    backgroundColor: colors.skySoft
+  },
+  nativeStarsRow: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "center"
+  },
+  nativeChipWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 9
+  },
+  nativeToggleRow: {
+    minHeight: 64,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.white,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 11,
+    padding: 12
+  },
+  nativeToggleDot: {
+    width: 22,
+    height: 22,
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: colors.line,
+    backgroundColor: colors.white
+  },
+  nativeToggleDotActive: {
+    borderColor: colors.green,
+    backgroundColor: colors.green
+  },
+  nativeNotification: {
+    gap: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.white,
+    padding: 12
+  },
+  nativeNotificationUnread: {
+    borderColor: colors.sky,
+    backgroundColor: "#f0f9ff"
+  },
+  nativeUnreadDot: {
+    width: 9,
+    height: 9,
+    borderRadius: 999,
+    backgroundColor: colors.green
   },
   policyCompactList: {
     gap: 8
@@ -5441,9 +7304,17 @@ const styles = StyleSheet.create({
     gap: 12
   },
   priceText: {
-    color: colors.text,
+    alignSelf: "flex-start",
+    overflow: "hidden",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    backgroundColor: "#dcfce7",
+    color: "#15803d",
     fontSize: 15,
-    fontWeight: "900"
+    fontWeight: "900",
+    paddingHorizontal: 10,
+    paddingVertical: 5
   },
   ratingPill: {
     flexDirection: "row",
@@ -5491,20 +7362,30 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 12
   },
+  tourPriceBlock: {
+    alignSelf: "flex-start",
+    minWidth: 92,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#86efac",
+    backgroundColor: "#f0fdf4",
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
   tourPriceLabel: {
-    color: colors.muted,
+    color: "#166534",
     fontSize: 11,
     fontWeight: "900",
     textTransform: "uppercase"
   },
   tourOldPrice: {
-    color: colors.muted,
+    color: "#65a30d",
     fontSize: 12,
     fontWeight: "900",
     textDecorationLine: "line-through"
   },
   tourPrice: {
-    color: colors.text,
+    color: "#16a34a",
     fontSize: 22,
     fontWeight: "900"
   },
@@ -5513,13 +7394,17 @@ const styles = StyleSheet.create({
     paddingBottom: 18
   },
   productHero: {
-    minHeight: 430,
+    minHeight: 500,
     justifyContent: "flex-end",
     overflow: "hidden",
     backgroundColor: colors.ink
   },
   productImageButton: {
     ...StyleSheet.absoluteFillObject
+  },
+  productImageSlide: {
+    width: windowWidth,
+    height: "100%"
   },
   productHeroImage: {
     width: "100%",
@@ -5572,22 +7457,27 @@ const styles = StyleSheet.create({
   },
   productOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(6,17,31,0.34)"
+    backgroundColor: "rgba(6,17,31,0.12)"
   },
   backButton: {
     position: "absolute",
     top: 16,
     left: 16,
     zIndex: 2,
-    minHeight: 42,
+    width: 54,
+    height: 54,
     borderRadius: 999,
-    backgroundColor: "rgba(15, 23, 42, 0.72)",
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.22)",
+    borderColor: "rgba(15,23,42,0.08)",
     flexDirection: "row",
     alignItems: "center",
-    gap: 7,
-    paddingHorizontal: 12
+    justifyContent: "center",
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 7 },
+    elevation: 6
   },
   backButtonText: {
     color: colors.white,
@@ -5599,25 +7489,54 @@ const styles = StyleSheet.create({
     top: 16,
     right: 16,
     zIndex: 2,
-    minHeight: 42,
+    minHeight: 54,
     borderRadius: 999,
-    backgroundColor: "rgba(15, 23, 42, 0.72)",
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.22)",
+    borderColor: "rgba(15,23,42,0.08)",
     flexDirection: "row",
     alignItems: "center",
     gap: 7,
-    paddingHorizontal: 12
+    paddingHorizontal: 15,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 7 },
+    elevation: 6
   },
   galleryFloatingText: {
-    color: colors.white,
+    color: colors.ink,
     fontSize: 13,
     fontWeight: "900"
+  },
+  productHeroDots: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 150,
+    zIndex: 2,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 7
+  },
+  productHeroDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.56)"
+  },
+  productHeroDotActive: {
+    width: 18,
+    backgroundColor: colors.white
+  },
+  productHeroDotActiveDark: {
+    width: 18,
+    backgroundColor: colors.ink
   },
   productHeroContent: {
     gap: 12,
     padding: 20,
-    paddingBottom: 42
+    paddingBottom: 46
   },
   productTitle: {
     color: colors.white,
@@ -5647,8 +7566,32 @@ const styles = StyleSheet.create({
   productPanel: {
     gap: 18,
     marginHorizontal: 16,
-    marginTop: -32,
+    marginTop: -24,
     paddingBottom: 6
+  },
+  productTrustPanel: {
+    gap: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    backgroundColor: "#f0fdf4",
+    padding: 14,
+    ...shadows.card
+  },
+  productTrustGrid: {
+    gap: 9
+  },
+  productTrustItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8
+  },
+  productTrustText: {
+    flex: 1,
+    color: colors.text,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "800"
   },
   productBookingCard: {
     flexDirection: "row",
@@ -5662,6 +7605,76 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     padding: 16,
     ...shadows.card
+  },
+  productFloatingBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    minHeight: 94,
+    borderTopWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: "rgba(255,255,255,0.98)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    paddingBottom: 18,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.16,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: -6 },
+    elevation: 12
+  },
+  productFloatingPriceBlock: {
+    flexShrink: 1,
+    minWidth: 98
+  },
+  productFloatingLabel: {
+    color: colors.inkSoft,
+    fontSize: 12,
+    fontWeight: "800"
+  },
+  productFloatingPriceRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    flexWrap: "wrap",
+    gap: 6
+  },
+  productFloatingOldPrice: {
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: "800",
+    textDecorationLine: "line-through"
+  },
+  productFloatingPrice: {
+    color: colors.ink,
+    fontSize: 24,
+    lineHeight: 28,
+    fontWeight: "900"
+  },
+  productFloatingSub: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "800"
+  },
+  productFloatingButton: {
+    minHeight: 58,
+    flexShrink: 0,
+    borderRadius: 999,
+    backgroundColor: colors.sky,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingHorizontal: 19
+  },
+  productFloatingButtonText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: "900"
   },
   offerBadge: {
     alignSelf: "flex-start",
@@ -6197,6 +8210,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "800"
   },
+  textInputDisabled: {
+    backgroundColor: "#eef4f8",
+    color: colors.muted
+  },
   textArea: {
     minHeight: 94,
     paddingTop: 12,
@@ -6213,6 +8230,33 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     fontWeight: "800"
   },
+  trustMiniList: {
+    gap: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+    backgroundColor: "#f0f9ff",
+    padding: 12
+  },
+  trustMiniListDark: {
+    borderColor: "rgba(125,211,252,0.22)",
+    backgroundColor: "rgba(14,165,233,0.1)"
+  },
+  trustMiniItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8
+  },
+  trustMiniText: {
+    flex: 1,
+    color: colors.text,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "900"
+  },
+  trustMiniTextDark: {
+    color: colors.skySoft
+  },
   checkoutTotal: {
     color: "#22c55e",
     fontSize: 28,
@@ -6220,7 +8264,7 @@ const styles = StyleSheet.create({
   },
   transferScreen: {
     gap: 16,
-    paddingBottom: 16,
+    paddingBottom: 54,
     backgroundColor: colors.surface
   },
   transferHero: {
@@ -6312,8 +8356,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12
   },
   locationInputSelected: {
-    borderColor: "#86efac",
-    backgroundColor: "#f0fdf4"
+    borderColor: "#7dd3fc",
+    backgroundColor: "#f0f9ff"
+  },
+  locationInputFocused: {
+    borderColor: colors.sky,
+    backgroundColor: colors.white
   },
   locationInput: {
     flex: 1,
@@ -6321,6 +8369,23 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 15,
     fontWeight: "800"
+  },
+  locationEditPill: {
+    width: 30,
+    height: 30,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.skySoft
+  },
+  locationStatusText: {
+    color: colors.muted,
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: "800"
+  },
+  locationStatusSelected: {
+    color: colors.skyDark
   },
   loadingText: {
     color: colors.muted,
@@ -6498,7 +8563,7 @@ const styles = StyleSheet.create({
   checkoutContent: {
     gap: 14,
     padding: 16,
-    paddingBottom: 36
+    paddingBottom: 64
   },
   checkoutHero: {
     gap: 8,
@@ -6736,17 +8801,31 @@ const styles = StyleSheet.create({
   galleryViewer: {
     flex: 1,
     minHeight: windowHeight,
-    gap: 14,
-    backgroundColor: colors.ink,
-    padding: 14,
-    paddingTop: 18
+    backgroundColor: colors.white,
+    paddingTop: 10
   },
   galleryTopbar: {
-    minHeight: 46,
+    minHeight: 74,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 12
+    gap: 12,
+    paddingHorizontal: 10
+  },
+  galleryViewerCircleButton: {
+    width: 58,
+    height: 58,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.line,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.14,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 5
   },
   backSoftDark: {
     flexDirection: "row",
@@ -6759,14 +8838,93 @@ const styles = StyleSheet.create({
     fontWeight: "900"
   },
   galleryCounter: {
-    color: colors.mutedOnDark,
-    fontSize: 12,
+    color: colors.ink,
+    fontSize: 18,
     fontWeight: "900"
   },
-  galleryLarge: {
+  galleryViewerStage: {
     flex: 1,
+    minHeight: Math.max(430, windowHeight - 250),
+    justifyContent: "center",
+    gap: 20
+  },
+  galleryLarge: {
     width: "100%",
-    minHeight: 360
+    height: Math.max(360, windowHeight * 0.54),
+    backgroundColor: colors.white
+  },
+  galleryViewerSlide: {
+    width: windowWidth,
+    minHeight: Math.max(360, windowHeight * 0.54),
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  galleryViewerDots: {
+    minHeight: 16,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 7
+  },
+  galleryViewerDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 999,
+    backgroundColor: "#cbd5e1"
+  },
+  galleryViewerGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingBottom: 20
+  },
+  galleryViewerGridItem: {
+    width: (windowWidth - 38) / 2,
+    height: 132,
+    overflow: "hidden",
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: colors.line,
+    backgroundColor: colors.line
+  },
+  galleryViewerGridItemActive: {
+    borderColor: colors.sky
+  },
+  galleryViewerBottom: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 30,
+    backgroundColor: colors.white
+  },
+  galleryAvailabilityButton: {
+    minHeight: 58,
+    borderRadius: 999,
+    borderWidth: 3,
+    borderColor: colors.ink,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.white,
+    paddingHorizontal: 18
+  },
+  galleryAvailabilityText: {
+    color: colors.ink,
+    fontSize: 16,
+    fontWeight: "900"
+  },
+  remoteImageShell: {
+    overflow: "hidden",
+    backgroundColor: colors.line
+  },
+  remoteImageFill: {
+    ...StyleSheet.absoluteFillObject,
+    width: "100%",
+    height: "100%"
+  },
+  remoteImageSkeleton: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.skySoft
   },
   viewerThumb: {
     width: 82,
@@ -6852,16 +9010,21 @@ const styles = StyleSheet.create({
     fontWeight: "900"
   },
   actionButton: {
-    minHeight: 50,
-    borderRadius: 8,
-    paddingHorizontal: 16,
+    minHeight: 56,
+    borderRadius: 999,
+    paddingHorizontal: 18,
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
     gap: 8
   },
   actionButtonPrimary: {
-    backgroundColor: colors.sky
+    backgroundColor: colors.sky,
+    shadowColor: colors.skyDark,
+    shadowOpacity: 0.24,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 5
   },
   actionButtonOutline: {
     borderWidth: 1,
@@ -6918,11 +9081,11 @@ const styles = StyleSheet.create({
     left: 12,
     right: 12,
     bottom: 14,
-    minHeight: 66,
-    borderRadius: 18,
+    minHeight: 72,
+    borderRadius: 999,
     borderWidth: 1,
     borderColor: colors.line,
-    backgroundColor: colors.card,
+    backgroundColor: "rgba(255,255,255,0.98)",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
@@ -6931,7 +9094,7 @@ const styles = StyleSheet.create({
   },
   tabButton: {
     flex: 1,
-    minHeight: 54,
+    minHeight: 58,
     alignItems: "center",
     justifyContent: "center",
     gap: 3

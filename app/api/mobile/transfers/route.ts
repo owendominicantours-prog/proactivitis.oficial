@@ -23,7 +23,8 @@ const toLocationSummary = (location: {
   name: location.name,
   slug: location.slug,
   type: location.type,
-  zoneName: zoneName ?? location.zone?.name ?? null
+  zoneName: zoneName ?? location.zone?.name ?? null,
+  zoneId: "zoneId" in location ? location.zoneId : undefined
 });
 
 export async function GET() {

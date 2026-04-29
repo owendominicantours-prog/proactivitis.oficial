@@ -16,7 +16,6 @@ import { es } from "@/lib/translations";
 import { findStaticVariant } from "@/lib/tourVariantCatalog";
 import { getPublishedVariantBySlug } from "@/lib/tourVariantStore";
 import { parseTourMarketVariantSlug } from "@/lib/tourMarketVariants";
-import { isIndexableTourMarketIntent } from "@/lib/seo-index-policy";
 
 const BASE_URL = "https://proactivitis.com";
 
@@ -92,10 +91,7 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
       select: { slug: true, title: true, shortDescription: true, description: true, heroImage: true, gallery: true, price: true }
     });
     if (!tour) return { title: "Landing no encontrada" };
-    const canIndexVariant = isIndexableTourMarketIntent(marketVariant.intent.id);
-    const canonical = canIndexVariant
-      ? `https://proactivitis.com/thingtodo/tours/${resolved.variantSlug}`
-      : `https://proactivitis.com/tours/${tour.slug}`;
+    const canonical = `https://proactivitis.com/thingtodo/tours/${resolved.variantSlug}`;
     const seoTitle = `${marketVariant.intent.heroPrefix.es}: ${tour.title} en Punta Cana | Proactivitis`;
     const seoDescription = `${marketVariant.intent.angle.es} Reserva ${tour.title} desde USD ${Math.round(tour.price)} con soporte local.`;
     const imageUrl = toAbsoluteUrl(resolveTourImage(tour.heroImage ?? null, tour.gallery ?? null));
@@ -106,18 +102,14 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
       alternates: {
         canonical,
         languages: {
-          es: canIndexVariant ? canonical : `https://proactivitis.com/tours/${tour.slug}`,
-          en: canIndexVariant
-            ? `https://proactivitis.com/en/thingtodo/tours/${resolved.variantSlug}`
-            : `https://proactivitis.com/en/tours/${tour.slug}`,
-          fr: canIndexVariant
-            ? `https://proactivitis.com/fr/thingtodo/tours/${resolved.variantSlug}`
-            : `https://proactivitis.com/fr/tours/${tour.slug}`,
-          "x-default": canIndexVariant ? canonical : `https://proactivitis.com/tours/${tour.slug}`
+          es: canonical,
+          en: `https://proactivitis.com/en/thingtodo/tours/${resolved.variantSlug}`,
+          fr: `https://proactivitis.com/fr/thingtodo/tours/${resolved.variantSlug}`,
+          "x-default": canonical
         }
       },
       robots: {
-        index: canIndexVariant,
+        index: true,
         follow: true
       },
       openGraph: {
@@ -193,41 +185,44 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
   }
   const marketVariant = parseTourMarketVariantSlug(resolved.variantSlug);
   if (marketVariant) {
-    const [tour, transferHotels, allHotels] = await Promise.all([
-      prisma.tour.findFirst({
-        where: { slug: marketVariant.tourSlug, status: "published" },
-        select: {
-          slug: true,
-          title: true,
-          shortDescription: true,
-          description: true,
-          duration: true,
-          price: true,
-          heroImage: true,
-          location: true
-        }
-      }),
-      prisma.transferLocation.findMany({
-        where: { type: "HOTEL", active: true },
-        select: { slug: true, name: true, heroImage: true, zone: { select: { name: true } } },
-        orderBy: { updatedAt: "desc" },
-        take: 9
-      }),
-      prisma.transferLocation.findMany({
-        where: { type: "HOTEL", active: true },
-        select: { slug: true, name: true },
-        orderBy: { name: "asc" },
-        take: 500
-      })
-    ]);
+    const tour = await prisma.tour.findFirst({
+      where: { slug: marketVariant.tourSlug, status: "published" },
+      select: {
+        slug: true,
+        title: true,
+        shortDescription: true,
+        description: true,
+        duration: true,
+        price: true,
+        priceChild: true,
+        priceYouth: true,
+        heroImage: true,
+        gallery: true,
+        location: true,
+        category: true,
+        language: true,
+        pickup: true,
+        meetingPoint: true,
+        meetingInstructions: true,
+        requirements: true,
+        cancellationPolicy: true,
+        confirmationType: true,
+        timeOptions: true,
+        operatingDays: true,
+        capacity: true,
+        minAge: true,
+        highlights: true,
+        includes: true,
+        includesList: true,
+        notIncludedList: true
+      }
+    });
     if (!tour) return notFound();
     return (
       <TourMarketVariantLanding
         locale={es}
         intent={marketVariant.intent}
         tour={tour}
-        transferHotels={transferHotels}
-        allHotels={allHotels}
       />
     );
   }

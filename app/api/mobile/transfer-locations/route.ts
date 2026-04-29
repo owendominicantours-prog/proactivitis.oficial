@@ -26,7 +26,8 @@ export async function GET() {
       name: location.name,
       slug: location.slug,
       type: location.type,
-      zoneName: location.zone?.name ?? null
+      zoneName: location.zone?.name ?? null,
+      zoneId: location.zoneId
     }))
   });
 

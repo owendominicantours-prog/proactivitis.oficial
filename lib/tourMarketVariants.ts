@@ -334,7 +334,7 @@ export const buildTourMarketIntentCards = (
   intent: TourMarketIntent,
   locale: Locale,
   tourTitle: string,
-  hotelCount: number
+  _hotelCount: number
 ): IntentCard[] => {
   if (locale === "en") {
     return [
@@ -343,8 +343,8 @@ export const buildTourMarketIntentCards = (
         body: `If you are searching for "${intent.keyword.en}", this version helps you compare ${tourTitle} quickly and book with clear details.`
       },
       {
-        title: "Hotel, transfer, and tour connected",
-        body: `You can plan airport transfer and activities in one place, with access to ${hotelCount}+ hotel routes around Punta Cana.`
+        title: "Same tour, clearer decision angle",
+        body: `The activity details stay focused on ${tourTitle}: what you do, what is included, how timing works, and what to expect before booking.`
       },
       {
         title: "Clear booking experience",
@@ -359,8 +359,8 @@ export const buildTourMarketIntentCards = (
         body: `Si vous recherchez "${intent.keyword.fr}", cette page vous aide a comparer ${tourTitle} rapidement et reserver avec informations claires.`
       },
       {
-        title: "Hotel, transfert et tour connectes",
-        body: `Vous pouvez organiser transfert aeroport et activites au meme endroit, avec plus de ${hotelCount} hotels couverts a Punta Cana.`
+        title: "Meme tour, angle de decision plus clair",
+        body: `Les details restent centres sur ${tourTitle}: experience, inclusions, horaires et informations utiles avant reservation.`
       },
       {
         title: "Reservation simple et fiable",
@@ -374,8 +374,8 @@ export const buildTourMarketIntentCards = (
       body: `Si llegaste buscando "${intent.keyword.es}", esta pagina te ayuda a comparar ${tourTitle} rapido y reservar con informacion clara.`
     },
     {
-      title: "Hotel, traslado y tour en un mismo lugar",
-      body: `Aqui puedes planificar traslado de aeropuerto y actividades en un solo paso, con cobertura para ${hotelCount}+ hoteles de Punta Cana.`
+      title: "Mismo tour, enfoque mas claro",
+      body: `La pagina se centra en ${tourTitle}: que haras, que incluye, como funciona el horario y que debes saber antes de reservar.`
     },
     {
       title: "Reserva sencilla y segura",
@@ -396,8 +396,8 @@ export const buildTourMarketIntentFaqs = (
         a: `Yes. This page is tailored to that search and shows ${tourTitle} with practical details like pricing, timing, and pickup information.`
       },
       {
-        q: "Can I combine this tour with private transfer?",
-        a: "Yes. You can book airport-to-hotel transfer first and then continue with your tour plan from the same booking flow."
+        q: "Is this a different product from the main tour?",
+        a: `No. It is the same ${tourTitle}, presented with a more specific booking angle so you can decide faster.`
       },
       {
         q: "Do you support same-day or quick confirmation?",
@@ -412,8 +412,8 @@ export const buildTourMarketIntentFaqs = (
         a: `Oui. Cette page correspond a cette recherche et presente ${tourTitle} avec informations utiles: prix, horaires et pickup.`
       },
       {
-        q: "Puis-je combiner ce tour avec un transfert prive ?",
-        a: "Oui. Vous pouvez reserver d abord le transfert aeroport-hotel, puis ajouter votre tour dans le meme parcours."
+        q: "Est-ce un produit different du tour principal ?",
+        a: `Non. Il s agit du meme ${tourTitle}, presente avec un angle plus specifique pour aider la decision.`
       },
       {
         q: "Avez-vous une confirmation rapide ?",
@@ -427,8 +427,8 @@ export const buildTourMarketIntentFaqs = (
       a: `Si. Esta pagina responde a esa busqueda y te muestra ${tourTitle} con datos utiles para reservar: precio, horarios y recogida.`
     },
     {
-      q: "Puedo combinar este tour con traslado privado?",
-      a: "Si. Puedes reservar primero el traslado aeropuerto-hotel y despues completar tu plan de tour en el mismo flujo."
+      q: "Es un producto diferente al tour principal?",
+      a: `No. Es el mismo ${tourTitle}, presentado con un enfoque mas especifico para ayudarte a decidir mejor.`
     },
     {
       q: "Tienen confirmacion rapida?",

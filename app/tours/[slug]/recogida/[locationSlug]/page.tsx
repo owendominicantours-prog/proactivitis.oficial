@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import TourGalleryViewer from "@/components/shared/TourGalleryViewer";
@@ -151,7 +151,7 @@ const buildReviewTags = (t: (key: Parameters<typeof translate>[1]) => string) =>
 
 type TourHotelLandingParams = {
   params: Promise<{ slug: string; locationSlug: string }>;
-  searchParams?: Promise<{ bookingCode?: string }>;
+  searchParams?: Promise<{ bookingCode?: string; hotelSlug?: string }>;
 };
 
 const buildTourPickupUrl = (slug: string, locationSlug: string, locale: Locale) =>
@@ -291,6 +291,13 @@ export async function TourHotelLanding({
 }: TourHotelLandingParams & { locale: Locale }) {
   const { slug, locationSlug } = await params;
   const resolvedSearch = searchParams ? await searchParams : {};
+  if (resolvedSearch.hotelSlug && !resolvedSearch.bookingCode) {
+    permanentRedirect(
+      locale === "es"
+        ? `/tours/${slug}/recogida/${locationSlug}`
+        : `/${locale}/tours/${slug}/recogida/${locationSlug}`
+    );
+  }
   const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
     translate(locale, key, replacements);
 
