@@ -19,6 +19,7 @@ import {
 import { TRANSFER_QUESTION_SALES_LANDINGS } from "@/data/transfer-question-sales-landings";
 import { TOUR_MARKET_INTENTS, buildTourMarketVariantSlug } from "@/lib/tourMarketVariants";
 import { GOLDEN_TOUR_INTENTS, buildGoldenTourPageSlug } from "@/lib/goldenTourPages";
+import { GOLDEN_TRANSFER_INTENTS, buildGoldenTransferPageSlug } from "@/lib/goldenTransferPages";
 import CollapsibleSection from "@/components/admin/CollapsibleSection";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import LandingRefreshControl from "@/components/admin/LandingRefreshControl";
@@ -223,6 +224,14 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       active: true
     }))
   );
+  const goldenTransferEntries = manual.flatMap((landing) =>
+    GOLDEN_TRANSFER_INTENTS.map((intent) => ({
+      slug: `punta-cana/transfer/${buildGoldenTransferPageSlug(landing.landingSlug, intent.slug)}`,
+      name: `${landing.hotelName} - ${intent.catalogLabel}`,
+      zone: "Las 100 mil de oro Transfer",
+      active: true
+    }))
+  );
   const goldenTourEntries = publishedTours.flatMap((tour) =>
     GOLDEN_TOUR_INTENTS.map((intent) => ({
       slug: `punta-cana/tours/${buildGoldenTourPageSlug(tour.slug, intent.slug)}`,
@@ -250,6 +259,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
   const hotelSalesTransferSlugs = hotelSalesTransferEntries.map((entry) =>
     entry.slug.replace(/^transfer\//, "")
   );
+  const goldenTransferSlugs = goldenTransferEntries.map((entry) => entry.slug);
   const transferQuestionSlugs = transferQuestionEntries.map((entry) => entry.slug);
   const tourMarketVariantSlugs = tourMarketVariantEntries.map((entry) => entry.slug);
   const goldenTourSlugs = goldenTourEntries.map((entry) => entry.slug);
@@ -269,6 +279,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       ...samanaWhaleSlugs,
       ...premiumTransferSlugs,
       ...hotelSalesTransferSlugs,
+      ...goldenTransferSlugs,
       ...transferQuestionSlugs,
       ...tourMarketVariantSlugs,
       ...goldenTourSlugs,
@@ -319,6 +330,13 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       category: "hotel-transfer-sales",
       path: entry.slug,
       visits: trafficMap.get(entry.slug.replace(/^transfer\//, "")) ?? 0
+    })),
+    ...goldenTransferEntries.map((entry) => ({
+      ...entry,
+      type: "GOLD_TRANSFER",
+      category: "golden-transfer-pages",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
     })),
     ...transferQuestionEntries.map((entry) => ({
       ...entry,
@@ -457,6 +475,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
   const transferTotalCount = entries.length;
   const explorerTotalCount = explorerEntries.length;
   const goldenTourCount = goldenTourEntries.length;
+  const goldenTransferCount = goldenTransferEntries.length;
 
   const pageHref = (nextPage: number) => {
     const query = new URLSearchParams();
@@ -493,13 +512,15 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
         </article>
         <article className="rounded-2xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-sky-700">Catálogos</p>
-          <p className="mt-2 text-3xl font-semibold text-sky-900">15</p>
+          <p className="mt-2 text-3xl font-semibold text-sky-900">16</p>
           <p className="text-sm text-sky-700">Colecciones para filtrar por intención.</p>
         </article>
         <article className="rounded-2xl border border-violet-200 bg-violet-50 p-5 shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-violet-700">100 mil de oro</p>
-          <p className="mt-2 text-3xl font-semibold text-violet-900">{goldenTourCount.toLocaleString()}</p>
-          <p className="text-sm text-violet-700">Paginas comerciales nuevas de tours.</p>
+          <p className="mt-2 text-3xl font-semibold text-violet-900">
+            {(goldenTourCount + goldenTransferCount).toLocaleString()}
+          </p>
+          <p className="text-sm text-violet-700">Tours + transfer comerciales nuevos.</p>
         </article>
       </section>
 
@@ -517,6 +538,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
               <option value="transfer">Transfer base</option>
               <option value="premium-transfer">Premium transfer</option>
               <option value="hotel-transfer-sales">Transfer sales por hotel</option>
+              <option value="golden-transfer-pages">Las 100 mil transfer</option>
               <option value="google-questions">Google Questions</option>
               <option value="hotels-things-to-do">Hotels Things to do</option>
               <option value="hotel-pickup">Hotel pickup tours</option>
@@ -775,6 +797,39 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
               </Link>
             );
           })}
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Las 100 mil transfer"
+        description="Matriz comercial de traslados por hotel: privado, ida/vuelta, SUV, familia, grupos, WhatsApp y precio 2026."
+        badge={`${goldenTransferEntries.length} items`}
+        defaultOpen={false}
+      >
+        <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
+          Mostrando las primeras 120 para no hacer pesado el panel. El inventario completo esta en el explorador con el catalogo
+          "Las 100 mil transfer" y en el sitemap nuevo.
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {goldenTransferEntries.slice(0, 120).map((entry) => (
+            <Link
+              key={entry.slug}
+              href={`https://proactivitis.com/${entry.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-sm text-slate-700 transition hover:border-sky-400 hover:shadow-lg"
+            >
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-sky-700">{entry.zone}</p>
+                <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">Gold Transfer</p>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                <p>{entry.slug}</p>
+                <p>Visitas {trafficMap.get(entry.slug)?.toLocaleString() ?? "0"}</p>
+              </div>
+            </Link>
+          ))}
         </div>
       </CollapsibleSection>
 
