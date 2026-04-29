@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ProDiscoveryTransferDetailPage from "@/components/public/ProDiscoveryTransferDetailPage";
+import { parseTransferHotelVariantSlug } from "@/data/transfer-hotel-sales-variants";
 import { allLandings } from "@/data/transfer-landings";
 import {
   buildProDiscoveryTransferMetadata,
@@ -14,7 +15,8 @@ export async function generateMetadata({
   params: Promise<{ landingSlug: string }>;
 }): Promise<Metadata> {
   const { landingSlug } = await params;
-  const landing = allLandings().find((item) => item.landingSlug === landingSlug);
+  const parsedLandingSlug = parseTransferHotelVariantSlug(landingSlug);
+  const landing = allLandings().find((item) => item.landingSlug === parsedLandingSlug.baseSlug);
   if (!landing) return buildProDiscoveryTransferNotFoundMetadata(en);
   const reviewSummary = await getTransferReviewSummaryForLanding(landingSlug);
   return buildProDiscoveryTransferMetadata({

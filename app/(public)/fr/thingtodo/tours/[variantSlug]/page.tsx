@@ -87,7 +87,7 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
   const marketVariant = parseTourMarketVariantSlug(resolved.variantSlug);
   if (marketVariant) {
     const tour = await prisma.tour.findFirst({
-      where: { slug: marketVariant.tourSlug, status: "published" },
+      where: { slug: marketVariant.tourSlug, status: { in: ["published", "seo_only"] } },
       select: { slug: true, title: true, shortDescription: true, description: true, heroImage: true, gallery: true, price: true }
     });
     if (!tour) return { title: "Landing introuvable" };
@@ -186,7 +186,7 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
   const marketVariant = parseTourMarketVariantSlug(resolved.variantSlug);
   if (marketVariant) {
     const tour = await prisma.tour.findFirst({
-      where: { slug: marketVariant.tourSlug, status: "published" },
+      where: { slug: marketVariant.tourSlug, status: { in: ["published", "seo_only"] } },
       select: {
         slug: true,
         title: true,

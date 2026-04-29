@@ -30,8 +30,33 @@ const BASE_URL = "https://proactivitis.com";
 const FALLBACK_IMAGE = "/transfer/mini van.png";
 
 type RouteBase = "things-to-do" | "hoteles";
+type HotelRecord = {
+  name: string;
+  slug: string;
+  address: string | null;
+  description: string | null;
+  heroImage: string | null;
+};
 
 const DEFAULT_AMENITIES = ["Wi-Fi Gratis", "Todo Incluido", "Piscina", "Club de Ninos", "Gimnasio"];
+const STATIC_HOTEL_FALLBACKS: Record<string, HotelRecord> = {
+  "bahia-principe-luxury-esmeralda": {
+    name: "Bahia Principe Luxury Esmeralda",
+    slug: "bahia-principe-luxury-esmeralda",
+    address: "Arena Gorda, Punta Cana",
+    description:
+      "Hotel todo incluido dentro del complejo Bahia Principe en Punta Cana, ideal para combinar descanso, playa, restaurantes y excursiones con recogida desde el resort.",
+    heroImage: "/transfer/mini van.png"
+  },
+  "bahia-principe-luxury-ambar": {
+    name: "Bahia Principe Luxury Ambar",
+    slug: "bahia-principe-luxury-ambar",
+    address: "Arena Gorda, Punta Cana",
+    description:
+      "Resort todo incluido solo adultos en Punta Cana, con acceso a playa, restaurantes, bares y actividades que se pueden coordinar desde el hotel.",
+    heroImage: "/transfer/mini van.png"
+  }
+};
 const BAHIA_ACTIVITY_COPY: Record<
   Locale,
   {
@@ -211,11 +236,13 @@ const UI_COPY: Record<
 
 const buildTransferSlug = (hotelSlug: string) => `punta-cana-international-airport-puj-to-${hotelSlug}`;
 
-const getHotel = (hotelSlug: string) =>
-  prisma.transferLocation.findFirst({
+const getHotel = async (hotelSlug: string): Promise<HotelRecord | null> => {
+  const hotel = await prisma.transferLocation.findFirst({
     where: { slug: hotelSlug, type: "HOTEL" },
     select: { name: true, slug: true, address: true, description: true, heroImage: true }
   });
+  return hotel ?? STATIC_HOTEL_FALLBACKS[hotelSlug] ?? null;
+};
 
 const buildLocalizedPath = (hotelSlug: string, locale: Locale, routeBase: RouteBase) => {
   const localizedRoute =

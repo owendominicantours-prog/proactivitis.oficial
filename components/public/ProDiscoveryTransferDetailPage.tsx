@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import StructuredData from "@/components/schema/StructuredData";
 import TrasladoSearchV2 from "@/components/traslado/TrasladoSearchV2";
+import { parseTransferHotelVariantSlug } from "@/data/transfer-hotel-sales-variants";
 import { allLandings } from "@/data/transfer-landings";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_URL, getPriceValidUntil } from "@/lib/seo";
@@ -121,7 +122,8 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
     localeLabel(locale, "Reserva segura", "Secure booking", "Reservation securisee"),
     localeLabel(locale, "Soporte local", "Local support", "Support local")
   ];
-  const landing = allLandings().find((item) => item.landingSlug === landingSlug);
+  const parsedLandingSlug = parseTransferHotelVariantSlug(landingSlug);
+  const landing = allLandings().find((item) => item.landingSlug === parsedLandingSlug.baseSlug);
   if (!landing) return notFound();
 
   const [reviewsRaw, totalApprovedReviews, related] = await Promise.all([

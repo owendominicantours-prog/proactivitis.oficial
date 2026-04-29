@@ -48,6 +48,14 @@ const nextConfig = {
         permanent: true
       }
     ];
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/_next/static/css/b7257f1f63783173.css",
+        destination: "/legacy-static/b7257f1f63783173.css"
+      }
+    ];
   }
 };
 
