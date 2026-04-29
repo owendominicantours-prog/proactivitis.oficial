@@ -14,6 +14,7 @@ const PUBLIC_TOUR_STATUSES = ["published", "seo_only"];
 const localePrefix = (locale: Locale) => (locale === "es" ? "" : `/${locale}`);
 
 const tourSelect = {
+  id: true,
   slug: true,
   title: true,
   shortDescription: true,
@@ -40,7 +41,20 @@ const tourSelect = {
   highlights: true,
   includes: true,
   includesList: true,
-  notIncludedList: true
+  notIncludedList: true,
+  translations: {
+    select: {
+      locale: true,
+      title: true,
+      subtitle: true,
+      shortDescription: true,
+      description: true,
+      includesList: true,
+      notIncludedList: true,
+      highlights: true,
+      durationUnit: true
+    }
+  }
 } as const;
 
 const relatedTourSelect = {
@@ -49,7 +63,13 @@ const relatedTourSelect = {
   price: true,
   heroImage: true,
   gallery: true,
-  duration: true
+  duration: true,
+  translations: {
+    select: {
+      locale: true,
+      title: true
+    }
+  }
 } as const;
 
 const trimDescription = (value: string, max = 156) =>
@@ -76,23 +96,35 @@ export async function buildGoldenTourPageMetadata(goldSlug: string, locale: Loca
   const tour = await prisma.tour.findFirst({
     where: { slug: parsed.tourSlug, status: { in: PUBLIC_TOUR_STATUSES } },
     select: {
+      id: true,
       slug: true,
       title: true,
       shortDescription: true,
       description: true,
       price: true,
       heroImage: true,
-      gallery: true
+      gallery: true,
+      translations: {
+        where: { locale },
+        select: {
+          title: true,
+          shortDescription: true,
+          description: true
+        }
+      }
     }
   });
   if (!tour) {
     return { title: locale === "es" ? "Tour no encontrado" : locale === "fr" ? "Tour introuvable" : "Tour not found" };
   }
 
-  const title = fillGoldenTourText(parsed.intent.headline[locale], tour.title);
-  const keyword = fillGoldenTourText(parsed.intent.keyword[locale], tour.title);
+  const translation = tour.translations?.[0];
+  const localizedTitle = translation?.title ?? tour.title;
+  const localizedDescription = translation?.shortDescription ?? translation?.description ?? tour.shortDescription ?? tour.description;
+  const title = fillGoldenTourText(parsed.intent.headline[locale], localizedTitle);
+  const keyword = fillGoldenTourText(parsed.intent.keyword[locale], localizedTitle);
   const description = trimDescription(
-    `${parsed.intent.promise[locale]} Desde USD ${Math.round(tour.price)}. ${tour.shortDescription || tour.description}`
+    `${parsed.intent.promise[locale]} Desde USD ${Math.round(tour.price)}. ${localizedDescription}`
   );
   const canonicalPath = `${localePrefix(locale)}/punta-cana/tours/${goldSlug}`;
   const canonical = `${BASE_URL}${canonicalPath}`;
@@ -101,7 +133,7 @@ export async function buildGoldenTourPageMetadata(goldSlug: string, locale: Loca
   return {
     title: `${title} | Proactivitis`,
     description,
-    keywords: [keyword, "punta cana tours", tour.title, "excursiones punta cana"],
+    keywords: [keyword, "punta cana tours", localizedTitle, "excursiones punta cana"],
     alternates: {
       canonical,
       languages: {
@@ -148,14 +180,31 @@ export async function renderGoldenTourPage(goldSlug: string, locale: Locale) {
     orderBy: { createdAt: "desc" },
     take: 3
   });
+  const translation = tour.translations.find((entry) => entry.locale === locale);
+  const localizedTour = {
+    ...tour,
+    title: translation?.title ?? tour.title,
+    shortDescription: translation?.shortDescription ?? tour.shortDescription,
+    description: translation?.description ?? tour.description,
+    highlights: translation?.highlights ?? tour.highlights,
+    includesList: translation?.includesList ?? tour.includesList,
+    notIncludedList: translation?.notIncludedList ?? tour.notIncludedList
+  };
+  const localizedRelatedTours = relatedTours.map((related) => {
+    const relatedTranslation = related.translations.find((entry) => entry.locale === locale);
+    return {
+      ...related,
+      title: relatedTranslation?.title ?? related.title
+    };
+  });
 
   return (
     <GoldenTourLandingPage
       locale={locale}
-      tour={tour}
+      tour={localizedTour}
       intent={parsed.intent}
       pageSlug={goldSlug}
-      relatedTours={relatedTours}
+      relatedTours={localizedRelatedTours}
     />
   );
 }
