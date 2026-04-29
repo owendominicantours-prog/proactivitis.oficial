@@ -172,6 +172,94 @@ const parseGallery = (value?: string | null) => {
 const trimLong = (value: string, max = 520) =>
   value.length > max ? `${value.slice(0, max).trim()}...` : value;
 
+const parseJsonValue = (value?: string | null): unknown => {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return trimmed;
+  }
+};
+
+const formatTimeOption = (value: unknown) => {
+  if (typeof value === "string") return value.trim();
+  if (!value || typeof value !== "object") return "";
+  const item = value as { hour?: number | string; minute?: number | string; period?: string; label?: string; time?: string };
+  if (item.label) return item.label;
+  if (item.time) return item.time;
+  if (item.hour == null) return "";
+  const minute = item.minute == null ? "00" : String(item.minute).padStart(2, "0");
+  const period = item.period ? ` ${item.period}` : "";
+  return `${item.hour}:${minute}${period}`;
+};
+
+const formatSchedule = (value?: string | null) => {
+  const parsed = parseJsonValue(value);
+  if (Array.isArray(parsed)) {
+    return parsed.map(formatTimeOption).filter(Boolean).join(", ");
+  }
+  if (typeof parsed === "string") return parsed;
+  return "";
+};
+
+const dayNames: Record<Locale, Record<string, string>> = {
+  es: {
+    lunes: "Lunes",
+    martes: "Martes",
+    miercoles: "Miercoles",
+    jueves: "Jueves",
+    viernes: "Viernes",
+    sabado: "Sabado",
+    domingo: "Domingo"
+  },
+  en: {
+    lunes: "Monday",
+    martes: "Tuesday",
+    miercoles: "Wednesday",
+    jueves: "Thursday",
+    viernes: "Friday",
+    sabado: "Saturday",
+    domingo: "Sunday"
+  },
+  fr: {
+    lunes: "Lundi",
+    martes: "Mardi",
+    miercoles: "Mercredi",
+    jueves: "Jeudi",
+    viernes: "Vendredi",
+    sabado: "Samedi",
+    domingo: "Dimanche"
+  }
+};
+
+const everydayLabel: Record<Locale, string> = {
+  es: "Todos los dias",
+  en: "Every day",
+  fr: "Tous les jours"
+};
+
+const normalizeDayKey = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+const formatOperatingDays = (value: string | null | undefined, locale: Locale) => {
+  const parsed = parseJsonValue(value);
+  const days = Array.isArray(parsed)
+    ? parsed.map((item) => String(item).trim()).filter(Boolean)
+    : typeof parsed === "string"
+      ? splitTextList(parsed)
+      : [];
+  if (!days.length) return "";
+  const localized = days.map((day) => dayNames[locale][normalizeDayKey(day)] ?? day);
+  const unique = Array.from(new Set(localized));
+  if (unique.length >= 7) return everydayLabel[locale];
+  return unique.join(", ");
+};
+
 export default function TourMarketVariantLanding({ locale, tour, intent }: Props) {
   const t = copy[locale];
   const localePrefix = locale === "es" ? "" : `/${locale}`;
@@ -189,6 +277,8 @@ export default function TourMarketVariantLanding({ locale, tour, intent }: Props
   const intentCards = buildTourMarketIntentCards(intent, locale, tour.title, 0);
   const intentFaqs = buildTourMarketIntentFaqs(intent, locale, tour.title);
   const highlights = toTextList(tour.highlights);
+  const scheduleLabel = formatSchedule(tour.timeOptions);
+  const operatingDaysLabel = formatOperatingDays(tour.operatingDays, locale);
   const includes = toTextList(tour.includesList).length
     ? toTextList(tour.includesList)
     : toTextList(tour.includes).length
@@ -202,8 +292,8 @@ export default function TourMarketVariantLanding({ locale, tour, intent }: Props
     { label: t.category, value: tour.category },
     { label: t.language, value: tour.language },
     { label: t.pickup, value: tour.pickup },
-    { label: t.schedule, value: tour.timeOptions },
-    { label: t.days, value: tour.operatingDays },
+    { label: t.schedule, value: scheduleLabel },
+    { label: t.days, value: operatingDaysLabel },
     { label: t.capacity, value: tour.capacity ? `${tour.capacity}` : null },
     { label: t.minAge, value: tour.minAge ? `${tour.minAge}+` : null }
   ].filter((item) => Boolean(item.value)) as Array<{ label: string; value: string }>;
