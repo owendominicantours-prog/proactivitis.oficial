@@ -19,6 +19,7 @@ Sitemap: https://proactivitis.com/sitemap.xml
 Sitemap: https://proactivitis.com/sitemap-hotels.xml
 Sitemap: https://proactivitis.com/sitemap-transfers.xml
 Sitemap: https://proactivitis.com/sitemap-tour-variants.xml
+Sitemap: https://proactivitis.com/sitemap-golden-tour-pages.xml
 Sitemap: https://proactivitis.com/sitemap-things-to-do.xml
 Sitemap: https://proactivitis.com/sitemap-party-boat.xml
 Sitemap: https://proactivitis.com/sitemap-santo-domingo.xml
