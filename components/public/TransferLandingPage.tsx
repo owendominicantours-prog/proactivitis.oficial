@@ -340,6 +340,17 @@ export const localizeLanding = async (landing: TransferLandingData, locale: Loca
 export const buildCanonical = (slug: string, locale: Locale) =>
   locale === "es" ? `${BASE_URL}/transfer/${slug}` : `${BASE_URL}/${locale}/transfer/${slug}`;
 
+const toPujAirportAlias = (slug: string) =>
+  normalizeLoose(slug)
+    .replace("punta-cana-international-airport-to-", "punta-cana-international-airport-puj-to-")
+    .replace("-to-punta-cana-international-airport", "-to-punta-cana-international-airport-puj");
+
+const isAcceptedAirportAlias = (canonicalSlug: string, requestedSlug: string) => {
+  const canonical = normalizeLoose(canonicalSlug);
+  const requested = normalizeLoose(requestedSlug);
+  return requested === canonical || requested === toPujAirportAlias(canonical);
+};
+
 export const toAbsoluteImageUrl = (value?: string | null) => {
   if (!value) return `${BASE_URL}/transfer/suv.png`;
   if (value.startsWith("http://") || value.startsWith("https://")) return value;
@@ -1239,7 +1250,7 @@ export async function TransferLandingPage({
 
   const landing = await resolveLanding(landingSlug);
   if (!landing) return notFound();
-  if (landing.landingSlug !== landingSlug) {
+  if (!isAcceptedAirportAlias(landing.landingSlug, landingSlug)) {
     permanentRedirect(locale === "es" ? `/transfer/${landing.landingSlug}` : `/${locale}/transfer/${landing.landingSlug}`);
   }
   const localizedLanding = normalizeTextDeep(await localizeLanding(landing, locale));

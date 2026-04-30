@@ -32,20 +32,6 @@ export default withAuth(
     const currentLocaleCookie = req.cookies.get("proactivitis-language")?.value;
     const requestHeaders = new Headers(req.headers);
     requestHeaders.set("x-proactivitis-locale", locale);
-    const transferPrefix = "/transfer/punta-cana-international-airport-to-";
-    if (pathname.startsWith(transferPrefix)) {
-      const targetPath = pathname.replace(
-        transferPrefix,
-        "/transfer/punta-cana-international-airport-puj-to-"
-      );
-      const url = req.nextUrl.clone();
-      url.pathname = targetPath;
-      const response = NextResponse.redirect(url, 301);
-      if (currentLocaleCookie !== locale) {
-        response.cookies.set("proactivitis-language", locale, { path: "/", sameSite: "lax" });
-      }
-      return response;
-    }
     if (pathname === "/en/hoteles" || pathname.startsWith("/en/hoteles/")) {
       const url = req.nextUrl.clone();
       url.pathname = pathname.replace("/en/hoteles", "/en/hotels");
