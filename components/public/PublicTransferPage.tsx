@@ -46,7 +46,7 @@ export default async function PublicTransferPage({
   heroDescriptionOverride,
   heroImageOverride
 }: Props) {
-  const transfersV2Enabled = process.env.TRANSFERS_V2_ENABLED === "true";
+  const transfersV2Enabled = process.env.TRANSFERS_V2_ENABLED !== "false";
   const homeHref = locale === "es" ? "/" : `/${locale}`;
   const toursRootHref = locale === "es" ? "/tours" : `/${locale}/tours`;
   const hotelsRootHref = locale === "es" ? "/hoteles" : `/${locale}/hotels`;
@@ -181,7 +181,20 @@ export default async function PublicTransferPage({
         </div>
       </section>
 
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-10 px-4 py-10">
+      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-10 px-4 pb-10">
+        <section
+          id="transfer-search"
+          className="relative z-20 -mt-14 rounded-[36px] border border-slate-100 bg-white/95 p-3 shadow-2xl md:-mt-20 md:p-5"
+        >
+          <Suspense fallback={<div />}>
+            {transfersV2Enabled ? (
+              <TrasladoSearchV2 />
+            ) : (
+              <TrasladoSearch hotels={options} originPoints={originPoints} />
+            )}
+          </Suspense>
+        </section>
+
         <section className="rounded-[32px] border border-amber-300/30 bg-gradient-to-r from-[#1f2937] via-[#111827] to-[#0f172a] p-6 text-white shadow-xl">
           <p className="text-xs uppercase tracking-[0.35em] text-amber-200">
             {locale === "es" ? "Elite Collection" : locale === "fr" ? "Collection Elite" : "Elite Collection"}
@@ -243,16 +256,6 @@ export default async function PublicTransferPage({
               {locale === "es" ? "Ver en ProDiscovery" : locale === "fr" ? "Voir dans ProDiscovery" : "View in ProDiscovery"}
             </Link>
           </div>
-        </section>
-
-        <section id="transfer-search" className="rounded-[36px] border border-slate-100 bg-white/90 p-6 shadow-2xl">
-          <Suspense fallback={<div />}>
-            {transfersV2Enabled ? (
-              <TrasladoSearchV2 />
-            ) : (
-              <TrasladoSearch hotels={options} originPoints={originPoints} />
-            )}
-          </Suspense>
         </section>
 
         <section className="rounded-[32px] border border-slate-100 bg-white/90 p-8 shadow-lg">
