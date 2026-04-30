@@ -202,14 +202,14 @@ export default async function GeminiSeoFactoryAdminPage() {
                     </div>
                     <div className="flex flex-wrap gap-2 lg:justify-end">
                       <Link
-                        href={`/seo/${landing.slug}?preview=1`}
+                        href={`/punta-cana/${landing.slug}?preview=1`}
                         target="_blank"
                         className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
                       >
                         Preview
                       </Link>
                       <Link
-                        href={`/seo/${landing.slug}`}
+                        href={`/punta-cana/${landing.slug}`}
                         target="_blank"
                         className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
                       >

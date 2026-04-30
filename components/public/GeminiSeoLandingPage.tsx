@@ -16,6 +16,8 @@ import type { Locale } from "@/lib/translations";
 const BASE_URL = "https://proactivitis.com";
 
 const localePrefix = (locale: Locale) => (locale === "es" ? "" : `/${locale}`);
+export const geminiSeoPublicPath = (slug: string, locale: Locale) =>
+  `${localePrefix(locale)}/punta-cana/${slug}`;
 
 const absoluteUrl = (value?: string | null) => {
   if (!value) return `${BASE_URL}/transfer/sedan.png`;
@@ -80,7 +82,7 @@ export async function buildGeminiSeoLandingMetadata(slug: string, locale: Locale
   if (!landing) return {};
   const content = getContent(landing, locale);
   const prefix = localePrefix(locale);
-  const pageUrl = `${BASE_URL}${prefix}/seo/${landing.slug}`;
+  const pageUrl = `${BASE_URL}${geminiSeoPublicPath(landing.slug, locale)}`;
   const imageUrl = absoluteUrl(getDisplayImage(landing, content));
   const isPublished = landing.status === "published";
 
@@ -94,10 +96,10 @@ export async function buildGeminiSeoLandingMetadata(slug: string, locale: Locale
     alternates: {
       canonical: pageUrl,
       languages: {
-        es: `/seo/${landing.slug}`,
-        en: `/en/seo/${landing.slug}`,
-        fr: `/fr/seo/${landing.slug}`,
-        "x-default": `/seo/${landing.slug}`
+        es: geminiSeoPublicPath(landing.slug, "es"),
+        en: geminiSeoPublicPath(landing.slug, "en"),
+        fr: geminiSeoPublicPath(landing.slug, "fr"),
+        "x-default": geminiSeoPublicPath(landing.slug, "es")
       }
     },
     openGraph: {

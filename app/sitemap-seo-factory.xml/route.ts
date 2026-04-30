@@ -27,7 +27,7 @@ export async function GET() {
       const prefix = locale === "es" ? "" : `/${locale}`;
       const content = landing.locales[locale] ?? landing.locales.es;
       return {
-        loc: `${BASE_URL}${prefix}/seo/${landing.slug}`,
+        loc: `${BASE_URL}${prefix}/punta-cana/${landing.slug}`,
         lastmod: landing.publishedAt ?? landing.generatedAt,
         image: absoluteImage(content.image || landing.product.image),
         imageTitle: content.imageAlt || content.h1

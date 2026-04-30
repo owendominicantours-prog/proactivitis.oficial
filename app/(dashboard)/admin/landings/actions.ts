@@ -29,6 +29,9 @@ const revalidateGeminiSeoFactory = (slug?: string) => {
   revalidatePath("/sitemap-seo-factory.xml");
   revalidatePath("/sitemap-index.xml");
   if (slug) {
+    revalidatePath(`/punta-cana/${slug}`);
+    revalidatePath(`/en/punta-cana/${slug}`);
+    revalidatePath(`/fr/punta-cana/${slug}`);
     revalidatePath(`/seo/${slug}`);
     revalidatePath(`/en/seo/${slug}`);
     revalidatePath(`/fr/seo/${slug}`);

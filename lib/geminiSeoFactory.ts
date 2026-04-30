@@ -633,7 +633,7 @@ const buildSafeSchema = ({
   content: GeminiSeoLocaleContent;
 }) => {
   const prefix = locale === "es" ? "" : `/${locale}`;
-  const pageUrl = `${BASE_URL}${prefix}/seo/${landing.slug}`;
+  const pageUrl = `${BASE_URL}${prefix}/punta-cana/${landing.slug}`;
   const imageUrl = absoluteUrl(content.image || landing.product.image);
   const productNode =
     landing.type === "transfer"
