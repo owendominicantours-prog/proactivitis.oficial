@@ -370,6 +370,22 @@ export async function listPublishedGeminiSeoLandings() {
     .filter((item): item is GeminiSeoLandingRecord => Boolean(item && item.status === "published"));
 }
 
+export async function getGeminiSeoGeneratedTodayCount(now = new Date()) {
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 1);
+  const rows = await prisma.landingPage.findMany({
+    select: { body: true }
+  });
+  return rows
+    .map((row) => parseLandingRecord(row.body))
+    .filter((item): item is GeminiSeoLandingRecord => Boolean(item))
+    .filter((item) => {
+      const generatedAt = new Date(item.generatedAt);
+      return generatedAt >= start && generatedAt < end;
+    }).length;
+}
+
 const buildTourCandidates = async (limit: number, offset: number): Promise<GeminiSeoFactoryCandidate[]> => {
   const tours = await prisma.tour.findMany({
     where: { status: { in: ["published", "seo_only"] } },
@@ -865,11 +881,19 @@ export async function generateGeminiSeoLanding(candidate: GeminiSeoFactoryCandid
   return landing;
 }
 
-export async function runGeminiSeoFactoryBatch({ manualLimit }: { manualLimit?: number } = {}) {
+export async function runGeminiSeoFactoryBatch({
+  manualLimit,
+  transferLimitOverride,
+  tourLimitOverride
+}: {
+  manualLimit?: number;
+  transferLimitOverride?: number;
+  tourLimitOverride?: number;
+} = {}) {
   const config = await getGeminiSeoFactoryConfig();
   const limit = Math.max(1, Math.min(manualLimit ?? config.dailyLimit, config.dailyLimit, 50));
-  const transferLimit = Math.min(config.transferDailyLimit, limit);
-  const tourLimit = Math.min(config.tourDailyLimit, Math.max(0, limit - transferLimit));
+  const transferLimit = Math.min(transferLimitOverride ?? config.transferDailyLimit, limit);
+  const tourLimit = Math.min(tourLimitOverride ?? config.tourDailyLimit, Math.max(0, limit - transferLimit));
   const cursor = Math.max(0, config.cursor);
 
   if (!config.enabled && !manualLimit) {

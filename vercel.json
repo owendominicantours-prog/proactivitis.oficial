@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/gemini-seo-factory",
-      "schedule": "17 10 * * *"
+      "schedule": "0 * * * *"
     }
   ]
 }

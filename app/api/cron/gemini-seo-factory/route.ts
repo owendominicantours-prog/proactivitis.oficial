@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGeminiSeoFactoryConfig, runGeminiSeoFactoryBatch } from "@/lib/geminiSeoFactory";
+import {
+  getGeminiSeoFactoryConfig,
+  getGeminiSeoGeneratedTodayCount,
+  runGeminiSeoFactoryBatch
+} from "@/lib/geminiSeoFactory";
 
 export const maxDuration = 300;
 
@@ -25,6 +29,35 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, skipped: true, reason: "Gemini SEO Factory pausado." });
   }
 
-  const result = await runGeminiSeoFactoryBatch();
-  return NextResponse.json({ ok: true, result });
+  const generatedToday = await getGeminiSeoGeneratedTodayCount();
+  const remainingToday = Math.max(0, config.dailyLimit - generatedToday);
+  if (remainingToday <= 0) {
+    return NextResponse.json({
+      ok: true,
+      skipped: true,
+      reason: "Limite diario alcanzado.",
+      generatedToday,
+      dailyLimit: config.dailyLimit
+    });
+  }
+
+  const manualLimit = Math.min(2, remainingToday);
+  const transferLimitOverride = manualLimit === 1 && generatedToday % 2 === 1 ? 0 : 1;
+  const tourLimitOverride = Math.max(0, manualLimit - transferLimitOverride);
+  const result = await runGeminiSeoFactoryBatch({
+    manualLimit,
+    transferLimitOverride,
+    tourLimitOverride
+  });
+  return NextResponse.json({
+    ok: true,
+    generatedToday,
+    remainingToday,
+    requested: {
+      total: manualLimit,
+      transfer: transferLimitOverride,
+      tour: tourLimitOverride
+    },
+    result
+  });
 }
