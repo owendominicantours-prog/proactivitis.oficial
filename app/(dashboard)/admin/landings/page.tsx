@@ -497,6 +497,14 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
           Monitorea todos los slugs generados (manuales + dinámicos) y accede a ellos con un solo clic.
           Usa filtros por zona, estado o palabra clave para localizar cualquier landing aunque tengas millones.
         </p>
+        <div className="pt-3">
+          <Link
+            href="/admin/landings/seo-factory"
+            className="inline-flex rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-sm transition hover:bg-slate-800"
+          >
+            Abrir Gemini SEO Factory
+          </Link>
+        </div>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

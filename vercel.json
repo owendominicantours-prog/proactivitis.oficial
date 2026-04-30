@@ -5,8 +5,8 @@
       "schedule": "0 13 * * *"
     },
     {
-      "path": "/api/cron/schema-autopilot",
-      "schedule": "17 * * * *"
+      "path": "/api/cron/gemini-seo-factory",
+      "schedule": "17 10 * * *"
     }
   ]
 }

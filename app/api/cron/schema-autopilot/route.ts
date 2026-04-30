@@ -62,6 +62,13 @@ export async function GET(request: NextRequest) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
+  if (process.env.SCHEMA_AUTOPILOT_ENABLED !== "true") {
+    return NextResponse.json({
+      ok: true,
+      skipped: true,
+      reason: "Schema autopilot pausado. Gemini queda reservado para SEO Factory."
+    });
+  }
 
   const slugs = await listTransferSchemaCandidateSlugs();
   const jobs = slugs.flatMap((slug) => DEFAULT_LOCALES.map((locale) => ({ slug, locale })));

@@ -7,6 +7,7 @@ import { getNotificationUnreadCount, getNotificationsForRecipient } from "@/lib/
 const adminNav = [
   { label: "Dashboard", href: "/admin" },
   { label: "Landings", href: "/admin/landings" },
+  { label: "SEO Factory", href: "/admin/landings/seo-factory" },
   { label: "SEO", href: "/admin/seo" },
   { label: "Schema", href: "/admin/seo/schema" },
   { label: "Resorts", href: "/admin/resorts" },
