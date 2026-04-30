@@ -2,7 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { TransferLocationType } from "@prisma/client";
+import TrasladoSearchV2, { type LocationSummary } from "@/components/traslado/TrasladoSearchV2";
 import StructuredData from "@/components/schema/StructuredData";
+import { resolveLocationByAlias } from "@/components/public/TransferLandingPage";
 import {
   getGeminiSeoLanding,
   type GeminiSeoLandingRecord,
@@ -20,6 +23,55 @@ const absoluteUrl = (value?: string | null) => {
   return `${BASE_URL}${value.startsWith("/") ? value : `/${value}`}`;
 };
 
+const getDisplayImage = (landing: GeminiSeoLandingRecord, content: GeminiSeoLocaleContent) => {
+  if (landing.type === "transfer") return "/transfer/sedan.png";
+  const candidate = absoluteUrl(content.image || landing.product.image);
+  const normalized = candidate.toLowerCase();
+  if (
+    normalized.includes("google.com/url") ||
+    normalized.includes("gstatic.com") ||
+    normalized.includes("encrypted-tbn") ||
+    normalized.includes("placeholder")
+  ) {
+    return absoluteUrl(landing.product.image);
+  }
+  try {
+    const url = new URL(candidate);
+    if (url.hostname === "proactivitis.com" || url.hostname === "www.proactivitis.com") {
+      return decodeURI(url.pathname);
+    }
+  } catch {
+    return candidate;
+  }
+  return candidate;
+};
+
+const toLocationSummary = (location: Awaited<ReturnType<typeof resolveLocationByAlias>>): LocationSummary | null =>
+  location
+    ? {
+        id: location.id,
+        name: location.name,
+        slug: location.slug,
+        type: location.type,
+        zoneName: null
+      }
+    : null;
+
+const getTransferInitialLocations = async (landing: GeminiSeoLandingRecord) => {
+  if (landing.type !== "transfer") return { initialOrigin: null, initialDestination: null };
+  const [originSlugRaw, destinationSlugRaw] = landing.product.slug.includes("-to-")
+    ? landing.product.slug.split("-to-")
+    : ["puj-airport", landing.product.slug];
+  const [originLocation, destinationLocation] = await Promise.all([
+    resolveLocationByAlias(originSlugRaw || "puj-airport", TransferLocationType.AIRPORT),
+    resolveLocationByAlias(destinationSlugRaw || landing.product.slug)
+  ]);
+  return {
+    initialOrigin: toLocationSummary(originLocation),
+    initialDestination: toLocationSummary(destinationLocation)
+  };
+};
+
 const getContent = (landing: GeminiSeoLandingRecord, locale: Locale): GeminiSeoLocaleContent =>
   landing.locales[locale] ?? landing.locales.es;
 
@@ -29,7 +81,7 @@ export async function buildGeminiSeoLandingMetadata(slug: string, locale: Locale
   const content = getContent(landing, locale);
   const prefix = localePrefix(locale);
   const pageUrl = `${BASE_URL}${prefix}/seo/${landing.slug}`;
-  const imageUrl = absoluteUrl(content.image || landing.product.image);
+  const imageUrl = absoluteUrl(getDisplayImage(landing, content));
   const isPublished = landing.status === "published";
 
   return {
@@ -93,7 +145,8 @@ export default async function GeminiSeoLandingPage({
     landing.type === "transfer"
       ? `${prefix}${new URL(landing.product.url).pathname}`
       : `${prefix}${new URL(landing.product.url).pathname}`;
-  const imageUrl = absoluteUrl(content.image || landing.product.image);
+  const imageUrl = getDisplayImage(landing, content);
+  const { initialOrigin, initialDestination } = await getTransferInitialLocations(landing);
   const priceLabel =
     typeof landing.product.price === "number"
       ? `Desde $${Math.round(landing.product.price)}`
@@ -126,12 +179,12 @@ export default async function GeminiSeoLandingPage({
             </h1>
             <p className="mt-5 max-w-2xl text-lg font-medium leading-8 text-white/90">{content.intro}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href={productUrl}
+              <a
+                href={landing.type === "transfer" ? "#seo-transfer-quote" : productUrl}
                 className="rounded-full bg-sky-500 px-6 py-4 text-sm font-black text-white shadow-xl shadow-sky-950/30 transition hover:bg-sky-400"
               >
                 {content.ctaLabel}
-              </Link>
+              </a>
               <span className="rounded-full border border-white/25 bg-white/15 px-6 py-4 text-sm font-black text-white backdrop-blur">
                 {priceLabel}
               </span>
@@ -158,6 +211,38 @@ export default async function GeminiSeoLandingPage({
           </div>
         </div>
       </section>
+
+      {landing.type === "transfer" ? (
+        <section id="seo-transfer-quote" className="bg-slate-50 px-5 py-12 sm:px-8 lg:px-12">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-6 max-w-3xl">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-700">
+                {locale === "es" ? "Cotiza sin salir de la pagina" : locale === "fr" ? "Devis sans quitter la page" : "Quote without leaving"}
+              </p>
+              <h2 className="mt-2 text-3xl font-black text-slate-950">
+                {locale === "es"
+                  ? "Elige tu vehiculo y asegura el precio aqui mismo"
+                  : locale === "fr"
+                    ? "Choisissez votre vehicule et gardez le prix ici"
+                    : "Choose your vehicle and secure the price here"}
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                {locale === "es"
+                  ? "No mandamos al viajero a otra pagina para descubrir el precio. La cotizacion, el regreso y el checkout empiezan aqui."
+                  : locale === "fr"
+                    ? "Le voyageur voit le prix, le retour et la prochaine etape ici, sans friction."
+                    : "The traveler sees price, return option, and the next step here without extra friction."}
+              </p>
+            </div>
+            <TrasladoSearchV2
+              initialOrigin={initialOrigin}
+              initialDestination={initialDestination}
+              initialPassengers={2}
+              autoQuote={Boolean(initialOrigin && initialDestination)}
+            />
+          </div>
+        </section>
+      ) : null}
 
       <section className="mx-auto grid max-w-7xl gap-8 px-5 py-14 sm:px-8 lg:grid-cols-[1fr_360px] lg:px-12">
         <div className="space-y-8">
@@ -206,7 +291,7 @@ export default async function GeminiSeoLandingPage({
               <h3 className="text-xl font-black text-slate-950">{landing.product.title}</h3>
               <p className="text-sm leading-6 text-slate-600">{content.metaDescription}</p>
               <Link
-                href={productUrl}
+                href={landing.type === "transfer" ? "#seo-transfer-quote" : productUrl}
                 className="block rounded-2xl bg-slate-950 px-5 py-4 text-center text-sm font-black text-white transition hover:bg-slate-800"
               >
                 {content.ctaLabel}
