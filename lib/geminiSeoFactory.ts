@@ -271,7 +271,17 @@ const extractSources = (data: GeminiApiResponse) => {
 const parseJsonFromText = (text: string) => {
   const direct = text.trim();
   const fenced = direct.match(/```json\s*([\s\S]+?)```/i)?.[1] ?? direct.match(/```\s*([\s\S]+?)```/i)?.[1];
-  return JSON.parse((fenced ?? direct).trim()) as Record<string, unknown>;
+  const payload = (fenced ?? direct).trim();
+  try {
+    return JSON.parse(payload) as Record<string, unknown>;
+  } catch {
+    const start = payload.indexOf("{");
+    const end = payload.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      return JSON.parse(payload.slice(start, end + 1)) as Record<string, unknown>;
+    }
+    throw new Error("Gemini no devolvio JSON valido para la landing.");
+  }
 };
 
 const safeString = (value: unknown, fallback = "") => (typeof value === "string" ? value.trim() : fallback);
@@ -523,8 +533,7 @@ const callGemini = async (candidate: GeminiSeoFactoryCandidate) => {
       ],
       tools: [{ google_search: {} }],
       generationConfig: {
-        temperature: 0.35,
-        responseMimeType: "application/json"
+        temperature: 0.35
       }
     })
   });
@@ -894,14 +903,20 @@ export async function runGeminiSeoFactoryBatch({ manualLimit }: { manualLimit?: 
       if (landing.status === "draft") result.drafted += 1;
       if (landing.status === "rejected") result.rejected += 1;
     } catch (error) {
-      result.errors.push(
-        `${candidate.type}:${candidate.product.slug}:${error instanceof Error ? error.message : "unknown_error"}`
-      );
+      const detail = error instanceof Error ? error.message : "unknown_error";
+      result.errors.push(`${candidate.type}:${candidate.product.slug}:${detail}`);
+      if (
+        detail.includes("RESOURCE_EXHAUSTED") ||
+        detail.includes("Quota exceeded") ||
+        detail.includes("exceeded your current quota")
+      ) {
+        break;
+      }
     }
   }
 
   await saveGeminiSeoFactoryConfig({
-    cursor: cursor + candidates.length,
+    cursor: cursor + result.generated,
     lastRunAt: new Date().toISOString(),
     lastResult: result
   });

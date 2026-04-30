@@ -149,6 +149,16 @@ export default async function GeminiSeoFactoryAdminPage() {
                 {config.lastResult.generated} generadas, {config.lastResult.published} publicadas,{" "}
                 {config.lastResult.drafted} draft.
               </p>
+              {config.lastResult.errors.length > 0 ? (
+                <div className="mt-3 rounded-xl border border-rose-300/30 bg-rose-500/10 p-3 text-xs leading-5 text-rose-100">
+                  <p className="font-black">Errores del ultimo lote</p>
+                  <ul className="mt-2 space-y-1">
+                    {config.lastResult.errors.slice(0, 3).map((error) => (
+                      <li key={error}>{error.slice(0, 260)}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
             </div>
           ) : null}
         </div>
