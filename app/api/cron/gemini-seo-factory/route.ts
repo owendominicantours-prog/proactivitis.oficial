@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGeminiSeoFactoryConfig, runGeminiSeoFactoryBatch } from "@/lib/geminiSeoFactory";
 
+export const maxDuration = 300;
+
 const getBearerToken = (request: NextRequest) => {
   const header = request.headers.get("authorization") ?? "";
   const match = header.match(/^Bearer\s+(.+)$/i);

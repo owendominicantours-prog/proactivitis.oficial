@@ -886,7 +886,13 @@ export async function runGeminiSeoFactoryBatch({ manualLimit }: { manualLimit?: 
     buildTransferCandidates(transferLimit, cursor),
     buildTourCandidates(tourLimit, cursor)
   ]);
-  const candidates = [...transferCandidates, ...tourCandidates].slice(0, limit);
+  const candidates: GeminiSeoFactoryCandidate[] = [];
+  const maxCandidateLength = Math.max(transferCandidates.length, tourCandidates.length);
+  for (let index = 0; index < maxCandidateLength; index += 1) {
+    if (transferCandidates[index]) candidates.push(transferCandidates[index]);
+    if (tourCandidates[index]) candidates.push(tourCandidates[index]);
+  }
+  const selectedCandidates = candidates.slice(0, limit);
   const result = {
     generated: 0,
     published: 0,
@@ -895,16 +901,28 @@ export async function runGeminiSeoFactoryBatch({ manualLimit }: { manualLimit?: 
     errors: [] as string[]
   };
 
-  for (const candidate of candidates) {
+  const persistProgress = async () => {
+    await saveGeminiSeoFactoryConfig({
+      cursor: cursor + result.generated,
+      lastRunAt: new Date().toISOString(),
+      lastResult: result
+    });
+  };
+
+  await persistProgress();
+
+  for (const candidate of selectedCandidates) {
     try {
       const landing = await generateGeminiSeoLanding(candidate, config.autoPublish);
       result.generated += 1;
       if (landing.status === "published") result.published += 1;
       if (landing.status === "draft") result.drafted += 1;
       if (landing.status === "rejected") result.rejected += 1;
+      await persistProgress();
     } catch (error) {
       const detail = error instanceof Error ? error.message : "unknown_error";
       result.errors.push(`${candidate.type}:${candidate.product.slug}:${detail}`);
+      await persistProgress();
       if (
         detail.includes("RESOURCE_EXHAUSTED") ||
         detail.includes("Quota exceeded") ||
@@ -915,10 +933,6 @@ export async function runGeminiSeoFactoryBatch({ manualLimit }: { manualLimit?: 
     }
   }
 
-  await saveGeminiSeoFactoryConfig({
-    cursor: cursor + result.generated,
-    lastRunAt: new Date().toISOString(),
-    lastResult: result
-  });
+  await persistProgress();
   return result;
 }

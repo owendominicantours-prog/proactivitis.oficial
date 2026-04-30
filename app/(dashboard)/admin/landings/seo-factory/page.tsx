@@ -8,6 +8,8 @@ import {
 } from "../actions";
 import { getGeminiSeoFactoryConfig, listGeminiSeoLandings } from "@/lib/geminiSeoFactory";
 
+export const maxDuration = 300;
+
 const statusStyles = {
   published: "bg-emerald-100 text-emerald-800 border-emerald-200",
   draft: "bg-amber-100 text-amber-800 border-amber-200",
