@@ -1,12 +1,10 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import TrasladoSearch, { LocationOption } from "@/components/traslado/TrasladoSearch";
+import TrasladoSearchV2, { type LocationSummary } from "@/components/traslado/TrasladoSearchV2";
+import { resolveLocationByAlias } from "@/components/public/TransferLandingPage";
 import { prisma } from "@/lib/prisma";
-import { getSiteDateTimeInputValue } from "@/lib/site-date";
-import { getTransferPointsForCountry } from "@/lib/transfers";
 
-const BASE_ORIGIN_CODE = "PUJ";
 const BASE_ORIGIN_LABEL = "Aeropuerto de Punta Cana (PUJ)";
 
 const HOTEL_INCLUDE = {
@@ -26,13 +24,6 @@ const buildTrasladoSeoText = (hotelName: string) => {
   const paragraphThree = `El estilo ${keywords[3]} combina confort, limpieza y conectividad con tu hotel favorito. Cambia vuelos, actualiza datos y mantente en control del traslado.`;
   const paragraphFour = `Selecciona el ${keywords[2]} desde el formulario y veras la tarifa transparente para Sedan, Van y SUV. Confirma y el ${keywords[1]} seguira el itinerario exacto.`;
   return [paragraphOne, paragraphTwo, paragraphThree, paragraphFour].join("\n\n");
-};
-
-const getDefaultDateTime = () => {
-  const date = new Date();
-  date.setMinutes(0, 0, 0);
-  date.setHours(date.getHours() + 2);
-  return getSiteDateTimeInputValue(date);
 };
 
 const findHotelBySlug = async (slug: string | null) => {
@@ -60,6 +51,19 @@ const findHotelBySlug = async (slug: string | null) => {
 
   return hotel;
 };
+
+const toLocationSummary = (
+  location: Awaited<ReturnType<typeof resolveLocationByAlias>>
+): LocationSummary | null =>
+  location
+    ? {
+        id: location.id,
+        name: location.name,
+        slug: location.slug,
+        type: location.type,
+        zoneName: null
+      }
+    : null;
 
 export async function generateMetadata({
   params
@@ -114,46 +118,15 @@ export default async function HotelTrasladoPage({ params }: TrasladoPageProps) {
     notFound();
   }
 
-  const hotelOptions = await prisma.location.findMany({
-    where: { countryId: "RD", authorized: true },
-    orderBy: { name: "asc" },
-    select: {
-      name: true,
-      slug: true,
-      destination: { select: { name: true } },
-      microZone: { select: { name: true, slug: true } },
-    }
-  });
-
-  const transferDestinations = await prisma.transferDestination.findMany({
-    where: {
-      zone: {
-        countryCode: "RD"
-      }
-    },
-    select: {
-      id: true,
-      slug: true
-    }
-  });
-  const destinationMap = new Map(transferDestinations.map((destination) => [destination.slug, destination.id]));
-
-  const options: LocationOption[] = hotelOptions.map((item) => ({
-    name: item.name,
-    slug: item.slug,
-    destinationName: item.destination?.name ?? null,
-    microZoneName: item.microZone?.name ?? null,
-    microZoneSlug: item.microZone?.slug ?? null,
-    transferDestinationId: destinationMap.get(item.slug) ?? null
-  }));
-
-  const originPoints = await getTransferPointsForCountry("RD");
-  const baseOriginPoint =
-    originPoints.find((point) => point.code === BASE_ORIGIN_CODE) ?? originPoints[0] ?? null;
+  const [originLocation, destinationLocation] = await Promise.all([
+    resolveLocationByAlias("puj-airport"),
+    resolveLocationByAlias(hotel.slug)
+  ]);
+  const initialOrigin = toLocationSummary(originLocation);
+  const initialDestination = toLocationSummary(destinationLocation);
 
   const seoCopy = buildTrasladoSeoText(hotel.name);
   const seoParagraphs = seoCopy.split("\n\n");
-  const defaultDateTime = getDefaultDateTime();
 
   return (
     <div className="travel-surface">
@@ -170,15 +143,10 @@ export default async function HotelTrasladoPage({ params }: TrasladoPageProps) {
 
       <main className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-10">
         <section className="rounded-[32px] border border-slate-100 bg-white/90 p-6 shadow-2xl">
-          <TrasladoSearch
-            hotels={options}
-            originPoints={originPoints}
-            initialHotelSlug={hotel.slug}
-            initialOriginPointSlug={baseOriginPoint?.slug ?? undefined}
-            initialOriginCode={BASE_ORIGIN_CODE}
-            initialOriginLabel={BASE_ORIGIN_LABEL}
-            initialDateTime={defaultDateTime}
-            autoShowResults
+          <TrasladoSearchV2
+            initialOrigin={initialOrigin}
+            initialDestination={initialDestination}
+            autoQuote={Boolean(initialOrigin && initialDestination)}
           />
         </section>
 

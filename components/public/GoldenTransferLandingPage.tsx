@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Car, CheckCircle2, Clock, Luggage, MessageCircle, Plane, ShieldCheck } from "lucide-react";
 import StructuredData from "@/components/schema/StructuredData";
 import type { TransferLandingData } from "@/data/transfer-landings";
+import TrasladoSearchV2, { type LocationSummary } from "@/components/traslado/TrasladoSearchV2";
+import { resolveLocationByAlias } from "@/components/public/TransferLandingPage";
 import {
   fillGoldenTransferText,
   type GoldenTransferIntent
@@ -110,13 +112,34 @@ const directionLabel = (direction: GoldenTransferIntent["direction"], locale: Lo
   return t.arrival;
 };
 
-export default function GoldenTransferLandingPage({ locale, landing, intent, pageSlug }: Props) {
+const toLocationSummary = (
+  location: Awaited<ReturnType<typeof resolveLocationByAlias>>
+): LocationSummary | null =>
+  location
+    ? {
+        id: location.id,
+        name: location.name,
+        slug: location.slug,
+        type: location.type,
+        zoneName: null
+      }
+    : null;
+
+export default async function GoldenTransferLandingPage({ locale, landing, intent, pageSlug }: Props) {
   const t = copy[locale];
   const prefix = localePrefix(locale);
   const headline = fillGoldenTransferText(intent.headline[locale], landing.hotelName);
   const keyword = fillGoldenTransferText(intent.keyword[locale], landing.hotelName);
   const targetSlug = intent.direction === "return" ? landing.reverseSlug : landing.landingSlug;
-  const bookingHref = `${prefix}/transfer/${targetSlug}`;
+  const bookingHref = "#transfer-quote-cards";
+  const [originSlug, destinationSlug] = targetSlug.split("-to-");
+  const [originLocation, destinationLocation] =
+    originSlug && destinationSlug
+      ? await Promise.all([resolveLocationByAlias(originSlug), resolveLocationByAlias(destinationSlug)])
+      : [null, null];
+  const initialOrigin = toLocationSummary(originLocation);
+  const initialDestination = toLocationSummary(destinationLocation);
+  const canQuote = Boolean(initialOrigin && initialDestination);
   const pageUrl = `${BASE_URL}${prefix}/punta-cana/transfer/${pageSlug}`;
   const whatsappText = encodeURIComponent(`${headline} - ${pageUrl}`);
   const whatsappHref = `https://wa.me/18293939757?text=${whatsappText}`;
@@ -262,6 +285,34 @@ export default function GoldenTransferLandingPage({ locale, landing, intent, pag
             <p className="mt-2 text-base font-black text-slate-950">{fact.value}</p>
           </article>
         ))}
+      </section>
+
+      <section id="transfer-quote-cards" className="mx-auto max-w-6xl px-4 pb-8">
+        <div className="mb-5">
+          <p className="text-xs font-black uppercase tracking-[0.28em] text-sky-700">{keyword}</p>
+          <h2 className="mt-2 text-3xl font-black text-slate-950">
+            {locale === "es"
+              ? `Cotiza ${landing.hotelName} con precio real`
+              : locale === "fr"
+                ? `Devis reel pour ${landing.hotelName}`
+                : `Real quote for ${landing.hotelName}`}
+          </h2>
+        </div>
+        {canQuote ? (
+          <TrasladoSearchV2
+            initialOrigin={initialOrigin}
+            initialDestination={initialDestination}
+            autoQuote
+          />
+        ) : (
+          <div className="rounded-[28px] border border-amber-200 bg-amber-50 p-5 text-sm font-semibold text-amber-900">
+            {locale === "es"
+              ? "Esta ruta se esta preparando para cotizacion automatica. Entra a la landing principal para elegir tu hotel."
+              : locale === "fr"
+                ? "Cette route est en preparation pour le devis automatique. Ouvrez la landing principale pour choisir votre hotel."
+                : "This route is being prepared for automatic quoting. Open the main landing to choose your hotel."}
+          </div>
+        )}
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-6 px-4 py-4 lg:grid-cols-[1fr_0.85fr]">

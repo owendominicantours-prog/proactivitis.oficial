@@ -13,7 +13,7 @@ import {
   parseTransferHotelVariantSlug,
   TRANSFER_HOTEL_SALES_VARIANTS
 } from "@/data/transfer-hotel-sales-variants";
-import TransferQuoteCards from "@/components/transfers/TransferQuoteCards";
+import TrasladoSearchV2, { type LocationSummary } from "@/components/traslado/TrasladoSearchV2";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 import StructuredData from "@/components/schema/StructuredData";
 import { translateEntries, translateText } from "@/lib/translationService";
@@ -749,11 +749,6 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
   };
 }
 
-const formatDateTime = (date: Date) => {
-  const iso = date.toISOString();
-  return iso.slice(0, 16);
-};
-
 const buildGenericTransferHighlights = (keyword: string, locale: Locale) => {
   if (locale === "en") {
     return [
@@ -1267,6 +1262,24 @@ export async function TransferLandingPage({
   const originLabel = originLocation?.name ?? DEFAULT_AIRPORT_NAME;
   const destinationLabel = destinationLocation?.name ?? localizedLanding.hotelName;
   const canQuote = Boolean(originLocation?.id && destinationLocation?.id);
+  const initialOrigin: LocationSummary | null = originLocation
+    ? {
+        id: originLocation.id,
+        name: originLocation.name,
+        slug: originLocation.slug,
+        type: originLocation.type,
+        zoneName: null
+      }
+    : null;
+  const initialDestination: LocationSummary | null = destinationLocation
+    ? {
+        id: destinationLocation.id,
+        name: destinationLocation.name,
+        slug: destinationLocation.slug,
+        type: destinationLocation.type,
+        zoneName: null
+      }
+    : null;
   const marketTitles = buildMarketTransferTitles(
     locale,
     localizedLanding.hotelName,
@@ -1278,7 +1291,6 @@ export async function TransferLandingPage({
   const hotelThingsToDoHref =
     locale === "es" ? `/things-to-do/${landing.hotelSlug}` : `/${locale}/things-to-do/${landing.hotelSlug}`;
 
-  const defaultDeparture = formatDateTime(new Date(Date.now() + 2 * 60 * 60 * 1000));
   const salesCards = buildTransferSalesCards(
     locale,
     localizedLanding.hotelName,
@@ -1691,16 +1703,10 @@ export async function TransferLandingPage({
           </p>
         </div>
         {canQuote ? (
-          <TransferQuoteCards
-            originId={originLocation!.id}
-            destinationId={destinationLocation!.id}
-            originSlug={originLocation!.slug}
-            destinationSlug={destinationLocation!.slug}
-            originLabel={originLabel}
-            destinationLabel={destinationLabel}
-            defaultDeparture={defaultDeparture}
-            priceFrom={localizedLanding.priceFrom}
-            locale={locale}
+          <TrasladoSearchV2
+            initialOrigin={initialOrigin}
+            initialDestination={initialDestination}
+            autoQuote
           />
         ) : (
           <div className="mt-4 rounded-[28px] border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">

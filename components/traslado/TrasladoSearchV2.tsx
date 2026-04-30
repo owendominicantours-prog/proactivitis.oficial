@@ -24,7 +24,7 @@ const TRUST_BULLETS = [
   "transfer.search.trust.freeCancellation"
 ] as const;
 
-type LocationSummary = {
+export type LocationSummary = {
   id: string;
   name: string;
   slug: string;
@@ -42,18 +42,31 @@ type QuoteVehicle = {
   imageUrl?: string | null;
 };
 
-export default function TrasladoSearchV2() {
+type TrasladoSearchV2Props = {
+  initialOrigin?: LocationSummary | null;
+  initialDestination?: LocationSummary | null;
+  initialPassengers?: number;
+  autoQuote?: boolean;
+};
+
+export default function TrasladoSearchV2({
+  initialOrigin = null,
+  initialDestination = null,
+  initialPassengers = 2,
+  autoQuote = false
+}: TrasladoSearchV2Props) {
   const { t } = useTranslation();
-  const [originQuery, setOriginQuery] = useState("");
-  const [destinationQuery, setDestinationQuery] = useState("");
+  const normalizedInitialPassengers = Math.max(1, initialPassengers);
+  const [originQuery, setOriginQuery] = useState(initialOrigin?.name ?? "");
+  const [destinationQuery, setDestinationQuery] = useState(initialDestination?.name ?? "");
   const [originOptions, setOriginOptions] = useState<LocationSummary[]>([]);
   const [destinationOptions, setDestinationOptions] = useState<LocationSummary[]>([]);
   const [originLoading, setOriginLoading] = useState(false);
   const [destinationLoading, setDestinationLoading] = useState(false);
-  const [selectedOrigin, setSelectedOrigin] = useState<LocationSummary | null>(null);
-  const [selectedDestination, setSelectedDestination] = useState<LocationSummary | null>(null);
-  const [passengers, setPassengers] = useState(2);
-  const [passengersInput, setPassengersInput] = useState("2");
+  const [selectedOrigin, setSelectedOrigin] = useState<LocationSummary | null>(initialOrigin);
+  const [selectedDestination, setSelectedDestination] = useState<LocationSummary | null>(initialDestination);
+  const [passengers, setPassengers] = useState(normalizedInitialPassengers);
+  const [passengersInput, setPassengersInput] = useState(String(normalizedInitialPassengers));
   const [departureDate, setDepartureDate] = useState("");
   const [departureTime, setDepartureTime] = useState("");
   const [returnDate, setReturnDate] = useState("");
@@ -72,6 +85,7 @@ export default function TrasladoSearchV2() {
   const destinationRef = useRef<HTMLDivElement | null>(null);
   const quoteRef = useRef<HTMLElement | null>(null);
   const searchPanelRef = useRef<HTMLDivElement | null>(null);
+  const autoQuoteDoneRef = useRef(false);
   const [exitModalOpen, setExitModalOpen] = useState(false);
   const [exitModalDismissed, setExitModalDismissed] = useState(false);
   const [pendingExitHref, setPendingExitHref] = useState<string | null>(null);
@@ -220,6 +234,14 @@ export default function TrasladoSearchV2() {
       setQuoteLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!autoQuote || autoQuoteDoneRef.current || !selectedOrigin || !selectedDestination) {
+      return;
+    }
+    autoQuoteDoneRef.current = true;
+    void handleQuote();
+  }, [autoQuote, selectedOrigin, selectedDestination]);
 
   const originDisplay = useMemo(() => selectedOrigin?.name ?? originQuery, [selectedOrigin, originQuery]);
   const destinationDisplay = useMemo(

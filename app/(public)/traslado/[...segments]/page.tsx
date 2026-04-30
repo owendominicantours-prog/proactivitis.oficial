@@ -7,6 +7,7 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getTransferPrice, resolveZoneId } from "@/data/traslado-pricing";
 import StructuredData from "@/components/schema/StructuredData";
+import TrasladoSearchV2 from "@/components/traslado/TrasladoSearchV2";
 import {
   ECUADOR_SUPPORT_EMAIL,
   ECUADOR_SUPPORT_PHONE,
@@ -330,7 +331,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
   const homeLabel = LOCALE === "en" ? "Home" : LOCALE === "fr" ? "Accueil" : "Inicio";
   const toursCtaLabel =
     LOCALE === "en" ? "See tours and experiences" : LOCALE === "fr" ? "Voir tours et experiences" : "Ver tours y experiencias";
-  const callToAction = basePath;
+  const callToAction = "#transfer-search";
   const toursPath = LOCALE === "es" ? "/tours" : `/${LOCALE}/tours`;
   const homeHref = LOCALE === "es" ? PROACTIVITIS_URL : `${PROACTIVITIS_URL}/${LOCALE}`;
   const breadcrumbItems = [
@@ -585,6 +586,10 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       </section>
 
       <main className="mx-auto flex max-w-6xl flex-col gap-12 px-4 py-10">
+        <section id="transfer-search" className="rounded-[36px] border border-slate-100 bg-white/95 p-3 shadow-2xl md:p-5">
+          <TrasladoSearchV2 />
+        </section>
+
         {level === "country" && (
           <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
