@@ -87,9 +87,6 @@ export default async function TransfersAdminPage() {
     }
   });
 
-  const landingLinks = Array.from(landingLinkMap.entries()).sort(([slugA], [slugB]) =>
-    slugA.localeCompare(slugB)
-  );
   const activeVehicles = vehicles.filter((vehicle) => vehicle.active);
   const activeLocations = locations.filter((location) => location.active);
   const hotelLocations = activeLocations.filter((location) => location.type === TransferLocationType.HOTEL);
@@ -217,36 +214,6 @@ export default async function TransfersAdminPage() {
           </div>
         ) : null}
       </section>
-
-      <CollapsibleSection
-        title="Landing pages"
-        description="Convierte cualquier slug de transfers en landing pública y revisa el tráfico."
-        badge={`${landingLinks.length} disponibles`}
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Landing pages</p>
-            <h2 className="text-lg font-semibold text-slate-900">Copias públicas disponibles</h2>
-          </div>
-          <p className="text-xs text-slate-500">
-            Pulsa para abrir la landing correspondiente en producción (mismo slug que Google ya indexó).
-          </p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {landingLinks.map(([slug, label]) => (
-            <a
-              key={slug}
-              href={`https://proactivitis.com/transfer/${slug}`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex flex-col gap-2 rounded-2xl border border-slate-100 bg-white/60 p-4 text-sm text-slate-600 transition hover:border-slate-400 hover:shadow-lg"
-            >
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">/transfer/{slug}</p>
-              <p className="font-semibold text-slate-900">{label}</p>
-            </a>
-          ))}
-        </div>
-      </CollapsibleSection>
 
       <CollapsibleSection
         title="Países"
