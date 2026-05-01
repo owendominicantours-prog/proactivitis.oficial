@@ -97,6 +97,7 @@ const requestOptions: RequestInfoOption[] = [
 const statusColors: Record<string, string> = {
   CONFIRMED: "bg-emerald-100 text-emerald-800 border-emerald-200",
   PENDING: "bg-amber-100 text-amber-700 border-amber-200",
+  CANCELLATION_REQUESTED: "bg-orange-100 text-orange-700 border-orange-200",
   CANCELLED: "bg-rose-100 text-rose-700 border-rose-200",
   PAYMENT_PENDING: "bg-amber-100 text-amber-700 border-amber-200",
   COMPLETED: "bg-slate-100 text-slate-700 border-slate-200"
@@ -106,6 +107,7 @@ const statusOptions = [
   { label: "Pendiente", value: "PENDING" },
   { label: "Confirmado", value: "CONFIRMED" },
   { label: "Pago pendiente", value: "PAYMENT_PENDING" },
+  { label: "Cancelación solicitada", value: "CANCELLATION_REQUESTED" },
   { label: "Cancelado", value: "CANCELLED" },
   { label: "Completado", value: "COMPLETED" }
 ];
@@ -348,6 +350,7 @@ export function SupplierBookingList({ bookings }: Props) {
     }
     try {
       await sendSupplierAction(booking.id, { action: "requestCancel", reason: reason.trim() });
+      setStatusOverrides((prev) => ({ ...prev, [booking.id]: "CANCELLATION_REQUESTED" }));
       addFeedback(booking.id, "Solicitud de cancelación enviada al equipo.");
     } catch (error) {
       addFeedback(booking.id, (error as Error).message);
