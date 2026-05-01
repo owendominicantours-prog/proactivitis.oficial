@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type ReserveFloatingButtonProps = {
   targetId: string;
@@ -15,39 +15,24 @@ export default function ReserveFloatingButton({
   label,
   buttonLabel
 }: ReserveFloatingButtonProps) {
-  const [isVisible, setIsVisible] = useState(false);
   const [hiddenAfterClick, setHiddenAfterClick] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const shouldShow = window.scrollY > 200;
-      if (window.scrollY < 200 && hiddenAfterClick) {
-        setHiddenAfterClick(false);
-      }
-      setIsVisible(shouldShow && !hiddenAfterClick);
-    };
-    handleScroll();
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [hiddenAfterClick]);
-
-  if (!isVisible) return null;
+  if (hiddenAfterClick) return null;
 
   const scroll = () => {
     document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
     setHiddenAfterClick(true);
-    setIsVisible(false);
   };
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-50 flex items-center justify-between gap-3 rounded-2xl bg-white/90 px-4 py-3 shadow-2xl shadow-slate-900/30 backdrop-blur lg:hidden">
-      <div>
-        <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{label ?? "Desde"}</p>
-        <p className="text-lg font-semibold text-slate-900">{priceLabel ?? "Consultar precio"}</p>
+    <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between gap-4 rounded-t-[28px] border-t border-slate-200 bg-white px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 shadow-[0_-14px_35px_rgba(15,23,42,0.18)] lg:hidden">
+      <div className="min-w-0">
+        <p className="text-base font-semibold leading-5 text-slate-900">{label ?? "Desde"}</p>
+        <p className="text-2xl font-black leading-7 text-slate-950">{priceLabel ?? "Consultar precio"}</p>
+        <p className="text-sm font-semibold leading-4 text-slate-700">por persona</p>
       </div>
       <button
         onClick={scroll}
-        className="rounded-full bg-sky-600 px-5 py-2 text-sm font-semibold uppercase text-white transition hover:bg-sky-500"
+        className="min-h-14 shrink-0 rounded-full bg-sky-600 px-7 py-3 text-base font-black text-white shadow-lg shadow-sky-600/25 transition hover:bg-sky-500"
       >
         {buttonLabel ?? "Reserva"}
       </button>

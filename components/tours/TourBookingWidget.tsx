@@ -83,7 +83,6 @@ const WEEKDAY_ALIASES: Record<string, WeekdayKey> = {
   wednesday: "wednesday",
   miercoles: "wednesday",
   miércoles: "wednesday",
-  "mi?rcoles": "wednesday",
   mie: "wednesday",
   thu: "thursday",
   thur: "thursday",
@@ -98,7 +97,6 @@ const WEEKDAY_ALIASES: Record<string, WeekdayKey> = {
   saturday: "saturday",
   sabado: "saturday",
   sábado: "saturday",
-  "s?bado": "saturday",
   sab: "saturday"
 };
 
@@ -456,7 +454,7 @@ export function TourBookingWidget({
     <div className="relative w-full max-w-sm space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-md">
       {resolvedOptions.length > 0 && (
         <div className="space-y-2">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-slate-500">Opcion</p>
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-slate-500">Opción</p>
           <div className="space-y-2">
             {resolvedOptions.map((option) => {
               const optionPricing = resolveOptionPricing(option, totalTravelers, basePrice);
@@ -503,7 +501,7 @@ export function TourBookingWidget({
                       {disabledForDate ? (
                         <p className="mt-0.5 text-[10px] font-semibold text-rose-600">
                           {option.unavailableReason ||
-                            "Esta opcion no opera en la fecha seleccionada."}
+                            "Esta opción no opera en la fecha seleccionada."}
                         </p>
                       ) : null}
                     </div>
@@ -525,7 +523,7 @@ export function TourBookingWidget({
         <p className="text-3xl font-semibold text-slate-900">
           ${priceHeaderValue.toFixed(2)} <span className="text-xs font-normal text-slate-500">USD</span>
         </p>
-        <p className="text-xs text-slate-600">{priceHeaderNote} - Confirmacion inmediata</p>
+        <p className="text-xs text-slate-600">{priceHeaderNote} - Confirmación inmediata</p>
       </div>
 
       {/* ESTIMATED TOTAL */}
@@ -598,7 +596,7 @@ export function TourBookingWidget({
 
       {!operatingDayBlocked && date && selectedWeekday && !selectedOptionAvailable ? (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          La opcion elegida no opera ese dia. Cambia de ticket o elige una fecha compatible.
+          La opción elegida no opera ese día. Cambia de ticket o elige una fecha compatible.
         </div>
       ) : null}
 
@@ -672,35 +670,6 @@ export function TourBookingWidget({
       >
         Check availability
       </button>
-
-      {/* BENEFITS */}
-      <div className="space-y-2 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-3 text-xs text-slate-800">
-        <div className="flex items-start gap-2">
-          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[0.65rem] text-white">
-            OK
-          </span>
-          <p>
-            <span className="font-semibold">Free cancellation</span> up to 24 hours before the experience starts.
-          </p>
-        </div>
-        <div className="flex items-start gap-2">
-          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[0.65rem] text-white">
-            OK
-          </span>
-          <p>
-            <span className="font-semibold">Reserve now and pay later</span> - secure your spot while staying flexible.
-          </p>
-        </div>
-      </div>
-
-      {/* URGENCY */}
-      <div className="flex gap-3 rounded-xl border border-amber-100 bg-amber-50 px-3 py-3 text-xs text-slate-800">
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 text-amber-700">!</div>
-        <div>
-          <p className="font-semibold">Book ahead!</p>
-          <p>On average, this is booked several days in advance.</p>
-        </div>
-      </div>
 
     </div>
   );

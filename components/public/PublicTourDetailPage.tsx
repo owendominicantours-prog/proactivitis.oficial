@@ -174,7 +174,7 @@ const TOUR_H1_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     fr: "Bateau prive a Sosua depuis Puerto Plata"
   },
   "party-boat-sosua": {
-    es: "Sosua Party Boat: snorkel, open bar y opcion privada",
+    es: "Sosua Party Boat: snorkel, open bar y opción privada",
     en: "Sosua Party Boat: snorkel, open bar, private option",
     fr: "Sosua Party Boat : snorkel, open bar, option privee"
   },
@@ -209,16 +209,16 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
   "tour-en-buggy-en-punta-cana": {
     es: [
       {
-        question: "Que incluye el tour en buggy en Punta Cana?",
-        answer: "Incluye buggy, guia local, ruta off-road y paradas para foto. Antes de pagar ves el total final, sin cargos sorpresa."
+        question: "¿Qué incluye el tour en buggy en Punta Cana?",
+        answer: "Incluye buggy, guía local, ruta off-road y paradas para foto. Antes de pagar ves el total final, sin cargos sorpresa."
       },
       {
         question: "Hay parada en cueva o cenote?",
-        answer: "Si. Normalmente hacemos parada en cueva o cenote y en casa tipica para probar cafe y cacao dominicano."
+        answer: "Sí. Normalmente hacemos parada en cueva o cenote y en casa típica para probar café y cacao dominicano."
       },
       {
         question: "Necesito licencia para conducir?",
-        answer: "Si, necesitas licencia vigente y ser mayor de edad para conducir. Antes de salir damos briefing de seguridad obligatorio."
+        answer: "Sí, necesitas licencia vigente y ser mayor de edad para conducir. Antes de salir damos briefing de seguridad obligatorio."
       }
     ],
     en: [
@@ -254,15 +254,15 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Puedo elegir buggy o ATV?",
-        answer: "Si. Puedes elegir buggy o ATV al reservar, y te confirmamos disponibilidad real para ese horario."
+        answer: "Sí. Puedes elegir buggy o ATV al reservar, y te confirmamos disponibilidad real para ese horario."
       },
       {
-        question: "Cuanto dura la excursion?",
+        question: "¿Cuánto dura la excursión?",
         answer: "La actividad dura aproximadamente {durationLabel}, incluyendo las paradas."
       },
       {
-        question: "Hay recogida en hotel?",
-        answer: "Si, la mayoria de salidas incluye pickup en hoteles de Punta Cana y Bavaro con punto y hora confirmados."
+        question: "¿Hay recogida en hotel?",
+        answer: "Sí, la mayoria de salidas incluye pickup en hoteles de Punta Cana y Bavaro con punto y hora confirmados."
       }
     ],
     en: [
@@ -302,11 +302,11 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Incluye seguimiento de vuelo?",
-        answer: "Si, monitoreamos la hora de llegada y ajustamos la espera cuando es necesario."
+        answer: "Sí, monitoreamos la hora de llegada y ajustamos la espera cuando es necesario."
       },
       {
         question: "Puedo reservar ida y vuelta?",
-        answer: "Si, elige la opcion round trip en el checkout para asegurar ambos trayectos."
+        answer: "Sí, elige la opción round trip en el checkout para asegurar ambos trayectos."
       }
     ],
     en: [
@@ -342,15 +342,15 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Desde donde sale el tour a Isla Saona?",
-        answer: "Sale desde Bayahibe o La Romana. Segun la salida, combinas lancha rapida y catamaran durante el dia."
+        answer: "Sale desde Bayahibe o La Romana. Según la salida, combinas lancha rápida y catamarán durante el día."
       },
       {
         question: "Incluye almuerzo y bebidas?",
-        answer: "Si, incluye almuerzo tipo buffet y bebidas basicas. Los detalles exactos aparecen antes de confirmar reserva."
+        answer: "Sí, incluye almuerzo tipo buffet y bebidas basicas. Los detalles exactos aparecen antes de confirmar reserva."
       },
       {
         question: "Hay tiempo libre en la playa?",
-        answer: "Si, hay tiempo de playa para banarse y descansar."
+        answer: "Sí, hay tiempo de playa para banarse y descansar."
       }
     ],
     en: [
@@ -385,16 +385,16 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
   "cayo-levantado-luxury-beach-day": {
     es: [
       {
-        question: "Que incluye el dia en Samana y Cayo Levantado?",
+        question: "¿Qué incluye el día en Samaná y Cayo Levantado?",
         answer: "Incluye transporte ida y vuelta, parada en Cascada El Limon, tiempo de playa en Cayo Levantado y almuerzo."
       },
       {
-        question: "Cuanto dura el viaje desde Punta Cana?",
-        answer: "Es un tour de dia completo con salida temprano y regreso en la tarde."
+        question: "Cuánto dura el viaje desde Punta Cana?",
+        answer: "Es un tour de día completo con salida temprano y regreso en la tarde."
       },
       {
         question: "Es apto para familias?",
-        answer: "Si, es una excursion tranquila con ritmo moderado."
+        answer: "Sí, es una excursión tranquila con ritmo moderado."
       }
     ],
     en: [
@@ -430,15 +430,15 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Es party boat con snorkel?",
-        answer: "Si. Es una salida en catamaran con musica, open bar y parada para snorkel en zona segura."
+        answer: "Sí. Es una salida en catamarán con música, open bar y parada para snorkel en zona segura."
       },
       {
-        question: "Hay recogida en hotel?",
-        answer: "Confirmamos pickup en Punta Cana/Bavaro despues de reservar."
+        question: "¿Hay recogida en hotel?",
+        answer: "Confirmamos pickup en Punta Cana/Bávaro después de reservar."
       },
       {
-        question: "Que llevar?",
-        answer: "Lleva traje de bano, toalla, protector solar y ropa ligera. Si quieres extras o fotos, lleva efectivo opcional."
+        question: "¿Qué llevar?",
+        answer: "Lleva traje de baño, toalla, protector solar y ropa ligera. Si quieres extras o fotos, lleva efectivo opciónal."
       }
     ],
     en: [
@@ -478,11 +478,11 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Incluye Cascada El Limon?",
-        answer: "Si, incluye visita a la cascada y Cayo Levantado."
+        answer: "Sí, incluye visita a la cascada y Cayo Levantado."
       },
       {
         question: "Es un tour largo?",
-        answer: "Si, es jornada completa. Se sale temprano desde Punta Cana y se regresa en la tarde-noche."
+        answer: "Sí, es jornada completa. Se sale temprano desde Punta Cana y se regresa en la tarde-noche."
       }
     ],
     en: [
@@ -517,7 +517,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
   "parasailing-punta-cana": {
     es: [
       {
-        question: "Cuanto dura el vuelo?",
+        question: "Cuánto dura el vuelo?",
         answer: "El vuelo suele durar entre 10 y 12 minutos en el aire, mas el tiempo de navegacion y preparacion."
       },
       {
@@ -526,7 +526,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Pueden volar dos personas?",
-        answer: "Si, se puede volar en pareja o trio segun peso combinado y condiciones del viento."
+        answer: "Sí, se puede volar en pareja o trío según peso combinado y condiciones del viento."
       }
     ],
     en: [
@@ -562,15 +562,15 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Incluye entrada y transporte?",
-        answer: "Si, incluye entradas, transporte y tiempo real en playa. Veras el detalle final antes de confirmar."
+        answer: "Sí, incluye entradas, transporte y tiempo real en playa. Veras el detalle final antes de confirmar."
       },
       {
         question: "Que tipo de barco se usa?",
-        answer: "Lancha rapida y catamaran segun el itinerario."
+        answer: "Lancha rápida y catamarán según el itinerario."
       },
       {
         question: "Hay pickup en hoteles?",
-        answer: "Si, coordinamos recogida en hoteles de Punta Cana y Bavaro con horario confirmado despues de reservar."
+        answer: "Sí, coordinamos recogida en hoteles de Punta Cana y Bavaro con horario confirmado despues de reservar."
       }
     ],
     en: [
@@ -606,15 +606,15 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Que lugares se visitan en el safari cultural?",
-        answer: "Visitamos zonas rurales, pueblos locales, casa tipica y paradas para degustaciones dominicanas."
+        answer: "Visitamos zonas rurales, pueblos locales, casa típica y paradas para degustaciones dominicanas."
       },
       {
-        question: "Incluye guia local?",
-        answer: "Si, guia y transporte incluidos."
+        question: "¿Incluye guía local?",
+        answer: "Sí, guía y transporte incluidos."
       },
       {
         question: "Es recomendable para familias?",
-        answer: "Si, es una experiencia tranquila y educativa, recomendada para familias y viajeros de ritmo relajado."
+        answer: "Sí, es una experiencia tranquila y educativa, recomendada para familias y viajeros de ritmo relajado."
       }
     ],
     en: [
@@ -650,15 +650,15 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Que incluye la visita a Santo Domingo?",
-        answer: "Incluye recorrido por Zona Colonial, paradas historicas y acompanamiento de guia local durante la visita."
+        answer: "Incluye recorrido por Zona Colonial, paradas históricas y acompañamiento de guía local durante la visita."
       },
       {
         question: "Incluye almuerzo?",
-        answer: "Si, almuerzo tipico incluido."
+        answer: "Sí, almuerzo tipico incluido."
       },
       {
-        question: "Cuanto dura el viaje?",
-        answer: "Es dia completo. La salida es temprano desde Punta Cana y el regreso es en la tarde."
+        question: "Cuánto dura el viaje?",
+        answer: "Es día completo. La salida es temprano desde Punta Cana y el regreso es en la tarde."
       }
     ],
     en: [
@@ -693,16 +693,16 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
   "party-boat-sosua": {
     es: [
       {
-        question: "Cuanto cuesta el Sosua Party Boat?",
-        answer: "La salida compartida inicia en USD 65 por persona. Si viajas en grupo, tambien puedes elegir opcion privada o VIP."
+        question: "Cuánto cuesta el Sosua Party Boat?",
+        answer: "La salida compartida inicia en USD 65 por persona. Si viajas en grupo, también puedes elegir opción privada o VIP."
       },
       {
         question: "El tour incluye open bar y snorkel?",
-        answer: "Si, incluye open bar, musica a bordo, parada de snorkel y tiempo para disfrutar la bahia de Sosua."
+        answer: "Sí, incluye open bar, música a bordo, parada de snorkel y tiempo para disfrutar la bahía de Sosúa."
       },
       {
         question: "Hay pickup desde Puerto Plata, Amber Cove o Taino Bay?",
-        answer: "Si. Coordinamos recogida en Puerto Plata, Amber Cove y Taino Bay segun horario, trafico y disponibilidad del dia."
+        answer: "Sí. Coordinamos recogida en Puerto Plata, Amber Cove y Taino Bay según horario, tráfico y disponibilidad del día."
       }
     ],
     en: [
@@ -737,16 +737,16 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
   "scape-park-full-admission-punta-cana": {
     es: [
       {
-        question: "Que incluye Scape Park Full Admission?",
+        question: "¿Qué incluye Scape Park Full Admission?",
         answer: "Incluye Hoyo Azul, zip lines, cuevas, Saltos Azules, Faunaland, transporte ida y vuelta y almuerzo buffet."
       },
       {
-        question: "Es una buena opcion para familias?",
-        answer: "Si. Es la opcion mas equilibrada para familias y grupos porque combina naturaleza, agua y actividades de distinta intensidad en un mismo dia."
+        question: "¿Es una buena opción para familias?",
+        answer: "Sí. Es la opción más equilibrada para familias y grupos porque combina naturaleza, agua y actividades de distinta intensidad en un mismo día."
       },
       {
-        question: "Cuanto dura la experiencia?",
-        answer: "La duracion estimada es {durationLabel}, contando parque, traslados y tiempo para almorzar."
+        question: "¿Cuánto dura la experiencia?",
+        answer: "La duración estimada es {durationLabel}, contando parque, traslados y tiempo para almorzar."
       }
     ],
     en: [
@@ -782,15 +782,15 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Que agrega Sunshine Cruise al Scape Park completo?",
-        answer: "Agrega un catamaran al final del parque con snorkel, barra libre y parada en la piscina natural de Juanillo."
+        answer: "Agrega un catamarán al final del parque con snorkel, barra libre y parada en la piscina natural de Juanillo."
       },
       {
         question: "Es mejor que Full Admission normal?",
-        answer: "Si quieres selva y mar en el mismo dia, esta es la mejora mas completa. Si solo quieres parque, Full Admission suele ser suficiente."
+        answer: "Si quieres selva y mar en el mismo día, esta es la mejora más completa. Si solo quieres parque, Full Admission suele ser suficiente."
       },
       {
         question: "Incluye almuerzo y transporte?",
-        answer: "Si, incluye transporte ida y vuelta y almuerzo buffet, ademas del crucero Sunshine."
+        answer: "Sí, incluye transporte ida y vuelta y almuerzo buffet, ademas del crucero Sunshine."
       }
     ],
     en: [
@@ -834,7 +834,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       },
       {
         question: "Hay equipo de seguridad incluido?",
-        answer: "Si, el equipo de seguridad esta incluido junto con transporte y almuerzo buffet."
+        answer: "Sí, el equipo de seguridad esta incluido junto con transporte y almuerzo buffet."
       }
     ],
     en: [
@@ -869,16 +869,16 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
   "juanillo-vip-scape-park-punta-cana": {
     es: [
       {
-        question: "Que hace diferente a Juanillo VIP?",
-        answer: "Es la opcion mas exclusiva: Hoyo Azul con prioridad, catamaran premium, Juanillo Beach Club y almuerzo superior."
+        question: "Qué hace diferente a Juanillo VIP?",
+        answer: "Es la opción más exclusiva: Hoyo Azul con prioridad, catamarán premium, Juanillo Beach Club y almuerzo superior."
       },
       {
-        question: "Es una excursion de lujo real?",
-        answer: "Si. Esta pensada para viajeros que quieren menos densidad, mejor servicio y una experiencia mas premium en Cap Cana."
+        question: "¿Es una excursión de lujo real?",
+        answer: "Sí. Esta pensada para viajeros que quieren menos densidad, mejor servicio y una experiencia mas premium en Cap Cana."
       },
       {
         question: "Incluye snorkel y bebidas premium?",
-        answer: "Si, incluye navegacion con bebidas premium y snorkel durante la salida en catamaran."
+        answer: "Sí, incluye navegación con bebidas premium y snorkel durante la salida en catamarán."
       }
     ],
     en: [
@@ -913,16 +913,16 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
   "scape-park-punta-cana": {
     es: [
       {
-        question: "Cual opcion de Scape Park me conviene mas?",
-        answer: "Full Admission es la base mas equilibrada. Sunshine Cruise agrega mar y catamaran, Buggies suma adrenalina off-road, y Juanillo VIP es la opcion mas exclusiva."
+        question: "¿Cuál opción de Scape Park me conviene más?",
+        answer: "Full Admission es la base más equilibrada. Sunshine Cruise agrega mar y catamarán, Buggies suma adrenalina off-road, y Juanillo VIP es la opción más exclusiva."
       },
       {
-        question: "Que debo saber si estoy hospedado en Bayahibe o La Romana?",
-        answer: "Para hoteles en Bayahibe o La Romana la recogida suele operar solo martes y sabados, y puede aplicar suplemento de transporte segun hotel."
+        question: "Qué debo saber si estoy hospedado en Bayahibe o La Romana?",
+        answer: "Para hoteles en Bayahibe o La Romana la recogida suele operar solo martes y sábados, y puede aplicar suplemento de transporte según hotel."
       },
       {
         question: "A que hora termina el tour y como funcionan las actividades especiales?",
-        answer: "La operacion suele arrancar por la manana y el regreso sale normalmente entre 03:30 PM y 04:30 PM, con llegada al hotel entre 05:00 PM y 06:00 PM. Los buggies se asignan por turnos al llegar, Sunshine Cruise suele operar al final del dia y Juanillo VIP lleva un ritmo mas relajado."
+        answer: "La operación suele arrancar por la mañana y el regreso sale normalmente entre 03:30 PM y 04:30 PM, con llegada al hotel entre 05:00 PM y 06:00 PM. Los buggies se asignan por turnos al llegar, Sunshine Cruise suele operar al final del día y Juanillo VIP lleva un ritmo más relajado."
       }
     ],
     en: [
@@ -959,15 +959,15 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
     es: [
       {
         question: "Que incluye este buggy privado en Punta Cana?",
-        answer: "Incluye buggy privado para tu grupo, guia, parada para bano en cenote o rio, almuerzo dominicano, una bebida y fotos del recorrido."
+        answer: "Incluye buggy privado para tu grupo, guía, parada para baño en cenote o río, almuerzo dominicano, una bebida y fotos del recorrido."
       },
       {
-        question: "Es una excursion compartida o privada?",
+        question: "¿Es una excursión compartida o privada?",
         answer: "Es una experiencia privada. No se mezcla tu grupo con otros viajeros durante la salida."
       },
       {
         question: "Que debo llevar para esta experiencia?",
-        answer: "Recomendamos ropa comoda, ropa de bano, toalla, protector solar y calzado que puedas usar en terreno off-road y zonas con agua."
+        answer: "Recomendamos ropa cómoda, ropa de baño, toalla, protector solar y calzado que puedas usar en terreno off-road y zonas con agua."
       }
     ],
     en: [
@@ -1085,7 +1085,7 @@ const buildCommercialIntentLinks = (locale: Locale, slug: string): IntentLink[] 
       ),
       description: localeLabel(
         locale,
-        "Comparar excursiones por precio, duracion y categoria.",
+        "Comparar excursiones por precio, duración y categoría.",
         "Compare excursions by price, duration, and category.",
         "Comparer les excursions par prix, duree et categorie."
       )
@@ -1153,7 +1153,7 @@ const buildPracticalInfo = (locale: Locale, slug: string) => {
       )
     : localeLabel(
         locale,
-        ["Toalla", "Protector solar", "Efectivo opcional para extras", "Documento de identidad"].join(";"),
+        ["Toalla", "Protector solar", "Efectivo opciónal para extras", "Documento de identidad"].join(";"),
         ["Towel", "Sunscreen", "Optional cash for extras", "ID document"].join(";"),
         ["Serviette", "Creme solaire", "Cash optionnel pour extras", "Piece d identite"].join(";")
       );
@@ -1167,7 +1167,7 @@ const buildPracticalInfo = (locale: Locale, slug: string) => {
       )
     : localeLabel(
         locale,
-        ["Sujeto a condiciones del clima", "Horarios pueden variar por operacion local", "Seguir siempre indicaciones del guia"].join(";"),
+        ["Sujeto a condiciones del clima", "Horarios pueden variar por operación local", "Seguir siempre indicaciones del guía"].join(";"),
         ["Weather conditions may affect schedule", "Timings can vary due to local operations", "Always follow guide instructions"].join(";"),
         ["Les conditions meteo peuvent affecter l horaire", "Les horaires peuvent varier selon l operation locale", "Suivre les instructions du guide"].join(";")
       );
@@ -1404,7 +1404,7 @@ const itineraryMock: ItineraryStop[] = [
   {
     time: "Cultura Local",
     title: "Cultura Local",
-    description: "Degustacion de cafe, cacao y tabaco en casa tipica."
+    description: "Degustación de café, cacao y tabaco en casa típica."
   },
   {
     time: "Cenote / Playa",
@@ -1728,6 +1728,8 @@ export default async function TourDetailPage({
       ? notIncludedList
       : fallbackExcludes;
   const highlights = translationHighlights.length ? translationHighlights : rawHighlights;
+  const seoOnlyHighlights = new Set(["hip hop", "hip hop party boat", "mar caribe"]);
+  const visibleHighlights = highlights.filter((item) => !seoOnlyHighlights.has(item.trim().toLowerCase()));
   const hasBaseItinerary = itinerarySource.length > 0;
   const hasTranslationItinerary = translationItineraryStops.length > 0;
   const visualTimeline =
@@ -1815,20 +1817,20 @@ export default async function TourDetailPage({
     const optionKey = (option.type ?? option.name).toLowerCase();
     const structuredDescription = splitScapeOptionDescription(option.description);
     const summary = option.description?.split(/(?<=[.!?])\s+/)[0]?.trim() || "";
-    let focus = localeLabel(locale, "Opcion disponible", "Available option", "Option disponible");
+    let focus = localeLabel(locale, "Opción disponible", "Available option", "Option disponible");
     let detail = summary;
 
     if (optionKey.includes("full-admission")) {
       focus = localeLabel(locale, "Variedad y mejor relacion valor", "Best overall value and variety", "Meilleur rapport valeur-variete");
       detail = localeLabel(locale, "Hoyo Azul, tirolesas, cuevas y aventura en un solo pase.", "Hoyo Azul, zip lines, caves and adventure in one pass.", "Hoyo Azul, tyroliennes, grottes et aventure en un seul pass.");
     } else if (optionKey.includes("sunshine-cruise")) {
-      focus = localeLabel(locale, "Selva + mar el mismo dia", "Jungle + sea in one day", "Jungle + mer le meme jour");
-      detail = localeLabel(locale, "Parque completo, catamaran, snorkel y barra libre.", "Full park, catamaran, snorkel and open bar.", "Parc complet, catamaran, snorkel et open bar.");
+      focus = localeLabel(locale, "Selva + mar el mismo día", "Jungle + sea in one day", "Jungle + mer le meme jour");
+      detail = localeLabel(locale, "Parque completo, catamarán, snorkel y barra libre.", "Full park, catamaran, snorkel and open bar.", "Parc complet, catamaran, snorkel et open bar.");
     } else if (optionKey.includes("buggies")) {
       focus = localeLabel(locale, "Mas adrenalina", "More adrenaline", "Plus d adrenaline");
       detail = localeLabel(locale, "Parque completo con circuito 4x4 en buggy por la jungla.", "Full park plus a 4x4 buggy route through the jungle.", "Parc complet avec parcours buggy 4x4 dans la jungle.");
     } else if (optionKey.includes("juanillo-vip")) {
-      focus = localeLabel(locale, "La opcion premium", "The premium option", "L option premium");
+      focus = localeLabel(locale, "La opción premium", "The premium option", "L option premium");
       detail = localeLabel(locale, "Catamaran, Juanillo Beach Club, almuerzo y Blue Hole.", "Catamaran, Juanillo Beach Club, lunch and Blue Hole.", "Catamaran, Juanillo Beach Club, dejeuner et Blue Hole.");
     }
 
@@ -1891,7 +1893,6 @@ export default async function TourDetailPage({
   const floatingButtonCta = isDiscoveryMode
     ? localeLabel(locale, "Comparar y reservar", "Compare and book", "Comparer et reserver")
     : translate(locale, "tour.booking.floating.button");
-
   const heroNavTabs: { labelKey: TranslationKey; href: string }[] = [
     { labelKey: "tour.nav.overview", href: "#overview" },
     { labelKey: "tour.nav.includes", href: "#includes" },
@@ -1915,6 +1916,9 @@ export default async function TourDetailPage({
     quote: review.body,
     rating: review.rating
   }));
+  const featuredReviewHighlights = [...reviewHighlights]
+    .sort((left, right) => right.rating - left.rating)
+    .slice(0, 2);
 
 
   const quickInfo = [
@@ -2054,7 +2058,7 @@ export default async function TourDetailPage({
       tour.slug === "private-buggy-tour-cenote-swim-dominican-lunch"
         ? localeLabel(
             locale,
-            "Buggy privado, bano en cenote y almuerzo dominicano real",
+            "Buggy privado, baño en cenote y almuerzo dominicano real",
             "Private buggy, cenote swim, and real Dominican lunch",
             "Buggy prive, baignade en cenote et vrai dejeuner dominicain"
           )
@@ -2334,41 +2338,29 @@ export default async function TourDetailPage({
     : null;
 
   const BookingPanel = ({ className = "" }: { className?: string }) => (
-    <div className={`rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl ${className}`}>
-      <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-        {translate(locale, "tour.booking.panel.label")}
-      </p>
-      <h3 className="mt-2 text-2xl font-bold text-slate-900">
-        {translate(locale, "tour.booking.panel.title")}
-      </h3>
-      <div className="mt-4">
+    <div className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_16px_44px_rgba(15,23,42,0.14)] ${className}`}>
+      <div>
         <TourBookingWidget {...bookingWidgetProps} />
       </div>
-      <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-700">
-        <p className="font-semibold text-slate-900">
-          {agencyDisplayName ??
-            tour.SupplierProfile?.company ??
-            tour.SupplierProfile?.User?.name ??
-            translate(locale, "tour.booking.panel.providerFallback")}
-        </p>
-        <p>
-          {agencyMode
-            ? localeLabel(
+      <div className="mt-4 border-t border-slate-100 pt-4">
+        <div className="flex items-start gap-3 text-sm text-slate-700">
+          <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500 text-xs font-black text-emerald-600">
+            +
+          </span>
+          <div>
+            <p className="font-black text-slate-950">
+              {localeLabel(locale, "Cancelación flexible", "Flexible cancellation", "Annulation flexible")}
+            </p>
+            <p className="mt-0.5 text-xs leading-5 text-slate-600">
+              {localeLabel(
                 locale,
-                "Reserva gestionada por tu agencia con precio acordado.",
-                "Booking managed by your agency with agreed pricing.",
-                "Reservation geree par votre agence avec tarif convenu."
-              )
-            : directAgencyMode
-              ? localeLabel(
-                  locale,
-                  "Estas reservando como agencia con tu tarifa neta aplicada en checkout.",
-                  "You are booking as an agency with your net rate applied at checkout.",
-                  "Vous reservez en tant qu agence avec votre tarif net applique au checkout."
-                )
-            : translate(locale, "tour.booking.panel.supplier")}
-        </p>
-        {agencyMode && agencyProLink?.note ? <p className="mt-2 text-xs text-slate-500">{agencyProLink.note}</p> : null}
+                "Puedes cancelar con 24 horas de antelación y recibir reembolso completo.",
+                "Cancel up to 24 hours in advance for a full refund.",
+                "Annulez jusqu a 24 heures a l avance pour un remboursement complet."
+              )}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -2384,7 +2376,7 @@ export default async function TourDetailPage({
       <StructuredData data={faqSchema} />
       {relatedToursSchema ? <StructuredData data={relatedToursSchema} /> : null}
 
-      <section className="mx-auto max-w-[1240px] px-4 pt-8 sm:pt-10">
+      <section className="mx-auto max-w-[1180px] px-4 pt-6 sm:pt-8">
         {agencyMode ? (
           <div className="mb-4 rounded-[24px] border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-sky-50 px-5 py-4 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -2407,143 +2399,188 @@ export default async function TourDetailPage({
             </div>
           </div>
         ) : null}
-        <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">
-          <div className="flex flex-col justify-center gap-6 p-6 sm:p-8 lg:p-16">
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
-                <svg
-                  aria-hidden
-                  className="h-3 w-3 text-indigo-600"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 12.5 7 12.5s7-7.25 7-12.5c0-3.866-3.134-7-7-7zm0 4a3 3 0 100-6 3 3 0 000 6z"
-                  />
-                  <circle cx="12" cy="8.4" r="2.4" />
-                </svg>
-                <span>{locationLabel}</span>
-              </div>
-              {agencyMode ? (
-                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">
-                  <span>{agencyDisplayName ?? localeLabel(locale, "Agencia", "Agency", "Agence")}</span>
-                </div>
-              ) : null}
-              {isDiscoveryMode ? (
-                <div className="inline-flex items-center gap-2 rounded-full bg-sky-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-sky-700">
-                  <span>{discoveryBadgeLabel}</span>
-                </div>
-              ) : null}
+        <div className="space-y-4">
+          <div className="hidden flex-wrap items-center gap-2 text-xs font-semibold text-slate-600 lg:flex">
+            <span className="rounded-full bg-slate-100 px-3 py-1 uppercase tracking-[0.18em] text-slate-700">
+              {locationLabel}
+            </span>
+            {agencyMode ? (
+              <span className="rounded-full bg-emerald-50 px-3 py-1 uppercase tracking-[0.18em] text-emerald-700">
+                {agencyDisplayName ?? localeLabel(locale, "Agencia", "Agency", "Agence")}
+              </span>
+            ) : null}
+            {isDiscoveryMode ? (
+              <span className="rounded-full bg-sky-50 px-3 py-1 uppercase tracking-[0.18em] text-sky-700">
+                {discoveryBadgeLabel}
+              </span>
+            ) : null}
+          </div>
+          <div className="hidden space-y-2 lg:block">
+            <h1 className="max-w-4xl text-3xl font-black leading-tight text-slate-950 sm:text-4xl">
+              {visibleHeroTitle}
+            </h1>
+            <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-700">
+              <span className="inline-flex items-center gap-1 text-slate-950">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <svg
+                    key={index}
+                    aria-hidden
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4 text-amber-500"
+                    fill="currentColor"
+                  >
+                    <path d="M12 3.5l2.7 5.48 6.05.88-4.38 4.27 1.03 6.03L12 17.9l-5.4 2.84 1.03-6.03-4.38-4.27 6.05-.88L12 3.5z" />
+                  </svg>
+                ))}
+                {detailReviewCount ? ratingValue.toFixed(1) : "0.0"}
+              </span>
+              <a href="#reviews" className="underline decoration-slate-300 underline-offset-4 hover:text-sky-700">
+                {heroReviewsLabel}
+              </a>
+              <span className="text-slate-400">|</span>
+              <span>
+                {localeLabel(locale, "Operado por", "Operated by", "Opere par")}{" "}
+                {agencyDisplayName ??
+                  tour.SupplierProfile?.company ??
+                  tour.SupplierProfile?.User?.name ??
+                  translate(locale, "tour.booking.panel.providerFallback")}
+              </span>
             </div>
-            <h1 className="text-3xl font-black text-slate-900 sm:text-4xl lg:text-5xl">{visibleHeroTitle}</h1>
-            <div className="flex flex-col gap-4">
-              <div className="flex items-end gap-8">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    {agencyMode
-                      ? localeLabel(locale, "Tarifa de agencia", "Agency rate", "Tarif agence")
-                      : heroPriceLabel}
-                  </p>
-                  <p className={`text-4xl font-black ${hasActiveDiscount ? "text-emerald-600" : "text-indigo-600"}`}>{priceLabel}</p>
-                  {hasActiveDiscount ? (
-                    <div className="mt-1 space-y-1">
-                      <p className="text-xs text-slate-400 line-through">${tour.price.toFixed(0)} USD</p>
-                      {discountTag ? (
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-600">{discountTag}</p>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{heroRatingLabel}</p>
-                  <div className="flex items-center gap-2">
-                    <svg
-                      aria-hidden
-                      viewBox="0 0 24 24"
-                      className="h-5 w-5 text-amber-500"
-                      fill="currentColor"
-                    >
-                      <path d="M12 3.5l2.7 5.48 6.05.88-4.38 4.27 1.03 6.03L12 17.9l-5.4 2.84 1.03-6.03-4.38-4.27 6.05-.88L12 3.5z" />
-                    </svg>
-                    <p className="text-xl font-black">
-                      {detailReviewCount ? ratingValue.toFixed(1) : "0.0"}
-                    </p>
-                  </div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{heroReviewsLabel}</p>
+            <div className="mt-3 flex flex-wrap gap-2 text-sm font-semibold text-slate-700">
+              {trustBadges.map((badge) => (
+                <span key={badge} className="rounded-full border border-slate-200 bg-white px-3 py-1">
+                  {badge}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="space-y-6">
+              <div className="space-y-3">
+              <TourGalleryCollage
+                images={gallery}
+                title={heroTitle}
+                fallbackImage={heroImage}
+                label={heroGalleryCta}
+                variant="compact"
+              />
+              <div className="space-y-3 lg:hidden">
+                <p className="inline-flex items-center gap-2 text-sm font-black text-slate-500">
+                  <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-5" />
+                  </svg>
+                  {localeLabel(locale, "Original Proactivitis", "Original Proactivitis", "Original Proactivitis")}
+                </p>
+                <h1 className="text-[2rem] font-black leading-tight text-slate-950">
+                  {visibleHeroTitle}
+                </h1>
+                <div className="flex flex-wrap items-center gap-2 text-base font-semibold text-slate-800">
+                  <span className="inline-flex items-center gap-0.5 text-slate-950">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <svg
+                        key={index}
+                        aria-hidden
+                        viewBox="0 0 24 24"
+                        className="h-6 w-6"
+                        fill="currentColor"
+                      >
+                        <path d="M12 3.5l2.7 5.48 6.05.88-4.38 4.27 1.03 6.03L12 17.9l-5.4 2.84 1.03-6.03-4.38-4.27 6.05-.88L12 3.5z" />
+                      </svg>
+                    ))}
+                  </span>
+                  <span>{detailReviewCount ? ratingValue.toFixed(1) : "0.0"}</span>
+                  <a href="#reviews" className="font-black underline underline-offset-4">
+                    {heroReviewsLabel}
+                  </a>
                 </div>
               </div>
-                <div className="flex flex-wrap gap-3 text-sm font-medium text-slate-700">
-                  {trustBadges.map((badge) => (
-                    <span
-                      key={badge}
-                      className="rounded-full border border-slate-200 bg-white/80 px-4 py-1 text-sm font-semibold text-slate-700 shadow-sm"
+              <nav className="hidden rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 shadow-sm backdrop-blur lg:block">
+                <div className="flex gap-3 overflow-x-auto py-1 text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  {heroNavTabs.map((tab) => (
+                    <a
+                      key={tab.href}
+                      href={tab.href}
+                      className="whitespace-nowrap rounded-full px-4 py-2 transition hover:bg-slate-100 hover:text-slate-700"
                     >
-                      {badge}
-                    </span>
+                      {translate(locale, tab.labelKey)}
+                    </a>
                   ))}
                 </div>
-              <div className={`flex gap-3 ${isDiscoveryMode ? "flex-col sm:flex-row" : "flex-wrap"}`}>
-                    <Link
-                      href="#booking"
-                      className={`rounded-3xl bg-indigo-600 px-10 py-4 text-base font-bold text-white shadow-xl shadow-indigo-100 transition-transform hover:scale-105 active:scale-95 ${
-                        isDiscoveryMode ? "text-center sm:w-auto" : ""
-                      }`}
-                    >
-                      {agencyMode
-                        ? localeLabel(locale, "Continuar con esta tarifa", "Continue with this rate", "Continuer avec ce tarif")
-                        : heroReserveCta}
-                    </Link>
-                    <GalleryLightbox
-                      images={gallery}
-                      buttonLabel={heroGalleryCta}
-                      buttonClassName={`rounded-2xl border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-50 ${
-                        isDiscoveryMode ? "w-full sm:w-auto text-center" : ""
-                      }`}
-                    />
-                    <a
-                      href="#traveler-photos"
-                      className={`rounded-2xl border border-emerald-200 bg-emerald-50 px-7 py-3 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 ${
-                        isDiscoveryMode ? "w-full sm:w-auto text-center" : ""
-                      }`}
-                    >
-                      {localeLabel(locale, "Ver fotos de viajeros", "View traveler photos", "Voir les photos des voyageurs")}
-                    </a>
+              </nav>
               </div>
-            </div>
-          </div>
-          <TourGalleryCollage images={gallery} title={heroTitle} fallbackImage={heroImage} />
-        </div>
-      </section>
 
-      <section className="mx-auto mt-6 max-w-[1240px] px-4">
-        <nav className="sticky top-16 z-10 rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 shadow-lg backdrop-blur lg:top-8">
-          <div className="flex gap-3 overflow-x-auto py-1 text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">
-            {heroNavTabs.map((tab) => (
-              <a
-                key={tab.href}
-                href={tab.href}
-                className="whitespace-nowrap rounded-full px-4 py-2 transition hover:bg-slate-100 hover:text-slate-700"
-              >
-                {translate(locale, tab.labelKey)}
-              </a>
-            ))}
-          </div>
-        </nav>
-      </section>
-
-      <section id="overview" className="mx-auto mt-8 max-w-[1240px] px-4">
+      <section id="overview" className="mt-8">
         <div className="space-y-4 rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
             {translate(locale, "tour.section.overview.label")}
           </p>
           <p className="text-lg text-slate-800 line-clamp-3">{shortDescriptionText ?? shortTeaser}</p>
-          {highlights.length ? (
+          <div className="grid gap-5 border-t border-slate-100 pt-4 md:grid-cols-2">
+            {quickInfo.map((item) => (
+              <div key={item.label} className="flex gap-3">
+                <span className="mt-1 inline-flex h-7 w-7 shrink-0 items-center justify-center text-slate-950">
+                  {item.icon}
+                </span>
+                <div>
+                  <p className="text-base font-black text-slate-950">{item.label}</p>
+                  <p className="mt-1 text-sm font-bold text-slate-800">{item.value}</p>
+                  <p className="mt-0.5 text-sm text-slate-600">{item.detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          {featuredReviewHighlights.length ? (
+            <div className="border-t border-slate-100 pt-5">
+              <h2 className="text-xl font-black text-slate-950">
+                {localeLabel(
+                  locale,
+                  "Lo que más les gustó a los viajeros",
+                  "What travelers liked most",
+                  "Ce que les voyageurs ont le plus aime"
+                )}
+              </h2>
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                {featuredReviewHighlights.map((review) => (
+                  <article key={review.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md">
+                    <div className="flex items-center gap-1 text-slate-950">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <svg key={index} aria-hidden viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+                          <path d="M12 3.5l2.7 5.48 6.05.88-4.38 4.27 1.03 6.03L12 17.9l-5.4 2.84 1.03-6.03-4.38-4.27 6.05-.88L12 3.5z" />
+                        </svg>
+                      ))}
+                      <span className="ml-1 text-sm font-black">{review.rating}</span>
+                    </div>
+                    <div className="mt-3 flex items-start gap-3">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-100 text-base font-black text-sky-700">
+                        {review.name
+                          .split(" ")
+                          .map((chunk) => chunk[0])
+                          .slice(0, 1)
+                          .join("")
+                          .toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-slate-950">{review.name}</p>
+                        <p className="text-xs font-semibold text-slate-500">
+                          {review.date} - {localeLabel(locale, "Reserva verificada", "Verified booking", "Reservation verifiee")}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mt-3 line-clamp-3 text-sm font-semibold leading-6 text-slate-900">{review.quote}</p>
+                  </article>
+                ))}
+              </div>
+              <div className="mt-4 text-right">
+                <a href="#reviews" className="text-sm font-black text-slate-950 underline underline-offset-4">
+                  {localeLabel(locale, "Ver más reseñas", "See more reviews", "Voir plus d avis")}
+                </a>
+              </div>
+            </div>
+          ) : null}
+          {visibleHighlights.length ? (
             <ul className="space-y-2 text-sm font-semibold text-slate-700">
-              {highlights.map((item) => (
+              {visibleHighlights.map((item) => (
                 <li key={item} className="flex items-center gap-2">
                   <span aria-hidden className="text-lg text-emerald-600">*</span>
                   {item}
@@ -2555,7 +2592,7 @@ export default async function TourDetailPage({
       </section>
 
       {longDescriptionParagraphs.length ? (
-        <section className="mx-auto mt-6 max-w-[1240px] px-4">
+        <section className="mt-6">
           <div className="space-y-3 rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
               {translate(locale, "tour.section.description.label")}
@@ -2569,8 +2606,57 @@ export default async function TourDetailPage({
         </section>
       ) : null}
 
+      <section id="includes" className="mt-6">
+        <div className="space-y-4 rounded-[24px] border border-slate-100 bg-white p-6 shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-500">
+                {translate(locale, "tour.section.coverage.label")}
+              </p>
+              <h2 className="text-[20px] font-semibold text-slate-900">
+                {translate(locale, "tour.section.coverage.heading")}
+                <span className="sr-only"> {localizedTitle}</span>
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500">{translate(locale, "tour.section.coverage.note")}</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                {translate(locale, "tour.section.coverage.includes")}
+              </p>
+              <ul className="mt-3 space-y-2 text-sm font-semibold text-emerald-600">
+                {includes.map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <span aria-hidden className="text-lg text-emerald-500">+</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                {translate(locale, "tour.section.coverage.excludes")}
+              </p>
+              <ul className="mt-3 space-y-2 text-sm font-semibold text-rose-500">
+                {excludes.map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <span aria-hidden className="text-lg text-rose-500">-</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="booking" className="mt-6 lg:hidden">
+        <BookingPanel />
+      </section>
+
       {isCocoBongoTour ? (
-        <section className="mx-auto mt-6 max-w-[1240px] px-4">
+        <section className="mt-6">
           <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
@@ -2588,7 +2674,7 @@ export default async function TourDetailPage({
                 <p className="mt-2 max-w-3xl text-sm text-slate-600">
                   {localeLabel(
                     locale,
-                    "Asi evitamos reservas equivocadas: la opcion economica es para vivir el show en area general, mientras Gold da asiento, mas espacio y bar premium.",
+                    "Así evitamos reservas equivocadas: la opción económica es para vivir el show en área general, mientras Gold da asiento, más espacio y bar premium.",
                     "This makes the difference clear before booking: the cheaper option is the general-standing experience, while Gold adds seating, more space and premium bar.",
                     "Cela clarifie la difference avant reservation : l option economique reste en zone generale, tandis que Gold ajoute siege, espace et bar premium."
                   )}
@@ -2600,7 +2686,7 @@ export default async function TourDetailPage({
                   <p>
                     {localeLabel(
                       locale,
-                      "Solo disponible martes y miercoles. El widget bloquea automaticamente otras fechas.",
+                      "Solo disponible martes y miércoles. El widget bloquea automáticamente otras fechas.",
                       "Only available on Tuesdays and Wednesdays. The widget automatically blocks other dates.",
                       "Disponible uniquement mardi et mercredi. Le widget bloque automatiquement les autres dates."
                     )}
@@ -2613,7 +2699,7 @@ export default async function TourDetailPage({
               {regularOption ? (
                 <article className="rounded-[22px] border border-slate-200 bg-slate-50 p-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
-                    {localeLabel(locale, "Opcion base", "Base option", "Option de base")}
+                    {localeLabel(locale, "Opción base", "Base option", "Option de base")}
                   </p>
                   <div className="mt-2 flex items-end justify-between gap-4">
                     <h3 className="text-lg font-bold text-slate-900">{regularOption.name}</h3>
@@ -2643,7 +2729,7 @@ export default async function TourDetailPage({
                   </div>
                   <ul className="mt-4 space-y-2 text-sm text-slate-700">
                     <li>• {localeLabel(locale, "Entrada VIP sin filas", "VIP fast-track entry", "Entree VIP rapide")}</li>
-                    <li>• {localeLabel(locale, "Asiento reservado y mas espacio", "Reserved seating and more space", "Siege reserve et plus d espace")}</li>
+                    <li>• {localeLabel(locale, "Asiento reservado y más espacio", "Reserved seating and more space", "Siege reserve et plus d espace")}</li>
                     <li>• {localeLabel(locale, "Bar premium y mejor vista del show", "Premium bar and better show view", "Bar premium et meilleure vue sur le show")}</li>
                     <li>• {localeLabel(locale, "Recomendado si no quieres pasar horas de pie", "Recommended if you do not want to stand for hours", "Recommande si vous ne voulez pas rester debout pendant des heures")}</li>
                   </ul>
@@ -2653,13 +2739,13 @@ export default async function TourDetailPage({
 
             <div className="mt-6 overflow-hidden rounded-[22px] border border-slate-200">
               <div className="grid grid-cols-[1.3fr,1fr,1fr] bg-slate-100 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                <div className="px-4 py-3">{localeLabel(locale, "Caracteristica", "Feature", "Caracteristique")}</div>
+                <div className="px-4 py-3">{localeLabel(locale, "Característica", "Feature", "Caracteristique")}</div>
                 <div className="px-4 py-3">{regularOption?.name ?? "Regular"}</div>
                 <div className="px-4 py-3">{goldOption?.name ?? "Gold Member"}</div>
               </div>
               {[
                 [
-                  localeLabel(locale, "Tipo de area", "Area type", "Type de zone"),
+                  localeLabel(locale, "Tipo de área", "Area type", "Type de zone"),
                   localeLabel(locale, "General / de pie", "General / standing", "Generale / debout"),
                   localeLabel(locale, "Reservada / sentada", "Reserved / seated", "Reservee / assise")
                 ],
@@ -2670,11 +2756,11 @@ export default async function TourDetailPage({
                 ],
                 [
                   localeLabel(locale, "Comodidad durante el show", "Comfort during the show", "Confort pendant le show"),
-                  localeLabel(locale, "Basica", "Basic", "Basique"),
+                  localeLabel(locale, "Básica", "Basic", "Basique"),
                   localeLabel(locale, "Alta", "High", "Eleve")
                 ],
                 [
-                  localeLabel(locale, "Para quien conviene", "Best for", "Ideal pour"),
+                  localeLabel(locale, "Para quién conviene", "Best for", "Ideal pour"),
                   localeLabel(locale, "Quien quiere entrar al mejor precio", "Travelers focused on the best price", "Voyageurs axes sur le meilleur prix"),
                   localeLabel(locale, "Quien quiere espacio, asiento y experiencia VIP", "Travelers wanting space, seating and VIP comfort", "Voyageurs voulant espace, siege et confort VIP")
                 ]
@@ -2691,7 +2777,7 @@ export default async function TourDetailPage({
       ) : null}
 
       {isScapeParkTour ? (
-        <section className="mx-auto mt-6 max-w-[1240px] px-4">
+        <section className="mt-6">
           <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
@@ -2701,7 +2787,7 @@ export default async function TourDetailPage({
                 <h2 className="mt-2 text-[20px] font-semibold text-slate-900">
                   {localeLabel(
                     locale,
-                    "Que opcion te conviene mas dentro de Cap Cana",
+                    "Qué opción te conviene más dentro de Cap Cana",
                     "Which Cap Cana option fits you best",
                     "Quelle option de Cap Cana vous convient le mieux"
                   )}
@@ -2709,7 +2795,7 @@ export default async function TourDetailPage({
                 <p className="mt-2 max-w-3xl text-sm text-slate-600">
                   {localeLabel(
                     locale,
-                    "Compara rapido cada variante, abre los detalles dentro de cada tarjeta y luego selecciona la que quieras reservar.",
+                    "Compara rápido cada variante, abre los detalles dentro de cada tarjeta y luego selecciona la que quieras reservar.",
                     "Compare each option quickly, open the details inside each card and then select the one you want to book.",
                     "Comparez rapidement chaque option, ouvrez les details dans chaque carte puis selectionnez celle que vous voulez reserver."
                   )}
@@ -2735,7 +2821,7 @@ export default async function TourDetailPage({
                     </div>
                     <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
                       {isCurrent
-                        ? localeLabel(locale, "Estas viendo", "Viewing now", "En cours")
+                        ? localeLabel(locale, "Estás viendo", "Viewing now", "En cours")
                         : localeLabel(locale, "Disponible", "Available", "Disponible")}
                     </p>
                     <h3 className="mt-2 text-lg font-bold text-slate-900">{item.title}</h3>
@@ -2766,7 +2852,7 @@ export default async function TourDetailPage({
                         {item.structuredDescription.specialOps ? (
                           <div>
                             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                              {localeLabel(locale, "Operacion especial", "Special operation", "Operation speciale")}
+                              {localeLabel(locale, "Operación especial", "Special operation", "Operation speciale")}
                             </p>
                             <p className="mt-1 leading-relaxed">{item.structuredDescription.specialOps}</p>
                           </div>
@@ -2806,8 +2892,8 @@ export default async function TourDetailPage({
                       }`}
                     >
                       {isCurrent
-                        ? localeLabel(locale, "Opcion seleccionada", "Selected option", "Option selectionnee")
-                        : localeLabel(locale, "Seleccionar esta opcion", "Select this option", "Selectionner cette option")}
+                        ? localeLabel(locale, "Opción seleccionada", "Selected option", "Option selectionnee")
+                        : localeLabel(locale, "Seleccionar esta opción", "Select this option", "Selectionner cette option")}
                     </Link>
                   </article>
                 );
@@ -2817,27 +2903,11 @@ export default async function TourDetailPage({
         </section>
       ) : null}
 
-      <section id="key-info" className="mx-auto mt-6 max-w-[1240px] px-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {quickInfo.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-[16px] border border-slate-100 bg-white/80 px-5 py-4 text-center shadow-md"
-            >
-              <span className="mb-2 inline-block text-2xl">{item.icon}</span>
-              <p className="text-[10px] font-semibold text-slate-500 tracking-[0.2em]">{item.label}</p>
-              <p className="text-sm font-semibold text-slate-900">{item.value}</p>
-              <p className="text-xs text-slate-500">{item.detail}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section id="practical" className="mx-auto mt-6 max-w-[1240px] px-4">
+      <section id="practical" className="mt-6">
         <div className="grid gap-4 md:grid-cols-2">
           <article className="rounded-[20px] border border-slate-100 bg-white p-5 shadow-md">
             <p className="text-xs uppercase tracking-[0.35em] text-slate-500">
-              {localeLabel(locale, "Que llevar", "What to bring", "Que faut-il apporter")}
+              {localeLabel(locale, "Qué llevar", "What to bring", "Que faut-il apporter")}
             </p>
             <ul className="mt-3 space-y-2 text-sm font-medium text-slate-700">
               {practicalInfo.whatToBring.map((item) => (
@@ -2864,7 +2934,7 @@ export default async function TourDetailPage({
         </div>
       </section>
 
-      <section id="meeting-point" className="mx-auto mt-6 max-w-[1240px] px-4">
+      <section id="meeting-point" className="mt-6">
         <div className="overflow-hidden rounded-[24px] border border-slate-100 bg-white shadow-lg">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
             <div>
@@ -2892,7 +2962,7 @@ export default async function TourDetailPage({
         </div>
       </section>
 
-      <section id="traveler-photos" className="mx-auto mt-6 max-w-[1240px] px-4">
+      <section id="traveler-photos" className="mt-6">
         <div className="rounded-[24px] border border-slate-100 bg-white p-5 shadow-md">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -2923,21 +2993,9 @@ export default async function TourDetailPage({
         </div>
       </section>
 
-      <section id="booking" className="mx-auto mt-6 max-w-[1240px] px-4 lg:hidden">
-        <div className="md:hidden mb-3">
-          <p className="text-sm font-semibold text-gray-900">
-            {translate(locale, "tour.booking.mobile.title")}
-          </p>
-          <p className="text-xs text-gray-600">{translate(locale, "tour.booking.mobile.description")}</p>
-        </div>
-        <div className="md:hidden ring-1 ring-black/10 shadow-md">
-          <BookingPanel />
-        </div>
-      </section>
-
-      <main className="mx-auto mt-10 grid max-w-[1240px] gap-10 px-4 lg:grid-cols-[1fr,420px]">
+      <main className="mt-10">
         <div className="space-y-10">
-          <section id="includes" className="space-y-4">
+          <section id="includes-legacy" className="hidden">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
@@ -3089,7 +3147,7 @@ export default async function TourDetailPage({
             {isSosuaPartyBoatTour && reviewHighlights.length ? (
               <div className="rounded-[16px] border border-emerald-100 bg-emerald-50/60 p-4">
                 <p className="text-xs uppercase tracking-[0.3em] text-emerald-700">
-                  {localeLabel(locale, "Resenas verificadas", "Verified reviews", "Avis verifies")}
+                  {localeLabel(locale, "Reseñas verificadas", "Verified reviews", "Avis verifies")}
                 </p>
                 <h3 className="mt-2 text-sm font-semibold text-slate-900">
                   {localeLabel(
@@ -3142,7 +3200,7 @@ export default async function TourDetailPage({
               <h2 className="text-[20px] font-semibold text-slate-900">
                 {localeLabel(
                   locale,
-                  "Enlaces utiles para reservar",
+                  "Enlaces útiles para reservar",
                   "Useful booking links",
                   "Liens utiles pour reserver"
                 )}
@@ -3163,49 +3221,80 @@ export default async function TourDetailPage({
           </section>
           ) : null}
 
-          {!agencyMode && relatedTourCards.length ? (
-            <section className="space-y-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
-                  {localeLabel(locale, "Mas tours", "More tours", "Plus d excursions")}
-                </p>
-                <h2 className="text-[20px] font-semibold text-slate-900">
-                  {localeLabel(locale, "Tours relacionados", "Related tours", "Excursions associees")}
-                </h2>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                {relatedTourCards.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className="group overflow-hidden rounded-[16px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                  >
-                    <div className="relative h-44 w-full">
-                      <Image
-                        src={item.image}
-                        alt={item.title}
-                        fill
-                        className="object-cover transition duration-500 group-hover:scale-105"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                      />
-                    </div>
-                    <div className="space-y-1 p-4">
-                      <p className="text-base font-semibold text-slate-900">{item.title}</p>
-                      <p className="text-sm font-bold text-indigo-600">{item.price}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          ) : null}
         </div>
-
-        <aside className="hidden lg:block">
-          <div className="sticky top-10 space-y-6">
-            <BookingPanel />
-          </div>
-        </aside>
       </main>
+            </div>
+            <aside className="hidden self-start lg:block">
+              <div
+                className="sticky top-20 max-h-[calc(100dvh-6rem)] overflow-y-auto overscroll-contain pb-4 pr-1"
+                style={{ scrollbarWidth: "thin" }}
+              >
+                <BookingPanel />
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      {!agencyMode && relatedTourCards.length ? (
+        <section id="related-tours" className="mx-auto mt-12 max-w-[1180px] px-4">
+          <div className="space-y-5">
+            <h2 className="text-2xl font-black text-slate-950">
+              {localeLabel(locale, "Otras sugerencias", "Other suggestions", "Autres suggestions")}
+            </h2>
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {relatedTourCards.map((item, index) => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+                >
+                  <div className="relative h-44 w-full overflow-hidden bg-slate-100">
+                    <Image
+                      src={item.image}
+                      alt={item.title}
+                      fill
+                      className="object-cover transition duration-500 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
+                    />
+                    {index === 0 ? (
+                      <span className="absolute left-3 top-3 rounded bg-slate-950 px-2.5 py-1 text-[11px] font-black text-white shadow">
+                        {localeLabel(locale, "Recomendado", "Recommended", "Recommande")}
+                      </span>
+                    ) : null}
+                    <span className="absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-950 shadow-md">
+                      <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z" />
+                      </svg>
+                    </span>
+                  </div>
+                  <div className="space-y-3 p-4">
+                    <h3 className="line-clamp-3 min-h-[4.5rem] text-base font-black leading-6 text-slate-950">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm font-semibold text-slate-700">
+                      {localeLabel(locale, "Recogida disponible", "Pickup available", "Prise en charge disponible")} · {durationLabel}
+                    </p>
+                    <div className="flex items-end justify-between gap-3 pt-2">
+                      <p className="inline-flex items-center gap-1 text-sm font-black text-slate-950">
+                        {ratingValue.toFixed(1)}
+                        <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5 text-slate-950" fill="currentColor">
+                          <path d="M12 3.5l2.7 5.48 6.05.88-4.38 4.27 1.03 6.03L12 17.9l-5.4 2.84 1.03-6.03-4.38-4.27 6.05-.88L12 3.5z" />
+                        </svg>
+                        <span className="text-xs font-semibold text-slate-500">({Math.max(detailReviewCount, 100)})</span>
+                      </p>
+                      <p className="text-right text-xs font-semibold text-slate-500">
+                        {localeLabel(locale, "Desde", "From", "Des")}{" "}
+                        <span className="text-lg font-black text-rose-600">{item.price}</span>
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <ReserveFloatingButton
         targetId="booking"
