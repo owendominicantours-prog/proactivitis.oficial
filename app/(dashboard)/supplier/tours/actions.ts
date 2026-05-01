@@ -161,10 +161,10 @@ function validateCommercialTourFields(input: {
   meetingPoint: string;
 }) {
   if (input.title.length < 8) {
-    throw new Error("El titulo debe tener al menos 8 caracteres.");
+    throw new Error("El título debe tener al menos 8 caracteres.");
   }
   if (!input.categoryValue) {
-    throw new Error("Selecciona al menos una categoria valida para el tour.");
+    throw new Error("Selecciona al menos una categoría válida para el tour.");
   }
   if (!input.languageValue) {
     throw new Error("Selecciona al menos un idioma disponible para el tour.");
@@ -194,7 +194,7 @@ function validateCommercialTourFields(input: {
     throw new Error("Define la duracion del tour.");
   }
   if (!input.operatingDays.length || !input.timeSlots.length) {
-    throw new Error("Define dias de operacion y al menos un horario.");
+    throw new Error("Define días de operación y al menos un horario.");
   }
   if (!input.heroImage || input.heroImage === "/fototours/fototour.jpeg") {
     throw new Error("Sube una foto principal real del tour.");
@@ -236,7 +236,7 @@ async function assertNoSupplierDuplicateTour({
     select: { id: true, title: true }
   });
   if (duplicate) {
-    throw new Error("Ya tienes un tour con ese nombre. Edita el existente o usa un titulo mas especifico.");
+    throw new Error("Ya tienes un tour con ese nombre. Edita el existente o usa un título más específico.");
   }
 }
 

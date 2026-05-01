@@ -557,6 +557,8 @@ export function SupplierTourCreateForm({
   const [submitting, setSubmitting] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const termsAcceptedRef = useRef(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const formRef = useRef<HTMLFormElement | null>(null);
   const translationToken = process.env.NEXT_PUBLIC_TRANSLATION_CRON_TOKEN;
   const [previewRefreshKey, setPreviewRefreshKey] = useState(0);
@@ -592,6 +594,11 @@ export function SupplierTourCreateForm({
       .slice(0, 3);
   }, [existingTours, state.title]);
 
+  const destinationIsCountryOnly = useMemo(() => {
+    const slug = normalizeSlugLike(state.destination);
+    return !slug || DOMINICAN_REPUBLIC_COUNTRY_SLUGS.includes(slug);
+  }, [state.destination]);
+
   const qualityChecks = useMemo(
     () => [
       {
@@ -603,13 +610,25 @@ export function SupplierTourCreateForm({
       {
         id: "category",
         label: "Categoria definida",
-        detail: "Ayuda a mostrarlo en listados y busquedas.",
+        detail: "Ayuda a mostrarlo en listados y búsquedas.",
         done: categories.length > 0
       },
       {
+        id: "destination",
+        label: "Zona concreta",
+        detail: "Usa una zona real: Punta Cana, Bavaro, Samana, La Romana.",
+        done: !destinationIsCountryOnly
+      },
+      {
+        id: "languages",
+        label: "Idiomas definidos",
+        detail: "Indica los idiomas disponibles para el cliente.",
+        done: languages.length > 0
+      },
+      {
         id: "description",
-        label: "Descripcion vendible",
-        detail: "Minimo 250 caracteres con experiencia y logistica.",
+        label: "Descripción vendible",
+        detail: "Mínimo 250 caracteres con experiencia y logística.",
         done: state.description.trim().length >= 250
       },
       {
@@ -650,18 +669,20 @@ export function SupplierTourCreateForm({
       },
       {
         id: "policies",
-        label: "Politicas y requisitos",
-        detail: "Condiciones claras para revision humana.",
+        label: "Políticas y requisitos",
+        detail: "Condiciones claras para revisión humana.",
         done: Boolean(state.requirements.trim() && state.terms.trim())
       }
     ],
     [
       categories.length,
       daySelection.length,
+      destinationIsCountryOnly,
       galleryImages.length,
       heroImage,
       highlightCountValid,
       includesList.length,
+      languages.length,
       notIncludedList.length,
       pickupOptions.length,
       state.capacity,
@@ -678,7 +699,8 @@ export function SupplierTourCreateForm({
   const completedChecks = qualityChecks.filter((item) => item.done).length;
   const qualityScore = Math.round((completedChecks / qualityChecks.length) * 100);
   const currentStepProgress = Math.round(((step + 1) / STEP_TITLES.length) * 100);
-  const canSubmitByQuality = qualityScore >= 70 && highlightCountValid;
+  const submitBlockers = qualityChecks.filter((item) => !item.done);
+  const canSubmitByQuality = submitBlockers.length === 0;
 
   const buildDraftSnapshot = useMemo(
     () => () =>
@@ -1094,8 +1116,14 @@ export function SupplierTourCreateForm({
   const handlePrev = () => setStep((prev) => Math.max(prev - 1, 0));
 
   const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+    setSubmitAttempted(true);
 
-    if (!termsAccepted) {
+    if (!canSubmitByQuality) {
+      event.preventDefault();
+      return;
+    }
+
+    if (!termsAcceptedRef.current && !termsAccepted) {
       event.preventDefault();
       setTermsModalOpen(true);
       return;
@@ -1131,6 +1159,7 @@ export function SupplierTourCreateForm({
 
   const confirmTerms = () => {
     void runAutoTranslation();
+    termsAcceptedRef.current = true;
     setTermsAccepted(true);
     setTermsModalOpen(false);
     formRef.current?.requestSubmit();
@@ -2661,7 +2690,7 @@ export function SupplierTourCreateForm({
             <div className="mt-4 flex items-end justify-between gap-4">
               <div>
                 <p className="text-4xl font-black text-slate-950">{qualityScore}%</p>
-                <p className="text-sm font-semibold text-slate-500">calidad para revision</p>
+                <p className="text-sm font-semibold text-slate-500">calidad para revisión</p>
               </div>
               <span className={`rounded-full px-3 py-1 text-xs font-black ${
                 qualityScore >= 85
@@ -2715,9 +2744,9 @@ export function SupplierTourCreateForm({
           </div>
 
           <div className="rounded-[28px] border border-sky-100 bg-sky-50 p-4 text-sm text-slate-700">
-            <p className="font-black text-slate-950">{state.title || "Tour sin titulo"}</p>
+            <p className="font-black text-slate-950">{state.title || "Tour sin título"}</p>
             <p className="mt-2 leading-6">
-              {categories.length ? categories.join(", ") : "Selecciona categoria"} · {state.destination || "Destino pendiente"}
+              {categories.length ? categories.join(", ") : "Selecciona categoría"} · {state.destination || "Destino pendiente"}
             </p>
             <p className="mt-2 font-semibold text-sky-700">
               {Number(state.price) > 0 ? `$${Number(state.price).toFixed(2)} USD` : "Precio pendiente"}
@@ -2733,7 +2762,7 @@ export function SupplierTourCreateForm({
                 <p className="text-xs font-black uppercase tracking-[0.36em] text-sky-200">Supplier tour builder</p>
                 <h2 className="mt-3 text-3xl font-black tracking-tight">Construye un tour listo para vender</h2>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                  Crea una ficha clara para revision humana: contenido comercial, precio, disponibilidad, fotos, pickup y politicas.
+                  Crea una ficha clara para revisión humana: contenido comercial, precio, disponibilidad, fotos, pickup y políticas.
                 </p>
               </div>
               <div className="rounded-[24px] border border-white/10 bg-white/10 p-4 text-right">
@@ -2979,11 +3008,22 @@ export function SupplierTourCreateForm({
 
           <div className="flex flex-col items-end gap-2">
 
+            {(submitAttempted || step === STEP_TITLES.length - 1) && submitBlockers.length > 0 ? (
+              <div className="max-w-xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-left text-xs font-semibold text-amber-900">
+                <p className="font-black uppercase tracking-[0.24em] text-amber-700">Antes de enviar</p>
+                <ul className="mt-2 list-disc space-y-1 pl-4">
+                  {submitBlockers.slice(0, 4).map((item) => (
+                    <li key={item.id}>{item.label}: {item.detail}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
             <div className="text-xs text-slate-500">
 
               {canSubmitByQuality
-                ? "Listo para enviar a revision humana."
-                : `Completa al menos 70% de calidad. Ahora: ${qualityScore}%.`}
+                ? "Listo para enviar a revisión humana."
+                : `Completa los puntos requeridos. Ahora: ${qualityScore}%.`}
 
             </div>
 
@@ -2991,7 +3031,7 @@ export function SupplierTourCreateForm({
               type="submit"
               disabled={submitting || !canSubmitByQuality}
               className={`primary-btn ${submitting || !canSubmitByQuality ? "opacity-70" : ""}`}
-              title={!canSubmitByQuality ? "Completa el checklist minimo antes de enviar." : undefined}
+              title={!canSubmitByQuality ? "Completa el checklist mínimo antes de enviar." : undefined}
 
             >
 
