@@ -308,6 +308,40 @@ export function SupplierBookingList({ bookings }: Props) {
     return { reservasHoy, totalPaxHoy, totalDelDia, pendientesPago, nextDepartureMinutes };
   }, [enrichedBookings, todayKey]);
 
+  const activeFilterCount = useMemo(
+    () =>
+      [
+        activeTab !== "today",
+        dateFilterMode !== "today",
+        statusFilters.length !== 3 ||
+          !["CONFIRMED", "PENDING", "PAYMENT_PENDING"].every((status) => statusFilters.includes(status)),
+        selectedTour !== "all",
+        Boolean(bookingCodeFilter.trim()),
+        Boolean(searchQuery.trim()),
+        Boolean(pickupFilter.trim()),
+        Boolean(exactDateFilter)
+      ].filter(Boolean).length,
+    [
+      activeTab,
+      bookingCodeFilter,
+      dateFilterMode,
+      exactDateFilter,
+      pickupFilter,
+      searchQuery,
+      selectedTour,
+      statusFilters
+    ]
+  );
+
+  const canConfirmBooking = (booking: SupplierBookingSummary) =>
+    !["CANCELLED", "COMPLETED", "CANCELLATION_REQUESTED"].includes(booking.status);
+
+  const canCompleteBooking = (booking: SupplierBookingSummary) =>
+    booking.status === "CONFIRMED" && bookingDateKey(booking) <= todayKey;
+
+  const canRequestCancel = (booking: SupplierBookingSummary) =>
+    !["CANCELLED", "COMPLETED", "CANCELLATION_REQUESTED"].includes(booking.status);
+
   const addFeedback = (bookingId: string, message: string) => {
     setActionFeedbacks((prev) => ({ ...prev, [bookingId]: message }));
     setTimeout(() => {
@@ -556,7 +590,23 @@ export function SupplierBookingList({ bookings }: Props) {
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="grid gap-4 lg:grid-cols-7">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Filtros de operación</p>
+              <p className="mt-1 text-sm text-slate-600">
+                {orderedBookings.length} resultado{orderedBookings.length === 1 ? "" : "s"}
+                {activeFilterCount ? ` · ${activeFilterCount} filtro${activeFilterCount === 1 ? "" : "s"} activo${activeFilterCount === 1 ? "" : "s"}` : ""}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600"
+            >
+              Limpiar filtros
+            </button>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div>
               <label className="text-xs uppercase text-slate-500">Fecha</label>
               <select
@@ -699,22 +749,6 @@ export function SupplierBookingList({ bookings }: Props) {
               </select>
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled
-              className="cursor-default rounded-full bg-slate-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
-            >
-              Filtros automáticos
-            </button>
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600"
-            >
-              Limpiar filtros
-            </button>
-          </div>
         </div>
 
         <div className="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.4em]">
@@ -758,7 +792,7 @@ export function SupplierBookingList({ bookings }: Props) {
               month: "short",
               year: "numeric"
             });
-            const totalPassengersLabel = `${booking.pax} ${booking.pax === 1 ? "adulto" : "adultos"}`;
+            const totalPassengersLabel = `${booking.pax} ${booking.pax === 1 ? "viajero" : "viajeros"}`;
             const sentLabel = new Date(booking.createdAt).toLocaleString("es-ES", {
               day: "numeric",
               month: "short",
@@ -801,6 +835,23 @@ export function SupplierBookingList({ bookings }: Props) {
                   <div className="mt-4">
                     <h2 className="text-3xl font-semibold leading-tight text-slate-900">{booking.tourTitle}</h2>
                     <p className="mt-3 text-[1.02rem] text-slate-500">{subtitle}</p>
+                  </div>
+
+                  <div className="mt-5 grid gap-3 md:grid-cols-3">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-400">Pickup / ruta</p>
+                      <p className="mt-1 line-clamp-2 text-sm font-semibold text-slate-900">{presentation.routeValue}</p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-400">Hora</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900">{booking.startTime ?? "Por confirmar"}</p>
+                    </div>
+                    <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-emerald-600">Neto supplier</p>
+                      <p className="mt-1 text-sm font-semibold text-emerald-800">
+                        ${(booking.supplierAmount ?? booking.totalAmount).toFixed(2)}
+                      </p>
+                    </div>
                   </div>
 
                   <div className="mt-5 border-t border-slate-200 pt-5">
@@ -895,7 +946,8 @@ export function SupplierBookingList({ bookings }: Props) {
                     <button
                       type="button"
                       onClick={() => handleConfirmTime(booking)}
-                      className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+                      disabled={!canConfirmBooking(booking)}
+                      className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       <Check className="h-4 w-4" />
                       Confirmar
@@ -903,7 +955,9 @@ export function SupplierBookingList({ bookings }: Props) {
                     <button
                       type="button"
                       onClick={() => handleMarkComplete(booking)}
-                      className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700"
+                      disabled={!canCompleteBooking(booking)}
+                      title={!canCompleteBooking(booking) ? "Solo reservas confirmadas y con fecha de servicio cumplida." : undefined}
+                      className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       <ClipboardCheck className="h-4 w-4" />
                       Completada
@@ -911,7 +965,8 @@ export function SupplierBookingList({ bookings }: Props) {
                     <button
                       type="button"
                       onClick={() => handleCancel(booking)}
-                      className="flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-700"
+                      disabled={!canRequestCancel(booking)}
+                      className="flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-700 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       <Slack className="h-4 w-4" />
                       Solicitar cancelación
