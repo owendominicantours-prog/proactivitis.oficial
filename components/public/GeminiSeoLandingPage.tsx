@@ -269,9 +269,11 @@ export default async function GeminiSeoLandingPage({
         : locale === "fr"
           ? "Prix clair a la reservation"
           : "Clear price before booking";
+  const mobileAvailabilityLabel =
+    locale === "es" ? "Ver disponibilidad" : locale === "fr" ? "Voir disponibilite" : "Check availability";
 
   return (
-    <main className="bg-white text-slate-950">
+    <main className={`bg-white text-slate-950 ${landing.type === "tour" && tourBookingData ? "pb-24 lg:pb-0" : ""}`}>
       <StructuredData data={content.schema} />
       <section className="relative overflow-hidden bg-slate-950 text-white">
         <div className="absolute inset-0">
@@ -505,6 +507,25 @@ export default async function GeminiSeoLandingPage({
           </div>
         </aside>
       </section>
+
+      {landing.type === "tour" && tourBookingData ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(0.85rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-18px_40px_rgba(15,23,42,0.16)] backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-md items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">
+                {priceLabel}
+              </p>
+              <p className="truncate text-sm font-black text-slate-950">{landing.product.title}</p>
+            </div>
+            <a
+              href="#seo-tour-booking"
+              className="shrink-0 rounded-full bg-sky-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-sky-200 transition active:scale-[0.98]"
+            >
+              {mobileAvailabilityLabel}
+            </a>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
