@@ -27,11 +27,58 @@ type TourOptionInput = {
   sortOrder?: number;
 };
 
+const COUNTRY_ONLY_DESTINATION_SLUGS = new Set([
+  "dominican-republic",
+  "dominican-republic-rd",
+  "republica-dominicana"
+]);
+
+function parseDurationField(value: FormDataEntryValue | null, fallback = "") {
+  if (typeof value !== "string") return fallback;
+  const rawValue = value.trim();
+  if (!rawValue) return fallback;
+  try {
+    const parsed = JSON.parse(rawValue);
+    const amount = String(parsed?.value ?? "").trim();
+    const unit = String(parsed?.unit ?? "").trim();
+    if (amount && unit) return `${amount} ${unit}`;
+  } catch {
+    return rawValue;
+  }
+  return rawValue;
+}
+
 function parseTimeSlots(formData: FormData): PersistedTimeSlot[] {
   const rawValue = formData.get("timeSlots");
+  return parseTimeSlotsFromJson(typeof rawValue === "string" ? rawValue : null);
+}
+
+function parseTimeSlotsFromJson(rawValue?: string | null): PersistedTimeSlot[] {
   if (!rawValue || typeof rawValue !== "string") return [];
   try {
-    return JSON.parse(rawValue) as PersistedTimeSlot[];
+    const parsed = JSON.parse(rawValue);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((slot) =>
+      Number.isInteger(slot?.hour) &&
+      slot.hour >= 1 &&
+      slot.hour <= 12 &&
+      ["00", "15", "30", "45"].includes(slot?.minute) &&
+      ["AM", "PM"].includes(slot?.period)
+    ) as PersistedTimeSlot[];
+  } catch {
+    return [];
+  }
+}
+
+function parseJsonStringArray(rawValue: FormDataEntryValue | null) {
+  if (!rawValue || typeof rawValue !== "string") return [];
+  try {
+    const parsed = JSON.parse(rawValue);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((item) => (typeof item === "string" ? item.trim() : ""))
+      .filter(Boolean)
+      .filter((item, index, list) => list.indexOf(item) === index);
   } catch {
     return [];
   }
@@ -95,17 +142,39 @@ function normalizeJsonInput(value: Prisma.JsonValue | null | undefined): Prisma.
 function validateCommercialTourFields(input: {
   title: string;
   categoryValue: string;
+  languageValue: string;
+  destinationValue: string;
   price: number;
   priceChild?: number;
   priceYouth?: number;
   capacity: number;
   durationValue: string;
+  description: string;
+  heroImage: string;
+  galleryUrls: string[];
+  highlightsList: string[];
+  includesArray: string[];
+  notIncludedArray: string[];
+  operatingDays: string[];
+  timeSlots: PersistedTimeSlot[];
+  pickup: string;
+  meetingPoint: string;
 }) {
   if (input.title.length < 8) {
     throw new Error("El titulo debe tener al menos 8 caracteres.");
   }
   if (!input.categoryValue) {
     throw new Error("Selecciona al menos una categoria valida para el tour.");
+  }
+  if (!input.languageValue) {
+    throw new Error("Selecciona al menos un idioma disponible para el tour.");
+  }
+  const destinationSlug = slugify(input.destinationValue);
+  if (!destinationSlug || COUNTRY_ONLY_DESTINATION_SLUGS.has(destinationSlug)) {
+    throw new Error("Selecciona una zona o ciudad concreta, no solo Republica Dominicana. Ejemplo: Punta Cana, Bavaro, Samana.");
+  }
+  if (input.description.length < 250) {
+    throw new Error("La descripcion debe tener al menos 250 caracteres.");
   }
   if (!Number.isFinite(input.price) || input.price <= 0) {
     throw new Error("El precio adulto debe ser mayor que cero.");
@@ -124,6 +193,51 @@ function validateCommercialTourFields(input: {
   if (!input.durationValue.trim()) {
     throw new Error("Define la duracion del tour.");
   }
+  if (!input.operatingDays.length || !input.timeSlots.length) {
+    throw new Error("Define dias de operacion y al menos un horario.");
+  }
+  if (!input.heroImage || input.heroImage === "/fototours/fototour.jpeg") {
+    throw new Error("Sube una foto principal real del tour.");
+  }
+  if (input.galleryUrls.length < 3) {
+    throw new Error("Sube al menos 3 fotos adicionales para la galeria.");
+  }
+  if (input.highlightsList.length < 3 || input.highlightsList.length > 6) {
+    throw new Error("Los highlights deben ser entre 3 y 6 elementos.");
+  }
+  if (input.includesArray.length < 2 || input.notIncludedArray.length < 1) {
+    throw new Error("Agrega al menos 2 elementos incluidos y 1 no incluido.");
+  }
+  if (!input.pickup.trim() && !input.meetingPoint.trim()) {
+    throw new Error("Define pickup o punto de encuentro.");
+  }
+}
+
+async function assertNoSupplierDuplicateTour({
+  supplierId,
+  title,
+  slug,
+  excludeTourId
+}: {
+  supplierId: string;
+  title: string;
+  slug: string;
+  excludeTourId?: string;
+}) {
+  const duplicate = await prisma.tour.findFirst({
+    where: {
+      supplierId,
+      ...(excludeTourId ? { id: { not: excludeTourId } } : {}),
+      OR: [
+        { slug },
+        { title: { equals: title, mode: "insensitive" } }
+      ]
+    },
+    select: { id: true, title: true }
+  });
+  if (duplicate) {
+    throw new Error("Ya tienes un tour con ese nombre. Edita el existente o usa un titulo mas especifico.");
+  }
 }
 
 export async function createTourAction(formData: FormData) {
@@ -137,6 +251,7 @@ export async function createTourAction(formData: FormData) {
   const title = sanitized(formData.get("title"), "title");
   const baseSlug = slugify(title);
   let slug = baseSlug || `tour-${Date.now()}`;
+  await assertNoSupplierDuplicateTour({ supplierId, title, slug });
   const slugExists = await prisma.tour.findUnique({ where: { slug } });
   if (slugExists) slug = `${baseSlug}-${Math.floor(Math.random() * 9999)}`;
 
@@ -158,19 +273,11 @@ export async function createTourAction(formData: FormData) {
   const priceValue = toFloat(formData.get("price")) ?? 0;
   const priceChildValue = toFloat(formData.get("priceChild"));
   const priceYouthValue = toFloat(formData.get("priceYouth"));
-  const durationValue = formData.get("duration")?.toString() ?? "";
-  validateCommercialTourFields({
-    title,
-    categoryValue,
-    price: priceValue,
-    priceChild: priceChildValue,
-    priceYouth: priceYouthValue,
-    capacity: capacityValue,
-    durationValue
-  });
+  const durationValue = parseDurationField(formData.get("duration"));
   const timeSlots = parseTimeSlots(formData);
   const timeOptionsValue = timeSlots.length ? JSON.stringify(timeSlots) : null;
-  const operatingDaysValue = formData.get("operatingDays")?.toString() ?? "[]";
+  const operatingDays = parseJsonStringArray(formData.get("operatingDays"));
+  const operatingDaysValue = JSON.stringify(operatingDays);
   const blackoutDatesValue = formData.get("blackoutDates")?.toString() ?? "[]";
   const resolvedDestination = await resolveDestination(
     formData.get("country")?.toString(),
@@ -189,12 +296,30 @@ export async function createTourAction(formData: FormData) {
   const heroImage = formData.get("heroImageUrl")?.toString() || "/fototours/fototour.jpeg";
   const includes = sanitized(formData.get("includes"), "includes");
   const highlightsList = parseStringArrayField(formData, "highlights");
-  if (highlightsList.length < 3 || highlightsList.length > 6) {
-    throw new Error("Los highlights deben ser entre 3 y 6 elementos.");
-  }
   const includesArray = parseStringArrayField(formData, "includesList");
   const notIncludedArray = parseStringArrayField(formData, "notIncludedList");
   const tourOptions = parseTourOptions(formData);
+  validateCommercialTourFields({
+    title,
+    categoryValue,
+    languageValue,
+    destinationValue: formData.get("destination")?.toString() ?? "",
+    price: priceValue,
+    priceChild: priceChildValue,
+    priceYouth: priceYouthValue,
+    capacity: capacityValue,
+    durationValue,
+    description,
+    heroImage,
+    galleryUrls,
+    highlightsList,
+    includesArray,
+    notIncludedArray,
+    operatingDays,
+    timeSlots,
+    pickup,
+    meetingPoint
+  });
 
   const tourId = randomUUID();
   await prisma.tour.create({
@@ -375,6 +500,12 @@ export async function updateTourAction(formData: FormData) {
   if (tour.supplierId !== supplierId && supplierId) throw new Error("No autorizado");
 
   const title = sanitized(formData.get("title"), "title") || tour.title;
+  await assertNoSupplierDuplicateTour({
+    supplierId,
+    title,
+    slug: slugify(title),
+    excludeTourId: tourId
+  });
   const languageValue = buildLanguagesString(formData);
   const categoryValue = buildCategoryString(formData);
   const itineraryValue = buildItineraryDescription(formData);
@@ -395,19 +526,14 @@ export async function updateTourAction(formData: FormData) {
   const priceValue = toFloat(formData.get("price")) ?? tour.price;
   const priceChildValue = toFloat(formData.get("priceChild")) ?? tour.priceChild ?? undefined;
   const priceYouthValue = toFloat(formData.get("priceYouth")) ?? tour.priceYouth ?? undefined;
-  const durationValue = formData.get("duration")?.toString() ?? tour.duration;
-  validateCommercialTourFields({
-    title,
-    categoryValue: categoryValue || buildCategoryStringFromText(tour.category),
-    price: priceValue,
-    priceChild: priceChildValue,
-    priceYouth: priceYouthValue,
-    capacity: capacityValue,
-    durationValue
-  });
+  const durationValue = parseDurationField(formData.get("duration"), tour.duration ?? "");
   const timeSlots = parseTimeSlots(formData);
   const timeOptionsValue = timeSlots.length ? JSON.stringify(timeSlots) : tour.timeOptions;
-  const operatingDaysValue = formData.get("operatingDays")?.toString() ?? tour.operatingDays ?? "[]";
+  const operatingDays = parseJsonStringArray(formData.get("operatingDays"));
+  const storedOperatingDays = parseJsonStringArray(tour.operatingDays ?? "[]");
+  const operatingDaysValue = operatingDays.length
+    ? JSON.stringify(operatingDays)
+    : tour.operatingDays ?? "[]";
   const blackoutDatesValue = formData.get("blackoutDates")?.toString() ?? tour.blackoutDates ?? "[]";
   const resolvedDestination = await resolveDestination(
     formData.get("country")?.toString(),
@@ -428,13 +554,44 @@ export async function updateTourAction(formData: FormData) {
   const includesArray = parseStringArrayField(formData, "includesList");
   const notIncludedArray = parseStringArrayField(formData, "notIncludedList");
   const tourOptions = parseTourOptions(formData);
+  const galleryUrlsForValidation = galleryUrls.length
+    ? galleryUrls
+    : parseJsonStringArray(tour.gallery ?? "[]");
+  const includesForValidation = includesArray.length
+    ? includesArray
+    : Array.isArray(tour.includesList)
+      ? tour.includesList.filter((item): item is string => typeof item === "string")
+      : [];
+  const notIncludedForValidation = notIncludedArray.length
+    ? notIncludedArray
+    : Array.isArray(tour.notIncludedList)
+      ? tour.notIncludedList.filter((item): item is string => typeof item === "string")
+      : [];
   const highlightsToStore =
     highlightsList.length || !Array.isArray(tour.highlights)
       ? highlightsList
       : tour.highlights;
-  if (highlightsToStore.length && (highlightsToStore.length < 3 || highlightsToStore.length > 6)) {
-    throw new Error("Los highlights deben ser entre 3 y 6 elementos.");
-  }
+  validateCommercialTourFields({
+    title,
+    categoryValue: categoryValue || buildCategoryStringFromText(tour.category),
+    languageValue: languageValue || tour.language || "",
+    destinationValue: formData.get("destination")?.toString() || tour.location || "",
+    price: priceValue,
+    priceChild: priceChildValue,
+    priceYouth: priceYouthValue,
+    capacity: capacityValue,
+    durationValue,
+    description,
+    heroImage: heroImage ?? "",
+    galleryUrls: galleryUrlsForValidation,
+    highlightsList: highlightsToStore.filter((item): item is string => typeof item === "string"),
+    includesArray: includesForValidation,
+    notIncludedArray: notIncludedForValidation,
+    operatingDays: operatingDays.length ? operatingDays : storedOperatingDays,
+    timeSlots: timeSlots.length ? timeSlots : parseTimeSlotsFromJson(tour.timeOptions),
+    pickup,
+    meetingPoint
+  });
 
   await prisma.tour.update({
     where: { id: tourId },
