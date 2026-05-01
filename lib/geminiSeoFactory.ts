@@ -250,6 +250,19 @@ const parseJsonArray = (value?: string | null): string[] => {
   }
 };
 
+const formatTourDuration = (value?: string | null) => {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value);
+    if (isObject(parsed) && typeof parsed.value === "string" && typeof parsed.unit === "string") {
+      return `${parsed.value} ${parsed.unit}`.trim();
+    }
+  } catch {
+    // Plain duration text is already safe to use.
+  }
+  return value;
+};
+
 const extractText = (data: GeminiApiResponse) =>
   data.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("\n").trim() ?? "";
 
@@ -420,7 +433,7 @@ const buildTourCandidates = async (limit: number, offset: number): Promise<Gemin
         image: absoluteUrl(image),
         price: tour.price,
         currency: "USD",
-        duration: tour.duration,
+        duration: formatTourDuration(tour.duration),
         location: tour.location
       },
       intent: {

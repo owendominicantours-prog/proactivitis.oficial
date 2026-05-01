@@ -117,6 +117,32 @@ const getContent = (landing: GeminiSeoLandingRecord, locale: Locale): GeminiSeoL
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
 
+const cleanGeneratedText = (value: string) =>
+  value.replace(/\{\s*"value"\s*:\s*"([^"]+)"\s*,\s*"unit"\s*:\s*"([^"]+)"\s*\}/g, "$1 $2");
+
+const cleanGeneratedContent = (content: GeminiSeoLocaleContent): GeminiSeoLocaleContent => ({
+  ...content,
+  title: cleanGeneratedText(content.title),
+  metaDescription: cleanGeneratedText(content.metaDescription),
+  ogTitle: cleanGeneratedText(content.ogTitle),
+  ogDescription: cleanGeneratedText(content.ogDescription),
+  h1: cleanGeneratedText(content.h1),
+  intro: cleanGeneratedText(content.intro),
+  ctaLabel: cleanGeneratedText(content.ctaLabel),
+  imageAlt: cleanGeneratedText(content.imageAlt),
+  keywords: content.keywords.map(cleanGeneratedText),
+  sections: content.sections.map((section) => ({
+    ...section,
+    heading: cleanGeneratedText(section.heading),
+    body: cleanGeneratedText(section.body),
+    bullets: section.bullets?.map(cleanGeneratedText)
+  })),
+  faqs: content.faqs.map((faq) => ({
+    question: cleanGeneratedText(faq.question),
+    answer: cleanGeneratedText(faq.answer)
+  }))
+});
+
 const parseJsonArray = <T,>(value?: string | null | Prisma.JsonValue): T[] => {
   if (value === undefined || value === null) return [];
   if (Array.isArray(value)) return value.filter((item) => item !== null && item !== undefined) as T[];
@@ -177,7 +203,7 @@ const getTourBookingData = async (landing: GeminiSeoLandingRecord) => {
 export async function buildGeminiSeoLandingMetadata(slug: string, locale: Locale): Promise<Metadata> {
   const landing = await getGeminiSeoLanding(slug);
   if (!landing) return {};
-  const content = getContent(landing, locale);
+  const content = cleanGeneratedContent(getContent(landing, locale));
   const prefix = localePrefix(locale);
   const pageUrl = `${BASE_URL}${geminiSeoPublicPath(landing.slug, locale)}`;
   const imageUrl = absoluteUrl(getDisplayImage(landing, content));
@@ -238,7 +264,7 @@ export default async function GeminiSeoLandingPage({
   if (!landing) return notFound();
   if (landing.status !== "published" && !preview) return notFound();
 
-  const content = getContent(landing, locale);
+  const content = cleanGeneratedContent(getContent(landing, locale));
   const prefix = localePrefix(locale);
   const productUrl =
     landing.type === "transfer"
