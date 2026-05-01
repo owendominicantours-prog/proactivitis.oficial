@@ -245,6 +245,7 @@ export function TourBookingWidget({
   const [youth, setYouth] = useState(0);
   const [child, setChild] = useState(0);
   const [showTravelersPopover, setShowTravelersPopover] = useState(false);
+  const [bookingNotice, setBookingNotice] = useState("");
   const normalizedOperatingDays = useMemo(
     () => parseAvailableDays(operatingDays ?? null),
     [operatingDays]
@@ -296,6 +297,7 @@ export function TourBookingWidget({
 
   const popoverRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
   const totalTravelers = Math.max(1, adults + youth + child);
   const pricing = resolveOptionPricing(selectedOption ?? null, totalTravelers, basePrice);
   const discountMultiplier = discountPercent > 0 ? 1 - discountPercent / 100 : 1;
@@ -348,7 +350,21 @@ export function TourBookingWidget({
   }, [resolvedOptions, selectedOption, selectedOptionAvailable, selectedWeekday]);
 
   const handleCheckAvailability = () => {
-    if (!date || operatingDayBlocked || !selectedOptionAvailable) return;
+    if (!date) {
+      setBookingNotice("Selecciona una fecha para asegurar tu cupo.");
+      dateInputRef.current?.focus();
+      dateInputRef.current?.showPicker?.();
+      return;
+    }
+    if (operatingDayBlocked) {
+      setBookingNotice("Ese día no está disponible. Elige otra fecha para reservar.");
+      return;
+    }
+    if (!selectedOptionAvailable) {
+      setBookingNotice("Esta opción no opera ese día. Cambia de ticket o elige otra fecha.");
+      return;
+    }
+    setBookingNotice("");
     const params = new URLSearchParams({
       tourId,
       date,
@@ -450,8 +466,18 @@ export function TourBookingWidget({
     { label: "Child", range: "Age 1-9", count: child, setter: setChild }
   ];
 
+  const canContinue = Boolean(date && !operatingDayBlocked && selectedOptionAvailable);
+
   return (
     <div className="relative w-full max-w-sm space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-md">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="rounded-md bg-rose-600 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-[0.12em] text-white shadow-sm shadow-rose-600/20">
+          Alta demanda
+        </span>
+        <span className="rounded-md bg-amber-100 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-[0.12em] text-amber-900">
+          Se agota rápido
+        </span>
+      </div>
       {resolvedOptions.length > 0 && (
         <div className="space-y-2">
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-slate-500">Opción</p>
@@ -546,9 +572,13 @@ export function TourBookingWidget({
           <div className="flex flex-col px-4 py-2">
             <span className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Date</span>
             <input
+              ref={dateInputRef}
               type="date"
               value={date}
-              onChange={(event) => setDate(event.target.value)}
+              onChange={(event) => {
+                setDate(event.target.value);
+                setBookingNotice("");
+              }}
               className="mt-1 w-full border-none bg-transparent text-sm text-slate-900 outline-none"
             />
           </div>
@@ -658,18 +688,45 @@ export function TourBookingWidget({
       )}
 
       {/* MAIN CTA */}
+      {bookingNotice ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
+          {bookingNotice}
+        </div>
+      ) : null}
+
       <button
         type="button"
         onClick={handleCheckAvailability}
-        disabled={!date || operatingDayBlocked || !selectedOptionAvailable}
-        className={`w-full rounded-lg px-4 py-3 text-sm font-semibold text-white transition ${
-          date && !operatingDayBlocked && selectedOptionAvailable
-            ? "bg-sky-500 hover:bg-sky-600"
-            : "cursor-not-allowed bg-slate-300"
-        }`}
+        aria-disabled={!canContinue}
+        className="w-full rounded-full bg-blue-600 px-5 py-4 text-base font-black text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200"
       >
-        Check availability
+        Reservar ahora
       </button>
+
+      <div className="space-y-3 border-t border-slate-200 pt-4">
+        <div className="flex gap-3 text-sm">
+          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xs font-black text-emerald-700">
+            ✓
+          </span>
+          <div>
+            <p className="font-black text-slate-900">Cancelación gratis</p>
+            <p className="text-xs leading-relaxed text-slate-600">
+              Reembolso íntegro si cancelas con 24 horas de antelación.
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-3 text-sm">
+          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xs font-black text-emerald-700">
+            ✓
+          </span>
+          <div>
+            <p className="font-black text-slate-900">Reserva sin pagar ahora</p>
+            <p className="text-xs leading-relaxed text-slate-600">
+              Asegura tu cupo y confirma los detalles antes del pago final.
+            </p>
+          </div>
+        </div>
+      </div>
 
     </div>
   );
