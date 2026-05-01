@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { TransferLocationType, type Prisma } from "@prisma/client";
 import TrasladoSearchV2, { type LocationSummary } from "@/components/traslado/TrasladoSearchV2";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
+import TourGalleryCollage from "@/components/tours/TourGalleryCollage";
 import StructuredData from "@/components/schema/StructuredData";
 import { resolveLocationByAlias } from "@/components/public/TransferLandingPage";
 import {
@@ -48,6 +49,41 @@ const getDisplayImage = (landing: GeminiSeoLandingRecord, content: GeminiSeoLoca
     return candidate;
   }
   return candidate;
+};
+
+const normalizeRenderableImage = (value?: string | null) => {
+  if (!value?.trim()) return null;
+  const candidate = value.trim();
+  const normalized = candidate.toLowerCase();
+  if (
+    normalized.includes("google.com/url") ||
+    normalized.includes("gstatic.com") ||
+    normalized.includes("encrypted-tbn") ||
+    normalized.includes("placeholder")
+  ) {
+    return null;
+  }
+  try {
+    const url = new URL(candidate);
+    if (url.hostname === "proactivitis.com" || url.hostname === "www.proactivitis.com") {
+      return decodeURI(url.pathname);
+    }
+    return candidate;
+  } catch {
+    return candidate.startsWith("/") ? candidate : `/${candidate}`;
+  }
+};
+
+const uniqueImages = (images: Array<string | null | undefined>) => {
+  const seen = new Set<string>();
+  return images
+    .map((image) => normalizeRenderableImage(image))
+    .filter((image): image is string => Boolean(image))
+    .filter((image) => {
+      if (seen.has(image)) return false;
+      seen.add(image);
+      return true;
+    });
 };
 
 const toLocationSummary = (location: Awaited<ReturnType<typeof resolveLocationByAlias>>): LocationSummary | null =>
@@ -217,6 +253,14 @@ export default async function GeminiSeoLandingPage({
       : tourBookingData
         ? "#seo-tour-booking"
         : productUrl;
+  const tourGalleryImages = tourBookingData
+    ? uniqueImages([
+        tourBookingData.heroImage,
+        ...parseJsonArray<string>(tourBookingData.gallery),
+        landing.product.image,
+        imageUrl
+      ])
+    : [];
   const priceLabel =
     typeof landing.product.price === "number"
       ? `Desde $${Math.round(landing.product.price)}`
@@ -309,6 +353,40 @@ export default async function GeminiSeoLandingPage({
               initialDestination={initialDestination}
               initialPassengers={2}
               autoQuote={Boolean(initialOrigin && initialDestination)}
+            />
+          </div>
+        </section>
+      ) : null}
+
+      {landing.type === "tour" && tourGalleryImages.length > 0 ? (
+        <section className="bg-white px-5 py-12 sm:px-8 lg:px-12">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-700">
+                  {locale === "es" ? "Galeria del tour" : locale === "fr" ? "Galerie du tour" : "Tour gallery"}
+                </p>
+                <h2 className="mt-2 text-3xl font-black text-slate-950">
+                  {locale === "es"
+                    ? "Fotos reales para decidir mejor"
+                    : locale === "fr"
+                      ? "Photos reelles pour mieux choisir"
+                      : "Real photos to choose with confidence"}
+                </h2>
+              </div>
+              <p className="max-w-md text-sm leading-6 text-slate-600">
+                {locale === "es"
+                  ? "Mira la experiencia antes de reservar y abre la galeria para ver mas detalles."
+                  : locale === "fr"
+                    ? "Consultez l experience avant de reserver et ouvrez la galerie pour voir plus de details."
+                    : "Preview the experience before booking and open the gallery for more details."}
+              </p>
+            </div>
+            <TourGalleryCollage
+              images={tourGalleryImages}
+              title={content.h1}
+              fallbackImage={imageUrl}
+              label={locale === "es" ? "Ver galeria" : locale === "fr" ? "Voir galerie" : "View gallery"}
             />
           </div>
         </section>

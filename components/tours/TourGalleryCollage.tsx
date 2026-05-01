@@ -7,9 +7,15 @@ type TourGalleryCollageProps = {
   images: string[];
   title: string;
   fallbackImage: string;
+  label?: string;
 };
 
-export default function TourGalleryCollage({ images, title, fallbackImage }: TourGalleryCollageProps) {
+export default function TourGalleryCollage({
+  images,
+  title,
+  fallbackImage,
+  label = "View gallery"
+}: TourGalleryCollageProps) {
   const collageImages = images.slice(0, 4);
   const primaryCollageImage = collageImages[0] ?? fallbackImage;
   const secondaryCollageImages = collageImages.slice(1, 4);
@@ -50,7 +56,7 @@ export default function TourGalleryCollage({ images, title, fallbackImage }: Tou
               ))}
             </div>
             <div className="absolute bottom-4 left-4 right-4 rounded-[24px] border border-white/60 bg-black/50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white backdrop-blur">
-              View gallery
+              {label}
             </div>
           </div>
         )}
