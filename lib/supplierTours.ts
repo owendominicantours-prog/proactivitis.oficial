@@ -37,9 +37,19 @@ const clampText = (value: string, limit?: number) => {
   return value.length <= limit ? value : value.slice(0, limit);
 };
 
+const stripUnsafeText = (value: string) =>
+  value
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
 export const sanitized = (value: unknown, key?: keyof typeof FIELD_LIMITS) => {
   if (typeof value !== "string") return "";
-  return clampText(value.trim(), key ? FIELD_LIMITS[key] : undefined);
+  return clampText(stripUnsafeText(value), key ? FIELD_LIMITS[key] : undefined);
 };
 
 export function slugify(value: string) {

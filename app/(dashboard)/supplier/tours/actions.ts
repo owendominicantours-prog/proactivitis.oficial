@@ -70,6 +70,19 @@ function parseTimeSlotsFromJson(rawValue?: string | null): PersistedTimeSlot[] {
   }
 }
 
+function sanitizeMediaUrl(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  if (trimmed.startsWith("/") && !trimmed.startsWith("//")) return trimmed;
+  try {
+    const url = new URL(trimmed);
+    return ["http:", "https:"].includes(url.protocol) ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function parseJsonStringArray(rawValue: FormDataEntryValue | null) {
   if (!rawValue || typeof rawValue !== "string") return [];
   try {
@@ -111,7 +124,7 @@ function parseTourOptions(formData: FormData): TourOptionInput[] {
         name: typeof option?.name === "string" ? sanitized(option.name, "title") : "",
         type: typeof option?.type === "string" ? option.type.trim() : undefined,
         description: typeof option?.description === "string" ? sanitized(option.description, "description") : undefined,
-        imageUrl: typeof option?.imageUrl === "string" ? option.imageUrl.trim() : undefined,
+        imageUrl: sanitizeMediaUrl(option?.imageUrl),
         pricePerPerson:
           typeof option?.pricePerPerson === "number" && option.pricePerPerson >= 0 ? option.pricePerPerson : undefined,
         basePrice: typeof option?.basePrice === "number" && option.basePrice >= 0 ? option.basePrice : undefined,
@@ -289,11 +302,11 @@ export async function createTourAction(formData: FormData) {
 
   const galleryUrls = formData
     .getAll("galleryUrls")
-    .filter((val): val is string =>
-      typeof val === "string" && val.trim().length > 0
-    );
+    .map(sanitizeMediaUrl)
+    .filter((val): val is string => Boolean(val))
+    .filter((url, index, list) => list.indexOf(url) === index);
 
-  const heroImage = formData.get("heroImageUrl")?.toString() || "/fototours/fototour.jpeg";
+  const heroImage = sanitizeMediaUrl(formData.get("heroImageUrl")) || "/fototours/fototour.jpeg";
   const includes = sanitized(formData.get("includes"), "includes");
   const highlightsList = parseStringArrayField(formData, "highlights");
   const includesArray = parseStringArrayField(formData, "includesList");
@@ -545,10 +558,10 @@ export async function updateTourAction(formData: FormData) {
 
   const galleryUrls = formData
     .getAll("galleryUrls")
-    .filter((val): val is string =>
-      typeof val === "string" && val.trim().length > 0
-    );
-  const heroImage = formData.get("heroImageUrl")?.toString() || tour.heroImage;
+    .map(sanitizeMediaUrl)
+    .filter((val): val is string => Boolean(val))
+    .filter((url, index, list) => list.indexOf(url) === index);
+  const heroImage = sanitizeMediaUrl(formData.get("heroImageUrl")) || tour.heroImage;
   const includes = sanitized(formData.get("includes"), "includes") || tour.includes;
   const highlightsList = parseStringArrayField(formData, "highlights");
   const includesArray = parseStringArrayField(formData, "includesList");
