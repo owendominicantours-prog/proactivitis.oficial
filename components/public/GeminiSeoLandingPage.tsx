@@ -2,8 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { TransferLocationType } from "@prisma/client";
+import { TransferLocationType, type Prisma } from "@prisma/client";
 import TrasladoSearchV2, { type LocationSummary } from "@/components/traslado/TrasladoSearchV2";
+import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import StructuredData from "@/components/schema/StructuredData";
 import { resolveLocationByAlias } from "@/components/public/TransferLandingPage";
 import {
@@ -11,6 +12,7 @@ import {
   type GeminiSeoLandingRecord,
   type GeminiSeoLocaleContent
 } from "@/lib/geminiSeoFactory";
+import { prisma } from "@/lib/prisma";
 import type { Locale } from "@/lib/translations";
 
 const BASE_URL = "https://proactivitis.com";
@@ -76,6 +78,65 @@ const getTransferInitialLocations = async (landing: GeminiSeoLandingRecord) => {
 
 const getContent = (landing: GeminiSeoLandingRecord, locale: Locale): GeminiSeoLocaleContent =>
   landing.locales[locale] ?? landing.locales.es;
+
+type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
+
+const parseJsonArray = <T,>(value?: string | null | Prisma.JsonValue): T[] => {
+  if (value === undefined || value === null) return [];
+  if (Array.isArray(value)) return value.filter((item) => item !== null && item !== undefined) as T[];
+  if (!value) return [];
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value) as T[];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};
+
+const getTourBookingData = async (landing: GeminiSeoLandingRecord) => {
+  if (landing.type !== "tour") return null;
+  return prisma.tour.findFirst({
+    where: {
+      id: landing.product.id,
+      status: { in: ["published", "seo_only"] }
+    },
+    select: {
+      id: true,
+      title: true,
+      price: true,
+      heroImage: true,
+      gallery: true,
+      timeOptions: true,
+      operatingDays: true,
+      platformSharePercent: true,
+      options: {
+        where: { active: true },
+        orderBy: { sortOrder: "asc" },
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          description: true,
+          imageUrl: true,
+          pricePerPerson: true,
+          basePrice: true,
+          baseCapacity: true,
+          extraPricePerPerson: true,
+          pickupTimes: true,
+          isDefault: true,
+          active: true
+        }
+      },
+      SupplierProfile: {
+        select: {
+          stripeAccountId: true
+        }
+      }
+    }
+  });
+};
 
 export async function buildGeminiSeoLandingMetadata(slug: string, locale: Locale): Promise<Metadata> {
   const landing = await getGeminiSeoLanding(slug);
@@ -149,6 +210,13 @@ export default async function GeminiSeoLandingPage({
       : `${prefix}${new URL(landing.product.url).pathname}`;
   const imageUrl = getDisplayImage(landing, content);
   const { initialOrigin, initialDestination } = await getTransferInitialLocations(landing);
+  const tourBookingData = await getTourBookingData(landing);
+  const primaryCtaHref =
+    landing.type === "transfer"
+      ? "#seo-transfer-quote"
+      : tourBookingData
+        ? "#seo-tour-booking"
+        : productUrl;
   const priceLabel =
     typeof landing.product.price === "number"
       ? `Desde $${Math.round(landing.product.price)}`
@@ -182,7 +250,7 @@ export default async function GeminiSeoLandingPage({
             <p className="mt-5 max-w-2xl text-lg font-medium leading-8 text-white/90">{content.intro}</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
-                href={landing.type === "transfer" ? "#seo-transfer-quote" : productUrl}
+                href={primaryCtaHref}
                 className="rounded-full bg-sky-500 px-6 py-4 text-sm font-black text-white shadow-xl shadow-sky-950/30 transition hover:bg-sky-400"
               >
                 {content.ctaLabel}
@@ -246,6 +314,63 @@ export default async function GeminiSeoLandingPage({
         </section>
       ) : null}
 
+      {landing.type === "tour" && tourBookingData ? (
+        <section id="seo-tour-booking" className="bg-slate-50 px-5 py-12 sm:px-8 lg:px-12">
+          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_420px] lg:items-start">
+            <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-700">
+                {locale === "es" ? "Reserva sin salir de la pagina" : locale === "fr" ? "Reservation sur cette page" : "Book on this page"}
+              </p>
+              <h2 className="mt-3 text-3xl font-black leading-tight text-slate-950">
+                {locale === "es"
+                  ? "Elige fecha, hora y viajeros aqui mismo"
+                  : locale === "fr"
+                    ? "Choisissez date, heure et voyageurs ici"
+                    : "Choose date, time, and travelers right here"}
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
+                {locale === "es"
+                  ? "La disponibilidad y el resumen pasan directo al checkout seguro de Proactivitis sin mandar al viajero a otra ficha."
+                  : locale === "fr"
+                    ? "La disponibilite et le resume passent au checkout securise Proactivitis sans autre fiche."
+                    : "Availability and summary go straight to Proactivitis secure checkout without sending the traveler to another product page."}
+              </p>
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                {[
+                  locale === "es" ? "Pago seguro" : locale === "fr" ? "Paiement securise" : "Secure payment",
+                  locale === "es" ? "Soporte humano" : locale === "fr" ? "Support humain" : "Human support",
+                  locale === "es" ? "Confirmacion clara" : locale === "fr" ? "Confirmation claire" : "Clear confirmation"
+                ].map((item) => (
+                  <div key={item} className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-900">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-[32px] border border-slate-200 bg-white p-4 shadow-xl">
+              <TourBookingWidget
+                tourId={tourBookingData.id}
+                basePrice={tourBookingData.price}
+                timeSlots={parseJsonArray<PersistedTimeSlot>(tourBookingData.timeOptions)}
+                operatingDays={parseJsonArray<string>(tourBookingData.operatingDays)}
+                options={tourBookingData.options.map((option) => ({
+                  ...option,
+                  pickupTimes: parseJsonArray<string>(option.pickupTimes)
+                }))}
+                supplierHasStripeAccount={Boolean(tourBookingData.SupplierProfile?.stripeAccountId)}
+                platformSharePercent={tourBookingData.platformSharePercent ?? 20}
+                tourTitle={tourBookingData.title}
+                tourImage={
+                  tourBookingData.heroImage ||
+                  parseJsonArray<string>(tourBookingData.gallery)[0] ||
+                  landing.product.image
+                }
+              />
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section className="mx-auto grid max-w-7xl gap-8 px-5 py-14 sm:px-8 lg:grid-cols-[1fr_360px] lg:px-12">
         <div className="space-y-8">
           {content.sections.map((section) => (
@@ -293,19 +418,11 @@ export default async function GeminiSeoLandingPage({
               <h3 className="text-xl font-black text-slate-950">{landing.product.title}</h3>
               <p className="text-sm leading-6 text-slate-600">{content.metaDescription}</p>
               <Link
-                href={landing.type === "transfer" ? "#seo-transfer-quote" : productUrl}
+                href={primaryCtaHref}
                 className="block rounded-2xl bg-slate-950 px-5 py-4 text-center text-sm font-black text-white transition hover:bg-slate-800"
               >
                 {content.ctaLabel}
               </Link>
-              {landing.sources.length > 0 ? (
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">Senales revisadas</p>
-                  <p className="mt-2 text-xs leading-5 text-slate-500">
-                    Gemini uso busqueda actual para ajustar intencion, FAQ y angulo SEO.
-                  </p>
-                </div>
-              ) : null}
             </div>
           </div>
         </aside>

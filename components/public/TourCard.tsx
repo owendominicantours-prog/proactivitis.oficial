@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -7,6 +7,7 @@ import { formatReviewCountShort } from "@/lib/reviewCounts";
 import { formatDurationDisplay } from "@/lib/formatDuration";
 
 type TourCardProps = {
+  locale?: "es" | "en" | "fr";
   slug: string;
   title: string;
   location: string;
@@ -26,6 +27,45 @@ type TourCardProps = {
   pickupIncluded?: boolean;
   compact?: boolean;
 };
+
+const labelsByLocale = {
+  es: {
+    reviews: "rese\u00f1as",
+    topExperience: "Experiencia top",
+    smallGroup: "Grupo peque\u00f1o",
+    topSeller: "M\u00e1s reservado",
+    instant: "Confirmaci\u00f3n r\u00e1pida",
+    fallbackDescription: (location: string) => `Reserva una experiencia verificada en ${location} con soporte local.`,
+    max: "Max",
+    pickup: "Recogida en hotel incluida",
+    from: "Desde",
+    view: "Ver tour"
+  },
+  en: {
+    reviews: "reviews",
+    topExperience: "Top Experience",
+    smallGroup: "Small group",
+    topSeller: "Top seller",
+    instant: "Instant booking",
+    fallbackDescription: (location: string) => `Book a verified ${location} experience with professional local support.`,
+    max: "Max",
+    pickup: "Hotel pickup included",
+    from: "From",
+    view: "View tour"
+  },
+  fr: {
+    reviews: "avis",
+    topExperience: "Experience top",
+    smallGroup: "Petit groupe",
+    topSeller: "Plus reserve",
+    instant: "Confirmation rapide",
+    fallbackDescription: (location: string) => `Reservez une experience verifiee a ${location} avec support local.`,
+    max: "Max",
+    pickup: "Pickup hotel inclus",
+    from: "Depuis",
+    view: "Voir le tour"
+  }
+} as const;
 
 const IconUsers = () => (
   <svg viewBox="0 0 24 24" className="h-5 w-5 text-slate-500" fill="none" stroke="currentColor" strokeWidth={1.5}>
@@ -56,6 +96,7 @@ const IconChevron = ({ direction }: { direction: "left" | "right" }) => (
 );
 
 export function TourCard({
+  locale = "en",
   slug,
   title,
   location,
@@ -80,11 +121,12 @@ export function TourCard({
   const normalizedRating = typeof rating === "number" ? rating : 0;
   const normalizedCount = reviewCount ?? 0;
   const reviewLabel = formatReviewCountShort(normalizedCount);
-  const badgeText = `★ ${normalizedRating.toFixed(1)} · ${reviewLabel} reviews`;
+  const labels = labelsByLocale[locale];
+  const badgeText = `★ ${normalizedRating.toFixed(1)} · ${reviewLabel} ${labels.reviews}`;
   const showBadge = normalizedRating > 0 && normalizedCount > 0;
-  const tagList = tags && tags.length ? tags : ["Top Experience"];
+  const tagList = tags && tags.length ? tags : [labels.topExperience];
   const locationText = zone || location?.split(",")[0] || "Punta Cana";
-  const audienceLabel = maxPax && maxPax <= 8 ? "Small group" : "Top seller";
+  const audienceLabel = maxPax && maxPax <= 8 ? labels.smallGroup : labels.topSeller;
   const durationLabel = formatDurationDisplay(duration, "4 hours");
   const activeImage = normalizedImages[activeImageIndex] ?? image;
 
@@ -168,12 +210,12 @@ export function TourCard({
           <div className="flex items-center justify-between gap-3">
             <p className="text-brand text-[10px] font-medium uppercase tracking-[0.35em]">{locationText}</p>
             <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600">
-              Instant booking
+              {labels.instant}
             </span>
           </div>
           <h3 className={`font-black leading-tight text-slate-900 ${compact ? "text-lg" : "text-2xl"}`}>{title}</h3>
           <p className={`leading-relaxed text-slate-500 ${compact ? "line-clamp-1 text-xs" : "line-clamp-2 text-sm"}`}>
-            {description ?? `Book a verified ${locationText} experience with professional local support.`}
+            {description ?? labels.fallbackDescription(locationText)}
           </p>
 
           <div className={`flex flex-wrap items-center gap-2 border-y border-slate-50 text-[11px] text-slate-500 ${compact ? "py-1.5" : "py-2"}`}>
@@ -183,7 +225,7 @@ export function TourCard({
             </span>
             <span className="flex items-center gap-1">
               <IconUsers />
-              {`Max ${maxPax ?? 15}`}
+              {`${labels.max} ${maxPax ?? 15}`}
             </span>
             <span className="flex items-center gap-1">
               <IconMap />
@@ -191,7 +233,7 @@ export function TourCard({
             </span>
           </div>
 
-          {pickupIncluded ? <p className="text-[11px] font-semibold text-emerald-600">Hotel pickup included</p> : null}
+          {pickupIncluded ? <p className="text-[11px] font-semibold text-emerald-600">{labels.pickup}</p> : null}
 
           {normalizedImages.length > 1 ? (
             <div className="flex items-center gap-1">
@@ -215,7 +257,7 @@ export function TourCard({
 
           <div className={`mt-auto flex items-center justify-between border-t border-slate-100 ${compact ? "pt-2.5" : "pt-4"}`}>
             <div>
-              <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400">From</p>
+              <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400">{labels.from}</p>
               <div className="flex items-baseline gap-1">
                 <span className={`${compact ? "text-2xl" : "text-3xl"} font-black ${hasDiscount ? "text-emerald-600" : "text-brand"}`}>
                   ${bestDiscountedPrice.toFixed(0)}
@@ -236,7 +278,7 @@ export function TourCard({
                 compact ? "px-4 py-2" : "px-6 py-3"
               }`}
             >
-              View tour
+              {labels.view}
             </span>
           </div>
         </div>

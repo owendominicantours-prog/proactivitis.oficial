@@ -82,6 +82,9 @@ const formatDurationValue = (value?: string | null) => {
   try {
     const parsed = JSON.parse(value);
     if (parsed?.value && parsed?.unit) {
+      if (typeof parsed.value === "string" && /[a-zA-Z]/.test(parsed.value)) {
+        return parsed.value;
+      }
       return `${parsed.value} ${parsed.unit}`;
     }
   } catch {
@@ -157,6 +160,7 @@ export default async function FeaturedToursSection({ locale }: Props) {
             : undefined;
           return (
         <TourCard
+          locale={locale}
           key={tour.id}
           slug={tour.slug}
           title={
