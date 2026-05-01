@@ -40,6 +40,14 @@ type TourOptionsEditorProps = {
 
 const createOptionId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+const OPTION_TYPE_PRESETS = [
+  { label: "Compartido", value: "shared" },
+  { label: "Privado", value: "private" },
+  { label: "VIP", value: "vip" },
+  { label: "Familiar", value: "family" },
+  { label: "Premium", value: "premium" }
+];
+
 const emptyOption = (): TourOptionDraft => ({
   id: createOptionId(),
   name: "",
@@ -65,7 +73,7 @@ export function TourOptionsEditor({ initialOptions, onChange }: TourOptionsEdito
     if (!initialOptions?.length) return [emptyOption()];
     return initialOptions.map((option, index) => ({
       id: createOptionId(),
-      name: option.name ?? `Opcion ${index + 1}`,
+      name: option.name ?? `Opción ${index + 1}`,
       type: option.type ?? "",
       description: option.description ?? "",
       imageUrl: option.imageUrl ?? "",
@@ -142,11 +150,11 @@ export function TourOptionsEditor({ initialOptions, onChange }: TourOptionsEdito
         <div key={option.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Opcion {index + 1}</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Opción {index + 1}</p>
               <input
                 value={option.name}
                 onChange={(event) => updateOption(option.id, { name: event.target.value })}
-                placeholder="Ej: Share boat trip"
+                placeholder="Ej: Bote compartido con almuerzo"
                 className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
               />
             </div>
@@ -166,28 +174,34 @@ export function TourOptionsEditor({ initialOptions, onChange }: TourOptionsEdito
                   checked={option.isDefault}
                   onChange={() => handleDefaultToggle(option.id)}
                 />
-                Default
+                Principal
               </label>
             </div>
           </div>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <input
+            <select
               value={option.type}
               onChange={(event) => updateOption(option.id, { type: event.target.value })}
-              placeholder="Tipo o regla (vip | days:tue,wed,thu,fri,sat,sun)"
               className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
-            />
+            >
+              <option value="">Tipo de experiencia</option>
+              {OPTION_TYPE_PRESETS.map((preset) => (
+                <option key={preset.value} value={preset.value}>
+                  {preset.label}
+                </option>
+              ))}
+            </select>
             <input
               value={option.description}
               onChange={(event) => updateOption(option.id, { description: event.target.value })}
-              placeholder="Descripcion corta"
+              placeholder="Descripción corta"
               className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
             />
           </div>
           <input
             value={option.imageUrl}
             onChange={(event) => updateOption(option.id, { imageUrl: event.target.value })}
-            placeholder="URL de imagen para esta opcion"
+            placeholder="Imagen de esta opción (opcional)"
             className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
           />
           <div className="mt-3 grid gap-3 md:grid-cols-4">
@@ -219,11 +233,11 @@ export function TourOptionsEditor({ initialOptions, onChange }: TourOptionsEdito
           <input
             value={option.pickupTimes}
             onChange={(event) => updateOption(option.id, { pickupTimes: event.target.value })}
-            placeholder="Pickup times (comma separated, optional)"
+            placeholder="Horarios de recogida separados por coma. Ej: 08:00 AM, 09:00 AM"
             className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
           />
           <p className="mt-2 text-xs text-slate-500">
-            Puedes bloquear tickets por dia usando el campo tipo. Ejemplo: <span className="font-semibold">drink-pack | days:tue,wed</span>
+            Si esta opción solo opera algunos días, déjalo en la nota interna del tour para que el equipo lo revise.
           </p>
           <div className="mt-3 flex justify-end">
             <button
@@ -241,7 +255,7 @@ export function TourOptionsEditor({ initialOptions, onChange }: TourOptionsEdito
         onClick={() => setOptions((prev) => [...prev, emptyOption()])}
         className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700"
       >
-        Agregar opcion
+        Agregar opción
       </button>
     </div>
   );

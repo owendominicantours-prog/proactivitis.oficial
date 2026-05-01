@@ -2,11 +2,57 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getServerSession } from "next-auth";
 
+import { authOptions } from "@/lib/auth";
 import { createNotification } from "@/lib/notificationService";
 import { NotificationType } from "@/lib/types/notificationTypes";
 import { TOUR_DELETE_REASONS } from "@/lib/constants/tourDeletion";
 import { notifyAdminTourModeration, notifySupplierTourModeration } from "@/lib/mailers/adminNotifications";
+
+type SessionUser = {
+  id?: string;
+  role?: string;
+};
+
+const getSessionUser = async () => {
+  const session = await getServerSession(authOptions);
+  return session?.user as SessionUser | undefined;
+};
+
+const requireAdmin = async () => {
+  const user = await getSessionUser();
+  if (!user?.id || user.role !== "ADMIN") {
+    throw new Error("No autorizado");
+  }
+};
+
+const requireTourOwnerOrAdmin = async (tourId: string) => {
+  const user = await getSessionUser();
+  if (!user?.id) {
+    throw new Error("No autorizado");
+  }
+
+  const tour = await prisma.tour.findUnique({
+    where: { id: tourId },
+    select: { id: true, supplierId: true, status: true }
+  });
+  if (!tour) {
+    throw new Error("Tour no encontrado");
+  }
+  if (user.role === "ADMIN") {
+    return tour;
+  }
+
+  const supplierProfile = await prisma.supplierProfile.findUnique({
+    where: { userId: user.id },
+    select: { id: true }
+  });
+  if (!supplierProfile || supplierProfile.id !== tour.supplierId) {
+    throw new Error("No tienes permiso para modificar este tour");
+  }
+  return tour;
+};
 
 const notifySupplier = async (
   tourId: string,
@@ -52,6 +98,7 @@ const deleteReasonLookup = Object.fromEntries(
 );
 
 export async function approveTour(formData: FormData) {
+  await requireAdmin();
   const tourId = formData.get("tourId");
   const note = formData.get("note");
   if (!tourId || typeof tourId !== "string") return;
@@ -84,6 +131,7 @@ export async function approveTour(formData: FormData) {
 }
 
 export async function requestChanges(formData: FormData) {
+  await requireAdmin();
   const tourId = formData.get("tourId");
   const note = formData.get("note");
   if (!tourId || typeof tourId !== "string") return;
@@ -118,6 +166,10 @@ export async function requestChanges(formData: FormData) {
 export async function sendToReview(formData: FormData) {
   const tourId = formData.get("tourId");
   if (!tourId || typeof tourId !== "string") return;
+  const tourAccess = await requireTourOwnerOrAdmin(tourId);
+  if (!["draft", "needs_changes"].includes(tourAccess.status)) {
+    throw new Error("Solo puedes enviar a revisión tours en borrador o con cambios requeridos.");
+  }
   await changeTourStatus(tourId, "under_review");
   const tour = await notifySupplier(
     tourId,
@@ -146,13 +198,17 @@ export async function sendToReview(formData: FormData) {
 
 export async function togglePauseTour(formData: FormData) {
   const tourId = formData.get("tourId");
-  const currentStatus = formData.get("currentStatus");
   if (!tourId || typeof tourId !== "string") return;
-  const status = currentStatus === "paused" ? "published" : "paused";
+  const tourAccess = await requireTourOwnerOrAdmin(tourId);
+  if (!["published", "paused"].includes(tourAccess.status)) {
+    throw new Error("Solo puedes pausar o reanudar tours publicados.");
+  }
+  const status = tourAccess.status === "paused" ? "published" : "paused";
   await changeTourStatus(tourId, status);
 }
 
 export async function deleteTourAction(formData: FormData) {
+  await requireAdmin();
   const tourId = formData.get("tourId");
   const reasonValue = formData.get("reason");
   if (!tourId || typeof tourId !== "string") return;

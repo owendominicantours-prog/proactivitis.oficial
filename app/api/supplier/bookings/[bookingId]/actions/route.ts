@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
+import { authOptions } from "@/lib/auth";
 import { createNotification } from "@/lib/notificationService";
 import { sendEmail } from "@/lib/email";
 import { buildEmailShell } from "@/lib/emailTemplates";
@@ -74,12 +76,29 @@ export async function POST(
     return NextResponse.json({ error: "ID de reserva faltante." }, { status: 400 });
   }
 
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  if (!userId) {
+    return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  }
+
+  const supplierProfile = await prisma.supplierProfile.findUnique({
+    where: { userId },
+    select: { id: true }
+  });
+  if (!supplierProfile) {
+    return NextResponse.json({ error: "Perfil de proveedor no encontrado." }, { status: 403 });
+  }
+
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: { Tour: true }
   });
   if (!booking) {
     return NextResponse.json({ error: "Reserva no encontrada." }, { status: 404 });
+  }
+  if (!booking.Tour || booking.Tour.supplierId !== supplierProfile.id) {
+    return NextResponse.json({ error: "No tienes permiso para operar esta reserva." }, { status: 403 });
   }
 
   const body = await request.json().catch(() => ({}));
