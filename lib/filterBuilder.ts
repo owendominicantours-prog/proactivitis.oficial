@@ -50,7 +50,8 @@ const ensureDestinationIs = (where: any) => {
 export function buildTourFilter(params: TourSearchParams = {}) {
   const where: any = { status: "published" };
   const countrySlugs = getCountrySlugAliases(params.country);
-  const hasDestination = Boolean(params.destination?.trim());
+  const destinationSearch = params.destination?.trim() ?? "";
+  const hasDestination = Boolean(destinationSearch);
 
   if (countrySlugs.length && hasDestination) {
     const destinationIs = ensureDestinationIs(where);
@@ -64,8 +65,8 @@ export function buildTourFilter(params: TourSearchParams = {}) {
 
   if (hasDestination) {
     const destinationIs = ensureDestinationIs(where);
-    const normalizedSlug = normalizeToSlug(params.destination);
-    const searchValue = params.destination.trim();
+    const normalizedSlug = normalizeToSlug(destinationSearch);
+    const searchValue = destinationSearch;
     const orConditions: any[] = [];
 
     if (normalizedSlug) {
