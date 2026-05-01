@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import type { Prisma } from "@prisma/client";
 import { ensureCountryByCode, resolveDestination, sanitized, slugify } from "@/lib/supplierTours";
 import { translateTourById } from "@/lib/translationWorker";
+import { normalizeTourCategories } from "@/lib/tourTaxonomy";
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
 type TourOptionInput = {
@@ -45,7 +46,8 @@ function parseStringArrayField(formData: FormData, fieldName: string) {
     return parsed
       .map((item) => (typeof item === "string" ? sanitized(item, "includes") : ""))
       .map((item) => item.trim())
-      .filter(Boolean);
+      .filter(Boolean)
+      .filter((item, index, list) => list.indexOf(item) === index);
   } catch {
     return [];
   }
@@ -63,10 +65,15 @@ function parseTourOptions(formData: FormData): TourOptionInput[] {
         type: typeof option?.type === "string" ? option.type.trim() : undefined,
         description: typeof option?.description === "string" ? sanitized(option.description, "description") : undefined,
         imageUrl: typeof option?.imageUrl === "string" ? option.imageUrl.trim() : undefined,
-        pricePerPerson: typeof option?.pricePerPerson === "number" ? option.pricePerPerson : undefined,
-        basePrice: typeof option?.basePrice === "number" ? option.basePrice : undefined,
-        baseCapacity: typeof option?.baseCapacity === "number" ? option.baseCapacity : undefined,
-        extraPricePerPerson: typeof option?.extraPricePerPerson === "number" ? option.extraPricePerPerson : undefined,
+        pricePerPerson:
+          typeof option?.pricePerPerson === "number" && option.pricePerPerson >= 0 ? option.pricePerPerson : undefined,
+        basePrice: typeof option?.basePrice === "number" && option.basePrice >= 0 ? option.basePrice : undefined,
+        baseCapacity:
+          typeof option?.baseCapacity === "number" && option.baseCapacity > 0 ? Math.trunc(option.baseCapacity) : undefined,
+        extraPricePerPerson:
+          typeof option?.extraPricePerPerson === "number" && option.extraPricePerPerson >= 0
+            ? option.extraPricePerPerson
+            : undefined,
         pickupTimes: Array.isArray(option?.pickupTimes)
           ? option.pickupTimes.filter((item: unknown) => typeof item === "string" && item.trim())
           : undefined,
@@ -83,6 +90,40 @@ function parseTourOptions(formData: FormData): TourOptionInput[] {
 function normalizeJsonInput(value: Prisma.JsonValue | null | undefined): Prisma.InputJsonValue | undefined {
   if (value === null || value === undefined) return undefined;
   return value as Prisma.InputJsonValue;
+}
+
+function validateCommercialTourFields(input: {
+  title: string;
+  categoryValue: string;
+  price: number;
+  priceChild?: number;
+  priceYouth?: number;
+  capacity: number;
+  durationValue: string;
+}) {
+  if (input.title.length < 8) {
+    throw new Error("El titulo debe tener al menos 8 caracteres.");
+  }
+  if (!input.categoryValue) {
+    throw new Error("Selecciona al menos una categoria valida para el tour.");
+  }
+  if (!Number.isFinite(input.price) || input.price <= 0) {
+    throw new Error("El precio adulto debe ser mayor que cero.");
+  }
+  if (!Number.isFinite(input.capacity) || input.capacity < 1 || input.capacity > 999) {
+    throw new Error("La capacidad debe estar entre 1 y 999 personas.");
+  }
+  for (const [label, value] of [
+    ["precio de nino", input.priceChild],
+    ["precio de joven", input.priceYouth]
+  ] as const) {
+    if (value === undefined) continue;
+    if (!Number.isFinite(value) || value < 0) throw new Error(`El ${label} no puede ser negativo.`);
+    if (value > input.price) throw new Error(`El ${label} no debe ser mayor que el precio adulto.`);
+  }
+  if (!input.durationValue.trim()) {
+    throw new Error("Define la duracion del tour.");
+  }
 }
 
 export async function createTourAction(formData: FormData) {
@@ -118,6 +159,15 @@ export async function createTourAction(formData: FormData) {
   const priceChildValue = toFloat(formData.get("priceChild"));
   const priceYouthValue = toFloat(formData.get("priceYouth"));
   const durationValue = formData.get("duration")?.toString() ?? "";
+  validateCommercialTourFields({
+    title,
+    categoryValue,
+    price: priceValue,
+    priceChild: priceChildValue,
+    priceYouth: priceYouthValue,
+    capacity: capacityValue,
+    durationValue
+  });
   const timeSlots = parseTimeSlots(formData);
   const timeOptionsValue = timeSlots.length ? JSON.stringify(timeSlots) : null;
   const operatingDaysValue = formData.get("operatingDays")?.toString() ?? "[]";
@@ -324,6 +374,7 @@ export async function updateTourAction(formData: FormData) {
   if (!tour) throw new Error("Tour no existe");
   if (tour.supplierId !== supplierId && supplierId) throw new Error("No autorizado");
 
+  const title = sanitized(formData.get("title"), "title") || tour.title;
   const languageValue = buildLanguagesString(formData);
   const categoryValue = buildCategoryString(formData);
   const itineraryValue = buildItineraryDescription(formData);
@@ -345,6 +396,15 @@ export async function updateTourAction(formData: FormData) {
   const priceChildValue = toFloat(formData.get("priceChild")) ?? tour.priceChild ?? undefined;
   const priceYouthValue = toFloat(formData.get("priceYouth")) ?? tour.priceYouth ?? undefined;
   const durationValue = formData.get("duration")?.toString() ?? tour.duration;
+  validateCommercialTourFields({
+    title,
+    categoryValue: categoryValue || buildCategoryStringFromText(tour.category),
+    price: priceValue,
+    priceChild: priceChildValue,
+    priceYouth: priceYouthValue,
+    capacity: capacityValue,
+    durationValue
+  });
   const timeSlots = parseTimeSlots(formData);
   const timeOptionsValue = timeSlots.length ? JSON.stringify(timeSlots) : tour.timeOptions;
   const operatingDaysValue = formData.get("operatingDays")?.toString() ?? tour.operatingDays ?? "[]";
@@ -379,14 +439,14 @@ export async function updateTourAction(formData: FormData) {
   await prisma.tour.update({
     where: { id: tourId },
     data: {
-      title: formData.get("title")?.toString() ?? tour.title,
+      title,
       description,
       shortDescription,
       includes,
       duration: durationValue,
       location: formData.get("location")?.toString() ?? tour.location,
       language: languageValue || tour.language,
-      category: categoryValue || tour.category,
+      category: categoryValue || buildCategoryStringFromText(tour.category) || tour.category,
       price: priceValue,
       priceChild: priceChildValue,
       priceYouth: priceYouthValue,
@@ -499,17 +559,23 @@ function buildItineraryDescription(formData: FormData) {
 }
 
 function buildCategoryString(formData: FormData) {
-  const categories = formData
-    .getAll("categories")
-    .filter((value): value is string => typeof value === "string")
-    .map((value) => value.trim())
-    .filter(Boolean);
+  const categories = normalizeTourCategories(
+    formData
+      .getAll("categories")
+      .filter((value): value is string => typeof value === "string")
+      .map((value) => value.trim())
+      .filter(Boolean)
+  );
   if (categories.length) return categories.join(", ");
   const fallback = formData.get("category");
-  if (typeof fallback === "string" && fallback.trim()) {
-    return fallback.trim();
-  }
+  const fallbackCategory = normalizeTourCategories(typeof fallback === "string" ? [fallback] : []);
+  if (fallbackCategory.length) return fallbackCategory.join(", ");
   return "";
+}
+
+function buildCategoryStringFromText(value?: string | null) {
+  if (!value) return "";
+  return normalizeTourCategories(value.split(",")).join(", ");
 }
 
 function toInteger(value: FormDataEntryValue | null): number | undefined {

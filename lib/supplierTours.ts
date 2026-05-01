@@ -1,6 +1,12 @@
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 
+const DOMINICAN_REPUBLIC_COUNTRY_SLUGS = [
+  "dominican-republic",
+  "dominican-republic-rd",
+  "republica-dominicana"
+];
+
 const FIELD_LIMITS: Partial<
   Record<
     | "title"
@@ -45,6 +51,13 @@ export function slugify(value: string) {
     .replace(/(^-|-$)/g, "");
 }
 
+const getCountrySlugAliases = (value?: string | null) => {
+  if (!value) return [];
+  const slug = slugify(value);
+  if (!slug) return [];
+  return DOMINICAN_REPUBLIC_COUNTRY_SLUGS.includes(slug) ? DOMINICAN_REPUBLIC_COUNTRY_SLUGS : [slug];
+};
+
 export async function ensureCountryByCode(code: string, name?: string) {
   const upperCode = code.toUpperCase();
   return prisma.country.upsert({
@@ -68,10 +81,56 @@ export async function resolveDestination(countryInput?: string | null, destinati
   const destSlug = slugify(destName);
   const countryName = countryInput?.trim();
   const countrySlug = countryName ? slugify(countryName) : null;
+  const countrySlugAliases = getCountrySlugAliases(countryName);
+
+  const destinationFilter: any = {
+    OR: [
+      { id: destName },
+      { slug: destSlug },
+      { name: { equals: destName, mode: "insensitive" } }
+    ]
+  };
+  if (countrySlugAliases.length) {
+    destinationFilter.country = { slug: { in: countrySlugAliases } };
+  }
+
+  const existingDestination = await prisma.destination.findFirst({
+    where: destinationFilter,
+    include: {
+      country: {
+        select: { code: true }
+      }
+    },
+    orderBy: { name: "asc" }
+  });
+
+  if (existingDestination) {
+    return {
+      destinationId: existingDestination.id,
+      countryCode: existingDestination.country.code
+    };
+  }
 
   let countryId: string | undefined;
   let countryRecord: { code: string } | undefined;
   if (countrySlug) {
+    const existingCountry = await prisma.country.findFirst({
+      where: {
+        OR: [
+          { id: countryName },
+          { slug: { in: countrySlugAliases.length ? countrySlugAliases : [countrySlug] } },
+          { name: { equals: countryName ?? countrySlug, mode: "insensitive" } }
+        ]
+      },
+      select: { id: true, code: true }
+    });
+    if (existingCountry) {
+      countryId = existingCountry.id;
+      countryRecord = existingCountry;
+    }
+  }
+
+  if (countrySlug && !countryId) {
     const code = countrySlug.toUpperCase();
     const country = await prisma.country.upsert({
       where: { slug: countrySlug },

@@ -12,6 +12,7 @@ import type { UploadedImage } from "@/components/supplier/MediaUploader";
 import { ItineraryTimeline } from "@/components/itinerary/ItineraryTimeline";
 import { TranslationPreview } from "@/components/supplier/TranslationPreview";
 import { TourOptionsEditor, type TourOptionPayload } from "@/components/supplier/TourOptionsEditor";
+import { TOUR_CATEGORY_OPTIONS, normalizeTourCategories } from "@/lib/tourTaxonomy";
 
 
 
@@ -84,33 +85,7 @@ const LANGUAGE_OPTIONS = [
 
 
 
-const CATEGORY_OPTIONS = [
-
-  "Aventura",
-
-  "Adrenalina",
-
-  "Aire Libre",
-
-  "Agua",
-
-  "Safari",
-
-  "Cultura",
-
-  "Historia",
-
-  "Gastronom?a",
-
-  "Relajaci?n",
-
-  "Urbano",
-
-  "Nocturno",
-
-  "Traslados"
-
-];
+const CATEGORY_LIMIT = 3;
 
 
 
@@ -139,6 +114,25 @@ const normalizeSearchTerm = (value: string) =>
 
 const normalizeComparableText = (value: string) =>
   normalizeSearchTerm(value).replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+
+const DOMINICAN_REPUBLIC_COUNTRY_SLUGS = [
+  "dominican-republic",
+  "dominican-republic-rd",
+  "republica-dominicana"
+];
+
+const normalizeSlugLike = (value: string) =>
+  normalizeSearchTerm(value).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+const isDominicanRepublicOption = (country: Option) => {
+  const slug = normalizeSlugLike(country.slug || country.name);
+  const name = normalizeComparableText(country.name);
+  return (
+    DOMINICAN_REPUBLIC_COUNTRY_SLUGS.includes(slug) ||
+    name === "republica dominicana" ||
+    name === "dominican republic"
+  );
+};
 
 const getMeaningfulTokens = (value: string) =>
   normalizeComparableText(value)
@@ -424,7 +418,9 @@ export function SupplierTourCreateForm({
 
   const [languages, setLanguages] = useState<string[]>(initialDraft?.languages ?? []);
 
-  const [categories, setCategories] = useState<string[]>(initialDraft?.categories ?? []);
+  const [categories, setCategories] = useState<string[]>(() =>
+    normalizeTourCategories(initialDraft?.categories ?? [], CATEGORY_LIMIT)
+  );
 
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(() => initialDraft?.timeSlots ?? [defaultTimeSlot]);
 
@@ -564,6 +560,22 @@ export function SupplierTourCreateForm({
   const formRef = useRef<HTMLFormElement | null>(null);
   const translationToken = process.env.NEXT_PUBLIC_TRANSLATION_CRON_TOKEN;
   const [previewRefreshKey, setPreviewRefreshKey] = useState(0);
+
+  const countryOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const options: Option[] = [];
+    for (const country of countries) {
+      const key = isDominicanRepublicOption(country) ? "dominican-republic" : country.id;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      options.push(
+        key === "dominican-republic"
+          ? { ...country, name: "República Dominicana", slug: "dominican-republic" }
+          : country
+      );
+    }
+    return options.sort((a, b) => a.name.localeCompare(b.name));
+  }, [countries]);
 
   const possibleDuplicates = useMemo(() => {
     if (state.title.trim().length < 6) return [];
@@ -719,7 +731,11 @@ export function SupplierTourCreateForm({
       const trimmedInput = input.trim();
       if (!trimmedInput) return undefined;
       const normalizedInput = normalizeSearchTerm(trimmedInput);
-      return countries.find((country) => {
+      const slugInput = normalizeSlugLike(trimmedInput);
+      return countryOptions.find((country) => {
+        if (country.slug === "dominican-republic" && DOMINICAN_REPUBLIC_COUNTRY_SLUGS.includes(slugInput)) {
+          return true;
+        }
         if (normalizeSearchTerm(country.name) === normalizedInput) {
           return true;
         }
@@ -732,22 +748,34 @@ export function SupplierTourCreateForm({
         return false;
       });
     },
-    [countries]
+    [countryOptions]
+  );
+
+  const getCountryIdsForInput = useCallback(
+    (input: string) => {
+      const matchedCountry = findCountryByInput(input);
+      if (!matchedCountry) return [];
+      if (isDominicanRepublicOption(matchedCountry)) {
+        return countries.filter(isDominicanRepublicOption).map((country) => country.id);
+      }
+      return [matchedCountry.id];
+    },
+    [countries, findCountryByInput]
   );
 
   const filteredDestinations = useMemo(() => {
 
-    const matchedCountry = findCountryByInput(state.country);
+    const countryIds = getCountryIdsForInput(state.country);
 
-    if (!matchedCountry) {
+    if (!countryIds.length) {
 
       return state.country.trim() ? [] : destinations;
 
     }
 
-    return destinations.filter((destination) => destination.countryId === matchedCountry.id);
+    return destinations.filter((destination) => countryIds.includes(destination.countryId ?? ""));
 
-  }, [state.country, destinations, findCountryByInput]);
+  }, [state.country, destinations, getCountryIdsForInput]);
 
 
 
@@ -787,7 +815,7 @@ export function SupplierTourCreateForm({
 
         setLanguages(parsed.languages ?? []);
 
-        setCategories(parsed.categories ?? []);
+        setCategories(normalizeTourCategories(parsed.categories ?? [], CATEGORY_LIMIT));
 
         setTimeSlots(parsed.timeSlots ?? [defaultTimeSlot]);
 
@@ -898,8 +926,8 @@ export function SupplierTourCreateForm({
           nextState.destination = "";
           return nextState;
         }
-        const matchedCountry = findCountryByInput(nextCountry);
-        if (!matchedCountry) {
+        const countryIds = getCountryIdsForInput(nextCountry);
+        if (!countryIds.length) {
           nextState.destination = "";
           return nextState;
         }
@@ -907,9 +935,7 @@ export function SupplierTourCreateForm({
           return nextState;
         }
         const normalizedDestination = normalizeSearchTerm(nextState.destination);
-        const allowedDestinations = destinations.filter(
-          (destination) => destination.countryId === matchedCountry.id
-        );
+        const allowedDestinations = destinations.filter((destination) => countryIds.includes(destination.countryId ?? ""));
         const destinationMatches = allowedDestinations.some((destination) => {
           if (normalizeSearchTerm(destination.name) === normalizedDestination) {
             return true;
@@ -952,9 +978,13 @@ export function SupplierTourCreateForm({
 
 
   const toggleCategory = (value: string) => {
-    setCategories((prev) =>
-      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
-    );
+    const normalized = normalizeTourCategories([value], 1)[0];
+    if (!normalized) return;
+    setCategories((prev) => {
+      if (prev.includes(normalized)) return prev.filter((item) => item !== normalized);
+      if (prev.length >= CATEGORY_LIMIT) return prev;
+      return [...prev, normalized];
+    });
   };
 
 
@@ -1204,29 +1234,44 @@ export function SupplierTourCreateForm({
 
                     {categoryMenuOpen && (
 
-                      <div className="absolute z-10 mt-1 max-h-40 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-lg">
+                      <div className="absolute z-10 mt-1 max-h-72 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-lg">
 
-                        {CATEGORY_OPTIONS.map((cat) => (
+                        {TOUR_CATEGORY_OPTIONS.map((category) => {
+                          const checked = categories.includes(category.value);
+                          const disabled = !checked && categories.length >= CATEGORY_LIMIT;
 
-                          <label key={cat} className="flex items-center gap-2 px-3 py-2 text-sm">
+                          return (
+                            <label
+                              key={category.value}
+                              className={`flex items-start gap-2 px-3 py-2 text-sm ${
+                                disabled ? "cursor-not-allowed opacity-45" : ""
+                              }`}
+                              title={category.description}
+                            >
 
                             <input
 
                               type="checkbox"
 
-                              checked={categories.includes(cat)}
+                              checked={checked}
 
-                              onChange={() => toggleCategory(cat)}
+                              disabled={disabled}
 
-                              className="h-4 w-4 rounded border-slate-300 text-sky-600"
+                              onChange={() => toggleCategory(category.value)}
+
+                              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-sky-600"
 
                             />
 
-                            <span>{cat}</span>
+                            <span>
+                              <span className="block font-semibold text-slate-800">{category.label}</span>
+                              <span className="block text-xs leading-4 text-slate-500">{category.description}</span>
+                            </span>
 
                           </label>
 
-                        ))}
+                          );
+                        })}
 
                       </div>
 
@@ -1540,7 +1585,7 @@ export function SupplierTourCreateForm({
 
                   <datalist id="country-list">
 
-                    {countries.map((country) => (
+                    {countryOptions.map((country) => (
 
                       <option key={country.id} value={country.name} />
 

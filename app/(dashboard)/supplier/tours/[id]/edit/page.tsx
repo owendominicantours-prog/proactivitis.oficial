@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { SupplierTourCreateForm, type SavedDraft } from "@/components/supplier/SupplierTourCreateForm";
 import { updateTourAction } from "@/app/(dashboard)/supplier/tours/actions";
 import type { Prisma } from "@prisma/client";
+import { normalizeTourCategories } from "@/lib/tourTaxonomy";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -153,7 +154,7 @@ export default async function SupplierTourEditPage({ params }: Props) {
       pickupOptions: [],
     },
     languages: parsedLanguages,
-    categories: parsedCategories,
+    categories: normalizeTourCategories(parsedCategories),
     timeSlots: parsedTimeSlots,
     daySelection: parsedOperatingDays,
     blackoutDates: parsedBlackoutDates,
