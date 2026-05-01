@@ -297,9 +297,10 @@ export default async function GeminiSeoLandingPage({
             <div className="mt-6 flex flex-wrap gap-3">
               <a
                 href={primaryCtaHref}
-                className="rounded-full bg-sky-500 px-6 py-4 text-sm font-black text-white shadow-xl shadow-sky-950/30 transition hover:bg-sky-400"
+                className="rounded-full bg-sky-500 px-5 py-4 text-sm font-black text-white shadow-xl shadow-sky-950/30 transition hover:bg-sky-400 sm:px-6"
               >
-                {content.ctaLabel}
+                <span className="sm:hidden">{mobileAvailabilityLabel}</span>
+                <span className="hidden sm:inline">{content.ctaLabel}</span>
               </a>
               <span className="rounded-full border border-white/25 bg-white/15 px-6 py-4 text-sm font-black text-white backdrop-blur">
                 {priceLabel}
@@ -398,37 +399,65 @@ export default async function GeminiSeoLandingPage({
       {landing.type === "tour" && tourBookingData ? (
         <section id="seo-tour-booking" className="bg-slate-50 px-5 py-8 sm:px-8 sm:py-10 lg:px-12">
           <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1fr_420px] lg:items-start">
-            <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-700">
-                {locale === "es" ? "Reserva sin salir de la pagina" : locale === "fr" ? "Reservation sur cette page" : "Book on this page"}
-              </p>
-              <h2 className="mt-2 text-2xl font-black leading-tight text-slate-950 sm:text-3xl">
-                {locale === "es"
-                  ? "Elige fecha, hora y viajeros aqui mismo"
-                  : locale === "fr"
-                    ? "Choisissez date, heure et voyageurs ici"
-                    : "Choose date, time, and travelers right here"}
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-                {locale === "es"
-                  ? "La disponibilidad y el resumen pasan directo al checkout seguro de Proactivitis sin mandar al viajero a otra ficha."
-                  : locale === "fr"
-                    ? "La disponibilite et le resume passent au checkout securise Proactivitis sans autre fiche."
-                    : "Availability and summary go straight to Proactivitis secure checkout without sending the traveler to another product page."}
-              </p>
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                {[
-                  locale === "es" ? "Pago seguro" : locale === "fr" ? "Paiement securise" : "Secure payment",
-                  locale === "es" ? "Soporte humano" : locale === "fr" ? "Support humain" : "Human support",
-                  locale === "es" ? "Confirmacion clara" : locale === "fr" ? "Confirmation claire" : "Clear confirmation"
-                ].map((item) => (
-                  <div key={item} className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-900">
-                    {item}
-                  </div>
-                ))}
+            <div className="space-y-4">
+              <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-700">
+                  {locale === "es" ? "Reserva sin salir de la pagina" : locale === "fr" ? "Reservation sur cette page" : "Book on this page"}
+                </p>
+                <h2 className="mt-2 text-2xl font-black leading-tight text-slate-950 sm:text-3xl">
+                  {locale === "es"
+                    ? "Elige fecha, hora y viajeros aqui mismo"
+                    : locale === "fr"
+                      ? "Choisissez date, heure et voyageurs ici"
+                      : "Choose date, time, and travelers right here"}
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
+                  {locale === "es"
+                    ? "La disponibilidad y el resumen pasan directo al checkout seguro de Proactivitis sin mandar al viajero a otra ficha."
+                    : locale === "fr"
+                      ? "La disponibilite et le resume passent au checkout securise Proactivitis sans autre fiche."
+                      : "Availability and summary go straight to Proactivitis secure checkout without sending the traveler to another product page."}
+                </p>
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  {[
+                    locale === "es" ? "Pago seguro" : locale === "fr" ? "Paiement securise" : "Secure payment",
+                    locale === "es" ? "Soporte humano" : locale === "fr" ? "Support humain" : "Human support",
+                    locale === "es" ? "Confirmacion clara" : locale === "fr" ? "Confirmation claire" : "Clear confirmation"
+                  ].map((item) => (
+                    <div key={item} className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-900">
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="hidden gap-4 lg:grid lg:grid-cols-2">
+                <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+                  <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">
+                    {locale === "es" ? "Despues de reservar" : locale === "fr" ? "Apres reservation" : "After booking"}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">
+                    {locale === "es"
+                      ? "Recibes confirmacion y soporte para coordinar recogida, horario y detalles finales."
+                      : locale === "fr"
+                        ? "Vous recevez confirmation et support pour pickup, horaire et details."
+                        : "You receive confirmation and support for pickup, timing, and final details."}
+                  </p>
+                </div>
+                <div className="rounded-[24px] border border-sky-100 bg-sky-50 p-5 shadow-sm">
+                  <p className="text-xs font-bold uppercase tracking-[0.24em] text-sky-700">
+                    {locale === "es" ? "Sin friccion" : locale === "fr" ? "Sans friction" : "Low friction"}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">
+                    {locale === "es"
+                      ? "El formulario mantiene la experiencia en esta pagina y solo avanza cuando eliges fecha."
+                      : locale === "fr"
+                        ? "Le formulaire garde l experience ici et avance apres choix de date."
+                        : "The form keeps the flow on this page and continues after you choose a date."}
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="rounded-[28px] border border-slate-200 bg-white p-3 shadow-xl sm:p-4">
+            <div className="rounded-[28px] border border-slate-200 bg-white p-3 shadow-xl sm:p-4 lg:col-start-2 lg:row-span-2">
               <TourBookingWidget
                 tourId={tourBookingData.id}
                 basePrice={tourBookingData.price}
@@ -448,83 +477,110 @@ export default async function GeminiSeoLandingPage({
                 }
               />
             </div>
+            <div className="space-y-5 lg:col-start-1">
+              {content.sections.map((section) => (
+                <article key={section.heading} className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                  <h2 className="text-2xl font-black text-slate-950">{section.heading}</h2>
+                  <p className="mt-3 text-base leading-7 text-slate-700">{section.body}</p>
+                  {section.bullets && section.bullets.length > 0 ? (
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {section.bullets.map((bullet) => (
+                        <div key={bullet} className="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
+                          {bullet}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </article>
+              ))}
+
+              <article className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <h2 className="text-2xl font-black text-slate-950">
+                  {locale === "es" ? "Preguntas frecuentes" : locale === "fr" ? "Questions frequentes" : "Frequently asked questions"}
+                </h2>
+                <div className="mt-4 divide-y divide-slate-200">
+                  {content.faqs.map((faq) => (
+                    <details key={faq.question} className="group py-4">
+                      <summary className="cursor-pointer list-none text-base font-black text-slate-950">
+                        {faq.question}
+                      </summary>
+                      <p className="mt-2 text-sm leading-7 text-slate-700">{faq.answer}</p>
+                    </details>
+                  ))}
+                </div>
+              </article>
+            </div>
           </div>
         </section>
       ) : null}
 
-      <section className="mx-auto grid max-w-7xl gap-6 px-5 py-9 sm:px-8 sm:py-10 lg:grid-cols-[1fr_360px] lg:px-12">
-        <div className="space-y-6">
-          {content.sections.map((section) => (
-            <article key={section.heading} className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-              <h2 className="text-2xl font-black text-slate-950">{section.heading}</h2>
-              <p className="mt-3 text-base leading-7 text-slate-700">{section.body}</p>
-              {section.bullets && section.bullets.length > 0 ? (
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {section.bullets.map((bullet) => (
-                    <div key={bullet} className="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
-                      {bullet}
-                    </div>
-                  ))}
-                </div>
-              ) : null}
+      {landing.type === "tour" && tourBookingData ? null : (
+        <section className="mx-auto grid max-w-7xl gap-6 px-5 py-9 sm:px-8 sm:py-10 lg:grid-cols-[1fr_360px] lg:px-12">
+          <div className="space-y-6">
+            {content.sections.map((section) => (
+              <article key={section.heading} className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <h2 className="text-2xl font-black text-slate-950">{section.heading}</h2>
+                <p className="mt-3 text-base leading-7 text-slate-700">{section.body}</p>
+                {section.bullets && section.bullets.length > 0 ? (
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {section.bullets.map((bullet) => (
+                      <div key={bullet} className="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
+                        {bullet}
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </article>
+            ))}
+
+            <article className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 sm:p-6">
+              <h2 className="text-2xl font-black text-slate-950">
+                {locale === "es" ? "Preguntas frecuentes" : locale === "fr" ? "Questions frequentes" : "Frequently asked questions"}
+              </h2>
+              <div className="mt-5 divide-y divide-slate-200">
+                {content.faqs.map((faq) => (
+                  <details key={faq.question} className="group py-4">
+                    <summary className="cursor-pointer list-none text-base font-black text-slate-950">
+                      {faq.question}
+                    </summary>
+                    <p className="mt-2 text-sm leading-7 text-slate-700">{faq.answer}</p>
+                  </details>
+                ))}
+              </div>
             </article>
-          ))}
-
-          <article className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 sm:p-6">
-            <h2 className="text-2xl font-black text-slate-950">
-              {locale === "es" ? "Preguntas frecuentes" : locale === "fr" ? "Questions frequentes" : "Frequently asked questions"}
-            </h2>
-            <div className="mt-5 divide-y divide-slate-200">
-              {content.faqs.map((faq) => (
-                <details key={faq.question} className="group py-4">
-                  <summary className="cursor-pointer list-none text-base font-black text-slate-950">
-                    {faq.question}
-                  </summary>
-                  <p className="mt-2 text-sm leading-7 text-slate-700">{faq.answer}</p>
-                </details>
-              ))}
-            </div>
-          </article>
-        </div>
-
-        <aside className="lg:sticky lg:top-6 lg:self-start">
-          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
-            <div className="relative aspect-[4/3]">
-              <Image src={imageUrl} alt={content.imageAlt || content.h1} fill className="object-cover" />
-            </div>
-            <div className="space-y-4 p-5">
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">
-                {landing.type === "transfer" ? "Reserva tu traslado" : "Reserva tu tour"}
-              </p>
-              <h3 className="text-xl font-black text-slate-950">{landing.product.title}</h3>
-              <p className="text-sm leading-6 text-slate-600">{content.metaDescription}</p>
-              <Link
-                href={primaryCtaHref}
-                className="block rounded-2xl bg-slate-950 px-5 py-4 text-center text-sm font-black text-white transition hover:bg-slate-800"
-              >
-                {content.ctaLabel}
-              </Link>
-            </div>
           </div>
-        </aside>
-      </section>
+
+          <aside className="lg:sticky lg:top-6 lg:self-start">
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
+              <div className="relative aspect-[4/3]">
+                <Image src={imageUrl} alt={content.imageAlt || content.h1} fill className="object-cover" />
+              </div>
+              <div className="space-y-4 p-5">
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">
+                  {landing.type === "transfer" ? "Reserva tu traslado" : "Reserva tu tour"}
+                </p>
+                <h3 className="text-xl font-black text-slate-950">{landing.product.title}</h3>
+                <p className="text-sm leading-6 text-slate-600">{content.metaDescription}</p>
+                <Link
+                  href={primaryCtaHref}
+                  className="block rounded-2xl bg-slate-950 px-5 py-4 text-center text-sm font-black text-white transition hover:bg-slate-800"
+                >
+                  {content.ctaLabel}
+                </Link>
+              </div>
+            </div>
+          </aside>
+        </section>
+      )}
 
       {landing.type === "tour" && tourBookingData ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(0.85rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-18px_40px_rgba(15,23,42,0.16)] backdrop-blur lg:hidden">
-          <div className="mx-auto flex max-w-md items-center gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">
-                {priceLabel}
-              </p>
-              <p className="truncate text-sm font-black text-slate-950">{landing.product.title}</p>
-            </div>
-            <a
-              href="#seo-tour-booking"
-              className="shrink-0 rounded-full bg-sky-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-sky-200 transition active:scale-[0.98]"
-            >
-              {mobileAvailabilityLabel}
-            </a>
-          </div>
+        <div className="fixed bottom-[calc(0.85rem+env(safe-area-inset-bottom))] left-3 right-36 z-50 lg:hidden">
+          <a
+            href="#seo-tour-booking"
+            className="flex min-h-14 items-center justify-center rounded-full bg-sky-500 px-4 py-3 text-center text-xs font-black text-white shadow-[0_14px_34px_rgba(14,165,233,0.35)] transition active:scale-[0.98] sm:text-sm"
+          >
+            {mobileAvailabilityLabel}
+          </a>
         </div>
       ) : null}
     </main>
