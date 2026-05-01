@@ -53,9 +53,14 @@ type PartnerRequestFormProps = {
   role: "SUPPLIER" | "AGENCY";
   subtitle?: string;
   id?: string;
+  initialOpportunity?: {
+    name: string;
+    category?: string;
+    status?: string;
+  };
 };
 
-export default function PartnerRequestForm({ role, subtitle, id }: PartnerRequestFormProps) {
+export default function PartnerRequestForm({ role, subtitle, id, initialOpportunity }: PartnerRequestFormProps) {
   const { data: session, update } = useSession();
   const [companyName, setCompanyName] = useState("");
   const [contactName, setContactName] = useState("");
@@ -76,6 +81,7 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const toastTimeoutRef = useRef<number | null>(null);
+  const opportunityPrefillRef = useRef(false);
   const { t } = useTranslation();
   const inputClassName =
     "mt-1 w-full rounded-xl border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-500 focus:border-slate-900 focus:outline-none";
@@ -99,6 +105,31 @@ export default function PartnerRequestForm({ role, subtitle, id }: PartnerReques
       setEmail(session.user.email);
     }
   }, [contactName, email, session]);
+
+  useEffect(() => {
+    if (opportunityPrefillRef.current || role !== "SUPPLIER") return;
+    const opportunity = initialOpportunity?.name;
+    if (!opportunity) return;
+    const category = initialOpportunity.category;
+    const status = initialOpportunity.status;
+    const statusLabel =
+      status === "covered"
+        ? "Este servicio aparece como cubierto; deseo ofrecer una variante o mejor operacion."
+        : "Este servicio aparece disponible para vender en Proactivitis.";
+    const note = [
+      `Servicio seleccionado desde el mapa de oportunidades: ${opportunity}.`,
+      category ? `Categoria: ${category}.` : null,
+      statusLabel,
+      "Quiero que el equipo lo revise dentro de mi solicitud de suplidor."
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    setSelectedServices((current) => (current.includes("tours") ? current : [...current, "tours"]));
+    setCountry("Dominican Republic");
+    setDescription((current) => (current.trim() ? current : note));
+    opportunityPrefillRef.current = true;
+  }, [initialOpportunity, role]);
 
   const handleServiceToggle = (option: string) => {
     setSelectedServices((current) =>

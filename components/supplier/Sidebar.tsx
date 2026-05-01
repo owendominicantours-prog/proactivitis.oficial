@@ -2,6 +2,7 @@ import Link from "next/link";
 
 const menu = [
   { label: "Dashboard", href: "/supplier", icon: "dashboard" },
+  { label: "Oportunidades", href: "/supplier-tour-opportunities", icon: "tour" },
   { label: "Mis Tours", href: "/supplier/tours", icon: "tour" },
   { label: "Crear Tour", href: "/supplier/tours/create", icon: "add" },
   { label: "Reservas", href: "/supplier/bookings", icon: "calendar" },

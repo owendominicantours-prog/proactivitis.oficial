@@ -119,7 +119,24 @@ const faqs = [
   }
 ];
 
-export default function BecomeSupplierPage() {
+type BecomeSupplierPageProps = {
+  searchParams?: Promise<{
+    opportunity?: string;
+    category?: string;
+    status?: string;
+  }>;
+};
+
+export default async function BecomeSupplierPage({ searchParams }: BecomeSupplierPageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const initialOpportunity = resolvedSearchParams.opportunity
+    ? {
+        name: resolvedSearchParams.opportunity,
+        category: resolvedSearchParams.category,
+        status: resolvedSearchParams.status
+      }
+    : undefined;
+
   return (
     <div className="bg-gradient-to-b from-slate-50 via-white to-slate-100">
       <div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-16">
@@ -147,6 +164,12 @@ export default function BecomeSupplierPage() {
                 className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-slate-700 transition hover:border-slate-400"
               >
                 Ver beneficios
+              </a>
+              <a
+                href="/supplier-tour-opportunities"
+                className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100"
+              >
+                Ver tours buscados
               </a>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -272,6 +295,7 @@ export default function BecomeSupplierPage() {
           <PartnerRequestForm
             id="partner-form"
             role="SUPPLIER"
+            initialOpportunity={initialOpportunity}
             subtitle="Cuéntanos sobre tu empresa, zona de operación y servicios para revisar tu solicitud."
           />
         </section>
