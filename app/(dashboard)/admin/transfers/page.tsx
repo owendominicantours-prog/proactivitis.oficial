@@ -169,6 +169,45 @@ export default async function TransfersAdminPage({ searchParams }: Props) {
     routes: routes.length,
     overrides: routes.reduce((total, route) => total + route.overrides.length, 0)
   };
+  const activeTabConfig = transferAdminTabs.find((tab) => tab.key === activeTab) ?? transferAdminTabs[0];
+  const quickActions = [
+    {
+      title: "Completar precios de rutas",
+      detail: routesMissingPrices.length
+        ? `${routesMissingPrices.length} ruta(s) necesitan precio para todos los vehiculos activos.`
+        : "Las rutas activas tienen precio completo.",
+      href: "/admin/transfers?tab=routes",
+      count: routesMissingPrices.length,
+      tone: routesMissingPrices.length ? "rose" : "emerald"
+    },
+    {
+      title: "Revisar ubicaciones",
+      detail: locationsMissingInfo.length
+        ? `${locationsMissingInfo.length} location(s) necesitan direccion o descripcion.`
+        : "Las ubicaciones activas tienen datos suficientes.",
+      href: "/admin/transfers?tab=locations",
+      count: locationsMissingInfo.length,
+      tone: locationsMissingInfo.length ? "sky" : "emerald"
+    },
+    {
+      title: "Actualizar vehiculos",
+      detail: vehiclesWithoutImage.length
+        ? `${vehiclesWithoutImage.length} vehiculo(s) necesitan imagen.`
+        : "La flota activa tiene imagen.",
+      href: "/admin/transfers?tab=vehicles",
+      count: vehiclesWithoutImage.length,
+      tone: vehiclesWithoutImage.length ? "amber" : "emerald"
+    },
+    {
+      title: "Agregar hoteles a landings",
+      detail: hotelsWithoutLanding.length
+        ? `${hotelsWithoutLanding.length} hotel(es) activos no aparecen en landings.`
+        : "Los hoteles activos estan cubiertos por landings.",
+      href: "/admin/landings",
+      count: hotelsWithoutLanding.length,
+      tone: hotelsWithoutLanding.length ? "amber" : "emerald"
+    }
+  ] as const;
 
   return (
     <div className="space-y-10 pb-10">
@@ -210,6 +249,30 @@ export default async function TransfersAdminPage({ searchParams }: Props) {
         </div>
       </section>
 
+      <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-500">
+              Estas editando
+            </p>
+            <h2 className="mt-1 text-2xl font-semibold text-slate-900">{activeTabConfig.label}</h2>
+            <p className="mt-1 text-sm text-slate-600">{activeTabConfig.description}</p>
+          </div>
+          {activeTab !== "overview" ? (
+            <a
+              href="/admin/transfers?tab=overview"
+              className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-500"
+            >
+              Volver al resumen
+            </a>
+          ) : (
+            <span className="inline-flex min-h-11 items-center rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-600">
+              {tabCounters.overview ?? 0} alerta(s)
+            </span>
+          )}
+        </div>
+      </section>
+
       {activeTab === "overview" ? (
       <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
         <div className="grid gap-5 bg-[linear-gradient(135deg,#071727,#0f3b57)] p-6 text-white lg:grid-cols-[1.2fr,0.8fr]">
@@ -248,6 +311,21 @@ export default async function TransfersAdminPage({ searchParams }: Props) {
               </div>
               <p className="mt-2 text-xs leading-relaxed opacity-80">{item.detail}</p>
             </article>
+          ))}
+        </div>
+        <div className="grid gap-4 border-t border-slate-100 bg-white p-5 md:grid-cols-2 xl:grid-cols-4">
+          {quickActions.map((action) => (
+            <a
+              key={action.title}
+              href={action.href}
+              className={`rounded-3xl border p-4 transition hover:-translate-y-0.5 hover:shadow-md ${healthTone(action.tone)}`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-sm font-semibold">{action.title}</p>
+                <span className="rounded-full bg-white/75 px-3 py-1 text-xs font-semibold">{action.count}</span>
+              </div>
+              <p className="mt-2 text-xs leading-relaxed opacity-80">{action.detail}</p>
+            </a>
           ))}
         </div>
         {(routesMissingPrices.length || hotelsWithoutLanding.length || vehiclesWithoutImage.length || zonesWithoutLocations.length) ? (
