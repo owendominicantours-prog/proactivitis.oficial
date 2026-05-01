@@ -469,7 +469,7 @@ export function TourBookingWidget({
   const canContinue = Boolean(date && !operatingDayBlocked && selectedOptionAvailable);
 
   return (
-    <div className="relative w-full max-w-sm space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-md">
+    <div className="relative w-full max-w-sm space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-none">
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-md bg-rose-600 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-[0.12em] text-white shadow-sm shadow-rose-600/20">
           Alta demanda
@@ -698,7 +698,7 @@ export function TourBookingWidget({
         type="button"
         onClick={handleCheckAvailability}
         aria-disabled={!canContinue}
-        className="w-full rounded-full bg-blue-600 px-5 py-4 text-base font-black text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200"
+        className="w-full rounded-full bg-blue-600 px-5 py-4 text-base font-black text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200"
       >
         Reservar ahora
       </button>
