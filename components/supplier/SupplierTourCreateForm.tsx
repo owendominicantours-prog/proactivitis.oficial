@@ -33,6 +33,13 @@ type ItineraryStop = { place: string; duration: string; note: string };
 
 type StopDraft = { place: string; note: string };
 
+type ExistingTourSignal = {
+  title: string;
+  slug: string;
+  category?: string | null;
+  status?: string | null;
+};
+
 
 
 const STEP_TITLES = [
@@ -130,6 +137,22 @@ const normalizeSearchTerm = (value: string) =>
     .trim()
     .toLowerCase();
 
+const normalizeComparableText = (value: string) =>
+  normalizeSearchTerm(value).replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+
+const getMeaningfulTokens = (value: string) =>
+  normalizeComparableText(value)
+    .split(" ")
+    .filter((token) => token.length >= 4);
+
+const calculateTokenOverlap = (source: string, target: string) => {
+  const sourceTokens = getMeaningfulTokens(source);
+  if (!sourceTokens.length) return 0;
+  const targetText = normalizeComparableText(target);
+  const matches = sourceTokens.filter((token) => targetText.includes(token)).length;
+  return matches / sourceTokens.length;
+};
+
 type FormAction = (formData: FormData) => Promise<void>;
 
 
@@ -139,6 +162,8 @@ type SupplierTourCreateFormProps = {
   countries: Option[];
 
   destinations: Option[];
+
+  existingTours?: ExistingTourSignal[];
 
   action?: FormAction;
 
@@ -371,6 +396,8 @@ export function SupplierTourCreateForm({
 
   destinations,
 
+  existingTours = [],
+
   action,
 
   mode = "create",
@@ -537,6 +564,109 @@ export function SupplierTourCreateForm({
   const formRef = useRef<HTMLFormElement | null>(null);
   const translationToken = process.env.NEXT_PUBLIC_TRANSLATION_CRON_TOKEN;
   const [previewRefreshKey, setPreviewRefreshKey] = useState(0);
+
+  const possibleDuplicates = useMemo(() => {
+    if (state.title.trim().length < 6) return [];
+    return existingTours
+      .map((tour) => ({
+        ...tour,
+        score: Math.max(
+          calculateTokenOverlap(state.title, tour.title),
+          calculateTokenOverlap(tour.title, state.title)
+        )
+      }))
+      .filter((tour) => tour.score >= 0.55)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+  }, [existingTours, state.title]);
+
+  const qualityChecks = useMemo(
+    () => [
+      {
+        id: "title",
+        label: "Titulo claro",
+        detail: "Usa un nombre comercial facil de entender.",
+        done: state.title.trim().length >= 8
+      },
+      {
+        id: "category",
+        label: "Categoria definida",
+        detail: "Ayuda a mostrarlo en listados y busquedas.",
+        done: categories.length > 0
+      },
+      {
+        id: "description",
+        label: "Descripcion vendible",
+        detail: "Minimo 250 caracteres con experiencia y logistica.",
+        done: state.description.trim().length >= 250
+      },
+      {
+        id: "highlights",
+        label: "Highlights completos",
+        detail: "Entre 3 y 6 puntos destacados.",
+        done: highlightCountValid
+      },
+      {
+        id: "includes",
+        label: "Incluye / no incluye",
+        detail: "Evita confusiones antes del checkout.",
+        done: includesList.length >= 2 && notIncludedList.length >= 1
+      },
+      {
+        id: "price",
+        label: "Precio y cupo",
+        detail: "Adulto y capacidad son obligatorios.",
+        done: Number(state.price) > 0 && Number(state.capacity) > 0
+      },
+      {
+        id: "availability",
+        label: "Dias y horarios",
+        detail: "Define cuando opera el tour.",
+        done: daySelection.length > 0 && timeSlots.length > 0
+      },
+      {
+        id: "pickup",
+        label: "Pickup o punto de encuentro",
+        detail: "El cliente necesita saber donde inicia.",
+        done: Boolean(state.meetingPoint.trim() || pickupOptions.length || state.pickup.trim())
+      },
+      {
+        id: "media",
+        label: "Fotos suficientes",
+        detail: "Hero + al menos 3 fotos de galeria.",
+        done: Boolean(heroImage) && galleryImages.length >= 3
+      },
+      {
+        id: "policies",
+        label: "Politicas y requisitos",
+        detail: "Condiciones claras para revision humana.",
+        done: Boolean(state.requirements.trim() && state.terms.trim())
+      }
+    ],
+    [
+      categories.length,
+      daySelection.length,
+      galleryImages.length,
+      heroImage,
+      highlightCountValid,
+      includesList.length,
+      notIncludedList.length,
+      pickupOptions.length,
+      state.capacity,
+      state.description,
+      state.meetingPoint,
+      state.pickup,
+      state.price,
+      state.requirements,
+      state.terms,
+      state.title,
+      timeSlots.length
+    ]
+  );
+  const completedChecks = qualityChecks.filter((item) => item.done).length;
+  const qualityScore = Math.round((completedChecks / qualityChecks.length) * 100);
+  const currentStepProgress = Math.round(((step + 1) / STEP_TITLES.length) * 100);
+  const canSubmitByQuality = qualityScore >= 70 && highlightCountValid;
 
   const buildDraftSnapshot = useMemo(
     () => () =>
@@ -2477,60 +2607,126 @@ export function SupplierTourCreateForm({
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f4f6fb] to-[#edf3fb] py-10">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 sm:px-6 lg:flex-row lg:items-start">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.12),transparent_32%),linear-gradient(135deg,#f8fafc,#eef6ff)] py-8">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 sm:px-6 lg:flex-row lg:items-start">
 
-        <aside className="panel-card hidden w-72 flex-col gap-6 text-slate-900">
-
-          <h3 className="text-2xl font-semibold text-slate-900">Sube tu tour</h3>
-
-          <div className="space-y-4">
-
-            {STEP_TITLES.map((title, index) => (
-
-              <div key={title} className="flex items-center gap-3">
-
-                <span
-
-                  className={`flex h-10 w-10 items-center justify-center rounded-2xl border-2 ${
-
-                    index < step
-                      ? "border-emerald-400 bg-emerald-400 text-white"
-                      : index === step
-                        ? "border-blue-400 bg-blue-500 text-white"
-                        : "border-slate-700 text-slate-400"
-
-                  }`}
-
-                >
-
-                  {index < step ? <CheckIcon /> : index + 1}
-
-                </span>
-
-                <div>
-
-                  <p className="text-sm font-semibold text-slate-900">{title}</p>
-
-                  <p className="text-[0.65rem] text-slate-400">Paso {index + 1}</p>
-
-                </div>
-
+        <aside className="hidden w-80 shrink-0 flex-col gap-4 text-slate-900 lg:sticky lg:top-6 lg:flex">
+          <div className="rounded-[32px] border border-slate-200 bg-white p-5 shadow-xl shadow-slate-200/60">
+            <p className="text-xs font-black uppercase tracking-[0.32em] text-sky-700">Asistente</p>
+            <div className="mt-4 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-4xl font-black text-slate-950">{qualityScore}%</p>
+                <p className="text-sm font-semibold text-slate-500">calidad para revision</p>
               </div>
-
-            ))}
-
+              <span className={`rounded-full px-3 py-1 text-xs font-black ${
+                qualityScore >= 85
+                  ? "bg-emerald-100 text-emerald-700"
+                  : qualityScore >= 70
+                    ? "bg-sky-100 text-sky-700"
+                    : "bg-amber-100 text-amber-700"
+              }`}>
+                {qualityScore >= 85 ? "Fuerte" : qualityScore >= 70 ? "Listo" : "Incompleto"}
+              </span>
+            </div>
+            <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-full rounded-full bg-sky-500 transition-all" style={{ width: `${qualityScore}%` }} />
+            </div>
           </div>
 
+          {possibleDuplicates.length > 0 ? (
+            <div className="rounded-[28px] border border-amber-200 bg-amber-50 p-4 shadow-sm">
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-amber-700">Posible duplicado</p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-amber-950">
+                Ya existen tours parecidos. Puedes continuar, pero explica que variante, zona o ventaja trae tu servicio.
+              </p>
+              <div className="mt-3 space-y-2">
+                {possibleDuplicates.map((tour) => (
+                  <div key={tour.slug} className="rounded-2xl bg-white/80 px-3 py-2 text-xs font-semibold text-slate-700">
+                    <p className="line-clamp-1">{tour.title}</p>
+                    <p className="mt-0.5 uppercase tracking-[0.18em] text-slate-400">{tour.status ?? "tour"}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-black uppercase tracking-[0.32em] text-slate-500">Checklist</p>
+            <div className="mt-4 space-y-3">
+              {qualityChecks.map((item) => (
+                <div key={item.id} className="flex items-start gap-3">
+                  <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                    item.done ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"
+                  }`}>
+                    {item.done ? <CheckIcon /> : null}
+                  </span>
+                  <div>
+                    <p className="text-sm font-black text-slate-900">{item.label}</p>
+                    <p className="text-xs leading-5 text-slate-500">{item.detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[28px] border border-sky-100 bg-sky-50 p-4 text-sm text-slate-700">
+            <p className="font-black text-slate-950">{state.title || "Tour sin titulo"}</p>
+            <p className="mt-2 leading-6">
+              {categories.length ? categories.join(", ") : "Selecciona categoria"} · {state.destination || "Destino pendiente"}
+            </p>
+            <p className="mt-2 font-semibold text-sky-700">
+              {Number(state.price) > 0 ? `$${Number(state.price).toFixed(2)} USD` : "Precio pendiente"}
+            </p>
+          </div>
         </aside>
 
         <div className="flex-1 space-y-6">
 
-          <div className="panel-card rounded-[32px] px-6 py-5">
-            <div className="flex flex-col gap-3">
-              <h2 className="text-2xl font-semibold text-slate-900">Sube tu tour premium</h2>
+          <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
+            <div className="grid gap-5 bg-slate-950 p-6 text-white lg:grid-cols-[1fr_auto] lg:items-center">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.36em] text-sky-200">Supplier tour builder</p>
+                <h2 className="mt-3 text-3xl font-black tracking-tight">Construye un tour listo para vender</h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                  Crea una ficha clara para revision humana: contenido comercial, precio, disponibilidad, fotos, pickup y politicas.
+                </p>
+              </div>
+              <div className="rounded-[24px] border border-white/10 bg-white/10 p-4 text-right">
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-300">Progreso</p>
+                <p className="mt-1 text-3xl font-black">{currentStepProgress}%</p>
+                <p className="text-xs text-slate-300">Paso {step + 1} de {STEP_TITLES.length}</p>
+              </div>
             </div>
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="p-5">
+              <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-full rounded-full bg-sky-500 transition-all" style={{ width: `${currentStepProgress}%` }} />
+              </div>
+              <div className="mt-4 grid gap-3 lg:hidden">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-500">Calidad</p>
+                      <p className="mt-1 text-2xl font-black text-slate-950">{qualityScore}%</p>
+                    </div>
+                    <span className={`rounded-full px-3 py-1 text-xs font-black ${
+                      qualityScore >= 85
+                        ? "bg-emerald-100 text-emerald-700"
+                        : qualityScore >= 70
+                          ? "bg-sky-100 text-sky-700"
+                          : "bg-amber-100 text-amber-700"
+                    }`}>
+                      {completedChecks}/{qualityChecks.length}
+                    </span>
+                  </div>
+                  {possibleDuplicates.length > 0 ? (
+                    <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                      Hay tours parecidos. Explica tu diferencia antes de enviar.
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 px-5 pb-5">
               <div className="flex flex-wrap gap-3">
                 {STEP_TITLES.map((title, index) => (
                   <button
@@ -2545,18 +2741,15 @@ export function SupplierTourCreateForm({
               </div>
               <span className="flex items-center gap-2 text-xs font-semibold text-emerald-500">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
-                Cambios guardados
+                Autosave activo
               </span>
             </div>
-            <p className="mt-3 text-xs uppercase tracking-[0.3em] text-slate-400">
-              Paso {step + 1} de {STEP_TITLES.length}
-            </p>
           </div>
 
-          <div className="panel-card rounded-[32px] p-6">
+          <div className="rounded-[32px] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-200/50 sm:p-6">
           <form ref={formRef} action={formAction} onSubmit={handleFormSubmit} className="space-y-6 text-slate-900">
 
-          <div className="max-h-[70vh] min-h-[420px] space-y-3 overflow-y-auto pr-2 sm:pr-6">
+          <div className="min-h-[420px] space-y-4">
 
         <div className="space-y-3 hidden">
 
@@ -2703,7 +2896,7 @@ export function SupplierTourCreateForm({
 
 
 
-      <div className="flex items-center justify-between gap-4 pt-4">
+      <div className="sticky bottom-4 z-20 flex items-center justify-between gap-4 rounded-[24px] border border-slate-200 bg-white/95 p-3 shadow-2xl shadow-slate-300/40 backdrop-blur">
 
         <button
 
@@ -2743,15 +2936,17 @@ export function SupplierTourCreateForm({
 
             <div className="text-xs text-slate-500">
 
-              El tour se enviará directamente para aprobación; no se guarda como borrador.
+              {canSubmitByQuality
+                ? "Listo para enviar a revision humana."
+                : `Completa al menos 70% de calidad. Ahora: ${qualityScore}%.`}
 
             </div>
 
             <button
               type="submit"
-              disabled={submitting || !highlightCountValid}
-              className={`primary-btn ${submitting || !highlightCountValid ? "opacity-70" : ""}`}
-              title={!highlightCountValid ? "Añade entre 3 y 6 highlights antes de enviar." : undefined}
+              disabled={submitting || !canSubmitByQuality}
+              className={`primary-btn ${submitting || !canSubmitByQuality ? "opacity-70" : ""}`}
+              title={!canSubmitByQuality ? "Completa el checklist minimo antes de enviar." : undefined}
 
             >
 

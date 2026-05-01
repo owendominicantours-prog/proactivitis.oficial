@@ -44,6 +44,21 @@ export default async function SupplierTourEditPage({ params }: Props) {
     orderBy: { name: "asc" }
   });
 
+  const existingTours = await prisma.tour.findMany({
+    where: {
+      id: { not: tour.id },
+      status: { notIn: ["rejected", "archived"] }
+    },
+    select: {
+      title: true,
+      slug: true,
+      category: true,
+      status: true
+    },
+    orderBy: { createdAt: "desc" },
+    take: 500
+  });
+
   const parseJsonArray = <T extends string>(value?: string | null | Prisma.JsonValue): T[] => {
     if (!value) return [];
 
@@ -175,6 +190,7 @@ export default async function SupplierTourEditPage({ params }: Props) {
         tourId={tour.id}
         countries={countries}
         destinations={destinations}
+        existingTours={existingTours}
       />
     </div>
   );

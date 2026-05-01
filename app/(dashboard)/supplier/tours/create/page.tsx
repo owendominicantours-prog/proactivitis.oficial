@@ -24,6 +24,20 @@ export default async function SupplierTourCreatePage({ searchParams }: SupplierT
     select: { id: true, name: true, slug: true, countryId: true }
   });
 
+  const existingTours = await prisma.tour.findMany({
+    where: {
+      status: { notIn: ["rejected", "archived"] }
+    },
+    select: {
+      title: true,
+      slug: true,
+      category: true,
+      status: true
+    },
+    orderBy: { createdAt: "desc" },
+    take: 500
+  });
+
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) {
@@ -67,6 +81,7 @@ export default async function SupplierTourCreatePage({ searchParams }: SupplierT
       <SupplierTourCreateForm
         countries={countries}
         destinations={destinations}
+        existingTours={existingTours}
         initialDraft={initialDraft}
       />
     </div>
