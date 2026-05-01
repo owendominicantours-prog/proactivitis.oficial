@@ -280,7 +280,7 @@ export default async function GeminiSeoLandingPage({
           <Image src={imageUrl} alt={content.imageAlt || content.h1} fill priority className="object-cover opacity-65" />
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/50 via-slate-950/45 to-slate-950" />
         </div>
-        <div className="relative mx-auto flex min-h-[620px] max-w-7xl flex-col justify-end px-5 pb-12 pt-24 sm:px-8 lg:px-12">
+        <div className="relative mx-auto flex min-h-[540px] max-w-7xl flex-col justify-end px-5 pb-10 pt-20 sm:min-h-[580px] sm:px-8 lg:px-12">
           {preview ? (
             <div className="mb-5 w-fit rounded-full bg-amber-300 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-slate-950">
               Draft preview
@@ -290,11 +290,11 @@ export default async function GeminiSeoLandingPage({
             <p className="text-xs font-semibold uppercase tracking-[0.32em] text-sky-200">
               {landing.type === "transfer" ? "Private transfer" : "Selected experience"}
             </p>
-            <h1 className="mt-4 text-4xl font-black leading-tight tracking-normal sm:text-5xl lg:text-6xl">
+            <h1 className="mt-3 text-4xl font-black leading-tight tracking-normal sm:text-5xl lg:text-6xl">
               {content.h1}
             </h1>
-            <p className="mt-5 max-w-2xl text-lg font-medium leading-8 text-white/90">{content.intro}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <p className="mt-4 max-w-2xl text-lg font-medium leading-8 text-white/90">{content.intro}</p>
+            <div className="mt-6 flex flex-wrap gap-3">
               <a
                 href={primaryCtaHref}
                 className="rounded-full bg-sky-500 px-6 py-4 text-sm font-black text-white shadow-xl shadow-sky-950/30 transition hover:bg-sky-400"
@@ -310,16 +310,16 @@ export default async function GeminiSeoLandingPage({
       </section>
 
       <section className="border-b border-slate-100 bg-white">
-        <div className="mx-auto grid max-w-7xl gap-4 px-5 py-6 sm:grid-cols-3 sm:px-8 lg:px-12">
-          <div className="rounded-2xl border border-slate-200 p-4">
+        <div className="mx-auto grid max-w-7xl gap-3 px-5 py-4 sm:grid-cols-3 sm:px-8 lg:px-12">
+          <div className="rounded-2xl border border-slate-200 p-3.5">
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">Producto real</p>
             <p className="mt-2 font-black text-slate-950">{landing.product.title}</p>
           </div>
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3.5">
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-emerald-700">Confianza</p>
             <p className="mt-2 font-black text-emerald-950">Soporte local y checkout seguro</p>
           </div>
-          <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4">
+          <div className="rounded-2xl border border-sky-200 bg-sky-50 p-3.5">
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-sky-700">Siguiente paso</p>
             <p className="mt-2 font-black text-sky-950">
               {landing.type === "transfer" ? "Cotiza tu ruta" : "Ver disponibilidad"}
@@ -329,7 +329,7 @@ export default async function GeminiSeoLandingPage({
       </section>
 
       {landing.type === "transfer" ? (
-        <section id="seo-transfer-quote" className="bg-slate-50 px-5 py-12 sm:px-8 lg:px-12">
+        <section id="seo-transfer-quote" className="bg-slate-50 px-5 py-9 sm:px-8 sm:py-10 lg:px-12">
           <div className="mx-auto max-w-7xl">
             <div className="mb-6 max-w-3xl">
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-700">
@@ -361,14 +361,14 @@ export default async function GeminiSeoLandingPage({
       ) : null}
 
       {landing.type === "tour" && tourGalleryImages.length > 0 ? (
-        <section className="bg-white px-5 py-12 sm:px-8 lg:px-12">
+        <section className="bg-white px-5 py-8 sm:px-8 sm:py-10 lg:px-12">
           <div className="mx-auto max-w-7xl">
-            <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-700">
                   {locale === "es" ? "Galeria del tour" : locale === "fr" ? "Galerie du tour" : "Tour gallery"}
                 </p>
-                <h2 className="mt-2 text-3xl font-black text-slate-950">
+                <h2 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">
                   {locale === "es"
                     ? "Fotos reales para decidir mejor"
                     : locale === "fr"
@@ -389,19 +389,20 @@ export default async function GeminiSeoLandingPage({
               title={content.h1}
               fallbackImage={imageUrl}
               label={locale === "es" ? "Ver galeria" : locale === "fr" ? "Voir galerie" : "View gallery"}
+              variant="compact"
             />
           </div>
         </section>
       ) : null}
 
       {landing.type === "tour" && tourBookingData ? (
-        <section id="seo-tour-booking" className="bg-slate-50 px-5 py-12 sm:px-8 lg:px-12">
-          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_420px] lg:items-start">
-            <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <section id="seo-tour-booking" className="bg-slate-50 px-5 py-8 sm:px-8 sm:py-10 lg:px-12">
+          <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1fr_420px] lg:items-start">
+            <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-700">
                 {locale === "es" ? "Reserva sin salir de la pagina" : locale === "fr" ? "Reservation sur cette page" : "Book on this page"}
               </p>
-              <h2 className="mt-3 text-3xl font-black leading-tight text-slate-950">
+              <h2 className="mt-2 text-2xl font-black leading-tight text-slate-950 sm:text-3xl">
                 {locale === "es"
                   ? "Elige fecha, hora y viajeros aqui mismo"
                   : locale === "fr"
@@ -415,7 +416,7 @@ export default async function GeminiSeoLandingPage({
                     ? "La disponibilite et le resume passent au checkout securise Proactivitis sans autre fiche."
                     : "Availability and summary go straight to Proactivitis secure checkout without sending the traveler to another product page."}
               </p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
                 {[
                   locale === "es" ? "Pago seguro" : locale === "fr" ? "Paiement securise" : "Secure payment",
                   locale === "es" ? "Soporte humano" : locale === "fr" ? "Support humain" : "Human support",
@@ -427,7 +428,7 @@ export default async function GeminiSeoLandingPage({
                 ))}
               </div>
             </div>
-            <div className="rounded-[32px] border border-slate-200 bg-white p-4 shadow-xl">
+            <div className="rounded-[28px] border border-slate-200 bg-white p-3 shadow-xl sm:p-4">
               <TourBookingWidget
                 tourId={tourBookingData.id}
                 basePrice={tourBookingData.price}
@@ -451,14 +452,14 @@ export default async function GeminiSeoLandingPage({
         </section>
       ) : null}
 
-      <section className="mx-auto grid max-w-7xl gap-8 px-5 py-14 sm:px-8 lg:grid-cols-[1fr_360px] lg:px-12">
-        <div className="space-y-8">
+      <section className="mx-auto grid max-w-7xl gap-6 px-5 py-9 sm:px-8 sm:py-10 lg:grid-cols-[1fr_360px] lg:px-12">
+        <div className="space-y-6">
           {content.sections.map((section) => (
-            <article key={section.heading} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <article key={section.heading} className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <h2 className="text-2xl font-black text-slate-950">{section.heading}</h2>
-              <p className="mt-3 text-base leading-8 text-slate-700">{section.body}</p>
+              <p className="mt-3 text-base leading-7 text-slate-700">{section.body}</p>
               {section.bullets && section.bullets.length > 0 ? (
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   {section.bullets.map((bullet) => (
                     <div key={bullet} className="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
                       {bullet}
@@ -469,7 +470,7 @@ export default async function GeminiSeoLandingPage({
             </article>
           ))}
 
-          <article className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+          <article className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 sm:p-6">
             <h2 className="text-2xl font-black text-slate-950">
               {locale === "es" ? "Preguntas frecuentes" : locale === "fr" ? "Questions frequentes" : "Frequently asked questions"}
             </h2>

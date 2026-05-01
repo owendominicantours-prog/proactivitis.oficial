@@ -8,20 +8,28 @@ type TourGalleryCollageProps = {
   title: string;
   fallbackImage: string;
   label?: string;
+  variant?: "default" | "compact";
 };
 
 export default function TourGalleryCollage({
   images,
   title,
   fallbackImage,
-  label = "View gallery"
+  label = "View gallery",
+  variant = "default"
 }: TourGalleryCollageProps) {
   const collageImages = images.slice(0, 4);
   const primaryCollageImage = collageImages[0] ?? fallbackImage;
   const secondaryCollageImages = collageImages.slice(1, 4);
+  const shellClassName =
+    variant === "compact"
+      ? "relative h-[300px] w-full overflow-hidden rounded-[28px] bg-slate-100 p-2.5 sm:h-[350px] lg:h-[430px]"
+      : "relative h-[380px] w-full overflow-hidden rounded-[36px] bg-slate-100 p-3 sm:h-[420px] lg:h-[520px]";
+  const primaryRadius = variant === "compact" ? "rounded-[22px]" : "rounded-[28px]";
+  const secondaryRadius = variant === "compact" ? "rounded-[20px]" : "rounded-[24px]";
 
   return (
-    <div className="relative h-[380px] w-full overflow-hidden rounded-[36px] bg-slate-100 p-3 sm:h-[420px] lg:h-[520px]">
+    <div className={shellClassName}>
       <GalleryLightbox
         images={images}
         showDefaultTrigger={false}
@@ -32,7 +40,7 @@ export default function TourGalleryCollage({
             onClick={() => open()}
             className="relative grid h-full w-full cursor-pointer grid-cols-2 gap-2"
           >
-            <div className="relative overflow-hidden rounded-[28px] bg-slate-200">
+            <div className={`relative overflow-hidden bg-slate-200 ${primaryRadius}`}>
               <Image
                 src={primaryCollageImage}
                 alt={title}
@@ -44,7 +52,7 @@ export default function TourGalleryCollage({
             </div>
             <div className="grid w-full grid-rows-2 gap-2">
               {secondaryCollageImages.map((image, index) => (
-                <div key={image ?? index} className="relative overflow-hidden rounded-[24px] bg-slate-200">
+                <div key={image ?? index} className={`relative overflow-hidden bg-slate-200 ${secondaryRadius}`}>
                   <Image
                     src={image ?? primaryCollageImage}
                     alt={`${title} imagen ${index + 2}`}
