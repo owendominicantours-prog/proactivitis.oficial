@@ -79,6 +79,12 @@ export function SupplierMinisiteWizard({ supplierName, baseSlug, baseUrl, initia
 
   const theme = useMemo(() => THEMES.find((item) => item.id === themeId) ?? THEMES[0], [themeId]);
   const heroUrl = `${baseUrl}/s/${slug || baseSlug}`;
+  const stepReady =
+    step === 0
+      ? brandName.trim().length >= 2
+      : step === 1
+        ? Boolean(themeId)
+        : slug.trim().length >= 3;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -105,30 +111,33 @@ export function SupplierMinisiteWizard({ supplierName, baseSlug, baseUrl, initia
     }
   };
 
-  const stepTitles = ["Branding", "Tema", "Publicar"];
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, stepTitles.length - 1));
+  const stepTitles = ["Marca", "Tema", "Publicar"];
+  const nextStep = () => {
+    if (!stepReady) return;
+    setStep((prev) => Math.min(prev + 1, stepTitles.length - 1));
+  };
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 0));
 
   return (
     <div className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="space-y-2">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Get your own website in 2 minutes</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Landing del proveedor</p>
         <h1 className="text-2xl font-semibold text-slate-900">Supplier Minisite</h1>
         <p className="text-sm text-slate-600">
-          Hosted en Proactivitis con tus tours aprobados, WhatsApp instantáneo y branding personalizado.
+          Hospedado en Proactivitis con tus tours aprobados, WhatsApp directo y marca personalizada.
         </p>
         <div className="flex flex-wrap gap-3 text-xs font-semibold uppercase text-slate-500">
           <span className="flex items-center gap-1">
             <Globe className="h-3 w-3" />
-            Hosted on Proactivitis domain
+            Dominio Proactivitis
           </span>
           <span className="flex items-center gap-1">
             <Sparkles className="h-3 w-3" />
-            Only approved products shown
+            Solo productos aprobados
           </span>
           <span className="flex items-center gap-1">
             <ShieldCheck className="h-3 w-3" />
-            Free for partners
+            Gratis para partners
           </span>
         </div>
       </div>
@@ -154,7 +163,7 @@ export function SupplierMinisiteWizard({ supplierName, baseSlug, baseUrl, initia
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className={step === 0 ? "space-y-4" : "hidden"} aria-hidden={step !== 0}>
-          <p className="text-sm font-semibold text-slate-700">Paso 1 · Branding</p>
+          <p className="text-sm font-semibold text-slate-700">Paso 1 · Marca</p>
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-1 text-sm text-slate-600">
               Nombre comercial
@@ -216,8 +225,10 @@ export function SupplierMinisiteWizard({ supplierName, baseSlug, baseUrl, initia
               value={bio}
               onChange={(event) => setBio(event.target.value)}
               rows={4}
+              maxLength={400}
               className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-400"
             />
+            <span className="block text-right text-xs text-slate-400">{bio.length}/400</span>
           </label>
         </div>
 
@@ -273,7 +284,7 @@ export function SupplierMinisiteWizard({ supplierName, baseSlug, baseUrl, initia
                 Copy URL
               </button>
             </div>
-            <p className="text-xs text-slate-500">Puedes cambiar este slug cuando quieras; manténlo corto y sin espacios.</p>
+            <p className="text-xs text-slate-500">Puedes cambiar este slug cuando quieras; mantenlo corto y sin espacios.</p>
           </div>
           <label className="flex items-center gap-3 text-sm font-semibold text-slate-700">
             <input
@@ -301,7 +312,7 @@ export function SupplierMinisiteWizard({ supplierName, baseSlug, baseUrl, initia
                 Anterior
               </button>
               {step < stepTitles.length - 1 && (
-                <button type="button" onClick={nextStep} className="primary-btn text-xs">
+                <button type="button" onClick={nextStep} disabled={!stepReady} className="primary-btn text-xs disabled:opacity-50">
                   Siguiente
                 </button>
               )}
@@ -314,8 +325,8 @@ export function SupplierMinisiteWizard({ supplierName, baseSlug, baseUrl, initia
           {step === stepTitles.length - 1 && (
             <button
               type="submit"
-              disabled={isPending}
-              className={`primary-btn w-full text-sm ${isPending ? "opacity-70" : ""}`}
+              disabled={isPending || !stepReady}
+              className={`primary-btn w-full text-sm ${isPending || !stepReady ? "opacity-70" : ""}`}
             >
               {isPending ? "Guardando..." : "Guardar minisite"}
             </button>
@@ -327,7 +338,7 @@ export function SupplierMinisiteWizard({ supplierName, baseSlug, baseUrl, initia
         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Preview</p>
         <div className="rounded-2xl border border-slate-200 p-5">
           <div className={`rounded-2xl p-5 text-white ${theme.background}`}>
-            <p className="text-sm uppercase tracking-[0.3em]">Theme · {theme.name}</p>
+            <p className="text-sm uppercase tracking-[0.3em]">Tema · {theme.name}</p>
             <h2 className="text-2xl font-semibold">{brandName}</h2>
             <p className="max-w-xl text-xs text-white/80">{theme.description}</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -339,7 +350,7 @@ export function SupplierMinisiteWizard({ supplierName, baseSlug, baseUrl, initia
             </div>
           </div>
           <p className="mt-3 text-xs text-slate-500">
-            Cada minic sitio enlaza a tus tours oficiales con CTA “Book now”.
+            Cada minisite enlaza a tus tours oficiales con CTA de reserva.
           </p>
           <p className="text-xs text-slate-500">URL pública: <strong>{heroUrl}</strong></p>
         </div>

@@ -23,9 +23,9 @@ export default async function SupplierNotificationsPage({ searchParams }: Props)
 
   return (
     <NotificationCenter
-      eyebrow="Supplier alerts"
-      title="Centro de notificaciones supplier"
-      description="Controla reservas nuevas, cambios, cancelaciones y pagos desde una vista más clara y accionable."
+      eyebrow="Alertas de proveedor"
+      title="Centro de notificaciones"
+      description="Controla reservas nuevas, cambios, cancelaciones y pagos desde una vista clara y accionable."
       centerHref="/supplier/notifications"
       relatedFallbackHref="/supplier/bookings"
       relatedFallbackLabel="Ver reservas"

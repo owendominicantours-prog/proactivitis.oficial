@@ -36,9 +36,22 @@ const statusStyles: Record<SupplierTourSummary["status"], string> = {
   paused: "bg-slate-50 text-slate-500"
 };
 
+const statusLabels: Record<SupplierTourSummary["status"], string> = {
+  published: "Publicado",
+  draft: "Borrador",
+  pending: "En revisión",
+  under_review: "En revisión",
+  needs_changes: "Necesita cambios",
+  paused: "Pausado"
+};
+
+const fallbackImages = new Set(["", "/fototours/fototour.jpeg"]);
+
 export const ToursList = ({ tours }: { tours: SupplierTourSummary[] }) => {
   const [statusFilter, setStatusFilter] = useState("");
   const [destinationFilter, setDestinationFilter] = useState("");
+  const [searchFilter, setSearchFilter] = useState("");
+  const [qualityFilter, setQualityFilter] = useState("");
   const [infoOpen, setInfoOpen] = useState<Record<string, boolean>>({});
   const [impulzaVisible, setImpulzaVisible] = useState<Record<string, boolean>>({});
   const [importPanel, setImportPanel] = useState(false);
@@ -49,7 +62,30 @@ export const ToursList = ({ tours }: { tours: SupplierTourSummary[] }) => {
   const [jsonPanel, setJsonPanel] = useState(false);
   const [importJson, setImportJson] = useState("");
 
-  const destinations = useMemo(() => Array.from(new Set(tours.map((tour) => tour.destination ?? tour.location))), [tours]);
+  const destinations = useMemo(
+    () => Array.from(new Set(tours.map((tour) => tour.destination ?? tour.location).filter(Boolean))),
+    [tours]
+  );
+
+  const getTourIssues = (tour: SupplierTourSummary) => {
+    const issues: string[] = [];
+    const destination = tour.destination ?? tour.location;
+    if (!destination || ["República Dominicana", "Dominican Republic"].includes(destination)) {
+      issues.push("Destino específico");
+    }
+    if (!tour.price || tour.price <= 0) issues.push("Precio");
+    if (!tour.duration) issues.push("Duración");
+    if (!tour.language) issues.push("Idiomas");
+    if (!tour.includes) issues.push("Incluye");
+    if (!tour.description || tour.description.length < 220) issues.push("Descripción");
+    if (!tour.heroImage || fallbackImages.has(tour.heroImage)) issues.push("Foto principal");
+    return issues;
+  };
+
+  const tourQuality = (tour: SupplierTourSummary) => {
+    const issueCount = getTourIssues(tour).length;
+    return Math.max(0, Math.round(((7 - issueCount) / 7) * 100));
+  };
 
   const filtered = useMemo(() => {
     return tours.filter((tour) => {
@@ -57,9 +93,30 @@ export const ToursList = ({ tours }: { tours: SupplierTourSummary[] }) => {
       const matchesDestination = destinationFilter
         ? (tour.destination ?? tour.location) === destinationFilter
         : true;
-      return matchesStatus && matchesDestination;
+      const query = searchFilter.trim().toLowerCase();
+      const matchesSearch = query
+        ? `${tour.title} ${tour.productId} ${tour.location} ${tour.destination ?? ""}`.toLowerCase().includes(query)
+        : true;
+      const quality = tourQuality(tour);
+      const matchesQuality =
+        qualityFilter === "ready"
+          ? quality >= 85
+          : qualityFilter === "needs_work"
+            ? quality < 85
+            : true;
+      return matchesStatus && matchesDestination && matchesSearch && matchesQuality;
     });
-  }, [tours, statusFilter, destinationFilter]);
+  }, [tours, statusFilter, destinationFilter, searchFilter, qualityFilter]);
+
+  const stats = useMemo(
+    () => ({
+      total: tours.length,
+      published: tours.filter((tour) => tour.status === "published").length,
+      review: tours.filter((tour) => ["pending", "under_review"].includes(tour.status)).length,
+      needsWork: tours.filter((tour) => getTourIssues(tour).length > 0).length
+    }),
+    [tours]
+  );
 
   const normalizeKey = (value: string | undefined) =>
     value
@@ -288,7 +345,32 @@ const getProactiveMessage = (value: number) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-3 text-sm">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Total</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">{stats.total}</p>
+        </div>
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-emerald-600">Publicados</p>
+          <p className="mt-1 text-2xl font-semibold text-emerald-800">{stats.published}</p>
+        </div>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-amber-600">En revisión</p>
+          <p className="mt-1 text-2xl font-semibold text-amber-800">{stats.review}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Por mejorar</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">{stats.needsWork}</p>
+        </div>
+      </div>
+
+      <div className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-sm md:grid-cols-2 xl:grid-cols-6">
+        <input
+          value={searchFilter}
+          onChange={(event) => setSearchFilter(event.target.value)}
+          placeholder="Buscar por tour, ID o destino"
+          className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-sky-500 focus:outline-none xl:col-span-2"
+        />
         <select
           className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-sky-500 focus:outline-none"
           value={statusFilter}
@@ -298,6 +380,7 @@ const getProactiveMessage = (value: number) => {
           <option value="published">Publicado</option>
           <option value="draft">Borrador</option>
           <option value="pending">En revisión</option>
+          <option value="under_review">En revisión activa</option>
           <option value="needs_changes">Necesita cambios</option>
           <option value="paused">Pausado</option>
         </select>
@@ -312,6 +395,15 @@ const getProactiveMessage = (value: number) => {
               {destination}
             </option>
           ))}
+        </select>
+        <select
+          className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-sky-500 focus:outline-none"
+          value={qualityFilter}
+          onChange={(event) => setQualityFilter(event.target.value)}
+        >
+          <option value="">Todas las calidades</option>
+          <option value="ready">Listos para vender</option>
+          <option value="needs_work">Necesitan mejora</option>
         </select>
           <button
             type="button"
@@ -411,10 +503,14 @@ const getProactiveMessage = (value: number) => {
           const platformCut = (tour.price * (sharePercent / 100)).toFixed(2);
           const supplierCut = (tour.price * (supplierPercent / 100)).toFixed(2);
           const agencyPercent = (sharePercent * 0.18).toFixed(2);
+          const issues = getTourIssues(tour);
+          const quality = tourQuality(tour);
+          const canPause = ["published", "paused"].includes(tour.status);
+          const canSendReview = ["draft", "needs_changes"].includes(tour.status) && issues.length === 0;
           return (
             <div
               key={tour.id}
-              className="flex flex-wrap items-center gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300"
+              className="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300"
             >
             <div className="flex items-center gap-3">
               <div className="h-16 w-28 overflow-hidden rounded-md bg-slate-100">
@@ -432,6 +528,18 @@ const getProactiveMessage = (value: number) => {
                   Rating {tour.rating.toFixed(1)} · Estado {tour.status}
                   {tour.duration ? ` · ${formatDurationDisplay(tour.duration)}` : ""}
                 </div>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  <span className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold ${
+                    quality >= 85 ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                  }`}>
+                    Calidad {quality}%
+                  </span>
+                  {issues.slice(0, 3).map((issue) => (
+                    <span key={issue} className="rounded-full bg-slate-100 px-2 py-0.5 text-[0.65rem] font-semibold text-slate-500">
+                      Falta {issue}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="flex flex-1 flex-wrap items-center gap-3 text-sm text-slate-600">
@@ -439,20 +547,21 @@ const getProactiveMessage = (value: number) => {
                 ${tour.price.toFixed(0)} desde
               </span>
               <span className={`rounded-full px-2 py-1 text-xs font-semibold ${statusStyles[tour.status]}`}>
-                {tour.status.replace("_", " ")}
+                {statusLabels[tour.status]}
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
-              <form action={togglePauseTour} className="inline-flex">
-                <input type="hidden" name="tourId" value={tour.id} />
-                <input type="hidden" name="currentStatus" value={tour.status} />
-                <button
-                  type="submit"
-                  className="rounded-md border border-slate-200 px-3 py-1 text-slate-600 transition hover:border-slate-300"
-                >
-                  {tour.status === "paused" ? "Reanudar" : "Pausar"}
-                </button>
-              </form>
+              {canPause && (
+                <form action={togglePauseTour} className="inline-flex">
+                  <input type="hidden" name="tourId" value={tour.id} />
+                  <button
+                    type="submit"
+                    className="rounded-md border border-slate-200 px-3 py-1 text-slate-600 transition hover:border-slate-300"
+                  >
+                    {tour.status === "paused" ? "Reanudar" : "Pausar"}
+                  </button>
+                </form>
+              )}
               <Link
                 href={`/supplier/tours/${tour.id}/edit`}
                 className="rounded-md border border-slate-200 px-3 py-1 text-slate-600 transition hover:border-slate-300"
@@ -502,7 +611,16 @@ const getProactiveMessage = (value: number) => {
                 </form>
               )}
               {["draft", "needs_changes"].includes(tour.status) && (
-                <form action={sendToReview} className="inline-flex">
+                <form
+                  action={sendToReview}
+                  className={`inline-flex ${canSendReview ? "" : "opacity-40"}`}
+                  onSubmit={(event) => {
+                    if (!canSendReview) {
+                      event.preventDefault();
+                    }
+                  }}
+                  title={!canSendReview ? `Completa: ${issues.join(", ")}` : undefined}
+                >
                   <input type="hidden" name="tourId" value={tour.id} />
                   <button
                     type="submit"

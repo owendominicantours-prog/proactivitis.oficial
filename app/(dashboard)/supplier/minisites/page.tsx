@@ -74,13 +74,13 @@ export default async function SupplierMinisiteDashboardPage() {
         </p>
         <div className="flex flex-wrap gap-3 text-xs uppercase tracking-[0.3em] text-slate-500">
           <Link href="/supplier/profile" className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600">
-            Only approved products
+            Solo productos aprobados
           </Link>
           <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600">
-            Instant WhatsApp bookings
+            WhatsApp directo
           </span>
           <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600">
-            Hosted on Proactivitis
+            Dominio Proactivitis
           </span>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -118,13 +118,13 @@ export default async function SupplierMinisiteDashboardPage() {
               )}`}
               className="primary-btn text-xs"
             >
-              Request activation
+              Solicitar activación
             </a>
             <Link href="/supplier/tours" className="text-xs font-semibold text-slate-800 underline">
               Ver mis tours
             </Link>
           </div>
-          <p className="mt-2 text-xs text-slate-500">Activation is available only for partners.</p>
+          <p className="mt-2 text-xs text-slate-500">La activación está disponible solo para partners aprobados.</p>
         </section>
       )}
 

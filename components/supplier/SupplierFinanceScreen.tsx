@@ -117,6 +117,24 @@ export default function SupplierFinanceScreen({ supplierName, initialAccountId }
         </p>
       </header>
 
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Paso 1</p>
+          <h2 className="mt-2 text-base font-semibold text-slate-900">Conecta Stripe</h2>
+          <p className="mt-1 text-sm leading-6 text-slate-500">Activa la cuenta Express para recibir pagos de reservas aprobadas.</p>
+        </div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Paso 2</p>
+          <h2 className="mt-2 text-base font-semibold text-slate-900">Completa verificación</h2>
+          <p className="mt-1 text-sm leading-6 text-slate-500">Stripe puede pedir documentos de empresa, identidad y cuenta bancaria.</p>
+        </div>
+        <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-600">Payouts</p>
+          <h2 className="mt-2 text-base font-semibold text-emerald-900">Pago semanal</h2>
+          <p className="mt-1 text-sm leading-6 text-emerald-700">La programación está preparada para pagos semanales cuando Stripe apruebe la cuenta.</p>
+        </div>
+      </div>
+
       {loading && (
         <div className="rounded-3xl border border-slate-200 bg-white px-6 py-5 text-sm text-slate-600 shadow-sm">
           Conectando con Stripe...
