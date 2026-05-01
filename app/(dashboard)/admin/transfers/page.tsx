@@ -29,7 +29,33 @@ const LOCATION_TYPE_OPTIONS: { value: TransferLocationType; label: string }[] = 
   { value: TransferLocationType.PLACE, label: "Lugar" }
 ];
 
-export default async function TransfersAdminPage() {
+type TransferAdminTab = "overview" | "countries" | "zones" | "locations" | "vehicles" | "routes" | "overrides";
+
+type SearchParams = {
+  tab?: string;
+};
+
+type Props = {
+  searchParams?: Promise<SearchParams>;
+};
+
+const transferAdminTabs: { key: TransferAdminTab; label: string; description: string }[] = [
+  { key: "overview", label: "Resumen", description: "Salud operativa y problemas pendientes" },
+  { key: "countries", label: "Paises", description: "Base geografica" },
+  { key: "zones", label: "Zonas", description: "Agrupacion por area" },
+  { key: "locations", label: "Ubicaciones", description: "Hoteles, aeropuertos y lugares" },
+  { key: "vehicles", label: "Vehiculos", description: "Flota, imagenes y capacidad" },
+  { key: "routes", label: "Rutas", description: "Pares de zonas y precios" },
+  { key: "overrides", label: "Overrides", description: "Precios especiales por hotel" }
+];
+
+const isTransferAdminTab = (value?: string): value is TransferAdminTab =>
+  Boolean(value && transferAdminTabs.some((tab) => tab.key === value));
+
+export default async function TransfersAdminPage({ searchParams }: Props) {
+  const params = (searchParams ? await searchParams : undefined) ?? {};
+  const activeTab: TransferAdminTab = isTransferAdminTab(params.tab) ? params.tab : "overview";
+
   if (!TRANSFERS_ENABLED) {
     return (
       <div className="space-y-4 rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
@@ -134,6 +160,15 @@ export default async function TransfersAdminPage() {
       tone: locationsMissingInfo.length ? "sky" : "emerald"
     }
   ] as const;
+  const tabCounters: Partial<Record<TransferAdminTab, number>> = {
+    overview: routesMissingPrices.length + hotelsWithoutLanding.length + vehiclesWithoutImage.length + locationsMissingInfo.length,
+    countries: countries.length,
+    zones: zones.length,
+    locations: locations.length,
+    vehicles: vehicles.length,
+    routes: routes.length,
+    overrides: routes.reduce((total, route) => total + route.overrides.length, 0)
+  };
 
   return (
     <div className="space-y-10 pb-10">
@@ -146,6 +181,36 @@ export default async function TransfersAdminPage() {
         </p>
       </header>
 
+      <section className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-7">
+          {transferAdminTabs.map((tab) => {
+            const isActive = tab.key === activeTab;
+            return (
+              <a
+                key={tab.key}
+                href={`/admin/transfers?tab=${tab.key}`}
+                className={`rounded-2xl border px-4 py-3 text-sm transition hover:-translate-y-0.5 hover:shadow-sm ${
+                  isActive
+                    ? "border-slate-900 bg-slate-900 text-white"
+                    : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-semibold">{tab.label}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${isActive ? "bg-white/15 text-white" : "bg-white text-slate-500"}`}>
+                    {tabCounters[tab.key] ?? 0}
+                  </span>
+                </div>
+                <p className={`mt-1 text-xs leading-snug ${isActive ? "text-slate-200" : "text-slate-500"}`}>
+                  {tab.description}
+                </p>
+              </a>
+            );
+          })}
+        </div>
+      </section>
+
+      {activeTab === "overview" ? (
       <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
         <div className="grid gap-5 bg-[linear-gradient(135deg,#071727,#0f3b57)] p-6 text-white lg:grid-cols-[1.2fr,0.8fr]">
           <div>
@@ -214,7 +279,9 @@ export default async function TransfersAdminPage() {
           </div>
         ) : null}
       </section>
+      ) : null}
 
+      {activeTab === "countries" ? (
       <CollapsibleSection
         title="Países"
         description="Registra países y edita su descripción."
@@ -266,7 +333,9 @@ export default async function TransfersAdminPage() {
           ))}
         </div>
       </CollapsibleSection>
+      ) : null}
 
+      {activeTab === "zones" ? (
       <CollapsibleSection
         title="Zonas"
         description="Agrupa hoteles y aeropuertos por región."
@@ -373,7 +442,9 @@ export default async function TransfersAdminPage() {
           ))}
         </div>
       </CollapsibleSection>
+      ) : null}
 
+      {activeTab === "locations" ? (
       <CollapsibleSection
         title="Locations"
         description="Importa hoteles, aeropuertos o lugares por CSV y controla su visibilidad."
@@ -462,7 +533,9 @@ export default async function TransfersAdminPage() {
           ))}
         </div>
       </CollapsibleSection>
+      ) : null}
 
+      {activeTab === "vehicles" ? (
       <CollapsibleSection
         title="Vehículos"
         description="Administra tipos de vehículo y capacidades."
@@ -592,7 +665,9 @@ export default async function TransfersAdminPage() {
           ))}
         </div>
       </CollapsibleSection>
+      ) : null}
 
+      {activeTab === "routes" ? (
       <CollapsibleSection
         title="Rutas y precios"
         description="Define rutas bidireccionales y precios por vehículo."
@@ -691,7 +766,9 @@ export default async function TransfersAdminPage() {
           ))}
         </div>
       </CollapsibleSection>
+      ) : null}
 
+      {activeTab === "overrides" ? (
       <CollapsibleSection
         title="Overrides"
         description="Tarifas especiales por hotel, origen o destino."
@@ -785,6 +862,7 @@ export default async function TransfersAdminPage() {
           )}
         </div>
       </CollapsibleSection>
+      ) : null}
     </div>
   );
 }
