@@ -118,7 +118,17 @@ const getContent = (landing: GeminiSeoLandingRecord, locale: Locale): GeminiSeoL
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
 
 const cleanGeneratedText = (value: string) =>
-  value.replace(/\{\s*"value"\s*:\s*"([^"]+)"\s*,\s*"unit"\s*:\s*"([^"]+)"\s*\}/g, "$1 $2");
+  value
+    .replace(/\{\s*"value"\s*:\s*"([^"]+)"\s*,\s*"unit"\s*:\s*"([^"]+)"\s*\}/g, "$1 $2")
+    .replace(/<\s*br\s*\/?\s*>/gi, " ")
+    .replace(/<\/\s*(p|div|li|h[1-6])\s*>/gi, " ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s{2,}/g, " ")
+    .trim();
 
 const cleanGeneratedContent = (content: GeminiSeoLocaleContent): GeminiSeoLocaleContent => ({
   ...content,
