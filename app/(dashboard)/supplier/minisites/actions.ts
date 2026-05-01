@@ -5,14 +5,25 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { slugify } from "@/lib/supplierTours";
+import { sanitized, slugify } from "@/lib/supplierTours";
 
 const THEME_IDS = [1, 2, 3, 4, 5];
 const BIO_LIMIT = 400;
+const RESERVED_SLUGS = new Set([
+  "admin",
+  "api",
+  "app",
+  "checkout",
+  "dashboard",
+  "login",
+  "supplier",
+  "support",
+  "transfer",
+  "tours"
+]);
 
 function clampString(value: unknown, limit: number) {
-  if (typeof value !== "string") return "";
-  return value.trim().slice(0, limit);
+  return sanitized(value).slice(0, limit);
 }
 
 function parseThemeId(value: FormDataEntryValue | null) {
@@ -29,6 +40,29 @@ function parseBool(value: FormDataEntryValue | null) {
     return value === "true" || value === "on";
   }
   return Boolean(value);
+}
+
+function cleanPublicUrl(value: unknown) {
+  const rawValue = clampString(value, 512);
+  if (!rawValue) return undefined;
+  if (rawValue.startsWith("/") && !rawValue.startsWith("//")) return rawValue;
+  try {
+    const url = new URL(rawValue);
+    return ["http:", "https:"].includes(url.protocol) ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function cleanPhone(value: unknown) {
+  const rawValue = clampString(value, 32);
+  const cleaned = rawValue.replace(/[^\d+()\-\s]/g, "").trim();
+  return cleaned.length >= 7 ? cleaned : undefined;
+}
+
+function cleanEmail(value: unknown) {
+  const email = clampString(value, 100).toLowerCase();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : undefined;
 }
 
 export async function upsertSupplierMinisiteAction(formData: FormData) {
@@ -60,10 +94,10 @@ export async function upsertSupplierMinisiteAction(formData: FormData) {
   }
 
   const brandName = clampString(formData.get("brandName"), 60) || supplier.company || "Proveedor Proactivitis";
-  const logoUrl = clampString(formData.get("logoUrl"), 512) || undefined;
-  const whatsapp = clampString(formData.get("whatsapp"), 32) || undefined;
-  const phone = clampString(formData.get("phone"), 32) || undefined;
-  const email = clampString(formData.get("email"), 100) || undefined;
+  const logoUrl = cleanPublicUrl(formData.get("logoUrl"));
+  const whatsapp = cleanPhone(formData.get("whatsapp"));
+  const phone = cleanPhone(formData.get("phone"));
+  const email = cleanEmail(formData.get("email"));
   const bio = clampString(formData.get("bio"), BIO_LIMIT) || undefined;
   const themeId = parseThemeId(formData.get("themeId"));
   const slugValue = clampString(formData.get("slug"), 60);
@@ -71,10 +105,13 @@ export async function upsertSupplierMinisiteAction(formData: FormData) {
 
   const baseSlug = slugify(slugValue || brandName || supplier.company || supplier.User?.name || supplier.id);
   const slug = baseSlug || slugify(supplier.id);
+  if (RESERVED_SLUGS.has(slug) || slug.length < 3) {
+    throw new Error("Ese identificador no está disponible. Elige otro más específico.");
+  }
 
   const slugOwner = await prisma.supplierMinisite.findUnique({ where: { slug } });
   if (slugOwner && slugOwner.supplierId !== supplier.id) {
-    throw new Error("Ese slug ya está en uso. Elige otro identificador.");
+    throw new Error("Ese identificador ya está en uso. Elige otro.");
   }
 
   const data = {

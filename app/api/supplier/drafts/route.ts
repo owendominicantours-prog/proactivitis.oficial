@@ -3,8 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
+import { sanitized, slugify } from "@/lib/supplierTours";
 
 const DEFAULT_DRAFT_KEY = "supplier-autosave";
+const MAX_DRAFT_SIZE = 250_000;
 
 type SaveDraftRequest = {
   draftId?: string;
@@ -18,6 +20,18 @@ async function resolveSupplier(sessionUserId?: string | null) {
     return null;
   }
   return prisma.supplierProfile.findUnique({ where: { userId: sessionUserId } });
+}
+
+function parseDraftKey(value: unknown) {
+  const key = typeof value === "string" ? slugify(value).slice(0, 80) : "";
+  return key || DEFAULT_DRAFT_KEY;
+}
+
+function assertDraftSize(data: unknown) {
+  const size = JSON.stringify(data ?? {}).length;
+  if (size > MAX_DRAFT_SIZE) {
+    throw new Error("El borrador es demasiado grande. Reduce imagenes o texto antes de continuar.");
+  }
 }
 
 export async function POST(request: Request) {
@@ -34,9 +48,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const draftKey = body.draftKey ?? DEFAULT_DRAFT_KEY;
-  const title = typeof body.title === "string" && body.title.trim() ? body.title.trim() : undefined;
+  const draftKey = parseDraftKey(body.draftKey);
+  const title = typeof body.title === "string" && body.title.trim()
+    ? sanitized(body.title).slice(0, 120)
+    : undefined;
   const data = body.data ?? {};
+  try {
+    assertDraftSize(data);
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Draft too large" },
+      { status: 413 }
+    );
+  }
 
   let draft;
   if (body.draftId) {
@@ -81,7 +105,7 @@ export async function DELETE(request: Request) {
 
   const url = new URL(request.url);
   const draftId = url.searchParams.get("draftId");
-  const draftKey = url.searchParams.get("draftKey") ?? DEFAULT_DRAFT_KEY;
+  const draftKey = parseDraftKey(url.searchParams.get("draftKey"));
 
   if (draftId) {
     await prisma.tourDraft.deleteMany({ where: { id: draftId, supplierId: supplier.id } });
