@@ -90,6 +90,53 @@ export default async function TransfersAdminPage() {
   const landingLinks = Array.from(landingLinkMap.entries()).sort(([slugA], [slugB]) =>
     slugA.localeCompare(slugB)
   );
+  const activeVehicles = vehicles.filter((vehicle) => vehicle.active);
+  const activeLocations = locations.filter((location) => location.active);
+  const hotelLocations = activeLocations.filter((location) => location.type === TransferLocationType.HOTEL);
+  const airportLocations = activeLocations.filter((location) => location.type === TransferLocationType.AIRPORT);
+  const vehiclesWithoutImage = activeVehicles.filter((vehicle) => !vehicle.imageUrl?.trim());
+  const locationsMissingInfo = activeLocations.filter(
+    (location) => !location.description?.trim() || !location.address?.trim()
+  );
+  const routesMissingPrices = routes.filter((route) => {
+    const activePriceVehicleIds = new Set(
+      route.prices
+        .filter((price) => price.vehicle.active && price.price > 0)
+        .map((price) => price.vehicleId)
+    );
+    return activeVehicles.some((vehicle) => !activePriceVehicleIds.has(vehicle.id));
+  });
+  const hotelsWithoutLanding = hotelLocations.filter((location) => {
+    const expectedSlug = `punta-cana-international-airport-to-${location.slug}`;
+    return !landingLinkMap.has(expectedSlug);
+  });
+  const zonesWithoutLocations = zones.filter((zone) => zone.locations.length === 0);
+  const transferHealthItems = [
+    {
+      label: "Rutas sin precio completo",
+      value: routesMissingPrices.length,
+      detail: "Falta precio en al menos un vehiculo activo.",
+      tone: routesMissingPrices.length ? "rose" : "emerald"
+    },
+    {
+      label: "Hoteles sin landing",
+      value: hotelsWithoutLanding.length,
+      detail: "Hoteles activos sin pagina de transfer detectada.",
+      tone: hotelsWithoutLanding.length ? "amber" : "emerald"
+    },
+    {
+      label: "Vehiculos sin imagen",
+      value: vehiclesWithoutImage.length,
+      detail: "Afecta confianza y conversion en checkout.",
+      tone: vehiclesWithoutImage.length ? "amber" : "emerald"
+    },
+    {
+      label: "Locations incompletos",
+      value: locationsMissingInfo.length,
+      detail: "Falta direccion o descripcion corta.",
+      tone: locationsMissingInfo.length ? "sky" : "emerald"
+    }
+  ] as const;
 
   return (
     <div className="space-y-10 pb-10">
@@ -101,6 +148,75 @@ export default async function TransfersAdminPage() {
           El formulario público consumirá los locations y precios una vez que actives el flag.
         </p>
       </header>
+
+      <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+        <div className="grid gap-5 bg-[linear-gradient(135deg,#071727,#0f3b57)] p-6 text-white lg:grid-cols-[1.2fr,0.8fr]">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-sky-200">Control operativo</p>
+            <h2 className="mt-3 text-2xl font-semibold">Antes de vender, revisa que la ruta este completa.</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-200">
+              Esta vista detecta problemas que pueden romper cotizaciones, bajar conversion o crear reservas con datos incompletos.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 rounded-3xl border border-white/10 bg-white/10 p-4 text-sm backdrop-blur">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.26em] text-slate-300">Hoteles</p>
+              <p className="mt-1 text-2xl font-semibold">{hotelLocations.length}</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.26em] text-slate-300">Aeropuertos</p>
+              <p className="mt-1 text-2xl font-semibold">{airportLocations.length}</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.26em] text-slate-300">Vehiculos</p>
+              <p className="mt-1 text-2xl font-semibold">{activeVehicles.length}</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.26em] text-slate-300">Rutas</p>
+              <p className="mt-1 text-2xl font-semibold">{routes.length}</p>
+            </div>
+          </div>
+        </div>
+        <div className="grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-4">
+          {transferHealthItems.map((item) => (
+            <article key={item.label} className={`rounded-3xl border p-4 ${healthTone(item.tone)}`}>
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-sm font-semibold">{item.label}</p>
+                <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold">{item.value}</span>
+              </div>
+              <p className="mt-2 text-xs leading-relaxed opacity-80">{item.detail}</p>
+            </article>
+          ))}
+        </div>
+        {(routesMissingPrices.length || hotelsWithoutLanding.length || vehiclesWithoutImage.length || zonesWithoutLocations.length) ? (
+          <div className="grid gap-4 border-t border-slate-100 bg-slate-50 p-5 lg:grid-cols-2">
+            {routesMissingPrices.length ? (
+              <IssueList
+                title="Rutas que necesitan precio"
+                items={routesMissingPrices.slice(0, 8).map((route) => `${route.zoneA.name} -> ${route.zoneB.name}`)}
+              />
+            ) : null}
+            {hotelsWithoutLanding.length ? (
+              <IssueList
+                title="Hoteles sin landing detectada"
+                items={hotelsWithoutLanding.slice(0, 8).map((location) => location.name)}
+              />
+            ) : null}
+            {vehiclesWithoutImage.length ? (
+              <IssueList
+                title="Vehiculos sin imagen"
+                items={vehiclesWithoutImage.map((vehicle) => vehicle.name)}
+              />
+            ) : null}
+            {zonesWithoutLocations.length ? (
+              <IssueList
+                title="Zonas sin locations"
+                items={zonesWithoutLocations.map((zone) => zone.name)}
+              />
+            ) : null}
+          </div>
+        ) : null}
+      </section>
 
       <CollapsibleSection
         title="Landing pages"
@@ -703,5 +819,30 @@ export default async function TransfersAdminPage() {
         </div>
       </CollapsibleSection>
     </div>
+  );
+}
+
+function healthTone(tone: "emerald" | "amber" | "rose" | "sky") {
+  const classes = {
+    emerald: "border-emerald-200 bg-emerald-50 text-emerald-900",
+    amber: "border-amber-200 bg-amber-50 text-amber-900",
+    rose: "border-rose-200 bg-rose-50 text-rose-900",
+    sky: "border-sky-200 bg-sky-50 text-sky-900"
+  };
+  return classes[tone];
+}
+
+function IssueList({ title, items }: { title: string; items: string[] }) {
+  return (
+    <article className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+      <p className="text-sm font-semibold text-slate-900">{title}</p>
+      <ul className="mt-3 space-y-2 text-sm text-slate-600">
+        {items.map((item) => (
+          <li key={item} className="rounded-2xl bg-slate-50 px-3 py-2">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </article>
   );
 }

@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import {
   approveTourReview,
   approveTransferReview,
+  deleteTourReview,
+  deleteTransferReview,
   rejectTourReview,
   rejectTransferReview
 } from "./actions";
@@ -167,6 +169,11 @@ export default async function AdminReviewsPage({ searchParams }: Props) {
                       Rechazar
                     </button>
                   </form>
+                  <form action={deleteTourReview.bind(null, review.id)}>
+                    <button className="rounded-full border border-rose-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-600">
+                      Eliminar spam
+                    </button>
+                  </form>
                 </div>
               </article>
             ))}
@@ -227,6 +234,11 @@ export default async function AdminReviewsPage({ searchParams }: Props) {
                     <form action={rejectTransferReview.bind(null, review.id)}>
                       <button className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600">
                         Rechazar
+                      </button>
+                    </form>
+                    <form action={deleteTransferReview.bind(null, review.id)}>
+                      <button className="rounded-full border border-rose-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-600">
+                        Eliminar spam
                       </button>
                     </form>
                   </div>
