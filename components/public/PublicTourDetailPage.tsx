@@ -2366,7 +2366,7 @@ export default async function TourDetailPage({
   );
 
   return (
-  <div className="travel-surface min-h-screen pb-24 overflow-x-hidden text-slate-950">
+  <div className="travel-surface min-h-screen overflow-x-clip pb-24 text-slate-950">
       <StructuredData data={tourSchema} />
       <StructuredData data={touristTripSchema} />
       <StructuredData data={webPageSchema} />
@@ -3224,10 +3224,9 @@ export default async function TourDetailPage({
         </div>
       </main>
             </div>
-            <aside className="hidden self-start lg:block">
+            <aside className="sticky top-20 hidden max-h-[calc(100dvh-6rem)] self-start overflow-y-auto overscroll-contain pb-4 pr-1 lg:block" style={{ scrollbarWidth: "thin" }}>
               <div
-                className="sticky top-20 max-h-[calc(100dvh-6rem)] overflow-y-auto overscroll-contain pb-4 pr-1"
-                style={{ scrollbarWidth: "thin" }}
+                className="w-full"
               >
                 <BookingPanel />
               </div>
