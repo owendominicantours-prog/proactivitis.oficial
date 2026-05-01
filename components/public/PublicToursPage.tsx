@@ -1,6 +1,11 @@
 ﻿import Link from "next/link";
 import { logPrismaError, prisma } from "@/lib/prisma";
-import { buildTourFilter, TourSearchParams } from "@/lib/filterBuilder";
+import {
+  buildTourFilter,
+  canonicalizeCountrySlug,
+  getCountrySlugAliases,
+  TourSearchParams
+} from "@/lib/filterBuilder";
 import { TourFilters } from "@/components/public/TourFilters";
 import { DynamicImage } from "@/components/shared/DynamicImage";
 import { TrustBadges } from "@/components/shared/TrustBadges";
@@ -166,6 +171,44 @@ type TourDurationRow = Prisma.TourGetPayload<{
   select: { duration: true };
 }>;
 
+const PUBLIC_TOUR_OPTION_WHERE: Prisma.TourWhereInput = {
+  status: "published",
+  slug: { not: "transfer-privado-proactivitis" }
+};
+
+const normalizeCountryOption = (country: CountryOption): CountryOption => {
+  const slug = canonicalizeCountrySlug(country.slug);
+  return slug === "dominican-republic" ? { name: "República Dominicana", slug } : { ...country, slug };
+};
+
+const normalizeDestinationOption = (destination: DestinationOption): DestinationOption => {
+  const countrySlug = canonicalizeCountrySlug(destination.country.slug);
+  return {
+    ...destination,
+    country: {
+      name: countrySlug === "dominican-republic" ? "República Dominicana" : destination.country.name,
+      slug: countrySlug
+    }
+  };
+};
+
+const dedupeBySlug = <T extends { slug: string }>(items: T[]) => {
+  const bySlug = new Map<string, T>();
+  for (const item of items) {
+    if (!bySlug.has(item.slug)) bySlug.set(item.slug, item);
+  }
+  return Array.from(bySlug.values());
+};
+
+const dedupeDestinations = (items: DestinationOption[]) => {
+  const byKey = new Map<string, DestinationOption>();
+  for (const item of items) {
+    const key = `${item.country.slug}:${item.slug}`;
+    if (!byKey.has(key)) byKey.set(key, item);
+  }
+  return Array.from(byKey.values());
+};
+
 const PUNTA_CANA_LINKS = [
   { slug: "tour-en-buggy-en-punta-cana", labelKey: "puntaCana.links.item.1" },
   { slug: "excursion-en-buggy-y-atv-en-punta-cana", labelKey: "puntaCana.links.item.2" },
@@ -216,15 +259,27 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   let countries: CountryOption[] = [];
   try {
     countries = await prisma.country.findMany({
+      where: {
+        OR: [
+          { tours: { some: PUBLIC_TOUR_OPTION_WHERE } },
+          { destinations: { some: { departureTours: { some: PUBLIC_TOUR_OPTION_WHERE } } } }
+        ]
+      },
       select: { name: true, slug: true }
     });
   } catch (error) {
     logPrismaError("loading countries", error);
   }
+  countries = dedupeBySlug(countries.map(normalizeCountryOption)).sort((a, b) => a.name.localeCompare(b.name));
 
   let destinations: DestinationOption[] = [];
   try {
     destinations = await prisma.destination.findMany({
+      where: {
+        departureTours: {
+          some: PUBLIC_TOUR_OPTION_WHERE
+        }
+      },
       select: {
         name: true,
         slug: true,
@@ -234,11 +289,14 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   } catch (error) {
     logPrismaError("loading destinations", error);
   }
+  destinations = dedupeDestinations(destinations.map(normalizeDestinationOption)).sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
 
   let languagesRaw: TourLanguageRow[] = [];
   try {
     languagesRaw = await prisma.tour.findMany({
-      where: { status: "published" },
+      where: PUBLIC_TOUR_OPTION_WHERE,
       select: { language: true }
     });
   } catch (error) {
@@ -248,7 +306,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   let durationsRaw: TourDurationRow[] = [];
   try {
     durationsRaw = await prisma.tour.findMany({
-      where: { status: "published" },
+      where: PUBLIC_TOUR_OPTION_WHERE,
       select: { duration: true }
     });
   } catch (error) {
@@ -294,8 +352,9 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
 
   if (applyPreferences && (preferredCountries.length || preferredDestinations.length)) {
     const destinationIs = ensureDepartureDestinationIs(where);
-    if (preferredCountries.length) {
-      destinationIs.country = { slug: { in: preferredCountries } };
+    const preferredCountrySlugs = Array.from(new Set(preferredCountries.flatMap((slug) => getCountrySlugAliases(slug))));
+    if (preferredCountrySlugs.length) {
+      destinationIs.country = { slug: { in: preferredCountrySlugs } };
     }
     if (preferredDestinations.length) {
       destinationIs.slug = { in: preferredDestinations };

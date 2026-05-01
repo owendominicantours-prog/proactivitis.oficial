@@ -8,6 +8,14 @@ export type TourSearchParams = {
   sort?: string;
 };
 
+export const DOMINICAN_REPUBLIC_CANONICAL_SLUG = "dominican-republic";
+
+const DOMINICAN_REPUBLIC_COUNTRY_SLUGS = [
+  DOMINICAN_REPUBLIC_CANONICAL_SLUG,
+  "dominican-republic-rd",
+  "republica-dominicana"
+];
+
 const normalizeToSlug = (value: string | undefined) => {
   if (!value) return "";
   return value
@@ -16,6 +24,17 @@ const normalizeToSlug = (value: string | undefined) => {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+};
+
+export const canonicalizeCountrySlug = (value: string | undefined) => {
+  const slug = normalizeToSlug(value);
+  return DOMINICAN_REPUBLIC_COUNTRY_SLUGS.includes(slug) ? DOMINICAN_REPUBLIC_CANONICAL_SLUG : slug;
+};
+
+export const getCountrySlugAliases = (value: string | undefined) => {
+  const slug = normalizeToSlug(value);
+  if (!slug) return [];
+  return DOMINICAN_REPUBLIC_COUNTRY_SLUGS.includes(slug) ? DOMINICAN_REPUBLIC_COUNTRY_SLUGS : [slug];
 };
 
 const ensureDestinationIs = (where: any) => {
@@ -30,13 +49,20 @@ const ensureDestinationIs = (where: any) => {
 
 export function buildTourFilter(params: TourSearchParams = {}) {
   const where: any = { status: "published" };
+  const countrySlugs = getCountrySlugAliases(params.country);
+  const hasDestination = Boolean(params.destination?.trim());
 
-  if (params.country) {
+  if (countrySlugs.length && hasDestination) {
     const destinationIs = ensureDestinationIs(where);
-    destinationIs.country = { slug: params.country };
+    destinationIs.country = { slug: { in: countrySlugs } };
+  } else if (countrySlugs.length) {
+    where.OR = [
+      { country: { slug: { in: countrySlugs } } },
+      { departureDestination: { is: { country: { slug: { in: countrySlugs } } } } }
+    ];
   }
 
-  if (params.destination) {
+  if (hasDestination) {
     const destinationIs = ensureDestinationIs(where);
     const normalizedSlug = normalizeToSlug(params.destination);
     const searchValue = params.destination.trim();

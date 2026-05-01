@@ -7,8 +7,25 @@ describe("buildTourFilter", () => {
       destination: "punta-cana"
     });
 
-    expect(where.departureDestination?.is?.country?.slug).toBe("dominican-republic");
+    expect(where.departureDestination?.is?.country?.slug).toEqual({
+      in: ["dominican-republic", "dominican-republic-rd", "republica-dominicana"]
+    });
     expect(where.departureDestination?.is?.slug).toBe("punta-cana");
+  });
+
+  it("treats Dominican Republic aliases as the same country", () => {
+    const where = buildTourFilter({
+      country: "republica-dominicana"
+    });
+
+    expect(where.OR).toEqual([
+      { country: { slug: { in: ["dominican-republic", "dominican-republic-rd", "republica-dominicana"] } } },
+      {
+        departureDestination: {
+          is: { country: { slug: { in: ["dominican-republic", "dominican-republic-rd", "republica-dominicana"] } } }
+        }
+      }
+    ]);
   });
 
   it("adds price bounds when numeric values exist", () => {
