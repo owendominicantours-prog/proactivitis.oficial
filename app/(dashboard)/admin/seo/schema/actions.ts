@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { requireAdminSession } from "@/lib/adminAccess";
 import type { Locale } from "@/lib/translations";
 import { getGeminiSchemaReview, reviewTransferSchemaWithGemini } from "@/lib/geminiSchemaReview";
 import { updateSchemaProcessingState } from "@/lib/schemaProcessingState";
@@ -145,6 +146,8 @@ const autoApplySuggestionIfPossible = async ({
 };
 
 export async function saveTransferSchemaOverrideAction(formData: FormData) {
+  await requireAdminSession();
+
   const slug = readField(formData, "slug");
   const locale = (readField(formData, "locale") || "es") as Locale;
   const scope = readField(formData, "scope") === "all" ? "all" : locale;
@@ -164,6 +167,8 @@ export async function saveTransferSchemaOverrideAction(formData: FormData) {
 }
 
 export async function clearTransferSchemaOverrideAction(formData: FormData) {
+  await requireAdminSession();
+
   const slug = readField(formData, "slug");
   const locale = (readField(formData, "locale") || "es") as Locale;
   const scope = readField(formData, "scope") === "all" ? "all" : locale;
@@ -177,6 +182,8 @@ export async function clearTransferSchemaOverrideAction(formData: FormData) {
 }
 
 export async function generateTransferFaqDraftAction(formData: FormData) {
+  await requireAdminSession();
+
   const slug = readField(formData, "slug");
   const locale = (readField(formData, "locale") || "es") as Locale;
   const serviceName = readField(formData, "service_name") || "Private transfer";
@@ -205,6 +212,8 @@ export async function generateTransferFaqDraftAction(formData: FormData) {
 }
 
 export async function reviewTransferSchemaWithGeminiAction(formData: FormData) {
+  await requireAdminSession();
+
   const slug = readField(formData, "slug");
   const locale = (readField(formData, "locale") || "es") as Locale;
   const pageUrl = readField(formData, "page_url");
@@ -258,6 +267,8 @@ export async function reviewTransferSchemaWithGeminiAction(formData: FormData) {
 }
 
 export async function applyGeminiOverrideSuggestionsAction(formData: FormData) {
+  await requireAdminSession();
+
   const slug = readField(formData, "slug");
   const locale = (readField(formData, "locale") || "es") as Locale;
 

@@ -1,17 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "next-auth";
 
-import { authOptions } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/adminAccess";
 import { createNotification } from "@/lib/notificationService";
 import { prisma } from "@/lib/prisma";
 
 const sanitize = (value: unknown) => (typeof value === "string" ? value.trim() : "");
 
 export async function addAdminBookingNote(formData: FormData) {
+  await requireAdminSession();
+
   const bookingId = sanitize(formData.get("bookingId"));
-  const note = sanitize(formData.get("note"));
+  const note = sanitize(formData.get("note")).slice(0, 800);
   const author = sanitize(formData.get("author")) || "Admin";
 
   if (!bookingId) {
@@ -42,10 +43,7 @@ const parseOptionalDate = (value: string) => {
 };
 
 export async function updateAdminTransferLogistics(formData: FormData) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id || session.user.role !== "ADMIN") {
-    throw new Error("No autorizado.");
-  }
+  await requireAdminSession();
 
   const bookingId = sanitize(formData.get("bookingId"));
   const pickup = sanitize(formData.get("pickup"));

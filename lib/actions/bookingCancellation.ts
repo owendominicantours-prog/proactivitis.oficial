@@ -1,6 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/adminAccess";
 import { prisma } from "@/lib/prisma";
 import { requiresCancellationRequest } from "@/lib/bookings";
 import { createNotification } from "@/lib/notificationService";
@@ -154,7 +157,76 @@ const updateCancellation = async (bookingId: string, status: BookingStatus, role
   revalidate();
 };
 
+const requireSupplierBookingAccess = async (bookingId: string) => {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || session.user.role !== "SUPPLIER") {
+    throw new Error("No autorizado.");
+  }
+
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: {
+      Tour: {
+        select: {
+          SupplierProfile: {
+            select: {
+              userId: true
+            }
+          }
+        }
+      }
+    }
+  });
+
+  if (!booking) {
+    throw new Error("Reserva no encontrada.");
+  }
+  if (booking.Tour?.SupplierProfile?.userId !== session.user.id) {
+    throw new Error("No tienes permiso para gestionar esta reserva.");
+  }
+  return booking;
+};
+
+const requireAgencyBookingAccess = async (bookingId: string) => {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || session.user.role !== "AGENCY") {
+    throw new Error("No autorizado.");
+  }
+
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: {
+      AgencyProLink: {
+        select: {
+          agencyUserId: true
+        }
+      },
+      AgencyTransferLink: {
+        select: {
+          agencyUserId: true
+        }
+      }
+    }
+  });
+
+  if (!booking) {
+    throw new Error("Reserva no encontrada.");
+  }
+
+  const ownsBooking =
+    booking.userId === session.user.id ||
+    booking.AgencyProLink?.agencyUserId === session.user.id ||
+    booking.AgencyTransferLink?.agencyUserId === session.user.id;
+
+  if (!ownsBooking) {
+    throw new Error("No tienes permiso para gestionar esta reserva.");
+  }
+
+  return booking;
+};
+
 export async function adminCancelBooking(formData: FormData) {
+  await requireAdminSession();
   const bookingId = formData.get("bookingId");
   const reason = formData.get("reason");
   if (!bookingId || typeof bookingId !== "string") {
@@ -167,6 +239,7 @@ export async function adminCancelBooking(formData: FormData) {
 }
 
 export async function adminApproveCancellation(formData: FormData) {
+  await requireAdminSession();
   const bookingId = formData.get("bookingId");
   if (!bookingId || typeof bookingId !== "string") {
     throw new Error("Reserva inválida.");
@@ -183,8 +256,7 @@ export async function supplierCancelBooking(formData: FormData) {
   if (!reason || typeof reason !== "string" || !reason.trim()) {
     throw new Error("Escribe un motivo para cancelar.");
   }
-  const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
-  if (!booking) throw new Error("Reserva no encontrada.");
+  const booking = await requireSupplierBookingAccess(bookingId);
   if (requiresCancellationRequest(booking.travelDate)) {
     throw new Error("Esta reserva requiere aprobación del admin.");
   }
@@ -200,6 +272,7 @@ export async function supplierRequestCancellation(formData: FormData) {
   if (!reason || typeof reason !== "string" || !reason.trim()) {
     throw new Error("Describe el motivo de tu solicitud.");
   }
+  await requireSupplierBookingAccess(bookingId);
   await updateCancellation(bookingId, BookingStatusEnum.CANCELLATION_REQUESTED, "SUPPLIER", reason.trim());
 }
 
@@ -212,8 +285,7 @@ export async function agencyCancelBooking(formData: FormData) {
   if (!reason || typeof reason !== "string" || !reason.trim()) {
     throw new Error("Escribe un motivo para cancelar.");
   }
-  const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
-  if (!booking) throw new Error("Reserva no encontrada.");
+  const booking = await requireAgencyBookingAccess(bookingId);
   if (requiresCancellationRequest(booking.travelDate)) {
     throw new Error("Esta reserva requiere aprobación del admin.");
   }
@@ -229,5 +301,6 @@ export async function agencyRequestCancellation(formData: FormData) {
   if (!reason || typeof reason !== "string" || !reason.trim()) {
     throw new Error("Describe el motivo de tu solicitud.");
   }
+  await requireAgencyBookingAccess(bookingId);
   await updateCancellation(bookingId, BookingStatusEnum.CANCELLATION_REQUESTED, "AGENCY", reason.trim());
 }

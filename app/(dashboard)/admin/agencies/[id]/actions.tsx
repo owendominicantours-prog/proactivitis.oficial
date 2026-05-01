@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/adminAccess";
 import { ensureAgencyProfile } from "@/lib/agencyProfiles";
 
 async function setAgencyApproval(userId: string, approved: boolean, companyName?: string) {
@@ -37,6 +38,8 @@ async function setAgencyApproval(userId: string, approved: boolean, companyName?
 }
 
 export async function updateAgencyCommission(formData: FormData) {
+  await requireAdminSession();
+
   const userId = formData.get("userId");
   const commissionPercentRaw = formData.get("commissionPercent");
   if (typeof userId !== "string" || !userId) return;
@@ -64,6 +67,8 @@ const revalidateAgencyPaths = (referenceId: string, userId: string) => {
 };
 
 export async function approveAgency(formData: FormData) {
+  await requireAdminSession();
+
   const userId = formData.get("userId");
   const companyName = formData.get("companyName");
   const profileId = formData.get("agencyId");
@@ -82,6 +87,8 @@ export async function approveAgency(formData: FormData) {
 }
 
 export async function rejectAgency(formData: FormData) {
+  await requireAdminSession();
+
   const userId = formData.get("userId");
   const profileId = formData.get("agencyId");
 

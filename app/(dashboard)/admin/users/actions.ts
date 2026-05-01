@@ -1,17 +1,28 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/adminAccess";
 import { revalidatePath } from "next/cache";
 
 export async function deleteUserAction(formData: FormData) {
+  const session = await requireAdminSession();
   const id = formData.get("userId");
   if (!id || typeof id !== "string") {
     throw new Error("Falta el identificador del usuario.");
+  }
+  if (id === session.user.id) {
+    throw new Error("No puedes eliminar tu propia cuenta admin.");
   }
 
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user) {
     throw new Error("Usuario no encontrado.");
+  }
+  if (user.role === "ADMIN") {
+    const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
+    if (adminCount <= 1) {
+      throw new Error("No puedes eliminar el último admin.");
+    }
   }
 
   await prisma.$transaction(async (tx) => {
@@ -29,6 +40,7 @@ export async function deleteUserAction(formData: FormData) {
 }
 
 export async function resetUserPreferencesAction(formData: FormData) {
+  await requireAdminSession();
   const id = formData.get("userId");
   if (!id || typeof id !== "string") {
     throw new Error("Falta el identificador del usuario.");

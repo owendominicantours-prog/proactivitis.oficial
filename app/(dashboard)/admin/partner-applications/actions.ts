@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/adminAccess";
 import { createAccountStatusNotification } from "@/lib/notificationService";
 import { NotificationRole, NotificationType } from "@/lib/types/notificationTypes";
 import { sendEmail } from "@/lib/email";
@@ -15,6 +16,8 @@ const ensureStatusMessage = (status: "APPROVED" | "REJECTED") =>
 
 async function updateApplicationStatus(formData: FormData, status: "APPROVED" | "REJECTED") {
   "use server";
+  await requireAdminSession();
+
   const id = formData.get("applicationId");
   if (!id || typeof id !== "string") {
     throw new Error("Falta el identificador de la solicitud.");
@@ -149,6 +152,8 @@ async function sendPartnerWelcome(user: { id: string; email: string | null; name
 
 export async function ensureSupplierProfileAction(formData: FormData) {
   "use server";
+  await requireAdminSession();
+
   const id = formData.get("applicationId");
   if (!id || typeof id !== "string") {
     throw new Error("Falta el identificador de la solicitud.");

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/adminAccess";
 import { TransferLocationType } from "@prisma/client";
 
 type ImportFailure = {
@@ -10,6 +11,12 @@ type ImportFailure = {
 };
 
 export async function POST(request: NextRequest) {
+  try {
+    await requireAdminSession();
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const formData = await request.formData();
   const csvField = formData.get("csvFile");
   const fallbackZoneId = formData.get("zoneId");

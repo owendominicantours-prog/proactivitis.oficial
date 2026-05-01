@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/adminAccess";
 import { revalidatePath } from "next/cache";
 import { findStaticVariant } from "@/lib/tourVariantCatalog";
 import { Prisma } from "@prisma/client";
@@ -18,6 +19,8 @@ const parseFaqLines = (value: FormDataEntryValue | null) =>
   }).filter((faq) => faq.q && faq.a);
 
 export async function saveTourVariant(formData: FormData) {
+  await requireAdminSession();
+
   const id = String(formData.get("id") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim();
   const type = String(formData.get("type") ?? "").trim();
@@ -83,6 +86,8 @@ export async function saveTourVariant(formData: FormData) {
 }
 
 export async function importStaticVariant(slug: string) {
+  await requireAdminSession();
+
   const entry = findStaticVariant(slug);
   if (!entry) return;
   try {
@@ -118,6 +123,8 @@ export async function importStaticVariant(slug: string) {
 }
 
 export async function deleteTourVariant(id: string) {
+  await requireAdminSession();
+
   await prisma.tourVariant.delete({ where: { id } });
   revalidatePath("/admin/tour-variants");
   revalidatePath("/sitemap-tour-variants.xml");

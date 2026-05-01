@@ -1,7 +1,6 @@
 ﻿import { ReactNode } from "react";
-import { getServerSession } from "next-auth";
 import { PanelShell, NotificationMenuItem } from "@/components/dashboard/PanelShell";
-import { authOptions } from "@/lib/auth";
+import { requireAdminPage } from "@/lib/adminAccess";
 import { getNotificationUnreadCount, getNotificationsForRecipient } from "@/lib/notificationService";
 
 const adminNav = [
@@ -38,19 +37,16 @@ export const metadata = {
 };
 
 export default async function AdminDashboardLayout({ children }: { children: ReactNode }) {
-  const session = await getServerSession(authOptions);
-  const isAdmin = session?.user?.role === "ADMIN";
+  const session = await requireAdminPage();
   let notifications: NotificationMenuItem[] = [];
   let unreadCount = 0;
 
-  if (isAdmin) {
-    const [fetched, count] = await Promise.all([
-      getNotificationsForRecipient({ role: "ADMIN", limit: 5 }),
-      getNotificationUnreadCount({ role: "ADMIN" })
-    ]);
-    notifications = fetched;
-    unreadCount = count;
-  }
+  const [fetched, count] = await Promise.all([
+    getNotificationsForRecipient({ role: "ADMIN", limit: 5 }),
+    getNotificationUnreadCount({ role: "ADMIN" })
+  ]);
+  notifications = fetched;
+  unreadCount = count;
 
   return (
     <PanelShell
@@ -60,7 +56,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
       navDisplay="dropdown"
       notifications={notifications}
       unreadCount={unreadCount}
-      notificationLink={isAdmin ? "/admin/notifications" : undefined}
+      notificationLink="/admin/notifications"
       accountId={session?.user?.id ?? null}
     >
       {children}

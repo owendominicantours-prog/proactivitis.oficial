@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/adminAccess";
 import { normalizeRecipients, notificationEmailDefaults, type NotificationEmailKey } from "@/lib/notificationEmailSettings";
 import type {
   HomeContentOverrides,
@@ -14,6 +15,8 @@ import type {
 const allowedKeys = new Set<NotificationEmailKey>(notificationEmailDefaults.map((entry) => entry.key));
 
 export async function updateNotificationEmailSettingAction(formData: FormData) {
+  await requireAdminSession();
+
   const key = String(formData.get("key") ?? "").trim() as NotificationEmailKey;
   const recipientsRaw = String(formData.get("recipients") ?? "");
 
@@ -69,6 +72,8 @@ const parseSharedImageMap = (value: string): Record<string, string> =>
   );
 
 export async function updateSharedImagesAction(formData: FormData) {
+  await requireAdminSession();
+
   const value = readField(formData, "shared_images_map");
   const content = parseSharedImageMap(value);
 
@@ -85,6 +90,8 @@ export async function updateSharedImagesAction(formData: FormData) {
 }
 
 export async function updateHomeContentAction(formData: FormData) {
+  await requireAdminSession();
+
   const locale = readField(formData, "locale") || "es";
 
   const payload: HomeContentOverrides = {
@@ -174,6 +181,8 @@ export async function updateHomeContentAction(formData: FormData) {
 }
 
 export async function updateContactContentAction(formData: FormData) {
+  await requireAdminSession();
+
   const locale = readField(formData, "locale") || "es";
 
   const payload: ContactContentOverrides = {
@@ -225,6 +234,8 @@ export async function updateContactContentAction(formData: FormData) {
 }
 
 export async function updateGlobalBannerContentAction(formData: FormData) {
+  await requireAdminSession();
+
   const locale = readField(formData, "locale") || "es";
   const enabled = formData.get("banner_enabled") === "on";
   const payload: GlobalBannerOverrides = {
@@ -252,6 +263,8 @@ export async function updateGlobalBannerContentAction(formData: FormData) {
 }
 
 export async function updatePremiumTransferContentAction(formData: FormData) {
+  await requireAdminSession();
+
   const locale = (readField(formData, "locale") || "es") as "es" | "en" | "fr";
 
   const payload: PremiumTransferContentOverrides = {
@@ -293,6 +306,8 @@ export async function updatePremiumTransferContentAction(formData: FormData) {
 }
 
 export async function updateAgencyTutorialContentAction(formData: FormData) {
+  await requireAdminSession();
+
   const payload: AgencyTutorialLandingOverrides = {
     screenshotPrimary: readField(formData, "agency_tutorial_screenshot_primary"),
     screenshotSecondary: readField(formData, "agency_tutorial_screenshot_secondary"),

@@ -16,7 +16,19 @@ export async function getAdminDashboardMetrics() {
   const now = new Date();
   const { start, end } = getCurrentMonthRange(now);
 
-  const [confirmedCount, cancellationCount, requestCount, revenueResult] = await Promise.all([
+  const [
+    confirmedCount,
+    cancellationCount,
+    requestCount,
+    revenueResult,
+    paymentPendingCount,
+    tourReviewQueueCount,
+    supplierPendingCount,
+    pendingTourReviewsCount,
+    pendingTransferReviewsCount,
+    transferNeedsLogisticsCount,
+    latestBookings
+  ] = await Promise.all([
     prisma.booking.count({
       where: {
         travelDate: { gte: start, lt: end },
@@ -40,6 +52,60 @@ export async function getAdminDashboardMetrics() {
         status: { in: confirmedStatuses }
       },
       _sum: { totalAmount: true }
+    }),
+    prisma.booking.count({
+      where: {
+        status: { in: ["PAYMENT_PENDING", "PENDING"] }
+      }
+    }),
+    prisma.tour.count({
+      where: {
+        status: { in: ["under_review", "pending", "needs_changes"] }
+      }
+    }),
+    prisma.partnerApplication.count({
+      where: { status: "PENDING" }
+    }),
+    prisma.tourReview.count({
+      where: { status: "PENDING" }
+    }),
+    prisma.transferReview.count({
+      where: { status: "PENDING" }
+    }),
+    prisma.booking.count({
+      where: {
+        flowType: "transfer",
+        travelDate: { gte: now },
+        status: { notIn: ["CANCELLED", "COMPLETED"] },
+        OR: [
+          { pickup: null },
+          { pickup: "" },
+          { hotel: null },
+          { hotel: "" },
+          { flightNumber: null },
+          { flightNumber: "" }
+        ]
+      }
+    }),
+    prisma.booking.findMany({
+      where: {
+        status: { in: confirmedStatuses }
+      },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        bookingCode: true,
+        customerName: true,
+        totalAmount: true,
+        travelDate: true,
+        flowType: true,
+        Tour: {
+          select: {
+            title: true
+          }
+        }
+      }
     })
   ]);
 
@@ -47,7 +113,13 @@ export async function getAdminDashboardMetrics() {
     confirmedThisMonth: confirmedCount,
     cancellationsThisMonth: cancellationCount,
     cancellationRequests: requestCount,
-    grossRevenue: revenueResult._sum.totalAmount ?? 0
+    grossRevenue: revenueResult._sum.totalAmount ?? 0,
+    paymentPending: paymentPendingCount,
+    tourReviewQueue: tourReviewQueueCount,
+    supplierApplicationsPending: supplierPendingCount,
+    pendingReviews: pendingTourReviewsCount + pendingTransferReviewsCount,
+    transferNeedsLogistics: transferNeedsLogisticsCount,
+    latestBookings
   };
 }
 

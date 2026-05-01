@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/adminAccess";
 import { revalidatePath } from "next/cache";
 
 type CountryForm = {
@@ -17,6 +18,8 @@ type DestinationForm = {
 };
 
 export async function addCountryAction(formData: FormData) {
+  await requireAdminSession();
+
   const name = formData.get("name");
   const slug = formData.get("slug");
   const shortDescription = formData.get("shortDescription");
@@ -53,6 +56,8 @@ export async function addCountryAction(formData: FormData) {
 }
 
 export async function addDestinationAction(formData: FormData) {
+  await requireAdminSession();
+
   const name = formData.get("name");
   const slug = formData.get("slug");
   const countryId = formData.get("countryId");

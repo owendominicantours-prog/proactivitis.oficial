@@ -5,7 +5,7 @@ import { deleteUserAction, resetUserPreferencesAction } from "./actions";
 
 type SearchParams = {
   q?: string;
-  role?: "all" | "admin" | "supplier" | "agency" | "customer";
+  role?: "all" | "ADMIN" | "SUPPLIER" | "AGENCY" | "CUSTOMER";
 };
 
 type Props = {
@@ -13,10 +13,10 @@ type Props = {
 };
 
 const roleStyles: Record<string, string> = {
-  admin: "bg-slate-900 text-white",
-  supplier: "bg-emerald-100 text-emerald-800",
-  agency: "bg-sky-100 text-sky-800",
-  customer: "bg-amber-100 text-amber-800"
+  ADMIN: "bg-slate-900 text-white",
+  SUPPLIER: "bg-emerald-100 text-emerald-800",
+  AGENCY: "bg-sky-100 text-sky-800",
+  CUSTOMER: "bg-amber-100 text-amber-800"
 };
 
 export default async function AdminUsersPage({ searchParams }: Props) {
@@ -46,10 +46,10 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   }
 
   const byRole = {
-    admin: users.filter((user) => user.role === "admin").length,
-    supplier: users.filter((user) => user.role === "supplier").length,
-    agency: users.filter((user) => user.role === "agency").length,
-    customer: users.filter((user) => user.role === "customer").length
+    admin: users.filter((user) => user.role === "ADMIN").length,
+    supplier: users.filter((user) => user.role === "SUPPLIER").length,
+    agency: users.filter((user) => user.role === "AGENCY").length,
+    customer: users.filter((user) => user.role === "CUSTOMER").length
   };
 
   return (
@@ -106,10 +106,10 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-sky-400 focus:bg-white"
             >
               <option value="all">Todos</option>
-              <option value="admin">Admin</option>
-              <option value="supplier">Supplier</option>
-              <option value="agency">Agency</option>
-              <option value="customer">Customer</option>
+              <option value="ADMIN">Admin</option>
+              <option value="SUPPLIER">Supplier</option>
+              <option value="AGENCY">Agency</option>
+              <option value="CUSTOMER">Customer</option>
             </select>
           </label>
           <div className="flex items-end">

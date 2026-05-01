@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { requireAdminSession } from "@/lib/adminAccess";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import {
   getGeminiSeoFactoryConfig,
@@ -10,6 +11,8 @@ import {
 } from "@/lib/geminiSeoFactory";
 
 export async function refreshTransferLandingsAction() {
+  await requireAdminSession();
+
   const combos = await getDynamicTransferLandingCombos();
   combos.forEach((combo) => {
     revalidatePath(`/transfer/${combo.landingSlug}`);
@@ -39,6 +42,8 @@ const revalidateGeminiSeoFactory = (slug?: string) => {
 };
 
 export async function saveGeminiSeoFactorySettingsAction(formData: FormData) {
+  await requireAdminSession();
+
   const current = await getGeminiSeoFactoryConfig();
   const dailyLimit = Number(formData.get("dailyLimit") ?? current.dailyLimit);
   const tourDailyLimit = Number(formData.get("tourDailyLimit") ?? current.tourDailyLimit);
@@ -58,6 +63,8 @@ export async function saveGeminiSeoFactorySettingsAction(formData: FormData) {
 }
 
 export async function generateGeminiSeoFactoryBatchAction(formData: FormData) {
+  await requireAdminSession();
+
   const limit = Number(formData.get("limit") ?? "3");
   await runGeminiSeoFactoryBatch({
     manualLimit: Number.isFinite(limit) ? Math.max(1, Math.min(20, limit)) : 3
@@ -66,6 +73,8 @@ export async function generateGeminiSeoFactoryBatchAction(formData: FormData) {
 }
 
 export async function publishGeminiSeoLandingAction(formData: FormData) {
+  await requireAdminSession();
+
   const slug = String(formData.get("slug") ?? "");
   if (!slug) return;
   await updateGeminiSeoLandingStatus(slug, "published");
@@ -73,6 +82,8 @@ export async function publishGeminiSeoLandingAction(formData: FormData) {
 }
 
 export async function draftGeminiSeoLandingAction(formData: FormData) {
+  await requireAdminSession();
+
   const slug = String(formData.get("slug") ?? "");
   if (!slug) return;
   await updateGeminiSeoLandingStatus(slug, "draft");
@@ -80,6 +91,8 @@ export async function draftGeminiSeoLandingAction(formData: FormData) {
 }
 
 export async function rejectGeminiSeoLandingAction(formData: FormData) {
+  await requireAdminSession();
+
   const slug = String(formData.get("slug") ?? "");
   if (!slug) return;
   await updateGeminiSeoLandingStatus(slug, "rejected");

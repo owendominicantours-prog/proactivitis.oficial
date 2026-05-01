@@ -2,6 +2,7 @@
 
 import { TransferLocationType, VehicleCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/adminAccess";
 import { revalidatePath } from "next/cache";
 
 const TRANSFER_ADMIN_PATH = "/(dashboard)/admin/transfers";
@@ -13,6 +14,8 @@ function refreshTransfers() {
 }
 
 export async function addTransferCountryAction(formData: FormData) {
+  await requireAdminSession();
+
   const name = formData.get("name");
   const slug = formData.get("slug");
   const code = formData.get("code");
@@ -47,6 +50,8 @@ export async function addTransferCountryAction(formData: FormData) {
 }
 
 export async function addTransferZoneAction(formData: FormData) {
+  await requireAdminSession();
+
   const name = formData.get("name");
   const slug = formData.get("slug");
   const description = formData.get("description");
@@ -87,6 +92,8 @@ export async function addTransferZoneAction(formData: FormData) {
 }
 
 export async function updateTransferZoneAction(formData: FormData) {
+  await requireAdminSession();
+
   const zoneId = formData.get("zoneId");
   const name = formData.get("name");
   const slug = formData.get("slug");
@@ -130,6 +137,8 @@ export async function updateTransferZoneAction(formData: FormData) {
 }
 
 export async function deleteTransferZoneAction(formData: FormData) {
+  await requireAdminSession();
+
   const zoneId = formData.get("zoneId");
 
   if (!zoneId || typeof zoneId !== "string" || !zoneId.trim()) {
@@ -149,6 +158,8 @@ export async function deleteTransferZoneAction(formData: FormData) {
 }
 
 export async function addTransferLocationAction(formData: FormData) {
+  await requireAdminSession();
+
   const name = formData.get("name");
   const slug = formData.get("slug");
   const type = formData.get("type");
@@ -200,6 +211,8 @@ export async function addTransferLocationAction(formData: FormData) {
 }
 
 export async function addTransferVehicleAction(formData: FormData) {
+  await requireAdminSession();
+
   const vehicleId = formData.get("vehicleId");
   const name = formData.get("name");
   const slug = formData.get("slug");
@@ -267,6 +280,8 @@ export async function addTransferVehicleAction(formData: FormData) {
 }
 
 export async function addTransferRouteAction(formData: FormData) {
+  await requireAdminSession();
+
   const zoneAId = formData.get("zoneAId");
   const zoneBId = formData.get("zoneBId");
 
@@ -309,6 +324,8 @@ export async function addTransferRouteAction(formData: FormData) {
 }
 
 export async function upsertTransferRoutePriceAction(formData: FormData) {
+  await requireAdminSession();
+
   const routeId = formData.get("routeId");
   const vehicleId = formData.get("vehicleId");
   const priceValue = formData.get("price");
@@ -343,6 +360,8 @@ export async function upsertTransferRoutePriceAction(formData: FormData) {
 }
 
 export async function addTransferRouteOverrideAction(formData: FormData) {
+  await requireAdminSession();
+
   const routeId = formData.get("routeId");
   const vehicleId = formData.get("vehicleId");
   const originLocationId = formData.get("originLocationId");
@@ -406,6 +425,8 @@ export async function addTransferRouteOverrideAction(formData: FormData) {
 }
 
 export async function toggleTransferLocationActiveAction(formData: FormData) {
+  await requireAdminSession();
+
   const locationId = formData.get("locationId");
 
   if (!locationId || typeof locationId !== "string" || !locationId.trim()) {
@@ -426,6 +447,8 @@ export async function toggleTransferLocationActiveAction(formData: FormData) {
 }
 
 export async function toggleTransferVehicleActiveAction(formData: FormData) {
+  await requireAdminSession();
+
   const vehicleId = formData.get("vehicleId");
 
   if (!vehicleId || typeof vehicleId !== "string" || !vehicleId.trim()) {

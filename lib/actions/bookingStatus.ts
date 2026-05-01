@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/notificationService";
 import { BookingSourceEnum, BookingStatus, BookingStatusEnum } from "@/lib/types/booking";
+import { requireAdminSession } from "@/lib/adminAccess";
 
 const allowedStatuses = [
   BookingStatusEnum.CONFIRMED,
@@ -114,6 +115,8 @@ const notifyModification = async (bookingId: string, status: BookingStatus) => {
 };
 
 export async function updateBookingStatus(formData: FormData) {
+  await requireAdminSession();
+
   const bookingId = formData.get("bookingId");
   const status = formData.get("status");
 
@@ -123,6 +126,22 @@ export async function updateBookingStatus(formData: FormData) {
 
   if (!status || typeof status !== "string" || !allowedStatuses.includes(status as AllowedBookingStatus)) {
     throw new Error("Estado inválido.");
+  }
+
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId }
+  });
+
+  if (!booking) {
+    throw new Error("Reserva no encontrada.");
+  }
+
+  if (booking.status === BookingStatusEnum.CANCELLED) {
+    throw new Error("No puedes cambiar una reserva cancelada desde esta acción.");
+  }
+
+  if (status === BookingStatusEnum.COMPLETED && booking.travelDate > new Date()) {
+    throw new Error("No marques como completada una reserva futura.");
   }
 
   await prisma.booking.update({

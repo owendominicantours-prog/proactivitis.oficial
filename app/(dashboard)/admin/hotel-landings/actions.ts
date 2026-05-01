@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/adminAccess";
 import type { HotelLandingOverrides } from "@/lib/siteContent";
 
 const readField = (formData: FormData, key: string) => String(formData.get(key) ?? "").trim();
@@ -40,6 +41,8 @@ const keepList = <T>(raw: string, parser: (value: string) => T[], previous?: T[]
 const SUPPORTED_LOCALES = ["es", "en", "fr"] as const;
 
 export async function updateHotelLandingContentAction(formData: FormData) {
+  await requireAdminSession();
+
   const hotelSlug = readField(formData, "hotelSlug");
   const locale = readField(formData, "locale") || "es";
 
