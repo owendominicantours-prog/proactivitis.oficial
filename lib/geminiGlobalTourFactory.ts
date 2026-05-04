@@ -607,6 +607,11 @@ const ensureMicroZone = async (payload: GeminiGlobalTourPayload, destinationId: 
 };
 
 const ensureProactivitisSupplier = async () => {
+  const original = await prisma.supplierProfile.findFirst({
+    where: { company: { equals: "Original Proactivitis", mode: "insensitive" } }
+  });
+  if (original) return original;
+
   const profiles = await prisma.supplierProfile.findMany({
     where: {
       OR: [
