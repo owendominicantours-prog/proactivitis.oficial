@@ -3,10 +3,12 @@
 import { randomUUID } from "crypto";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { slugifyBlog } from "@/lib/blog";
 import { translateBlogPostAllLocales } from "@/lib/blogTranslationService";
+import { submitNewsSitemapsToSearchConsole } from "@/lib/googleSearchConsole";
 
 const requireAdmin = async () => {
   const session = await getServerSession(authOptions);
@@ -26,6 +28,17 @@ const buildSlug = async (value: string) => {
 const parseTours = (formData: FormData) => {
   const tourIds = formData.getAll("tourIds").map((id) => String(id)).filter(Boolean);
   return Array.from(new Set(tourIds));
+};
+
+const revalidatePublishedNews = (slug: string) => {
+  revalidatePath("/news");
+  revalidatePath("/en/news");
+  revalidatePath("/fr/news");
+  revalidatePath(`/news/${slug}`);
+  revalidatePath(`/en/news/${slug}`);
+  revalidatePath(`/fr/news/${slug}`);
+  revalidatePath("/sitemap-blog.xml");
+  revalidatePath("/sitemap-index.xml");
 };
 
 export async function createBlogPostAction(formData: FormData) {
@@ -61,6 +74,10 @@ export async function createBlogPostAction(formData: FormData) {
   });
 
   await translateBlogPostAllLocales(created.id);
+  if (created.status === "PUBLISHED") {
+    revalidatePublishedNews(created.slug);
+    await submitNewsSitemapsToSearchConsole("admin-news-created");
+  }
   redirect(`/admin/blog/${created.id}`);
 }
 
@@ -81,7 +98,7 @@ export async function updateBlogPostAction(formData: FormData) {
   const slug = slugInput ? slugifyBlog(slugInput) : await buildSlug(title);
   const tourIds = parseTours(formData);
 
-  await prisma.blogPost.update({
+  const updated = await prisma.blogPost.update({
     where: { id },
     data: {
       title,
@@ -99,6 +116,10 @@ export async function updateBlogPostAction(formData: FormData) {
   });
 
   await translateBlogPostAllLocales(id);
+  if (updated.status === "PUBLISHED") {
+    revalidatePublishedNews(updated.slug);
+    await submitNewsSitemapsToSearchConsole("admin-news-updated");
+  }
   redirect(`/admin/blog/${id}`);
 }
 

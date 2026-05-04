@@ -102,6 +102,11 @@ const TRANSFER_LANDING_SITEMAPS = [
   "/sitemap-prodiscovery.xml"
 ] as const;
 
+const NEWS_SITEMAPS = [
+  "/sitemap-index.xml",
+  "/sitemap-blog.xml"
+] as const;
+
 const SEARCH_CONSOLE_CLIENT_EMAIL = process.env.GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL ?? "";
 const SEARCH_CONSOLE_PRIVATE_KEY = process.env.GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY?.replace(/\\n/g, "\n") ?? "";
 const SEARCH_CONSOLE_SITE_URL = process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL ?? "";
@@ -259,6 +264,10 @@ export function submitPublishedTourSitemapsToSearchConsole(reason = "tour-publis
 
 export function submitTransferLandingSitemapsToSearchConsole(reason = "transfer-landings-updated") {
   return submitSitemapsToSearchConsole(TRANSFER_LANDING_SITEMAPS, reason);
+}
+
+export function submitNewsSitemapsToSearchConsole(reason = "news-updated") {
+  return submitSitemapsToSearchConsole(NEWS_SITEMAPS, reason);
 }
 
 function toPath(url: string) {

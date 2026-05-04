@@ -8,6 +8,7 @@ import { Locale } from "@/lib/translations";
 import { TrustBadges } from "@/components/shared/TrustBadges";
 
 type FooterSectionKey = "support" | "company" | "collaborate" | "legal";
+const EDITORIAL_TEAM_LINK = "__editorial_team__";
 
 type SectionDefinition = {
   key: FooterSectionKey;
@@ -30,7 +31,7 @@ const FOOTER_STRUCTURE: SectionDefinition[] = [
   },
   {
     key: "company",
-    hrefs: ["/about", "/our-mission", "/press", "/partners"]
+    hrefs: ["/about", "/our-mission", "/press", EDITORIAL_TEAM_LINK, "/partners"]
   },
   {
     key: "collaborate",
@@ -69,7 +70,7 @@ const FOOTER_TRANSLATIONS: Record<Locale, FooterCopy> = {
     },
     company: {
       title: "Company",
-      links: ["About Proactivitis", "Our mission", "Press", "Partners"]
+      links: ["About Proactivitis", "Our mission", "Press", "Editorial Team", "Partners"]
     },
     collaborate: {
       title: "Collaborate",
@@ -125,12 +126,19 @@ export function PublicFooter() {
   const honorHref = locale === "es" ? "/cliente-de-honor" : `/${locale}/cliente-de-honor`;
   const honorLabel =
     locale === "es" ? "Cliente de Honor" : locale === "en" ? "Honor Client" : "Client d'Honneur";
+  const editorialHref = locale === "es" ? "/es/equipo-editorial" : "/en/editorial-team";
+  const editorialLabel = locale === "es" ? "Equipo editorial" : "Editorial Team";
 
   const groups = FOOTER_STRUCTURE.map((section) => ({
     title: copy[section.key].title,
     links: section.hrefs.map((href, index) => ({
-      href,
+      href: href === EDITORIAL_TEAM_LINK ? editorialHref : href,
       label:
+        href === EDITORIAL_TEAM_LINK
+          ? editorialLabel
+          : href === "/partners" && section.key === "company" && !copy[section.key].links[index]
+            ? copy[section.key].links[copy[section.key].links.length - 1]
+            :
         copy[section.key].links[index] ??
         (href === "/account-deletion"
           ? locale === "en"

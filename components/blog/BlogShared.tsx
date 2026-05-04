@@ -11,6 +11,14 @@ import { authOptions } from "@/lib/auth";
 import BlogLibraryClient from "@/components/blog/BlogLibraryClient";
 
 const BASE_URL = "https://proactivitis.com";
+const EDITORIAL_AUTHOR_NAME = "Departamento de Inteligencia Editorial Proactivitis";
+const EDITORIAL_AUTHOR_URL = `${BASE_URL}/en/editorial-team`;
+const EDITORIAL_AUTHOR_SCHEMA = {
+  "@type": "Organization",
+  "@id": `${EDITORIAL_AUTHOR_URL}#editorial-organization`,
+  name: EDITORIAL_AUTHOR_NAME,
+  url: EDITORIAL_AUTHOR_URL
+};
 
 type StaticBlogTranslation = {
   title: string;
@@ -863,6 +871,45 @@ const renderBlogContent = (html: string) => (
   />
 );
 
+const AUTHOR_BOX_COPY = {
+  es: {
+    label: "Responsable editorial",
+    title: EDITORIAL_AUTHOR_NAME,
+    body:
+      "Unidad central de analisis y difusion tecnica de Proactivitis. El departamento transforma datos de logistica, mercado y tecnologia en informacion accionable para viajeros y agencias aliadas.",
+    link: "Ver equipo editorial"
+  },
+  en: {
+    label: "Editorial responsibility",
+    title: EDITORIAL_AUTHOR_NAME,
+    body:
+      "Proactivitis central technical analysis and publishing unit. The department turns logistics, market and technology data into actionable information for travelers and allied agencies.",
+    link: "View editorial team"
+  },
+  fr: {
+    label: "Responsabilite editoriale",
+    title: EDITORIAL_AUTHOR_NAME,
+    body:
+      "Unite centrale d'analyse technique et de publication de Proactivitis. Le departement transforme les donnees de logistique, marche et technologie en informations utiles.",
+    link: "Voir l'equipe editoriale"
+  }
+};
+
+const renderEditorialAuthorBox = (locale: BlogLocale) => {
+  const copy = AUTHOR_BOX_COPY[locale];
+  const href = locale === "es" ? "/es/equipo-editorial" : "/en/editorial-team";
+  return (
+    <aside className="rounded-3xl border border-sky-200 bg-sky-50 p-6 shadow-sm">
+      <p className="text-xs font-bold uppercase tracking-[0.35em] text-sky-700">{copy.label}</p>
+      <h2 className="mt-3 text-xl font-black text-slate-950">{copy.title}</h2>
+      <p className="mt-3 text-sm leading-7 text-slate-600">{copy.body}</p>
+      <Link href={href} className="mt-4 inline-flex text-sm font-bold text-sky-800 underline">
+        {copy.link}
+      </Link>
+    </aside>
+  );
+};
+
 const LABELS = {
   es: {
     listTitle: "Noticias y guias",
@@ -986,9 +1033,12 @@ export async function buildBlogPostMetadata(slug: string, locale: "es" | "en" | 
         }
       },
       openGraph: {
+        type: "article",
         title: translation.title,
         description: translation.excerpt,
         url: canonical,
+        publishedTime: staticPost.publishedAt.toISOString(),
+        authors: [EDITORIAL_AUTHOR_URL],
         images: [{ url: getCoverImageForStaticPost(staticPost) }]
       }
     };
@@ -1022,9 +1072,13 @@ export async function buildBlogPostMetadata(slug: string, locale: "es" | "en" | 
       }
     },
     openGraph: {
+      type: "article",
       title,
       description,
       url: canonical,
+      publishedTime: post.publishedAt ? new Date(post.publishedAt).toISOString() : undefined,
+      modifiedTime: post.updatedAt ? new Date(post.updatedAt).toISOString() : undefined,
+      authors: [EDITORIAL_AUTHOR_URL],
       images: post.coverImage ? [{ url: post.coverImage }] : undefined
     }
   };
@@ -1144,17 +1198,14 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
       "@context": "https://schema.org",
       "@graph": [
         {
-          "@type": "BlogPosting",
+          "@type": "NewsArticle",
           "@id": `${shareUrl}#article`,
           mainEntityOfPage: shareUrl,
           headline: translation.title,
           description: translation.excerpt,
           datePublished: staticPost.publishedAt.toISOString(),
           dateModified: staticPost.publishedAt.toISOString(),
-          author: {
-            "@type": "Organization",
-            name: "Proactivitis"
-          },
+          author: EDITORIAL_AUTHOR_SCHEMA,
           publisher: {
             "@type": "Organization",
             name: "Proactivitis",
@@ -1167,6 +1218,8 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
             "@type": "ImageObject",
             url: `${BASE_URL}${staticCoverImage.startsWith("/") ? staticCoverImage : `/${staticCoverImage}`}`
           },
+          articleSection: "Travel intelligence",
+          isAccessibleForFree: true,
           inLanguage: locale
         },
         {
@@ -1250,6 +1303,8 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
         </div>
 
           <section className="blog-content">{renderBlogContent(enrichedContentHtml)}</section>
+
+          {renderEditorialAuthorBox(locale)}
 
           {relatedTours.length ? (
             <section className="space-y-4">
@@ -1348,21 +1403,19 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
     ? `${BASE_URL}${post.coverImage.startsWith("/") ? post.coverImage : `/${post.coverImage}`}`
     : `${BASE_URL}/fototours/fotosimple.jpg`;
   const publishedIso = post.publishedAt ? new Date(post.publishedAt).toISOString() : new Date().toISOString();
+  const modifiedIso = post.updatedAt ? new Date(post.updatedAt).toISOString() : publishedIso;
   const dynamicBlogSchema = {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "BlogPosting",
+        "@type": "NewsArticle",
         "@id": `${shareUrl}#article`,
         mainEntityOfPage: shareUrl,
         headline: title,
         description: excerpt,
         datePublished: publishedIso,
-        dateModified: publishedIso,
-        author: {
-          "@type": "Organization",
-          name: "Proactivitis"
-        },
+        dateModified: modifiedIso,
+        author: EDITORIAL_AUTHOR_SCHEMA,
         publisher: {
           "@type": "Organization",
           name: "Proactivitis",
@@ -1375,6 +1428,8 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
           "@type": "ImageObject",
           url: coverImageUrl
         },
+        articleSection: "Travel intelligence",
+        isAccessibleForFree: true,
         inLanguage: locale
       },
       {
@@ -1469,6 +1524,8 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
         </div>
 
         <section className="blog-content">{renderBlogContent(contentHtml)}</section>
+
+        {renderEditorialAuthorBox(locale)}
 
         {filteredTours.length ? (
           <section className="space-y-4">

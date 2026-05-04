@@ -10,13 +10,22 @@ type SharedClusterTone = {
   close: string;
 };
 
+export const NEWS_EDITORIAL_SYSTEM_PROMPT = `
+Actua como el Departamento de Inteligencia Editorial Proactivitis.
+Voz: institucional, tecnica, clara y orientada a datos.
+No uses primera persona singular: evita "yo", "mi", "me parece".
+Usa expresiones como "nuestro equipo", "la plataforma", "el departamento" o "el analisis editorial".
+El contenido debe explicar logistica, mercado, precios, rutas o tecnologia con tono verificable.
+Cuando haya incertidumbre, expresa el dato como tendencia, rango o recomendacion operativa.
+`;
+
 const FALLBACK_TONE: SharedClusterTone = {
   titlePrefix: "Guia completa",
-  excerptLead: "Informacion practica para planificar mejor tu viaje.",
+  excerptLead: "Analisis editorial para planificar mejor el viaje.",
   intro:
-    "Si estas investigando esta opcion en Punta Cana, lo importante es bajar la informacion a decisiones reales: tiempo, presupuesto y logistica.",
+    "El Departamento de Inteligencia Editorial Proactivitis analiza esta busqueda desde tres variables operativas: tiempo, presupuesto y logistica real del viajero.",
   planning:
-    "Una buena planificacion evita costos ocultos y te permite disfrutar mas. Lo ideal es definir primero tu base de transporte, luego actividades principales y al final extras opcionales.",
+    "Una planificacion ordenada reduce costos ocultos y mejora la experiencia. Nuestro equipo recomienda definir primero la base de transporte, luego las actividades principales y al final los extras opcionales.",
   practicalBlockTitle: "Puntos clave para organizarlo bien",
   practicalTips: [
     "Define fecha exacta y zona donde te vas a hospedar.",
@@ -31,7 +40,7 @@ const FALLBACK_TONE: SharedClusterTone = {
     "No confirmar la logistica de ida y regreso."
   ],
   close:
-    "Si organizas estos puntos con antelacion, la experiencia mejora y el viaje se siente mas fluido desde el primer dia."
+    "Cuando estos puntos se organizan con antelacion, la experiencia mejora y el viaje se vuelve mas fluido desde el primer dia."
 };
 
 const mergeTone = (
@@ -61,7 +70,7 @@ export const buildSeoBlogDraft = (
 ) => {
   const resolvedTone = mergeTone(FALLBACK_TONE, tone);
   const title = `${resolvedTone.titlePrefix}: ${keyword}`;
-  const excerpt = `${resolvedTone.excerptLead} Guia real sobre ${keyword} para decidir con claridad y reservar con seguridad.`;
+  const excerpt = `${resolvedTone.excerptLead} Guia tecnica sobre ${keyword} para decidir con claridad y reservar con seguridad.`;
   const contentHtmlRaw = `
 <h1>${keyword}</h1>
 <p>${resolvedTone.intro}</p>
@@ -79,7 +88,7 @@ export const buildSeoBlogDraft = (
 
 <h2>Recomendacion practica</h2>
 <p>${resolvedTone.close}</p>
-<p>Si ya tienes fecha, te conviene dejar todo cerrado con anticipacion para evitar sobrecostos y cambios de disponibilidad en temporada alta.</p>
+<p>Cuando la fecha ya esta definida, la recomendacion operativa es cerrar disponibilidad con anticipacion para evitar sobrecostos y cambios en temporada alta.</p>
 
 <p><a href="${cta.href}">${cta.label}</a> | <a href="${cta.supportHref}">${cta.supportLabel}</a></p>
 `;
