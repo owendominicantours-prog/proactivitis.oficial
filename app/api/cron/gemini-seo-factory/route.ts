@@ -4,6 +4,7 @@ import {
   getGeminiSeoGeneratedTodayCount,
   runGeminiSeoFactoryBatch
 } from "@/lib/geminiSeoFactory";
+import { submitSeoFactorySitemapsToSearchConsole } from "@/lib/googleSearchConsole";
 
 export const maxDuration = 300;
 
@@ -49,6 +50,10 @@ export async function GET(request: NextRequest) {
     transferLimitOverride,
     tourLimitOverride
   });
+  const searchConsole =
+    result.published > 0
+      ? await submitSeoFactorySitemapsToSearchConsole("gemini-seo-factory-cron")
+      : null;
   return NextResponse.json({
     ok: true,
     generatedToday,
@@ -58,6 +63,7 @@ export async function GET(request: NextRequest) {
       transfer: transferLimitOverride,
       tour: tourLimitOverride
     },
-    result
+    result,
+    searchConsole
   });
 }

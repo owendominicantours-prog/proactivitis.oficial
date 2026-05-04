@@ -19,6 +19,10 @@ import {
   updateKeywordPlannerStatus,
   type KeywordPlannerStatus
 } from "@/lib/keywordPlanner";
+import {
+  submitSeoFactorySitemapsToSearchConsole,
+  submitTransferLandingSitemapsToSearchConsole
+} from "@/lib/googleSearchConsole";
 
 export async function refreshTransferLandingsAction() {
   await requireAdminSession();
@@ -33,6 +37,7 @@ export async function refreshTransferLandingsAction() {
   revalidatePath("/sitemap-transfers.xml");
   revalidatePath("/sitemap-things-to-do.xml");
   revalidatePath("/sitemap-admin-landings-extra.xml");
+  await submitTransferLandingSitemapsToSearchConsole("admin-transfer-landings-refresh");
   return combos.map((combo) => combo.landingSlug);
 }
 
@@ -77,10 +82,13 @@ export async function generateGeminiSeoFactoryBatchAction(formData: FormData) {
   await requireAdminSession();
 
   const limit = Number(formData.get("limit") ?? "3");
-  await runGeminiSeoFactoryBatch({
+  const result = await runGeminiSeoFactoryBatch({
     manualLimit: Number.isFinite(limit) ? Math.max(1, Math.min(20, limit)) : 3
   });
   revalidateGeminiSeoFactory();
+  if (result.published > 0) {
+    await submitSeoFactorySitemapsToSearchConsole("admin-seo-factory-generate");
+  }
 }
 
 export async function publishGeminiSeoLandingAction(formData: FormData) {
@@ -90,6 +98,7 @@ export async function publishGeminiSeoLandingAction(formData: FormData) {
   if (!slug) return;
   await updateGeminiSeoLandingStatus(slug, "published");
   revalidateGeminiSeoFactory(slug);
+  await submitSeoFactorySitemapsToSearchConsole("admin-seo-factory-publish");
 }
 
 export async function draftGeminiSeoLandingAction(formData: FormData) {

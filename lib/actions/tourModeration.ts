@@ -9,6 +9,7 @@ import { createNotification } from "@/lib/notificationService";
 import { NotificationType } from "@/lib/types/notificationTypes";
 import { TOUR_DELETE_REASONS } from "@/lib/constants/tourDeletion";
 import { notifyAdminTourModeration, notifySupplierTourModeration } from "@/lib/mailers/adminNotifications";
+import { submitPublishedTourSitemapsToSearchConsole } from "@/lib/googleSearchConsole";
 
 type SessionUser = {
   id?: string;
@@ -91,6 +92,18 @@ const changeTourStatus = async (tourId: string, status: string, note?: string) =
   revalidatePath("/admin/tours");
   revalidatePath("/supplier/tours");
   revalidatePath("/dashboard/customer");
+  revalidatePath("/tours");
+  revalidatePath("/sitemap.xml");
+  revalidatePath("/sitemap-i18n.xml");
+  revalidatePath("/sitemap-images.xml");
+  revalidatePath("/sitemap-prodiscovery.xml");
+  revalidatePath("/sitemap-tour-variants.xml");
+  revalidatePath("/sitemap-golden-tour-pages.xml");
+  revalidatePath("/sitemap-seo-only-tours.xml");
+
+  if (["published", "seo_only"].includes(status)) {
+    await submitPublishedTourSitemapsToSearchConsole(`tour-status-${status}`);
+  }
 };
 
 const deleteReasonLookup = Object.fromEntries(

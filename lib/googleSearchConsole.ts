@@ -60,9 +60,47 @@ export type SearchConsoleOverview = {
   error?: string;
 };
 
+export type SearchConsoleSitemapSubmitResult = {
+  configured: boolean;
+  siteUrl: string | null;
+  requested: string[];
+  submitted: string[];
+  failed: { sitemap: string; error: string }[];
+  skippedReason?: string;
+};
+
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
-const SEARCH_CONSOLE_SCOPE = "https://www.googleapis.com/auth/webmasters.readonly";
+const SEARCH_CONSOLE_SCOPE = "https://www.googleapis.com/auth/webmasters";
 const SEARCH_CONSOLE_API = "https://www.googleapis.com/webmasters/v3/sites";
+const PROACTIVITIS_BASE_URL = "https://proactivitis.com";
+
+const SEO_FACTORY_SITEMAPS = [
+  "/sitemap-index.xml",
+  "/sitemap-seo-factory.xml",
+  "/sitemap-transfer-seo-only.xml",
+  "/sitemap-golden-transfer-pages.xml",
+  "/sitemap-golden-tour-pages.xml",
+  "/sitemap-prodiscovery.xml"
+] as const;
+
+const PUBLISHED_TOUR_SITEMAPS = [
+  "/sitemap-index.xml",
+  "/sitemap.xml",
+  "/sitemap-i18n.xml",
+  "/sitemap-images.xml",
+  "/sitemap-prodiscovery.xml",
+  "/sitemap-tour-variants.xml",
+  "/sitemap-golden-tour-pages.xml",
+  "/sitemap-seo-only-tours.xml"
+] as const;
+
+const TRANSFER_LANDING_SITEMAPS = [
+  "/sitemap-index.xml",
+  "/sitemap-transfers.xml",
+  "/sitemap-transfer-seo-only.xml",
+  "/sitemap-golden-transfer-pages.xml",
+  "/sitemap-prodiscovery.xml"
+] as const;
 
 const SEARCH_CONSOLE_CLIENT_EMAIL = process.env.GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL ?? "";
 const SEARCH_CONSOLE_PRIVATE_KEY = process.env.GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY?.replace(/\\n/g, "\n") ?? "";
@@ -70,6 +108,11 @@ const SEARCH_CONSOLE_SITE_URL = process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL ?? ""
 
 function isConfigured() {
   return Boolean(SEARCH_CONSOLE_CLIENT_EMAIL && SEARCH_CONSOLE_PRIVATE_KEY && SEARCH_CONSOLE_SITE_URL);
+}
+
+function absoluteSitemapUrl(pathOrUrl: string) {
+  if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+  return `${PROACTIVITIS_BASE_URL}${pathOrUrl.startsWith("/") ? pathOrUrl : `/${pathOrUrl}`}`;
 }
 
 async function getAccessToken() {
@@ -126,6 +169,96 @@ async function querySearchConsole(
   }
 
   return (await response.json()) as SearchConsoleResponse;
+}
+
+async function submitSitemap(accessToken: string, sitemapUrl: string) {
+  const encodedSiteUrl = encodeURIComponent(SEARCH_CONSOLE_SITE_URL);
+  const encodedSitemapUrl = encodeURIComponent(sitemapUrl);
+  const response = await fetch(`${SEARCH_CONSOLE_API}/${encodedSiteUrl}/sitemaps/${encodedSitemapUrl}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    },
+    cache: "no-store"
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || `HTTP ${response.status}`);
+  }
+}
+
+export async function submitSitemapsToSearchConsole(
+  sitemaps: readonly string[],
+  reason = "content-updated"
+): Promise<SearchConsoleSitemapSubmitResult> {
+  const requested = [...new Set(sitemaps.map(absoluteSitemapUrl))];
+
+  if (!isConfigured()) {
+    return {
+      configured: false,
+      siteUrl: SEARCH_CONSOLE_SITE_URL || null,
+      requested,
+      submitted: [],
+      failed: [],
+      skippedReason:
+        "Faltan GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL, GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY o GOOGLE_SEARCH_CONSOLE_SITE_URL."
+    };
+  }
+
+  try {
+    const accessToken = await getAccessToken();
+    const submitted: string[] = [];
+    const failed: { sitemap: string; error: string }[] = [];
+
+    for (const sitemap of requested) {
+      try {
+        await submitSitemap(accessToken, sitemap);
+        submitted.push(sitemap);
+      } catch (error) {
+        failed.push({
+          sitemap,
+          error: error instanceof Error ? error.message : "No se pudo enviar el sitemap."
+        });
+      }
+    }
+
+    if (failed.length) {
+      console.warn(`[search-console] ${reason}: ${failed.length} sitemap(s) fallaron`, failed);
+    } else {
+      console.info(`[search-console] ${reason}: ${submitted.length} sitemap(s) enviados`);
+    }
+
+    return {
+      configured: true,
+      siteUrl: SEARCH_CONSOLE_SITE_URL,
+      requested,
+      submitted,
+      failed
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "No se pudo conectar Search Console.";
+    console.warn(`[search-console] ${reason}: ${message}`);
+    return {
+      configured: true,
+      siteUrl: SEARCH_CONSOLE_SITE_URL,
+      requested,
+      submitted: [],
+      failed: requested.map((sitemap) => ({ sitemap, error: message }))
+    };
+  }
+}
+
+export function submitSeoFactorySitemapsToSearchConsole(reason = "seo-factory-published") {
+  return submitSitemapsToSearchConsole(SEO_FACTORY_SITEMAPS, reason);
+}
+
+export function submitPublishedTourSitemapsToSearchConsole(reason = "tour-published") {
+  return submitSitemapsToSearchConsole(PUBLISHED_TOUR_SITEMAPS, reason);
+}
+
+export function submitTransferLandingSitemapsToSearchConsole(reason = "transfer-landings-updated") {
+  return submitSitemapsToSearchConsole(TRANSFER_LANDING_SITEMAPS, reason);
 }
 
 function toPath(url: string) {
