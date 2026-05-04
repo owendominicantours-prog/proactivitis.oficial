@@ -23,6 +23,9 @@ type Copy = {
   noReviews: string;
   from: string;
   book: string;
+  quoteNow: string;
+  commercialCta: string;
+  reviewCountLabel: string;
   details: string;
   map: string;
   reviewFilter: string;
@@ -40,13 +43,16 @@ const COPY: Record<Locale, Copy> = {
     noReviews: "Este traslado aún no tiene reseñas aprobadas.",
     from: "Desde",
     book: "Cotizar y reservar",
+    quoteNow: "Ver tarifa final",
+    commercialCta: "Reservar con Proactivitis",
+    reviewCountLabel: "opiniones aprobadas",
     details: "Lo que incluye",
     map: "Ver en mapa",
     reviewFilter: "Filtrar reseñas por tema",
     clear: "Limpiar",
     plannerTitle: "Reserva este traslado ahora",
     plannerBody: "Completa origen y destino para ver tarifa final y reservar sin salir de ProDiscovery.",
-    topTransfers: "Top transfer listings",
+    topTransfers: "Traslados recomendados",
     discoveryBadge: "Ficha ProDiscovery"
   },
   en: {
@@ -55,6 +61,9 @@ const COPY: Record<Locale, Copy> = {
     noReviews: "This transfer has no approved reviews yet.",
     from: "From",
     book: "Quote and book",
+    quoteNow: "See final rate",
+    commercialCta: "Book with Proactivitis",
+    reviewCountLabel: "approved reviews",
     details: "What is included",
     map: "View map",
     reviewFilter: "Filter reviews by topic",
@@ -70,13 +79,16 @@ const COPY: Record<Locale, Copy> = {
     noReviews: "Ce transfert n a pas encore d avis approuves.",
     from: "A partir de",
     book: "Devis et reservation",
+    quoteNow: "Voir le tarif final",
+    commercialCta: "Reserver avec Proactivitis",
+    reviewCountLabel: "avis approuves",
     details: "Ce qui est inclus",
     map: "Voir la carte",
     reviewFilter: "Filtrer les avis par theme",
     clear: "Effacer",
     plannerTitle: "Reservez ce transfert maintenant",
     plannerBody: "Choisissez origine et destination pour voir le tarif final et reserver sans quitter ProDiscovery.",
-    topTransfers: "Top transfer listings",
+    topTransfers: "Transferts recommandes",
     discoveryBadge: "Fiche ProDiscovery"
   }
 };
@@ -242,9 +254,13 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
         </Link>
 
         <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <section className="rounded-2xl border border-slate-200 bg-white">
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="relative h-80 overflow-hidden rounded-t-2xl bg-slate-100">
               <img src={landing.heroImage} alt={landing.heroImageAlt} className="h-full w-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 via-transparent to-transparent" />
+              <span className="absolute bottom-4 left-4 rounded-full bg-white/95 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-slate-900">
+                {landing.hotelName}
+              </span>
             </div>
             <div className="p-6">
               <div className="flex flex-wrap items-center gap-2">
@@ -260,33 +276,48 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
                 <span>({totalApprovedReviews})</span>
               </div>
               <p className="mt-4 leading-relaxed text-slate-700">{landing.metaDescription}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {trustBadges.map((badge) => (
-                <span
-                  key={badge}
+              <div className="mt-4 flex flex-wrap gap-2">
+                {trustBadges.map((badge) => (
+                  <span
+                    key={badge}
                     className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-700"
                   >
                     {badge}
                   </span>
                 ))}
               </div>
-              <div className="mt-4">
+              <div className="mt-5 flex flex-wrap gap-3">
+                <a
+                  href="#planner"
+                  className="inline-flex rounded-full bg-emerald-600 px-5 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-white hover:bg-emerald-700"
+                >
+                  {t.quoteNow}
+                </a>
                 <Link
                   href={toTransferHref(locale, landingSlug)}
-                  className="inline-flex rounded-full border border-emerald-300 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800"
+                  className="inline-flex rounded-full border border-slate-300 bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-slate-800 hover:border-slate-500"
                 >
-                  {locale === "es" ? "Ir a la landing comercial" : locale === "fr" ? "Voir la landing commerciale" : "Open commercial landing"}
+                  {t.commercialCta}
                 </Link>
               </div>
             </div>
           </section>
 
-          <aside className="hidden space-y-4 lg:block">
-            <section className="rounded-2xl border border-slate-200 bg-white p-5">
+          <aside className="hidden space-y-4 lg:sticky lg:top-28 lg:block lg:self-start">
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{t.details}</p>
               <p className="mt-3 text-2xl font-black text-slate-900">
                 {t.from} USD {Math.round(landing.priceFrom)}
               </p>
+              <div className="mt-3 rounded-2xl bg-emerald-50 p-3">
+                <div className="flex items-center gap-2 text-sm text-emerald-900">
+                  <BubbleRating rating={average} />
+                  <span className="font-black">{average.toFixed(1)}</span>
+                </div>
+                <p className="mt-1 text-xs font-semibold text-emerald-800">
+                  {totalApprovedReviews} {t.reviewCountLabel}
+                </p>
+              </div>
               <ul className="mt-3 space-y-1 text-sm text-slate-700">
                 {landing.priceDetails.slice(0, 4).map((detail) => (
                   <li key={detail}>- {detail}</li>
@@ -306,8 +337,14 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
                 href={toTransferHref(locale, landingSlug)}
                 className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
               >
-                {t.book}
+                {t.commercialCta}
               </Link>
+              <a
+                href="#planner"
+                className="mt-2 inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 hover:border-slate-400"
+              >
+                {t.quoteNow}
+              </a>
             </section>
           </aside>
         </div>

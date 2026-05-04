@@ -11,33 +11,36 @@ type Props = {
 const COPY = {
   es: {
     brand: "ProDiscovery",
-    tagline: "Compara, valida y reserva",
+    tagline: "Reviews reales by Proactivitis",
     home: "Inicio",
     tours: "Tours",
     transfers: "Traslados",
     hotels: "Hoteles",
     rankings: "Rankings",
-    language: "Idioma"
+    language: "Idioma",
+    book: "Reservar"
   },
   en: {
     brand: "ProDiscovery",
-    tagline: "Compare, validate and book",
+    tagline: "Real reviews by Proactivitis",
     home: "Home",
     tours: "Tours",
     transfers: "Transfers",
     hotels: "Hotels",
     rankings: "Rankings",
-    language: "Language"
+    language: "Language",
+    book: "Book"
   },
   fr: {
     brand: "ProDiscovery",
-    tagline: "Comparez, validez et reservez",
+    tagline: "Avis reels by Proactivitis",
     home: "Accueil",
     tours: "Excursions",
     transfers: "Transferts",
     hotels: "Hotels",
     rankings: "Classements",
-    language: "Langue"
+    language: "Langue",
+    book: "Reserver"
   }
 } as const;
 
@@ -61,31 +64,44 @@ export default function ProDiscoveryHeader({ locale }: Props) {
   const query = searchParams?.toString() ?? "";
   const base = `${localePrefix(locale)}/prodiscovery`;
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 shadow-sm shadow-slate-900/5 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link href={base} className="min-w-0">
-            <p className="text-lg font-black tracking-tight text-slate-900">{t.brand}</p>
-            <p className="text-xs font-medium text-slate-500">{t.tagline}</p>
+          <Link href={base} className="flex min-w-0 items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-lg font-black text-white">
+              PD
+            </span>
+            <span>
+              <span className="block text-lg font-black tracking-tight text-slate-900">{t.brand}</span>
+              <span className="block text-xs font-medium text-slate-500">{t.tagline}</span>
+            </span>
           </Link>
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className="hidden text-slate-500 sm:inline">{t.language}</span>
-            {(["es", "en", "fr"] as const).map((targetLocale) => {
-              const active = locale === targetLocale;
-              return (
-                <Link
-                  key={targetLocale}
-                  href={buildLocaleHref(targetLocale, pathname, query)}
-                  className={`rounded-full px-2.5 py-1 font-semibold uppercase tracking-[0.08em] ${
-                    active
-                      ? "bg-slate-900 text-white"
-                      : "border border-slate-300 text-slate-700 hover:border-slate-400"
-                  }`}
-                >
-                  {targetLocale}
-                </Link>
-              );
-            })}
+          <div className="flex items-center gap-2">
+            <Link
+              href={`${localePrefix(locale)}/tours`}
+              className="hidden rounded-full bg-emerald-600 px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-white hover:bg-emerald-700 sm:inline-flex"
+            >
+              {t.book}
+            </Link>
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="hidden text-slate-500 sm:inline">{t.language}</span>
+              {(["es", "en", "fr"] as const).map((targetLocale) => {
+                const active = locale === targetLocale;
+                return (
+                  <Link
+                    key={targetLocale}
+                    href={buildLocaleHref(targetLocale, pathname, query)}
+                    className={`rounded-full px-2.5 py-1 font-semibold uppercase tracking-[0.08em] ${
+                      active
+                        ? "bg-slate-900 text-white"
+                        : "border border-slate-300 text-slate-700 hover:border-slate-400"
+                    }`}
+                  >
+                    {targetLocale}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </div>
         <nav className="-mx-1 flex overflow-x-auto pb-1 text-sm [scrollbar-width:none]">
