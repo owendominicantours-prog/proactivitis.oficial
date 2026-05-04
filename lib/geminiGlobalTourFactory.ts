@@ -607,9 +607,30 @@ const ensureMicroZone = async (payload: GeminiGlobalTourPayload, destinationId: 
 };
 
 const ensureProactivitisSupplier = async () => {
-  const existing = await prisma.supplierProfile.findFirst({
-    where: { company: { contains: "Proactivitis", mode: "insensitive" } }
+  const profiles = await prisma.supplierProfile.findMany({
+    where: {
+      OR: [
+        { company: { contains: "Proactivitis", mode: "insensitive" } },
+        { User: { email: { contains: "proactivitis", mode: "insensitive" } } }
+      ]
+    },
+    include: {
+      User: {
+        select: {
+          role: true,
+          supplierApproved: true,
+          accountStatus: true
+        }
+      }
+    }
   });
+
+  const existing =
+    profiles.find((profile) => profile.User.role === "SUPPLIER" && profile.approved && profile.productsEnabled) ??
+    profiles.find((profile) => profile.User.role === "SUPPLIER") ??
+    profiles.find((profile) => profile.approved && profile.productsEnabled) ??
+    profiles[0];
+
   if (existing) return existing;
 
   const adminUser =
@@ -637,6 +658,17 @@ const ensureProactivitisSupplier = async () => {
       approved: true,
       productsEnabled: true
     }
+  });
+};
+
+const syncExistingGlobalDraftsToSupplier = async (supplierId: string) => {
+  await prisma.tour.updateMany({
+    where: {
+      adminNote: { contains: FACTORY_MARKER },
+      supplierId: { not: supplierId },
+      status: "draft"
+    },
+    data: { supplierId }
   });
 };
 
@@ -758,6 +790,9 @@ export async function runGeminiGlobalTourFactoryBatch({ manualLimit }: { manualL
   if (!config.enabled && !manualLimit) {
     return { generated: 0, drafted: 0, errors: ["Global Tour Factory esta pausado."] };
   }
+
+  const supplier = await ensureProactivitisSupplier();
+  await syncExistingGlobalDraftsToSupplier(supplier.id);
 
   const generatedToday = await getGeminiGlobalToursGeneratedTodayCount();
   const remainingToday = Math.max(0, config.dailyLimit - generatedToday);
