@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useRef, useState, type TouchEvent } from "react";
 import GalleryLightbox from "@/components/shared/GalleryLightbox";
 
 type TourGalleryCollageProps = {
@@ -21,6 +21,8 @@ export default function TourGalleryCollage({
 }: TourGalleryCollageProps) {
   const galleryImages = images.length ? images : [fallbackImage];
   const [activeIndex, setActiveIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
   const activeImage = galleryImages[activeIndex] ?? galleryImages[0] ?? fallbackImage;
   const visibleThumbs = galleryImages.slice(0, 5);
   const hasMoreImages = galleryImages.length > visibleThumbs.length;
@@ -31,6 +33,23 @@ export default function TourGalleryCollage({
   const mediaRadius = variant === "compact" ? "rounded-[22px]" : "rounded-[28px]";
   const goTo = (delta: number) => {
     setActiveIndex((current) => (current + delta + galleryImages.length) % galleryImages.length);
+  };
+  const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches[0];
+    touchStartX.current = touch.clientX;
+    touchStartY.current = touch.clientY;
+  };
+  const handleTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    if (touchStartX.current === null || touchStartY.current === null || galleryImages.length < 2) return;
+
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - touchStartX.current;
+    const deltaY = touch.clientY - touchStartY.current;
+    touchStartX.current = null;
+    touchStartY.current = null;
+
+    if (Math.abs(deltaX) < 45 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
+    goTo(deltaX < 0 ? 1 : -1);
   };
   const goBack = () => {
     if (typeof window !== "undefined") window.history.back();
@@ -78,7 +97,11 @@ export default function TourGalleryCollage({
               })}
             </div>
 
-            <div className={`relative order-1 overflow-hidden bg-slate-200 sm:order-2 ${mediaRadius}`}>
+            <div
+              className={`relative order-1 touch-pan-y overflow-hidden bg-slate-200 sm:order-2 ${mediaRadius}`}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
               <Image
                 src={activeImage}
                 alt={title}
