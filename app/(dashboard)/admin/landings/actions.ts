@@ -14,6 +14,11 @@ import {
   runGeminiGlobalTourFactoryBatch,
   saveGeminiGlobalTourFactoryConfig
 } from "@/lib/geminiGlobalTourFactory";
+import {
+  importKeywordPlannerCsv,
+  updateKeywordPlannerStatus,
+  type KeywordPlannerStatus
+} from "@/lib/keywordPlanner";
 
 export async function refreshTransferLandingsAction() {
   await requireAdminSession();
@@ -34,6 +39,7 @@ export async function refreshTransferLandingsAction() {
 const revalidateGeminiSeoFactory = (slug?: string) => {
   revalidatePath("/admin/landings");
   revalidatePath("/admin/landings/seo-factory");
+  revalidatePath("/admin/landings/keyword-planner");
   revalidatePath("/sitemap-seo-factory.xml");
   revalidatePath("/sitemap-index.xml");
   if (slug) {
@@ -140,4 +146,40 @@ export async function generateGeminiGlobalTourFactoryBatchAction(formData: FormD
     manualLimit: Number.isFinite(limit) ? Math.max(1, Math.min(2, limit)) : 2
   });
   revalidateGeminiGlobalTourFactory();
+}
+
+export async function importKeywordPlannerCsvAction(formData: FormData) {
+  await requireAdminSession();
+
+  const files = formData.getAll("keywordCsv").filter((file): file is File => file instanceof File && file.size > 0);
+  for (const file of files) {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const text = buffer[0] === 0xff && buffer[1] === 0xfe ? buffer.toString("utf16le") : buffer.toString("utf8");
+    await importKeywordPlannerCsv({
+      fileName: file.name || "keyword-planner.csv",
+      text
+    });
+  }
+  revalidatePath("/admin/landings/keyword-planner");
+  revalidatePath("/admin/landings/seo-factory");
+}
+
+export async function updateKeywordPlannerStatusAction(formData: FormData) {
+  await requireAdminSession();
+
+  const normalizedKeyword = String(formData.get("normalizedKeyword") ?? "");
+  const status = String(formData.get("status") ?? "pending") as KeywordPlannerStatus;
+  const allowedStatuses: KeywordPlannerStatus[] = [
+    "new",
+    "pending",
+    "in_process",
+    "draft_created",
+    "published",
+    "duplicate",
+    "ignored"
+  ];
+  if (!normalizedKeyword || !allowedStatuses.includes(status)) return;
+  await updateKeywordPlannerStatus(normalizedKeyword, status);
+  revalidatePath("/admin/landings/keyword-planner");
+  revalidatePath("/admin/landings/seo-factory");
 }

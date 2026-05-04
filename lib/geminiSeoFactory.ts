@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import type { Locale } from "@/lib/translations";
+import { listKeywordPlannerOpportunities, updateKeywordPlannerStatus } from "@/lib/keywordPlanner";
 
 export type GeminiSeoLandingType = "tour" | "transfer";
 export type GeminiSeoLandingStatus = "draft" | "published" | "rejected";
@@ -96,6 +97,7 @@ type GeminiSeoFactoryCandidate = {
   type: GeminiSeoLandingType;
   product: GeminiSeoLandingRecord["product"];
   intent: GeminiSeoLandingRecord["intent"];
+  keywordPlannerNormalized?: string;
 };
 
 type GeminiApiResponse = {
@@ -414,27 +416,42 @@ export async function getGeminiSeoGeneratedTodayCount(now = new Date()) {
 }
 
 const buildTourCandidates = async (limit: number, offset: number): Promise<GeminiSeoFactoryCandidate[]> => {
-  const tours = await prisma.tour.findMany({
-    where: { status: { in: ["published", "seo_only"] } },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      price: true,
-      duration: true,
-      location: true,
-      category: true,
-      shortDescription: true,
-      description: true,
-      heroImage: true,
-      gallery: true
-    },
-    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-    take: Math.max(1, limit + offset + 16)
-  });
+  const [tours, keywordOpportunities] = await Promise.all([
+    prisma.tour.findMany({
+      where: { status: { in: ["published", "seo_only"] } },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        price: true,
+        duration: true,
+        location: true,
+        category: true,
+        shortDescription: true,
+        description: true,
+        heroImage: true,
+        gallery: true
+      },
+      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+      take: Math.max(1, limit + offset + 16)
+    }),
+    listKeywordPlannerOpportunities({ limit: Math.max(20, limit + offset + 16), status: "pending" })
+  ]);
+  const tourKeywords = keywordOpportunities.filter((keyword) =>
+    ["tour", "catamaran", "buggy_atv", "island", "informational"].includes(keyword.intent)
+  );
 
   return tours.slice(offset, offset + limit).map((tour, index) => {
-    const intent = TOUR_INTENTS[(offset + index) % TOUR_INTENTS.length];
+    const keyword = tourKeywords.length > 0 ? tourKeywords[(offset + index) % tourKeywords.length] : null;
+    const fallbackIntent = TOUR_INTENTS[(offset + index) % TOUR_INTENTS.length];
+    const keywordIntent = keyword
+      ? {
+          id: `kp-${slugify(keyword.keyword).slice(0, 56)}`,
+          label: keyword.keyword,
+          angle: `${keyword.suggestedAction} Prioridad ${keyword.priority}, volumen ${keyword.avgMonthlySearches}.`,
+          searchQuery: `${keyword.keyword} ${tour.title}`
+        }
+      : null;
     const image = tour.heroImage || parseJsonArray(tour.gallery)[0] || "/transfer/sedan.png";
     return {
       type: "tour",
@@ -451,9 +468,10 @@ const buildTourCandidates = async (limit: number, offset: number): Promise<Gemin
         location: tour.location
       },
       intent: {
-        ...intent,
-        searchQuery: `${tour.title} Punta Cana ${intent.label} tour`
-      }
+        ...(keywordIntent ?? fallbackIntent),
+        searchQuery: keywordIntent?.searchQuery ?? `${tour.title} Punta Cana ${fallbackIntent.label} tour`
+      },
+      keywordPlannerNormalized: keyword?.normalizedKeyword
     };
   });
 };
@@ -475,10 +493,25 @@ const buildTransferCandidates = async (limit: number, offset: number): Promise<G
     image: "/transfer/sedan.png",
     price: null
   }));
+  const [keywordOpportunities] = await Promise.all([
+    listKeywordPlannerOpportunities({ limit: Math.max(20, limit + offset + 16), status: "pending" })
+  ]);
+  const transferKeywords = keywordOpportunities.filter((keyword) =>
+    ["transfer", "taxi"].includes(keyword.intent)
+  );
   const transfers = [...manual, ...dynamic];
 
   return transfers.slice(offset, offset + limit).map((transfer, index) => {
-    const intent = TRANSFER_INTENTS[(offset + index) % TRANSFER_INTENTS.length];
+    const keyword = transferKeywords.length > 0 ? transferKeywords[(offset + index) % transferKeywords.length] : null;
+    const fallbackIntent = TRANSFER_INTENTS[(offset + index) % TRANSFER_INTENTS.length];
+    const keywordIntent = keyword
+      ? {
+          id: `kp-${slugify(keyword.keyword).slice(0, 56)}`,
+          label: keyword.keyword,
+          angle: `${keyword.suggestedAction} Prioridad ${keyword.priority}, volumen ${keyword.avgMonthlySearches}.`,
+          searchQuery: `${keyword.keyword} ${transfer.destinationName}`
+        }
+      : null;
     const title = `${transfer.originName} to ${transfer.destinationName}`;
     return {
       type: "transfer",
@@ -496,9 +529,10 @@ const buildTransferCandidates = async (limit: number, offset: number): Promise<G
         location: "Punta Cana, Dominican Republic"
       },
       intent: {
-        ...intent,
-        searchQuery: `${title} ${intent.label} Punta Cana transfer`
-      }
+        ...(keywordIntent ?? fallbackIntent),
+        searchQuery: keywordIntent?.searchQuery ?? `${title} ${fallbackIntent.label} Punta Cana transfer`
+      },
+      keywordPlannerNormalized: keyword?.normalizedKeyword
     };
   });
 };
@@ -969,6 +1003,12 @@ export async function runGeminiSeoFactoryBatch({
       if (landing.status === "published") result.published += 1;
       if (landing.status === "draft") result.drafted += 1;
       if (landing.status === "rejected") result.rejected += 1;
+      if (candidate.keywordPlannerNormalized) {
+        await updateKeywordPlannerStatus(
+          candidate.keywordPlannerNormalized,
+          landing.status === "published" ? "published" : "draft_created"
+        );
+      }
       await persistProgress();
     } catch (error) {
       const detail = error instanceof Error ? error.message : "unknown_error";

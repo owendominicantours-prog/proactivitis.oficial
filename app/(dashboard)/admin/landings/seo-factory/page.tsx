@@ -47,12 +47,20 @@ export default async function GeminiSeoFactoryAdminPage() {
               y publicacion manual al inicio. Cuando actives publicacion automatica, solo se publican las que pasen validacion.
             </p>
           </div>
-          <Link
-            href="/admin/landings"
-            className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
-          >
-            Volver a Landings
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/admin/landings/keyword-planner"
+              className="rounded-2xl bg-emerald-700 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-600"
+            >
+              Keyword Planner
+            </Link>
+            <Link
+              href="/admin/landings"
+              className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
+            >
+              Volver a Landings
+            </Link>
+          </div>
         </div>
       </header>
 
