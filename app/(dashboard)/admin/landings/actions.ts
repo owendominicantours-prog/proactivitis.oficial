@@ -9,6 +9,11 @@ import {
   saveGeminiSeoFactoryConfig,
   updateGeminiSeoLandingStatus
 } from "@/lib/geminiSeoFactory";
+import {
+  getGeminiGlobalTourFactoryConfig,
+  runGeminiGlobalTourFactoryBatch,
+  saveGeminiGlobalTourFactoryConfig
+} from "@/lib/geminiGlobalTourFactory";
 
 export async function refreshTransferLandingsAction() {
   await requireAdminSession();
@@ -97,4 +102,42 @@ export async function rejectGeminiSeoLandingAction(formData: FormData) {
   if (!slug) return;
   await updateGeminiSeoLandingStatus(slug, "rejected");
   revalidateGeminiSeoFactory(slug);
+}
+
+const revalidateGeminiGlobalTourFactory = () => {
+  revalidatePath("/admin/landings/seo-factory");
+  revalidatePath("/admin/tours");
+  revalidatePath("/tours");
+  revalidatePath("/destinations");
+};
+
+export async function saveGeminiGlobalTourFactorySettingsAction(formData: FormData) {
+  await requireAdminSession();
+
+  const current = await getGeminiGlobalTourFactoryConfig();
+  const batchSize = Number(formData.get("globalBatchSize") ?? current.batchSize);
+  const dailyLimit = Number(formData.get("globalDailyLimit") ?? current.dailyLimit);
+  const markupPerPerson = Number(formData.get("globalMarkupPerPerson") ?? current.markupPerPerson);
+  const minLeadHours = Number(formData.get("globalMinLeadHours") ?? current.minLeadHours);
+
+  await saveGeminiGlobalTourFactoryConfig({
+    enabled: formData.get("globalEnabled") === "on",
+    batchSize: Number.isFinite(batchSize) ? Math.max(1, Math.min(2, batchSize)) : current.batchSize,
+    dailyLimit: Number.isFinite(dailyLimit) ? Math.max(1, Math.min(192, dailyLimit)) : current.dailyLimit,
+    markupPerPerson: Number.isFinite(markupPerPerson)
+      ? Math.max(0, Math.min(500, markupPerPerson))
+      : current.markupPerPerson,
+    minLeadHours: Number.isFinite(minLeadHours) ? Math.max(12, Math.min(168, minLeadHours)) : current.minLeadHours
+  });
+  revalidateGeminiGlobalTourFactory();
+}
+
+export async function generateGeminiGlobalTourFactoryBatchAction(formData: FormData) {
+  await requireAdminSession();
+
+  const limit = Number(formData.get("limit") ?? "2");
+  await runGeminiGlobalTourFactoryBatch({
+    manualLimit: Number.isFinite(limit) ? Math.max(1, Math.min(2, limit)) : 2
+  });
+  revalidateGeminiGlobalTourFactory();
 }

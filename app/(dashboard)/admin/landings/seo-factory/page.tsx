@@ -1,12 +1,19 @@
 import Link from "next/link";
 import {
   draftGeminiSeoLandingAction,
+  generateGeminiGlobalTourFactoryBatchAction,
   generateGeminiSeoFactoryBatchAction,
   publishGeminiSeoLandingAction,
   rejectGeminiSeoLandingAction,
+  saveGeminiGlobalTourFactorySettingsAction,
   saveGeminiSeoFactorySettingsAction
 } from "../actions";
 import { getGeminiSeoFactoryConfig, listGeminiSeoLandings } from "@/lib/geminiSeoFactory";
+import {
+  getGeminiGlobalTourFactoryConfig,
+  getGeminiGlobalToursGeneratedTodayCount,
+  listRecentGeminiGlobalTourDrafts
+} from "@/lib/geminiGlobalTourFactory";
 
 export const maxDuration = 300;
 
@@ -17,7 +24,13 @@ const statusStyles = {
 };
 
 export default async function GeminiSeoFactoryAdminPage() {
-  const [config, landings] = await Promise.all([getGeminiSeoFactoryConfig(), listGeminiSeoLandings()]);
+  const [config, landings, globalConfig, globalGeneratedToday, globalDrafts] = await Promise.all([
+    getGeminiSeoFactoryConfig(),
+    listGeminiSeoLandings(),
+    getGeminiGlobalTourFactoryConfig(),
+    getGeminiGlobalToursGeneratedTodayCount(),
+    listRecentGeminiGlobalTourDrafts(8)
+  ]);
   const published = landings.filter((item) => item.status === "published").length;
   const drafts = landings.filter((item) => item.status === "draft").length;
   const rejected = landings.filter((item) => item.status === "rejected").length;
@@ -163,6 +176,139 @@ export default async function GeminiSeoFactoryAdminPage() {
               ) : null}
             </div>
           ) : null}
+        </div>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[420px_1fr]">
+        <form action={saveGeminiGlobalTourFactorySettingsAction} className="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-[0.28em] text-emerald-700">Tours globales</p>
+          <h2 className="mt-2 text-2xl font-black text-emerald-950">2 drafts cada 15 minutos</h2>
+          <p className="mt-2 text-sm leading-6 text-emerald-900/70">
+            Gemini crea productos reales en borrador, clasificados por pais, destino, zona y categoria. Quedan listos
+            para revisar fotos, disponibilidad y proveedor antes de publicar.
+          </p>
+          <div className="mt-5 space-y-3">
+            <label className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-white p-4">
+              <span>
+                <span className="block font-black text-slate-950">Generacion automatica</span>
+                <span className="text-sm text-slate-500">El cron corre cada 15 minutos.</span>
+              </span>
+              <input name="globalEnabled" type="checkbox" defaultChecked={globalConfig.enabled} className="h-5 w-5" />
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="rounded-2xl border border-emerald-200 bg-white p-4">
+                <span className="block text-sm font-black text-slate-950">Por lote</span>
+                <input
+                  name="globalBatchSize"
+                  type="number"
+                  min={1}
+                  max={2}
+                  defaultValue={globalConfig.batchSize}
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2"
+                />
+              </label>
+              <label className="rounded-2xl border border-emerald-200 bg-white p-4">
+                <span className="block text-sm font-black text-slate-950">Limite diario</span>
+                <input
+                  name="globalDailyLimit"
+                  type="number"
+                  min={1}
+                  max={192}
+                  defaultValue={globalConfig.dailyLimit}
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2"
+                />
+              </label>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="rounded-2xl border border-emerald-200 bg-white p-4">
+                <span className="block text-sm font-black text-slate-950">Margen USD</span>
+                <input
+                  name="globalMarkupPerPerson"
+                  type="number"
+                  min={0}
+                  max={500}
+                  defaultValue={globalConfig.markupPerPerson}
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2"
+                />
+              </label>
+              <label className="rounded-2xl border border-emerald-200 bg-white p-4">
+                <span className="block text-sm font-black text-slate-950">Anticipacion</span>
+                <input
+                  name="globalMinLeadHours"
+                  type="number"
+                  min={12}
+                  max={168}
+                  defaultValue={globalConfig.minLeadHours}
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2"
+                />
+              </label>
+            </div>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button className="rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-black text-white hover:bg-emerald-600">
+              Guardar global
+            </button>
+          </div>
+          {globalConfig.lastResult ? (
+            <div className="mt-5 rounded-2xl border border-emerald-200 bg-white p-4 text-sm text-slate-700">
+              <p>Ultimo lote: {globalConfig.lastRunAt ? new Date(globalConfig.lastRunAt).toLocaleString("es-DO") : "sin fecha"}</p>
+              <p>
+                {globalConfig.lastResult.generated} generados, {globalConfig.lastResult.drafted} draft.
+              </p>
+              {globalConfig.lastResult.errors.length > 0 ? (
+                <p className="mt-2 text-xs text-rose-700">{globalConfig.lastResult.errors.slice(0, 2).join(" | ")}</p>
+              ) : null}
+            </div>
+          ) : null}
+        </form>
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">Borradores globales</p>
+              <h2 className="mt-2 text-2xl font-black text-slate-950">
+                {globalGeneratedToday} creados hoy
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Meta actual: {globalConfig.dailyLimit} por dia, siempre en estado draft.
+              </p>
+            </div>
+            <form action={generateGeminiGlobalTourFactoryBatchAction}>
+              <input type="hidden" name="limit" value="2" />
+              <button className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white hover:bg-slate-800">
+                Generar 2 ahora
+              </button>
+            </form>
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {globalDrafts.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-300 p-6 text-sm text-slate-500 md:col-span-2">
+                Todavia no hay tours globales generados.
+              </div>
+            ) : (
+              globalDrafts.map((tour) => (
+                <Link
+                  key={tour.id}
+                  href={`/admin/tours?search=${encodeURIComponent(tour.slug)}`}
+                  className="rounded-2xl border border-slate-200 p-4 transition hover:border-emerald-300 hover:bg-emerald-50/50"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.22em] text-emerald-700">{tour.status}</p>
+                      <h3 className="mt-2 line-clamp-2 text-base font-black text-slate-950">{tour.title}</h3>
+                    </div>
+                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-800">
+                      ${Math.round(tour.price)}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs text-slate-500">
+                    {[tour.country?.name, tour.destination?.name, tour.microZone?.name].filter(Boolean).join(" · ")}
+                  </p>
+                  <p className="mt-2 text-xs font-semibold text-slate-600">{tour.category ?? "Sin categoria"}</p>
+                </Link>
+              ))
+            )}
+          </div>
         </div>
       </section>
 
