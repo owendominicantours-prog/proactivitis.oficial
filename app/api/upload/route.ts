@@ -5,7 +5,7 @@ import { getSessionUser, requireRole, type Role } from "@/lib/session";
 
 export const runtime = "nodejs";
 
-const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/jpg"]);
+const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/jpg"]);
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
 const ALLOWED_ROLES: Role[] = ["ADMIN", "SUPPLIER"];
 
@@ -45,9 +45,14 @@ export async function POST(request: Request) {
       optimized.byteOffset + optimized.byteLength
     ) as ArrayBuffer;
     const blob = new Blob([arrayBuffer], { type: "image/webp" });
-    const safeName = file.name.replace(/\s+/g, "-").toLowerCase().replace(/[^a-z0-9.-]/g, "");
+    const safeNameBase =
+      file.name
+        .replace(/\.[^.]+$/, "")
+        .replace(/\s+/g, "-")
+        .toLowerCase()
+        .replace(/[^a-z0-9.-]/g, "") || "image";
     const groupId = tourId || `temp-${Date.now()}`;
-    const key = `tours/${supplierId}/${groupId}/${kind}-${Date.now()}-${safeName}`;
+    const key = `tours/${supplierId}/${groupId}/${kind}-${Date.now()}-${safeNameBase}.webp`;
 
     const { url } = await uploadToBlob({ key, body: blob });
 

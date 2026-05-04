@@ -24,6 +24,14 @@ const resolveTourHeroImage = (tour: TourImageSource) => {
   return tour.heroImage ?? gallery[0] ?? DEFAULT_TOUR_IMAGE;
 };
 
+const getImageMimeType = (url: string) => {
+  const pathname = url.split("?")[0]?.toLowerCase() ?? "";
+  if (pathname.endsWith(".png")) return "image/png";
+  if (pathname.endsWith(".webp")) return "image/webp";
+  if (pathname.endsWith(".avif")) return "image/avif";
+  return "image/jpeg";
+};
+
 const MAX_TITLE_LENGTH = 60;
 const MAX_DESCRIPTION_LENGTH = 160;
 const BRAND_SUFFIX = " | Proactivitis";
@@ -545,7 +553,7 @@ export async function generateTourMetadata(
     .map((image) => toAbsoluteUrl(image))
     .filter((image) => image && image !== heroImage);
   const ogImages = [heroImage, ...galleryImages].slice(0, 5);
-  const heroImageType = heroImage.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg";
+  const heroImageType = getImageMimeType(heroImage);
   const canonicalSlug = buildLanguageAlternates(slug)[locale];
   const canonicalUrl = `${PROACTIVITIS_URL}${canonicalSlug}`;
 

@@ -17,6 +17,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
       contentType = "image/png";
     } else if (ext === ".webp") {
       contentType = "image/webp";
+    } else if (ext === ".avif") {
+      contentType = "image/avif";
     }
     const etag = `W/\"${fileId}-${buffer.length}\"`;
 
