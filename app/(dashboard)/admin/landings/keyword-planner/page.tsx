@@ -1,17 +1,32 @@
 import Link from "next/link";
-import {
-  importKeywordPlannerCsvAction,
-  updateKeywordPlannerStatusAction
-} from "../actions";
+import { importKeywordPlannerCsvAction, updateKeywordPlannerStatusAction } from "../actions";
 import {
   getKeywordPlannerStore,
   getKeywordPlannerSummary,
-  listKeywordPlannerOpportunities,
+  type KeywordPlannerConnectedType,
+  type KeywordPlannerIntent,
+  type KeywordPlannerPriority,
   type KeywordPlannerRecord,
   type KeywordPlannerStatus
 } from "@/lib/keywordPlanner";
 
 export const maxDuration = 120;
+
+type SearchParams = {
+  query?: string;
+  status?: KeywordPlannerStatus | "all";
+  priority?: KeywordPlannerPriority | "all";
+  intent?: KeywordPlannerIntent | "all";
+  type?: KeywordPlannerConnectedType | "all";
+  sort?: "priority" | "volume" | "bid" | "updated";
+  page?: string;
+};
+
+type KeywordPlannerAdminPageProps = {
+  searchParams?: Promise<SearchParams>;
+};
+
+const PAGE_SIZE = 40;
 
 const numberFormatter = new Intl.NumberFormat("es-DO");
 const moneyFormatter = new Intl.NumberFormat("en-US", {
@@ -20,10 +35,16 @@ const moneyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2
 });
 
-const priorityStyles = {
+const priorityStyles: Record<KeywordPlannerPriority, string> = {
   high: "border-emerald-200 bg-emerald-50 text-emerald-800",
   medium: "border-amber-200 bg-amber-50 text-amber-800",
   low: "border-slate-200 bg-slate-50 text-slate-700"
+};
+
+const priorityLabels: Record<KeywordPlannerPriority, string> = {
+  high: "Alta",
+  medium: "Media",
+  low: "Baja"
 };
 
 const statusLabels: Record<KeywordPlannerStatus, string> = {
@@ -36,7 +57,7 @@ const statusLabels: Record<KeywordPlannerStatus, string> = {
   ignored: "Ignorada"
 };
 
-const intentLabels: Record<KeywordPlannerRecord["intent"], string> = {
+const intentLabels: Record<KeywordPlannerIntent, string> = {
   transfer: "Transfer",
   tour: "Tour",
   taxi: "Taxi",
@@ -48,9 +69,32 @@ const intentLabels: Record<KeywordPlannerRecord["intent"], string> = {
   other: "Otra"
 };
 
+const typeLabels: Record<KeywordPlannerConnectedType, string> = {
+  transfer: "Transfer",
+  tour: "Tour",
+  content: "Contenido",
+  review: "Competidor"
+};
+
 const actionStatuses: KeywordPlannerStatus[] = ["pending", "in_process", "draft_created", "published", "ignored"];
+const priorityWeight: Record<KeywordPlannerPriority, number> = { high: 0, medium: 1, low: 2 };
 
 const formatBid = (value?: number | null) => (typeof value === "number" ? moneyFormatter.format(value) : "-");
+
+const getParamValue = <T extends string>(value: T | "all" | undefined, allowed: readonly T[]) =>
+  value && value !== "all" && allowed.includes(value as T) ? (value as T) : undefined;
+
+const buildPageHref = (params: SearchParams, page: number) => {
+  const query = new URLSearchParams();
+  if (params.query) query.set("query", params.query);
+  if (params.status && params.status !== "all") query.set("status", params.status);
+  if (params.priority && params.priority !== "all") query.set("priority", params.priority);
+  if (params.intent && params.intent !== "all") query.set("intent", params.intent);
+  if (params.type && params.type !== "all") query.set("type", params.type);
+  if (params.sort && params.sort !== "priority") query.set("sort", params.sort);
+  query.set("page", String(page));
+  return `/admin/landings/keyword-planner?${query.toString()}`;
+};
 
 function StatusAction({
   keyword,
@@ -72,16 +116,58 @@ function StatusAction({
   );
 }
 
-export default async function KeywordPlannerAdminPage() {
-  const [summary, store, topKeywords] = await Promise.all([
-    getKeywordPlannerSummary(),
-    getKeywordPlannerStore(),
-    listKeywordPlannerOpportunities({ limit: 120 })
-  ]);
+export default async function KeywordPlannerAdminPage({ searchParams }: KeywordPlannerAdminPageProps) {
+  const params = searchParams ? await searchParams : {};
+  const [summary, store] = await Promise.all([getKeywordPlannerSummary(), getKeywordPlannerStore()]);
 
   const latestBatches = store.batches.slice(0, 8);
-  const transferKeywords = topKeywords.filter((keyword) => keyword.connectedType === "transfer").slice(0, 10);
-  const tourKeywords = topKeywords.filter((keyword) => keyword.connectedType === "tour").slice(0, 10);
+  const transferKeywords = store.keywords.filter((keyword) => keyword.connectedType === "transfer").slice(0, 10);
+  const tourKeywords = store.keywords.filter((keyword) => keyword.connectedType === "tour").slice(0, 10);
+  const selectedStatus = getParamValue(params.status, Object.keys(statusLabels) as KeywordPlannerStatus[]);
+  const selectedPriority = getParamValue(params.priority, Object.keys(priorityLabels) as KeywordPlannerPriority[]);
+  const selectedIntent = getParamValue(params.intent, Object.keys(intentLabels) as KeywordPlannerIntent[]);
+  const selectedType = getParamValue(params.type, Object.keys(typeLabels) as KeywordPlannerConnectedType[]);
+  const normalizedQuery = (params.query ?? "").trim().toLowerCase();
+  const sortMode = params.sort ?? "priority";
+
+  const classifiedCounts: Record<KeywordPlannerConnectedType, number> = {
+    transfer: store.keywords.filter((keyword) => keyword.connectedType === "transfer").length,
+    tour: store.keywords.filter((keyword) => keyword.connectedType === "tour").length,
+    content: store.keywords.filter((keyword) => keyword.connectedType === "content").length,
+    review: store.keywords.filter((keyword) => keyword.connectedType === "review").length
+  };
+  const statusCounts = (Object.keys(statusLabels) as KeywordPlannerStatus[]).reduce(
+    (acc, status) => ({
+      ...acc,
+      [status]: store.keywords.filter((keyword) => keyword.status === status).length
+    }),
+    {} as Record<KeywordPlannerStatus, number>
+  );
+
+  const filteredKeywords = store.keywords
+    .filter((keyword) => (selectedStatus ? keyword.status === selectedStatus : true))
+    .filter((keyword) => (selectedPriority ? keyword.priority === selectedPriority : true))
+    .filter((keyword) => (selectedIntent ? keyword.intent === selectedIntent : true))
+    .filter((keyword) => (selectedType ? keyword.connectedType === selectedType : true))
+    .filter((keyword) =>
+      normalizedQuery
+        ? keyword.keyword.toLowerCase().includes(normalizedQuery) ||
+          keyword.suggestedAction.toLowerCase().includes(normalizedQuery)
+        : true
+    )
+    .sort((a, b) => {
+      if (sortMode === "volume") return b.avgMonthlySearches - a.avgMonthlySearches;
+      if (sortMode === "bid") return (b.topBidHigh ?? 0) - (a.topBidHigh ?? 0);
+      if (sortMode === "updated") return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      const priorityDiff = priorityWeight[a.priority] - priorityWeight[b.priority];
+      return priorityDiff !== 0 ? priorityDiff : b.avgMonthlySearches - a.avgMonthlySearches;
+    });
+
+  const currentPage = Math.max(1, Number(params.page ?? "1") || 1);
+  const totalPages = Math.max(1, Math.ceil(filteredKeywords.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const start = (safePage - 1) * PAGE_SIZE;
+  const paginatedKeywords = filteredKeywords.slice(start, start + PAGE_SIZE);
 
   return (
     <div className="space-y-8 pb-10">
@@ -217,9 +303,104 @@ export default async function KeywordPlannerAdminPage() {
             <h2 className="mt-2 text-2xl font-black text-slate-950">Keywords importadas</h2>
           </div>
           <p className="text-sm text-slate-500">
-            Mostrando {numberFormatter.format(topKeywords.length)} de {numberFormatter.format(summary.total)}.
+            Pagina {safePage} de {totalPages} · {numberFormatter.format(filteredKeywords.length)} resultados filtrados.
           </p>
         </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-4">
+          {(Object.keys(typeLabels) as KeywordPlannerConnectedType[]).map((type) => (
+            <Link
+              key={type}
+              href={buildPageHref({ ...params, type }, 1)}
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-emerald-300 hover:bg-emerald-50"
+            >
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">{typeLabels[type]}</p>
+              <p className="mt-2 text-2xl font-black text-slate-950">{numberFormatter.format(classifiedCounts[type])}</p>
+            </Link>
+          ))}
+        </div>
+
+        <form className="mt-5 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-6">
+          <label className="md:col-span-2">
+            <span className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Buscar</span>
+            <input
+              name="query"
+              defaultValue={params.query ?? ""}
+              placeholder="hotel, tour, transfer..."
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+            />
+          </label>
+          <label>
+            <span className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Estado</span>
+            <select
+              name="status"
+              defaultValue={params.status ?? "all"}
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+            >
+              <option value="all">Todos</option>
+              {(Object.keys(statusLabels) as KeywordPlannerStatus[]).map((status) => (
+                <option key={status} value={status}>
+                  {statusLabels[status]} ({statusCounts[status]})
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Prioridad</span>
+            <select
+              name="priority"
+              defaultValue={params.priority ?? "all"}
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+            >
+              <option value="all">Todas</option>
+              {(Object.keys(priorityLabels) as KeywordPlannerPriority[]).map((priority) => (
+                <option key={priority} value={priority}>
+                  {priorityLabels[priority]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Intencion</span>
+            <select
+              name="intent"
+              defaultValue={params.intent ?? "all"}
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+            >
+              <option value="all">Todas</option>
+              {(Object.keys(intentLabels) as KeywordPlannerIntent[]).map((intent) => (
+                <option key={intent} value={intent}>
+                  {intentLabels[intent]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Orden</span>
+            <select
+              name="sort"
+              defaultValue={params.sort ?? "priority"}
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+            >
+              <option value="priority">Prioridad</option>
+              <option value="volume">Volumen</option>
+              <option value="bid">CPC alto</option>
+              <option value="updated">Actualizadas</option>
+            </select>
+          </label>
+          <input type="hidden" name="page" value="1" />
+          <div className="flex items-end gap-2 md:col-span-6">
+            <button className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-black text-white hover:bg-slate-800">
+              Filtrar
+            </button>
+            <Link
+              href="/admin/landings/keyword-planner"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700 hover:bg-slate-50"
+            >
+              Limpiar
+            </Link>
+          </div>
+        </form>
 
         <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200">
           <div className="grid grid-cols-[1.6fr_120px_110px_110px_100px_1.4fr] gap-0 bg-slate-50 px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-slate-500 max-xl:hidden">
@@ -231,12 +412,10 @@ export default async function KeywordPlannerAdminPage() {
             <span>Accion sugerida</span>
           </div>
           <div className="divide-y divide-slate-200">
-            {topKeywords.length === 0 ? (
-              <div className="p-8 text-center text-sm text-slate-500">
-                Sube el primer CSV de Keyword Planner para crear la cola.
-              </div>
+            {paginatedKeywords.length === 0 ? (
+              <div className="p-8 text-center text-sm text-slate-500">No hay keywords con esos filtros.</div>
             ) : (
-              topKeywords.map((keyword) => (
+              paginatedKeywords.map((keyword) => (
                 <article
                   key={keyword.normalizedKeyword}
                   className="grid gap-3 px-4 py-4 text-sm xl:grid-cols-[1.6fr_120px_110px_110px_100px_1.4fr] xl:items-start"
@@ -251,7 +430,7 @@ export default async function KeywordPlannerAdminPage() {
                     {intentLabels[keyword.intent]}
                   </span>
                   <span className={`w-fit rounded-full border px-3 py-1 text-xs font-bold ${priorityStyles[keyword.priority]}`}>
-                    {keyword.priority}
+                    {priorityLabels[keyword.priority]}
                   </span>
                   <span className="w-fit rounded-full bg-slate-950 px-3 py-1 text-xs font-bold text-white">
                     {statusLabels[keyword.status]}
@@ -273,6 +452,46 @@ export default async function KeywordPlannerAdminPage() {
             )}
           </div>
         </div>
+
+        {totalPages > 1 ? (
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+            <Link
+              href={buildPageHref(params, Math.max(1, safePage - 1))}
+              className={`rounded-xl border border-slate-200 px-4 py-2 text-sm font-black ${
+                safePage <= 1 ? "pointer-events-none text-slate-300" : "text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              Anterior
+            </Link>
+            <div className="flex flex-wrap gap-2">
+              {Array.from({ length: Math.min(7, totalPages) }, (_, index) => {
+                const page =
+                  totalPages <= 7 ? index + 1 : Math.min(Math.max(1, safePage - 3), totalPages - 6) + index;
+                return (
+                  <Link
+                    key={page}
+                    href={buildPageHref(params, page)}
+                    className={`rounded-xl px-3 py-2 text-sm font-black ${
+                      page === safePage
+                        ? "bg-slate-950 text-white"
+                        : "border border-slate-200 text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    {page}
+                  </Link>
+                );
+              })}
+            </div>
+            <Link
+              href={buildPageHref(params, Math.min(totalPages, safePage + 1))}
+              className={`rounded-xl border border-slate-200 px-4 py-2 text-sm font-black ${
+                safePage >= totalPages ? "pointer-events-none text-slate-300" : "text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              Siguiente
+            </Link>
+          </div>
+        ) : null}
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
