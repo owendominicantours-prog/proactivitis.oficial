@@ -224,6 +224,100 @@ const PUNTA_CANA_LINKS = [
   { slug: "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana", labelKey: "puntaCana.links.item.10" }
 ] as const;
 
+const buildScopedToursCopy = ({
+  locale,
+  countryName,
+  destinationName
+}: {
+  locale: Locale;
+  countryName?: string | null;
+  destinationName?: string | null;
+}) => {
+  const placeName = destinationName || countryName;
+  if (!placeName) {
+    return null;
+  }
+
+  if (locale === "en") {
+    return {
+      tagline: countryName ? "Tours by destination" : "Tours & Activities",
+      title: destinationName ? `Tours and activities in ${destinationName}` : `${countryName} tours and activities`,
+      description: destinationName
+        ? `Compare curated experiences in ${destinationName} with clear prices, verified operators, and support before you book.`
+        : `Explore tours across ${countryName} with clear pricing, practical details, and Proactivitis support from planning to confirmation.`,
+      seoTitle: destinationName ? `Book verified tours in ${destinationName}` : `Verified tours and excursions in ${countryName}`,
+      seoBody1: `Compare real activities in ${placeName} with prices, duration, languages, pickup details, and booking conditions in one place.`,
+      seoBody2: "Each experience is reviewed so travelers can understand what is included, where it starts, and what happens after booking.",
+      seoBody3: `Use filters to find adventure, culture, food, private options, family-friendly plans, or short activities in ${placeName}.`,
+      seoBody4: "Proactivitis keeps the booking flow clear: visible prices, useful logistics, and support if plans change.",
+      seoBody5: `This page is focused on ${placeName}, so results and destination suggestions stay aligned with the trip you are planning.`,
+      listItem2: `${placeName} activities with clear pricing`,
+      longformTitle: `Plan tours in ${placeName} with less friction`,
+      longformBody1: `Travelers looking at ${placeName} need more than a catalog. They need to know which tour fits their schedule, who operates it, what is included, and how the reservation is confirmed.`,
+      longformBody2: "That is why Proactivitis keeps every product structured with price, duration, pickup, meeting point, cancellation policy, and support details.",
+      longformBody3: `You can compare options, save time, and choose experiences in ${placeName} without jumping between unrelated destinations.`,
+      guideTitle: `How to choose an experience in ${placeName}`,
+      guideBody1: "Start with the time you have available, then compare duration, pickup, and physical level before choosing the lowest price.",
+      guideBody2: "For families or groups, check language, capacity, and whether the activity is private or shared.",
+      guideBody3: `For a better trip in ${placeName}, combine one signature attraction with one relaxed local experience.`,
+      destinationsHeading: destinationName ? `More zones near ${countryName}` : `Popular zones in ${countryName}`,
+      destinationsFooter: `These destinations are connected to active Proactivitis tour pages for ${countryName}. Choose a zone to narrow your results.`
+    };
+  }
+
+  if (locale === "fr") {
+    return {
+      tagline: countryName ? "Tours par destination" : "Tours & activites",
+      title: destinationName ? `Tours et activites a ${destinationName}` : `Tours et activites en ${countryName}`,
+      description: destinationName
+        ? `Comparez des experiences selectionnees a ${destinationName} avec prix clairs, operateurs verifies et support avant reservation.`
+        : `Explorez des tours en ${countryName} avec prix clairs, details pratiques et support Proactivitis jusqu'a la confirmation.`,
+      seoTitle: destinationName ? `Reserver des tours verifies a ${destinationName}` : `Tours et excursions verifies en ${countryName}`,
+      seoBody1: `Comparez des activites reelles a ${placeName} avec prix, duree, langues, prise en charge et conditions de reservation.`,
+      seoBody2: "Chaque experience est organisee pour comprendre ce qui est inclus, ou elle commence et ce qui se passe apres la reservation.",
+      seoBody3: `Utilisez les filtres pour trouver aventure, culture, gastronomie, options privees, plans famille ou activites courtes a ${placeName}.`,
+      seoBody4: "Proactivitis garde un parcours clair: prix visibles, logistique utile et support si votre plan change.",
+      seoBody5: `Cette page est centree sur ${placeName}; les resultats et suggestions restent donc alignes avec votre voyage.`,
+      listItem2: `Activites a ${placeName} avec prix clairs`,
+      longformTitle: `Planifier des tours a ${placeName} sans friction`,
+      longformBody1: `Les voyageurs qui recherchent ${placeName} ont besoin de plus qu'un catalogue: horaire, operateur, inclusions et confirmation doivent etre clairs.`,
+      longformBody2: "Proactivitis structure chaque produit avec prix, duree, prise en charge, point de rencontre, politique d'annulation et support.",
+      longformBody3: `Vous pouvez comparer et choisir des experiences a ${placeName} sans passer par des destinations qui ne concernent pas votre voyage.`,
+      guideTitle: `Comment choisir une experience a ${placeName}`,
+      guideBody1: "Commencez par le temps disponible, puis comparez duree, prise en charge et niveau d'effort.",
+      guideBody2: "Pour familles ou groupes, verifiez langue, capacite et si l'activite est privee ou partagee.",
+      guideBody3: `Pour un meilleur voyage a ${placeName}, combinez une attraction principale avec une experience locale plus calme.`,
+      destinationsHeading: destinationName ? `Autres zones en ${countryName}` : `Zones populaires en ${countryName}`,
+      destinationsFooter: `Ces destinations sont reliees aux pages de tours actives de Proactivitis en ${countryName}.`
+    };
+  }
+
+  return {
+    tagline: countryName ? "Tours por destino" : "Tours y Actividades",
+    title: destinationName ? `Tours y actividades en ${destinationName}` : `Tours y actividades en ${countryName}`,
+    description: destinationName
+      ? `Compara experiencias seleccionadas en ${destinationName} con precios claros, operadores verificados y soporte antes de reservar.`
+      : `Explora tours en ${countryName} con precios claros, detalles utiles y soporte Proactivitis desde la planificacion hasta la confirmacion.`,
+    seoTitle: destinationName ? `Reserva tours verificados en ${destinationName}` : `Tours y excursiones verificadas en ${countryName}`,
+    seoBody1: `Compara actividades reales en ${placeName} con precio, duracion, idiomas, recogida y condiciones de reserva en un solo lugar.`,
+    seoBody2: "Cada experiencia esta organizada para que entiendas que incluye, donde inicia y que pasa despues de reservar.",
+    seoBody3: `Usa los filtros para encontrar aventura, cultura, gastronomia, opciones privadas, planes familiares o actividades cortas en ${placeName}.`,
+    seoBody4: "Proactivitis mantiene el proceso claro: precios visibles, logistica util y soporte si tus planes cambian.",
+    seoBody5: `Esta pagina esta enfocada en ${placeName}, por eso los resultados y sugerencias se mantienen alineados con tu viaje.`,
+    listItem2: `Actividades en ${placeName} con precios claros`,
+    longformTitle: `Planifica tours en ${placeName} sin perder tiempo`,
+    longformBody1: `Cuando un viajero busca ${placeName}, necesita mas que una lista de tours. Necesita saber cual encaja con su horario, quien lo opera, que incluye y como se confirma la reserva.`,
+    longformBody2: "Por eso Proactivitis organiza cada producto con precio, duracion, recogida, punto de encuentro, politica de cancelacion y soporte.",
+    longformBody3: `Asi puedes comparar opciones y elegir experiencias en ${placeName} sin mezclar resultados de destinos que no forman parte de tu viaje.`,
+    guideTitle: `Como elegir una experiencia en ${placeName}`,
+    guideBody1: "Empieza por el tiempo disponible, luego compara duracion, recogida y nivel fisico antes de elegir solo por precio.",
+    guideBody2: "Para familias o grupos, revisa idioma, capacidad y si la actividad es privada o compartida.",
+    guideBody3: `Para un viaje mas completo en ${placeName}, combina una atraccion principal con una experiencia local relajada.`,
+    destinationsHeading: destinationName ? `Mas zonas en ${countryName}` : `Zonas populares en ${countryName}`,
+    destinationsFooter: `Estos destinos estan conectados a paginas activas de tours de Proactivitis en ${countryName}. Elige una zona para ajustar tus resultados.`
+  };
+};
+
 type TourWithDeparture = Prisma.TourGetPayload<{
   include: {
     departureDestination: {
@@ -394,13 +488,41 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
     console.error("Tour query failed", { where, error });
   }
 
+  const activeCountrySlug = params.country ? canonicalizeCountrySlug(params.country) : null;
+  const activeDestinationOption = params.destination
+    ? destinations.find((destination) => destination.slug === params.destination)
+    : null;
+  const activeCountryOption = activeCountrySlug
+    ? countries.find((country) => country.slug === activeCountrySlug)
+    : activeDestinationOption
+      ? countries.find((country) => country.slug === activeDestinationOption.country.slug)
+      : null;
+  const scopedCountryName =
+    activeDestinationOption?.country.name ??
+    activeCountryOption?.name ??
+    (params.country ? localizedCountryName({ slug: params.country }, locale) : null);
+  const scopedDestinationName =
+    activeDestinationOption?.name ??
+    (params.destination ? localizedDestinationName({ slug: params.destination }, locale) : null);
+  const scopedCopy = buildScopedToursCopy({
+    locale,
+    countryName: scopedCountryName,
+    destinationName: activeDestinationOption ? scopedDestinationName : null
+  });
+  const destinationCards = (
+    activeDestinationOption
+      ? destinations.filter((destination) => destination.country.slug === activeDestinationOption.country.slug)
+      : activeCountrySlug
+        ? destinations.filter((destination) => destination.country.slug === activeCountrySlug)
+        : destinations
+  ).slice(0, 6);
+  const showPuntaCanaLinks =
+    !scopedCopy || activeCountrySlug === "dominican-republic" || activeDestinationOption?.country.slug === "dominican-republic";
   const activeCountryValue = params.country
-    ? countries.find((country) => country.slug === canonicalizeCountrySlug(params.country ?? ""))?.name ??
-      localizedCountryName({ slug: params.country }, locale)
+    ? activeCountryOption?.name ?? localizedCountryName({ slug: params.country }, locale)
     : null;
   const activeDestinationValue = params.destination
-    ? destinations.find((destination) => destination.slug === params.destination)?.name ??
-      localizedDestinationName({ slug: params.destination }, locale)
+    ? scopedDestinationName
     : null;
   const activeFilters = [
     activeCountryValue && t("tours.filter.active.country", { value: activeCountryValue }),
@@ -449,7 +571,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   const itemListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: t("tours.header.title"),
+    name: scopedCopy?.title ?? t("tours.header.title"),
     itemListOrder: "https://schema.org/ItemListOrderAscending",
     numberOfItems: listItemSchema.length,
     itemListElement: listItemSchema
@@ -481,18 +603,24 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 md:flex-row md:items-end md:justify-between">
           <div className="space-y-4">
             <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
-              {t("tours.header.tagline")}
+              {scopedCopy?.tagline ?? t("tours.header.tagline")}
             </p>
             <h1 className="text-3xl font-semibold text-slate-900 md:text-4xl">
-              {t("tours.header.title")}
+              {scopedCopy?.title ?? t("tours.header.title")}
             </h1>
-            <p className="text-base text-slate-600">{t("tours.header.description")}</p>
+            <p className="text-base text-slate-600">{scopedCopy?.description ?? t("tours.header.description")}</p>
             <div className="flex flex-wrap gap-3">
               <Link
-                href={puntaCanaHubHref}
+                href={showPuntaCanaLinks ? puntaCanaHubHref : toursHubPath}
                 className="rounded-full bg-brand px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-sm shadow-brand/30"
               >
-                {t("tours.puntaCanaHub.cta")}
+                {showPuntaCanaLinks
+                  ? t("tours.puntaCanaHub.cta")
+                  : locale === "es"
+                    ? "Ver todos los tours"
+                    : locale === "fr"
+                      ? "Voir tous les tours"
+                      : "See all tours"}
               </Link>
               <Link
                 href={transfersHubHref}
@@ -506,12 +634,14 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
               >
                 {locale === "es" ? "Hoteles" : "Hotels"}
               </Link>
-              <Link
-                href={premiumTransferHref}
-                className="rounded-full border border-amber-300 bg-amber-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800 transition hover:bg-amber-100"
-              >
-                {locale === "es" ? "Transfer VIP" : locale === "en" ? "VIP Transfer" : "Transfert VIP"}
-              </Link>
+              {showPuntaCanaLinks ? (
+                <Link
+                  href={premiumTransferHref}
+                  className="rounded-full border border-amber-300 bg-amber-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800 transition hover:bg-amber-100"
+                >
+                  {locale === "es" ? "Transfer VIP" : locale === "en" ? "VIP Transfer" : "Transfert VIP"}
+                </Link>
+              ) : null}
               <Link
                 href={proDiscoveryToursHref}
                 className="rounded-full border border-sky-300 bg-sky-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-sky-800 transition hover:bg-sky-100"
@@ -715,34 +845,36 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                 {locale === "es" ? "Guía y enlaces de búsqueda" : locale === "fr" ? "Guide et liens de recherche" : "Search guide and destination links"}
               </summary>
               <div className="mt-5 space-y-5">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
-                    {t("puntaCana.links.subtitle")}
-                  </p>
-                  <h2 className="mt-2 text-2xl font-bold text-slate-900">{t("puntaCana.links.title")}</h2>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    {PUNTA_CANA_LINKS.map((item) => (
-                      <Link
-                        key={item.slug}
-                        href={tourHref(item.slug)}
-                        className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
-                      >
-                        {t(item.labelKey)}
-                      </Link>
-                    ))}
+                {showPuntaCanaLinks ? (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
+                      {t("puntaCana.links.subtitle")}
+                    </p>
+                    <h2 className="mt-2 text-2xl font-bold text-slate-900">{t("puntaCana.links.title")}</h2>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {PUNTA_CANA_LINKS.map((item) => (
+                        <Link
+                          key={item.slug}
+                          href={tourHref(item.slug)}
+                          className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
+                        >
+                          {t(item.labelKey)}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ) : null}
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
                     {t("tours.seo.label")}
                   </p>
-                  <h2 className="mt-2 text-2xl font-bold text-slate-900">{t("tours.seo.title")}</h2>
+                  <h2 className="mt-2 text-2xl font-bold text-slate-900">{scopedCopy?.seoTitle ?? t("tours.seo.title")}</h2>
                   <div className="mt-3 space-y-3">
-                    <p>{t("tours.seo.body1")}</p>
-                    <p>{t("tours.seo.body2")}</p>
-                    <p>{t("tours.seo.body3")}</p>
-                    <p>{t("tours.seo.body4")}</p>
-                    <p>{t("tours.seo.body5")}</p>
+                    <p>{scopedCopy?.seoBody1 ?? t("tours.seo.body1")}</p>
+                    <p>{scopedCopy?.seoBody2 ?? t("tours.seo.body2")}</p>
+                    <p>{scopedCopy?.seoBody3 ?? t("tours.seo.body3")}</p>
+                    <p>{scopedCopy?.seoBody4 ?? t("tours.seo.body4")}</p>
+                    <p>{scopedCopy?.seoBody5 ?? t("tours.seo.body5")}</p>
                   </div>
                   <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/80 p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
@@ -750,12 +882,13 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                     </p>
                     <ul className="mt-2 list-disc space-y-1 pl-4">
                       <li>{t("tours.seo.list.item1")}</li>
-                      <li>{t("tours.seo.list.item2")}</li>
+                      <li>{scopedCopy?.listItem2 ?? t("tours.seo.list.item2")}</li>
                       <li>{t("tours.seo.list.item3")}</li>
                       <li>{t("tours.seo.list.item4")}</li>
                     </ul>
                   </div>
-                  <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
+                  {showPuntaCanaLinks ? (
+                    <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700">
                       {locale === "es"
                         ? "Recomendado en costa norte"
@@ -773,7 +906,8 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                           ? "Sosua Party Boat: prices, open bar, and private option"
                           : "Sosua Party Boat : prix, open bar et option privee"}
                     </Link>
-                  </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </details>
@@ -786,11 +920,13 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
             {t("tours.longform.eyebrow")}
           </p>
-          <h2 className="mt-3 text-2xl font-semibold text-slate-900">{t("tours.longform.title")}</h2>
+          <h2 className="mt-3 text-2xl font-semibold text-slate-900">
+            {scopedCopy?.longformTitle ?? t("tours.longform.title")}
+          </h2>
           <div className="mt-4 space-y-4 text-sm text-slate-600">
-            <p>{t("tours.longform.body1")}</p>
-            <p>{t("tours.longform.body2")}</p>
-            <p>{t("tours.longform.body3")}</p>
+            <p>{scopedCopy?.longformBody1 ?? t("tours.longform.body1")}</p>
+            <p>{scopedCopy?.longformBody2 ?? t("tours.longform.body2")}</p>
+            <p>{scopedCopy?.longformBody3 ?? t("tours.longform.body3")}</p>
           </div>
         </div>
       </section>
@@ -800,11 +936,13 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
             {t("tours.longform2.eyebrow")}
           </p>
-          <h2 className="mt-3 text-2xl font-semibold text-slate-900">{t("tours.longform2.title")}</h2>
+          <h2 className="mt-3 text-2xl font-semibold text-slate-900">
+            {scopedCopy?.guideTitle ?? t("tours.longform2.title")}
+          </h2>
           <div className="mt-4 space-y-4 text-sm text-slate-600">
-            <p>{t("tours.longform2.body1")}</p>
-            <p>{t("tours.longform2.body2")}</p>
-            <p>{t("tours.longform2.body3")}</p>
+            <p>{scopedCopy?.guideBody1 ?? t("tours.longform2.body1")}</p>
+            <p>{scopedCopy?.guideBody2 ?? t("tours.longform2.body2")}</p>
+            <p>{scopedCopy?.guideBody3 ?? t("tours.longform2.body3")}</p>
           </div>
         </div>
       </section>
@@ -816,7 +954,9 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
               {t("tours.destinations.label")}
             </p>
-            <h2 className="text-3xl font-semibold text-slate-900">{t("tours.destinations.heading")}</h2>
+            <h2 className="text-3xl font-semibold text-slate-900">
+              {scopedCopy?.destinationsHeading ?? t("tours.destinations.heading")}
+            </h2>
           </div>
           <Link
             href={locale === "es" ? "/destinations" : `/${locale}/destinations`}
@@ -826,7 +966,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
           </Link>
           </div>
           <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {destinations.slice(0, 6).map((dest) => (
+            {destinationCards.map((dest) => (
               <Link
                 key={dest.slug}
                 href={`${locale === "es" ? "" : `/${locale}`}/destinations/${dest.country.slug}/${dest.slug}`}
@@ -849,7 +989,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
               </Link>
             ))}
           </div>
-          <p className="mt-6 text-sm text-slate-500">{t("tours.destinations.footer")}</p>
+          <p className="mt-6 text-sm text-slate-500">{scopedCopy?.destinationsFooter ?? t("tours.destinations.footer")}</p>
         </div>
       </section>
     </div>
