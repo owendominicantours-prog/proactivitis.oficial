@@ -62,6 +62,19 @@ function Link({ href, rel, prefetch, ...props }: ComponentProps<typeof NextLink>
 type DiscoveryCopy = {
   title: string;
   subtitle: string;
+  heroEyebrow: string;
+  heroTitle: string;
+  heroBody: string;
+  heroCtaTours: string;
+  heroCtaTransfers: string;
+  heroReviewLabel: string;
+  topPicksTitle: string;
+  topPicksBody: string;
+  categoryTitle: string;
+  categoryBody: string;
+  decisionTitle: string;
+  decisionBody: string;
+  listTitle: string;
   searchPlaceholder: string;
   transferSearchPlaceholder: string;
   filterAll: string;
@@ -126,7 +139,20 @@ const TRUST_BADGES: Record<Locale, string[]> = {
 const COPY: Record<Locale, DiscoveryCopy> = {
   es: {
     title: "ProDiscovery",
-    subtitle: "Compara tours, traslados y hoteles con resenas reales, fotos y filtros avanzados.",
+    subtitle: "El espacio de Proactivitis para comparar experiencias, traslados y hoteles antes de reservar.",
+    heroEyebrow: "Reviews, rankings y reserva segura",
+    heroTitle: "Descubre que reservar con datos reales, no con promesas vacias",
+    heroBody: "Compara tours, traslados y hoteles con resenas verificadas, fotos reales, precios visibles y acceso directo a la reserva.",
+    heroCtaTours: "Ver mejores tours",
+    heroCtaTransfers: "Cotizar traslado",
+    heroReviewLabel: "resenas verificadas",
+    topPicksTitle: "Lo mejor para reservar ahora",
+    topPicksBody: "Picks destacados por demanda, valor, reseñas y facilidad de reserva.",
+    categoryTitle: "Explora por intencion",
+    categoryBody: "Entra directo al tipo de decision que necesitas resolver.",
+    decisionTitle: "Por que usar ProDiscovery",
+    decisionBody: "Te ayuda a comparar sin perderte: opiniones reales, precio visible y reserva conectada a Proactivitis.",
+    listTitle: "Compara todas las opciones",
     searchPlaceholder: "Buscar por tour, hotel, traslado o zona",
     transferSearchPlaceholder: "Buscar por hotel, ruta, aeropuerto o zona",
     filterAll: "Todo",
@@ -183,7 +209,20 @@ const COPY: Record<Locale, DiscoveryCopy> = {
   },
   en: {
     title: "ProDiscovery",
-    subtitle: "Compare tours, transfers, and hotels with real reviews, photos, and smart filters.",
+    subtitle: "The Proactivitis space to compare experiences, transfers, and hotels before booking.",
+    heroEyebrow: "Reviews, rankings and secure booking",
+    heroTitle: "Know what to book with real signals, not empty promises",
+    heroBody: "Compare tours, transfers, and hotels with verified reviews, real photos, visible prices, and direct booking access.",
+    heroCtaTours: "See best tours",
+    heroCtaTransfers: "Quote transfer",
+    heroReviewLabel: "verified reviews",
+    topPicksTitle: "Best picks to book now",
+    topPicksBody: "Highlighted by demand, value, reviews, and booking simplicity.",
+    categoryTitle: "Explore by intent",
+    categoryBody: "Go straight to the decision you need to solve.",
+    decisionTitle: "Why use ProDiscovery",
+    decisionBody: "Compare without getting lost: real reviews, visible pricing, and booking connected to Proactivitis.",
+    listTitle: "Compare every option",
     searchPlaceholder: "Search by tour, hotel, transfer, or area",
     transferSearchPlaceholder: "Search by hotel, route, airport, or area",
     filterAll: "All",
@@ -240,7 +279,20 @@ const COPY: Record<Locale, DiscoveryCopy> = {
   },
   fr: {
     title: "ProDiscovery",
-    subtitle: "Comparez excursions, transferts et hotels avec de vrais avis, photos et filtres intelligents.",
+    subtitle: "L espace Proactivitis pour comparer excursions, transferts et hotels avant de reserver.",
+    heroEyebrow: "Avis, classements et reservation securisee",
+    heroTitle: "Decidez quoi reserver avec des signaux reels",
+    heroBody: "Comparez excursions, transferts et hotels avec avis verifies, vraies photos, prix visibles et acces direct a la reservation.",
+    heroCtaTours: "Voir les meilleurs tours",
+    heroCtaTransfers: "Calculer un transfert",
+    heroReviewLabel: "avis verifies",
+    topPicksTitle: "Les meilleurs choix a reserver",
+    topPicksBody: "Selectionnes selon demande, valeur, avis et facilite de reservation.",
+    categoryTitle: "Explorer par intention",
+    categoryBody: "Allez directement a la decision que vous voulez prendre.",
+    decisionTitle: "Pourquoi utiliser ProDiscovery",
+    decisionBody: "Comparez sans vous perdre: avis reels, prix visibles et reservation connectee a Proactivitis.",
+    listTitle: "Comparer toutes les options",
     searchPlaceholder: "Rechercher tour, hotel, transfert ou zone",
     transferSearchPlaceholder: "Rechercher hotel, trajet, aeroport ou zone",
     filterAll: "Tout",
@@ -299,6 +351,7 @@ const COPY: Record<Locale, DiscoveryCopy> = {
 
 const localePrefix = (locale: Locale) => (locale === "es" ? "" : `/${locale}`);
 const firstParam = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) ?? "";
+const numberFormatter = new Intl.NumberFormat("es-DO");
 
 const parseGallery = (gallery?: string | null) => {
   if (!gallery) return [];
@@ -699,6 +752,57 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
     return qs ? `${localePrefix(locale)}/prodiscovery?${qs}` : `${localePrefix(locale)}/prodiscovery`;
   };
 
+  const editorialItems = allItems
+    .map((item) => ({
+      ...item,
+      discoveryScore: item.rating * 8 + Math.min(item.reviews, 400) / 22 + (item.price ? Math.max(0, 10 - item.price / 25) : 2)
+    }))
+    .sort((a, b) => b.discoveryScore - a.discoveryScore);
+  const heroItem = editorialItems.find((item) => item.type === "tour") ?? editorialItems[0];
+  const topPicks = editorialItems.filter((item) => item.type !== "hotel").slice(0, 4);
+  const totalApprovedReviews = allItems.reduce((sum, item) => sum + item.reviews, 0);
+  const categoryCards = [
+    {
+      key: "tour",
+      title: t.filterTours,
+      body:
+        locale === "fr"
+          ? "Experiences avec photos, avis et reservation directe."
+          : locale === "en"
+            ? "Experiences with photos, reviews, and direct booking."
+            : "Experiencias con fotos, resenas y reserva directa.",
+      href: makeHref(1, compareIds, { type: "tour" }),
+      count: tourItems.length,
+      image: editorialItems.find((item) => item.type === "tour")?.image
+    },
+    {
+      key: "transfer",
+      title: t.filterTransfers,
+      body:
+        locale === "fr"
+          ? "Trajets prives avec tarif clair et support local."
+          : locale === "en"
+            ? "Private routes with clear rates and local support."
+            : "Rutas privadas con tarifa clara y soporte local.",
+      href: makeHref(1, compareIds, { type: "transfer" }),
+      count: transferItems.length + transferLocationItems.length,
+      image: editorialItems.find((item) => item.type === "transfer")?.image
+    },
+    {
+      key: "hotel",
+      title: t.filterHotels,
+      body:
+        locale === "fr"
+          ? "Hotels relies aux transferts et aux activites proches."
+          : locale === "en"
+            ? "Hotels connected with transfers and nearby activities."
+            : "Hoteles conectados con traslados y actividades cercanas.",
+      href: makeHref(1, compareIds, { type: "hotel" }),
+      count: hotelItems.length,
+      image: editorialItems.find((item) => item.type === "hotel")?.image
+    }
+  ];
+
   const byId = new Map(allItems.map((item) => [item.id, item]));
   const selectedCompare = compareIds.map((id) => byId.get(id)).filter(Boolean) as DiscoveryItem[];
 
@@ -974,99 +1078,226 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
       <StructuredData data={schema} />
       <ProDiscoveryHeader locale={locale} />
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-black tracking-tight text-slate-900">{t.title}</h1>
-          <p className="mt-2 max-w-3xl text-slate-600">{t.subtitle}</p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {TRUST_BADGES[locale].map((badge) => (
-              <span key={badge} className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
-                {badge}
-              </span>
-            ))}
-          </div>
-          <form action={`${localePrefix(locale)}/prodiscovery`} method="get" className="mt-6 grid gap-3 lg:grid-cols-12">
-            <input
-              name="q"
-              defaultValue={q}
-              placeholder={searchPlaceholder}
-              className="lg:col-span-5 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-emerald-200 focus:ring-2"
-            />
-            <select
-              name="type"
-              defaultValue={typeFilter}
-              className="lg:col-span-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-emerald-200 focus:ring-2"
-            >
-              <option value="all">{t.filterAll}</option>
-              <option value="tour">{t.filterTours}</option>
-              <option value="transfer">{t.filterTransfers}</option>
-              <option value="hotel">{t.filterHotels}</option>
-            </select>
-            <select
-              name="destination"
-              defaultValue={destinationFilter}
-              className="lg:col-span-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-emerald-200 focus:ring-2"
-            >
-              <option value="all">{t.destinationAll}</option>
-              <option value="punta-cana">Punta Cana</option>
-              <option value="la-romana">La Romana</option>
-              <option value="sosua">Sosua</option>
-              <option value="puerto-plata">Puerto Plata</option>
-              <option value="santo-domingo">Santo Domingo</option>
-            </select>
-            <select
-              name="minRating"
-              defaultValue={String(minRating || 0)}
-              className="lg:col-span-1 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none ring-emerald-200 focus:ring-2"
-            >
-              <option value="0">0+</option>
-              <option value="3">3+</option>
-              <option value="4">4+</option>
-              <option value="4.5">4.5+</option>
-            </select>
-            <select
-              name="sort"
-              defaultValue={sort}
-              className="lg:col-span-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-emerald-200 focus:ring-2"
-            >
-              <option value="recommended">{t.sortRecommended}</option>
-              <option value="rating">{t.sortRating}</option>
-              <option value="reviews">{t.sortReviews}</option>
-              <option value="price-low">{t.sortPriceLow}</option>
-              <option value="price-high">{t.sortPriceHigh}</option>
-            </select>
-            <button className="lg:col-span-12 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700">
-              {t.topFiltersTitle}
-            </button>
-          </form>
-          <div className="mt-3 flex items-center gap-3 text-sm text-slate-600">
-            <span>
-              <strong className="text-slate-900">{scored.length}</strong> {t.results}
-            </span>
-            <Link href={`${localePrefix(locale)}/prodiscovery`} className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold">
-              {t.clear}
-            </Link>
-          </div>
-          {activeFilterChips.length ? (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {activeFilterChips.map((chip) => (
-                <Link
-                  key={chip.key}
-                  href={chip.href}
-                  className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800"
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:px-8 lg:py-10">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-700">{t.heroEyebrow}</p>
+            <h1 className="mt-3 max-w-4xl text-4xl font-black tracking-tight text-slate-950 md:text-6xl">
+              {t.heroTitle}
+            </h1>
+            <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">{t.heroBody}</p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {TRUST_BADGES[locale].map((badge) => (
+                <span
+                  key={badge}
+                  className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800"
                 >
-                  {chip.label}
-                  <span className="text-[10px] text-amber-700">{t.removeFilter}</span>
+                  {badge}
+                </span>
+              ))}
+            </div>
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-3xl font-black text-slate-950">{numberFormatter.format(tourItems.length)}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{t.filterTours}</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-3xl font-black text-slate-950">
+                  {numberFormatter.format(transferItems.length + transferLocationItems.length)}
+                </p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{t.filterTransfers}</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-3xl font-black text-slate-950">{numberFormatter.format(totalApprovedReviews)}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{t.heroReviewLabel}</p>
+              </div>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href={makeHref(1, compareIds, { type: "tour" })}
+                className="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-emerald-700"
+              >
+                {t.heroCtaTours}
+              </Link>
+              <Link
+                href={makeHref(1, compareIds, { type: "transfer" })}
+                className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-black text-slate-800 hover:border-slate-500"
+              >
+                {t.heroCtaTransfers}
+              </Link>
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-slate-950 text-white shadow-xl">
+            <div className="relative h-64">
+              <img
+                src={heroItem?.image ?? "/fototours/fotosimple.jpg"}
+                alt={heroItem?.title ?? "ProDiscovery"}
+                className="h-full w-full object-cover opacity-80"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4">
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-200">Featured</p>
+                <h2 className="mt-2 line-clamp-2 text-2xl font-black">{heroItem?.title ?? t.title}</h2>
+                <div className="mt-2 flex items-center gap-2 text-sm text-white/85">
+                  <BubbleRating rating={heroItem?.rating ?? 0} label={t.bubbleLabel} />
+                  <span>{(heroItem?.rating ?? 0).toFixed(1)}</span>
+                  <span>({heroItem?.reviews ?? 0} {t.reviewsWord})</span>
+                </div>
+              </div>
+            </div>
+            <form action={`${localePrefix(locale)}/prodiscovery`} method="get" className="grid gap-3 p-5">
+              <input
+                name="q"
+                defaultValue={q}
+                placeholder={searchPlaceholder}
+                className="rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm text-slate-950 outline-none ring-emerald-300 focus:ring-2"
+              />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <select
+                  name="type"
+                  defaultValue={typeFilter}
+                  className="rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm text-slate-950 outline-none ring-emerald-300 focus:ring-2"
+                >
+                  <option value="all">{t.filterAll}</option>
+                  <option value="tour">{t.filterTours}</option>
+                  <option value="transfer">{t.filterTransfers}</option>
+                  <option value="hotel">{t.filterHotels}</option>
+                </select>
+                <select
+                  name="destination"
+                  defaultValue={destinationFilter}
+                  className="rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm text-slate-950 outline-none ring-emerald-300 focus:ring-2"
+                >
+                  <option value="all">{t.destinationAll}</option>
+                  <option value="punta-cana">Punta Cana</option>
+                  <option value="la-romana">La Romana</option>
+                  <option value="sosua">Sosua</option>
+                  <option value="puerto-plata">Puerto Plata</option>
+                  <option value="santo-domingo">Santo Domingo</option>
+                </select>
+                <select
+                  name="minRating"
+                  defaultValue={String(minRating || 0)}
+                  className="rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm text-slate-950 outline-none ring-emerald-300 focus:ring-2"
+                >
+                  <option value="0">0+</option>
+                  <option value="3">3+</option>
+                  <option value="4">4+</option>
+                  <option value="4.5">4.5+</option>
+                </select>
+                <select
+                  name="sort"
+                  defaultValue={sort}
+                  className="rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm text-slate-950 outline-none ring-emerald-300 focus:ring-2"
+                >
+                  <option value="recommended">{t.sortRecommended}</option>
+                  <option value="rating">{t.sortRating}</option>
+                  <option value="reviews">{t.sortReviews}</option>
+                  <option value="price-low">{t.sortPriceLow}</option>
+                  <option value="price-high">{t.sortPriceHigh}</option>
+                </select>
+              </div>
+              <button className="rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-black text-white hover:bg-emerald-400">
+                {t.topFiltersTitle}
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto mt-6 max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
+          <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-2xl font-black text-slate-950">{t.categoryTitle}</h2>
+            <p className="mt-1 text-sm text-slate-600">{t.categoryBody}</p>
+            <div className="mt-4 grid gap-3">
+              {categoryCards.map((category) => (
+                <Link
+                  key={category.key}
+                  href={category.href}
+                  className="group grid grid-cols-[86px_1fr_auto] items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 transition hover:border-emerald-300 hover:bg-white"
+                >
+                  <img
+                    src={category.image ?? "/fototours/fotosimple.jpg"}
+                    alt={category.title}
+                    className="h-16 w-20 rounded-xl object-cover"
+                    loading="lazy"
+                  />
+                  <span>
+                    <span className="block font-black text-slate-950 group-hover:text-emerald-700">{category.title}</span>
+                    <span className="text-xs text-slate-500">{category.body}</span>
+                  </span>
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-700">{category.count}</span>
                 </Link>
               ))}
             </div>
-          ) : null}
+          </div>
+
+          <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h2 className="text-2xl font-black text-slate-950">{t.topPicksTitle}</h2>
+                <p className="mt-1 text-sm text-slate-600">{t.topPicksBody}</p>
+              </div>
+              <span className="text-sm text-slate-500">
+                <strong className="text-slate-950">{scored.length}</strong> {t.results}
+              </span>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {topPicks.map((item) => (
+                <Link
+                  key={`pick-${item.id}`}
+                  href={item.href}
+                  className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md"
+                >
+                  <div className="relative h-36 bg-slate-100">
+                    <img src={item.image} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
+                    <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-slate-800">
+                      {item.tag}
+                    </span>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="line-clamp-2 font-black text-slate-950 group-hover:text-emerald-700">{item.title}</h3>
+                    <div className="mt-2 flex items-center gap-2 text-xs text-slate-600">
+                      <BubbleRating rating={item.rating} label={t.bubbleLabel} />
+                      <span>{item.rating.toFixed(1)}</span>
+                      <span>({item.reviews})</span>
+                    </div>
+                    <p className="mt-2 text-sm font-black text-emerald-700">
+                      {item.price ? `${t.from} USD ${Math.round(item.price)}` : t.consultRate}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-[28px] border border-emerald-200 bg-emerald-50 p-5">
+          <h2 className="text-xl font-black text-emerald-950">{t.decisionTitle}</h2>
+          <p className="mt-1 max-w-4xl text-sm leading-6 text-emerald-900/80">{t.decisionBody}</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {activeFilterChips.map((chip) => (
+              <Link
+                key={chip.key}
+                href={chip.href}
+                className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-white px-3 py-1 text-xs font-semibold text-amber-800"
+              >
+                {chip.label}
+                <span className="text-[10px] text-amber-700">{t.removeFilter}</span>
+              </Link>
+            ))}
+            <Link href={`${localePrefix(locale)}/prodiscovery`} className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold">
+              {t.clear}
+            </Link>
+          </div>
           {typeFilter === "transfer" ? (
             <div className="mt-3 flex flex-wrap gap-2">
               {transferQuickSearches.map((term) => (
                 <Link
                   key={term}
                   href={makeHref(1, compareIds, { q: term, type: "transfer" })}
-                  className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-800"
+                  className="rounded-full border border-sky-200 bg-white px-3 py-1 text-xs font-semibold text-sky-800"
                 >
                   {term}
                 </Link>
@@ -1146,6 +1377,17 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
         </aside>
 
         <section className="space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">{t.title}</p>
+                <h2 className="mt-1 text-2xl font-black text-slate-950">{t.listTitle}</h2>
+              </div>
+              <span className="text-sm text-slate-500">
+                <strong className="text-slate-950">{scored.length}</strong> {t.results}
+              </span>
+            </div>
+          </div>
           {items.length === 0 ? (
             <article className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
               <h2 className="text-xl font-bold text-slate-900">{t.noResults}</h2>
