@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_URL } from "@/lib/seo";
 import { parseAdminItinerary, parseItinerary } from "@/lib/itinerary";
+import { localizedCountryName, localizedDestinationName, localizedLocationText } from "@/lib/localizedPlaces";
 
 const withCors = (response: NextResponse) => {
   response.headers.set("Access-Control-Allow-Origin", "*");
@@ -153,6 +154,15 @@ export async function GET(request: NextRequest) {
       category: true,
       location: true,
       language: true,
+      country: { select: { code: true, name: true, slug: true } },
+      destination: { select: { name: true, slug: true } },
+      departureDestination: {
+        select: {
+          name: true,
+          slug: true,
+          country: { select: { code: true, name: true, slug: true } }
+        }
+      },
       timeOptions: true,
       operatingDays: true,
       pickup: true,
@@ -265,7 +275,36 @@ export async function GET(request: NextRequest) {
           : null,
         duration: formatDuration(tour.duration, translation?.durationUnit),
         category: sanitizeText(tour.category ?? "Tours"),
-        location: sanitizeText(tour.location),
+        location: sanitizeText(
+          tour.departureDestination
+            ? [
+                localizedDestinationName(tour.departureDestination, locale),
+                localizedCountryName(tour.departureDestination.country, locale)
+              ]
+                .filter(Boolean)
+                .join(", ")
+            : localizedLocationText(tour.location, locale)
+        ),
+        country: tour.country
+          ? {
+              code: tour.country.code,
+              slug: tour.country.slug,
+              name: sanitizeText(localizedCountryName(tour.country, locale))
+            }
+          : null,
+        destination: tour.departureDestination
+          ? {
+              slug: tour.departureDestination.slug,
+              name: sanitizeText(localizedDestinationName(tour.departureDestination, locale)),
+              countrySlug: tour.departureDestination.country.slug
+            }
+          : tour.destination
+            ? {
+                slug: tour.destination.slug,
+                name: sanitizeText(localizedDestinationName(tour.destination, locale)),
+                countrySlug: tour.country.slug
+              }
+            : null,
         languages: normalizeLanguages(tour.language),
         timeOptions: parseJsonStringList(tour.timeOptions),
         operatingDays: parseJsonStringList(tour.operatingDays),

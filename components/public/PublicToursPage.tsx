@@ -19,6 +19,7 @@ import StructuredData from "@/components/schema/StructuredData";
 import { PROACTIVITIS_URL } from "@/lib/seo";
 import { ensureLeadingCapital } from "@/lib/text-format";
 import { getActiveOfferPriceMapForTours } from "@/lib/offerPricing";
+import { localizedCountryName, localizedDestinationName, localizedLocationText } from "@/lib/localizedPlaces";
 
 const parseDurationMeta = (value?: string | null) => {
   if (!value) return null;
@@ -176,17 +177,18 @@ const PUBLIC_TOUR_OPTION_WHERE: Prisma.TourWhereInput = {
   slug: { not: "transfer-privado-proactivitis" }
 };
 
-const normalizeCountryOption = (country: CountryOption): CountryOption => {
+const normalizeCountryOption = (country: CountryOption, locale: Locale): CountryOption => {
   const slug = canonicalizeCountrySlug(country.slug);
-  return slug === "dominican-republic" ? { name: "República Dominicana", slug } : { ...country, slug };
+  return { ...country, name: localizedCountryName({ ...country, slug }, locale), slug };
 };
 
-const normalizeDestinationOption = (destination: DestinationOption): DestinationOption => {
+const normalizeDestinationOption = (destination: DestinationOption, locale: Locale): DestinationOption => {
   const countrySlug = canonicalizeCountrySlug(destination.country.slug);
   return {
     ...destination,
+    name: localizedDestinationName(destination, locale),
     country: {
-      name: countrySlug === "dominican-republic" ? "República Dominicana" : destination.country.name,
+      name: localizedCountryName({ ...destination.country, slug: countrySlug }, locale),
       slug: countrySlug
     }
   };
@@ -270,7 +272,9 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   } catch (error) {
     logPrismaError("loading countries", error);
   }
-  countries = dedupeBySlug(countries.map(normalizeCountryOption)).sort((a, b) => a.name.localeCompare(b.name));
+  countries = dedupeBySlug(countries.map((country) => normalizeCountryOption(country, locale))).sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
 
   let destinations: DestinationOption[] = [];
   try {
@@ -289,8 +293,8 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   } catch (error) {
     logPrismaError("loading destinations", error);
   }
-  destinations = dedupeDestinations(destinations.map(normalizeDestinationOption)).sort((a, b) =>
-    a.name.localeCompare(b.name)
+  destinations = dedupeDestinations(destinations.map((destination) => normalizeDestinationOption(destination, locale))).sort(
+    (a, b) => a.name.localeCompare(b.name)
   );
 
   let languagesRaw: TourLanguageRow[] = [];
@@ -390,9 +394,17 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
     console.error("Tour query failed", { where, error });
   }
 
+  const activeCountryValue = params.country
+    ? countries.find((country) => country.slug === canonicalizeCountrySlug(params.country ?? ""))?.name ??
+      localizedCountryName({ slug: params.country }, locale)
+    : null;
+  const activeDestinationValue = params.destination
+    ? destinations.find((destination) => destination.slug === params.destination)?.name ??
+      localizedDestinationName({ slug: params.destination }, locale)
+    : null;
   const activeFilters = [
-    params.country && t("tours.filter.active.country", { value: params.country }),
-    params.destination && t("tours.filter.active.destination", { value: params.destination }),
+    activeCountryValue && t("tours.filter.active.country", { value: activeCountryValue }),
+    activeDestinationValue && t("tours.filter.active.destination", { value: activeDestinationValue }),
     params.language && t("tours.filter.active.language", { value: params.language }),
     params.duration &&
       t("tours.filter.active.duration", {
@@ -646,7 +658,11 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
                     </div>
                     <div className="space-y-2 px-4 py-4">
                       <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                        <span>{tour.departureDestination?.name ?? tour.location}</span>
+                        <span>
+                          {tour.departureDestination
+                            ? localizedDestinationName(tour.departureDestination, locale)
+                            : localizedLocationText(tour.location, locale)}
+                        </span>
                         <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-emerald-600">
                           {verifiedText}
                         </span>

@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { localizedCountryName, localizedDestinationName } from "@/lib/localizedPlaces";
 
 type Locale = "es" | "en" | "fr";
 
@@ -551,13 +552,17 @@ const ensureCountry = async (payload: GeminiGlobalTourPayload) => {
   const code = payload.country.code || "US";
   const existing = await prisma.country.findUnique({ where: { code } });
   if (existing) return existing;
+  const countryName = localizedCountryName(
+    { code, slug: payload.country.slug, name: payload.country.name },
+    "es"
+  );
   return prisma.country.create({
     data: {
       id: code,
       code,
-      name: payload.country.name || code,
+      name: countryName || code,
       slug: await uniqueSlug(payload.country.slug || payload.country.name || code, "country"),
-      shortDescription: `Destino global agregado por Proactivitis para experiencias seleccionadas en ${payload.country.name || code}.`
+      shortDescription: `Destino global agregado por Proactivitis para experiencias seleccionadas en ${countryName || code}.`
     }
   });
 };
@@ -682,11 +687,13 @@ const buildAdminNote = (payload: GeminiGlobalTourPayload, config: GeminiGlobalTo
     .map((stop) => `${stop.time} - ${stop.title}: ${stop.description ?? ""}`.trim())
     .join("\n");
   const keywords = payload.seoKeywords.slice(0, 10).join(", ");
+  const countryName = localizedCountryName(payload.country, "es") || payload.country.name;
+  const destinationName = localizedDestinationName(payload.destination, "es") || payload.destination.name;
   return [
     FACTORY_MARKER,
     `Confirmacion manual minima: ${config.minLeadHours} horas antes de la actividad.`,
     `Margen objetivo: +${config.markupPerPerson} USD por adulto.`,
-    `Clasificacion: ${payload.country.name} > ${payload.destination.name} > ${payload.microZone?.name ?? "zona principal"} > ${payload.category}.`,
+    `Clasificacion: ${countryName} > ${destinationName} > ${payload.microZone?.name ?? "zona principal"} > ${payload.category}.`,
     `SEO: ${keywords}`,
     "",
     itinerary
@@ -702,6 +709,8 @@ const createTourFromPayload = async (payload: GeminiGlobalTourPayload, config: G
   const microZone = await ensureMicroZone(payload, destination.id, country.code);
   const slug = await uniqueSlug(payload.slug || payload.title, "tour");
   const id = randomUUID();
+  const countryName = localizedCountryName(country, "es");
+  const destinationName = localizedDestinationName(destination, "es");
 
   const tour = await prisma.tour.create({
     data: {
@@ -713,7 +722,7 @@ const createTourFromPayload = async (payload: GeminiGlobalTourPayload, config: G
       shortDescription: payload.shortDescription,
       includes: payload.includesList.join("; "),
       duration: JSON.stringify(payload.duration),
-      location: [payload.destination.name, payload.country.name].filter(Boolean).join(", "),
+      location: [destinationName, countryName].filter(Boolean).join(", "),
       language: payload.languages.join(", "),
       category: payload.category,
       price: payload.priceUsd,

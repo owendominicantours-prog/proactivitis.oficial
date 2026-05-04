@@ -8,6 +8,7 @@ import type { DurationOption } from "@/components/public/TourFilters";
 import { buildTourFilter, type TourSearchParams } from "@/lib/filterBuilder";
 import { getZoneInfo } from "@/lib/destinationInfo";
 import { formatDurationDisplay } from "@/lib/formatDuration";
+import { localizedCountryName, localizedDestinationName } from "@/lib/localizedPlaces";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -27,17 +28,19 @@ export async function generateMetadata({
   });
 
   if (!destination) return {};
+  const destinationName = localizedDestinationName(destination, "es");
+  const countryName = localizedCountryName(destination.country, "es");
 
-  const title = `Tours y traslados en ${destination.name} | Proactivitis`;
+  const title = `Tours y traslados en ${destinationName} | Proactivitis`;
   const baseDescription =
     destination.shortDescription ??
-    `Explora ${destination.name} en ${destination.country.name} con tours, excursiones y traslados verificados.`;
+    `Explora ${destinationName} en ${countryName} con tours, excursiones y traslados verificados.`;
   const description = `${baseDescription} Reserva actividades con precios claros, recogida en hotel y soporte 24/7.`;
 
   return {
     title,
     description,
-    keywords: [destination.name, destination.country.name, "tours", "excursiones", "traslados", "actividades", "Proactivitis"],
+    keywords: [destinationName, countryName, "tours", "excursiones", "traslados", "actividades", "Proactivitis"],
     alternates: {
       canonical: `/destinations/${destination.country.slug}/${destination.slug}`
     }
@@ -79,6 +82,8 @@ export default async function DestinationPage({
   if (!destination) {
     notFound();
   }
+  const destinationName = localizedDestinationName(destination, "es");
+  const countryName = localizedCountryName(destination.country, "es");
 
   const filterParams: TourSearchParams = {
     ...(resolvedSearchParams ?? {}),
@@ -111,13 +116,13 @@ export default async function DestinationPage({
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8">
           <p className="text-xs uppercase tracking-[0.35em] text-slate-500">
-            Destino  {destination.name}
+            Destino  {destinationName}
           </p>
-          <h1 className="text-4xl font-semibold text-slate-900">{destination.name}</h1>
+          <h1 className="text-4xl font-semibold text-slate-900">{destinationName}</h1>
           <p className="text-sm text-slate-600">
             {zoneInfo?.summary ??
               destination.shortDescription ??
-              `Descubre tours desde ${destination.name}, parte de ${destination.country.name} con playas, cultura y guias expertos.`}
+              `Descubre tours desde ${destinationName}, parte de ${countryName} con playas, cultura y guias expertos.`}
           </p>
         </div>
       </section>
@@ -159,9 +164,9 @@ export default async function DestinationPage({
       <main className="mx-auto max-w-6xl px-4 py-8 space-y-8">
       <section className="mx-auto mt-6 max-w-6xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Guia rapida</p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-900">Tours, excursiones y traslados en {destination.name}</h2>
+        <h2 className="mt-2 text-2xl font-semibold text-slate-900">Tours, excursiones y traslados en {destinationName}</h2>
         <div className="mt-3 space-y-3 text-sm text-slate-600">
-          <p>Compara tours y actividades con salida desde {destination.name} y reservas con confirmacion inmediata.</p>
+          <p>Compara tours y actividades con salida desde {destinationName} y reservas con confirmacion inmediata.</p>
           <p>Incluimos datos claros de duracion, punto de encuentro y lo que esta incluido para elegir con seguridad.</p>
           <p>Si necesitas traslado, puedes coordinar ida, vuelta o rutas entre hoteles con soporte 24/7.</p>
         </div>
@@ -174,7 +179,7 @@ export default async function DestinationPage({
       </section>
 
       <section className="mx-auto max-w-6xl rounded-3xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600 shadow-sm">
-        <h2 className="text-2xl font-semibold text-slate-900">Como organizar tu visita a {destination.name}</h2>
+        <h2 className="text-2xl font-semibold text-slate-900">Como organizar tu visita a {destinationName}</h2>
         <p className="mt-3">
           Define tu horario ideal segun el clima y el tipo de experiencia: playa, cultura, aventura o gastronomia.
           Asi puedes combinar tours cortos con traslados puntuales y evitar tiempos muertos.
@@ -193,9 +198,9 @@ export default async function DestinationPage({
 
         <section>
           <TourFilters
-            countries={[{ name: destination.country.name, slug: destination.country.slug }]}
+            countries={[{ name: countryName, slug: destination.country.slug }]}
             destinations={[
-              { name: destination.name, slug: destination.slug, countrySlug: destination.country.slug }
+              { name: destinationName, slug: destination.slug, countrySlug: destination.country.slug }
             ]}
             languages={languages}
             durations={durations}
@@ -203,7 +208,7 @@ export default async function DestinationPage({
         </section>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-          <h2 className="text-xl font-semibold text-slate-900">Tours que salen de {destination.name}</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Tours que salen de {destinationName}</h2>
           <p className="text-sm text-slate-500">
             Cada tour esta conectado a esta zona y respeta itinerarios locales, guias bilingues y logistica confiable.
           </p>

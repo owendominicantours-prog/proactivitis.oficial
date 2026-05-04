@@ -4,6 +4,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ZoneSelector } from "@/components/public/ZoneSelector";
 import { getZoneInfo } from "@/lib/destinationInfo";
+import { localizedCountryName, localizedDestinationName } from "@/lib/localizedPlaces";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -22,17 +23,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     select: { name: true, slug: true, shortDescription: true }
   });
   if (!country) return {};
+  const countryName = localizedCountryName(country, "es");
 
-  const title = `Destinos en ${country.name} | Tours y traslados Proactivitis`;
+  const title = `Destinos en ${countryName} | Tours y traslados Proactivitis`;
   const baseDescription =
     country.shortDescription ??
-    `Explora zonas y experiencias recomendadas en ${country.name} con operadores verificados.`;
+    `Explora zonas y experiencias recomendadas en ${countryName} con operadores verificados.`;
   const description = `${baseDescription} Reserva tours, excursiones y traslados con confirmacion inmediata.`;
 
   return {
     title,
     description,
-    keywords: [country.name, "destinos", "tours", "excursiones", "traslados", "Proactivitis"],
+    keywords: [countryName, "destinos", "tours", "excursiones", "traslados", "Proactivitis"],
     alternates: {
       canonical: `/destinations/${country.slug}`
     }
@@ -63,9 +65,11 @@ export default async function CountryPage({ params }: Props) {
   if (!country) {
     notFound();
   }
+  const countryName = localizedCountryName(country, "es");
 
   const enrichedDestinations = country.destinations.map((destination) => ({
     ...destination,
+    displayName: localizedDestinationName(destination, "es"),
     zoneInfo: getZoneInfo(country.slug, destination.slug)
   }));
 
@@ -73,10 +77,10 @@ export default async function CountryPage({ params }: Props) {
     <div className="travel-surface pb-16">
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8">
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Destinos  {country.name}</p>
-          <h1 className="text-4xl font-semibold text-slate-900">{country.name}</h1>
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Destinos  {countryName}</p>
+          <h1 className="text-4xl font-semibold text-slate-900">{countryName}</h1>
           <p className="text-sm text-slate-600">
-            {country.shortDescription || `Explora las zonas mas representativas de ${country.name} y elige la que te inspire para tu siguiente aventura.`}
+            {country.shortDescription || `Explora las zonas mas representativas de ${countryName} y elige la que te inspire para tu siguiente aventura.`}
           </p>
         </div>
       </section>
@@ -84,7 +88,7 @@ export default async function CountryPage({ params }: Props) {
       <main className="mx-auto max-w-6xl px-4 py-10 space-y-8">
       <section className="mx-auto mt-6 max-w-6xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Guia rapida</p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-900">Zonas y experiencias en {country.name}</h2>
+        <h2 className="mt-2 text-2xl font-semibold text-slate-900">Zonas y experiencias en {countryName}</h2>
         <div className="mt-3 space-y-3 text-sm text-slate-600">
           <p>Explora destinos con tours, excursiones y actividades verificadas por zona.</p>
           <p>Compara experiencias por ciudad, playa o region y reserva con precios claros.</p>
@@ -99,7 +103,7 @@ export default async function CountryPage({ params }: Props) {
       </section>
 
       <section className="mx-auto max-w-6xl rounded-3xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600 shadow-sm">
-        <h2 className="text-2xl font-semibold text-slate-900">Planifica tu ruta en {country.name}</h2>
+        <h2 className="text-2xl font-semibold text-slate-900">Planifica tu ruta en {countryName}</h2>
         <p className="mt-3">
           Cada zona tiene ritmos distintos: playas para descansar, ciudades para cultura y rutas de naturaleza para
           aventura. Te mostramos opciones comparables para decidir segun tu tiempo y presupuesto.
@@ -128,7 +132,7 @@ export default async function CountryPage({ params }: Props) {
               <ZoneSelector
                 current=""
                 zones={country.destinations.map((dest) => ({
-                  name: dest.name,
+                  name: localizedDestinationName(dest, "es"),
                   slug: dest.slug,
                   countrySlug: country.slug
                 }))}
@@ -145,7 +149,7 @@ export default async function CountryPage({ params }: Props) {
             >
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Zona</p>
-                <h3 className="text-2xl font-semibold text-slate-900">{destination.name}</h3>
+                <h3 className="text-2xl font-semibold text-slate-900">{destination.displayName}</h3>
               </div>
               <p className="text-sm text-slate-600">
                 {destination.zoneInfo?.summary ?? "Una zona con tours autenticos y guias locales expertos."}
