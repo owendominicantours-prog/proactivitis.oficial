@@ -7,6 +7,7 @@ import TrasladoSearchV2 from "@/components/traslado/TrasladoSearchV2";
 import { formatDurationDisplay } from "@/lib/formatDuration";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_URL, SAME_AS_URLS, getPriceValidUntil } from "@/lib/seo";
+import { normalizeDisplayText, normalizeTextDeep } from "@/lib/text-format";
 import { getTourReviewSummaryForTours } from "@/lib/tourReviews";
 import type { Locale } from "@/lib/translations";
 
@@ -437,7 +438,7 @@ function BubbleRating({ rating, label }: { rating: number; label: string }) {
 }
 
 export default async function ProDiscoveryPage({ locale, searchParams = {} }: Props) {
-  const t = COPY[locale];
+  const t = normalizeTextDeep(COPY[locale]);
   const typeFilter = (firstParam(searchParams.type) || "all") as "all" | ItemType;
   const destinationFilter = (firstParam(searchParams.destination) || "all") as Destination;
   const q = firstParam(searchParams.q).trim();
@@ -536,8 +537,8 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
   const tourItems: DiscoveryItem[] = tours.map((tour) => {
     const tr = tour.translations[0];
     const ratingData = tourSummary[tour.id] ?? { average: 0, count: 0 };
-    const title = tr?.title || tour.title;
-    const description = tr?.shortDescription || tr?.description || tour.shortDescription || tour.description;
+    const title = normalizeDisplayText(tr?.title || tour.title);
+    const description = normalizeDisplayText(tr?.shortDescription || tr?.description || tour.shortDescription || tour.description || "");
     const gallery = parseGallery(tour.gallery);
     const durationLabel = formatDurationDisplay(tour.duration, locale === "fr" ? "Duree variable" : locale === "en" ? "Flexible duration" : "Duracion variable");
     const languageLabel = (tour.language || "").split(",").map((item) => item.trim()).filter(Boolean).slice(0, 2).join(", ");
@@ -546,7 +547,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
       id: `tour-${tour.id}`,
       type: "tour",
       title,
-      description: (description || "").slice(0, 160),
+      description: description.slice(0, 160),
       metaLine: `${durationLabel}${languageLabel ? ` · ${languageLabel}` : ""}`,
       decisionHighlights: [
         durationLabel,
@@ -584,12 +585,12 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
     return {
       id: `transfer-${landing.landingSlug}`,
       type: "transfer",
-      title: landing.heroTitle,
-      description: landing.heroSubtitle || landing.metaDescription,
+      title: normalizeDisplayText(landing.heroTitle),
+      description: normalizeDisplayText(landing.heroSubtitle || landing.metaDescription),
       searchText: `${landing.heroTitle} ${landing.heroSubtitle || ""} ${landing.metaDescription || ""} ${landing.hotelName} ${landing.landingSlug} ${routeLabel} ${detailsText}`,
-      metaLine: `${landing.hotelName} · ${locale === "fr" ? "Service prive" : locale === "en" ? "Private service" : "Servicio privado"}`,
+      metaLine: `${normalizeDisplayText(landing.hotelName)} · ${locale === "fr" ? "Service privé" : locale === "en" ? "Private service" : "Servicio privado"}`,
       decisionHighlights: [
-        landing.hotelName,
+        normalizeDisplayText(landing.hotelName),
         locale === "fr" ? "Suivi de vol" : locale === "en" ? "Flight tracking" : "Seguimiento de vuelo",
         locale === "fr" ? "Porte a porte" : locale === "en" ? "Door to door" : "Puerta a puerta"
       ],
@@ -624,8 +625,8 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
     return {
       id: `transfer-location-${location.id}`,
       type: "transfer",
-      title,
-      description,
+      title: normalizeDisplayText(title),
+      description: normalizeDisplayText(description),
       searchText: `${location.name} ${location.slug} ${zoneName} ${location.type} transfer traslado airport hotel route destination origin`,
       image: "/transfer/suv.png",
       schemaImages: buildSchemaImageCollage(["/transfer/suv.png"], TRANSFER_COLLAGE_POOL),
@@ -652,9 +653,9 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
     return {
       id: `hotel-${hotel.slug}`,
       type: "hotel",
-      title: hotel.name,
-      description: (hotel.description || `${hotel.name} in Punta Cana`).slice(0, 160),
-      metaLine: zoneName || (locale === "fr" ? "Zone hoteliere" : locale === "en" ? "Hotel zone" : "Zona hotelera"),
+      title: normalizeDisplayText(hotel.name),
+      description: normalizeDisplayText(hotel.description || `${hotel.name} in Punta Cana`).slice(0, 160),
+      metaLine: zoneName || (locale === "fr" ? "Zone hôtelière" : locale === "en" ? "Hotel zone" : "Zona hotelera"),
       decisionHighlights: [
         zoneName || "Punta Cana",
         locale === "fr" ? "Acces aux transferts" : locale === "en" ? "Transfer access" : "Acceso a traslados",
@@ -1086,7 +1087,7 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
             </h1>
             <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">{t.heroBody}</p>
             <div className="mt-5 flex flex-wrap gap-2">
-              {TRUST_BADGES[locale].map((badge) => (
+              {TRUST_BADGES[locale].map((badge) => normalizeDisplayText(badge)).map((badge) => (
                 <span
                   key={badge}
                   className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800"
@@ -1136,7 +1137,9 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
               <div className="absolute bottom-4 left-4 right-4">
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-200">Featured</p>
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-200">
+                  {locale === "es" ? "Destacado" : locale === "fr" ? "Sélection" : "Featured"}
+                </p>
                 <h2 className="mt-2 line-clamp-2 text-2xl font-black">{heroItem?.title ?? t.title}</h2>
                 <div className="mt-2 flex items-center gap-2 text-sm text-white/85">
                   <BubbleRating rating={heroItem?.rating ?? 0} label={t.bubbleLabel} />
@@ -1366,10 +1369,10 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
               {comments.map((comment) => (
                 <article key={comment.id} className="rounded-xl border border-slate-200 p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-semibold text-slate-900">{comment.customerName}</p>
+                  <p className="truncate text-sm font-semibold text-slate-900">{normalizeDisplayText(comment.customerName)}</p>
                     <BubbleRating rating={comment.rating} label={t.bubbleLabel} />
                   </div>
-                  <p className="mt-2 line-clamp-3 text-xs text-slate-600">{comment.body}</p>
+                  <p className="mt-2 line-clamp-3 text-xs text-slate-600">{normalizeDisplayText(comment.body)}</p>
                 </article>
               ))}
             </div>
@@ -1645,10 +1648,10 @@ export default async function ProDiscoveryPage({ locale, searchParams = {} }: Pr
               {comments.map((comment) => (
                 <article key={`mobile-${comment.id}`} className="rounded-xl border border-slate-200 p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-semibold text-slate-900">{comment.customerName}</p>
+                    <p className="truncate text-sm font-semibold text-slate-900">{normalizeDisplayText(comment.customerName)}</p>
                     <BubbleRating rating={comment.rating} label={t.bubbleLabel} />
                   </div>
-                  <p className="mt-2 line-clamp-3 text-xs text-slate-600">{comment.body}</p>
+                  <p className="mt-2 line-clamp-3 text-xs text-slate-600">{normalizeDisplayText(comment.body)}</p>
                 </article>
               ))}
             </div>

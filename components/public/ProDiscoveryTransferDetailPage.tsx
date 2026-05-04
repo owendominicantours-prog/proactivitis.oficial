@@ -8,6 +8,7 @@ import { parseTransferHotelVariantSlug } from "@/data/transfer-hotel-sales-varia
 import { allLandings } from "@/data/transfer-landings";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_URL, getPriceValidUntil } from "@/lib/seo";
+import { normalizeDisplayText, normalizeTextDeep } from "@/lib/text-format";
 import type { Locale } from "@/lib/translations";
 import { buildTransferReviewWhereForLanding } from "@/lib/transferReviews";
 
@@ -39,8 +40,8 @@ type Copy = {
 const COPY: Record<Locale, Copy> = {
   es: {
     back: "Volver a ProDiscovery",
-    reviews: "Reseñas verificadas",
-    noReviews: "Este traslado aún no tiene reseñas aprobadas.",
+    reviews: "ReseÃ±as verificadas",
+    noReviews: "Este traslado aÃºn no tiene reseÃ±as aprobadas.",
     from: "Desde",
     book: "Cotizar y reservar",
     quoteNow: "Ver tarifa final",
@@ -48,7 +49,7 @@ const COPY: Record<Locale, Copy> = {
     reviewCountLabel: "opiniones aprobadas",
     details: "Lo que incluye",
     map: "Ver en mapa",
-    reviewFilter: "Filtrar reseñas por tema",
+    reviewFilter: "Filtrar reseÃ±as por tema",
     clear: "Limpiar",
     plannerTitle: "Reserva este traslado ahora",
     plannerBody: "Completa origen y destino para ver tarifa final y reservar sin salir de ProDiscovery.",
@@ -126,17 +127,18 @@ function BubbleRating({ rating }: { rating: number }) {
 
 export default async function ProDiscoveryTransferDetailPage({ locale, landingSlug, reviewKeyword }: Props) {
   const initialVisibleReviews = 7;
-  const t = COPY[locale];
+  const t = normalizeTextDeep(COPY[locale]);
   const reserveNowLabel = localeLabel(locale, "Abrir reserva", "Open booking", "Ouvrir la reservation");
   const plannerJumpLabel = localeLabel(locale, "Usar cotizador", "Use planner", "Utiliser le devis");
   const trustBadges = [
-    localeLabel(locale, "Reseñas verificadas", "Verified reviews", "Avis verifies"),
+    localeLabel(locale, "ReseÃ±as verificadas", "Verified reviews", "Avis verifies"),
     localeLabel(locale, "Reserva segura", "Secure booking", "Reservation securisee"),
     localeLabel(locale, "Soporte local", "Local support", "Support local")
-  ];
+  ].map(normalizeDisplayText);
   const parsedLandingSlug = parseTransferHotelVariantSlug(landingSlug);
-  const landing = allLandings().find((item) => item.landingSlug === parsedLandingSlug.baseSlug);
-  if (!landing) return notFound();
+  const rawLanding = allLandings().find((item) => item.landingSlug === parsedLandingSlug.baseSlug);
+  if (!rawLanding) return notFound();
+  const landing = normalizeTextDeep(rawLanding);
 
   const [reviewsRaw, totalApprovedReviews, related] = await Promise.all([
     prisma.transferReview.findMany({
@@ -164,7 +166,7 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
     : reviewsRaw;
 
   const keywordPool = reviewsRaw
-    .flatMap((review) => review.body.toLowerCase().split(/[^a-zA-ZÀ-ÿ0-9]+/g))
+    .flatMap((review) => review.body.toLowerCase().split(/[^\p{L}\p{N}]+/gu))
     .filter((word) => word.length >= 5 && !["punta", "cana", "hotel", "transfer", "great", "excelente", "proactivitis", "service"].includes(word))
     .slice(0, 400);
   const keywordCounts = new Map<string, number>();
@@ -177,12 +179,13 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
   const average = reviews.length ? round1(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) : 0;
   const pageUrl = `${PROACTIVITIS_URL}${localePrefix(locale)}/prodiscovery/transfer/${landingSlug}`;
   const bookingUrl = `${PROACTIVITIS_URL}${toTransferHref(locale, landingSlug)}`;
-  const visibleHeroTitle =
+  const visibleHeroTitle = normalizeDisplayText(
     locale === "es"
       ? `${landing.heroTitle} · Opiniones y reserva`
       : locale === "fr"
-        ? `${landing.heroTitle} · Avis et reservation`
-        : `${landing.heroTitle} · Reviews and booking`;
+        ? `${landing.heroTitle} · Avis et réservation`
+        : `${landing.heroTitle} · Reviews and booking`
+  );
 
   const priceValidUntil = getPriceValidUntil();
 
@@ -430,31 +433,31 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
                 {reviews.slice(0, initialVisibleReviews).map((review) => (
                   <article key={review.id} className="rounded-xl border border-slate-200 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-slate-900">{review.customerName}</p>
+                      <p className="text-sm font-semibold text-slate-900">{normalizeDisplayText(review.customerName)}</p>
                       <div className="flex items-center gap-2">
                         <BubbleRating rating={review.rating} />
                         <span className="text-xs text-slate-500">{formatDate(review.createdAt, locale)}</span>
                       </div>
                     </div>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-700">{review.body}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-700">{normalizeDisplayText(review.body)}</p>
                   </article>
                 ))}
                 {reviews.length > initialVisibleReviews ? (
                   <details className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                     <summary className="cursor-pointer list-none text-sm font-semibold text-emerald-700">
-                      {localeLabel(locale, "Ver más reseñas", "See more reviews", "Voir plus d avis")}
+                      {normalizeDisplayText(localeLabel(locale, "Ver mÃ¡s reseÃ±as", "See more reviews", "Voir plus d avis"))}
                     </summary>
                     <div className="mt-4 space-y-3">
                       {reviews.slice(initialVisibleReviews).map((review) => (
                         <article key={review.id} className="rounded-xl border border-slate-200 bg-white p-4">
                           <div className="flex flex-wrap items-center justify-between gap-2">
-                            <p className="text-sm font-semibold text-slate-900">{review.customerName}</p>
+                            <p className="text-sm font-semibold text-slate-900">{normalizeDisplayText(review.customerName)}</p>
                             <div className="flex items-center gap-2">
                               <BubbleRating rating={review.rating} />
                               <span className="text-xs text-slate-500">{formatDate(review.createdAt, locale)}</span>
                             </div>
                           </div>
-                          <p className="mt-2 text-sm leading-relaxed text-slate-700">{review.body}</p>
+                          <p className="mt-2 text-sm leading-relaxed text-slate-700">{normalizeDisplayText(review.body)}</p>
                         </article>
                       ))}
                     </div>

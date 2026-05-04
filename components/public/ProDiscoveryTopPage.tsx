@@ -5,6 +5,7 @@ import { allLandings } from "@/data/transfer-landings";
 import { prisma } from "@/lib/prisma";
 import { formatDurationDisplay } from "@/lib/formatDuration";
 import { PROACTIVITIS_URL } from "@/lib/seo";
+import { normalizeDisplayText, normalizeTextDeep } from "@/lib/text-format";
 import type { Locale } from "@/lib/translations";
 import {
   computeDiscoveryScore,
@@ -67,18 +68,18 @@ const COPY = {
     transfers: "Top traslados",
     eyebrow: "Ranking editorial ProDiscovery",
     introTours:
-      "Seleccionamos y ordenamos las experiencias con mejor reputacion, mejor contexto de reserva y señales reales de confianza para ayudarte a elegir sin abrir veinte pestañas.",
+      "Seleccionamos y ordenamos las experiencias con mejor reputacion, mejor contexto de reserva y seÃ±ales reales de confianza para ayudarte a elegir sin abrir veinte pestaÃ±as.",
     introTransfers:
-      "Este ranking agrupa traslados con mejor reputacion, reseñas aprobadas y rutas realmente buscadas para que compares antes de reservar.",
+      "Este ranking agrupa traslados con mejor reputacion, reseÃ±as aprobadas y rutas realmente buscadas para que compares antes de reservar.",
     whyTitle: "Como se ordena este ranking",
-    whyOne: "Reputacion basada en reseñas aprobadas",
+    whyOne: "Reputacion basada en reseÃ±as aprobadas",
     whyTwo: "Recencia y consistencia del servicio",
     whyThree: "Acceso directo a la reserva sin salir de ProDiscovery",
     tocTitle: "En esta pagina",
     openTour: "Ver ficha",
     openTransfer: "Ver traslado",
     reserve: "Reservar",
-    reviews: "reseñas",
+    reviews: "reseÃ±as",
     from: "Desde",
     duration: "Duracion",
     noItems: "Aun no hay suficientes fichas para este ranking.",
@@ -183,7 +184,7 @@ const getTransferFleetPresets = (locale: Locale): FleetPreset[] => {
 };
 
 export default async function ProDiscoveryTopPage({ locale, destination, category }: Props) {
-  const t = COPY[locale];
+  const t = normalizeTextDeep(COPY[locale]);
   const destinationName = humanizeDiscoveryDestination(destination);
   const basePath = `${localePrefix(locale)}/prodiscovery`;
   const showTours = category === "tours";
@@ -272,6 +273,10 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
   const intro = showTours ? t.introTours : t.introTransfers;
   const itemTitleTemplate = showTours ? t.itemTitleTours : t.itemTitleTransfers;
   const items = showTours ? topTours : topTransfers;
+  const totalRankingReviews = items.reduce(
+    (sum, item) => sum + (showTours ? (item as RankedTour).reviewCount : (item as RankedTransfer).reviewCount),
+    0
+  );
   const fleetPresets = getTransferFleetPresets(locale);
   const useFleetHotelView = !showTours && destination === "punta-cana";
 
@@ -296,11 +301,11 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
   };
 
   return (
-    <main className="travel-surface pb-16">
+    <main className="travel-surface bg-[#f5f7f9] pb-16">
       <StructuredData data={schema} />
       <ProDiscoveryHeader locale={locale} />
 
-      <section className="mx-auto max-w-6xl px-4 py-10">
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <Link href={basePath} className="text-sm font-semibold text-emerald-700">
           {t.back}
         </Link>
@@ -312,15 +317,31 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
             <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600">{intro}</p>
           </div>
 
-          <div className="grid gap-6 px-6 py-6 lg:grid-cols-[1.7fr,0.9fr]">
+          <div className="grid gap-6 px-6 py-6 lg:grid-cols-[1.7fr_0.9fr]">
             <div className="space-y-4">
               <div className="rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">{t.whyTitle}</p>
                 <ul className="mt-3 space-y-2 text-sm font-medium text-slate-700">
-                  <li>• {t.whyOne}</li>
-                  <li>• {t.whyTwo}</li>
-                  <li>• {t.whyThree}</li>
+                  <li className="flex gap-2"><span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" /><span>{t.whyOne}</span></li>
+                  <li className="flex gap-2"><span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" /><span>{t.whyTwo}</span></li>
+                  <li className="flex gap-2"><span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" /><span>{t.whyThree}</span></li>
                 </ul>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3">
+                  <p className="text-2xl font-black text-slate-950">{items.length}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                    {showTours ? t.tours : t.transfers}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3">
+                  <p className="text-2xl font-black text-slate-950">{totalRankingReviews}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">{t.reviews}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3">
+                  <p className="text-2xl font-black text-slate-950">Top</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">{destinationName}</p>
+                </div>
               </div>
             </div>
 
@@ -333,7 +354,7 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
                     href={`#rank-${index + 1}`}
                     className="block rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:border-emerald-300"
                   >
-                    {index + 1}. {showTours ? (item as RankedTour).title : (item as RankedTransfer).title}
+                    {index + 1}. {normalizeDisplayText(showTours ? (item as RankedTour).title : (item as RankedTransfer).title)}
                   </a>
                 ))}
               </div>
@@ -342,7 +363,7 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {items.length === 0 ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-600">{t.noItems}</div>
         ) : (
@@ -352,9 +373,9 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
                   <article
                     key={tour.id}
                     id={`rank-${index + 1}`}
-                    className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm"
+                    className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                   >
-                    <div className="grid gap-0 lg:grid-cols-[320px,1fr]">
+                    <div className="grid gap-0 lg:grid-cols-[320px_1fr]">
                       <div className="relative h-64 bg-slate-100 lg:h-full">
                         {tour.heroImage ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -373,9 +394,9 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
                           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                             {replaceTokens(itemTitleTemplate, { destination: destinationName })}
                           </p>
-                          <h2 className="mt-2 text-2xl font-black text-slate-900">{tour.title}</h2>
+                          <h2 className="mt-2 text-2xl font-black text-slate-900">{normalizeDisplayText(tour.title)}</h2>
                           <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                            {truncate(firstSentence(tour.shortDescription ?? tour.title))}
+                            {normalizeDisplayText(truncate(firstSentence(tour.shortDescription ?? tour.title)))}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-3 text-sm font-semibold">
@@ -421,9 +442,9 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
                   <article
                     key={transfer.slug}
                     id={`rank-${index + 1}`}
-                    className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm"
+                    className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                   >
-                    <div className="grid gap-0 lg:grid-cols-[320px,1fr]">
+                    <div className="grid gap-0 lg:grid-cols-[320px_1fr]">
                       <div className="relative h-64 bg-slate-100 lg:h-full">
                         {transfer.image ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -442,10 +463,10 @@ export default async function ProDiscoveryTopPage({ locale, destination, categor
                           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                             {useFleetHotelView ? transfer.hotelName : replaceTokens(itemTitleTemplate, { destination: destinationName })}
                           </p>
-                          <h2 className="mt-2 text-2xl font-black text-slate-900">{transfer.title}</h2>
-                          <p className="mt-2 text-sm font-medium text-slate-500">{transfer.hotelName}</p>
+                          <h2 className="mt-2 text-2xl font-black text-slate-900">{normalizeDisplayText(transfer.title)}</h2>
+                          <p className="mt-2 text-sm font-medium text-slate-500">{normalizeDisplayText(transfer.hotelName)}</p>
                           <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                            {truncate(firstSentence(transfer.description || transfer.title))}
+                            {normalizeDisplayText(truncate(firstSentence(transfer.description || transfer.title)))}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-3 text-sm font-semibold">

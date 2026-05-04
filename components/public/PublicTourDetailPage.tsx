@@ -18,7 +18,7 @@ import { Locale, translate, type TranslationKey } from "@/lib/translations";
 import { translateText } from "@/lib/translationService";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { ensureLeadingCapital } from "@/lib/text-format";
+import { ensureLeadingCapital, normalizeDisplayText } from "@/lib/text-format";
 import { getActiveOfferPriceMapForTours } from "@/lib/offerPricing";
 import { formatDurationDisplay } from "@/lib/formatDuration";
 import { normalizeTourLocation, normalizeTourLanguages } from "@/lib/tour-display";
@@ -1005,9 +1005,9 @@ const resolveTourH1 = (slug: string, locale: Locale, fallback: string) =>
   TOUR_H1_OVERRIDES[slug]?.[locale] ?? fallback;
 
 const localeLabel = (locale: Locale, esLabel: string, enLabel: string, frLabel: string) => {
-  if (locale === "en") return enLabel;
-  if (locale === "fr") return frLabel;
-  return esLabel;
+  if (locale === "en") return normalizeDisplayText(enLabel);
+  if (locale === "fr") return normalizeDisplayText(frLabel);
+  return normalizeDisplayText(esLabel);
 };
 
 const splitScapeOptionDescription = (description?: string | null) => {
@@ -1749,7 +1749,7 @@ export default async function TourDetailPage({
           ? itinerarySource
           : [];
   const hasVisualTimeline = visualTimeline.length > 0;
-  const localizedTitle = ensureLeadingCapital(translation?.title ?? tour.title);
+  const localizedTitle = ensureLeadingCapital(normalizeDisplayText(translation?.title ?? tour.title));
   const heroTitle = resolveTourH1(tour.slug, locale, localizedTitle);
   const isDiscoveryMode = presentationMode === "discovery";
   const discoveryBadgeLabel = localeLabel(locale, "Ficha ProDiscovery", "ProDiscovery listing", "Fiche ProDiscovery");
@@ -1761,9 +1761,13 @@ export default async function TourDetailPage({
         `${heroTitle} · Avis et reservation`
       )
     : heroTitle;
-  const localizedSubtitle = translation?.subtitle ?? tour.subtitle ?? "";
-  const localizedShortDescription = translation?.shortDescription ?? tour.shortDescription;
-  const localizedDescription = translation?.description ?? tour.description;
+  const localizedSubtitle = normalizeDisplayText(translation?.subtitle ?? tour.subtitle ?? "");
+  const localizedShortDescriptionSource = translation?.shortDescription ?? tour.shortDescription;
+  const localizedDescriptionSource = translation?.description ?? tour.description;
+  const localizedShortDescription = localizedShortDescriptionSource
+    ? normalizeDisplayText(localizedShortDescriptionSource)
+    : null;
+  const localizedDescription = localizedDescriptionSource ? normalizeDisplayText(localizedDescriptionSource) : null;
   const durationUnitSource = translation?.durationUnit ?? durationValue.unit;
   const durationUnit = normalizeDurationUnit(durationUnitSource, locale);
   const durationLabel = `${durationValue.value} ${durationUnit}`;
@@ -1781,9 +1785,12 @@ export default async function TourDetailPage({
         .filter(Boolean)
     : [];
   const trustBadges = buildTourTrustBadges(locale, languages, categories);
-  const faqList = buildTourFaq(locale, tour.slug, heroTitle, durationLabel, displayTime, priceLabel);
+  const faqList = buildTourFaq(locale, tour.slug, heroTitle, durationLabel, displayTime, priceLabel).map((item) => ({
+    question: normalizeDisplayText(item.question),
+    answer: normalizeDisplayText(item.answer)
+  }));
   const relatedTourCards = relatedTours.map((item) => {
-    const localizedRelatedTitle = ensureLeadingCapital(item.translations?.[0]?.title ?? item.title);
+    const localizedRelatedTitle = ensureLeadingCapital(normalizeDisplayText(item.translations?.[0]?.title ?? item.title));
     const relatedImage = resolveTourHeroImage(item);
     const relatedHref = locale === "es" ? `/tours/${item.slug}` : `/${locale}/tours/${item.slug}`;
     return {
@@ -1859,7 +1866,11 @@ export default async function TourDetailPage({
   const translatedReviews = await Promise.all(
     approvedReviews.map(async (review) => {
       if (locale === review.locale) {
-        return review;
+        return {
+          ...review,
+          title: review.title ? normalizeDisplayText(review.title) : review.title,
+          body: normalizeDisplayText(review.body)
+        };
       }
       const sourceLocale =
         review.locale === "en" || review.locale === "fr" ? review.locale : "auto";
@@ -1867,7 +1878,11 @@ export default async function TourDetailPage({
         ? await translateText(review.title, locale, sourceLocale)
         : review.title;
       const translatedBody = await translateText(review.body, locale, sourceLocale);
-      return { ...review, title: translatedTitle, body: translatedBody };
+      return {
+        ...review,
+        title: translatedTitle ? normalizeDisplayText(translatedTitle) : translatedTitle,
+        body: normalizeDisplayText(translatedBody)
+      };
     })
   );
   const reviewSummaryData = await getTourReviewSummary(tour.id);
@@ -1884,14 +1899,14 @@ export default async function TourDetailPage({
   const heroRatingLabel = translate(locale, "tour.hero.ratingLabel");
   const heroReviewsLabel = translate(locale, "tour.hero.reviewsCount", { count: detailReviewCount });
   const heroReserveCta = isDiscoveryMode
-    ? localeLabel(locale, "Comparar y reservar", "Compare and book", "Comparer et reserver")
+    ? localeLabel(locale, "Reservar ahora", "Book now", "Réserver maintenant")
     : translate(locale, "tour.hero.cta.reserve");
   const heroGalleryCta = translate(locale, "tour.hero.cta.gallery");
   const floatingButtonLabel = isDiscoveryMode
     ? localeLabel(locale, "Tarifa ProDiscovery", "ProDiscovery rate", "Tarif ProDiscovery")
     : translate(locale, "tour.booking.floating.label");
   const floatingButtonCta = isDiscoveryMode
-    ? localeLabel(locale, "Comparar y reservar", "Compare and book", "Comparer et reserver")
+    ? localeLabel(locale, "Ver disponibilidad", "Check availability", "Voir disponibilité")
     : translate(locale, "tour.booking.floating.button");
   const heroNavTabs: { labelKey: TranslationKey; href: string }[] = [
     { labelKey: "tour.nav.overview", href: "#overview" },
@@ -2339,6 +2354,16 @@ export default async function TourDetailPage({
 
   const BookingPanel = ({ className = "" }: { className?: string }) => (
     <div className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ${className}`}>
+      {isDiscoveryMode ? (
+        <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-slate-100 pb-4">
+          <span className="rounded-full bg-rose-600 px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-white">
+            {localeLabel(locale, "Alta demanda", "High demand", "Forte demande")}
+          </span>
+          <span className="rounded-full bg-amber-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-amber-800">
+            {localeLabel(locale, "Se agota rápido", "Likely to sell out", "Places limitées")}
+          </span>
+        </div>
+      ) : null}
       <div>
         <TourBookingWidget {...bookingWidgetProps} />
       </div>
@@ -2361,6 +2386,26 @@ export default async function TourDetailPage({
             </p>
           </div>
         </div>
+        {isDiscoveryMode ? (
+          <div className="mt-3 flex items-start gap-3 text-sm text-slate-700">
+            <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500 text-xs font-black text-emerald-600">
+              +
+            </span>
+            <div>
+              <p className="font-black text-slate-950">
+                {localeLabel(locale, "Reserva ahora y paga después", "Reserve now and pay later", "Réservez maintenant, payez plus tard")}
+              </p>
+              <p className="mt-0.5 text-xs leading-5 text-slate-600">
+                {localeLabel(
+                  locale,
+                  "Asegura tu cupo hoy y mantén flexibilidad antes del viaje.",
+                  "Secure your spot today while staying flexible before your trip.",
+                  "Gardez votre place aujourd'hui tout en restant flexible avant le voyage."
+                )}
+              </p>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -2738,7 +2783,7 @@ export default async function TourDetailPage({
             </div>
 
             <div className="mt-6 overflow-hidden rounded-[22px] border border-slate-200">
-              <div className="grid grid-cols-[1.3fr,1fr,1fr] bg-slate-100 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              <div className="grid grid-cols-[1.3fr_1fr_1fr] bg-slate-100 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 <div className="px-4 py-3">{localeLabel(locale, "Característica", "Feature", "Caracteristique")}</div>
                 <div className="px-4 py-3">{regularOption?.name ?? "Regular"}</div>
                 <div className="px-4 py-3">{goldOption?.name ?? "Gold Member"}</div>
@@ -2765,7 +2810,7 @@ export default async function TourDetailPage({
                   localeLabel(locale, "Quien quiere espacio, asiento y experiencia VIP", "Travelers wanting space, seating and VIP comfort", "Voyageurs voulant espace, siege et confort VIP")
                 ]
               ].map((row) => (
-                <div key={row[0]} className="grid grid-cols-[1.3fr,1fr,1fr] border-t border-slate-200 text-sm text-slate-700">
+                <div key={row[0]} className="grid grid-cols-[1.3fr_1fr_1fr] border-t border-slate-200 text-sm text-slate-700">
                   <div className="px-4 py-3 font-semibold text-slate-900">{row[0]}</div>
                   <div className="px-4 py-3">{row[1]}</div>
                   <div className="px-4 py-3">{row[2]}</div>
@@ -3086,7 +3131,7 @@ export default async function TourDetailPage({
               </div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{reviewSummary}</p>
             </div>
-            <div className="grid gap-6 lg:grid-cols-[1.2fr,1fr]">
+            <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <p className="text-4xl font-semibold text-slate-900">

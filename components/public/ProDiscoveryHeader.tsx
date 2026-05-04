@@ -11,7 +11,7 @@ type Props = {
 const COPY = {
   es: {
     brand: "ProDiscovery",
-    tagline: "Reviews reales by Proactivitis",
+    tagline: "Reseñas reales de Proactivitis",
     home: "Inicio",
     tours: "Tours",
     transfers: "Traslados",
@@ -33,7 +33,7 @@ const COPY = {
   },
   fr: {
     brand: "ProDiscovery",
-    tagline: "Avis reels by Proactivitis",
+    tagline: "Avis réels de Proactivitis",
     home: "Accueil",
     tours: "Excursions",
     transfers: "Transferts",
@@ -63,13 +63,20 @@ export default function ProDiscoveryHeader({ locale }: Props) {
   const searchParams = useSearchParams();
   const query = searchParams?.toString() ?? "";
   const base = `${localePrefix(locale)}/prodiscovery`;
+  const normalizedPath = stripLocalePrefix(pathname);
+  const navClass = (active: boolean) =>
+    active
+      ? "rounded-full bg-slate-950 px-3 py-1.5 font-semibold text-white shadow-sm"
+      : "rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-700 hover:border-slate-400 hover:text-slate-900";
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 shadow-sm shadow-slate-900/5 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link href={base} className="flex min-w-0 items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-lg font-black text-white">
-              PD
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-lg font-black text-white shadow-sm">
+              <span className="relative flex h-6 w-6 items-center justify-center rounded-full border-2 border-white/90">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
             </span>
             <span>
               <span className="block text-lg font-black tracking-tight text-slate-900">{t.brand}</span>
@@ -108,31 +115,35 @@ export default function ProDiscoveryHeader({ locale }: Props) {
           <div className="flex min-w-max items-center gap-2 px-1">
             <Link
               href={base}
-              className="rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-700 hover:border-slate-400 hover:text-slate-900"
+              className={navClass(normalizedPath === "/prodiscovery")}
             >
               {t.home}
             </Link>
             <Link
               href={`${base}?type=tour`}
-              className="rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-700 hover:border-slate-400 hover:text-slate-900"
+              className={navClass(query.includes("type=tour"))}
             >
               {t.tours}
             </Link>
             <Link
               href={`${base}?type=transfer`}
-              className="rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-700 hover:border-slate-400 hover:text-slate-900"
+              className={navClass(query.includes("type=transfer"))}
             >
               {t.transfers}
             </Link>
             <Link
               href={`${base}?type=hotel`}
-              className="rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-700 hover:border-slate-400 hover:text-slate-900"
+              className={navClass(query.includes("type=hotel"))}
             >
               {t.hotels}
             </Link>
             <Link
               href={`${base}/top/punta-cana/tours`}
-              className="rounded-full bg-emerald-600 px-3 py-1.5 font-semibold text-white hover:bg-emerald-700"
+              className={
+                normalizedPath.includes("/prodiscovery/top")
+                  ? "rounded-full bg-emerald-600 px-3 py-1.5 font-semibold text-white shadow-sm"
+                  : "rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700 hover:bg-emerald-100"
+              }
             >
               {t.rankings}
             </Link>
