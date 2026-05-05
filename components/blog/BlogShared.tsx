@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import BlogShareButtons from "@/components/blog/BlogShareButtons";
@@ -1112,6 +1113,35 @@ const formatNewsDate = (value: Date | string | null | undefined, locale: BlogLoc
   }).format(date);
 };
 
+const swgLanguage = (locale: BlogLocale) =>
+  locale === "es" ? "es-419" : locale === "fr" ? "fr" : "en";
+
+const renderNewsSwgBasic = (locale: BlogLocale) => (
+  <>
+    <Script
+      id="google-swg-basic"
+      src="https://news.google.com/swg/js/v1/swg-basic.js"
+      strategy="afterInteractive"
+    />
+    <Script
+      id={`google-swg-basic-init-${locale}`}
+      strategy="afterInteractive"
+      dangerouslySetInnerHTML={{
+        __html: `
+          (self.SWG_BASIC = self.SWG_BASIC || []).push(function (basicSubscriptions) {
+            basicSubscriptions.init({
+              type: "NewsArticle",
+              isPartOfType: ["Product"],
+              isPartOfProductId: "CAowsJbgCw:openaccess",
+              clientOptions: { theme: "light", lang: "${swgLanguage(locale)}" }
+            });
+          });
+        `
+      }}
+    />
+  </>
+);
+
 const contextualHref = (locale: BlogLocale) =>
   locale === "es" ? "/tours" : locale === "fr" ? "/fr/tours" : "/en/tours";
 
@@ -1211,6 +1241,7 @@ const renderNewsArticleLayout = ({
   return (
     <div className="travel-surface min-h-screen">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      {renderNewsSwgBasic(locale)}
       <BlogReadingProgress locale={locale} />
       <article className="mx-auto max-w-7xl px-4 py-8 lg:py-12">
         <header className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
