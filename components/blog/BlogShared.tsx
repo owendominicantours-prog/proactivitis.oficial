@@ -1142,6 +1142,13 @@ const renderNewsSwgBasic = (locale: BlogLocale) => (
   </>
 );
 
+const renderReaderRevenueInlineCta = () => (
+  <div
+    className="news-print-hide rounded-3xl border border-sky-200 bg-white p-4 shadow-sm"
+    dangerouslySetInnerHTML={{ __html: '<div rrm-inline-cta="7ea2ebda-cedd-43f9-8df4-a50def20fb99"></div>' }}
+  />
+);
+
 const contextualHref = (locale: BlogLocale) =>
   locale === "es" ? "/tours" : locale === "fr" ? "/fr/tours" : "/en/tours";
 
@@ -1323,6 +1330,8 @@ const renderNewsArticleLayout = ({
                 </div>
               </div>
             </section>
+
+            {renderReaderRevenueInlineCta()}
 
             <section id="analysis" className="blog-content">{renderBlogContent(contentHtml)}</section>
             <div className="news-print-hide">{renderContextualCta(locale)}</div>
