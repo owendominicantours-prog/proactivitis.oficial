@@ -15,7 +15,7 @@ import TourMarketVariantLanding from "@/components/public/TourMarketVariantLandi
 import { en } from "@/lib/translations";
 import { findStaticVariant } from "@/lib/tourVariantCatalog";
 import { getPublishedVariantBySlug } from "@/lib/tourVariantStore";
-import { parseTourMarketVariantSlug } from "@/lib/tourMarketVariants";
+import { isTourMarketVariantEligible, parseTourMarketVariantSlug } from "@/lib/tourMarketVariants";
 
 const BASE_URL = "https://proactivitis.com";
 
@@ -88,9 +88,15 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
   if (marketVariant) {
     const tour = await prisma.tour.findFirst({
       where: { slug: marketVariant.tourSlug, status: { in: ["published", "seo_only"] } },
-      select: { slug: true, title: true, shortDescription: true, description: true, heroImage: true, gallery: true, price: true }
+      select: { slug: true, title: true, shortDescription: true, description: true, heroImage: true, gallery: true, price: true, countryId: true }
     });
     if (!tour) return { title: "Landing not found" };
+    if (!isTourMarketVariantEligible(tour)) {
+      return {
+        title: "Landing not found",
+        robots: { index: false, follow: false }
+      };
+    }
     const canonical = `https://proactivitis.com/en/thingtodo/tours/${resolved.variantSlug}`;
     const seoTitle = `${marketVariant.intent.heroPrefix.en}: ${tour.title} in Punta Cana | Proactivitis`;
     const seoDescription = `${marketVariant.intent.angle.en} Book ${tour.title} from USD ${Math.round(tour.price)} with local support.`;
@@ -214,10 +220,12 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
         highlights: true,
         includes: true,
         includesList: true,
-        notIncludedList: true
+        notIncludedList: true,
+        countryId: true
       }
     });
     if (!tour) return notFound();
+    if (!isTourMarketVariantEligible(tour)) return notFound();
     return (
       <TourMarketVariantLanding
         locale={en}

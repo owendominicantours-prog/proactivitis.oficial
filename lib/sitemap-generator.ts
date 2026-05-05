@@ -7,7 +7,7 @@ import { buildTransferHotelVariantSlug, TRANSFER_HOTEL_SALES_VARIANTS } from "@/
 import { TRANSFER_QUESTION_SALES_LANDINGS } from "@/data/transfer-question-sales-landings";
 import { warnOnce } from "@/lib/logOnce";
 import { PRODISCOVERY_CATEGORIES, PRODISCOVERY_DESTINATIONS } from "@/lib/prodiscovery";
-import { TOUR_MARKET_INTENTS, buildTourMarketVariantSlug } from "@/lib/tourMarketVariants";
+import { TOUR_MARKET_INTENTS, buildTourMarketVariantSlug, isTourMarketVariantEligible } from "@/lib/tourMarketVariants";
 import { getIndexableTourMarketIntentIds, getIndexableTransferVariantIds } from "@/lib/seo-index-policy";
 
 declare global {
@@ -283,12 +283,14 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
         url: `${BASE_URL}${landing.path ?? `/landing/${landing.slug}`}`,
         priority: countryToPuntaCanaLandingSlugs.has(landing.slug) ? 0.72 : 0.7
       })),
-    ...tours.flatMap((tour) =>
-      TOUR_MARKET_INTENTS.filter((intent) => INDEXABLE_TOUR_MARKET_INTENT_IDS.has(intent.id)).map((intent) => ({
-        url: `${BASE_URL}/thingtodo/tours/${buildTourMarketVariantSlug(tour.slug, intent.id)}`,
-        priority: 0.66
-      }))
-    ),
+    ...tours
+      .filter(isTourMarketVariantEligible)
+      .flatMap((tour) =>
+        TOUR_MARKET_INTENTS.filter((intent) => INDEXABLE_TOUR_MARKET_INTENT_IDS.has(intent.id)).map((intent) => ({
+          url: `${BASE_URL}/thingtodo/tours/${buildTourMarketVariantSlug(tour.slug, intent.id)}`,
+          priority: 0.66
+        }))
+      ),
     ...excursionKeywordLandings.map((landing) => ({
       url: `${BASE_URL}/excursiones/${landing.landingSlug}`,
       priority: 0.7

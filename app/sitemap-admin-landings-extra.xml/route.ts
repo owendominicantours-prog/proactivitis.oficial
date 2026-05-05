@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { landingPages, countryToPuntaCanaLandingSlugs } from "@/lib/landing";
-import { TOUR_MARKET_INTENTS, buildTourMarketVariantSlug } from "@/lib/tourMarketVariants";
+import { TOUR_MARKET_INTENTS, buildTourMarketVariantSlug, isTourMarketVariantEligible } from "@/lib/tourMarketVariants";
 import { getIndexableTourMarketIntentIds } from "@/lib/seo-index-policy";
 import { warnOnce } from "@/lib/logOnce";
 
@@ -12,12 +12,12 @@ const INDEXABLE_TOUR_MARKET_INTENT_IDS = new Set(getIndexableTourMarketIntentIds
 export const revalidate = 86400;
 
 export async function GET() {
-  let publishedTours: { slug: string; createdAt: Date }[] = [];
+  let publishedTours: { slug: string; countryId: string; createdAt: Date }[] = [];
 
   try {
     publishedTours = await prisma.tour.findMany({
       where: { status: "published" },
-      select: { slug: true, createdAt: true },
+      select: { slug: true, countryId: true, createdAt: true },
       orderBy: { createdAt: "desc" }
     });
   } catch (error) {
@@ -36,18 +36,20 @@ export async function GET() {
       priority: 0.68
     }));
 
-  const extraTourMarketEntries = publishedTours.flatMap((tour) =>
-    TOUR_MARKET_INTENTS.filter((intent) => !INDEXABLE_TOUR_MARKET_INTENT_IDS.has(intent.id)).flatMap((intent) =>
-      LOCALES.map((locale) => {
-        const prefix = locale === "es" ? "" : `/${locale}`;
-        return {
-          loc: `${BASE_URL}${prefix}/thingtodo/tours/${buildTourMarketVariantSlug(tour.slug, intent.id)}`,
-          lastmod: tour.createdAt.toISOString(),
-          priority: 0.64
-        };
-      })
-    )
-  );
+  const extraTourMarketEntries = publishedTours
+    .filter(isTourMarketVariantEligible)
+    .flatMap((tour) =>
+      TOUR_MARKET_INTENTS.filter((intent) => !INDEXABLE_TOUR_MARKET_INTENT_IDS.has(intent.id)).flatMap((intent) =>
+        LOCALES.map((locale) => {
+          const prefix = locale === "es" ? "" : `/${locale}`;
+          return {
+            loc: `${BASE_URL}${prefix}/thingtodo/tours/${buildTourMarketVariantSlug(tour.slug, intent.id)}`,
+            lastmod: tour.createdAt.toISOString(),
+            priority: 0.64
+          };
+        })
+      )
+    );
 
   const entries = [...tourLandingEntries, ...extraTourMarketEntries];
 

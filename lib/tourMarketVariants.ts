@@ -318,6 +318,9 @@ export const TOUR_MARKET_INTENT_COUNT = TOUR_MARKET_INTENTS.length;
 export const buildTourMarketVariantSlug = (tourSlug: string, intentId: string) =>
   `${tourSlug}--mkt-${intentId}`;
 
+export const isTourMarketVariantEligible = (tour: { countryId?: string | null }) =>
+  (tour.countryId ?? "RD").toUpperCase() === "RD";
+
 export const parseTourMarketVariantSlug = (variantSlug: string) => {
   const marker = "--mkt-";
   const index = variantSlug.indexOf(marker);

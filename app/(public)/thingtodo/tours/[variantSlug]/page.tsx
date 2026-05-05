@@ -15,7 +15,7 @@ import TourMarketVariantLanding from "@/components/public/TourMarketVariantLandi
 import { es } from "@/lib/translations";
 import { findStaticVariant } from "@/lib/tourVariantCatalog";
 import { getPublishedVariantBySlug } from "@/lib/tourVariantStore";
-import { parseTourMarketVariantSlug } from "@/lib/tourMarketVariants";
+import { isTourMarketVariantEligible, parseTourMarketVariantSlug } from "@/lib/tourMarketVariants";
 
 const BASE_URL = "https://proactivitis.com";
 
@@ -88,9 +88,15 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
   if (marketVariant) {
     const tour = await prisma.tour.findFirst({
       where: { slug: marketVariant.tourSlug, status: { in: ["published", "seo_only"] } },
-      select: { slug: true, title: true, shortDescription: true, description: true, heroImage: true, gallery: true, price: true }
+      select: { slug: true, title: true, shortDescription: true, description: true, heroImage: true, gallery: true, price: true, countryId: true }
     });
     if (!tour) return { title: "Landing no encontrada" };
+    if (!isTourMarketVariantEligible(tour)) {
+      return {
+        title: "Landing no encontrada",
+        robots: { index: false, follow: false }
+      };
+    }
     const canonical = `https://proactivitis.com/thingtodo/tours/${resolved.variantSlug}`;
     const seoTitle = `${marketVariant.intent.heroPrefix.es}: ${tour.title} en Punta Cana | Proactivitis`;
     const seoDescription = `${marketVariant.intent.angle.es} Reserva ${tour.title} desde USD ${Math.round(tour.price)} con soporte local.`;
@@ -214,10 +220,12 @@ export default async function PartyBoatVariantPage({ params }: { params: Promise
         highlights: true,
         includes: true,
         includesList: true,
-        notIncludedList: true
+        notIncludedList: true,
+        countryId: true
       }
     });
     if (!tour) return notFound();
+    if (!isTourMarketVariantEligible(tour)) return notFound();
     return (
       <TourMarketVariantLanding
         locale={es}
