@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import FeaturedToursSection from "@/components/public/FeaturedToursSection";
 import { allLandings } from "@/data/transfer-landings";
 import { es, translate } from "@/lib/translations";
 
@@ -10,6 +9,26 @@ export default async function NotFound() {
   const locale = es;
   const t = (key: Parameters<typeof translate>[1]) => translate(locale, key);
   const transferCards = allLandings().slice(0, 3);
+  const fallbackTours = [
+    {
+      href: "/tours",
+      title: "Tours destacados",
+      body: "Explora experiencias verificadas por zona, precio y disponibilidad.",
+      image: "/fototours/fototour.jpeg"
+    },
+    {
+      href: "/thingtodo/tours",
+      title: "Actividades populares",
+      body: "Encuentra buggies, catamaranes, snorkel, cultura y aventura.",
+      image: "/fototours/fotosimple.jpg"
+    },
+    {
+      href: "/en/rent-a-car",
+      title: "Rent a car por zona",
+      body: "Vehiculos disponibles con precio final Proactivitis y soporte VIP.",
+      image: "/transfer/suv.png"
+    }
+  ];
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-12 px-4 py-12">
@@ -42,7 +61,33 @@ export default async function NotFound() {
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">{t("notFound.tours.eyebrow")}</p>
           <h2 className="text-2xl font-semibold text-slate-900">{t("notFound.tours.title")}</h2>
         </div>
-        <FeaturedToursSection locale={locale} />
+        <div className="grid gap-4 md:grid-cols-3">
+          {fallbackTours.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            >
+              <div className="relative h-40 w-full bg-slate-100">
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
+              </div>
+              <div className="flex flex-1 flex-col gap-2 p-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Proactivitis</p>
+                <h3 className="text-base font-semibold text-slate-900">{item.title}</h3>
+                <p className="text-sm text-slate-600">{item.body}</p>
+                <span className="mt-auto text-xs font-semibold uppercase tracking-[0.3em] text-slate-700">
+                  Ver opciones
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <section className="space-y-4">

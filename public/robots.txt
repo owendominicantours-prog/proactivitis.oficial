@@ -35,3 +35,4 @@ Sitemap: https://proactivitis.com/sitemap-transfer-seo-only.xml
 Sitemap: https://proactivitis.com/sitemap-prodiscovery.xml
 Sitemap: https://proactivitis.com/sitemap-blog.xml
 Sitemap: https://proactivitis.com/sitemap-urgent-discovered.xml
+Sitemap: https://proactivitis.com/sitemap-rent-a-car.xml

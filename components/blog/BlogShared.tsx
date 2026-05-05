@@ -8,6 +8,7 @@ import BlogCommentForm from "@/components/blog/BlogCommentForm";
 import { TourCard } from "@/components/public/TourCard";
 import BlogReadingProgress from "@/components/blog/BlogReadingProgress";
 import BlogArticleTools from "@/components/blog/BlogArticleTools";
+import RentCarWidget from "@/components/rentals/RentCarWidget";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import BlogLibraryClient from "@/components/blog/BlogLibraryClient";
@@ -1367,6 +1368,9 @@ const renderNewsArticleLayout = ({
 
             <section id="analysis" className="blog-content">{renderBlogContent(editorialContentHtml)}</section>
             <div className="news-print-hide">{renderContextualCta(locale)}</div>
+            <div className="news-print-hide">
+              <RentCarWidget locale={locale} regionText={`${title} ${excerpt} ${editorialContentHtml}`} compact />
+            </div>
             {renderEditorialAuthorBox(locale)}
             {children}
           </main>

@@ -25,7 +25,8 @@ const SITEMAPS = [
   "/sitemap-seo-factory.xml",
   "/sitemap-urgent-discovered.xml",
   "/sitemap-prodiscovery.xml",
-  "/sitemap-blog.xml"
+  "/sitemap-blog.xml",
+  "/sitemap-rent-a-car.xml"
 ] as const;
 
 export async function GET() {

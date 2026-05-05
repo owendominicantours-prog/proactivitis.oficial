@@ -24,6 +24,7 @@ import StructuredData from "@/components/schema/StructuredData";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 import HotelGallerySlider from "@/components/public/HotelGallerySlider";
 import HotelQuoteWidget from "@/components/public/HotelQuoteWidget";
+import RentCarWidget from "@/components/rentals/RentCarWidget";
 import { Locale, translate } from "@/lib/translations";
 import { getHotelLandingOverrides } from "@/lib/siteContent";
 import { ensureLeadingCapital, normalizeTextDeep } from "@/lib/text-format";
@@ -961,6 +962,18 @@ export async function ThingsToDoHotelPage({
           </div>
         </article>
       </section>
+
+      <RentCarWidget
+        locale={locale}
+        regionText={`${hotel.name} ${searchZone} ${locationLabel}`}
+        title={
+          locale === "es"
+            ? `Alquiler de vehiculos cerca de ${hotel.name}`
+            : locale === "fr"
+              ? `Location de voiture pres de ${hotel.name}`
+              : `Rent a car near ${hotel.name}`
+        }
+      />
 
       <section id="hotel-overview" className="scroll-mt-28 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
         <h2 className="text-2xl font-semibold text-slate-900">{overviewTitle}</h2>
