@@ -910,7 +910,7 @@ const renderEditorialAuthorBox = (locale: BlogLocale) => {
   const copy = AUTHOR_BOX_COPY[locale];
   const href = locale === "es" ? "/es/equipo-editorial" : locale === "fr" ? "/fr/equipe-editoriale" : "/en/editorial-team";
   return (
-    <aside className="rounded-3xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-slate-50 p-6 shadow-sm">
+    <aside id="editorial-author" className="rounded-3xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-slate-50 p-6 shadow-sm">
       <div className="flex gap-4">
         <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-white bg-white shadow-sm">
           <Image src="/logo.png" alt="Proactivitis" fill sizes="56px" className="object-contain p-2" />
@@ -978,7 +978,12 @@ const LABELS = {
     editorialProtocol: "Revision de datos, contexto de mercado y autor institucional.",
     sourceVerified: "Fuente verificada",
     crawlerReady: "Indexacion preparada",
-    newsStandard: "Estandar NewsArticle"
+    newsStandard: "Estandar NewsArticle",
+    reportSections: "Secciones del reporte",
+    navBrief: "Resumen ejecutivo",
+    navAnalysis: "Analisis completo",
+    navAuthor: "Autoridad editorial",
+    newsroomNote: "Este reporte fue preparado para lectores, agencias y sistemas de busqueda que necesitan informacion clara, verificable y accionable."
   },
   en: {
     listTitle: "Proactivitis News & Market Intelligence",
@@ -1018,7 +1023,12 @@ const LABELS = {
     editorialProtocol: "Data review, market context, and institutional authorship.",
     sourceVerified: "Verified source",
     crawlerReady: "Indexing ready",
-    newsStandard: "NewsArticle standard"
+    newsStandard: "NewsArticle standard",
+    reportSections: "Report sections",
+    navBrief: "Executive brief",
+    navAnalysis: "Full analysis",
+    navAuthor: "Editorial authority",
+    newsroomNote: "This report is prepared for readers, agencies, and search systems that need clear, verifiable, and actionable information."
   },
   fr: {
     listTitle: "Proactivitis News & Market Intelligence",
@@ -1058,7 +1068,12 @@ const LABELS = {
     editorialProtocol: "Verification des donnees, contexte marche et auteur institutionnel.",
     sourceVerified: "Source verifiee",
     crawlerReady: "Indexation preparee",
-    newsStandard: "Standard NewsArticle"
+    newsStandard: "Standard NewsArticle",
+    reportSections: "Sections du rapport",
+    navBrief: "Synthese executive",
+    navAnalysis: "Analyse complete",
+    navAuthor: "Autorite editoriale",
+    newsroomNote: "Ce rapport est prepare pour les lecteurs, agences et systemes de recherche qui exigent une information claire, verifiable et actionnable."
   }
 };
 
@@ -1132,8 +1147,27 @@ const renderContextualCta = (locale: BlogLocale) => {
 
 const renderNewsSidebar = (locale: BlogLocale) => {
   const labels = LABELS[locale];
+  const sectionLinks = [
+    { href: "#executive-brief", label: labels.navBrief },
+    { href: "#analysis", label: labels.navAnalysis },
+    { href: "#editorial-author", label: labels.navAuthor }
+  ];
   return (
-    <aside className="space-y-4 lg:sticky lg:top-24">
+    <aside className="news-print-hide space-y-4 lg:sticky lg:top-24">
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-400">{labels.reportSections}</p>
+        <nav className="mt-4 space-y-2">
+          {sectionLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="block rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-black text-slate-800 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700"
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+      </section>
       <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
         <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-400">{labels.sidebarTitle}</p>
         <div className="mt-4 space-y-3">
@@ -1237,11 +1271,14 @@ const renderNewsArticleLayout = ({
               </figcaption>
             </figure>
 
-            <section className="grid gap-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-[minmax(0,1fr)_280px]">
+            <section id="executive-brief" className="grid gap-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-[minmax(0,1fr)_280px]">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.3em] text-sky-700">{labels.articleBriefTitle}</p>
                 <h2 className="mt-3 font-serif text-3xl font-black leading-tight text-slate-950">{title}</h2>
                 <p className="mt-4 text-base leading-8 text-slate-600">{excerpt}</p>
+                <p className="mt-4 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-700">
+                  {labels.newsroomNote}
+                </p>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                 <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">{labels.evidenceTitle}</p>
@@ -1256,8 +1293,8 @@ const renderNewsArticleLayout = ({
               </div>
             </section>
 
-            <section className="blog-content">{renderBlogContent(contentHtml)}</section>
-            {renderContextualCta(locale)}
+            <section id="analysis" className="blog-content">{renderBlogContent(contentHtml)}</section>
+            <div className="news-print-hide">{renderContextualCta(locale)}</div>
             {renderEditorialAuthorBox(locale)}
             {children}
           </main>

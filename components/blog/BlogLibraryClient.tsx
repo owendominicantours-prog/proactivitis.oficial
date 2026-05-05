@@ -48,7 +48,12 @@ const UI = {
     operatingCopy: "Fact-checking, clasificación de intención y actualización de sitemaps para cada publicación.",
     topSignals: "Señales principales",
     reportType: "Market Intelligence",
-    sourceLine: "Fuente: Proactivitis Data Desk"
+    sourceLine: "Fuente: Proactivitis Data Desk",
+    operationsTitle: "Tablero operativo editorial",
+    operationsSubtitle: "Cada reporte entra en un flujo de verificación, clasificación y distribución técnica.",
+    distributionStatus: "Distribución SEO activa",
+    multilingualStatus: "Cobertura multidioma",
+    pressContact: "Contacto de prensa disponible"
   },
   en: {
     searchPlaceholder: "Search by title, topic, or buying intent...",
@@ -77,7 +82,12 @@ const UI = {
     operatingCopy: "Fact-checking, intent classification, and sitemap refreshes for every publication.",
     topSignals: "Top signals",
     reportType: "Market Intelligence",
-    sourceLine: "Source: Proactivitis Data Desk"
+    sourceLine: "Source: Proactivitis Data Desk",
+    operationsTitle: "Editorial operations board",
+    operationsSubtitle: "Every report enters a verification, classification, and technical distribution workflow.",
+    distributionStatus: "Active SEO distribution",
+    multilingualStatus: "Multilingual coverage",
+    pressContact: "Press contact available"
   },
   fr: {
     searchPlaceholder: "Rechercher par titre, sujet ou intention d'achat...",
@@ -106,7 +116,12 @@ const UI = {
     operatingCopy: "Fact-checking, classification d'intention et actualisation des sitemaps pour chaque publication.",
     topSignals: "Signaux principaux",
     reportType: "Market Intelligence",
-    sourceLine: "Source : Proactivitis Data Desk"
+    sourceLine: "Source : Proactivitis Data Desk",
+    operationsTitle: "Tableau operationnel editorial",
+    operationsSubtitle: "Chaque rapport entre dans un flux de verification, classification et distribution technique.",
+    distributionStatus: "Distribution SEO active",
+    multilingualStatus: "Couverture multilingue",
+    pressContact: "Contact presse disponible"
   }
 } as const;
 
@@ -210,8 +225,9 @@ export default function BlogLibraryClient({ locale, posts }: Props) {
   const signalPosts = filtered.filter((post) => !leadStory || post.id !== leadStory.id).slice(0, 3);
   const operatingCards = [
     { label: t.verified, value: `${filtered.length} ${t.posts}` },
-    { label: t.sourceLine, value: t.operatingCopy },
-    { label: t.liveDesk, value: t.operatingSystem }
+    { label: t.distributionStatus, value: t.operatingCopy },
+    { label: t.multilingualStatus, value: t.operatingSystem },
+    { label: t.pressContact, value: t.sourceLine }
   ];
 
   return (
@@ -296,13 +312,22 @@ export default function BlogLibraryClient({ locale, posts }: Props) {
         </section>
       ) : null}
 
-      <section className="grid gap-3 md:grid-cols-3">
-        {operatingCards.map((card) => (
-          <div key={card.label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-sky-700">{card.label}</p>
-            <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{card.value}</p>
+      <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 bg-slate-950 px-5 py-5 text-white md:px-7">
+          <p className="text-xs font-black uppercase tracking-[0.28em] text-sky-300">{t.liveDesk}</p>
+          <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <h2 className="font-serif text-3xl font-black">{t.operationsTitle}</h2>
+            <p className="max-w-xl text-sm leading-6 text-slate-300">{t.operationsSubtitle}</p>
           </div>
-        ))}
+        </div>
+        <div className="grid gap-px bg-slate-200 md:grid-cols-4">
+          {operatingCards.map((card) => (
+            <div key={card.label} className="bg-white p-5">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-sky-700">{card.label}</p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{card.value}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="grid gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[1fr,280px]">

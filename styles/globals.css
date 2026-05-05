@@ -86,6 +86,22 @@
   margin-bottom: 0.55rem;
 }
 
+@media print {
+  .news-print-hide,
+  .blog-reading-progress {
+    display: none !important;
+  }
+
+  .travel-surface {
+    background: #ffffff !important;
+  }
+
+  .blog-content {
+    font-size: 12pt;
+    line-height: 1.6;
+  }
+}
+
 
 
 .blog-reading-progress {
