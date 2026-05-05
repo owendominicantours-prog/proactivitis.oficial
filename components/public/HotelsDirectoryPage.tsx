@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TransferLocationType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { Locale } from "@/lib/translations";
 import type { HotelLandingOverrides } from "@/lib/siteContent";
@@ -20,8 +21,13 @@ type HotelCardInfo = {
   heroImage: string | null;
   description: string;
   zoneName: string;
+  zoneId: string;
   propertyType: "hotel" | "resort" | "apartment" | "villa";
   propertyTypeLabel: string;
+  experienceTags: string[];
+  amenities: string[];
+  transferPrice: number | null;
+  transferHref: string;
   price: number | null;
   rating: number;
   reviews: number;
@@ -71,6 +77,13 @@ const copy: Record<
     propertyResort: string;
     propertyApartment: string;
     propertyVilla: string;
+    experienceLabel: string;
+    experienceAll: string;
+    experienceFamily: string;
+    experienceAdults: string;
+    experienceAllInclusive: string;
+    experienceBeachfront: string;
+    experienceLuxury: string;
     heroEyebrow: string;
     heroPrimary: string;
     heroSecondary: string;
@@ -121,6 +134,13 @@ const copy: Record<
     propertyResort: "Resorts",
     propertyApartment: "Apartamentos",
     propertyVilla: "Casas vacacionales",
+    experienceLabel: "Experiencia",
+    experienceAll: "Todas las experiencias",
+    experienceFamily: "Familiar",
+    experienceAdults: "Solo adultos",
+    experienceAllInclusive: "Todo incluido",
+    experienceBeachfront: "Frente a la playa",
+    experienceLuxury: "Lujo",
     heroEyebrow: "Hoteles, resorts y estancias verificadas",
     heroPrimary: "Cotizar alojamiento",
     heroSecondary: "Explorar por zona",
@@ -170,6 +190,13 @@ const copy: Record<
     propertyResort: "Resorts",
     propertyApartment: "Apartments",
     propertyVilla: "Vacation homes",
+    experienceLabel: "Experience",
+    experienceAll: "All experiences",
+    experienceFamily: "Family",
+    experienceAdults: "Adults only",
+    experienceAllInclusive: "All-inclusive",
+    experienceBeachfront: "Beachfront",
+    experienceLuxury: "Luxury",
     heroEyebrow: "Hotels, resorts and verified stays",
     heroPrimary: "Request a stay quote",
     heroSecondary: "Explore by area",
@@ -219,6 +246,13 @@ const copy: Record<
     propertyResort: "Resorts",
     propertyApartment: "Appartements",
     propertyVilla: "Maisons de vacances",
+    experienceLabel: "Experience",
+    experienceAll: "Toutes experiences",
+    experienceFamily: "Famille",
+    experienceAdults: "Adultes seulement",
+    experienceAllInclusive: "Tout compris",
+    experienceBeachfront: "Front de mer",
+    experienceLuxury: "Luxe",
     heroEyebrow: "Hotels, resorts et sejours verifies",
     heroPrimary: "Demander un devis",
     heroSecondary: "Explorer par zone",
@@ -278,6 +312,45 @@ const getPropertyTypeLabel = (type: HotelCardInfo["propertyType"], locale: Local
     fr: { hotel: "Hotel", resort: "Resort", apartment: "Appartement", villa: "Maison de vacances" }
   };
   return labels[locale][type];
+};
+
+const getExperienceTags = (input: string) => {
+  const text = input.toLowerCase();
+  const tags = new Set<string>();
+  if (/(family|familia|kids|ninos|children|club infantil|teen)/.test(text)) tags.add("family");
+  if (/(adults only|solo adultos|adultes|ambar|breathless|secrets)/.test(text)) tags.add("adults");
+  if (/(all inclusive|todo incluido|tout inclus|resort|riu|bahia|majestic|dreams)/.test(text)) tags.add("all-inclusive");
+  if (/(beach|playa|front|ocean|mar|costa|beachfront)/.test(text)) tags.add("beachfront");
+  if (/(luxury|lujo|luxe|vip|premium|palace|majestic|finest|excellence|sanctuary)/.test(text)) tags.add("luxury");
+  if (!tags.size) tags.add("family");
+  return Array.from(tags);
+};
+
+const getExperienceLabel = (tag: string, locale: Locale) => {
+  const labels: Record<Locale, Record<string, string>> = {
+    es: {
+      family: "Familiar",
+      adults: "Solo adultos",
+      "all-inclusive": "Todo incluido",
+      beachfront: "Frente a playa",
+      luxury: "Lujo"
+    },
+    en: {
+      family: "Family",
+      adults: "Adults only",
+      "all-inclusive": "All-inclusive",
+      beachfront: "Beachfront",
+      luxury: "Luxury"
+    },
+    fr: {
+      family: "Famille",
+      adults: "Adultes",
+      "all-inclusive": "Tout compris",
+      beachfront: "Front de mer",
+      luxury: "Luxe"
+    }
+  };
+  return labels[locale][tag] ?? tag;
 };
 
 const safeText = (value: unknown) => {
@@ -361,6 +434,58 @@ const buildBadges = (zoneName: string, rating: number, reviews: number, locale: 
   return base;
 };
 
+type TransferPriceRow = {
+  price: number;
+  route: { zoneAId: string; zoneBId: string };
+  vehicle: { maxPax: number; active: boolean };
+};
+
+type TransferOverrideRow = {
+  price: number;
+  originLocationId: string | null;
+  destinationLocationId: string | null;
+  vehicle: { maxPax: number; active: boolean };
+};
+
+const getRouteKey = (a: string, b: string) => [a, b].sort().join("::");
+
+const buildTransferPriceMap = (
+  airportZoneId: string | null,
+  routePrices: TransferPriceRow[],
+  overrides: TransferOverrideRow[]
+) => {
+  const zonePriceMap = new Map<string, number>();
+  const hotelPriceMap = new Map<string, number>();
+
+  if (airportZoneId) {
+    routePrices
+      .filter((row) => row.vehicle.active && row.vehicle.maxPax >= 2)
+      .forEach((row) => {
+        const otherZone =
+          row.route.zoneAId === airportZoneId
+            ? row.route.zoneBId
+            : row.route.zoneBId === airportZoneId
+              ? row.route.zoneAId
+              : null;
+        if (!otherZone) return;
+        const key = getRouteKey(airportZoneId, otherZone);
+        const current = zonePriceMap.get(key);
+        if (current == null || row.price < current) zonePriceMap.set(key, Math.round(row.price));
+      });
+  }
+
+  overrides
+    .filter((row) => row.vehicle.active && row.vehicle.maxPax >= 2)
+    .forEach((row) => {
+      const locationId = row.destinationLocationId ?? row.originLocationId;
+      if (!locationId) return;
+      const current = hotelPriceMap.get(locationId);
+      if (current == null || row.price < current) hotelPriceMap.set(locationId, Math.round(row.price));
+    });
+
+  return { zonePriceMap, hotelPriceMap };
+};
+
 export default async function HotelsDirectoryPage({
   locale,
   searchParams
@@ -371,7 +496,7 @@ export default async function HotelsDirectoryPage({
   const [hotels, hotelLandingSetting, enrichmentSetting] = await Promise.all([
     prisma.transferLocation.findMany({
       where: { type: "HOTEL", active: true },
-      select: { slug: true, name: true, heroImage: true, description: true, zone: { select: { name: true } } },
+      select: { id: true, slug: true, name: true, heroImage: true, description: true, zoneId: true, zone: { select: { name: true } } },
       orderBy: { name: "asc" }
     }),
     prisma.siteContentSetting.findUnique({ where: { key: "HOTEL_LANDING" }, select: { content: true } }),
@@ -397,11 +522,52 @@ export default async function HotelsDirectoryPage({
   const q = (firstParamValue(resolvedSearchParams?.q) ?? "").trim();
   const zone = (firstParamValue(resolvedSearchParams?.zone) ?? "").trim();
   const propertyType = (firstParamValue(resolvedSearchParams?.type) ?? "").trim();
+  const experience = (firstParamValue(resolvedSearchParams?.experience) ?? "").trim();
   const sort = (firstParamValue(resolvedSearchParams?.sort) ?? "recommended").trim();
   const pageRaw = Number(firstParamValue(resolvedSearchParams?.page) ?? "1");
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? Math.floor(pageRaw) : 1;
 
   const zones = Array.from(new Set(hotels.map((hotel) => hotel.zone?.name).filter(Boolean))).sort();
+  const hotelIds = hotels.map((hotel) => hotel.id);
+  const hotelZoneIds = Array.from(new Set(hotels.map((hotel) => hotel.zoneId).filter(Boolean)));
+  const primaryAirport = await prisma.transferLocation.findFirst({
+    where: { type: TransferLocationType.AIRPORT, active: true, slug: "puj-airport" },
+    select: { zoneId: true }
+  });
+  const [routePriceRows, overrideRows] = primaryAirport
+    ? await Promise.all([
+        prisma.transferRoutePrice.findMany({
+          where: {
+            route: {
+              active: true,
+              OR: [
+                { zoneAId: primaryAirport.zoneId, zoneBId: { in: hotelZoneIds } },
+                { zoneBId: primaryAirport.zoneId, zoneAId: { in: hotelZoneIds } }
+              ]
+            },
+            vehicle: { active: true }
+          },
+          select: {
+            price: true,
+            route: { select: { zoneAId: true, zoneBId: true } },
+            vehicle: { select: { maxPax: true, active: true } }
+          }
+        }),
+        prisma.transferRoutePriceOverride.findMany({
+          where: {
+            OR: [{ destinationLocationId: { in: hotelIds } }, { originLocationId: { in: hotelIds } }],
+            vehicle: { active: true }
+          },
+          select: {
+            price: true,
+            originLocationId: true,
+            destinationLocationId: true,
+            vehicle: { select: { maxPax: true, active: true } }
+          }
+        })
+      ])
+    : [[], []];
+  const { zonePriceMap, hotelPriceMap } = buildTransferPriceMap(primaryAirport?.zoneId ?? null, routePriceRows, overrideRows);
 
   const hotelCards: HotelCardInfo[] = hotels.map((hotel) => {
     const zoneName = hotel.zone?.name ?? "Punta Cana";
@@ -426,14 +592,25 @@ export default async function HotelsDirectoryPage({
       localizedDescription ||
       hotel.description ||
       `${hotel.name} in ${zoneName} with all-inclusive options and direct quote support.`;
+    const amenities = (localizedLanding?.amenities ?? fallbackLanding?.amenities ?? []).filter(Boolean);
+    const experienceTags = getExperienceTags(
+      [hotel.name, zoneName, descriptionSource, amenities.join(" ")].filter(Boolean).join(" ")
+    );
+    const routePriceKey = primaryAirport ? getRouteKey(primaryAirport.zoneId, hotel.zoneId) : "";
+    const transferPrice = hotelPriceMap.get(hotel.id) ?? zonePriceMap.get(routePriceKey) ?? null;
     return {
       slug: hotel.slug,
       name: hotel.name,
       heroImage: resolvedHeroImage || null,
       description: shortenText(descriptionSource, 140),
       zoneName,
+      zoneId: hotel.zoneId,
       propertyType: detectedType,
       propertyTypeLabel: getPropertyTypeLabel(detectedType, locale),
+      experienceTags,
+      amenities,
+      transferPrice,
+      transferHref: `${transfersHref}?origin=PUJ&to=${hotel.slug}`,
       price,
       rating,
       reviews,
@@ -450,7 +627,8 @@ export default async function HotelsDirectoryPage({
       hotel.zoneName.toLowerCase().includes(q.toLowerCase());
     const matchesZone = zone.length === 0 || hotel.zoneName === zone;
     const matchesType = propertyType.length === 0 || hotel.propertyType === propertyType;
-    return matchesQuery && matchesZone && matchesType;
+    const matchesExperience = experience.length === 0 || hotel.experienceTags.includes(experience);
+    return matchesQuery && matchesZone && matchesType && matchesExperience;
   });
 
   const sortedHotels = [...filteredHotels].sort((a, b) => {
@@ -483,6 +661,14 @@ export default async function HotelsDirectoryPage({
     { value: "apartment", label: t.propertyApartment },
     { value: "villa", label: t.propertyVilla }
   ];
+  const experienceOptions = [
+    { value: "", label: t.experienceAll },
+    { value: "family", label: t.experienceFamily },
+    { value: "adults", label: t.experienceAdults },
+    { value: "all-inclusive", label: t.experienceAllInclusive },
+    { value: "beachfront", label: t.experienceBeachfront },
+    { value: "luxury", label: t.experienceLuxury }
+  ];
   const listSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -495,7 +681,38 @@ export default async function HotelsDirectoryPage({
         "@type": "Hotel",
         name: hotel.name,
         description: hotel.description,
-        image: toAbsoluteUrl(hotel.heroImage || "")
+        image: toAbsoluteUrl(hotel.heroImage || ""),
+        priceRange: hotel.price ? `From $${hotel.price} USD` : "Quote required",
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: hotel.zoneName,
+          addressCountry: "DO"
+        },
+        starRating: {
+          "@type": "Rating",
+          ratingValue: hotel.stars,
+          bestRating: 5
+        },
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: hotel.rating,
+          reviewCount: hotel.reviews
+        },
+        amenityFeature: [
+          ...hotel.amenities,
+          ...hotel.experienceTags.map((tag) => getExperienceLabel(tag, locale))
+        ].slice(0, 10).map((name) => ({
+          "@type": "LocationFeatureSpecification",
+          name,
+          value: true
+        })),
+        makesOffer: {
+          "@type": "Offer",
+          priceCurrency: "USD",
+          price: hotel.price ?? undefined,
+          availability: "https://schema.org/InStock",
+          url: `https://proactivitis.com${getHotelHref(hotel.slug, locale)}`
+        }
       }
     }))
   };
@@ -504,6 +721,7 @@ export default async function HotelsDirectoryPage({
     if (q) params.set("q", q);
     if (zone) params.set("zone", zone);
     if (propertyType) params.set("type", propertyType);
+    if (experience) params.set("experience", experience);
     if (sort && sort !== "recommended") params.set("sort", sort);
     if (targetPage > 1) params.set("page", String(targetPage));
     const query = params.toString();
@@ -627,7 +845,7 @@ export default async function HotelsDirectoryPage({
         <form
           action={listingBaseHref}
           method="get"
-          className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_200px_200px_200px_180px]"
+          className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_160px_160px_170px_160px_170px]"
         >
           <label className="block">
             <span className="sr-only">{t.searchPlaceholder}</span>
@@ -661,6 +879,20 @@ export default async function HotelsDirectoryPage({
               className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
             >
               {propertyOptions.map((option) => (
+                <option key={option.value || "all"} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="sr-only">{t.experienceLabel}</span>
+            <select
+              name="experience"
+              defaultValue={experience}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+            >
+              {experienceOptions.map((option) => (
                 <option key={option.value || "all"} value={option.value}>
                   {option.label}
                 </option>
@@ -709,6 +941,7 @@ export default async function HotelsDirectoryPage({
             if (q) params.set("q", q);
             if (zone) params.set("zone", zone);
             if (option.value) params.set("type", option.value);
+            if (experience) params.set("experience", experience);
             if (sort && sort !== "recommended") params.set("sort", sort);
             const href = params.toString() ? `${listingBaseHref}?${params.toString()}` : listingBaseHref;
             const active = propertyType === option.value;
@@ -720,6 +953,31 @@ export default async function HotelsDirectoryPage({
                   active
                     ? "shrink-0 rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold text-white"
                     : "shrink-0 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-400"
+                }
+              >
+                {option.label}
+              </Link>
+            );
+          })}
+        </div>
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          {experienceOptions.map((option) => {
+            const params = new URLSearchParams();
+            if (q) params.set("q", q);
+            if (zone) params.set("zone", zone);
+            if (propertyType) params.set("type", propertyType);
+            if (option.value) params.set("experience", option.value);
+            if (sort && sort !== "recommended") params.set("sort", sort);
+            const href = params.toString() ? `${listingBaseHref}?${params.toString()}` : listingBaseHref;
+            const active = experience === option.value;
+            return (
+              <Link
+                key={option.value || "all-experiences"}
+                href={href}
+                className={
+                  active
+                    ? "shrink-0 rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white"
+                    : "shrink-0 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-800 transition hover:border-emerald-300"
                 }
               >
                 {option.label}
@@ -752,6 +1010,40 @@ export default async function HotelsDirectoryPage({
             <p className="mt-1 text-slate-600">
               {propertyOptions.find((option) => option.value === propertyType)?.label ?? t.propertyAll}
             </p>
+            <p className="mt-4 font-semibold text-slate-900">{t.experienceLabel}</p>
+            <p className="mt-1 text-slate-600">
+              {experienceOptions.find((option) => option.value === experience)?.label ?? t.experienceAll}
+            </p>
+          </section>
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-sm">
+            <p className="font-semibold text-slate-900">
+              {locale === "es" ? "Mapa de zonas" : locale === "fr" ? "Carte des zones" : "Area map"}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              {locale === "es"
+                ? "Filtra por ubicacion y combina alojamiento con traslado y tours cercanos."
+                : locale === "fr"
+                  ? "Filtrez par zone et combinez hebergement, transfert et excursions proches."
+                  : "Filter by location and bundle stays with nearby transfers and tours."}
+            </p>
+            <div className="mt-3 grid gap-2">
+              {zones.slice(0, 8).map((zoneName) => {
+                const count = hotelCards.filter((hotel) => hotel.zoneName === zoneName).length;
+                const params = new URLSearchParams();
+                params.set("zone", zoneName);
+                const href = `${listingBaseHref}?${params.toString()}`;
+                return (
+                  <Link
+                    key={zoneName}
+                    href={href}
+                    className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-300"
+                  >
+                    <span>{zoneName}</span>
+                    <span className="rounded-full bg-white px-2 py-0.5 text-slate-500">{count}</span>
+                  </Link>
+                );
+              })}
+            </div>
           </section>
         </aside>
 
@@ -812,6 +1104,14 @@ export default async function HotelsDirectoryPage({
                           </p>
                           <p className="mt-3 text-sm leading-relaxed text-slate-600">{hotel.description}</p>
                           <div className="mt-3 flex flex-wrap gap-2">
+                            {hotel.experienceTags.slice(0, 3).map((tag) => (
+                              <span
+                                key={`${hotel.slug}-${tag}`}
+                                className="rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800"
+                              >
+                                {getExperienceLabel(tag, locale)}
+                              </span>
+                            ))}
                             {hotel.badges.map((badge) => (
                               <span
                                 key={`${hotel.slug}-${badge}`}
@@ -847,6 +1147,18 @@ export default async function HotelsDirectoryPage({
                           >
                             {t.quoteCta}
                           </Link>
+                          {hotel.transferPrice ? (
+                            <Link
+                              href={hotel.transferHref}
+                              className="mt-2 inline-flex w-full items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-center text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100"
+                            >
+                              {locale === "es"
+                                ? `Añadir traslado desde PUJ desde $${hotel.transferPrice}`
+                                : locale === "fr"
+                                  ? `Ajouter transfert PUJ des $${hotel.transferPrice}`
+                                  : `Add PUJ transfer from $${hotel.transferPrice}`}
+                            </Link>
+                          ) : null}
                           <p className="mt-2 text-center text-[11px] font-semibold text-slate-500">
                             {t.smartChoiceLabel}
                           </p>

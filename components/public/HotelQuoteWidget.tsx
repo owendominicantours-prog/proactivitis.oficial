@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 
 type Locale = "es" | "en" | "fr";
 
@@ -183,6 +184,20 @@ export default function HotelQuoteWidget({ hotelSlug, hotelName, locale, ctaLabe
         <div className="grid gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800">
           <p>{locale === "es" ? "Confirmacion humana antes de cobrar." : locale === "fr" ? "Confirmation humaine avant paiement." : "Human confirmation before payment."}</p>
           <p>{locale === "es" ? "Podemos agregar traslado y tours a la misma cotizacion." : locale === "fr" ? "Nous pouvons ajouter transfert et excursions au meme devis." : "We can add transfer and tours to the same quote."}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+          <p className="mb-2 text-xs font-semibold text-slate-700">
+            {locale === "es"
+              ? "Guarda esta busqueda y recibe seguimiento de tarifa."
+              : locale === "fr"
+                ? "Enregistrez cette recherche et recevez un suivi de tarif."
+                : "Save this search and get rate follow-up."}
+          </p>
+          <GoogleAuthButton
+            callbackUrl="/portal"
+            label={locale === "es" ? "Continuar con Google" : locale === "fr" ? "Continuer avec Google" : "Continue with Google"}
+            className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-slate-50"
+          />
         </div>
 
         {state === "success" ? <p className="text-sm text-emerald-600">{copy.success}</p> : null}

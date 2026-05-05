@@ -2,9 +2,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
+  Car,
   BadgeCheck,
   BedDouble,
   Dumbbell,
+  MapPin,
   Martini,
   ShieldCheck,
   Sparkles,
@@ -14,6 +16,7 @@ import {
   Waves,
   Wifi
 } from "lucide-react";
+import { TransferLocationType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import FeaturedToursSection from "@/components/public/FeaturedToursSection";
@@ -31,11 +34,14 @@ const FALLBACK_IMAGE = "/transfer/mini van.png";
 
 type RouteBase = "things-to-do" | "hoteles";
 type HotelRecord = {
+  id?: string;
   name: string;
   slug: string;
   address: string | null;
   description: string | null;
   heroImage: string | null;
+  zoneId?: string | null;
+  zoneName?: string | null;
 };
 
 const DEFAULT_AMENITIES = ["Wi-Fi Gratis", "Todo Incluido", "Piscina", "Club de Ninos", "Gimnasio"];
@@ -46,7 +52,9 @@ const STATIC_HOTEL_FALLBACKS: Record<string, HotelRecord> = {
     address: "Arena Gorda, Punta Cana",
     description:
       "Hotel todo incluido dentro del complejo Bahia Principe en Punta Cana, ideal para combinar descanso, playa, restaurantes y excursiones con recogida desde el resort.",
-    heroImage: "/transfer/mini van.png"
+    heroImage: "/transfer/mini van.png",
+    zoneId: null,
+    zoneName: "Punta Cana"
   },
   "bahia-principe-luxury-ambar": {
     name: "Bahia Principe Luxury Ambar",
@@ -54,7 +62,9 @@ const STATIC_HOTEL_FALLBACKS: Record<string, HotelRecord> = {
     address: "Arena Gorda, Punta Cana",
     description:
       "Resort todo incluido solo adultos en Punta Cana, con acceso a playa, restaurantes, bares y actividades que se pueden coordinar desde el hotel.",
-    heroImage: "/transfer/mini van.png"
+    heroImage: "/transfer/mini van.png",
+    zoneId: null,
+    zoneName: "Punta Cana"
   }
 };
 const BAHIA_ACTIVITY_COPY: Record<
@@ -271,9 +281,18 @@ const buildTransferSlug = (hotelSlug: string) => `punta-cana-international-airpo
 const getHotel = async (hotelSlug: string): Promise<HotelRecord | null> => {
   const hotel = await prisma.transferLocation.findFirst({
     where: { slug: hotelSlug, type: "HOTEL" },
-    select: { name: true, slug: true, address: true, description: true, heroImage: true }
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      address: true,
+      description: true,
+      heroImage: true,
+      zoneId: true,
+      zone: { select: { name: true } }
+    }
   });
-  return hotel ?? STATIC_HOTEL_FALLBACKS[hotelSlug] ?? null;
+  return hotel ? { ...hotel, zoneName: hotel.zone?.name ?? null } : STATIC_HOTEL_FALLBACKS[hotelSlug] ?? null;
 };
 
 const buildLocalizedPath = (hotelSlug: string, locale: Locale, routeBase: RouteBase) => {
@@ -344,6 +363,66 @@ const getAmenityIcon = (label: string) => {
   if (text.includes("gym") || text.includes("gimnasio") || text.includes("fitness")) return Dumbbell;
   if (text.includes("restaurant") || text.includes("restaurante") || text.includes("food") || text.includes("comida")) return Utensils;
   return ShieldCheck;
+};
+
+const getLocalizedTourHref = (slug: string, locale: Locale) => (locale === "es" ? `/tours/${slug}` : `/${locale}/tours/${slug}`);
+
+const getLocalizedTransferHref = (landingSlug: string, locale: Locale) =>
+  locale === "es" ? `/transfer/${landingSlug}` : `/${locale}/transfer/${landingSlug}`;
+
+const getNearbyMinutes = (seed: string, index: number) => {
+  const hash = seed.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return 8 + ((hash + index * 7) % 24);
+};
+
+const findHotelTransferOffer = async (hotel: HotelRecord, locale: Locale) => {
+  const landingSlug = buildTransferSlug(hotel.slug);
+  const fallback = {
+    price: null as number | null,
+    href: getLocalizedTransferHref(landingSlug, locale)
+  };
+
+  if (!hotel.id || !hotel.zoneId) return fallback;
+
+  const airport = await prisma.transferLocation.findFirst({
+    where: { type: TransferLocationType.AIRPORT, active: true, slug: "puj-airport" },
+    select: { zoneId: true }
+  });
+
+  if (!airport) return fallback;
+
+  const routeWhere = {
+    active: true,
+    OR: [
+      { zoneAId: airport.zoneId, zoneBId: hotel.zoneId },
+      { zoneBId: airport.zoneId, zoneAId: hotel.zoneId }
+    ]
+  };
+
+  const [override, routePrice] = await Promise.all([
+    prisma.transferRoutePriceOverride.findFirst({
+      where: {
+        route: routeWhere,
+        OR: [{ destinationLocationId: hotel.id }, { originLocationId: hotel.id }],
+        vehicle: { active: true, maxPax: { gte: 2 } }
+      },
+      select: { price: true },
+      orderBy: { price: "asc" }
+    }),
+    prisma.transferRoutePrice.findFirst({
+      where: {
+        route: routeWhere,
+        vehicle: { active: true, maxPax: { gte: 2 } }
+      },
+      select: { price: true },
+      orderBy: { price: "asc" }
+    })
+  ]);
+
+  return {
+    price: override?.price != null ? Math.round(override.price) : routePrice?.price != null ? Math.round(routePrice.price) : null,
+    href: fallback.href
+  };
 };
 
 const getBahiaCardIcon = (icon: "waves" | "utensils" | "dumbbell" | "martini" | "users" | "sparkles") => {
@@ -572,6 +651,44 @@ export async function ThingsToDoHotelPage({
   const priceFrom = parseNumber(overrides.priceFromUSD);
   const reviewRating = parseNumber(overrides.reviewRating);
   const reviewCount = parseNumber(overrides.reviewCount);
+  const searchZone = hotel.zoneName || locationLabel.split(",")[0]?.trim() || "Punta Cana";
+  const [transferOffer, nearbyToursInitial] = await Promise.all([
+    findHotelTransferOffer(hotel, locale),
+    prisma.tour.findMany({
+      where: {
+        status: "published",
+        OR: [{ location: { contains: searchZone } }, { location: { contains: "Punta Cana" } }]
+      },
+      select: {
+        slug: true,
+        title: true,
+        price: true,
+        heroImage: true,
+        location: true,
+        duration: true,
+        category: true
+      },
+      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+      take: 4
+    })
+  ]);
+  const nearbyTours =
+    nearbyToursInitial.length > 0
+      ? nearbyToursInitial
+      : await prisma.tour.findMany({
+          where: { status: "published" },
+          select: {
+            slug: true,
+            title: true,
+            price: true,
+            heroImage: true,
+            location: true,
+            duration: true,
+            category: true
+          },
+          orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+          take: 4
+        });
 
   const canonicalUrl = buildCanonical(hotel.slug, locale, routeBase);
   const isBahiaHotel = hotel.slug.startsWith("bahia-principe-");
@@ -588,6 +705,21 @@ export async function ThingsToDoHotelPage({
         description: descriptionParagraphs[0],
         url: canonicalUrl,
         image: galleryImages.map((image) => toAbsoluteUrl(image)),
+        hasMap: mapUrl,
+        containsPlace: roomTypes.map((room) => ({
+          "@type": "HotelRoom",
+          name: room.name,
+          offers: {
+            "@type": "Offer",
+            priceCurrency: "USD",
+            price: parseNumber(room.priceFrom)
+          }
+        })),
+        subjectOf: nearbyTours.map((tour) => ({
+          "@type": "TouristTrip",
+          name: tour.title,
+          url: `${BASE_URL}${getLocalizedTourHref(tour.slug, locale)}`
+        })),
         starRating: {
           "@type": "Rating",
           ratingValue: parseNumber(overrides.stars) ?? 5,
@@ -751,6 +883,85 @@ export async function ThingsToDoHotelPage({
         ))}
       </nav>
 
+      <section className="grid gap-4 lg:grid-cols-2">
+        <article className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm md:p-6">
+          <div className="flex items-start gap-3">
+            <span className="rounded-2xl bg-white p-3 text-emerald-700 shadow-sm">
+              <Car className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                {locale === "es" ? "Logistica de llegada" : locale === "fr" ? "Logistique d'arrivee" : "Arrival logistics"}
+              </p>
+              <h2 className="mt-2 text-xl font-semibold text-slate-950">
+                {locale === "es"
+                  ? `Traslado privado desde PUJ a ${hotel.name}`
+                  : locale === "fr"
+                    ? `Transfert prive depuis PUJ vers ${hotel.name}`
+                    : `Private PUJ transfer to ${hotel.name}`}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-700">
+                {locale === "es"
+                  ? "Reserva el alojamiento y deja coordinada la recogida en aeropuerto con conductor confirmado."
+                  : locale === "fr"
+                    ? "Reservez l'hebergement et coordonnez la prise en charge aeroport avec chauffeur confirme."
+                    : "Quote the stay and coordinate airport pickup with a confirmed driver."}
+              </p>
+              <Link
+                href={transferOffer.href}
+                className="mt-4 inline-flex rounded-full bg-emerald-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800"
+              >
+                {transferOffer.price
+                  ? locale === "es"
+                    ? `Anadir traslado desde $${transferOffer.price}`
+                    : locale === "fr"
+                      ? `Ajouter transfert des $${transferOffer.price}`
+                      : `Add transfer from $${transferOffer.price}`
+                  : locale === "es"
+                    ? "Cotizar traslado"
+                    : locale === "fr"
+                      ? "Demander transfert"
+                      : "Quote transfer"}
+              </Link>
+            </div>
+          </div>
+        </article>
+
+        <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+          <div className="flex items-start gap-3">
+            <span className="rounded-2xl bg-slate-50 p-3 text-slate-700">
+              <MapPin className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+                {locale === "es" ? "Actividades cercanas" : locale === "fr" ? "Activites proches" : "Nearby activities"}
+              </p>
+              <h2 className="mt-2 text-xl font-semibold text-slate-950">
+                {locale === "es"
+                  ? `Tours recomendados cerca de ${searchZone}`
+                  : locale === "fr"
+                    ? `Excursions recommandees pres de ${searchZone}`
+                    : `Recommended tours near ${searchZone}`}
+              </h2>
+              <div className="mt-3 grid gap-2">
+                {nearbyTours.slice(0, 3).map((tour, index) => (
+                  <Link
+                    key={tour.slug}
+                    href={getLocalizedTourHref(tour.slug, locale)}
+                    className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm transition hover:border-slate-300"
+                  >
+                    <span className="line-clamp-1 font-semibold text-slate-800">{tour.title}</span>
+                    <span className="shrink-0 text-xs font-semibold text-emerald-700">
+                      {getNearbyMinutes(`${hotel.slug}-${tour.slug}`, index)} min
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
       <section id="hotel-overview" className="scroll-mt-28 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
         <h2 className="text-2xl font-semibold text-slate-900">{overviewTitle}</h2>
         <div className="mt-4 grid gap-3 text-sm text-slate-600">
@@ -770,6 +981,22 @@ export async function ThingsToDoHotelPage({
             </li>
           ))}
         </ul>
+        <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
+          <h3 className="text-lg font-semibold text-slate-950">
+            {locale === "es"
+              ? `Por que elegir ${hotel.name} si vienes a Dominicana`
+              : locale === "fr"
+                ? `Pourquoi choisir ${hotel.name} pour votre sejour en Republique dominicaine`
+                : `Why choose ${hotel.name} for a Dominican Republic trip`}
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-slate-700">
+            {locale === "es"
+              ? `${hotel.name} funciona como base practica para combinar playa, descanso, traslados privados y experiencias cercanas. Proactivitis ayuda a unir alojamiento, llegada al aeropuerto y actividades para que el viaje no dependa de reservas separadas.`
+              : locale === "fr"
+                ? `${hotel.name} sert de base pratique pour combiner plage, repos, transferts prives et experiences proches. Proactivitis relie hebergement, arrivee aeroport et activites pour eviter des reservations dispersees.`
+                : `${hotel.name} works as a practical base for beach time, private transfers, and nearby experiences. Proactivitis connects the stay, airport arrival, and activities so the trip is not split across disconnected bookings.`}
+          </p>
+        </div>
       </section>
 
       {isBahiaHotel ? (
@@ -892,7 +1119,39 @@ export async function ThingsToDoHotelPage({
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">{t("thingsToDo.tours.eyebrow")}</p>
           <h2 className="text-2xl font-semibold text-slate-900">{overrides.toursTitle?.trim() || t("thingsToDo.tours.title")}</h2>
         </div>
-        <FeaturedToursSection locale={locale} />
+        {nearbyTours.length ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {nearbyTours.map((tour, index) => (
+              <Link
+                key={tour.slug}
+                href={getLocalizedTourHref(tour.slug, locale)}
+                className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              >
+                <div className="relative h-40 bg-slate-100">
+                  <img
+                    src={tour.heroImage || FALLBACK_IMAGE}
+                    alt={tour.title}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-slate-900">
+                    {getNearbyMinutes(`${hotel.slug}-${tour.slug}`, index)} min
+                  </span>
+                </div>
+                <div className="p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-700">
+                    {tour.category || searchZone}
+                  </p>
+                  <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-slate-950">{tour.title}</h3>
+                  <p className="mt-2 text-xs text-slate-500">{tour.duration || tour.location}</p>
+                  <p className="mt-3 text-sm font-bold text-emerald-700">Desde ${Math.round(tour.price)}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <FeaturedToursSection locale={locale} />
+        )}
       </section>
 
       <section className="space-y-4 pb-20 md:pb-0">
@@ -904,7 +1163,7 @@ export async function ThingsToDoHotelPage({
           {transferCards.map((landing) => (
             <Link
               key={landing.landingSlug}
-              href={`/transfer/${landing.landingSlug}`}
+              href={getLocalizedTransferHref(landing.landingSlug, locale)}
               className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
             >
               <div className="relative h-40 w-full overflow-hidden bg-slate-100">
