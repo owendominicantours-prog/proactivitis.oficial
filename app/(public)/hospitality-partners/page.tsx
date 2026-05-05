@@ -21,6 +21,33 @@ const propertyTracks = [
   }
 ];
 
+const platformBenefits = [
+  {
+    title: "Pagina publica con SEO de hotel",
+    body: "Ficha preparada con galeria, schema Hotel, servicios, politicas, mapa y contenido comercial."
+  },
+  {
+    title: "Venta cruzada automatica",
+    body: "El alojamiento se conecta con traslados privados desde aeropuerto y tours cercanos cuando aplica."
+  },
+  {
+    title: "Cotizacion asistida",
+    body: "Proactivitis filtra solicitudes, confirma datos y ayuda a convertir interesados en reservas reales."
+  },
+  {
+    title: "Control por revision humana",
+    body: "No publicamos inventario sensible sin validar fotos, tarifas, reglas y contacto operativo."
+  }
+];
+
+const readinessChecklist = [
+  "Fotos propias o con permiso comercial",
+  "Precio base o rango por temporada",
+  "Politicas claras de deposito y cancelacion",
+  "Ubicacion verificable en mapa",
+  "Contacto operativo por WhatsApp o email"
+];
+
 export default function HospitalityPartnersPage() {
   return (
     <div className="bg-gradient-to-b from-slate-50 via-white to-emerald-50">
@@ -72,6 +99,28 @@ export default function HospitalityPartnersPage() {
                   <p className="text-2xl font-semibold text-emerald-300">{step}</p>
                   <h3 className="mt-2 text-base font-semibold">{title}</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-300">{body}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="grid gap-4 md:grid-cols-2">
+            {platformBenefits.map((item) => (
+              <article key={item.title} className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-700">Sistema Proactivitis</p>
+                <h2 className="mt-2 text-lg font-semibold text-slate-950">{item.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{item.body}</p>
+              </article>
+            ))}
+          </section>
+
+          <section className="rounded-[2rem] border border-emerald-100 bg-emerald-50 p-7">
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-800">Antes de publicar</p>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-950">Lo que revisamos para activar un alojamiento</h2>
+            <div className="mt-5 grid gap-3 md:grid-cols-2">
+              {readinessChecklist.map((item) => (
+                <div key={item} className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-sm font-semibold text-slate-800">
+                  {item}
                 </div>
               ))}
             </div>
