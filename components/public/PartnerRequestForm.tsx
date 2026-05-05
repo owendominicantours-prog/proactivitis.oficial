@@ -70,6 +70,10 @@ export default function PartnerRequestForm({ role, subtitle, id, initialOpportun
   const [country, setCountry] = useState(countryOptions[0].value);
   const [website, setWebsite] = useState("");
   const [description, setDescription] = useState("");
+  const [propertyKind, setPropertyKind] = useState("hotel");
+  const [propertyUnits, setPropertyUnits] = useState("");
+  const [propertyLocation, setPropertyLocation] = useState("");
+  const [propertyAmenities, setPropertyAmenities] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [password, setPassword] = useState("");
@@ -88,6 +92,7 @@ export default function PartnerRequestForm({ role, subtitle, id, initialOpportun
   const labelClassName = "text-xs font-semibold uppercase tracking-[0.3em] text-slate-700";
 
   const hasServices = useMemo(() => selectedServices.length > 0, [selectedServices]);
+  const hasHospitality = selectedServices.includes("hospitality");
 
   useEffect(() => {
     return () => {
@@ -195,6 +200,19 @@ export default function PartnerRequestForm({ role, subtitle, id, initialOpportun
 
     setIsLoading(true);
     try {
+      const hospitalityNote = hasHospitality
+        ? [
+            "",
+            "Datos de alojamiento:",
+            `Tipo: ${propertyKind}`,
+            propertyUnits ? `Habitaciones/unidades: ${propertyUnits}` : null,
+            propertyLocation ? `Ubicacion: ${propertyLocation}` : null,
+            propertyAmenities ? `Amenidades clave: ${propertyAmenities}` : null
+          ]
+            .filter(Boolean)
+            .join("\n")
+        : "";
+
       const payload: Record<string, unknown> = {
         role,
         companyName,
@@ -205,7 +223,7 @@ export default function PartnerRequestForm({ role, subtitle, id, initialOpportun
         country,
         website: website || null,
         serviceTypes: selectedServices,
-        description,
+        description: `${description}${hospitalityNote}`,
         password,
         confirmPassword
       };
@@ -238,6 +256,10 @@ export default function PartnerRequestForm({ role, subtitle, id, initialOpportun
       setCountry(countryOptions[0].value);
       setWebsite("");
       setDescription("");
+      setPropertyKind("hotel");
+      setPropertyUnits("");
+      setPropertyLocation("");
+      setPropertyAmenities("");
       setSelectedServices([]);
       setFile(null);
       setPassword("");
@@ -388,6 +410,61 @@ export default function PartnerRequestForm({ role, subtitle, id, initialOpportun
             ))}
           </div>
         </div>
+
+        {hasHospitality ? (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-800">
+              Configuracion de alojamientos
+            </p>
+            <p className="mt-2 text-sm leading-6 text-emerald-900">
+              Como seleccionaste Hospitality, revisaremos tu solicitud como hotel, apartamento o casa vacacional.
+            </p>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <label className="block">
+                <span className={labelClassName}>Tipo de propiedad</span>
+                <select
+                  value={propertyKind}
+                  onChange={(event) => setPropertyKind(event.target.value)}
+                  className={inputClassName}
+                >
+                  <option value="hotel">Hotel / resort</option>
+                  <option value="apartment">Apartamento / aparta-hotel</option>
+                  <option value="villa">Casa vacacional / villa</option>
+                </select>
+              </label>
+              <label className="block">
+                <span className={labelClassName}>Habitaciones o unidades</span>
+                <input
+                  value={propertyUnits}
+                  onChange={(event) => setPropertyUnits(event.target.value)}
+                  className={inputClassName}
+                  placeholder="Ej: 24 habitaciones, 3 villas, 1 apartamento"
+                />
+              </label>
+              <label className="block">
+                <span className={labelClassName}>Ubicacion de la propiedad</span>
+                <input
+                  value={propertyLocation}
+                  onChange={(event) => setPropertyLocation(event.target.value)}
+                  className={inputClassName}
+                  placeholder="Ciudad, zona y referencia"
+                />
+              </label>
+              <label className="block">
+                <span className={labelClassName}>Amenidades clave</span>
+                <input
+                  value={propertyAmenities}
+                  onChange={(event) => setPropertyAmenities(event.target.value)}
+                  className={inputClassName}
+                  placeholder="Piscina, playa, desayuno, cocina, parking..."
+                />
+              </label>
+            </div>
+            <p className="mt-3 text-xs font-semibold text-emerald-900">
+              Si tu cuenta es aprobada, tu panel tendra la seccion Alojamientos para subir fichas completas a revision.
+            </p>
+          </div>
+        ) : null}
 
         <label className="block">
           <span className={labelClassName}>{t("partner.form.description.label")}</span>

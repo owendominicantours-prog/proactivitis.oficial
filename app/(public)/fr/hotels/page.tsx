@@ -5,13 +5,15 @@ import { fr } from "@/lib/translations";
 const canonicalUrl = "https://proactivitis.com/fr/hotels";
 
 export const metadata: Metadata = {
-  title: "Hotels Punta Cana Tout Inclus: Bavaro, Cap Cana et Uvero Alto | Proactivitis",
+  title: "Hotels, Resorts, Appartements et Villas a Punta Cana | Proactivitis",
   description:
-    "Comparez les hotels et resorts tout inclus a Punta Cana et demandez un devis pour Bavaro, Cap Cana et Uvero Alto avec accompagnement personnalise.",
+    "Comparez hotels, resorts, appartements et maisons de vacances a Punta Cana. Demandez un devis avec transferts et excursions connectes.",
   keywords: [
     "hotels punta cana",
     "resorts tout inclus punta cana",
     "hebergement punta cana",
+    "appartements punta cana",
+    "villas punta cana",
     "ou loger a punta cana",
     "devis hotel punta cana"
   ],
@@ -25,16 +27,16 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: "Hotels Punta Cana Tout Inclus: Bavaro, Cap Cana et Uvero Alto | Proactivitis",
+    title: "Hotels, Resorts, Appartements et Villas a Punta Cana | Proactivitis",
     description:
-      "Comparez les hotels tout inclus a Punta Cana et demandez votre devis en quelques minutes.",
+      "Comparez hotels, resorts, appartements et villas a Punta Cana et demandez votre devis en quelques minutes.",
     url: canonicalUrl,
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Hotels Punta Cana Tout Inclus: Bavaro, Cap Cana et Uvero Alto | Proactivitis",
-    description: "Demandez un devis hotel a Punta Cana avec accompagnement personnalise."
+    title: "Hotels, Resorts, Appartements et Villas a Punta Cana | Proactivitis",
+    description: "Demandez un devis hotel, appartement ou villa a Punta Cana avec accompagnement personnalise."
   },
   robots: {
     index: true,

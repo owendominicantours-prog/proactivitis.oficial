@@ -9,6 +9,7 @@ const supplierNav = [
   { label: "Inicio", href: "/supplier" },
   { label: "Experiencias", href: "/supplier/tours" },
   { label: "Nueva experiencia", href: "/supplier/tours/create" },
+  { label: "Alojamientos", href: "/supplier/properties" },
   { label: "Reservas", href: "/supplier/bookings" },
   { label: "Calendario", href: "/supplier/calendar" },
   { label: "Finanzas", href: "/supplier/finance" },

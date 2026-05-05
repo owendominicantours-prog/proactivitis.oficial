@@ -15,8 +15,8 @@ type QuoteState = "idle" | "sending" | "success" | "error";
 
 const LABELS: Record<Locale, Record<string, string>> = {
   es: {
-    title: "Motor de cotizacion",
-    subtitle: "Respuesta rapida por WhatsApp o email",
+    title: "Consulta disponibilidad",
+    subtitle: "Hotel, traslado y tours coordinados en una sola solicitud",
     checkIn: "Check-in",
     checkOut: "Check-out",
     adults: "Adultos",
@@ -29,13 +29,13 @@ const LABELS: Record<Locale, Record<string, string>> = {
     phone: "Telefono / WhatsApp",
     notes: "Detalles adicionales",
     notesPlaceholder: "Hora de llegada, celebracion, peticiones especiales...",
-    submit: "Consultar Disponibilidad",
+    submit: "Ver disponibilidad",
     success: "Solicitud enviada. Te contactamos pronto.",
     error: "No se pudo enviar. Intenta de nuevo."
   },
   en: {
-    title: "Availability widget",
-    subtitle: "Fast reply via WhatsApp or email",
+    title: "Check availability",
+    subtitle: "Hotel, transfer and tours coordinated in one request",
     checkIn: "Check-in",
     checkOut: "Check-out",
     adults: "Adults",
@@ -48,13 +48,13 @@ const LABELS: Record<Locale, Record<string, string>> = {
     phone: "Phone / WhatsApp",
     notes: "Extra details",
     notesPlaceholder: "Arrival time, celebration, special requests...",
-    submit: "Check Availability",
+    submit: "View availability",
     success: "Request sent. We will contact you soon.",
     error: "Could not send request. Please try again."
   },
   fr: {
-    title: "Widget de disponibilite",
-    subtitle: "Reponse rapide via WhatsApp ou email",
+    title: "Verifier disponibilite",
+    subtitle: "Hotel, transfert et excursions coordonnes en une seule demande",
     checkIn: "Check-in",
     checkOut: "Check-out",
     adults: "Adultes",
@@ -67,7 +67,7 @@ const LABELS: Record<Locale, Record<string, string>> = {
     phone: "Telephone / WhatsApp",
     notes: "Details supplementaires",
     notesPlaceholder: "Heure d'arrivee, celebration, demandes speciales...",
-    submit: "Demander Disponibilite",
+    submit: "Voir disponibilite",
     success: "Demande envoyee. Nous vous contactons bientot.",
     error: "Impossible d'envoyer la demande. Reessayez."
   }
@@ -115,9 +115,12 @@ export default function HotelQuoteWidget({ hotelSlug, hotelName, locale, ctaLabe
   };
 
   return (
-    <div id="hotel-quote-widget" className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-      <h2 className="text-lg font-semibold text-slate-900">{copy.title}</h2>
-      <p className="mt-1 text-xs text-slate-500">{copy.subtitle}</p>
+    <div id="hotel-quote-widget" className="rounded-[1.7rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-200/70 sm:p-5">
+      <div className="rounded-2xl bg-slate-950 p-4 text-white">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-300">Proactivitis stays</p>
+        <h2 className="mt-2 text-xl font-semibold">{copy.title}</h2>
+        <p className="mt-1 text-xs leading-5 text-slate-300">{copy.subtitle}</p>
+      </div>
       <form onSubmit={handleSubmit} className="mt-4 grid gap-3.5">
         <div className="grid grid-cols-2 gap-3">
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
@@ -173,10 +176,14 @@ export default function HotelQuoteWidget({ hotelSlug, hotelName, locale, ctaLabe
         <button
           type="submit"
           disabled={state === "sending"}
-          className="rounded-xl bg-slate-900 px-4 py-3.5 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+          className="rounded-2xl bg-emerald-600 px-4 py-4 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-emerald-200 transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {state === "sending" ? "..." : ctaLabel || copy.submit}
         </button>
+        <div className="grid gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800">
+          <p>{locale === "es" ? "Confirmacion humana antes de cobrar." : locale === "fr" ? "Confirmation humaine avant paiement." : "Human confirmation before payment."}</p>
+          <p>{locale === "es" ? "Podemos agregar traslado y tours a la misma cotizacion." : locale === "fr" ? "Nous pouvons ajouter transfert et excursions au meme devis." : "We can add transfer and tours to the same quote."}</p>
+        </div>
 
         {state === "success" ? <p className="text-sm text-emerald-600">{copy.success}</p> : null}
         {state === "error" ? <p className="text-sm text-rose-600">{copy.error}</p> : null}

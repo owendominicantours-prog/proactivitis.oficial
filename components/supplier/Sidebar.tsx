@@ -5,6 +5,7 @@ const menu = [
   { label: "Oportunidades", href: "/supplier-tour-opportunities", icon: "tour" },
   { label: "Mis Tours", href: "/supplier/tours", icon: "tour" },
   { label: "Crear Tour", href: "/supplier/tours/create", icon: "add" },
+  { label: "Alojamientos", href: "/supplier/properties", icon: "hotel" },
   { label: "Reservas", href: "/supplier/bookings", icon: "calendar" },
   { label: "Calendario", href: "/supplier/calendar", icon: "calendar" },
   { label: "Finanzas", href: "/supplier/finance", icon: "finance" },

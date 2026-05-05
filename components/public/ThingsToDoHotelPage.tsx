@@ -152,6 +152,14 @@ const UI_COPY: Record<
     card2Body: string;
     card3Title: string;
     card3Body: string;
+    verifiedStay: string;
+    bestFor: string;
+    directHelp: string;
+    navOverview: string;
+    navRooms: string;
+    navAmenities: string;
+    navPolicies: string;
+    navTours: string;
   }
 > = {
   es: {
@@ -178,7 +186,15 @@ const UI_COPY: Record<
     card2Title: "Asesoria humana",
     card2Body: "Atencion directa por WhatsApp para ajustar fechas, ninos y habitaciones.",
     card3Title: "Soporte local",
-    card3Body: "Equipo en destino para coordinar cambios y extras sin friccion."
+    card3Body: "Equipo en destino para coordinar cambios y extras sin friccion.",
+    verifiedStay: "Alojamiento verificado",
+    bestFor: "Ideal para familias, parejas y grupos",
+    directHelp: "Cotiza hotel, traslado y tours juntos",
+    navOverview: "Resumen",
+    navRooms: "Habitaciones",
+    navAmenities: "Servicios",
+    navPolicies: "Politicas",
+    navTours: "Tours cercanos"
   },
   en: {
     hotelTag: "Punta Cana Hotel",
@@ -204,7 +220,15 @@ const UI_COPY: Record<
     card2Title: "Human support",
     card2Body: "Direct WhatsApp assistance for dates, kids, and room setup.",
     card3Title: "Local team",
-    card3Body: "On-site support for changes and add-ons without friction."
+    card3Body: "On-site support for changes and add-ons without friction.",
+    verifiedStay: "Verified stay",
+    bestFor: "Great for families, couples and groups",
+    directHelp: "Quote hotel, transfer and tours together",
+    navOverview: "Overview",
+    navRooms: "Rooms",
+    navAmenities: "Amenities",
+    navPolicies: "Policies",
+    navTours: "Nearby tours"
   },
   fr: {
     hotelTag: "Hotel a Punta Cana",
@@ -230,7 +254,15 @@ const UI_COPY: Record<
     card2Title: "Support humain",
     card2Body: "Assistance WhatsApp directe pour dates, enfants et chambres.",
     card3Title: "Equipe locale",
-    card3Body: "Equipe sur place pour les changements et extras sans friction."
+    card3Body: "Equipe sur place pour les changements et extras sans friction.",
+    verifiedStay: "Hebergement verifie",
+    bestFor: "Ideal familles, couples et groupes",
+    directHelp: "Devis hotel, transfert et excursions ensemble",
+    navOverview: "Resume",
+    navRooms: "Chambres",
+    navAmenities: "Services",
+    navPolicies: "Politiques",
+    navTours: "Excursions"
   }
 };
 
@@ -633,45 +665,60 @@ export async function ThingsToDoHotelPage({
         {overrides.quoteCta?.trim() || "Consultar Disponibilidad"}
       </a>
 
-      <section className="grid gap-4 md:gap-6 xl:grid-cols-[1.7fr,1fr]">
-        <div className="space-y-4 overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 p-5 text-white shadow-sm md:space-y-5 md:p-8">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
-              {ui.hotelTag}
-            </span>
-            <span className="rounded-full bg-amber-300/20 px-3 py-1 text-xs font-semibold text-amber-100">{stars}</span>
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
+        <div className="space-y-5">
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm md:p-8">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
+                {ui.hotelTag}
+              </span>
+              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                {ui.verifiedStay}
+              </span>
+              <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">{stars}</span>
+            </div>
+
+            <h1 className="mt-4 max-w-5xl text-3xl font-semibold leading-tight tracking-tight text-slate-950 sm:text-4xl md:text-5xl">
+              {heroTitle}
+            </h1>
+            <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">{heroSubtitle}</p>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">{ui.rating}</p>
+                <p className="mt-2 flex items-center gap-1 text-base font-semibold text-slate-950">
+                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  {reviewRating ? `${reviewRating}/5${reviewCount ? ` (${reviewCount})` : ""}` : "Top Rated"}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">{ui.from}</p>
+                <p className="mt-2 text-base font-semibold text-emerald-700">
+                  {priceFrom ? `US$${priceFrom}` : locale === "es" ? "Mejor tarifa" : locale === "fr" ? "Meilleur tarif" : "Best rate"}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">{ui.booking}</p>
+                <p className="mt-2 flex items-center gap-1 text-base font-semibold text-slate-950">
+                  <BadgeCheck className="h-4 w-4 text-emerald-600" />
+                  {ui.bookingValue}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-2 text-sm">
+              {[ui.bestFor, ui.directHelp, locationLabel].map((item) => (
+                <span key={item} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-700">
+                  {item}
+                </span>
+              ))}
+              <a href={mapUrl} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-700 underline underline-offset-4">
+                {ui.map}
+              </a>
+            </div>
           </div>
 
-          <h1 className="text-2xl font-semibold leading-tight text-white sm:text-3xl md:text-5xl">{heroTitle}</h1>
-          <p className="max-w-3xl text-sm text-slate-100 md:text-base">{heroSubtitle}</p>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl border border-white/20 bg-white/10 p-3 backdrop-blur">
-              <p className="text-[11px] uppercase tracking-[0.2em] text-slate-100">{ui.rating}</p>
-              <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-white">
-                <Star className="h-4 w-4 text-amber-300" />
-                {reviewRating ? `${reviewRating}/5${reviewCount ? ` (${reviewCount})` : ""}` : "Top Rated"}
-              </p>
-            </div>
-            <div className="rounded-xl border border-white/20 bg-white/10 p-3 backdrop-blur">
-              <p className="text-[11px] uppercase tracking-[0.2em] text-slate-100">{ui.from}</p>
-              <p className="mt-1 text-sm font-semibold text-white">
-                {priceFrom ? `US$${priceFrom}` : locale === "es" ? "Mejor tarifa" : locale === "fr" ? "Meilleur tarif" : "Best rate"}
-              </p>
-            </div>
-            <div className="rounded-xl border border-white/20 bg-white/10 p-3 backdrop-blur">
-              <p className="text-[11px] uppercase tracking-[0.2em] text-slate-100">{ui.booking}</p>
-              <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-white">
-                <BadgeCheck className="h-4 w-4 text-emerald-300" />
-                {ui.bookingValue}
-              </p>
-            </div>
-          </div>
-
-          <a href={mapUrl} target="_blank" rel="noreferrer" className="inline-flex text-sm font-medium text-cyan-100 underline underline-offset-4">
-            {locationLabel} - {ui.map}
-          </a>
-          <div className="rounded-2xl bg-white p-1.5 text-slate-900 md:p-3">
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-2 shadow-sm md:p-3">
             <HotelGallerySlider images={galleryImages} hotelName={hotel.name} />
           </div>
         </div>
@@ -686,7 +733,25 @@ export async function ThingsToDoHotelPage({
         </aside>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
+      <nav className="flex gap-2 overflow-x-auto rounded-3xl border border-slate-200 bg-white p-2 shadow-sm">
+        {[
+          { href: "#hotel-overview", label: ui.navOverview },
+          { href: "#hotel-rooms", label: ui.navRooms },
+          { href: "#hotel-amenities", label: ui.navAmenities },
+          { href: "#hotel-policies", label: ui.navPolicies },
+          { href: "#hotel-tours", label: ui.navTours }
+        ].map((item) => (
+          <a
+            key={item.href}
+            href={item.href}
+            className="shrink-0 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700 transition hover:bg-slate-100"
+          >
+            {item.label}
+          </a>
+        ))}
+      </nav>
+
+      <section id="hotel-overview" className="scroll-mt-28 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
         <h2 className="text-2xl font-semibold text-slate-900">{overviewTitle}</h2>
         <div className="mt-4 grid gap-3 text-sm text-slate-600">
           {descriptionParagraphs.map((paragraph) => (
@@ -755,7 +820,7 @@ export async function ThingsToDoHotelPage({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
+      <section id="hotel-rooms" className="scroll-mt-28 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
         <h2 className="text-2xl font-semibold text-slate-900">{ui.roomTypes}</h2>
         {roomTypes.length ? (
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -779,7 +844,7 @@ export async function ThingsToDoHotelPage({
         )}
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
+      <section id="hotel-amenities" className="scroll-mt-28 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
         <h2 className="text-2xl font-semibold text-slate-900">{ui.amenities}</h2>
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           {amenityGroups.map(([groupName, groupItems]) => (
@@ -801,7 +866,7 @@ export async function ThingsToDoHotelPage({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
+      <section id="hotel-policies" className="scroll-mt-28 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-10">
         <h2 className="text-2xl font-semibold text-slate-900">{ui.policies}</h2>
         <div className="mt-4 grid gap-4 text-sm text-slate-700 md:grid-cols-2">
           <p>
@@ -822,7 +887,7 @@ export async function ThingsToDoHotelPage({
         </p>
       </section>
 
-      <section className="space-y-4">
+      <section id="hotel-tours" className="scroll-mt-28 space-y-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">{t("thingsToDo.tours.eyebrow")}</p>
           <h2 className="text-2xl font-semibold text-slate-900">{overrides.toursTitle?.trim() || t("thingsToDo.tours.title")}</h2>

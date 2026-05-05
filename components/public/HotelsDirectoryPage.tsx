@@ -20,6 +20,8 @@ type HotelCardInfo = {
   heroImage: string | null;
   description: string;
   zoneName: string;
+  propertyType: "hotel" | "resort" | "apartment" | "villa";
+  propertyTypeLabel: string;
   price: number | null;
   rating: number;
   reviews: number;
@@ -63,6 +65,20 @@ const copy: Record<
     starLabel: string;
     smartChoiceLabel: string;
     consultRateLabel: string;
+    propertyLabel: string;
+    propertyAll: string;
+    propertyHotel: string;
+    propertyResort: string;
+    propertyApartment: string;
+    propertyVilla: string;
+    heroEyebrow: string;
+    heroPrimary: string;
+    heroSecondary: string;
+    heroTrust1: string;
+    heroTrust2: string;
+    heroTrust3: string;
+    featuredTitle: string;
+    featuredSubtitle: string;
   }
 > = {
   es: {
@@ -98,7 +114,21 @@ const copy: Record<
     leftLabel: "habitaciones restantes",
     starLabel: "estrellas",
     smartChoiceLabel: "Eleccion inteligente",
-    consultRateLabel: "Consultar tarifa"
+    consultRateLabel: "Consultar tarifa",
+    propertyLabel: "Tipo",
+    propertyAll: "Todos los alojamientos",
+    propertyHotel: "Hoteles",
+    propertyResort: "Resorts",
+    propertyApartment: "Apartamentos",
+    propertyVilla: "Casas vacacionales",
+    heroEyebrow: "Hoteles, resorts y estancias verificadas",
+    heroPrimary: "Cotizar alojamiento",
+    heroSecondary: "Explorar por zona",
+    heroTrust1: "Tarifas consultadas con asistencia humana",
+    heroTrust2: "Traslado y tours conectados a tu estadia",
+    heroTrust3: "Hoteles, apartamentos y villas en un mismo flujo",
+    featuredTitle: "Alojamientos destacados",
+    featuredSubtitle: "Opciones con mejor balance entre zona, experiencia y facilidad para reservar."
   },
   en: {
     title: "Accommodation in Punta Cana",
@@ -133,7 +163,21 @@ const copy: Record<
     leftLabel: "rooms left",
     starLabel: "stars",
     smartChoiceLabel: "Smart choice",
-    consultRateLabel: "Check rate"
+    consultRateLabel: "Check rate",
+    propertyLabel: "Type",
+    propertyAll: "All stays",
+    propertyHotel: "Hotels",
+    propertyResort: "Resorts",
+    propertyApartment: "Apartments",
+    propertyVilla: "Vacation homes",
+    heroEyebrow: "Hotels, resorts and verified stays",
+    heroPrimary: "Request a stay quote",
+    heroSecondary: "Explore by area",
+    heroTrust1: "Rates checked with human support",
+    heroTrust2: "Transfers and tours connected to your stay",
+    heroTrust3: "Hotels, apartments and villas in one flow",
+    featuredTitle: "Featured stays",
+    featuredSubtitle: "Options with strong balance between area, experience and booking convenience."
   },
   fr: {
     title: "Hebergement a Punta Cana",
@@ -168,7 +212,21 @@ const copy: Record<
     leftLabel: "chambres restantes",
     starLabel: "etoiles",
     smartChoiceLabel: "Choix intelligent",
-    consultRateLabel: "Demander tarif"
+    consultRateLabel: "Demander tarif",
+    propertyLabel: "Type",
+    propertyAll: "Tous les hebergements",
+    propertyHotel: "Hotels",
+    propertyResort: "Resorts",
+    propertyApartment: "Appartements",
+    propertyVilla: "Maisons de vacances",
+    heroEyebrow: "Hotels, resorts et sejours verifies",
+    heroPrimary: "Demander un devis",
+    heroSecondary: "Explorer par zone",
+    heroTrust1: "Tarifs verifies avec support humain",
+    heroTrust2: "Transferts et excursions connectes au sejour",
+    heroTrust3: "Hotels, appartements et villas dans un seul flux",
+    featuredTitle: "Hebergements recommandes",
+    featuredSubtitle: "Options avec bon equilibre entre zone, experience et facilite de reservation."
   }
 };
 
@@ -203,6 +261,23 @@ const getStars = (name: string) => {
 const getRoomsLeft = (name: string) => {
   const sum = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return 2 + (sum % 7);
+};
+
+const getPropertyType = (name: string): HotelCardInfo["propertyType"] => {
+  const text = name.toLowerCase();
+  if (text.includes("villa") || text.includes("residence") || text.includes("casa")) return "villa";
+  if (text.includes("apartment") || text.includes("apartamento") || text.includes("condo")) return "apartment";
+  if (text.includes("resort") || text.includes("riu") || text.includes("bahia") || text.includes("dreams")) return "resort";
+  return "hotel";
+};
+
+const getPropertyTypeLabel = (type: HotelCardInfo["propertyType"], locale: Locale) => {
+  const labels: Record<Locale, Record<HotelCardInfo["propertyType"], string>> = {
+    es: { hotel: "Hotel", resort: "Resort", apartment: "Apartamento", villa: "Casa vacacional" },
+    en: { hotel: "Hotel", resort: "Resort", apartment: "Apartment", villa: "Vacation home" },
+    fr: { hotel: "Hotel", resort: "Resort", apartment: "Appartement", villa: "Maison de vacances" }
+  };
+  return labels[locale][type];
 };
 
 const safeText = (value: unknown) => {
@@ -321,6 +396,7 @@ export default async function HotelsDirectoryPage({
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const q = (firstParamValue(resolvedSearchParams?.q) ?? "").trim();
   const zone = (firstParamValue(resolvedSearchParams?.zone) ?? "").trim();
+  const propertyType = (firstParamValue(resolvedSearchParams?.type) ?? "").trim();
   const sort = (firstParamValue(resolvedSearchParams?.sort) ?? "recommended").trim();
   const pageRaw = Number(firstParamValue(resolvedSearchParams?.page) ?? "1");
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? Math.floor(pageRaw) : 1;
@@ -337,6 +413,7 @@ export default async function HotelsDirectoryPage({
     const price = parseUsdPrice(localizedLanding?.priceFromUSD) ?? parseUsdPrice(fallbackLanding?.priceFromUSD);
     const rating = getReviewScore(hotel.name);
     const reviews = getReviewCount(hotel.name);
+    const detectedType = getPropertyType(hotel.name);
     const localizedDescription = firstSentence(localizedLanding?.description1);
     const enrichment = enrichmentContent[hotel.slug];
     const resolvedHeroImage =
@@ -355,6 +432,8 @@ export default async function HotelsDirectoryPage({
       heroImage: resolvedHeroImage || null,
       description: shortenText(descriptionSource, 140),
       zoneName,
+      propertyType: detectedType,
+      propertyTypeLabel: getPropertyTypeLabel(detectedType, locale),
       price,
       rating,
       reviews,
@@ -370,7 +449,8 @@ export default async function HotelsDirectoryPage({
       hotel.name.toLowerCase().includes(q.toLowerCase()) ||
       hotel.zoneName.toLowerCase().includes(q.toLowerCase());
     const matchesZone = zone.length === 0 || hotel.zoneName === zone;
-    return matchesQuery && matchesZone;
+    const matchesType = propertyType.length === 0 || hotel.propertyType === propertyType;
+    return matchesQuery && matchesZone && matchesType;
   });
 
   const sortedHotels = [...filteredHotels].sort((a, b) => {
@@ -393,6 +473,16 @@ export default async function HotelsDirectoryPage({
   const hotelsPage = sortedHotels.slice(startIndex, startIndex + pageSize);
 
   const listingBaseHref = getDirectoryHref(locale);
+  const featuredHotels = [...hotelCards]
+    .sort((a, b) => b.rating - a.rating || b.reviews - a.reviews)
+    .slice(0, 3);
+  const propertyOptions = [
+    { value: "", label: t.propertyAll },
+    { value: "hotel", label: t.propertyHotel },
+    { value: "resort", label: t.propertyResort },
+    { value: "apartment", label: t.propertyApartment },
+    { value: "villa", label: t.propertyVilla }
+  ];
   const listSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -413,6 +503,7 @@ export default async function HotelsDirectoryPage({
     const params = new URLSearchParams();
     if (q) params.set("q", q);
     if (zone) params.set("zone", zone);
+    if (propertyType) params.set("type", propertyType);
     if (sort && sort !== "recommended") params.set("sort", sort);
     if (targetPage > 1) params.set("page", String(targetPage));
     const query = params.toString();
@@ -422,25 +513,72 @@ export default async function HotelsDirectoryPage({
   return (
     <div className="travel-surface mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
       <StructuredData data={listSchema} />
-      <header className="overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#334155] p-6 text-white shadow-xl sm:p-8">
-        <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-200">Proactivitis</p>
-            <h1 className="mt-2 text-3xl font-semibold leading-tight sm:text-4xl">{t.title}</h1>
-            <p className="mt-3 max-w-3xl text-sm text-slate-100 sm:text-base">{t.subtitle}</p>
+      <header className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-xl">
+        <div className="grid min-h-[430px] lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="flex flex-col justify-between gap-8 p-6 sm:p-8 lg:p-10">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-700">{t.heroEyebrow}</p>
+              <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight text-slate-950 sm:text-5xl">
+                {t.title}
+              </h1>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">{t.subtitle}</p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a
+                  href="#hotel-search"
+                  className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                >
+                  {t.heroPrimary}
+                </a>
+                <a
+                  href="#hotel-zones"
+                  className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-500"
+                >
+                  {t.heroSecondary}
+                </a>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[t.heroTrust1, t.heroTrust2, t.heroTrust3].map((item) => (
+                <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-sm font-semibold leading-5 text-slate-900">{item}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-2xl border border-white/20 bg-white/10 p-3 text-center">
-              <p className="text-2xl font-bold">{hotels.length}+</p>
-              <p className="text-xs text-slate-200">Hotels</p>
+
+          <div className="relative min-h-[340px] bg-slate-100">
+            <div className="absolute inset-0 grid grid-cols-2 gap-2 p-3">
+              {featuredHotels.map((hotel, index) => (
+                <Link
+                  key={hotel.slug}
+                  href={getHotelHref(hotel.slug, locale)}
+                  className={`group relative overflow-hidden rounded-[1.6rem] bg-slate-200 ${
+                    index === 0 ? "col-span-2 row-span-2" : ""
+                  }`}
+                >
+                  {hotel.heroImage ? (
+                    <img
+                      src={hotel.heroImage}
+                      alt={hotel.name}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      style={{ objectPosition: coverStyleFromSlug(hotel.slug).objectPosition }}
+                    />
+                  ) : (
+                    <div className="h-full w-full" style={{ background: coverStyleFromSlug(hotel.slug).overlay }} />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/10 to-transparent" />
+                  <div className="absolute inset-x-4 bottom-4 text-white">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-white/75">
+                      {hotel.propertyTypeLabel} · {hotel.zoneName}
+                    </p>
+                    <p className="mt-1 line-clamp-2 text-sm font-semibold sm:text-base">{hotel.name}</p>
+                  </div>
+                </Link>
+              ))}
             </div>
-            <div className="rounded-2xl border border-white/20 bg-white/10 p-3 text-center">
-              <p className="text-2xl font-bold">24/7</p>
-              <p className="text-xs text-slate-200">Support</p>
-            </div>
-            <div className="rounded-2xl border border-white/20 bg-white/10 p-3 text-center">
-              <p className="text-2xl font-bold">VIP</p>
-              <p className="text-xs text-slate-200">Assistance</p>
+            <div className="absolute right-6 top-6 rounded-2xl border border-white/30 bg-white/90 p-4 shadow-xl backdrop-blur">
+              <p className="text-3xl font-semibold text-slate-950">{hotels.length}+</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Stays</p>
             </div>
           </div>
         </div>
@@ -476,14 +614,20 @@ export default async function HotelsDirectoryPage({
           >
             {locale === "es" ? "Transfer VIP" : locale === "fr" ? "Transfert VIP" : "VIP transfer"}
           </Link>
+          <Link
+            href="/hospitality-partners"
+            className="rounded-full border border-emerald-300 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-800 transition hover:bg-emerald-100"
+          >
+            {locale === "es" ? "Publicar alojamiento" : locale === "fr" ? "Publier hebergement" : "List your stay"}
+          </Link>
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <section id="hotel-search" className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
         <form
           action={listingBaseHref}
           method="get"
-          className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_220px_180px]"
+          className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_200px_200px_200px_180px]"
         >
           <label className="block">
             <span className="sr-only">{t.searchPlaceholder}</span>
@@ -505,6 +649,20 @@ export default async function HotelsDirectoryPage({
               {zones.map((zoneName) => (
                 <option key={zoneName} value={zoneName}>
                   {zoneName}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="sr-only">{t.propertyLabel}</span>
+            <select
+              name="type"
+              defaultValue={propertyType}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+            >
+              {propertyOptions.map((option) => (
+                <option key={option.value || "all"} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
@@ -545,6 +703,30 @@ export default async function HotelsDirectoryPage({
             {t.trustedTitle}
           </span>
         </div>
+        <div id="hotel-zones" className="mt-4 flex gap-2 overflow-x-auto pb-1">
+          {propertyOptions.map((option) => {
+            const params = new URLSearchParams();
+            if (q) params.set("q", q);
+            if (zone) params.set("zone", zone);
+            if (option.value) params.set("type", option.value);
+            if (sort && sort !== "recommended") params.set("sort", sort);
+            const href = params.toString() ? `${listingBaseHref}?${params.toString()}` : listingBaseHref;
+            const active = propertyType === option.value;
+            return (
+              <Link
+                key={option.value || "all"}
+                href={href}
+                className={
+                  active
+                    ? "shrink-0 rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold text-white"
+                    : "shrink-0 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-400"
+                }
+              >
+                {option.label}
+              </Link>
+            );
+          })}
+        </div>
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
@@ -565,6 +747,10 @@ export default async function HotelsDirectoryPage({
                   : sort === "rating"
                     ? t.sortRating
                     : t.sortRecommended}
+            </p>
+            <p className="mt-4 font-semibold text-slate-900">{t.propertyLabel}</p>
+            <p className="mt-1 text-slate-600">
+              {propertyOptions.find((option) => option.value === propertyType)?.label ?? t.propertyAll}
             </p>
           </section>
         </aside>
@@ -616,10 +802,13 @@ export default async function HotelsDirectoryPage({
                         <div>
                           <h2 className="text-xl font-semibold leading-tight text-slate-900">{hotel.name}</h2>
                           <p className="mt-1 text-xs text-slate-600">
-                            {hotel.rating.toFixed(1)} / 5 * {hotel.reviews} {t.reviewLabel}
+                            {hotel.propertyTypeLabel} · {hotel.zoneName}
                           </p>
-                          <p className="mt-1 text-xs text-amber-600">
-                            {"*".repeat(hotel.stars)} {t.starLabel}
+                          <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                            <span className="font-semibold text-amber-600">{"★".repeat(5)}</span>
+                            <span>{hotel.rating.toFixed(1)} / 5</span>
+                            <span>·</span>
+                            <span>{hotel.reviews} {t.reviewLabel}</span>
                           </p>
                           <p className="mt-3 text-sm leading-relaxed text-slate-600">{hotel.description}</p>
                           <div className="mt-3 flex flex-wrap gap-2">

@@ -34,6 +34,7 @@ export default async function SupplierPanel() {
   const quickActions = [
     { label: "Revisar reservas", href: "/supplier/bookings", helper: "Coordina servicios y cambios operativos." },
     { label: "Gestionar tours", href: "/supplier/tours", helper: "Actualiza experiencias, fotos y publicación." },
+    { label: "Subir alojamiento", href: "/supplier/properties", helper: "Envia hotel, apartamento o villa a revision." },
     { label: "Ver finanzas", href: "/supplier/finance", helper: "Conecta Stripe y revisa payouts." },
     { label: "Crear oferta", href: "/supplier/offers", helper: "Activa descuentos para vender más." }
   ];
