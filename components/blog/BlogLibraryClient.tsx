@@ -233,10 +233,10 @@ export default function BlogLibraryClient({ locale, posts }: Props) {
   return (
     <main className="mx-auto max-w-7xl space-y-8 px-4 py-8">
       {leadStory ? (
-        <section className="grid gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.55fr)]">
-          <article className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+        <section className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.55fr)]">
+          <article className="self-start overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-950 shadow-sm">
             <Link href={`${prefix}/news/${leadStory.slug}`} className="group block">
-              <div className="relative min-h-[340px] bg-slate-100 md:min-h-[430px]">
+              <div className="relative h-[360px] bg-slate-100 md:h-[430px]">
                 <Image
                   src={leadStory.coverImage ?? "/fototours/fotosimple.jpg"}
                   alt={leadStory.title}
@@ -255,10 +255,10 @@ export default function BlogLibraryClient({ locale, posts }: Props) {
                       {t.reportType}
                     </span>
                   </div>
-                  <h2 className="mt-4 max-w-4xl font-serif text-4xl font-black leading-tight md:text-6xl">
+                  <h2 className="mt-4 max-w-4xl font-serif text-3xl font-black leading-tight md:text-5xl">
                     {leadStory.title}
                   </h2>
-                  <p className="mt-4 max-w-3xl text-base leading-8 text-slate-200">
+                  <p className="mt-4 line-clamp-3 max-w-3xl text-base leading-8 text-slate-200">
                     {leadStory.excerpt ?? "Insights and practical travel guidance from Proactivitis."}
                   </p>
                   <div className="mt-5 flex flex-wrap gap-2">
@@ -273,7 +273,7 @@ export default function BlogLibraryClient({ locale, posts }: Props) {
             </Link>
           </article>
 
-          <aside className="grid gap-4">
+          <aside className="grid self-start gap-4">
             <section className="rounded-[2rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-sm">
               <p className="text-xs font-black uppercase tracking-[0.28em] text-sky-300">{t.liveDesk}</p>
               <h3 className="mt-3 text-2xl font-black leading-tight">{t.operatingSystem}</h3>
