@@ -972,7 +972,13 @@ const LABELS = {
     contextualTitle: "Recomendacion basada en este analisis",
     contextualBody:
       "Si el viaje incluye Punta Cana, nuestro equipo recomienda asegurar traslado privado y experiencias verificadas antes de temporada alta.",
-    contextualCta: "Ver tours y traslados"
+    contextualCta: "Ver tours y traslados",
+    articleBriefTitle: "Resumen ejecutivo",
+    evidenceTitle: "Evidencia editorial",
+    editorialProtocol: "Revision de datos, contexto de mercado y autor institucional.",
+    sourceVerified: "Fuente verificada",
+    crawlerReady: "Indexacion preparada",
+    newsStandard: "Estandar NewsArticle"
   },
   en: {
     listTitle: "Proactivitis News & Market Intelligence",
@@ -1006,7 +1012,13 @@ const LABELS = {
     contextualTitle: "Recommendation based on this analysis",
     contextualBody:
       "If the trip includes Punta Cana, our team recommends securing private transfer and verified experiences before peak demand windows.",
-    contextualCta: "View tours and transfers"
+    contextualCta: "View tours and transfers",
+    articleBriefTitle: "Executive brief",
+    evidenceTitle: "Editorial evidence",
+    editorialProtocol: "Data review, market context, and institutional authorship.",
+    sourceVerified: "Verified source",
+    crawlerReady: "Indexing ready",
+    newsStandard: "NewsArticle standard"
   },
   fr: {
     listTitle: "Proactivitis News & Market Intelligence",
@@ -1040,7 +1052,13 @@ const LABELS = {
     contextualTitle: "Recommandation basee sur cette analyse",
     contextualBody:
       "Si le voyage inclut Punta Cana, notre equipe recommande de securiser le transfert prive et les experiences verifiees avant les periodes de forte demande.",
-    contextualCta: "Voir tours et transferts"
+    contextualCta: "Voir tours et transferts",
+    articleBriefTitle: "Synthese executive",
+    evidenceTitle: "Preuves editoriales",
+    editorialProtocol: "Verification des donnees, contexte marche et auteur institutionnel.",
+    sourceVerified: "Source verifiee",
+    crawlerReady: "Indexation preparee",
+    newsStandard: "Standard NewsArticle"
   }
 };
 
@@ -1164,6 +1182,13 @@ const renderNewsArticleLayout = ({
         <header className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             <p className="text-xs font-black uppercase tracking-[0.35em] text-sky-700">{labels.newsroomEyebrow}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {[labels.sourceVerified, labels.newsStandard, labels.crawlerReady].map((item) => (
+                <span key={item} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-slate-700">
+                  {item}
+                </span>
+              ))}
+            </div>
             <h1 className="mt-4 max-w-4xl font-serif text-4xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
               {title}
             </h1>
@@ -1211,6 +1236,25 @@ const renderNewsArticleLayout = ({
                 {labels.caption}
               </figcaption>
             </figure>
+
+            <section className="grid gap-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-[minmax(0,1fr)_280px]">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.3em] text-sky-700">{labels.articleBriefTitle}</p>
+                <h2 className="mt-3 font-serif text-3xl font-black leading-tight text-slate-950">{title}</h2>
+                <p className="mt-4 text-base leading-8 text-slate-600">{excerpt}</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">{labels.evidenceTitle}</p>
+                <div className="mt-4 space-y-3">
+                  {[labels.sourceVerified, labels.editorialProtocol, labels.trustLine].map((item) => (
+                    <div key={item} className="flex gap-3 text-sm font-semibold leading-6 text-slate-700">
+                      <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-sky-500" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
 
             <section className="blog-content">{renderBlogContent(contentHtml)}</section>
             {renderContextualCta(locale)}
@@ -1421,8 +1465,9 @@ export async function renderBlogList(locale: "es" | "en" | "fr") {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }}
       />
-      <section className="border-b border-slate-800 bg-slate-950 text-white">
-        <div className="border-b border-white/10 bg-sky-500/10">
+      <section className="relative overflow-hidden border-b border-slate-800 bg-slate-950 text-white">
+        <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:42px_42px]" />
+        <div className="relative border-b border-white/10 bg-sky-500/10">
           <div className="mx-auto flex max-w-7xl gap-4 overflow-hidden px-4 py-3 text-xs font-bold uppercase tracking-[0.18em]">
             <span className="shrink-0 text-sky-300">{labels.tickerLabel}</span>
             <div className="flex min-w-0 gap-6 text-slate-200">
@@ -1432,11 +1477,19 @@ export async function renderBlogList(locale: "es" | "en" | "fr") {
             </div>
           </div>
         </div>
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-14 lg:grid-cols-[1fr,360px]">
+        <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-14 lg:grid-cols-[1fr,360px]">
           <div className="space-y-5">
             <p className="text-xs font-black uppercase tracking-[0.4em] text-sky-300">{labels.newsroomEyebrow}</p>
             <h1 className="max-w-4xl font-serif text-4xl font-black leading-tight md:text-6xl">{labels.listTitle}</h1>
             <p className="max-w-3xl text-base leading-8 text-slate-300">{labels.listSubtitle}</p>
+            <div className="grid max-w-3xl gap-3 sm:grid-cols-3">
+              {[labels.sourceVerified, labels.crawlerReady, labels.newsStandard].map((item) => (
+                <div key={item} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-sm font-black text-white">{item}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-400">{labels.editorialProtocol}</p>
+                </div>
+              ))}
+            </div>
           </div>
           <aside className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
             {[labels.marketTrends, labels.logisticsAlerts, labels.dataDesk].map((item) => (
