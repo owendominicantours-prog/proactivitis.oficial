@@ -17,6 +17,10 @@ No uses primera persona singular: evita "yo", "mi", "me parece".
 Usa expresiones como "nuestro equipo", "la plataforma", "el departamento" o "el analisis editorial".
 El contenido debe explicar logistica, mercado, precios, rutas o tecnologia con tono verificable.
 Cuando haya incertidumbre, expresa el dato como tendencia, rango o recomendacion operativa.
+No escribas como vendedor ni cierres con presion comercial.
+Evita frases como "reserva ahora", "compra ahora", "asegura tu lugar", "oferta limitada" o "mejor precio".
+Si enlazas productos o paginas internas, presentalos como recursos de contexto editorial, no como llamada agresiva de venta.
+Cada pieza debe incluir contexto, hallazgos, limitaciones y una conclusion util para lectores humanos.
 `;
 
 const FALLBACK_TONE: SharedClusterTone = {
@@ -31,12 +35,12 @@ const FALLBACK_TONE: SharedClusterTone = {
     "Define fecha exacta y zona donde te vas a hospedar.",
     "Confirma horarios reales de traslado y duracion de la actividad.",
     "Revisa lo que incluye y lo que se paga aparte.",
-    "Guarda un contacto de soporte para cambios de ultima hora."
+    "Documenta un contacto de soporte para cambios de ultimo momento."
   ],
   mistakesTitle: "Errores comunes que conviene evitar",
   mistakes: [
     "Elegir solo por precio sin validar ubicacion y tiempos.",
-    "Reservar todo en el ultimo momento con disponibilidad limitada.",
+    "Dejar todas las decisiones para el ultimo momento con disponibilidad limitada.",
     "No confirmar la logistica de ida y regreso."
   ],
   close:
@@ -55,6 +59,14 @@ const mergeTone = (
 
 const htmlList = (items: string[]) => items.map((item) => `<li>${item}</li>`).join("");
 
+const editorialLinkLabel = (label: string) =>
+  label
+    .replace(/reserva ahora/gi, "consulta disponibilidad")
+    .replace(/reservar/gi, "consultar")
+    .replace(/book now/gi, "review availability")
+    .replace(/book/gi, "review")
+    .replace(/compra/gi, "consulta");
+
 const ensureMinTextLength = (html: string, minChars = 600) => {
   const textOnly = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
   if (textOnly.length >= minChars) return html;
@@ -69,8 +81,10 @@ export const buildSeoBlogDraft = (
   cta: { label: string; href: string; supportLabel: string; supportHref: string }
 ) => {
   const resolvedTone = mergeTone(FALLBACK_TONE, tone);
+  const primaryLabel = editorialLinkLabel(cta.label);
+  const supportLabel = editorialLinkLabel(cta.supportLabel);
   const title = `${resolvedTone.titlePrefix}: ${keyword}`;
-  const excerpt = `${resolvedTone.excerptLead} Guia tecnica sobre ${keyword} para decidir con claridad y reservar con seguridad.`;
+  const excerpt = `${resolvedTone.excerptLead} Guia tecnica sobre ${keyword} para decidir con claridad y contexto verificable.`;
   const contentHtmlRaw = `
 <h1>${keyword}</h1>
 <p>${resolvedTone.intro}</p>
@@ -86,11 +100,13 @@ export const buildSeoBlogDraft = (
   ${htmlList(resolvedTone.mistakes)}
 </ul>
 
-<h2>Recomendacion practica</h2>
+<h2>Criterio editorial</h2>
 <p>${resolvedTone.close}</p>
-<p>Cuando la fecha ya esta definida, la recomendacion operativa es cerrar disponibilidad con anticipacion para evitar sobrecostos y cambios en temporada alta.</p>
+<p>Cuando la fecha ya esta definida, la recomendacion operativa es validar disponibilidad con anticipacion, documentar condiciones y evitar decisiones improvisadas en temporada alta.</p>
 
-<p><a href="${cta.href}">${cta.label}</a> | <a href="${cta.supportHref}">${cta.supportLabel}</a></p>
+<h2>Recursos relacionados</h2>
+<p>Estos enlaces se incluyen como referencias internas para ampliar contexto operativo, rutas, disponibilidad o soporte documental.</p>
+<p><a href="${cta.href}">${primaryLabel}</a> | <a href="${cta.supportHref}">${supportLabel}</a></p>
 `;
   return {
     title,

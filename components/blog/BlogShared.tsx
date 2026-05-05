@@ -45,9 +45,9 @@ const STATIC_POSTS: StaticBlogPost[] = [
     publishedAt: new Date("2026-02-01T12:00:00Z"),
     translations: {
       es: {
-        title: "Guia de viaje Punta Cana 2026: que hacer, que reservar y cuanto tiempo quedarse",
+        title: "Guia de viaje Punta Cana 2026: que hacer, que revisar y cuanto tiempo quedarse",
         excerpt:
-          "La guia practica 2026 para planificar Punta Cana: traslados, excursiones top, precios reales y consejos para evitar sobrecostos.",
+          "La guia practica 2026 para entender Punta Cana: traslados, excursiones top, precios reales y consejos para evitar sobrecostos.",
         contentHtml: `
           <p>Punta Cana sigue siendo el destino numero uno del Caribe para quienes buscan playa, seguridad y experiencias bien organizadas. En 2026 la demanda crece, los hoteles suben tarifas y el mayor dolor del viajero es la logistica. Esta guia resume lo esencial para decidir rapido: que hacer, que reservar con tiempo y como moverte sin sorpresas.</p>
           <h2>1. Punto de partida: traslados privados desde PUJ</h2>
@@ -85,7 +85,7 @@ const STATIC_POSTS: StaticBlogPost[] = [
         `
       },
       en: {
-        title: "Punta Cana Travel Guide 2026: what to do, what to book, and how long to stay",
+        title: "Punta Cana Travel Guide 2026: what to do, what to compare, and how long to stay",
         excerpt:
           "Your 2026 planning guide for Punta Cana: transfers, top tours, real prices, and tips to avoid extra fees.",
         contentHtml: `
@@ -171,9 +171,9 @@ const STATIC_POSTS: StaticBlogPost[] = [
     publishedAt: new Date("2026-02-02T12:00:00Z"),
     translations: {
       es: {
-        title: "Top attractions in Punta Cana 2026: guia rapida con reservas directas",
+        title: "Top attractions in Punta Cana 2026: guia rapida con datos utiles",
         excerpt:
-          "Las atracciones mas buscadas en Punta Cana 2026 y como reservar sin sobrecostos.",
+          "Las atracciones mas buscadas en Punta Cana 2026 y como comparar opciones sin sobrecostos.",
         contentHtml: `
           <p>Esta lista resume las atracciones que mas buscan los viajeros en 2026 y lo que conviene reservar con tiempo para evitar alzas de precio.</p>
           <h2>1. Isla Saona</h2>
@@ -190,9 +190,9 @@ const STATIC_POSTS: StaticBlogPost[] = [
         `
       },
       en: {
-        title: "Top attractions in Punta Cana 2026: quick guide with direct booking",
+        title: "Top attractions in Punta Cana 2026: quick guide with planning data",
         excerpt:
-          "The most searched Punta Cana attractions for 2026 and how to book at a fixed price.",
+          "The most searched Punta Cana attractions for 2026 and how to compare options before overpaying.",
         contentHtml: `
           <p>Here are the top attractions travelers search for in 2026, plus what to book early to avoid price spikes.</p>
           <h2>1. Saona Island</h2>
@@ -209,9 +209,9 @@ const STATIC_POSTS: StaticBlogPost[] = [
         `
       },
       fr: {
-        title: "Top attractions a Punta Cana 2026: guide rapide et reservation directe",
+        title: "Top attractions a Punta Cana 2026: guide rapide et donnees utiles",
         excerpt:
-          "Les attractions les plus recherchees a Punta Cana en 2026 et comment reserver au bon prix.",
+          "Les attractions les plus recherchees a Punta Cana en 2026 et comment comparer les options.",
         contentHtml: `
           <p>Voici les attractions les plus recherchees en 2026, et celles a reserver a l'avance.</p>
           <h2>1. Isla Saona</h2>
@@ -640,78 +640,78 @@ type EditorialBlock = {
 const EDITORIAL_DEFAULT: Record<BlogLocale, EditorialBlock> = {
   es: {
     intro:
-      "Este articulo se actualizo para ayudarte a decidir mejor, con contexto real de viaje y recomendaciones accionables.",
-    planningTitle: "Como planificarlo sin perder dinero",
+      "Este articulo se actualizo para ofrecer contexto verificable de viaje, lectura de mercado y criterios operativos utiles.",
+    planningTitle: "Como leer este mercado sin perder dinero",
     planningBody:
-      "La mejor forma de aprovechar Punta Cana es ordenar reservas por prioridad: primero traslado, luego tours clave y finalmente actividades opcionales.",
+      "La forma mas clara de evaluar Punta Cana es ordenar la logistica por prioridad: llegada, experiencias principales y actividades opcionales.",
     checklistTitle: "Checklist recomendado",
     checklist: [
       "Define fechas, hotel y numero de viajeros antes de cotizar.",
       "Confirma horario de recogida y duracion real de cada actividad.",
-      "Reserva solo con precio total cerrado y politica de cancelacion clara.",
+      "Revisa solo opciones con precio total claro y politica de cancelacion visible.",
       "Guarda vouchers y soporte de contacto para cambios de ultima hora."
     ],
     mistakesTitle: "Errores comunes que debes evitar",
     mistakes: [
-      "Esperar a llegar al hotel para reservar todo.",
+      "Dejar todas las decisiones para la llegada al hotel.",
       "Elegir solo por precio sin validar logistica de recogida.",
       "Saturar la agenda sin dias de descanso o margen entre tours."
     ],
-    ctaTitle: "Siguiente paso recomendado",
+    ctaTitle: "Recursos relacionados",
     ctaBody:
-      "Si quieres cerrar tu plan hoy, combina traslados y excursiones en una sola ruta de reserva para tener todo confirmado antes de viajar.",
+      "Estos enlaces internos sirven como contexto documental para comparar rutas, actividades y condiciones operativas antes de tomar una decision.",
     ctaHref: "/tours",
-    ctaLabel: "Ver tours disponibles"
+    ctaLabel: "Consultar guias de viaje"
   },
   en: {
     intro:
-      "This article was expanded to give you practical, real-world guidance so you can book with confidence.",
-    planningTitle: "How to plan it without overspending",
+      "This article was expanded to provide verifiable travel context, market reading, and useful operational criteria.",
+    planningTitle: "How to read this market without overspending",
     planningBody:
-      "The smartest sequence in Punta Cana is simple: secure transfer first, lock your core tours, then add optional experiences.",
+      "The clearest way to evaluate Punta Cana is to order logistics by priority: arrival, core experiences, and optional activities.",
     checklistTitle: "Recommended checklist",
     checklist: [
       "Confirm travel dates, resort, and traveler count first.",
       "Validate pickup windows and true activity duration.",
-      "Book only with full-price transparency and clear cancellation rules.",
+      "Review only options with clear total pricing and visible cancellation rules.",
       "Keep vouchers and support contact ready for last-minute adjustments."
     ],
     mistakesTitle: "Common mistakes to avoid",
     mistakes: [
-      "Waiting until hotel arrival to book everything.",
+      "Leaving every decision for hotel arrival.",
       "Choosing only by price without pickup logistics.",
       "Overloading your itinerary with no recovery time."
     ],
-    ctaTitle: "Best next step",
+    ctaTitle: "Related resources",
     ctaBody:
-      "If you want to lock your plan now, combine transfers and tours in one booking flow so everything is confirmed before arrival.",
+      "These internal references are provided as planning context for comparing routes, activities, and operational conditions before making a decision.",
     ctaHref: "/en/tours",
-    ctaLabel: "Explore available tours"
+    ctaLabel: "Review travel references"
   },
   fr: {
     intro:
-      "Cet article a ete enrichi pour vous donner des conseils concrets et utiles avant reservation.",
-    planningTitle: "Comment planifier sans depenser trop",
+      "Cet article a ete enrichi pour offrir un contexte de voyage verifiable, une lecture du marche et des criteres operationnels utiles.",
+    planningTitle: "Comment lire ce marche sans depenser trop",
     planningBody:
-      "La sequence la plus efficace a Punta Cana: transfert d abord, excursions principales ensuite, options additionnelles a la fin.",
+      "La lecture la plus claire de Punta Cana consiste a classer la logistique par priorite: arrivee, experiences principales et activites optionnelles.",
     checklistTitle: "Checklist recommandee",
     checklist: [
       "Confirmez vos dates, hotel et nombre de voyageurs.",
       "Validez horaires de pickup et duree reelle des activites.",
-      "Reservez avec prix total clair et annulation transparente.",
+      "Consultez seulement les options avec prix total clair et annulation transparente.",
       "Gardez vouchers et contact support pour les changements."
     ],
     mistakesTitle: "Erreurs frequentes a eviter",
     mistakes: [
-      "Tout reserver uniquement a l arrivee a l hotel.",
+      "Laisser toutes les decisions pour l arrivee a l hotel.",
       "Choisir par prix sans verifier la logistique pickup.",
       "Surcharger le planning sans temps libre."
     ],
-    ctaTitle: "Prochaine etape conseillee",
+    ctaTitle: "Ressources associees",
     ctaBody:
-      "Pour verrouiller votre voyage maintenant, combinez transferts et excursions dans un parcours de reservation unique.",
+      "Ces references internes servent de contexte documentaire pour comparer routes, activites et conditions operationnelles avant une decision.",
     ctaHref: "/fr/tours",
-    ctaLabel: "Voir les excursions"
+    ctaLabel: "Consulter les references de voyage"
   }
 };
 
@@ -728,7 +728,7 @@ const EDITORIAL_BY_SLUG: Record<string, Partial<Record<BlogLocale, Partial<Edito
         "Definir punto de salida de retorno al aeropuerto."
       ],
       ctaHref: "/traslado",
-      ctaLabel: "Reservar traslado privado"
+      ctaLabel: "Consultar guia de traslado privado"
     }
   },
   "punta-cana-best-beaches-2026": {
@@ -867,6 +867,43 @@ const buildEditorialAppendix = (slug: string, locale: BlogLocale) => {
 
 const getStaticPost = (slug: string) => STATIC_POSTS.find((post) => post.slug === slug);
 
+const NEWS_EDITORIAL_REPLACEMENTS: Array<[RegExp, string]> = [
+  [/Reserva directo, compara opciones y evita intermediarios del hotel\./gi, "Compara opciones, verifica condiciones y documenta cada costo antes de decidir."],
+  [/Reserva directo para asegurar precio fijo y confirmacion inmediata:/gi, "Como referencia operativa, consulta tambien:"],
+  [/Reserva privado para evitar esperas y cargos sorpresa\./gi, "Para comprender la logistica de llegada, revisa el analisis de traslados privados."],
+  [/Reserva primero el traslado y luego 2-3 excursiones clave\./gi, "Ordena primero la logistica de llegada y luego selecciona 2-3 excursiones clave."],
+  [/Â¿Listo para organizar tu viaje\? Mira las opciones de/gi, "Para ampliar la planificacion, consulta las paginas internas sobre"],
+  [/¿Listo para organizar tu viaje\? Mira las opciones de/gi, "Para ampliar la planificacion, consulta las paginas internas sobre"],
+  [/reserva tu/gi, "revisa la guia de"],
+  [/Reserva experiencias cerca de cada playa:/gi, "Recursos de contexto por playa:"],
+  [/Reserva el party boat con antelacion:/gi, "Revisa ventanas de demanda para party boat:"],
+  [/Reserva directo:/gi, "Recurso interno:"],
+  [/reservar con seguridad/gi, "decidir con claridad"],
+  [/reservas seguras/gi, "planificacion segura"],
+  [/reservar ahora/gi, "consultar disponibilidad"],
+  [/compra ahora/gi, "consulta disponibilidad"],
+  [/asegura tu lugar/gi, "valida disponibilidad"],
+  [/Book direct, compare options, and avoid hotel desk commissions\./gi, "Compare options, review conditions, and document each cost before deciding."],
+  [/Book direct for fixed rates:/gi, "For operational context, review:"],
+  [/Book the party boat early:/gi, "Review demand windows for party boats:"],
+  [/Book direct:/gi, "Internal reference:"],
+  [/Book your transfer first and then/gi, "Organize arrival logistics first and then select"],
+  [/or reserve a/gi, "or review the"],
+  [/book now/gi, "review availability"],
+  [/secure your spot/gi, "review availability"],
+  [/Reservation directe:/gi, "Reference interne:"],
+  [/Reservez prive:/gi, "Reference logistique:"],
+  [/Reservez le party boat:/gi, "Consultez les fenetres de demande pour le party boat:"],
+  [/Reservez d'abord votre transfert/gi, "Organisez d'abord votre logistique d'arrivee"],
+  [/reserver un/gi, "consulter un"]
+];
+
+const normalizeNewsEditorialTone = (html: string) =>
+  NEWS_EDITORIAL_REPLACEMENTS.reduce(
+    (normalized, [pattern, replacement]) => normalized.replace(pattern, replacement),
+    html
+  );
+
 const renderBlogContent = (html: string) => (
   <div
     className="rounded-3xl border border-slate-200 bg-white p-6 font-serif text-[18px] leading-8 text-slate-800 shadow-sm md:p-8"
@@ -970,10 +1007,10 @@ const LABELS = {
     caption: "Imagen editorial usada como referencia visual para el analisis turistico y logistico de Proactivitis.",
     sidebarTitle: "Inteligencia operativa",
     sidebarItems: ["Precios y disponibilidad", "Rutas y traslados", "Senales de demanda"],
-    contextualTitle: "Recomendacion basada en este analisis",
+    contextualTitle: "Recursos editoriales relacionados",
     contextualBody:
-      "Si el viaje incluye Punta Cana, nuestro equipo recomienda asegurar traslado privado y experiencias verificadas antes de temporada alta.",
-    contextualCta: "Ver tours y traslados",
+      "El newsroom enlaza guias internas cuando aportan contexto operativo sobre rutas, precios o destinos. Estos recursos no sustituyen la verificacion editorial del articulo.",
+    contextualCta: "Ver archivo de noticias",
     articleBriefTitle: "Resumen ejecutivo",
     evidenceTitle: "Evidencia editorial",
     editorialProtocol: "Revision de datos, contexto de mercado y autor institucional.",
@@ -1015,10 +1052,10 @@ const LABELS = {
     caption: "Editorial image used as visual reference for Proactivitis tourism and logistics analysis.",
     sidebarTitle: "Operational intelligence",
     sidebarItems: ["Pricing and availability", "Routes and transfers", "Demand signals"],
-    contextualTitle: "Recommendation based on this analysis",
+    contextualTitle: "Related editorial resources",
     contextualBody:
-      "If the trip includes Punta Cana, our team recommends securing private transfer and verified experiences before peak demand windows.",
-    contextualCta: "View tours and transfers",
+      "The newsroom links internal guides when they add operational context on routes, pricing, or destinations. These resources do not replace the article's editorial verification.",
+    contextualCta: "View news archive",
     articleBriefTitle: "Executive brief",
     evidenceTitle: "Editorial evidence",
     editorialProtocol: "Data review, market context, and institutional authorship.",
@@ -1060,10 +1097,10 @@ const LABELS = {
     caption: "Image editoriale utilisee comme reference visuelle pour l'analyse touristique et logistique de Proactivitis.",
     sidebarTitle: "Intelligence operationnelle",
     sidebarItems: ["Prix et disponibilite", "Routes et transferts", "Signaux de demande"],
-    contextualTitle: "Recommandation basee sur cette analyse",
+    contextualTitle: "Ressources editoriales associees",
     contextualBody:
-      "Si le voyage inclut Punta Cana, notre equipe recommande de securiser le transfert prive et les experiences verifiees avant les periodes de forte demande.",
-    contextualCta: "Voir tours et transferts",
+      "Le newsroom relie des guides internes lorsqu'ils ajoutent un contexte operationnel sur les routes, les prix ou les destinations. Ces ressources ne remplacent pas la verification editoriale de l'article.",
+    contextualCta: "Voir les archives news",
     articleBriefTitle: "Synthese executive",
     evidenceTitle: "Preuves editoriales",
     editorialProtocol: "Verification des donnees, contexte marche et auteur institutionnel.",
@@ -1150,34 +1187,28 @@ const renderReaderRevenueInlineCta = () => (
 );
 
 const contextualHref = (locale: BlogLocale) =>
-  locale === "es" ? "/tours" : locale === "fr" ? "/fr/tours" : "/en/tours";
+  locale === "es" ? "/news" : locale === "fr" ? "/fr/news" : "/en/news";
 
 const renderContextualCta = (locale: BlogLocale) => {
   const labels = LABELS[locale];
   return (
-    <aside className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 shadow-sm">
-      <div className="grid gap-0 md:grid-cols-[1fr,220px]">
-        <div className="p-6 text-white md:p-8">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-300">{labels.dataDesk}</p>
-          <h2 className="mt-3 text-2xl font-black">{labels.contextualTitle}</h2>
-          <p className="mt-3 text-sm leading-7 text-slate-300">{labels.contextualBody}</p>
-          <Link
-            href={contextualHref(locale)}
-            className="mt-5 inline-flex rounded-full bg-sky-500 px-5 py-3 text-sm font-black text-white shadow-sm transition hover:bg-sky-400"
-          >
-            {labels.contextualCta}
-          </Link>
-        </div>
-        <div className="relative min-h-[180px] bg-slate-800">
-          <Image
-            src="/fototours/fototour.jpeg"
-            alt={labels.contextualTitle}
-            fill
-            sizes="220px"
-            className="object-cover opacity-80"
-          />
-        </div>
+    <aside className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+      <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">{labels.dataDesk}</p>
+      <h2 className="mt-3 font-serif text-2xl font-black text-slate-950">{labels.contextualTitle}</h2>
+      <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">{labels.contextualBody}</p>
+      <div className="mt-5 grid gap-3 md:grid-cols-3">
+        {[labels.sourceVerified, labels.editorialProtocol, labels.newsStandard].map((item) => (
+          <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
+            {item}
+          </div>
+        ))}
       </div>
+      <Link
+        href={contextualHref(locale)}
+        className="mt-5 inline-flex rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-black text-slate-900 transition hover:border-slate-950"
+      >
+        {labels.contextualCta}
+      </Link>
     </aside>
   );
 };
@@ -1245,6 +1276,7 @@ const renderNewsArticleLayout = ({
 }: NewsArticleLayoutProps) => {
   const labels = LABELS[locale];
   const editorialHref = editorialTeamHref(locale);
+  const editorialContentHtml = normalizeNewsEditorialTone(contentHtml);
   return (
     <div className="travel-surface min-h-screen">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
@@ -1333,7 +1365,7 @@ const renderNewsArticleLayout = ({
 
             {renderReaderRevenueInlineCta()}
 
-            <section id="analysis" className="blog-content">{renderBlogContent(contentHtml)}</section>
+            <section id="analysis" className="blog-content">{renderBlogContent(editorialContentHtml)}</section>
             <div className="news-print-hide">{renderContextualCta(locale)}</div>
             {renderEditorialAuthorBox(locale)}
             {children}
