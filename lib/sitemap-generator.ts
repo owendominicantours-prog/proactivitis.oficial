@@ -239,6 +239,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
     { url: `${BASE_URL}/fr/cliente-de-honor`, priority: 0.8 },
     { url: `${BASE_URL}/en/editorial-team`, priority: 0.72 },
     { url: `${BASE_URL}/es/equipo-editorial`, priority: 0.72 },
+    { url: `${BASE_URL}/fr/equipe-editoriale`, priority: 0.72 },
     { url: `${BASE_URL}/punta-cana/tours`, priority: 0.85 },
     { url: `${BASE_URL}/punta-cana/traslado`, priority: 0.85 },
     { url: `${BASE_URL}/punta-cana/premium-transfer-services`, priority: 0.86 },

@@ -5,7 +5,7 @@ const BASE_URL = "https://proactivitis.com";
 const EDITORIAL_NAME = "Departamento de Inteligencia Editorial Proactivitis";
 const CONTACT_EMAIL = "prensa@proactivitis.com";
 
-type EditorialLocale = "es" | "en";
+type EditorialLocale = "es" | "en" | "fr";
 
 const COPY = {
   es: {
@@ -75,12 +75,46 @@ const COPY = {
       "For press inquiries, editorial collaborations or data verification requests, contact the editorial team.",
     location: "Operations location: Eastern Region, Dominican Republic.",
     back: "Back to news"
+  },
+  fr: {
+    eyebrow: "Autorite editoriale",
+    title: "Departement d'intelligence editoriale Proactivitis",
+    description:
+      "Unite centrale d'analyse et de diffusion d'information technique pour le secteur touristique mondial.",
+    whoTitle: "Qui sommes-nous ?",
+    whoBody:
+      "Le Departement d'intelligence editoriale de Proactivitis est l'unite centrale d'analyse et de diffusion d'information technique pour le secteur touristique mondial. Sa mission est de transformer des donnees complexes de logistique, de marche et de technologie en informations actionnables pour les voyageurs modernes et les agences partenaires.",
+    approachTitle: "Notre approche E-E-A-T",
+    approachIntro:
+      "Le departement fonctionne avec un modele hybride qui combine des systemes avances de traitement de donnees et la supervision de specialistes en operations touristiques.",
+    pillars: [
+      {
+        title: "Analyse logistique",
+        body: "Surveillance continue des flux de transport et des services de transfert dans les principaux hubs touristiques des Caraibes et des destinations internationales."
+      },
+      {
+        title: "Audit de marche",
+        body: "Verification des standards de qualite et des structures de couts sur des plateformes globales comme Viator, GetYourGuide et les systemes B2B."
+      },
+      {
+        title: "Innovation technologique",
+        body: "Mise en place d'architectures logicielles et de SEO programmatique pour garantir une information fraiche, precise et accessible."
+      }
+    ],
+    transparencyTitle: "Engagement de transparence",
+    transparencyBody:
+      "Les contenus publies sous ce sceau editorial suivent un processus de verification des donnees. Des outils d'automatisation et d'intelligence artificielle peuvent etre utilises pour traiter de grands volumes de donnees, mais l'integrite editoriale et la precision des prix, horaires et routes restent prioritaires.",
+    contactTitle: "Contact institutionnel",
+    contactBody:
+      "Pour les demandes presse, collaborations editoriales ou verifications de donnees, contactez l'equipe editoriale.",
+    location: "Lieu des operations : Region Est, Republique dominicaine.",
+    back: "Retour aux actualites"
   }
 } as const;
 
 export function buildEditorialTeamMetadata(locale: EditorialLocale): Metadata {
   const copy = COPY[locale];
-  const path = locale === "es" ? "/es/equipo-editorial" : "/en/editorial-team";
+  const path = locale === "es" ? "/es/equipo-editorial" : locale === "fr" ? "/fr/equipe-editoriale" : "/en/editorial-team";
   return {
     title: `${copy.title} | Proactivitis`,
     description: copy.description,
@@ -88,7 +122,8 @@ export function buildEditorialTeamMetadata(locale: EditorialLocale): Metadata {
       canonical: `${BASE_URL}${path}`,
       languages: {
         es: `${BASE_URL}/es/equipo-editorial`,
-        en: `${BASE_URL}/en/editorial-team`
+        en: `${BASE_URL}/en/editorial-team`,
+        fr: `${BASE_URL}/fr/equipe-editoriale`
       }
     }
   };
@@ -96,7 +131,7 @@ export function buildEditorialTeamMetadata(locale: EditorialLocale): Metadata {
 
 export default function EditorialTeamPage({ locale }: { locale: EditorialLocale }) {
   const copy = COPY[locale];
-  const pageUrl = `${BASE_URL}${locale === "es" ? "/es/equipo-editorial" : "/en/editorial-team"}`;
+  const pageUrl = `${BASE_URL}${locale === "es" ? "/es/equipo-editorial" : locale === "fr" ? "/fr/equipe-editoriale" : "/en/editorial-team"}`;
   const schema = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -131,12 +166,12 @@ export default function EditorialTeamPage({ locale }: { locale: EditorialLocale 
       </section>
 
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-10">
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section id="who-we-are" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-2xl font-bold text-slate-950">{copy.whoTitle}</h2>
           <p className="mt-4 text-sm leading-7 text-slate-600">{copy.whoBody}</p>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section id="approach" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-2xl font-bold text-slate-950">{copy.approachTitle}</h2>
           <p className="mt-4 text-sm leading-7 text-slate-600">{copy.approachIntro}</p>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -149,12 +184,12 @@ export default function EditorialTeamPage({ locale }: { locale: EditorialLocale 
           </div>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section id="transparency" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-2xl font-bold text-slate-950">{copy.transparencyTitle}</h2>
           <p className="mt-4 text-sm leading-7 text-slate-600">{copy.transparencyBody}</p>
         </section>
 
-        <section className="rounded-3xl border border-sky-200 bg-sky-50 p-6 shadow-sm">
+        <section id="contact" className="rounded-3xl border border-sky-200 bg-sky-50 p-6 shadow-sm">
           <h2 className="text-2xl font-bold text-slate-950">{copy.contactTitle}</h2>
           <p className="mt-4 text-sm leading-7 text-slate-600">{copy.contactBody}</p>
           <p className="mt-4 text-sm font-bold text-slate-950">
@@ -163,7 +198,7 @@ export default function EditorialTeamPage({ locale }: { locale: EditorialLocale 
           <p className="mt-2 text-sm text-slate-600">{copy.location}</p>
         </section>
 
-        <Link href={locale === "es" ? "/news" : "/en/news"} className="inline-flex rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-800 transition hover:border-sky-300 hover:text-sky-700">
+        <Link href={locale === "es" ? "/news" : `/${locale}/news`} className="inline-flex rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-800 transition hover:border-sky-300 hover:text-sky-700">
           {copy.back}
         </Link>
       </main>

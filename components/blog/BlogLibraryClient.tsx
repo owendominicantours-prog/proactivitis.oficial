@@ -29,13 +29,20 @@ const UI = {
     sortNewest: "Más recientes",
     sortOldest: "Más antiguos",
     sortAZ: "A-Z",
-    recommendations: "Recomendaciones rotativas",
+    recommendations: "Mesa de inteligencia",
     empty: "No encontramos resultados con esos filtros.",
     readMore: "Ver artículo",
     page: "Página",
     prev: "Anterior",
     next: "Siguiente",
-    posts: "artículos"
+    posts: "artículos",
+    leadReport: "Reporte principal",
+    latestReports: "Últimos reportes",
+    intelligenceFilters: "Filtros de inteligencia",
+    verified: "Verificado por Proactivitis",
+    marketTrends: "Tendencias de mercado",
+    logisticsAlerts: "Alertas de logística",
+    dataSignals: "Señales de datos"
   },
   en: {
     searchPlaceholder: "Search by title, topic, or buying intent...",
@@ -45,13 +52,20 @@ const UI = {
     sortNewest: "Newest",
     sortOldest: "Oldest",
     sortAZ: "A-Z",
-    recommendations: "Rotating recommendations",
+    recommendations: "Intelligence desk",
     empty: "No results found with those filters.",
     readMore: "Read article",
     page: "Page",
     prev: "Previous",
     next: "Next",
-    posts: "articles"
+    posts: "articles",
+    leadReport: "Lead report",
+    latestReports: "Latest reports",
+    intelligenceFilters: "Intelligence filters",
+    verified: "Verified by Proactivitis",
+    marketTrends: "Market trends",
+    logisticsAlerts: "Logistics alerts",
+    dataSignals: "Data signals"
   },
   fr: {
     searchPlaceholder: "Rechercher par titre, sujet ou intention d'achat...",
@@ -61,13 +75,20 @@ const UI = {
     sortNewest: "Plus récents",
     sortOldest: "Plus anciens",
     sortAZ: "A-Z",
-    recommendations: "Recommandations rotatives",
+    recommendations: "Bureau d'intelligence",
     empty: "Aucun résultat avec ces filtres.",
     readMore: "Voir l'article",
     page: "Page",
     prev: "Précédent",
     next: "Suivant",
-    posts: "articles"
+    posts: "articles",
+    leadReport: "Rapport principal",
+    latestReports: "Derniers rapports",
+    intelligenceFilters: "Filtres d'intelligence",
+    verified: "Verifie par Proactivitis",
+    marketTrends: "Tendances du marche",
+    logisticsAlerts: "Alertes logistiques",
+    dataSignals: "Signaux de donnees"
   }
 } as const;
 
@@ -162,10 +183,15 @@ export default function BlogLibraryClient({ locale, posts }: Props) {
 
   const prefix = locale === "es" ? "" : `/${locale}`;
   const featured = recommended[recIndex] ?? null;
+  const leadStory = filtered[0] ?? featured;
+  const visiblePosts = leadStory && safePage === 1
+    ? pagePosts.filter((post) => post.id !== leadStory.id)
+    : pagePosts;
+  const intelligenceItems = [t.marketTrends, t.logisticsAlerts, t.dataSignals];
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8">
-      <section className="mb-6 grid gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[1fr,340px]">
+    <main className="mx-auto max-w-7xl space-y-8 px-4 py-8">
+      <section className="grid gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[1fr,340px]">
         <div className="space-y-4">
           <div className="grid gap-3 md:grid-cols-[1fr,170px]">
             <input
@@ -186,7 +212,7 @@ export default function BlogLibraryClient({ locale, posts }: Props) {
             </select>
           </div>
           <div>
-            <p className="mb-2 text-xs uppercase tracking-[0.25em] text-slate-500">{t.filters}</p>
+            <p className="mb-2 text-xs font-black uppercase tracking-[0.25em] text-slate-500">{t.intelligenceFilters}</p>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
@@ -221,32 +247,72 @@ export default function BlogLibraryClient({ locale, posts }: Props) {
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-slate-950 p-4 text-white">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-slate-300">{t.recommendations}</p>
-          {featured ? (
-            <Link href={`${prefix}/news/${featured.slug}`} className="mt-3 block">
-              <div className="relative h-28 overflow-hidden rounded-xl">
-                <Image
-                  src={featured.coverImage ?? "/fototours/fotosimple.jpg"}
-                  alt={featured.title}
-                  fill
-                  className="object-cover opacity-90"
-                />
+          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-sky-300">{t.recommendations}</p>
+          <div className="mt-4 space-y-3">
+            {intelligenceItems.map((item, index) => (
+              <div key={item} className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                <p className="text-sm font-black">{item}</p>
+                <p className="mt-1 text-xs leading-5 text-slate-300">
+                  {recommended[index]?.title ?? t.verified}
+                </p>
               </div>
-              <h3 className="mt-3 line-clamp-2 text-sm font-semibold">{featured.title}</h3>
-              <p className="mt-1 line-clamp-2 text-xs text-slate-300">{featured.excerpt ?? ""}</p>
-            </Link>
-          ) : null}
+            ))}
+          </div>
         </div>
       </section>
+
+      {leadStory ? (
+        <section className="grid gap-5 rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm lg:grid-cols-[1.1fr,0.9fr]">
+          <Link href={`${prefix}/news/${leadStory.slug}`} className="relative min-h-[260px] overflow-hidden rounded-[1.5rem] bg-slate-100">
+            <Image
+              src={leadStory.coverImage ?? "/fototours/fotosimple.jpg"}
+              alt={leadStory.title}
+              fill
+              sizes="(max-width: 1024px) 100vw, 55vw"
+              className="object-cover transition duration-500 hover:scale-105"
+            />
+            <span className="absolute left-4 top-4 rounded-full bg-slate-950/85 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-white">
+              {t.leadReport}
+            </span>
+          </Link>
+          <div className="flex flex-col justify-center p-2 md:p-6">
+            <p className="text-xs font-black uppercase tracking-[0.25em] text-sky-700">{t.verified}</p>
+            <h2 className="mt-3 font-serif text-3xl font-black leading-tight text-slate-950 md:text-4xl">
+              {leadStory.title}
+            </h2>
+            <p className="mt-4 line-clamp-4 text-sm leading-7 text-slate-600">
+              {leadStory.excerpt ?? "Insights and practical travel guidance from Proactivitis."}
+            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                {formatDate(leadStory.publishedAt, locale)}
+              </span>
+              <Link
+                href={`${prefix}/news/${leadStory.slug}`}
+                className="rounded-full bg-slate-950 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:bg-sky-700"
+              >
+                {t.readMore}
+              </Link>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {pagePosts.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-600">{t.empty}</div>
       ) : (
-        <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {pagePosts.map((post) => (
+        <section className="space-y-4">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">{t.latestReports}</p>
+              <h2 className="mt-1 text-2xl font-black text-slate-950">{filtered.length} {t.posts}</h2>
+            </div>
+          </div>
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {visiblePosts.map((post) => (
             <article
               key={post.id}
-              className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+              className="group overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
             >
               <Link href={`${prefix}/news/${post.slug}`} className="block">
                 <div className="relative h-48">
@@ -281,6 +347,7 @@ export default function BlogLibraryClient({ locale, posts }: Props) {
               </div>
             </article>
           ))}
+          </div>
         </section>
       )}
 

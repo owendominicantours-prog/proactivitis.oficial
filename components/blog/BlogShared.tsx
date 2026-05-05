@@ -6,9 +6,11 @@ import BlogShareButtons from "@/components/blog/BlogShareButtons";
 import BlogCommentForm from "@/components/blog/BlogCommentForm";
 import { TourCard } from "@/components/public/TourCard";
 import BlogReadingProgress from "@/components/blog/BlogReadingProgress";
+import BlogArticleTools from "@/components/blog/BlogArticleTools";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import BlogLibraryClient from "@/components/blog/BlogLibraryClient";
+import type { ReactNode } from "react";
 
 const BASE_URL = "https://proactivitis.com";
 const EDITORIAL_AUTHOR_NAME = "Departamento de Inteligencia Editorial Proactivitis";
@@ -866,7 +868,7 @@ const getStaticPost = (slug: string) => STATIC_POSTS.find((post) => post.slug ==
 
 const renderBlogContent = (html: string) => (
   <div
-    className="rounded-3xl border border-slate-200 bg-white p-6 text-[15px] leading-7 text-slate-700 shadow-sm"
+    className="rounded-3xl border border-slate-200 bg-white p-6 font-serif text-[18px] leading-8 text-slate-800 shadow-sm md:p-8"
     dangerouslySetInnerHTML={{ __html: html }}
   />
 );
@@ -877,73 +879,349 @@ const AUTHOR_BOX_COPY = {
     title: EDITORIAL_AUTHOR_NAME,
     body:
       "Unidad central de analisis y difusion tecnica de Proactivitis. El departamento transforma datos de logistica, mercado y tecnologia en informacion accionable para viajeros y agencias aliadas.",
-    link: "Ver equipo editorial"
+    link: "Ver equipo editorial",
+    verify: "Verificar datos",
+    ethics: "Etica editorial",
+    contact: "Contacto de prensa"
   },
   en: {
     label: "Editorial responsibility",
     title: EDITORIAL_AUTHOR_NAME,
     body:
       "Proactivitis central technical analysis and publishing unit. The department turns logistics, market and technology data into actionable information for travelers and allied agencies.",
-    link: "View editorial team"
+    link: "View editorial team",
+    verify: "Verify data",
+    ethics: "Editorial ethics",
+    contact: "Press contact"
   },
   fr: {
     label: "Responsabilite editoriale",
     title: EDITORIAL_AUTHOR_NAME,
     body:
       "Unite centrale d'analyse technique et de publication de Proactivitis. Le departement transforme les donnees de logistique, marche et technologie en informations utiles.",
-    link: "Voir l'equipe editoriale"
+    link: "Voir l'equipe editoriale",
+    verify: "Verifier les donnees",
+    ethics: "Ethique editoriale",
+    contact: "Contact presse"
   }
 };
 
 const renderEditorialAuthorBox = (locale: BlogLocale) => {
   const copy = AUTHOR_BOX_COPY[locale];
-  const href = locale === "es" ? "/es/equipo-editorial" : "/en/editorial-team";
+  const href = locale === "es" ? "/es/equipo-editorial" : locale === "fr" ? "/fr/equipe-editoriale" : "/en/editorial-team";
   return (
-    <aside className="rounded-3xl border border-sky-200 bg-sky-50 p-6 shadow-sm">
-      <p className="text-xs font-bold uppercase tracking-[0.35em] text-sky-700">{copy.label}</p>
-      <h2 className="mt-3 text-xl font-black text-slate-950">{copy.title}</h2>
-      <p className="mt-3 text-sm leading-7 text-slate-600">{copy.body}</p>
-      <Link href={href} className="mt-4 inline-flex text-sm font-bold text-sky-800 underline">
-        {copy.link}
-      </Link>
+    <aside className="rounded-3xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-slate-50 p-6 shadow-sm">
+      <div className="flex gap-4">
+        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-white bg-white shadow-sm">
+          <Image src="/logo.png" alt="Proactivitis" fill sizes="56px" className="object-contain p-2" />
+        </div>
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.35em] text-sky-700">{copy.label}</p>
+          <h2 className="mt-2 text-xl font-black text-slate-950">{copy.title}</h2>
+          <p className="mt-3 text-sm leading-7 text-slate-600">{copy.body}</p>
+        </div>
+      </div>
+      <div className="mt-5 flex flex-wrap gap-2">
+        <Link href={href} className="rounded-full border border-sky-200 bg-white px-4 py-2 text-xs font-bold text-sky-800">
+          {copy.link}
+        </Link>
+        <Link href={`${href}#transparency`} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700">
+          {copy.verify}
+        </Link>
+        <Link href={`${href}#approach`} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700">
+          {copy.ethics}
+        </Link>
+        <a href="mailto:prensa@proactivitis.com" className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700">
+          {copy.contact}
+        </a>
+      </div>
     </aside>
   );
 };
 
 const LABELS = {
   es: {
-    listTitle: "Noticias y guias",
-    listSubtitle: "Historias, recomendaciones y actualizaciones del equipo Proactivitis.",
+    listTitle: "Proactivitis News & Market Intelligence",
+    listSubtitle: "Analisis de mercado, logistica turistica, precios y senales operativas para viajeros y agencias.",
+    newsroomEyebrow: "Newsroom institucional",
+    tickerLabel: "Ultima hora",
+    tickerItems: [
+      "Monitoreo activo de tarifas, rutas y disponibilidad turistica.",
+      "Sitemap de noticias actualizado cada hora para acelerar descubrimiento.",
+      "Analisis editorial con supervision tecnica y enfoque de datos."
+    ],
+    marketTrends: "Tendencias de mercado",
+    logisticsAlerts: "Alertas de logistica turistica",
+    dataDesk: "Mesa de datos",
+    trustLine: "Fact-checking, monitoreo de rutas y actualizaciones editoriales.",
     listEmpty: "Todavia no hay publicaciones.",
     listCta: "Leer articulo",
     detailComments: "Comentarios",
     detailEmptyComments: "Aun no hay comentarios aprobados.",
     detailTours: "Tours recomendados",
     detailHotels: "Hoteles recomendados",
-    detailHotelsBody: "Seleccionados de nuestro inventario real con fotos cargadas por nuestro equipo."
+    detailHotelsBody: "Seleccionados de nuestro inventario real con fotos cargadas por nuestro equipo.",
+    analyzedBy: "Analizado por el Departamento de Inteligencia Editorial de Proactivitis",
+    published: "Publicado",
+    updated: "Actualizado",
+    minutesAgo: "hace 2 horas",
+    print: "Imprimir / PDF",
+    caption: "Imagen editorial usada como referencia visual para el analisis turistico y logistico de Proactivitis.",
+    sidebarTitle: "Inteligencia operativa",
+    sidebarItems: ["Precios y disponibilidad", "Rutas y traslados", "Senales de demanda"],
+    contextualTitle: "Recomendacion basada en este analisis",
+    contextualBody:
+      "Si el viaje incluye Punta Cana, nuestro equipo recomienda asegurar traslado privado y experiencias verificadas antes de temporada alta.",
+    contextualCta: "Ver tours y traslados"
   },
   en: {
-    listTitle: "News & Guides",
-    listSubtitle: "Updates, recommendations, and insights from Proactivitis.",
+    listTitle: "Proactivitis News & Market Intelligence",
+    listSubtitle: "Tourism market analysis, logistics signals, pricing intelligence, and operational updates for travelers and agencies.",
+    newsroomEyebrow: "Institutional newsroom",
+    tickerLabel: "Breaking",
+    tickerItems: [
+      "Active monitoring of travel prices, routes, and availability signals.",
+      "News sitemap refreshes hourly to support faster discovery.",
+      "Editorial analysis with technical supervision and a data-first standard."
+    ],
+    marketTrends: "Market trends",
+    logisticsAlerts: "Tourism logistics alerts",
+    dataDesk: "Data desk",
+    trustLine: "Fact-checking, route monitoring, and editorial updates.",
     listEmpty: "No posts yet.",
     listCta: "Read article",
     detailComments: "Comments",
     detailEmptyComments: "No approved comments yet.",
     detailTours: "Recommended tours",
     detailHotels: "Recommended hotels",
-    detailHotelsBody: "Selected from our live inventory with images uploaded by our team."
+    detailHotelsBody: "Selected from our live inventory with images uploaded by our team.",
+    analyzedBy: "Analyzed by the Proactivitis Editorial Intelligence Department",
+    published: "Published",
+    updated: "Updated",
+    minutesAgo: "2 hours ago",
+    print: "Print / PDF",
+    caption: "Editorial image used as visual reference for Proactivitis tourism and logistics analysis.",
+    sidebarTitle: "Operational intelligence",
+    sidebarItems: ["Pricing and availability", "Routes and transfers", "Demand signals"],
+    contextualTitle: "Recommendation based on this analysis",
+    contextualBody:
+      "If the trip includes Punta Cana, our team recommends securing private transfer and verified experiences before peak demand windows.",
+    contextualCta: "View tours and transfers"
   },
   fr: {
-    listTitle: "Actualites & Guides",
-    listSubtitle: "Mises a jour, recommandations et conseils de Proactivitis.",
+    listTitle: "Proactivitis News & Market Intelligence",
+    listSubtitle: "Analyse du marche touristique, signaux logistiques, intelligence tarifaire et mises a jour operationnelles.",
+    newsroomEyebrow: "Newsroom institutionnelle",
+    tickerLabel: "Derniere minute",
+    tickerItems: [
+      "Surveillance active des prix, routes et signaux de disponibilite.",
+      "Sitemap d'actualites actualise toutes les heures pour accelerer la decouverte.",
+      "Analyse editoriale avec supervision technique et standard data-first."
+    ],
+    marketTrends: "Tendances du marche",
+    logisticsAlerts: "Alertes de logistique touristique",
+    dataDesk: "Bureau des donnees",
+    trustLine: "Fact-checking, suivi des routes et mises a jour editoriales.",
     listEmpty: "Aucune publication pour le moment.",
     listCta: "Lire l'article",
     detailComments: "Commentaires",
     detailEmptyComments: "Aucun commentaire approuve pour le moment.",
     detailTours: "Tours recommandes",
     detailHotels: "Hotels recommandes",
-    detailHotelsBody: "Selectionnes depuis notre inventaire reel avec des photos telechargees par notre equipe."
+    detailHotelsBody: "Selectionnes depuis notre inventaire reel avec des photos telechargees par notre equipe.",
+    analyzedBy: "Analyse par le Departement d'intelligence editoriale de Proactivitis",
+    published: "Publie",
+    updated: "Mis a jour",
+    minutesAgo: "il y a 2 heures",
+    print: "Imprimer / PDF",
+    caption: "Image editoriale utilisee comme reference visuelle pour l'analyse touristique et logistique de Proactivitis.",
+    sidebarTitle: "Intelligence operationnelle",
+    sidebarItems: ["Prix et disponibilite", "Routes et transferts", "Signaux de demande"],
+    contextualTitle: "Recommandation basee sur cette analyse",
+    contextualBody:
+      "Si le voyage inclut Punta Cana, notre equipe recommande de securiser le transfert prive et les experiences verifiees avant les periodes de forte demande.",
+    contextualCta: "Voir tours et transferts"
   }
+};
+
+type NewsArticleLayoutProps = {
+  locale: BlogLocale;
+  schema: unknown;
+  title: string;
+  excerpt: string;
+  shareUrl: string;
+  coverImage: string;
+  publishedAt?: Date | string | null;
+  updatedAt?: Date | string | null;
+  contentHtml: string;
+  children?: ReactNode;
+};
+
+const editorialTeamHref = (locale: BlogLocale) =>
+  locale === "es" ? "/es/equipo-editorial" : locale === "fr" ? "/fr/equipe-editoriale" : "/en/editorial-team";
+
+const toDate = (value?: Date | string | null) => {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const formatNewsDate = (value: Date | string | null | undefined, locale: BlogLocale) => {
+  const date = toDate(value);
+  if (!date) return "Proactivitis";
+  const localeCode = locale === "es" ? "es-DO" : locale === "fr" ? "fr-FR" : "en-US";
+  return new Intl.DateTimeFormat(localeCode, {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+};
+
+const contextualHref = (locale: BlogLocale) =>
+  locale === "es" ? "/tours" : locale === "fr" ? "/fr/tours" : "/en/tours";
+
+const renderContextualCta = (locale: BlogLocale) => {
+  const labels = LABELS[locale];
+  return (
+    <aside className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 shadow-sm">
+      <div className="grid gap-0 md:grid-cols-[1fr,220px]">
+        <div className="p-6 text-white md:p-8">
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-300">{labels.dataDesk}</p>
+          <h2 className="mt-3 text-2xl font-black">{labels.contextualTitle}</h2>
+          <p className="mt-3 text-sm leading-7 text-slate-300">{labels.contextualBody}</p>
+          <Link
+            href={contextualHref(locale)}
+            className="mt-5 inline-flex rounded-full bg-sky-500 px-5 py-3 text-sm font-black text-white shadow-sm transition hover:bg-sky-400"
+          >
+            {labels.contextualCta}
+          </Link>
+        </div>
+        <div className="relative min-h-[180px] bg-slate-800">
+          <Image
+            src="/fototours/fototour.jpeg"
+            alt={labels.contextualTitle}
+            fill
+            sizes="220px"
+            className="object-cover opacity-80"
+          />
+        </div>
+      </div>
+    </aside>
+  );
+};
+
+const renderNewsSidebar = (locale: BlogLocale) => {
+  const labels = LABELS[locale];
+  return (
+    <aside className="space-y-4 lg:sticky lg:top-24">
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-400">{labels.sidebarTitle}</p>
+        <div className="mt-4 space-y-3">
+          {labels.sidebarItems.map((item) => (
+            <div key={item} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+              <p className="text-sm font-black text-slate-950">{item}</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">{labels.trustLine}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+      <section className="rounded-3xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-700">{labels.marketTrends}</p>
+        <ul className="mt-4 space-y-3 text-sm font-semibold text-slate-800">
+          {labels.tickerItems.map((item) => (
+            <li key={item} className="flex gap-2">
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </aside>
+  );
+};
+
+const renderNewsArticleLayout = ({
+  locale,
+  schema,
+  title,
+  excerpt,
+  shareUrl,
+  coverImage,
+  publishedAt,
+  updatedAt,
+  contentHtml,
+  children
+}: NewsArticleLayoutProps) => {
+  const labels = LABELS[locale];
+  const editorialHref = editorialTeamHref(locale);
+  return (
+    <div className="travel-surface min-h-screen">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <BlogReadingProgress locale={locale} />
+      <article className="mx-auto max-w-7xl px-4 py-8 lg:py-12">
+        <header className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+            <p className="text-xs font-black uppercase tracking-[0.35em] text-sky-700">{labels.newsroomEyebrow}</p>
+            <h1 className="mt-4 max-w-4xl font-serif text-4xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
+              {title}
+            </h1>
+            <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">{excerpt}</p>
+            <div className="mt-5 flex flex-wrap gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+              <span>{labels.published}: {formatNewsDate(publishedAt, locale)}</span>
+              <span className="text-slate-300">|</span>
+              <span>{labels.updated}: {updatedAt ? formatNewsDate(updatedAt, locale) : labels.minutesAgo}</span>
+            </div>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <BlogShareButtons url={shareUrl} title={title} />
+              <BlogArticleTools locale={locale} />
+            </div>
+          </div>
+
+          <aside className="rounded-[2rem] border border-slate-200 bg-slate-950 p-6 text-white shadow-sm">
+            <div className="relative h-14 w-14 overflow-hidden rounded-2xl border border-white/20 bg-white">
+              <Image src="/logo.png" alt="Proactivitis" fill sizes="56px" className="object-contain p-2" />
+            </div>
+            <p className="mt-5 text-xs font-black uppercase tracking-[0.3em] text-sky-300">{labels.dataDesk}</p>
+            <h2 className="mt-3 text-2xl font-black leading-tight">{labels.analyzedBy}</h2>
+            <p className="mt-4 text-sm leading-7 text-slate-300">{labels.trustLine}</p>
+            <Link
+              href={editorialHref}
+              className="mt-5 inline-flex rounded-full border border-white/20 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white transition hover:bg-white hover:text-slate-950"
+            >
+              {AUTHOR_BOX_COPY[locale].link}
+            </Link>
+          </aside>
+        </header>
+
+        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <main className="space-y-8">
+            <figure className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+              <div className="relative h-[260px] w-full bg-slate-100 md:h-[420px]">
+                <Image
+                  src={coverImage}
+                  alt={title}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 70vw"
+                  className="object-cover"
+                />
+              </div>
+              <figcaption className="border-t border-slate-100 px-5 py-3 text-xs font-semibold text-slate-500">
+                {labels.caption}
+              </figcaption>
+            </figure>
+
+            <section className="blog-content">{renderBlogContent(contentHtml)}</section>
+            {renderContextualCta(locale)}
+            {renderEditorialAuthorBox(locale)}
+            {children}
+          </main>
+          {renderNewsSidebar(locale)}
+        </div>
+      </article>
+    </div>
+  );
 };
 
 export async function getBlogList(locale: "es" | "en" | "fr") {
@@ -991,14 +1269,14 @@ export async function getBlogList(locale: "es" | "en" | "fr") {
 
 export async function buildBlogMetadata(locale: "es" | "en" | "fr"): Promise<Metadata> {
   const titleMap = {
-    es: "Noticias y Blog | Proactivitis",
-    en: "News & Blog | Proactivitis",
-    fr: "Actualites & Blog | Proactivitis"
+    es: "Proactivitis News & Market Intelligence",
+    en: "Proactivitis News & Market Intelligence",
+    fr: "Proactivitis News & Market Intelligence"
   } as const;
   const descriptionMap = {
-    es: "Actualizaciones, consejos y novedades de Proactivitis.",
-    en: "Updates, tips, and news from Proactivitis.",
-    fr: "Actualites, conseils et nouvelles de Proactivitis."
+    es: "Newsroom institucional de Proactivitis con analisis de mercado, logistica turistica y actualizaciones operativas.",
+    en: "Institutional Proactivitis newsroom for tourism market analysis, logistics intelligence, and operational updates.",
+    fr: "Newsroom institutionnelle Proactivitis pour analyse marche, logistique touristique et mises a jour operationnelles."
   } as const;
 
   return {
@@ -1143,11 +1421,31 @@ export async function renderBlogList(locale: "es" | "en" | "fr") {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }}
       />
-      <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-12 space-y-3">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Blog</p>
-          <h1 className="text-4xl font-semibold text-slate-900">{labels.listTitle}</h1>
-          <p className="text-sm text-slate-600">{labels.listSubtitle}</p>
+      <section className="border-b border-slate-800 bg-slate-950 text-white">
+        <div className="border-b border-white/10 bg-sky-500/10">
+          <div className="mx-auto flex max-w-7xl gap-4 overflow-hidden px-4 py-3 text-xs font-bold uppercase tracking-[0.18em]">
+            <span className="shrink-0 text-sky-300">{labels.tickerLabel}</span>
+            <div className="flex min-w-0 gap-6 text-slate-200">
+              {labels.tickerItems.map((item) => (
+                <span key={item} className="whitespace-nowrap">{item}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-14 lg:grid-cols-[1fr,360px]">
+          <div className="space-y-5">
+            <p className="text-xs font-black uppercase tracking-[0.4em] text-sky-300">{labels.newsroomEyebrow}</p>
+            <h1 className="max-w-4xl font-serif text-4xl font-black leading-tight md:text-6xl">{labels.listTitle}</h1>
+            <p className="max-w-3xl text-base leading-8 text-slate-300">{labels.listSubtitle}</p>
+          </div>
+          <aside className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            {[labels.marketTrends, labels.logisticsAlerts, labels.dataDesk].map((item) => (
+              <div key={item} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">{item}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-200">{labels.trustLine}</p>
+              </div>
+            ))}
+          </aside>
         </div>
       </section>
       {posts.length === 0 ? (
@@ -1275,37 +1573,18 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
       }
     });
 
-    return (
-      <div className="travel-surface min-h-screen">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(staticBlogSchema) }}
-        />
-        <BlogReadingProgress locale={locale} />
-        <article className="mx-auto max-w-4xl px-4 py-12 space-y-8">
-          <header className="space-y-4">
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
-              {staticPost.publishedAt.toLocaleDateString("es-ES")}
-            </p>
-            <h1 className="text-4xl font-semibold text-slate-900">{translation.title}</h1>
-            <p className="text-sm text-slate-600">{translation.excerpt}</p>
-            <BlogShareButtons url={shareUrl} title={translation.title} />
-          </header>
-
-        <div className="relative h-[320px] w-full overflow-hidden rounded-3xl bg-slate-100">
-          <Image
-            src={staticCoverImage}
-            alt={translation.title}
-            fill
-            sizes="(max-width: 768px) 100vw, 70vw"
-            className="object-cover"
-          />
-        </div>
-
-          <section className="blog-content">{renderBlogContent(enrichedContentHtml)}</section>
-
-          {renderEditorialAuthorBox(locale)}
-
+    return renderNewsArticleLayout({
+      locale,
+      schema: staticBlogSchema,
+      title: translation.title,
+      excerpt: translation.excerpt,
+      shareUrl,
+      coverImage: staticCoverImage,
+      publishedAt: staticPost.publishedAt,
+      updatedAt: staticPost.publishedAt,
+      contentHtml: enrichedContentHtml,
+      children: (
+        <>
           {relatedTours.length ? (
             <section className="space-y-4">
               <h2 className="text-2xl font-semibold text-slate-900">{labels.detailTours}</h2>
@@ -1329,9 +1608,9 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
             <h2 className="text-2xl font-semibold text-slate-900">{labels.detailComments}</h2>
             <p className="text-sm text-slate-500">{labels.detailEmptyComments}</p>
           </section>
-        </article>
-      </div>
-    );
+        </>
+      )
+    });
   }
 
   const post = await prisma.blogPost.findUnique({
@@ -1496,37 +1775,18 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
       })
     : relatedTours;
 
-  return (
-    <div className="travel-surface min-h-screen">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(dynamicBlogSchema) }}
-      />
-      <BlogReadingProgress locale={locale} />
-      <article className="mx-auto max-w-4xl px-4 py-12 space-y-8">
-        <header className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
-            {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString("es-ES") : "Proactivitis"}
-          </p>
-          <h1 className="text-4xl font-semibold text-slate-900">{title}</h1>
-          <p className="text-sm text-slate-600">{excerpt}</p>
-          <BlogShareButtons url={shareUrl} title={title} />
-        </header>
-
-        <div className="relative h-[320px] w-full overflow-hidden rounded-3xl bg-slate-100">
-          <Image
-            src={post.coverImage ?? "/fototours/fotosimple.jpg"}
-            alt={title}
-            fill
-            sizes="(max-width: 768px) 100vw, 70vw"
-            className="object-cover"
-          />
-        </div>
-
-        <section className="blog-content">{renderBlogContent(contentHtml)}</section>
-
-        {renderEditorialAuthorBox(locale)}
-
+  return renderNewsArticleLayout({
+    locale,
+    schema: dynamicBlogSchema,
+    title,
+    excerpt,
+    shareUrl,
+    coverImage: post.coverImage ?? "/fototours/fotosimple.jpg",
+    publishedAt: post.publishedAt,
+    updatedAt: post.updatedAt,
+    contentHtml,
+    children: (
+      <>
         {filteredTours.length ? (
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold text-slate-900">{labels.detailTours}</h2>
@@ -1597,13 +1857,13 @@ export async function renderBlogDetail(slug: string, locale: "es" | "en" | "fr")
                   <p className="text-xs text-slate-400">
                     {new Date(comment.createdAt).toLocaleDateString("es-ES")}
                   </p>
-                  <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{comment.body}</p>
+                  <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700">{comment.body}</p>
                 </article>
               ))
             )}
           </div>
         </section>
-      </article>
-    </div>
-  );
+      </>
+    )
+  });
 }

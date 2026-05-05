@@ -126,8 +126,8 @@ export function PublicFooter() {
   const honorHref = locale === "es" ? "/cliente-de-honor" : `/${locale}/cliente-de-honor`;
   const honorLabel =
     locale === "es" ? "Cliente de Honor" : locale === "en" ? "Honor Client" : "Client d'Honneur";
-  const editorialHref = locale === "es" ? "/es/equipo-editorial" : "/en/editorial-team";
-  const editorialLabel = locale === "es" ? "Equipo editorial" : "Editorial Team";
+  const editorialHref = locale === "es" ? "/es/equipo-editorial" : locale === "fr" ? "/fr/equipe-editoriale" : "/en/editorial-team";
+  const editorialLabel = locale === "es" ? "Equipo editorial" : locale === "fr" ? "Equipe editoriale" : "Editorial Team";
 
   const groups = FOOTER_STRUCTURE.map((section) => ({
     title: copy[section.key].title,
