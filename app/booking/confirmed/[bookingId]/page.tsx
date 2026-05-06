@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { BookingConfirmedContent } from "../BookingConfirmedContent";
+import BookingConfirmedEticket from "../BookingConfirmedEticket";
 import { getBookingConfirmationData } from "../helpers";
 
 export const dynamic = "force-dynamic";
@@ -28,5 +29,10 @@ export default async function BookingConfirmedPage({ params, searchParams }: Pro
     notFound();
   }
 
-  return <BookingConfirmedContent {...confirmationData} />;
+  return (
+    <BookingConfirmedContent
+      {...confirmationData}
+      eticketContent={<BookingConfirmedEticket {...confirmationData} />}
+    />
+  );
 }

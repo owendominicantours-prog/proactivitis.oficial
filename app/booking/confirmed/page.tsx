@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { BookingConfirmedContent } from "./BookingConfirmedContent";
+import BookingConfirmedEticket from "./BookingConfirmedEticket";
 import { getBookingConfirmationData } from "./helpers";
 
 type Props = {
@@ -63,5 +64,11 @@ export default async function BookingConfirmedRedirectPage({ searchParams }: Pro
     return <BookingMissingMessage bookingId={bookingId} />;
   }
 
-  return <BookingConfirmedContent {...confirmationData} flowType={flowType ?? confirmationData.flowType} />;
+  return (
+    <BookingConfirmedContent
+      {...confirmationData}
+      flowType={flowType ?? confirmationData.flowType}
+      eticketContent={<BookingConfirmedEticket {...confirmationData} />}
+    />
+  );
 }

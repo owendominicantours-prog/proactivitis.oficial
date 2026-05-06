@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { TourCard } from "@/components/public/TourCard";
 import ContactoProveedor from "@/components/booking/ContactoProveedor";
-import Eticket from "@/components/booking/Eticket";
 import BookingEmailDispatcher from "@/components/booking/BookingEmailDispatcher";
 import { ItineraryTimeline } from "@/components/itinerary/ItineraryTimeline";
 import { formatDurationDisplay } from "@/lib/formatDuration";
@@ -34,8 +34,9 @@ export function BookingConfirmedContent({
   orderCode,
   flowType,
   discountPercent,
-  analytics
-}: BookingConfirmationData) {
+  analytics,
+  eticketContent
+}: BookingConfirmationData & { eticketContent?: ReactNode }) {
   const isTransfer = flowType === "transfer";
   const isRentCar = flowType === "rent_car";
   const { t } = useTranslation();
@@ -285,38 +286,7 @@ export function BookingConfirmedContent({
         <section className="space-y-6 border-t border-slate-200 pt-8">
           <h2 className="text-2xl font-semibold text-slate-900">{t("booking.confirmation.section.eticket")}</h2>
           <p className="text-sm text-slate-500">{t("booking.confirmation.eticket.copy")}</p>
-          <Eticket
-            booking={{
-              id: booking.id,
-              travelDate: booking.travelDate,
-              startTime: booking.startTime,
-              totalAmount: booking.totalAmount,
-              paxAdults: booking.paxAdults,
-              paxChildren: booking.paxChildren,
-              customerName: booking.customerName,
-              customerEmail: booking.customerEmail,
-              pickupNotes: booking.pickupNotes,
-              hotel: booking.hotel,
-              originAirport: booking.originAirport,
-              flightNumber: booking.flightNumber,
-              tripType: booking.tripType,
-              returnTravelDate: booking.returnTravelDate,
-              returnStartTime: booking.returnStartTime,
-              agencyName: agency?.name ?? null,
-              agencyPhone: agency?.phone ?? null
-            }}
-            tour={{
-              id: tour.id,
-              slug: tour.slug,
-              title: tour.title,
-              heroImage: tour.heroImage,
-              meetingPoint: tour.meetingPoint,
-              meetingInstructions: tour.meetingInstructions,
-              duration: tour.duration
-            }}
-            supplierName={supplier?.name}
-            orderCode={orderCode}
-          />
+          {eticketContent}
         </section>
       </main>
     </div>
