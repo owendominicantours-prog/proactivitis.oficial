@@ -24,7 +24,26 @@ const normalize = (value: string) =>
 export default function RentCarSearch({ options, locale = "en" }: RentCarSearchProps) {
   const copy = getRentCarCopy(locale);
   const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
   const normalizedQuery = normalize(query);
+  const ui =
+    locale === "es"
+      ? {
+          label: "Buscar",
+          helper: "Busca zona, aeropuerto o vehiculo",
+          noResults: "No vemos esa zona exacta. Prueba con aeropuerto, ciudad o tipo de vehiculo."
+        }
+      : locale === "fr"
+        ? {
+            label: "Chercher",
+            helper: "Cherchez zone, aeroport ou vehicule",
+            noResults: "Zone introuvable. Essayez aeroport, ville ou type de vehicule."
+          }
+        : {
+            label: "Search",
+            helper: "Search zone, airport or vehicle",
+            noResults: "We do not see that exact zone. Try airport, city or vehicle type."
+          };
 
   const matches = useMemo(() => {
     if (!normalizedQuery) return options.slice(0, 5);
@@ -45,10 +64,10 @@ export default function RentCarSearch({ options, locale = "en" }: RentCarSearchP
             `${option.doors} doors`
           ].join(" ")
         );
-        const starts = haystack.includes(normalizedQuery) ? 2 : 0;
+        const phraseScore = haystack.includes(normalizedQuery) ? 2 : 0;
         const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
         const tokenScore = tokens.filter((token) => haystack.includes(token)).length;
-        return { option, score: starts + tokenScore };
+        return { option, score: phraseScore + tokenScore };
       })
       .filter((item) => item.score > 0)
       .sort((a, b) => b.score - a.score || a.option.price - b.option.price)
@@ -57,19 +76,29 @@ export default function RentCarSearch({ options, locale = "en" }: RentCarSearchP
   }, [normalizedQuery, options]);
 
   return (
-    <div className="rounded-[1.7rem] border border-slate-200 bg-white p-3 shadow-lg shadow-slate-200/60">
+    <div className="relative rounded-2xl border border-slate-200 bg-white">
       <label className="sr-only">{String(copy.searchTitle)}</label>
-      <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-        <span className="text-xs font-black uppercase tracking-[0.18em] text-sky-700">Search</span>
+      <div className="flex min-h-[66px] items-center gap-3 px-4 py-3">
+        <span className="text-xs font-black uppercase tracking-[0.18em] text-sky-700">{ui.label}</span>
         <input
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          onBlur={() => window.setTimeout(() => setIsOpen(false), 160)}
           placeholder={String(copy.searchPlaceholder)}
           className="min-w-0 flex-1 bg-transparent text-sm font-bold text-slate-950 outline-none placeholder:text-slate-400"
         />
       </div>
 
-      <div className="mt-3 grid gap-2">
+      <div
+        className={`absolute left-0 right-0 top-[calc(100%+8px)] z-30 grid gap-2 rounded-[1.3rem] border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-300/60 ${
+          isOpen ? "" : "hidden"
+        }`}
+      >
+        <p className="px-3 pt-1 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">{ui.helper}</p>
         {matches.length ? (
           matches.map((option) => (
             <Link
@@ -78,7 +107,9 @@ export default function RentCarSearch({ options, locale = "en" }: RentCarSearchP
               className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 text-left transition hover:border-sky-200 hover:bg-sky-50"
             >
               <span className="min-w-0">
-                <span className="block truncate text-sm font-black text-slate-950">{option.categoryLabel} · {option.locationName}</span>
+                <span className="block truncate text-sm font-black text-slate-950">
+                  {option.categoryLabel} / {option.locationName}
+                </span>
                 <span className="block truncate text-xs font-semibold text-slate-500">{option.model}</span>
               </span>
               <span className="shrink-0 rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-black text-emerald-700">
@@ -87,13 +118,7 @@ export default function RentCarSearch({ options, locale = "en" }: RentCarSearchP
             </Link>
           ))
         ) : (
-          <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800">
-            {locale === "es"
-              ? "No vemos esa zona exacta. Prueba con aeropuerto, ciudad o tipo de vehiculo."
-              : locale === "fr"
-                ? "Zone introuvable. Essayez aeroport, ville ou type de vehicule."
-                : "We do not see that exact zone. Try airport, city or vehicle type."}
-          </p>
+          <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800">{ui.noResults}</p>
         )}
       </div>
     </div>
