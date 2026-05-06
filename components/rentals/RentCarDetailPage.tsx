@@ -14,6 +14,7 @@ import {
   getRentCarOptionPath,
   getRentCarOptions,
   getRentCarRootPath,
+  getRentCarSpecBadges,
   type RentCarFleetSettings,
   type RentCarLocale
 } from "@/data/rentCarFleet";
@@ -37,11 +38,21 @@ export default function RentCarDetailPage({ locationId, categorySlug, locale = "
   const h1 = buildRentCarH1(option, locale);
   const description = buildRentCarDescription(option, locale);
   const factsLabels = copy.facts as string[];
+  const detailLabels =
+    locale === "es"
+      ? { doors: "Puertas", fuel: "Combustible", transmission: "Transmision", tech: "Tecnologia", large: "grandes", specs: "Detalles del vehiculo" }
+      : locale === "fr"
+        ? { doors: "Portes", fuel: "Carburant", transmission: "Transmission", tech: "Technologie", large: "grands", specs: "Details du vehicule" }
+        : { doors: "Doors", fuel: "Fuel", transmission: "Transmission", tech: "Tech", large: "large", specs: "Vehicle specs" };
   const facts = [
     [factsLabels[0], option.model],
     [factsLabels[1], `${option.seats} ${String(copy.passengers)}`],
-    [factsLabels[2], `${option.luggage} ${String(copy.bags)}`],
-    [factsLabels[3], option.airportLabel]
+    [factsLabels[2], `${option.bags} ${String(copy.bags)} / ${option.largeBags} ${detailLabels.large}`],
+    [factsLabels[3], option.airportLabel],
+    [detailLabels.doors, `${option.doors}`],
+    [detailLabels.fuel, option.fuelType],
+    [detailLabels.transmission, option.transmission],
+    [detailLabels.tech, [option.appleCarplay ? "CarPlay" : null, option.androidAuto ? "Android Auto" : null].filter(Boolean).join(" / ") || "USB"]
   ];
   const benefits =
     locale === "es"
@@ -124,11 +135,11 @@ export default function RentCarDetailPage({ locationId, categorySlug, locale = "
                       : "border-slate-200 hover:border-sky-300"
                   }`}
                 >
-                  <Image src={item.image} alt={item.model} fill sizes="120px" className="object-contain p-2" />
+                  <Image src={item.image} alt={item.model} fill sizes="120px" className="object-contain p-1" />
                 </Link>
               ))}
             </div>
-            <div className="order-1 overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-white via-sky-50 to-emerald-50 md:order-2">
+            <div className="order-1 overflow-hidden rounded-[1.5rem] bg-white md:order-2">
               <div className="relative h-[320px] md:h-[520px]">
                 <Image
                   src={option.image}
@@ -136,7 +147,7 @@ export default function RentCarDetailPage({ locationId, categorySlug, locale = "
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 70vw"
-                  className="object-contain p-8"
+                  className="object-contain p-2 md:p-4"
                 />
                 <div className="absolute left-4 top-4 rounded-full bg-white/95 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-950 shadow">
                   {option.categoryLabel}
@@ -155,6 +166,17 @@ export default function RentCarDetailPage({ locationId, categorySlug, locale = "
                 <p className="mt-2 text-base font-black text-slate-950">{value}</p>
               </div>
             ))}
+          </section>
+
+          <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-500">{detailLabels.specs}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {getRentCarSpecBadges(option, locale).map((item) => (
+                <span key={item} className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-black text-slate-800">
+                  {item}
+                </span>
+              ))}
+            </div>
           </section>
 
           <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
@@ -200,13 +222,20 @@ export default function RentCarDetailPage({ locationId, categorySlug, locale = "
                     item.categorySlug === option.categorySlug ? "border-slate-950" : "border-slate-200"
                   }`}
                 >
-                  <div className="relative h-36 bg-gradient-to-br from-slate-50 via-white to-emerald-50">
-                    <Image src={item.image} alt={item.model} fill sizes="240px" className="object-contain p-5" />
+                  <div className="relative h-44 bg-white">
+                    <Image src={item.image} alt={item.model} fill sizes="240px" className="object-contain p-2" />
                   </div>
                   <div className="p-4">
                     <p className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-700">{item.tag}</p>
                     <h3 className="mt-2 text-base font-black text-slate-950">{item.categoryLabel}</h3>
                     <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">{item.model}</p>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      {getRentCarSpecBadges(item, locale).slice(0, 4).map((badge) => (
+                        <span key={badge} className="rounded-full bg-slate-50 px-2.5 py-1.5 text-[11px] font-black text-slate-700">
+                          {badge}
+                        </span>
+                      ))}
+                    </div>
                     <p className="mt-3 text-xl font-black text-emerald-700">${item.price}/{String(copy.day)}</p>
                   </div>
                 </Link>

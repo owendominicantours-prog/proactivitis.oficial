@@ -38,7 +38,11 @@ export default function RentCarSearch({ options, locale = "en" }: RentCarSearchP
             option.categoryLabel,
             option.model,
             option.displayName,
-            option.tag
+            option.tag,
+            option.transmission,
+            option.fuelType,
+            `${option.seats} passengers`,
+            `${option.doors} doors`
           ].join(" ")
         );
         const starts = haystack.includes(normalizedQuery) ? 2 : 0;

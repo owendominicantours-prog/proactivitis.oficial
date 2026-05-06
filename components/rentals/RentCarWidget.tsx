@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { detectRentCarLocationId, getRentCarOptionPath, getRentCarOptions } from "@/data/rentCarFleet";
+import { detectRentCarLocationId, getRentCarOptionPath, getRentCarOptions, getRentCarSpecBadges } from "@/data/rentCarFleet";
 import { getRentCarFleetSettings } from "@/lib/rentCarSettings";
 
 type RentCarWidgetProps = {
@@ -63,13 +63,13 @@ export default async function RentCarWidget({ regionText = "", locationId, title
             href={getRentCarOptionPath(option.locationId, option.categorySlug, locale)}
             className="group overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 transition hover:border-emerald-200 hover:bg-emerald-50"
           >
-            <div className="relative h-28 bg-white">
+            <div className="relative h-32 bg-white">
               <Image
                 src={option.image}
                 alt={option.model}
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
-                className="object-contain p-4 transition duration-500 group-hover:scale-105"
+                className="object-contain p-2 transition duration-500 group-hover:scale-[1.02]"
                 loading="lazy"
               />
             </div>
@@ -77,6 +77,13 @@ export default async function RentCarWidget({ regionText = "", locationId, title
               <p className="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-700">{option.tag}</p>
               <h3 className="mt-1 line-clamp-1 text-sm font-black text-slate-950">{option.categoryLabel}</h3>
               <p className="mt-1 line-clamp-1 text-xs text-slate-500">{option.model}</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {getRentCarSpecBadges(option, locale).slice(0, 3).map((badge) => (
+                  <span key={badge} className="rounded-full bg-white px-2 py-1 text-[10px] font-black text-slate-700">
+                    {badge}
+                  </span>
+                ))}
+              </div>
               <p className="mt-2 text-sm font-black text-slate-950">${option.price}/{copy.day}</p>
             </div>
           </Link>

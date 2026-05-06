@@ -128,13 +128,54 @@ export default async function AdminRentCarPage() {
                   </select>
                 </label>
                 <label className="space-y-1">
-                  <span className={labelClass}>Asientos</span>
+                  <span className={labelClass}>Pasajeros</span>
                   <input name="seats" type="number" min="1" step="1" defaultValue={vehicle.seats} className={inputClass} />
                 </label>
                 <label className="space-y-1">
-                  <span className={labelClass}>Maletas</span>
-                  <input name="luggage" type="number" min="0" step="1" defaultValue={vehicle.luggage} className={inputClass} />
+                  <span className={labelClass}>Puertas</span>
+                  <input name="doors" type="number" min="0" step="1" defaultValue={vehicle.doors} className={inputClass} />
                 </label>
+                <label className="space-y-1">
+                  <span className={labelClass}>Maletas total</span>
+                  <input name="bags" type="number" min="0" step="1" defaultValue={vehicle.bags} className={inputClass} />
+                </label>
+                <label className="space-y-1">
+                  <span className={labelClass}>Maletas grandes</span>
+                  <input name="largeBags" type="number" min="0" step="1" defaultValue={vehicle.largeBags} className={inputClass} />
+                </label>
+                <label className="space-y-1">
+                  <span className={labelClass}>Transmision</span>
+                  <select name="transmission" defaultValue={vehicle.transmission} className={inputClass}>
+                    <option value="Automatic">Automatic</option>
+                    <option value="Manual">Manual</option>
+                  </select>
+                </label>
+                <label className="space-y-1">
+                  <span className={labelClass}>Combustible</span>
+                  <select name="fuelType" defaultValue={vehicle.fuelType} className={inputClass}>
+                    <option value="Gasoline">Gasoline</option>
+                    <option value="Hybrid">Hybrid</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="Electric">Electric</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[
+                  ["airConditioning", "A/C", vehicle.airConditioning],
+                  ["bluetooth", "Bluetooth", vehicle.bluetooth],
+                  ["usb", "USB", vehicle.usb],
+                  ["appleCarplay", "CarPlay", vehicle.appleCarplay],
+                  ["androidAuto", "Android Auto", vehicle.androidAuto],
+                  ["fourByFour", "4x4", vehicle.fourByFour],
+                  ["convertible", "Convertible", vehicle.convertible]
+                ].map(([name, label, checked]) => (
+                  <label key={String(name)} className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.13em] text-slate-700">
+                    <input type="checkbox" name={String(name)} defaultChecked={Boolean(checked)} />
+                    {String(label)}
+                  </label>
+                ))}
               </div>
 
               <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_120px]">
@@ -202,7 +243,7 @@ export default async function AdminRentCarPage() {
               </div>
             </div>
 
-            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <label className="space-y-1">
                 <span className={labelClass}>Precio base</span>
                 <input name="basePrice" type="number" min="0" step="1" defaultValue={90} className={inputClass} />
@@ -216,17 +257,58 @@ export default async function AdminRentCarPage() {
                 </select>
               </label>
               <label className="space-y-1">
-                <span className={labelClass}>Asientos</span>
+                <span className={labelClass}>Pasajeros</span>
                 <input name="seats" type="number" min="1" step="1" defaultValue={5} className={inputClass} />
               </label>
               <label className="space-y-1">
-                <span className={labelClass}>Maletas</span>
-                <input name="luggage" type="number" min="0" step="1" defaultValue={3} className={inputClass} />
+                <span className={labelClass}>Puertas</span>
+                <input name="doors" type="number" min="0" step="1" defaultValue={4} className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Maletas total</span>
+                <input name="bags" type="number" min="0" step="1" defaultValue={3} className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Maletas grandes</span>
+                <input name="largeBags" type="number" min="0" step="1" defaultValue={2} className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Transmision</span>
+                <select name="transmission" defaultValue="Automatic" className={inputClass}>
+                  <option value="Automatic">Automatic</option>
+                  <option value="Manual">Manual</option>
+                </select>
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Combustible</span>
+                <select name="fuelType" defaultValue="Gasoline" className={inputClass}>
+                  <option value="Gasoline">Gasoline</option>
+                  <option value="Hybrid">Hybrid</option>
+                  <option value="Diesel">Diesel</option>
+                  <option value="Electric">Electric</option>
+                </select>
               </label>
               <label className="space-y-1">
                 <span className={labelClass}>Prioridad</span>
                 <input name="priority" type="number" step="1" defaultValue={90} className={inputClass} />
               </label>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              {[
+                ["airConditioning", "A/C", true],
+                ["bluetooth", "Bluetooth", true],
+                ["usb", "USB", true],
+                ["appleCarplay", "CarPlay", true],
+                ["androidAuto", "Android Auto", true],
+                ["fourByFour", "4x4", false],
+                ["convertible", "Convertible", false]
+              ].map(([name, label, checked]) => (
+                <label key={String(name)} className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.13em] text-slate-700">
+                  <input type="checkbox" name={String(name)} defaultChecked={Boolean(checked)} />
+                  {String(label)}
+                </label>
+              ))}
             </div>
 
             <div className="mt-4 flex justify-end">

@@ -10,10 +10,12 @@ import {
   getRentCarRootPath,
   normalizeRentCarFleetSettings,
   rentCarMarginTypes,
+  type RentCarFuelType,
   type RentCarFleetSettings,
   type RentCarLocale,
   type RentCarLocationSetting,
   type RentCarMargin,
+  type RentCarTransmission,
   type RentCarVehicleSetting
 } from "@/data/rentCarFleet";
 
@@ -33,6 +35,10 @@ const readSearchTerms = (value: string) =>
 
 const normalizeMargin = (value: string): RentCarMargin =>
   rentCarMarginTypes.includes(value as RentCarMargin) ? (value as RentCarMargin) : "economy";
+const normalizeTransmission = (value: string): RentCarTransmission =>
+  value === "Manual" ? "Manual" : "Automatic";
+const normalizeFuelType = (value: string): RentCarFuelType =>
+  value === "Hybrid" || value === "Diesel" || value === "Electric" ? value : "Gasoline";
 
 const revalidateRentCar = (settings: RentCarFleetSettings) => {
   revalidatePath("/admin/rent-a-car");
@@ -53,6 +59,10 @@ export async function updateRentCarVehicleAction(formData: FormData) {
 
   const settings = await getRentCarFleetSettings();
   const current = settings.vehicles.find((vehicle) => vehicle.slug === slug);
+  const bagCount = Math.max(
+    0,
+    Math.round(readNumber(formData, "bags", readNumber(formData, "luggage", current?.bags ?? current?.luggage ?? 1)))
+  );
   const vehicle: RentCarVehicleSetting = {
     slug,
     model: readField(formData, "model") || current?.model || slug,
@@ -61,7 +71,19 @@ export async function updateRentCarVehicleAction(formData: FormData) {
     displayName: readField(formData, "displayName") || current?.displayName || "Rent a Car",
     tag: readField(formData, "tag") || current?.tag || "Proactivitis",
     seats: Math.max(1, Math.round(readNumber(formData, "seats", current?.seats ?? 4))),
-    luggage: Math.max(0, Math.round(readNumber(formData, "luggage", current?.luggage ?? 1))),
+    luggage: bagCount,
+    doors: Math.max(0, Math.round(readNumber(formData, "doors", current?.doors ?? 4))),
+    transmission: normalizeTransmission(readField(formData, "transmission") || current?.transmission || "Automatic"),
+    fuelType: normalizeFuelType(readField(formData, "fuelType") || current?.fuelType || "Gasoline"),
+    airConditioning: formData.get("airConditioning") === "on",
+    bags: bagCount,
+    largeBags: Math.max(0, Math.round(readNumber(formData, "largeBags", current?.largeBags ?? current?.luggage ?? 1))),
+    bluetooth: formData.get("bluetooth") === "on",
+    usb: formData.get("usb") === "on",
+    appleCarplay: formData.get("appleCarplay") === "on",
+    androidAuto: formData.get("androidAuto") === "on",
+    fourByFour: formData.get("fourByFour") === "on",
+    convertible: formData.get("convertible") === "on",
     image: readField(formData, "image") || current?.image || "/transfer/sedan.png",
     priority: Math.round(readNumber(formData, "priority", current?.priority ?? 10)),
     margin: normalizeMargin(readField(formData, "margin") || current?.margin || "economy"),

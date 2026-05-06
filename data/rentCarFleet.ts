@@ -3,6 +3,24 @@ export type RentCarLocale = "es" | "en" | "fr";
 export type RentCarCategorySlug = string;
 export const rentCarMarginTypes = ["economy", "sedan", "suv", "premium", "luxury"] as const;
 export type RentCarMargin = (typeof rentCarMarginTypes)[number];
+export type RentCarTransmission = "Automatic" | "Manual";
+export type RentCarFuelType = "Gasoline" | "Hybrid" | "Diesel" | "Electric";
+
+export type RentCarVehicleSpecs = {
+  passengers: number;
+  doors: number;
+  transmission: RentCarTransmission;
+  fuelType: RentCarFuelType;
+  airConditioning: boolean;
+  bags: number;
+  largeBags: number;
+  bluetooth: boolean;
+  usb: boolean;
+  appleCarplay: boolean;
+  androidAuto: boolean;
+  fourByFour: boolean;
+  convertible: boolean;
+};
 
 type RawFleetCategory = {
   model: string;
@@ -36,6 +54,309 @@ const fleetTemplate: Record<RentCarCategorySlug, { model: string; base_price: nu
   "ford-mustang-gt-convertible": { model: "Ford Mustang GT Convertible", base_price: 185 },
   "hyundai-h-1": { model: "Hyundai H-1", base_price: 125 },
   "toyota-hiace": { model: "Toyota Hiace", base_price: 135 }
+};
+
+const vehicleSpecDefaults: Record<RentCarCategorySlug, RentCarVehicleSpecs> = {
+  "kia-picanto-2025": {
+    passengers: 4,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 2,
+    largeBags: 1,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: false
+  },
+  "hyundai-i10-grand": {
+    passengers: 5,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 2,
+    largeBags: 1,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: false
+  },
+  "hyundai-elantra-n-line": {
+    passengers: 5,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 3,
+    largeBags: 2,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: false
+  },
+  "toyota-corolla-hybrid": {
+    passengers: 5,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Hybrid",
+    airConditioning: true,
+    bags: 3,
+    largeBags: 2,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: false
+  },
+  "hyundai-sonata": {
+    passengers: 5,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 4,
+    largeBags: 3,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: false
+  },
+  "toyota-camry": {
+    passengers: 5,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 4,
+    largeBags: 3,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: false
+  },
+  "kia-sportage": {
+    passengers: 5,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 5,
+    largeBags: 3,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: false
+  },
+  "hyundai-tucson": {
+    passengers: 5,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 5,
+    largeBags: 3,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: false
+  },
+  "toyota-rav4": {
+    passengers: 5,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 5,
+    largeBags: 3,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: false
+  },
+  "jeep-grand-cherokee": {
+    passengers: 5,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 5,
+    largeBags: 4,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: false
+  },
+  "suzuki-jimny-4x4": {
+    passengers: 4,
+    doors: 2,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 2,
+    largeBags: 1,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: true,
+    convertible: false
+  },
+  "chevrolet-tahoe-z71": {
+    passengers: 7,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 6,
+    largeBags: 5,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: true,
+    convertible: false
+  },
+  "chevrolet-suburban": {
+    passengers: 8,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 8,
+    largeBags: 6,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: false
+  },
+  "toyota-prado-vx": {
+    passengers: 7,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Diesel",
+    airConditioning: true,
+    bags: 6,
+    largeBags: 4,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: true,
+    convertible: false
+  },
+  "ford-explorer": {
+    passengers: 7,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 6,
+    largeBags: 4,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: false
+  },
+  "cadillac-escalade": {
+    passengers: 7,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 6,
+    largeBags: 5,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: false
+  },
+  "cadillac-escalade-esv": {
+    passengers: 7,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 8,
+    largeBags: 6,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: false
+  },
+  "ford-mustang-gt-convertible": {
+    passengers: 4,
+    doors: 2,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    airConditioning: true,
+    bags: 2,
+    largeBags: 1,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: true,
+    androidAuto: true,
+    fourByFour: false,
+    convertible: true
+  },
+  "hyundai-h-1": {
+    passengers: 12,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Diesel",
+    airConditioning: true,
+    bags: 10,
+    largeBags: 8,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: false,
+    androidAuto: false,
+    fourByFour: false,
+    convertible: false
+  },
+  "toyota-hiace": {
+    passengers: 15,
+    doors: 4,
+    transmission: "Manual",
+    fuelType: "Diesel",
+    airConditioning: true,
+    bags: 12,
+    largeBags: 10,
+    bluetooth: true,
+    usb: true,
+    appleCarplay: false,
+    androidAuto: false,
+    fourByFour: false,
+    convertible: false
+  }
 };
 
 const buildFleet = (multiplier = 1): Partial<Record<RentCarCategorySlug, RawFleetCategory>> =>
@@ -368,6 +689,18 @@ export type RentCarVehicleSetting = {
   tag: string;
   seats: number;
   luggage: number;
+  doors: number;
+  transmission: RentCarTransmission;
+  fuelType: RentCarFuelType;
+  airConditioning: boolean;
+  bags: number;
+  largeBags: number;
+  bluetooth: boolean;
+  usb: boolean;
+  appleCarplay: boolean;
+  androidAuto: boolean;
+  fourByFour: boolean;
+  convertible: boolean;
   image: string;
   priority: number;
   margin: RentCarMargin;
@@ -405,6 +738,7 @@ const locationMultipliers: Record<string, number> = {
 const toVehicleSetting = (slug: string): RentCarVehicleSetting => {
   const template = fleetTemplate[slug];
   const meta = categoryMeta[slug];
+  const specs = vehicleSpecDefaults[slug];
 
   return {
     slug,
@@ -413,8 +747,20 @@ const toVehicleSetting = (slug: string): RentCarVehicleSetting => {
     label: meta?.label ?? "Vehicle",
     displayName: meta?.displayName ?? "Rent a Car",
     tag: meta?.tag ?? "Proactivitis",
-    seats: meta?.seats ?? 4,
-    luggage: meta?.luggage ?? 1,
+    seats: specs?.passengers ?? meta?.seats ?? 4,
+    luggage: specs?.bags ?? meta?.luggage ?? 1,
+    doors: specs?.doors ?? 4,
+    transmission: specs?.transmission ?? "Automatic",
+    fuelType: specs?.fuelType ?? "Gasoline",
+    airConditioning: specs?.airConditioning ?? true,
+    bags: specs?.bags ?? meta?.luggage ?? 1,
+    largeBags: specs?.largeBags ?? meta?.luggage ?? 1,
+    bluetooth: specs?.bluetooth ?? true,
+    usb: specs?.usb ?? true,
+    appleCarplay: specs?.appleCarplay ?? true,
+    androidAuto: specs?.androidAuto ?? true,
+    fourByFour: specs?.fourByFour ?? false,
+    convertible: specs?.convertible ?? false,
     image: meta?.image ?? "/transfer/sedan.png",
     priority: meta?.priority ?? 10,
     margin: meta?.margin ?? "economy",
@@ -463,6 +809,12 @@ const readStringArray = (value: unknown, fallback: string[]) =>
 const normalizeMargin = (value: unknown, fallback: RentCarMargin): RentCarMargin =>
   rentCarMarginTypes.includes(value as RentCarMargin) ? (value as RentCarMargin) : fallback;
 
+const normalizeTransmission = (value: unknown, fallback: RentCarTransmission): RentCarTransmission =>
+  value === "Manual" || value === "Automatic" ? value : fallback;
+
+const normalizeFuelType = (value: unknown, fallback: RentCarFuelType): RentCarFuelType =>
+  value === "Gasoline" || value === "Hybrid" || value === "Diesel" || value === "Electric" ? value : fallback;
+
 export const normalizeRentCarFleetSettings = (value: unknown): RentCarFleetSettings => {
   if (!isRecord(value)) return defaultRentCarFleetSettings;
 
@@ -474,6 +826,7 @@ export const normalizeRentCarFleetSettings = (value: unknown): RentCarFleetSetti
       const slug = readString(vehicle.slug, "");
       if (!slug) return null;
       const fallback = defaultVehiclesBySlug.get(slug) ?? toVehicleSetting(slug);
+      const hasModernSpecs = "doors" in vehicle || "fuelType" in vehicle || "largeBags" in vehicle;
       return {
         slug,
         model: readString(vehicle.model, fallback.model),
@@ -481,8 +834,20 @@ export const normalizeRentCarFleetSettings = (value: unknown): RentCarFleetSetti
         label: readString(vehicle.label, fallback.label),
         displayName: readString(vehicle.displayName, fallback.displayName),
         tag: readString(vehicle.tag, fallback.tag),
-        seats: Math.max(1, Math.round(readNumber(vehicle.seats, fallback.seats))),
-        luggage: Math.max(0, Math.round(readNumber(vehicle.luggage, fallback.luggage))),
+        seats: Math.max(1, Math.round(readNumber(hasModernSpecs ? vehicle.seats : undefined, fallback.seats))),
+        luggage: Math.max(0, Math.round(readNumber(hasModernSpecs ? vehicle.luggage : undefined, fallback.luggage))),
+        doors: Math.max(0, Math.round(readNumber(vehicle.doors, fallback.doors))),
+        transmission: normalizeTransmission(vehicle.transmission, fallback.transmission),
+        fuelType: normalizeFuelType(vehicle.fuelType, fallback.fuelType),
+        airConditioning: readBoolean(vehicle.airConditioning, fallback.airConditioning),
+        bags: Math.max(0, Math.round(readNumber(vehicle.bags, fallback.bags))),
+        largeBags: Math.max(0, Math.round(readNumber(vehicle.largeBags, fallback.largeBags))),
+        bluetooth: readBoolean(vehicle.bluetooth, fallback.bluetooth),
+        usb: readBoolean(vehicle.usb, fallback.usb),
+        appleCarplay: readBoolean(vehicle.appleCarplay, fallback.appleCarplay),
+        androidAuto: readBoolean(vehicle.androidAuto, fallback.androidAuto),
+        fourByFour: readBoolean(vehicle.fourByFour, fallback.fourByFour),
+        convertible: readBoolean(vehicle.convertible, fallback.convertible),
         image: readString(vehicle.image, fallback.image),
         priority: Math.round(readNumber(vehicle.priority, fallback.priority)),
         margin: normalizeMargin(vehicle.margin, fallback.margin),
@@ -585,6 +950,18 @@ export type RentCarOption = {
   currency: string;
   seats: number;
   luggage: number;
+  doors: number;
+  transmission: RentCarTransmission;
+  fuelType: RentCarFuelType;
+  airConditioning: boolean;
+  bags: number;
+  largeBags: number;
+  bluetooth: boolean;
+  usb: boolean;
+  appleCarplay: boolean;
+  androidAuto: boolean;
+  fourByFour: boolean;
+  convertible: boolean;
   image: string;
   href: string;
   highProfile: boolean;
@@ -621,6 +998,18 @@ export const getRentCarOptions = (
         currency: normalized.currency,
         seats: vehicle.seats,
         luggage: vehicle.luggage,
+        doors: vehicle.doors,
+        transmission: vehicle.transmission,
+        fuelType: vehicle.fuelType,
+        airConditioning: vehicle.airConditioning,
+        bags: vehicle.bags,
+        largeBags: vehicle.largeBags,
+        bluetooth: vehicle.bluetooth,
+        usb: vehicle.usb,
+        appleCarplay: vehicle.appleCarplay,
+        androidAuto: vehicle.androidAuto,
+        fourByFour: vehicle.fourByFour,
+        convertible: vehicle.convertible,
         image: vehicle.image,
         href: getRentCarOptionPath(location.id, vehicle.slug, "en"),
         highProfile: Boolean(location.highProfile)
@@ -647,6 +1036,86 @@ export const detectRentCarLocationId = (input: string, settings: RentCarFleetSet
     location.searchTerms.some((term) => text.includes(term))
   );
   return match?.id ?? "puj-cap-cana";
+};
+
+export const getRentCarSpecBadges = (option: RentCarOption, locale: RentCarLocale = "en") => {
+  const labels = {
+    en: {
+      passengers: "passengers",
+      doors: "doors",
+      bags: "bags",
+      large: "large",
+      automatic: "Automatic",
+      manual: "Manual",
+      gasoline: "Gasoline",
+      hybrid: "Hybrid",
+      diesel: "Diesel",
+      electric: "Electric",
+      ac: "A/C",
+      carplay: "CarPlay",
+      android: "Android Auto",
+      fourByFour: "4x4",
+      convertible: "Convertible"
+    },
+    es: {
+      passengers: "pasajeros",
+      doors: "puertas",
+      bags: "maletas",
+      large: "grandes",
+      automatic: "Automatico",
+      manual: "Manual",
+      gasoline: "Gasolina",
+      hybrid: "Hibrido",
+      diesel: "Diesel",
+      electric: "Electrico",
+      ac: "A/C",
+      carplay: "CarPlay",
+      android: "Android Auto",
+      fourByFour: "4x4",
+      convertible: "Convertible"
+    },
+    fr: {
+      passengers: "passagers",
+      doors: "portes",
+      bags: "bagages",
+      large: "grands",
+      automatic: "Automatique",
+      manual: "Manuel",
+      gasoline: "Essence",
+      hybrid: "Hybride",
+      diesel: "Diesel",
+      electric: "Electrique",
+      ac: "Clim.",
+      carplay: "CarPlay",
+      android: "Android Auto",
+      fourByFour: "4x4",
+      convertible: "Cabriolet"
+    }
+  }[locale];
+
+  const transmission = option.transmission === "Manual" ? labels.manual : labels.automatic;
+  const fuel =
+    option.fuelType === "Hybrid"
+      ? labels.hybrid
+      : option.fuelType === "Diesel"
+        ? labels.diesel
+        : option.fuelType === "Electric"
+          ? labels.electric
+          : labels.gasoline;
+
+  return [
+    `${option.seats} ${labels.passengers}`,
+    `${option.doors} ${labels.doors}`,
+    transmission,
+    fuel,
+    option.airConditioning ? labels.ac : null,
+    `${option.bags} ${labels.bags}`,
+    `${option.largeBags} ${labels.large}`,
+    option.appleCarplay ? labels.carplay : null,
+    option.androidAuto ? labels.android : null,
+    option.fourByFour ? labels.fourByFour : null,
+    option.convertible ? labels.convertible : null
+  ].filter(Boolean) as string[];
 };
 
 export const rentCarCopy = {
@@ -838,6 +1307,18 @@ export const getRentCarJsonLd = (option: RentCarOption, locale: RentCarLocale = 
       description: buildRentCarDescription(option, locale),
       category: option.categoryLabel,
       vehicleSeatingCapacity: option.seats,
+      vehicleTransmission: option.transmission,
+      fuelType: option.fuelType,
+      numberOfDoors: option.doors,
+      additionalProperty: [
+        { "@type": "PropertyValue", name: "Bags", value: option.bags },
+        { "@type": "PropertyValue", name: "Large bags", value: option.largeBags },
+        { "@type": "PropertyValue", name: "Air conditioning", value: option.airConditioning },
+        { "@type": "PropertyValue", name: "Apple CarPlay", value: option.appleCarplay },
+        { "@type": "PropertyValue", name: "Android Auto", value: option.androidAuto },
+        { "@type": "PropertyValue", name: "4x4", value: option.fourByFour },
+        { "@type": "PropertyValue", name: "Convertible", value: option.convertible }
+      ],
       offers: {
         "@type": "Offer",
         priceCurrency: option.currency,

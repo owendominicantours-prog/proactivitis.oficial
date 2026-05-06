@@ -8,6 +8,7 @@ import {
   getRentCarLocations,
   getRentCarOptionPath,
   getRentCarOptions,
+  getRentCarSpecBadges,
   rentCarLastUpdate,
   type RentCarFleetSettings,
   type RentCarLocale
@@ -56,20 +57,27 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
               href={getRentCarOptionPath(heroOption.locationId, heroOption.categorySlug, locale)}
               className="group overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-950 text-white shadow-2xl shadow-slate-300/60 transition hover:-translate-y-1"
             >
-              <div className="relative h-72 bg-gradient-to-br from-white via-sky-50 to-emerald-50">
+              <div className="relative h-80 bg-white">
                 <Image
                   src={heroOption.image}
                   alt={heroOption.model}
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 430px"
-                  className="object-contain p-7 transition duration-500 group-hover:scale-105"
+                  className="object-contain p-2 transition duration-500 group-hover:scale-[1.02]"
                 />
               </div>
               <div className="p-5">
                 <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-300">{heroOption.tag}</p>
                 <h2 className="mt-2 text-2xl font-black">{heroOption.categoryLabel}</h2>
                 <p className="mt-2 text-sm font-semibold text-slate-300">{heroOption.model}</p>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  {getRentCarSpecBadges(heroOption, locale).slice(0, 4).map((item) => (
+                    <span key={item} className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-100">
+                      {item}
+                    </span>
+                  ))}
+                </div>
                 <div className="mt-4 flex items-end justify-between">
                   <p className="text-3xl font-black text-emerald-300">
                     ${heroOption.price}/{String(copy.day)}
@@ -105,14 +113,14 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
                   href={getRentCarLocationDefaultPath(location.id, locale, settings)}
                   className="group overflow-hidden rounded-[1.7rem] border border-slate-200 bg-slate-50 transition hover:-translate-y-1 hover:border-sky-300 hover:bg-white hover:shadow-lg"
                 >
-                  <div className="relative h-36 bg-gradient-to-br from-white via-sky-50 to-emerald-50">
+                  <div className="relative h-40 bg-white">
                     {topOption ? (
                       <Image
                         src={topOption.image}
                         alt={topOption.model}
                         fill
                         sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-contain p-5 transition duration-500 group-hover:scale-105"
+                        className="object-contain p-2 transition duration-500 group-hover:scale-[1.02]"
                       />
                     ) : null}
                     <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-sky-700 shadow-sm">
@@ -149,13 +157,13 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
                 href={getRentCarOptionPath(option.locationId, option.categorySlug, locale)}
                 className="group overflow-hidden rounded-[1.7rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg"
               >
-                <div className="relative h-44 bg-gradient-to-br from-slate-50 via-white to-emerald-50">
+                <div className="relative h-52 bg-white">
                   <Image
                     src={option.image}
                     alt={option.model}
                     fill
                     sizes="(max-width: 768px) 100vw, 25vw"
-                    className="object-contain p-5 transition duration-500 group-hover:scale-105"
+                    className="object-contain p-2 transition duration-500 group-hover:scale-[1.02]"
                     loading="lazy"
                   />
                   <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-red-700 shadow">
@@ -166,6 +174,13 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
                   <p className="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-700">{option.locationName}</p>
                   <h3 className="mt-2 text-lg font-black leading-tight text-slate-950">{option.categoryLabel}</h3>
                   <p className="mt-1 line-clamp-1 text-sm font-bold text-slate-500">{option.model}</p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {getRentCarSpecBadges(option, locale).slice(0, 6).map((item) => (
+                      <span key={item} className="rounded-full bg-slate-50 px-2.5 py-1.5 text-[11px] font-black text-slate-700">
+                        {item}
+                      </span>
+                    ))}
+                  </div>
                   <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-600">{buildRentCarDescription(option, locale)}</p>
                   <div className="mt-4 flex items-end justify-between gap-3">
                     <p className="text-2xl font-black text-emerald-700">${option.price}/{String(copy.day)}</p>
