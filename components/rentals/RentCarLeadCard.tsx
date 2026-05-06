@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import {
   getRentCarCopy,
@@ -19,10 +20,11 @@ const money = (value: number) => value.toFixed(value % 1 ? 2 : 0);
 
 export default function RentCarLeadCard({ option, compact = false, locale = "en" }: RentCarLeadCardProps) {
   const copy = getRentCarCopy(locale);
-  const [pickupDate, setPickupDate] = useState("");
-  const [pickupTime, setPickupTime] = useState("10:00");
-  const [returnDate, setReturnDate] = useState("");
-  const [returnTime, setReturnTime] = useState("10:00");
+  const searchParams = useSearchParams();
+  const [pickupDate, setPickupDate] = useState(searchParams.get("pickupDate") ?? "");
+  const [pickupTime, setPickupTime] = useState(searchParams.get("pickupTime") ?? "10:00");
+  const [returnDate, setReturnDate] = useState(searchParams.get("returnDate") ?? "");
+  const [returnTime, setReturnTime] = useState(searchParams.get("returnTime") ?? "10:00");
   const [pickupPlace, setPickupPlace] = useState(option.locationName);
   const [dropoffPlace, setDropoffPlace] = useState(option.locationName);
   const [flightNumber, setFlightNumber] = useState("");

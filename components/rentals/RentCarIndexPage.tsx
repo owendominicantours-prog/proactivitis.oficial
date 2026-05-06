@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import RentCarSearch from "@/components/rentals/RentCarSearch";
 import {
   getRentCarCopy,
@@ -23,6 +26,18 @@ type FilterItem = {
   from: number;
 };
 
+type FilterGroupKey = "used" | "type" | "capacity" | "specs" | "price";
+
+type SelectedFilters = Record<FilterGroupKey, string[]>;
+
+const emptyFilters: SelectedFilters = {
+  used: [],
+  type: [],
+  capacity: [],
+  specs: [],
+  price: []
+};
+
 const getVehicleType = (option: RentCarOption) => {
   const label = `${option.categoryLabel} ${option.model}`.toLowerCase();
   if (label.includes("van") || label.includes("hiace") || label.includes("h-1")) return "Van";
@@ -44,6 +59,39 @@ const sortRentCarResults = (options: RentCarOption[]) =>
     if (premiumBoost) return premiumBoost;
     return a.price - b.price;
   });
+
+const optionMatchesFilter = (option: RentCarOption, group: FilterGroupKey, label: string) => {
+  if (group === "used") return true;
+  if (group === "type") return getVehicleType(option) === label;
+  if (group === "capacity") {
+    if (label.startsWith("2-4")) return option.seats <= 4;
+    if (label.startsWith("5")) return option.seats === 5;
+    if (label.startsWith("7+")) return option.seats >= 7;
+    return true;
+  }
+  if (group === "specs") {
+    if (label === "Automatic") return option.transmission === "Automatic";
+    if (label === "Hybrid") return option.fuelType === "Hybrid";
+    if (label === "4x4") return option.fourByFour;
+    if (label === "CarPlay / Android") return option.appleCarplay || option.androidAuto;
+    return true;
+  }
+  if (group === "price") {
+    if (label === "$25 - $50") return option.price >= 25 && option.price <= 50;
+    if (label === "$50 - $100") return option.price > 50 && option.price <= 100;
+    if (label === "$100+") return option.price > 100;
+    return true;
+  }
+  return true;
+};
+
+const applyRentCarFilters = (options: RentCarOption[], selected: SelectedFilters) =>
+  options.filter((option) =>
+    (Object.entries(selected) as Array<[FilterGroupKey, string[]]>).every(([group, labels]) => {
+      if (!labels.length) return true;
+      return labels.some((label) => optionMatchesFilter(option, group, label));
+    })
+  );
 
 const copyByLocale = {
   en: {
@@ -202,14 +250,40 @@ const copyByLocale = {
 } satisfies Record<RentCarLocale, Record<string, string | string[][]>>;
 
 export default function RentCarIndexPage({ locale = "en", settings }: RentCarIndexPageProps) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(emptyFilters);
+  const [pickupDate, setPickupDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
+  const [pickupTime, setPickupTime] = useState("10:00");
+  const [returnTime, setReturnTime] = useState("10:00");
   const copy = getRentCarCopy(locale);
   const ui = copyByLocale[locale];
   const locations = getRentCarLocations(settings);
   const allOptions = getRentCarOptions(undefined, settings);
-  const resultOptions = sortRentCarResults(allOptions).slice(0, 24);
+  const filteredOptions = useMemo(() => applyRentCarFilters(allOptions, selectedFilters), [allOptions, selectedFilters]);
+  const resultOptions = sortRentCarResults(filteredOptions).slice(0, 24);
   const priceFloor = allOptions.length ? Math.min(...allOptions.map((option) => option.price)) : 0;
   const defaultLocation = locations[0];
   const defaultHref = defaultLocation ? getRentCarLocationDefaultPath(defaultLocation.id, locale, settings) : getRentCarRootPathSafe(locale);
+  const searchTarget = resultOptions[0]
+    ? getRentCarOptionPath(resultOptions[0].locationId, resultOptions[0].categorySlug, locale)
+    : defaultHref;
+  const searchParams = new URLSearchParams();
+  if (pickupDate) searchParams.set("pickupDate", pickupDate);
+  if (returnDate) searchParams.set("returnDate", returnDate);
+  if (pickupTime) searchParams.set("pickupTime", pickupTime);
+  if (returnTime) searchParams.set("returnTime", returnTime);
+  const searchHref = searchParams.size ? `${searchTarget}?${searchParams.toString()}` : searchTarget;
+  const activeFilterCount = (Object.values(selectedFilters) as string[][]).reduce((total, items) => total + items.length, 0);
+  const toggleFilter = (group: FilterGroupKey, label: string) => {
+    setSelectedFilters((current) => {
+      const values = current[group];
+      const nextValues = values.includes(label)
+        ? values.filter((item) => item !== label)
+        : [...values, label];
+      return { ...current, [group]: nextValues };
+    });
+  };
   const transferHref = locale === "es" ? "/transfer" : `/${locale}/transfer`;
   const vehicleTypes = ["Economy", "Sedan", "SUV", "Luxury", "Convertible", "Van"].map((label) => ({
     label,
@@ -264,18 +338,43 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
               </div>
               <label className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
                 <span className="block text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">{ui.dates as string}</span>
-                <input type="text" placeholder="20 May - 21 May" className="mt-1 w-full bg-transparent text-sm font-black outline-none placeholder:text-slate-400" />
+                <div className="mt-1 grid grid-cols-2 gap-2">
+                  <input
+                    type="date"
+                    min={today}
+                    value={pickupDate}
+                    onChange={(event) => setPickupDate(event.target.value)}
+                    className="w-full bg-transparent text-sm font-black outline-none placeholder:text-slate-400"
+                  />
+                  <input
+                    type="date"
+                    min={pickupDate || today}
+                    value={returnDate}
+                    onChange={(event) => setReturnDate(event.target.value)}
+                    className="w-full bg-transparent text-sm font-black outline-none placeholder:text-slate-400"
+                  />
+                </div>
               </label>
               <label className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
                 <span className="block text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">{ui.pickupTime as string}</span>
-                <input type="text" placeholder="10:30 AM" className="mt-1 w-full bg-transparent text-sm font-black outline-none placeholder:text-slate-400" />
+                <input
+                  type="time"
+                  value={pickupTime}
+                  onChange={(event) => setPickupTime(event.target.value)}
+                  className="mt-1 w-full bg-transparent text-sm font-black outline-none placeholder:text-slate-400"
+                />
               </label>
               <label className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
                 <span className="block text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">{ui.returnTime as string}</span>
-                <input type="text" placeholder="10:30 AM" className="mt-1 w-full bg-transparent text-sm font-black outline-none placeholder:text-slate-400" />
+                <input
+                  type="time"
+                  value={returnTime}
+                  onChange={(event) => setReturnTime(event.target.value)}
+                  className="mt-1 w-full bg-transparent text-sm font-black outline-none placeholder:text-slate-400"
+                />
               </label>
               <Link
-                href={defaultHref}
+                href={searchHref}
                 className="inline-flex items-center justify-center rounded-2xl bg-sky-600 px-5 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-lg shadow-sky-200 transition hover:bg-sky-700"
               >
                 {ui.search as string}
@@ -289,12 +388,23 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
         <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
           <aside className="hidden lg:block">
             <div className="sticky top-24 space-y-5 rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-black">{ui.filters as string}</h2>
-              <FilterGroup title={ui.used as string} items={usedFilters} />
-              <FilterGroup title={ui.type as string} items={vehicleTypes} />
-              <FilterGroup title={ui.capacity as string} items={capacities} />
-              <FilterGroup title={ui.specs as string} items={specs} />
-              <FilterGroup title={ui.price as string} items={priceFilters} />
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-lg font-black">{ui.filters as string}</h2>
+                {activeFilterCount ? (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFilters(emptyFilters)}
+                    className="text-xs font-black uppercase tracking-[0.16em] text-sky-700"
+                  >
+                    {locale === "es" ? "Limpiar" : locale === "fr" ? "Effacer" : "Clear"}
+                  </button>
+                ) : null}
+              </div>
+              <FilterGroup title={ui.used as string} group="used" items={usedFilters} selected={selectedFilters.used} onToggle={toggleFilter} />
+              <FilterGroup title={ui.type as string} group="type" items={vehicleTypes} selected={selectedFilters.type} onToggle={toggleFilter} />
+              <FilterGroup title={ui.capacity as string} group="capacity" items={capacities} selected={selectedFilters.capacity} onToggle={toggleFilter} />
+              <FilterGroup title={ui.specs as string} group="specs" items={specs} selected={selectedFilters.specs} onToggle={toggleFilter} />
+              <FilterGroup title={ui.price as string} group="price" items={priceFilters} selected={selectedFilters.price} onToggle={toggleFilter} />
             </div>
           </aside>
 
@@ -332,7 +442,7 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
 
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.4rem] border border-slate-200 bg-white px-4 py-3 shadow-sm">
               <p className="text-sm font-black text-slate-700">
-                <span className="text-slate-950">{allOptions.length}</span> {ui.results as string}
+                <span className="text-slate-950">{filteredOptions.length}</span> {ui.results as string}
               </p>
               <div className="flex flex-wrap gap-2">
                 {locations.slice(0, 4).map((location) => (
@@ -351,9 +461,19 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
             </div>
 
             <div id="rentcar-results" className="space-y-3">
-              {resultOptions.map((option) => (
-                <RentCarResultCard key={`${option.locationId}-${option.categorySlug}`} option={option} locale={locale} />
-              ))}
+              {resultOptions.length ? (
+                resultOptions.map((option) => (
+                  <RentCarResultCard key={`${option.locationId}-${option.categorySlug}`} option={option} locale={locale} />
+                ))
+              ) : (
+                <div className="rounded-[1.5rem] border border-amber-200 bg-amber-50 p-6 text-sm font-bold text-amber-900">
+                  {locale === "es"
+                    ? "No hay vehiculos con esos filtros. Limpia filtros o prueba otra categoria."
+                    : locale === "fr"
+                      ? "Aucun vehicule avec ces filtres. Effacez les filtres ou essayez une autre categorie."
+                      : "No vehicles match those filters. Clear filters or try another category."}
+                </div>
+              )}
             </div>
 
             <div className="flex justify-center pt-2">
@@ -424,7 +544,19 @@ function getRentCarRootPathSafe(locale: RentCarLocale) {
   return locale === "es" ? "/rent-a-car" : `/${locale}/rent-a-car`;
 }
 
-function FilterGroup({ title, items }: { title: string; items: FilterItem[] }) {
+function FilterGroup({
+  title,
+  group,
+  items,
+  selected,
+  onToggle
+}: {
+  title: string;
+  group: FilterGroupKey;
+  items: FilterItem[];
+  selected: string[];
+  onToggle: (group: FilterGroupKey, label: string) => void;
+}) {
   return (
     <div className="border-t border-slate-100 pt-4">
       <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">{title}</p>
@@ -432,7 +564,12 @@ function FilterGroup({ title, items }: { title: string; items: FilterItem[] }) {
         {items.map((item) => (
           <label key={item.label} className="flex cursor-pointer items-center justify-between gap-3 text-sm font-bold text-slate-700">
             <span className="flex min-w-0 items-center gap-2">
-              <span className="h-4 w-4 shrink-0 rounded border border-slate-300 bg-white" />
+              <input
+                type="checkbox"
+                checked={selected.includes(item.label)}
+                onChange={() => onToggle(group, item.label)}
+                className="h-4 w-4 shrink-0 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+              />
               <span className="truncate">{item.label}</span>
             </span>
             {item.from ? <span className="shrink-0 text-xs font-black text-slate-400">${item.from}</span> : null}

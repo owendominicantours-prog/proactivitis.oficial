@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import RentCarLeadCard from "@/components/rentals/RentCarLeadCard";
 import {
   buildRentCarDescription,
@@ -343,7 +344,9 @@ export default function RentCarDetailPage({ locationId, categorySlug, locale = "
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <RentCarLeadCard option={option} locale={locale} />
+          <Suspense fallback={<div className="rounded-[1.4rem] border border-slate-200 bg-white p-5 shadow-sm" />}>
+            <RentCarLeadCard option={option} locale={locale} />
+          </Suspense>
         </aside>
       </div>
 
