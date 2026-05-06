@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type RentCarVehicleImageFieldProps = {
   name?: string;
@@ -17,6 +17,10 @@ export default function RentCarVehicleImageField({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    setValue(defaultValue);
+  }, [defaultValue]);
 
   const uploadFile = async (file?: File | null) => {
     if (!file) return;

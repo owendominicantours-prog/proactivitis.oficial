@@ -93,7 +93,11 @@ export default async function AdminRentCarPage() {
               </div>
 
               <div className="mt-4 grid gap-3 md:grid-cols-[170px_minmax(0,1fr)]">
-                <RentCarVehicleImageField defaultValue={vehicle.image} vehicleSlug={vehicle.slug} />
+                <RentCarVehicleImageField
+                  key={`${vehicle.slug}-${vehicle.image}`}
+                  defaultValue={vehicle.image}
+                  vehicleSlug={vehicle.slug}
+                />
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="space-y-1">
                     <span className={labelClass}>Modelo</span>
