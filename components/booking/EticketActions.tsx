@@ -10,11 +10,33 @@ type EticketActionsProps = {
 
 export default function EticketActions({ bookingId, tourTitle, orderCode }: EticketActionsProps) {
   const [shareLabel, setShareLabel] = useState("Compartir mi e-ticket");
+  const [downloadLabel, setDownloadLabel] = useState("Descargar PDF");
 
-  const handleDownload = useCallback(() => {
-    const url = `/api/bookings/${bookingId}/eticket`;
-    window.open(url, "_blank");
-  }, [bookingId]);
+  const handleDownload = useCallback(async () => {
+    setDownloadLabel("Preparando...");
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}/eticket`, {
+        method: "GET",
+        cache: "no-store"
+      });
+      if (!response.ok) {
+        throw new Error("No se pudo generar el PDF");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `proactivitis-eticket-${orderCode.replace(/[^a-zA-Z0-9-]/g, "")}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      setDownloadLabel("Descargado");
+      window.setTimeout(() => setDownloadLabel("Descargar PDF"), 1800);
+    } catch {
+      setDownloadLabel("Intentar otra vez");
+    }
+  }, [bookingId, orderCode]);
 
   const handleShare = useCallback(async () => {
     const ticketUrl = `${window.location.origin}/api/bookings/${bookingId}/eticket`;
@@ -48,7 +70,7 @@ export default function EticketActions({ bookingId, tourTitle, orderCode }: Etic
         onClick={handleDownload}
         className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-700"
       >
-        Descargar PDF
+        {downloadLabel}
       </button>
       <button
         onClick={handleShare}
