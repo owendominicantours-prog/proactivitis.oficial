@@ -7,7 +7,9 @@ import { listKeywordPlannerOpportunities, updateKeywordPlannerStatus } from "@/l
 import {
   getRentCarOptions,
   getRentCarOptionPath,
-  getRentCarSpecBadges
+  getRentCarSpecBadges,
+  type RentCarFleetSettings,
+  type RentCarOption
 } from "@/data/rentCarFleet";
 import { getRentCarFleetSettings } from "@/lib/rentCarSettings";
 
@@ -268,6 +270,15 @@ const RENT_CAR_INTENTS = [
   }
 ];
 
+const RENT_CAR_LOCATION_GUARDS = [
+  { label: "Punta Cana / Cap Cana", terms: ["punta cana", "cap cana", "bavaro", "puj", "uvero alto"] },
+  { label: "Santo Domingo / Las Americas", terms: ["santo domingo", "las americas", "sdq"] },
+  { label: "Santiago / Cibao", terms: ["santiago", "cibao", "sti"] },
+  { label: "La Romana / Bayahibe", terms: ["la romana", "bayahibe", "casa de campo", "lrm"] },
+  { label: "Puerto Plata / Cabarete", terms: ["puerto plata", "cabarete", "sosua", "pop"] },
+  { label: "Samana / Las Terrenas", terms: ["samana", "las terrenas", "azs"] }
+];
+
 const toJson = (value: unknown) => value as Prisma.InputJsonValue;
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
@@ -277,6 +288,49 @@ const absoluteUrl = (value?: string | null) => {
   if (!value) return `${BASE_URL}/transfer/sedan.png`;
   if (value.startsWith("http://") || value.startsWith("https://")) return value;
   return `${BASE_URL}${value.startsWith("/") ? value : `/${value}`}`;
+};
+
+const normalizeSearchText = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+const containsSearchTerm = (text: string, term: string) => {
+  const normalizedText = normalizeSearchText(text);
+  const normalizedTerm = normalizeSearchText(term).trim();
+  if (!normalizedTerm) return false;
+  if (normalizedTerm.length <= 3) {
+    const escaped = normalizedTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`).test(normalizedText);
+  }
+  return normalizedText.includes(normalizedTerm);
+};
+
+const getRentCarLocationTerms = (settings: RentCarFleetSettings) =>
+  settings.locations.map((location) => ({
+    id: location.id,
+    terms: [
+      location.id.replace(/-/g, " "),
+      location.name,
+      location.code,
+      location.airportLabel,
+      location.regionId.replace(/_/g, " "),
+      ...location.searchTerms
+    ].filter(Boolean)
+  }));
+
+const keywordMatchesRentCarLocation = (
+  keyword: { keyword: string; suggestedAction?: string },
+  option: RentCarOption,
+  settings: RentCarFleetSettings
+) => {
+  const text = `${keyword.keyword} ${keyword.suggestedAction ?? ""}`;
+  const matchedLocationIds = getRentCarLocationTerms(settings)
+    .filter((location) => location.terms.some((term) => containsSearchTerm(text, term)))
+    .map((location) => location.id);
+  if (matchedLocationIds.length === 0) return true;
+  return matchedLocationIds.includes(option.locationId);
 };
 
 const slugify = (value: string) =>
@@ -452,6 +506,30 @@ const ensureKeywordInVisibleContent = (
     keywords: Array.from(new Set([keyword, ...content.keywords])).slice(0, 16),
     faqs: nextFaqs
   };
+};
+
+const rentCarContentHasLocationConflict = (landing: GeminiSeoLandingRecord, content: GeminiSeoLocaleContent) => {
+  if (landing.type !== "rent_car") return null;
+  const productLocation = `${landing.product.location ?? ""} ${landing.product.title}`.toLowerCase();
+  const allowed = RENT_CAR_LOCATION_GUARDS.find((group) =>
+    group.terms.some((term) => containsSearchTerm(productLocation, term))
+  );
+  if (!allowed) return null;
+
+  const visibleText = [
+    content.title,
+    content.metaDescription,
+    content.h1,
+    content.intro,
+    ...content.sections.flatMap((section) => [section.heading, section.body, ...(section.bullets ?? [])]),
+    ...content.faqs.flatMap((faq) => [faq.question, faq.answer])
+  ].join(" ");
+
+  const conflict = RENT_CAR_LOCATION_GUARDS.find(
+    (group) =>
+      group.label !== allowed.label && group.terms.some((term) => containsSearchTerm(visibleText, term))
+  );
+  return conflict ? `rent_car: menciona ${conflict.label} pero el producto es ${allowed.label}.` : null;
 };
 
 export async function getGeminiSeoFactoryConfig(): Promise<GeminiSeoFactoryConfig> {
@@ -667,7 +745,10 @@ const buildRentCarCandidates = async (limit: number, offset: number): Promise<Ge
   const start = offset % options.length;
 
   return Array.from({ length: Math.min(limit, options.length) }, (_, index) => options[(start + index) % options.length]).map((option, index) => {
-    const keyword = rentCarKeywords.length > 0 ? rentCarKeywords[(offset + index) % rentCarKeywords.length] : null;
+    const matchingKeywords = rentCarKeywords.filter((candidateKeyword) =>
+      keywordMatchesRentCarLocation(candidateKeyword, option, settings)
+    );
+    const keyword = matchingKeywords.length > 0 ? matchingKeywords[(offset + index) % matchingKeywords.length] : null;
     const fallbackIntent = RENT_CAR_INTENTS[(offset + index) % RENT_CAR_INTENTS.length];
     const keywordIntent = keyword
       ? {
@@ -742,6 +823,9 @@ Rules:
 - If this is rent_car, sell the need first (airport car rental, SUV rental, luxury rental, daily car rental), then mention the vehicle model as the featured class or confirmed/similar model.
 - Rent_car pages must feel transactional: clear pickup area, daily price, passenger/luggage fit, model 2024/2025 angle, reserve-now CTA, and Proactivitis VIP Support before pickup.
 - Rent_car titles should not always start with the vehicle model; sometimes travelers search by service/category, not by model.
+- Rent_car location integrity is mandatory: never mention or optimize for a destination that is not in Product.location.
+- If Product.location is Puerto Plata / Cabarete, do not use Punta Cana, Cap Cana, Bavaro, Santo Domingo, Samana, or La Romana as search targets.
+- If Product.location is Punta Cana / Cap Cana, do not use Cabarete, Puerto Plata, Santo Domingo, Samana, or La Romana as search targets.
 - Include schema JSON-LD per locale.
 - Schema must include image and thumbnailUrl using the product image.
 - Include WebPage, FAQPage, BreadcrumbList, and either TouristTrip for tours, Service for transfers, or Product/Car for rent car.
@@ -1058,6 +1142,8 @@ const validateLanding = (landing: GeminiSeoLandingRecord) => {
     if (!content?.sections || content.sections.length < 3) issues.push(`${locale}: faltan secciones.`);
     if (!content?.faqs || content.faqs.length < 3) issues.push(`${locale}: faltan FAQs.`);
     if (!content?.image || !content.schema) issues.push(`${locale}: falta imagen o schema.`);
+    const locationConflict = rentCarContentHasLocationConflict(landing, content);
+    if (locationConflict) issues.push(`${locale}: ${locationConflict}`);
   }
   const score = Math.max(0, 100 - issues.length * 12);
   return { score, issues };
