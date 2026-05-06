@@ -62,14 +62,15 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
               href={getRentCarOptionPath(heroOption.locationId, heroOption.categorySlug, locale)}
               className="group overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-950 text-white shadow-2xl shadow-slate-300/60 transition hover:-translate-y-1"
             >
-              <div className="relative h-80 bg-white">
+              <div className="relative h-80 overflow-hidden bg-[radial-gradient(ellipse_at_50%_45%,#ffffff_0%,#f7f7f5_48%,#ececea_100%)]">
+                <div className="absolute inset-x-[18%] bottom-[12%] h-[12%] rounded-full bg-black/20 blur-[18px] transition duration-300 group-hover:bg-black/25" />
                 <Image
                   src={heroOption.image}
                   alt={heroOption.model}
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 430px"
-                  className="object-contain p-2 transition duration-500 group-hover:scale-[1.02]"
+                  className="object-contain p-5 transition duration-500 group-hover:scale-[1.02]"
                 />
               </div>
               <div className="p-5">
@@ -123,15 +124,15 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
                   href={getRentCarLocationDefaultPath(location.id, locale, settings)}
                   className="group overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm ring-1 ring-white transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-2xl hover:shadow-slate-200/70"
                 >
-                  <div className="relative h-56 overflow-hidden bg-[radial-gradient(circle_at_50%_20%,#ffffff_0%,#ecfeff_42%,#dff8ef_100%)]">
-                    <div className="absolute inset-x-8 bottom-6 h-8 rounded-full bg-slate-900/10 blur-xl transition duration-300 group-hover:bg-slate-900/15" />
+                  <div className="relative h-56 overflow-hidden bg-[radial-gradient(ellipse_at_50%_45%,#ffffff_0%,#f7f7f5_48%,#ececea_100%)]">
+                    <div className="absolute inset-x-[18%] bottom-[12%] h-[12%] rounded-full bg-black/20 blur-[18px] transition duration-300 group-hover:bg-black/25" />
                     {topOption ? (
                       <Image
                         src={topOption.image}
                         alt={topOption.model}
                         fill
                         sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-contain p-3 transition duration-500 group-hover:scale-[1.035]"
+                        className="object-contain p-5 transition duration-500 group-hover:scale-[1.035]"
                       />
                     ) : null}
                     <div className="absolute left-4 top-4 flex flex-wrap gap-2">
@@ -195,14 +196,14 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
                 href={getRentCarOptionPath(option.locationId, option.categorySlug, locale)}
                 className="group overflow-hidden rounded-[1.7rem] border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-2xl hover:shadow-slate-200/70"
               >
-                <div className="relative h-56 overflow-hidden bg-[radial-gradient(circle_at_50%_25%,#ffffff_0%,#f0f9ff_48%,#e8fff4_100%)]">
-                  <div className="absolute inset-x-7 bottom-7 h-7 rounded-full bg-slate-900/10 blur-xl transition duration-300 group-hover:bg-slate-900/15" />
+                <div className="relative h-56 overflow-hidden bg-[radial-gradient(ellipse_at_50%_45%,#ffffff_0%,#f7f7f5_48%,#ececea_100%)]">
+                  <div className="absolute inset-x-[18%] bottom-[12%] h-[12%] rounded-full bg-black/20 blur-[18px] transition duration-300 group-hover:bg-black/25" />
                   <Image
                     src={option.image}
                     alt={option.model}
                     fill
                     sizes="(max-width: 768px) 100vw, 25vw"
-                    className="object-contain p-3 transition duration-500 group-hover:scale-[1.035]"
+                    className="object-contain p-5 transition duration-500 group-hover:scale-[1.035]"
                     loading="lazy"
                   />
                   <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-red-700 shadow">

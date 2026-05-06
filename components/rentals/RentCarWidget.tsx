@@ -63,13 +63,14 @@ export default async function RentCarWidget({ regionText = "", locationId, title
             href={getRentCarOptionPath(option.locationId, option.categorySlug, locale)}
             className="group overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 transition hover:border-emerald-200 hover:bg-emerald-50"
           >
-            <div className="relative h-32 bg-white">
+            <div className="relative h-32 overflow-hidden bg-[radial-gradient(ellipse_at_50%_45%,#ffffff_0%,#f7f7f5_48%,#ececea_100%)]">
+              <div className="absolute inset-x-[18%] bottom-[12%] h-[12%] rounded-full bg-black/20 blur-[14px] transition duration-300 group-hover:bg-black/25" />
               <Image
                 src={option.image}
                 alt={option.model}
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
-                className="object-contain p-2 transition duration-500 group-hover:scale-[1.02]"
+                className="object-contain p-4 transition duration-500 group-hover:scale-[1.02]"
                 loading="lazy"
               />
             </div>

@@ -129,25 +129,27 @@ export default function RentCarDetailPage({ locationId, categorySlug, locale = "
                 <Link
                   key={item.categorySlug}
                   href={getRentCarOptionPath(item.locationId, item.categorySlug, locale)}
-                  className={`relative h-20 overflow-hidden rounded-2xl border bg-white transition md:h-24 ${
+                  className={`relative h-20 overflow-hidden rounded-2xl border bg-[radial-gradient(ellipse_at_50%_45%,#ffffff_0%,#f7f7f5_48%,#ececea_100%)] transition md:h-24 ${
                     item.categorySlug === option.categorySlug
                       ? "border-slate-950 ring-2 ring-slate-950"
                       : "border-slate-200 hover:border-sky-300"
                   }`}
                 >
-                  <Image src={item.image} alt={item.model} fill sizes="120px" className="object-contain p-1" />
+                  <div className="absolute inset-x-[18%] bottom-[12%] h-[12%] rounded-full bg-black/15 blur-[10px]" />
+                  <Image src={item.image} alt={item.model} fill sizes="120px" className="object-contain p-3" />
                 </Link>
               ))}
             </div>
-            <div className="order-1 overflow-hidden rounded-[1.5rem] bg-white md:order-2">
+            <div className="order-1 overflow-hidden rounded-[1.5rem] bg-[radial-gradient(ellipse_at_50%_45%,#ffffff_0%,#f7f7f5_48%,#ececea_100%)] md:order-2">
               <div className="relative h-[320px] md:h-[520px]">
+                <div className="absolute inset-x-[18%] bottom-[12%] h-[12%] rounded-full bg-black/20 blur-[22px]" />
                 <Image
                   src={option.image}
                   alt={option.model}
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 70vw"
-                  className="object-contain p-2 md:p-4"
+                  className="object-contain p-6 md:p-10"
                 />
                 <div className="absolute left-4 top-4 rounded-full bg-white/95 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-950 shadow">
                   {option.categoryLabel}
@@ -222,8 +224,9 @@ export default function RentCarDetailPage({ locationId, categorySlug, locale = "
                     item.categorySlug === option.categorySlug ? "border-slate-950" : "border-slate-200"
                   }`}
                 >
-                  <div className="relative h-44 bg-white">
-                    <Image src={item.image} alt={item.model} fill sizes="240px" className="object-contain p-2" />
+                  <div className="relative h-44 overflow-hidden bg-[radial-gradient(ellipse_at_50%_45%,#ffffff_0%,#f7f7f5_48%,#ececea_100%)]">
+                    <div className="absolute inset-x-[18%] bottom-[12%] h-[12%] rounded-full bg-black/20 blur-[16px]" />
+                    <Image src={item.image} alt={item.model} fill sizes="240px" className="object-contain p-5" />
                   </div>
                   <div className="p-4">
                     <p className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-700">{item.tag}</p>
