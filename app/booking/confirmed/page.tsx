@@ -55,12 +55,13 @@ export default async function BookingConfirmedRedirectPage({ searchParams }: Pro
     return <BookingMissingMessage />;
   }
 
+  const requestedType = normalizeSearchParam(resolvedSearchParams.type);
   const flowType =
-    normalizeSearchParam(resolvedSearchParams.type) === "transfer" ? "transfer" : undefined;
+    requestedType === "transfer" || requestedType === "rent_car" ? requestedType : undefined;
   const confirmationData = await getBookingConfirmationData(bookingId);
   if (!confirmationData) {
     return <BookingMissingMessage bookingId={bookingId} />;
   }
 
-  return <BookingConfirmedContent {...confirmationData} flowType={flowType} />;
+  return <BookingConfirmedContent {...confirmationData} flowType={flowType ?? confirmationData.flowType} />;
 }

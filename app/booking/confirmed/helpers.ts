@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { parseAdminItinerary } from "@/lib/itinerary";
 import { TimelineStop } from "@/components/itinerary/ItineraryTimeline";
-import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
+import { HIDDEN_RENT_CAR_SLUG, HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 import type { Prisma } from "@prisma/client";
 
 const shuffleArray = <T,>(items: T[]) => items.slice().sort(() => Math.random() - 0.5);
@@ -29,7 +29,7 @@ export type BookingConfirmationData = {
   travelDateLabel: string;
   passengerLabel: string;
   startTimeLabel: string;
-  flowType?: "tour" | "transfer";
+  flowType?: "tour" | "transfer" | "rent_car";
   discountPercent: number;
   analytics: {
     transactionId: string;
@@ -143,7 +143,7 @@ export async function getBookingConfirmationData(
   const discountPercent = preference?.discountEligible && !preference?.discountRedeemedAt ? 10 : 0;
   const recommendedWhere: Prisma.TourWhereInput = {
     status: "published",
-    slug: { not: HIDDEN_TRANSFER_SLUG },
+    slug: { notIn: [HIDDEN_TRANSFER_SLUG, HIDDEN_RENT_CAR_SLUG] },
     id: { not: tour.id }
   };
   if (applyPreferences) {
@@ -194,9 +194,12 @@ export async function getBookingConfirmationData(
   const whatsappLink = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/?text=Hola%20Proactivitis";
   const orderCode = booking.bookingCode ?? `#PR-${booking.id.slice(-4).toUpperCase()}`;
   const travelDateLabel = new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(booking.travelDate);
-  const passengerLabel = `${booking.paxAdults + booking.paxChildren} pax`;
   const startTimeLabel = booking.startTime ?? "Hora por confirmar";
-  const flowType = (booking.flowType ?? "tour") as "tour" | "transfer";
+  const flowType = (booking.flowType ?? "tour") as "tour" | "transfer" | "rent_car";
+  const passengerLabel =
+    flowType === "rent_car"
+      ? ((booking as any).transferVehicleName ?? "Vehiculo reservado")
+      : `${booking.paxAdults + booking.paxChildren} pax`;
   const analytics = {
     transactionId: orderCode,
     value: booking.totalAmount,

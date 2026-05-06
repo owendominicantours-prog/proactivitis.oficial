@@ -37,12 +37,17 @@ export function BookingConfirmedContent({
   analytics
 }: BookingConfirmationData) {
   const isTransfer = flowType === "transfer";
+  const isRentCar = flowType === "rent_car";
   const { t } = useTranslation();
-  const heroHeadline = t("booking.confirmation.hero.headline");
-  const heroBody = isTransfer
+  const heroHeadline = isRentCar ? "Reserva registrada" : t("booking.confirmation.hero.headline");
+  const heroBody = isRentCar
+    ? "Tu solicitud de rent car quedo registrada como reserva formal."
+    : isTransfer
     ? t("booking.confirmation.hero.body.transfer")
     : t("booking.confirmation.hero.body.tour");
-  const heroNote = isTransfer
+  const heroNote = isRentCar
+    ? `Enviaremos la confirmacion operativa a ${booking.customerEmail}. No se cargo ninguna tarjeta; el pago se coordina despues de validar disponibilidad.`
+    : isTransfer
     ? t("booking.confirmation.hero.note.transfer", { email: booking.customerEmail })
     : t("booking.confirmation.hero.note.tour", { email: booking.customerEmail });
   const transferInstructionKeys = [
@@ -57,18 +62,32 @@ export function BookingConfirmedContent({
     "booking.confirmation.instructions.tour.askQuestions"
   ] as const;
   const instructionKeys = isTransfer ? transferInstructionKeys : tourInstructionKeys;
-  const serviceLabel = isTransfer
+  const rentCarInstructions = [
+    "Nuestro equipo valida disponibilidad real del vehiculo o clase similar.",
+    "Recibiras instrucciones de entrega, documentos requeridos y punto exacto.",
+    "No pagaste ahora; el pago se completa despues de la confirmacion operativa.",
+    "Ten licencia de conducir vigente y documento de identidad al recoger el vehiculo."
+  ];
+  const serviceLabel = isRentCar
+    ? "Vehiculo"
+    : isTransfer
     ? t("booking.confirmation.labels.service")
     : t("booking.confirmation.labels.duration");
-  const serviceValue = isTransfer
+  const serviceValue = isRentCar
+    ? ((booking as any).transferVehicleName ?? tour.title)
+    : isTransfer
     ? t("booking.confirmation.values.transferService")
     : formatDurationDisplay(tour.duration, t("booking.confirmation.values.durationPending"));
-  const pickupLabel = t("booking.confirmation.labels.meetingPoint");
-  const pickupValue = isTransfer
+  const pickupLabel = isRentCar ? "Entrega" : t("booking.confirmation.labels.meetingPoint");
+  const pickupValue = isRentCar
+    ? booking.pickup ?? "Punto por confirmar"
+    : isTransfer
     ? booking.pickup ?? t("booking.confirmation.values.defaultPickup")
     : tour.meetingPoint ?? t("booking.confirmation.values.noMeetingPoint");
-  const totalLabel = t("booking.confirmation.labels.totalPaid");
-  const totalValue = t("booking.confirmation.values.totalPaid", { amount: booking.totalAmount.toFixed(0) });
+  const totalLabel = isRentCar ? "Total estimado" : t("booking.confirmation.labels.totalPaid");
+  const totalValue = isRentCar
+    ? `$${booking.totalAmount.toFixed(0)} USD - pago pendiente`
+    : t("booking.confirmation.values.totalPaid", { amount: booking.totalAmount.toFixed(0) });
   const itineraryStart = tour.meetingPoint
     ? t("booking.confirmation.itinerary.start", { meetingPoint: tour.meetingPoint })
     : undefined;
@@ -137,7 +156,7 @@ export function BookingConfirmedContent({
               >
                 {t("booking.confirmation.buttons.whatsapp")}
               </a>
-              {!isTransfer ? (
+              {!isTransfer && !isRentCar ? (
                 <Link
                   href={`/tours/${tour.slug}#reviews`}
                   className="inline-flex items-center justify-center rounded-full border border-indigo-200 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-indigo-600 transition hover:bg-indigo-50"
@@ -207,9 +226,9 @@ export function BookingConfirmedContent({
             <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
               <h2 className="text-2xl font-semibold text-slate-900">{t("booking.confirmation.section.instructions")}</h2>
               <ul className="list-disc space-y-2 pl-5 text-sm text-slate-600">
-                {instructionKeys.map((key) => (
-                  <li key={key}>{t(key)}</li>
-                ))}
+                {isRentCar
+                  ? rentCarInstructions.map((item) => <li key={item}>{item}</li>)
+                  : instructionKeys.map((key) => <li key={key}>{t(key)}</li>)}
               </ul>
             </section>
           </div>

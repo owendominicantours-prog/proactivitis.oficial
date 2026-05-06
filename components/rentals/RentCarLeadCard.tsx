@@ -26,9 +26,13 @@ export default function RentCarLeadCard({ option, compact = false, locale = "en"
   const [pickupPlace, setPickupPlace] = useState(option.locationName);
   const [dropoffPlace, setDropoffPlace] = useState(option.locationName);
   const [flightNumber, setFlightNumber] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
   const [driverName, setDriverName] = useState("");
   const [phone, setPhone] = useState("");
   const [touched, setTouched] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
   const localizedHref = getRentCarOptionPath(option.locationId, option.categorySlug, locale);
   const pickupIsAirport = /airport|aeropuerto|aeroport/i.test(pickupPlace) || pickupPlace.toUpperCase().includes(option.airportLabel);
 
@@ -42,7 +46,15 @@ export default function RentCarLeadCard({ option, compact = false, locale = "en"
 
   const estimatedTotal = option.price * rentalDays;
   const taxesAndSupport = Math.max(0, Math.round(estimatedTotal * 0.08));
-  const missingRequired = !pickupDate || !returnDate || !pickupPlace.trim() || !dropoffPlace.trim() || !driverName.trim() || !phone.trim();
+  const missingRequired =
+    !pickupDate ||
+    !returnDate ||
+    !pickupPlace.trim() ||
+    !dropoffPlace.trim() ||
+    !customerName.trim() ||
+    !customerEmail.includes("@") ||
+    !driverName.trim() ||
+    !phone.trim();
 
   const labels =
     locale === "es"
@@ -69,11 +81,15 @@ export default function RentCarLeadCard({ option, compact = false, locale = "en"
           flight: "Numero de vuelo",
           flightHint: "Solo si llegas por aeropuerto",
           driver: "Nombre del conductor",
+          customerName: "Nombre del cliente",
+          customerEmail: "Correo electronico",
           phone: "WhatsApp",
-          missing: "Completa fechas, conductor y WhatsApp para enviar la reserva.",
-          cta: "Enviar reserva formal",
+          missing: "Completa fechas, nombre, correo, conductor y telefono para crear la reserva.",
+          cta: "Crear reserva formal",
+          sending: "Creando reserva...",
+          success: "Reserva creada. Abriendo confirmacion...",
           google: "Continuar con Google",
-          note: "No se cobra nada en este paso. Confirmamos disponibilidad, clase y punto de entrega antes del pago."
+          note: "No se cobra nada en este paso. La reserva queda registrada en Proactivitis y nuestro equipo confirma disponibilidad, clase y punto de entrega."
         }
       : locale === "fr"
         ? {
@@ -99,11 +115,15 @@ export default function RentCarLeadCard({ option, compact = false, locale = "en"
             flight: "Numero de vol",
             flightHint: "Seulement si arrivee aeroport",
             driver: "Nom du conducteur",
+            customerName: "Nom du client",
+            customerEmail: "Email",
             phone: "WhatsApp",
-            missing: "Completez les dates, conducteur et WhatsApp pour envoyer la reservation.",
-            cta: "Envoyer la reservation",
+            missing: "Completez dates, nom, email, conducteur et telephone pour creer la reservation.",
+            cta: "Creer la reservation",
+            sending: "Creation...",
+            success: "Reservation creee. Ouverture de la confirmation...",
             google: "Continuer avec Google",
-            note: "Aucun paiement a cette etape. Nous confirmons disponibilite, classe et lieu avant paiement."
+            note: "Aucun paiement a cette etape. La reservation est enregistree dans Proactivitis et notre equipe confirme disponibilite, classe et lieu."
           }
         : {
             perDay: "per day",
@@ -128,32 +148,63 @@ export default function RentCarLeadCard({ option, compact = false, locale = "en"
             flight: "Flight number",
             flightHint: "Only if arriving by airport",
             driver: "Driver name",
+            customerName: "Customer name",
+            customerEmail: "Email address",
             phone: "WhatsApp phone",
-            missing: "Complete dates, driver and WhatsApp to send the reservation.",
-            cta: "Send formal reservation",
+            missing: "Complete dates, name, email, driver and phone to create the reservation.",
+            cta: "Create formal reservation",
+            sending: "Creating reservation...",
+            success: "Reservation created. Opening confirmation...",
             google: "Continue with Google",
-            note: "Nothing is charged in this step. We confirm availability, class and delivery point before payment."
+            note: "Nothing is charged in this step. The reservation is registered in Proactivitis and our team confirms availability, class and delivery point."
           };
 
-  const reserve = () => {
+  const reserve = async () => {
     setTouched(true);
+    setFeedback(null);
     if (missingRequired) return;
 
-    const message = [
-      `Rent a car formal reservation: ${option.model}`,
-      `Zone: ${option.locationName}`,
-      `Daily price: $${money(option.price)} ${option.currency}`,
-      `Estimated days: ${rentalDays}`,
-      `Estimated total: $${money(estimatedTotal)} ${option.currency}`,
-      `Pay now: $0.00`,
-      `Pickup: ${pickupPlace} - ${pickupDate} ${pickupTime}`,
-      `Return: ${dropoffPlace} - ${returnDate} ${returnTime}`,
-      pickupIsAirport && flightNumber ? `Flight: ${flightNumber}` : null,
-      `Driver: ${driverName}`,
-      `Phone: ${phone}`
-    ].filter(Boolean).join("\n");
-
-    window.open(`https://wa.me/18293939757?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+    setSubmitting(true);
+    try {
+      const response = await fetch("/api/rent-car/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          locationId: option.locationId,
+          categorySlug: option.categorySlug,
+          locale,
+          customerName,
+          customerEmail,
+          customerPhone: phone,
+          driverName,
+          pickupPlace,
+          dropoffPlace,
+          pickupDate,
+          pickupTime,
+          returnDate,
+          returnTime,
+          flightNumber: pickupIsAirport ? flightNumber : "",
+          rentalDays,
+          estimatedTotal
+        })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data?.ok) {
+        throw new Error(data?.error ?? "Reservation failed");
+      }
+      setFeedback(labels.success);
+      window.location.href = data.confirmationUrl ?? `/booking/confirmed?bookingId=${data.bookingId}&type=rent_car`;
+    } catch (error) {
+      setFeedback(
+        error instanceof Error
+          ? error.message
+          : locale === "es"
+            ? "No pudimos crear la reserva."
+            : "We could not create the reservation."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const fieldClass =
@@ -272,6 +323,19 @@ export default function RentCarLeadCard({ option, compact = false, locale = "en"
             </div>
           ) : null}
           <div>
+            <label className={labelClass}>{labels.customerName}</label>
+            <input className={fieldClass} value={customerName} onChange={(event) => setCustomerName(event.target.value)} />
+          </div>
+          <div>
+            <label className={labelClass}>{labels.customerEmail}</label>
+            <input
+              type="email"
+              className={fieldClass}
+              value={customerEmail}
+              onChange={(event) => setCustomerEmail(event.target.value)}
+            />
+          </div>
+          <div>
             <label className={labelClass}>{labels.driver}</label>
             <input className={fieldClass} value={driverName} onChange={(event) => setDriverName(event.target.value)} />
           </div>
@@ -288,10 +352,15 @@ export default function RentCarLeadCard({ option, compact = false, locale = "en"
         <button
           type="button"
           onClick={reserve}
-          className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-sky-600 px-4 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-lg shadow-sky-100 transition hover:bg-sky-700"
+          disabled={submitting}
+          className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-sky-600 px-4 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-lg shadow-sky-100 transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-400"
         >
-          {labels.cta}
+          {submitting ? labels.sending : labels.cta}
         </button>
+
+        {feedback ? (
+          <p className="mt-3 rounded-xl bg-slate-50 p-3 text-xs font-bold text-slate-700">{feedback}</p>
+        ) : null}
 
         <p className="mt-3 text-xs font-bold leading-5 text-slate-500">{labels.note}</p>
 

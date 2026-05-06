@@ -89,16 +89,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "Reserva no encontrada" }, { status: 404 });
   }
 
-  const stripe = getStripe();
   const paymentIntentId = body.paymentIntentId ?? booking.stripePaymentIntentId;
   const stripeSessionId = body.sessionId ?? booking.stripeSessionId;
   let paymentStatus = booking.paymentStatus;
+  const isPayLaterRentCar =
+    (booking.flowType ?? "tour") === "rent_car" && booking.paymentMethod === "PAY_LATER";
 
-  if (!paymentIntentId && !stripeSessionId) {
+  if (!isPayLaterRentCar && !paymentIntentId && !stripeSessionId) {
     return NextResponse.json({ ok: false, error: "Falta la sesion de pago" }, { status: 400 });
   }
 
   if (paymentIntentId) {
+    const stripe = getStripe();
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     const intentPaid = ["succeeded", "requires_capture"].includes(paymentIntent.status);
     if (!intentPaid) {
@@ -106,17 +108,20 @@ export async function POST(request: NextRequest) {
     }
     paymentStatus = paymentIntent.status ?? paymentStatus;
   } else if (stripeSessionId) {
+    const stripe = getStripe();
     const stripeSession = await stripe.checkout.sessions.retrieve(stripeSessionId);
     if (stripeSession.payment_status !== "paid") {
       return NextResponse.json({ ok: false, error: "El pago aun no esta confirmado" }, { status: 402 });
     }
     paymentStatus = stripeSession.payment_status ?? paymentStatus;
+  } else if (isPayLaterRentCar) {
+    paymentStatus = paymentStatus ?? "PAY_LATER";
   }
 
   await prisma.booking.update({
     where: { id: bookingId },
     data: {
-      status: BookingStatusEnum.CONFIRMED,
+      status: isPayLaterRentCar ? booking.status : BookingStatusEnum.CONFIRMED,
       paymentStatus
     }
   });
