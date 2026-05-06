@@ -8,6 +8,7 @@ const adminNav = [
   { label: "Landings", href: "/admin/landings" },
   { label: "SEO Factory", href: "/admin/landings/seo-factory" },
   { label: "Keyword Planner", href: "/admin/landings/keyword-planner" },
+  { label: "SEO Cleanup", href: "/admin/seo-cleanup" },
   { label: "SEO", href: "/admin/seo" },
   { label: "Schema", href: "/admin/seo/schema" },
   { label: "Resorts", href: "/admin/resorts" },
