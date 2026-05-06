@@ -9,17 +9,20 @@ import {
   getRentCarOptionPath,
   getRentCarOptions,
   rentCarLastUpdate,
+  type RentCarFleetSettings,
   type RentCarLocale
 } from "@/data/rentCarFleet";
 
 type RentCarIndexPageProps = {
   locale?: RentCarLocale;
+  settings?: RentCarFleetSettings;
 };
 
-export default function RentCarIndexPage({ locale = "en" }: RentCarIndexPageProps) {
+export default function RentCarIndexPage({ locale = "en", settings }: RentCarIndexPageProps) {
   const copy = getRentCarCopy(locale);
-  const locations = getRentCarLocations();
-  const featuredOptions = getRentCarOptions().slice(0, 8);
+  const locations = getRentCarLocations(settings);
+  const allOptions = getRentCarOptions(undefined, settings);
+  const featuredOptions = allOptions.slice(0, 8);
   const heroOption = featuredOptions[0];
 
   return (
@@ -44,7 +47,7 @@ export default function RentCarIndexPage({ locale = "en" }: RentCarIndexPageProp
               </span>
             </div>
             <div className="mt-6 max-w-2xl">
-              <RentCarSearch options={getRentCarOptions()} locale={locale} />
+              <RentCarSearch options={allOptions} locale={locale} />
             </div>
           </div>
 
@@ -89,17 +92,17 @@ export default function RentCarIndexPage({ locale = "en" }: RentCarIndexPageProp
               <h2 className="mt-2 text-2xl font-black text-slate-950">{String(copy.zonesBody)}</h2>
             </div>
             <p className="rounded-full bg-slate-100 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-600">
-              {String(copy.updated)} {rentCarLastUpdate}
+              {String(copy.updated)} {settings?.lastUpdate ?? rentCarLastUpdate}
             </p>
           </div>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             {locations.map((location) => {
-              const options = getRentCarOptions(location.id);
+              const options = getRentCarOptions(location.id, settings);
               const topOption = options[0];
               return (
                 <Link
                   key={location.id}
-                  href={getRentCarLocationDefaultPath(location.id, locale)}
+                  href={getRentCarLocationDefaultPath(location.id, locale, settings)}
                   className="group overflow-hidden rounded-[1.7rem] border border-slate-200 bg-slate-50 transition hover:-translate-y-1 hover:border-sky-300 hover:bg-white hover:shadow-lg"
                 >
                   <div className="relative h-36 bg-gradient-to-br from-white via-sky-50 to-emerald-50">

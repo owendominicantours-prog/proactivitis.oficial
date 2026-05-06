@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getRentCarOptionPath, getRentCarOptions, getRentCarRootPath, type RentCarLocale } from "@/data/rentCarFleet";
+import { getRentCarFleetSettings } from "@/lib/rentCarSettings";
 
-export const runtime = "edge";
 export const revalidate = 86400;
 
 const BASE_URL = "https://proactivitis.com";
@@ -9,13 +9,14 @@ const BASE_URL = "https://proactivitis.com";
 export async function GET() {
   const lastmod = new Date().toISOString();
   const locales: RentCarLocale[] = ["es", "en", "fr"];
+  const settings = await getRentCarFleetSettings();
   const urls = [
     ...locales.map((locale) => ({
       loc: `${BASE_URL}${getRentCarRootPath(locale)}`,
       priority: "0.8"
     })),
     ...locales.flatMap((locale) =>
-      getRentCarOptions().map((option) => ({
+      getRentCarOptions(undefined, settings).map((option) => ({
         loc: `${BASE_URL}${getRentCarOptionPath(option.locationId, option.categorySlug, locale)}`,
         priority: option.highProfile ? "0.9" : "0.7"
       }))

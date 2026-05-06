@@ -6,8 +6,8 @@ import {
   getRentCarOption,
   getRentCarOptionPath
 } from "@/data/rentCarFleet";
+import { getRentCarFleetSettings } from "@/lib/rentCarSettings";
 
-export const runtime = "edge";
 export const revalidate = 86400;
 
 type PageProps = {
@@ -16,7 +16,8 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locationId, categorySlug } = await params;
-  const option = getRentCarOption(locationId, categorySlug);
+  const settings = await getRentCarFleetSettings();
+  const option = getRentCarOption(locationId, categorySlug, settings);
   if (!option) return {};
   const title = `${buildRentCarH1(option, "es")} | Proactivitis`;
   const description = buildRentCarDescription(option, "es");
@@ -44,5 +45,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function Page({ params }: PageProps) {
   const { locationId, categorySlug } = await params;
-  return <RentCarDetailPage locationId={locationId} categorySlug={categorySlug} locale="es" />;
+  const settings = await getRentCarFleetSettings();
+  return <RentCarDetailPage locationId={locationId} categorySlug={categorySlug} locale="es" settings={settings} />;
 }

@@ -1,81 +1,379 @@
-import Image from "next/image";
 import Link from "next/link";
-import { getRentCarLocations, getRentCarOptions } from "@/data/rentCarFleet";
+import { getRentCarFleetSettings } from "@/lib/rentCarSettings";
+import { getRentCarOptions, rentCarMarginTypes } from "@/data/rentCarFleet";
+import {
+  resetRentCarFleetSettingsAction,
+  updateRentCarLocationAction,
+  updateRentCarVehicleAction
+} from "./actions";
 
 export const metadata = {
   title: "Rent a car | Admin Proactivitis"
 };
 
-export default function AdminRentCarPage() {
-  const options = getRentCarOptions();
-  const locations = getRentCarLocations();
+const inputClass =
+  "w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-900 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100";
+const labelClass = "text-[10px] font-black uppercase tracking-[0.18em] text-slate-500";
+
+export default async function AdminRentCarPage() {
+  const settings = await getRentCarFleetSettings();
+  const options = getRentCarOptions(undefined, settings);
+  const activeVehicles = settings.vehicles.filter((vehicle) => vehicle.active);
+  const activeLocations = settings.locations.filter((location) => location.active);
+  const cheapest = options.length ? Math.min(...options.map((option) => option.price)) : 0;
 
   return (
     <main className="space-y-8">
       <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-xs font-black uppercase tracking-[0.3em] text-sky-700">Admin rent a car</p>
-        <h1 className="mt-3 text-3xl font-black text-slate-950">Flota, zonas y precios publicados</h1>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-          Por ahora la flota vive en <strong>data/rentCarFleet.ts</strong>. Ahi se editan zonas, modelos,
-          imagenes, precios base y categorias. Esta pantalla sirve para revisar lo que ve el cliente y abrir
-          rapidamente cada pagina publica.
-        </p>
-        <div className="mt-5 grid gap-3 md:grid-cols-3">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-sky-700">Admin rent a car</p>
+            <h1 className="mt-3 text-3xl font-black text-slate-950">Editor de flota, zonas, precios e imagenes</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+              Lo que edites aqui alimenta las paginas publicas de rent car, el buscador, los widgets y el sitemap.
+              Si algo falla en base de datos, la web conserva la flotilla base como respaldo.
+            </p>
+          </div>
+          <form action={resetRentCarFleetSettingsAction}>
+            <button className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-red-700">
+              Restaurar base
+            </button>
+          </form>
+        </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-4">
           <div className="rounded-2xl bg-slate-50 p-4">
-            <p className="text-2xl font-black text-slate-950">{locations.length}</p>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Zonas</p>
+            <p className="text-2xl font-black text-slate-950">{activeLocations.length}</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Zonas activas</p>
           </div>
           <div className="rounded-2xl bg-emerald-50 p-4">
-            <p className="text-2xl font-black text-emerald-700">{options.length}</p>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">Vehiculos</p>
+            <p className="text-2xl font-black text-emerald-700">{activeVehicles.length}</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">Vehiculos activos</p>
           </div>
           <div className="rounded-2xl bg-sky-50 p-4">
-            <p className="text-2xl font-black text-sky-700">${Math.min(...options.map((option) => option.price))}</p>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-sky-700">Desde</p>
+            <p className="text-2xl font-black text-sky-700">${cheapest}</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-sky-700">Precio desde</p>
+          </div>
+          <div className="rounded-2xl bg-amber-50 p-4">
+            <p className="text-2xl font-black text-amber-700">{settings.lastUpdate}</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-700">Ultima edicion</p>
           </div>
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 text-xs font-black uppercase tracking-[0.2em] text-slate-500">
-                <th className="px-3 py-3">Vehiculo</th>
-                <th className="px-3 py-3">Zona</th>
-                <th className="px-3 py-3">Categoria</th>
-                <th className="px-3 py-3">Precio</th>
-                <th className="px-3 py-3">Imagen</th>
-                <th className="px-3 py-3">Pagina</th>
-              </tr>
-            </thead>
-            <tbody>
-              {options.map((option) => (
-                <tr key={`${option.locationId}-${option.categorySlug}`} className="border-b border-slate-100">
-                  <td className="px-3 py-3">
-                    <p className="font-black text-slate-950">{option.model}</p>
-                    <p className="text-xs font-semibold text-slate-500">{option.tag}</p>
-                  </td>
-                  <td className="px-3 py-3 font-bold text-slate-700">{option.locationName}</td>
-                  <td className="px-3 py-3 font-bold text-slate-700">{option.categoryLabel}</td>
-                  <td className="px-3 py-3 text-lg font-black text-emerald-700">${option.price}</td>
-                  <td className="px-3 py-3">
-                    <div className="relative h-14 w-24 rounded-xl bg-slate-50">
-                      <Image src={option.image} alt={option.model} fill sizes="96px" className="object-contain p-2" />
-                    </div>
-                  </td>
-                  <td className="px-3 py-3">
-                    <Link
-                      href={option.href}
-                      className="inline-flex rounded-full bg-slate-950 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-white"
-                    >
-                      Ver
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-500">Vehiculos</p>
+            <h2 className="mt-2 text-2xl font-black text-slate-950">Editar modelos, precios, fotos y prioridad</h2>
+          </div>
+          <p className="max-w-xl text-sm leading-6 text-slate-600">
+            En imagen pega una ruta publica como <strong>/rent-a-car/fleet/01-kia-picanto-2025.webp</strong> o una URL permitida.
+          </p>
+        </div>
+
+        <div className="mt-6 grid gap-4 xl:grid-cols-2">
+          {settings.vehicles.map((vehicle) => (
+            <form
+              key={vehicle.slug}
+              action={updateRentCarVehicleAction}
+              className="rounded-[1.7rem] border border-slate-200 bg-slate-50 p-4"
+            >
+              <input type="hidden" name="slug" value={vehicle.slug} />
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-base font-black text-slate-950">{vehicle.model}</p>
+                  <p className="text-xs font-bold text-slate-500">{vehicle.slug}</p>
+                </div>
+                <label className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.15em] text-emerald-700">
+                  <input type="checkbox" name="active" defaultChecked={vehicle.active} />
+                  Activo
+                </label>
+              </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-[130px_minmax(0,1fr)]">
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                  <img src={vehicle.image} alt={vehicle.model} className="h-28 w-full object-contain p-3" />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="space-y-1">
+                    <span className={labelClass}>Modelo</span>
+                    <input name="model" defaultValue={vehicle.model} className={inputClass} />
+                  </label>
+                  <label className="space-y-1">
+                    <span className={labelClass}>Categoria visible</span>
+                    <input name="label" defaultValue={vehicle.label} className={inputClass} />
+                  </label>
+                  <label className="space-y-1">
+                    <span className={labelClass}>Nombre marketing</span>
+                    <input name="displayName" defaultValue={vehicle.displayName} className={inputClass} />
+                  </label>
+                  <label className="space-y-1">
+                    <span className={labelClass}>Badge</span>
+                    <input name="tag" defaultValue={vehicle.tag} className={inputClass} />
+                  </label>
+                </div>
+              </div>
+
+              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <label className="space-y-1">
+                  <span className={labelClass}>Precio base USD</span>
+                  <input name="basePrice" type="number" min="0" step="1" defaultValue={vehicle.basePrice} className={inputClass} />
+                </label>
+                <label className="space-y-1">
+                  <span className={labelClass}>Margen</span>
+                  <select name="margin" defaultValue={vehicle.margin} className={inputClass}>
+                    {rentCarMarginTypes.map((margin) => (
+                      <option key={margin} value={margin}>{margin}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="space-y-1">
+                  <span className={labelClass}>Asientos</span>
+                  <input name="seats" type="number" min="1" step="1" defaultValue={vehicle.seats} className={inputClass} />
+                </label>
+                <label className="space-y-1">
+                  <span className={labelClass}>Maletas</span>
+                  <input name="luggage" type="number" min="0" step="1" defaultValue={vehicle.luggage} className={inputClass} />
+                </label>
+              </div>
+
+              <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_120px]">
+                <label className="space-y-1">
+                  <span className={labelClass}>Imagen</span>
+                  <input name="image" defaultValue={vehicle.image} className={inputClass} />
+                </label>
+                <label className="space-y-1">
+                  <span className={labelClass}>Prioridad</span>
+                  <input name="priority" type="number" step="1" defaultValue={vehicle.priority} className={inputClass} />
+                </label>
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <Link
+                  href={`/en/rent-a-car/${activeLocations[0]?.id ?? "puj-cap-cana"}/${vehicle.slug}`}
+                  className="text-xs font-black uppercase tracking-[0.16em] text-sky-700 hover:text-sky-900"
+                >
+                  Ver pagina
+                </Link>
+                <button className="rounded-full bg-slate-950 px-5 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-white">
+                  Guardar vehiculo
+                </button>
+              </div>
+            </form>
+          ))}
+
+          <form action={updateRentCarVehicleAction} className="rounded-[1.7rem] border border-dashed border-sky-300 bg-sky-50/70 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-base font-black text-slate-950">Agregar nuevo vehiculo</p>
+                <p className="text-xs font-bold text-slate-500">Usa slug limpio, por ejemplo mercedes-benz-glc.</p>
+              </div>
+              <label className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.15em] text-emerald-700">
+                <input type="checkbox" name="active" defaultChecked />
+                Activo
+              </label>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="space-y-1">
+                <span className={labelClass}>Slug</span>
+                <input name="slug" placeholder="mercedes-benz-glc" className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Modelo</span>
+                <input name="model" placeholder="Mercedes-Benz GLC" className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Categoria visible</span>
+                <input name="label" placeholder="Premium SUV" className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Nombre marketing</span>
+                <input name="displayName" placeholder="Premium SUV Rental" className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Badge</span>
+                <input name="tag" placeholder="Boss Mode" className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Imagen</span>
+                <input name="image" placeholder="/rent-a-car/fleet/mercedes-benz-glc.webp" className={inputClass} />
+              </label>
+            </div>
+
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              <label className="space-y-1">
+                <span className={labelClass}>Precio base</span>
+                <input name="basePrice" type="number" min="0" step="1" defaultValue={90} className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Margen</span>
+                <select name="margin" defaultValue="premium" className={inputClass}>
+                  {rentCarMarginTypes.map((margin) => (
+                    <option key={margin} value={margin}>{margin}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Asientos</span>
+                <input name="seats" type="number" min="1" step="1" defaultValue={5} className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Maletas</span>
+                <input name="luggage" type="number" min="0" step="1" defaultValue={3} className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Prioridad</span>
+                <input name="priority" type="number" step="1" defaultValue={90} className={inputClass} />
+              </label>
+            </div>
+
+            <div className="mt-4 flex justify-end">
+              <button className="rounded-full bg-sky-700 px-5 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-white">
+                Crear vehiculo
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-500">Zonas</p>
+            <h2 className="mt-2 text-2xl font-black text-slate-950">Editar aeropuertos, multiplicador y busqueda</h2>
+          </div>
+          <p className="max-w-xl text-sm leading-6 text-slate-600">
+            El multiplicador ajusta la zona completa. Ejemplo: <strong>1.08</strong> sube todos los vehiculos 8% antes del margen.
+          </p>
+        </div>
+
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          {settings.locations.map((location) => (
+            <form
+              key={location.id}
+              action={updateRentCarLocationAction}
+              className="rounded-[1.7rem] border border-slate-200 bg-slate-50 p-4"
+            >
+              <input type="hidden" name="id" value={location.id} />
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-base font-black text-slate-950">{location.name}</p>
+                  <p className="text-xs font-bold text-slate-500">{location.id}</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <label className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.15em] text-emerald-700">
+                    <input type="checkbox" name="active" defaultChecked={location.active} />
+                    Activa
+                  </label>
+                  <label className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.15em] text-sky-700">
+                    <input type="checkbox" name="highProfile" defaultChecked={location.highProfile} />
+                    Premium
+                  </label>
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <label className="space-y-1">
+                  <span className={labelClass}>Nombre</span>
+                  <input name="name" defaultValue={location.name} className={inputClass} />
+                </label>
+                <label className="space-y-1">
+                  <span className={labelClass}>Codigo interno</span>
+                  <input name="code" defaultValue={location.code} className={inputClass} />
+                </label>
+                <label className="space-y-1">
+                  <span className={labelClass}>Region ID</span>
+                  <input name="regionId" defaultValue={location.regionId} className={inputClass} />
+                </label>
+                <label className="space-y-1">
+                  <span className={labelClass}>Aeropuerto</span>
+                  <input name="airportLabel" defaultValue={location.airportLabel} className={inputClass} />
+                </label>
+                <label className="space-y-1">
+                  <span className={labelClass}>Multiplicador</span>
+                  <input name="multiplier" type="number" min="0" step="0.01" defaultValue={location.multiplier} className={inputClass} />
+                </label>
+              </div>
+
+              <label className="mt-3 block space-y-1">
+                <span className={labelClass}>Terminos de busqueda</span>
+                <textarea
+                  name="searchTerms"
+                  defaultValue={location.searchTerms.join("\n")}
+                  className={`${inputClass} min-h-28 resize-y`}
+                />
+              </label>
+
+              <div className="mt-4 flex justify-end">
+                <button className="rounded-full bg-slate-950 px-5 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-white">
+                  Guardar zona
+                </button>
+              </div>
+            </form>
+          ))}
+
+          <form action={updateRentCarLocationAction} className="rounded-[1.7rem] border border-dashed border-sky-300 bg-sky-50/70 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-base font-black text-slate-950">Agregar nueva zona</p>
+                <p className="text-xs font-bold text-slate-500">La zona crea URLs nuevas en los 3 idiomas.</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <label className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.15em] text-emerald-700">
+                  <input type="checkbox" name="active" defaultChecked />
+                  Activa
+                </label>
+                <label className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.15em] text-sky-700">
+                  <input type="checkbox" name="highProfile" />
+                  Premium
+                </label>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="space-y-1">
+                <span className={labelClass}>ID URL</span>
+                <input name="id" placeholder="mexico-cancun" className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Nombre</span>
+                <input name="name" placeholder="Cancun / Riviera Maya" className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Codigo interno</span>
+                <input name="code" placeholder="CUN" className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Region ID</span>
+                <input name="regionId" placeholder="CUN_RIVIERA_MAYA" className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Aeropuerto</span>
+                <input name="airportLabel" placeholder="CUN" className={inputClass} />
+              </label>
+              <label className="space-y-1">
+                <span className={labelClass}>Multiplicador</span>
+                <input name="multiplier" type="number" min="0" step="0.01" defaultValue={1} className={inputClass} />
+              </label>
+            </div>
+
+            <label className="mt-3 block space-y-1">
+              <span className={labelClass}>Terminos de busqueda</span>
+              <textarea
+                name="searchTerms"
+                placeholder={"cancun\nriviera maya\ncun"}
+                className={`${inputClass} min-h-28 resize-y`}
+              />
+            </label>
+
+            <div className="mt-4 flex justify-end">
+              <button className="rounded-full bg-sky-700 px-5 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-white">
+                Crear zona
+              </button>
+            </div>
+          </form>
         </div>
       </section>
     </main>

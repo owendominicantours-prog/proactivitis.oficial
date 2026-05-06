@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { detectRentCarLocationId, getRentCarOptionPath, getRentCarOptions } from "@/data/rentCarFleet";
+import { getRentCarFleetSettings } from "@/lib/rentCarSettings";
 
 type RentCarWidgetProps = {
   regionText?: string;
@@ -10,9 +11,10 @@ type RentCarWidgetProps = {
   locale?: "es" | "en" | "fr";
 };
 
-export default function RentCarWidget({ regionText = "", locationId, title, compact = false, locale = "en" }: RentCarWidgetProps) {
-  const resolvedLocationId = locationId ?? detectRentCarLocationId(regionText);
-  const options = getRentCarOptions(resolvedLocationId).slice(0, compact ? 2 : 3);
+export default async function RentCarWidget({ regionText = "", locationId, title, compact = false, locale = "en" }: RentCarWidgetProps) {
+  const settings = await getRentCarFleetSettings();
+  const resolvedLocationId = locationId ?? detectRentCarLocationId(regionText, settings);
+  const options = getRentCarOptions(resolvedLocationId, settings).slice(0, compact ? 2 : 3);
   if (!options.length) return null;
 
   const locationName = options[0].locationName;

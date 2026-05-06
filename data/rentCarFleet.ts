@@ -1,26 +1,8 @@
 export type RentCarLocale = "es" | "en" | "fr";
 
-export type RentCarCategorySlug =
-  | "kia-picanto-2025"
-  | "hyundai-i10-grand"
-  | "hyundai-elantra-n-line"
-  | "toyota-corolla-hybrid"
-  | "hyundai-sonata"
-  | "toyota-camry"
-  | "kia-sportage"
-  | "hyundai-tucson"
-  | "toyota-rav4"
-  | "jeep-grand-cherokee"
-  | "suzuki-jimny-4x4"
-  | "chevrolet-tahoe-z71"
-  | "chevrolet-suburban"
-  | "toyota-prado-vx"
-  | "ford-explorer"
-  | "cadillac-escalade"
-  | "cadillac-escalade-esv"
-  | "ford-mustang-gt-convertible"
-  | "hyundai-h-1"
-  | "toyota-hiace";
+export type RentCarCategorySlug = string;
+export const rentCarMarginTypes = ["economy", "sedan", "suv", "premium", "luxury"] as const;
+export type RentCarMargin = (typeof rentCarMarginTypes)[number];
 
 type RawFleetCategory = {
   model: string;
@@ -172,7 +154,7 @@ const categoryMeta: Record<
     luggage: number;
     image: string;
     priority: number;
-    margin: "economy" | "sedan" | "suv" | "premium" | "luxury";
+    margin: RentCarMargin;
   }
 > = {
   "kia-picanto-2025": {
@@ -377,6 +359,190 @@ const categoryMeta: Record<
   }
 };
 
+export type RentCarVehicleSetting = {
+  slug: string;
+  model: string;
+  basePrice: number;
+  label: string;
+  displayName: string;
+  tag: string;
+  seats: number;
+  luggage: number;
+  image: string;
+  priority: number;
+  margin: RentCarMargin;
+  active: boolean;
+};
+
+export type RentCarLocationSetting = {
+  id: string;
+  code: string;
+  name: string;
+  regionId: string;
+  highProfile: boolean;
+  airportLabel: string;
+  searchTerms: string[];
+  multiplier: number;
+  active: boolean;
+};
+
+export type RentCarFleetSettings = {
+  lastUpdate: string;
+  currency: string;
+  vehicles: RentCarVehicleSetting[];
+  locations: RentCarLocationSetting[];
+};
+
+const locationMultipliers: Record<string, number> = {
+  "puj-cap-cana": 1,
+  "santo-domingo-sdq": 0.92,
+  "santiago-cibao": 0.94,
+  "la-romana-bayahibe": 0.98,
+  "puerto-plata-cabarete": 0.95,
+  "samana-las-terrenas": 1.08
+};
+
+const toVehicleSetting = (slug: string): RentCarVehicleSetting => {
+  const template = fleetTemplate[slug];
+  const meta = categoryMeta[slug];
+
+  return {
+    slug,
+    model: template?.model ?? slug,
+    basePrice: template?.base_price ?? 0,
+    label: meta?.label ?? "Vehicle",
+    displayName: meta?.displayName ?? "Rent a Car",
+    tag: meta?.tag ?? "Proactivitis",
+    seats: meta?.seats ?? 4,
+    luggage: meta?.luggage ?? 1,
+    image: meta?.image ?? "/transfer/sedan.png",
+    priority: meta?.priority ?? 10,
+    margin: meta?.margin ?? "economy",
+    active: true
+  };
+};
+
+const toLocationSetting = (location: (typeof locationMeta)[string]): RentCarLocationSetting => ({
+  id: location.id,
+  code: String(location.code),
+  name: location.name,
+  regionId: location.regionId,
+  highProfile: Boolean(location.highProfile),
+  airportLabel: location.airportLabel,
+  searchTerms: location.searchTerms,
+  multiplier: locationMultipliers[location.id] ?? 1,
+  active: true
+});
+
+export const defaultRentCarFleetSettings: RentCarFleetSettings = {
+  lastUpdate: rawFleet.last_update,
+  currency: rawFleet.currency,
+  vehicles: Object.keys(fleetTemplate).map(toVehicleSetting),
+  locations: Object.values(locationMeta).map(toLocationSetting)
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+const readString = (value: unknown, fallback: string) =>
+  typeof value === "string" && value.trim() ? value.trim() : fallback;
+
+const readNumber = (value: unknown, fallback: number) => {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const readBoolean = (value: unknown, fallback: boolean) =>
+  typeof value === "boolean" ? value : fallback;
+
+const readStringArray = (value: unknown, fallback: string[]) =>
+  Array.isArray(value)
+    ? value.map((item) => String(item).trim()).filter(Boolean)
+    : fallback;
+
+const normalizeMargin = (value: unknown, fallback: RentCarMargin): RentCarMargin =>
+  rentCarMarginTypes.includes(value as RentCarMargin) ? (value as RentCarMargin) : fallback;
+
+export const normalizeRentCarFleetSettings = (value: unknown): RentCarFleetSettings => {
+  if (!isRecord(value)) return defaultRentCarFleetSettings;
+
+  const defaultVehiclesBySlug = new Map(defaultRentCarFleetSettings.vehicles.map((vehicle) => [vehicle.slug, vehicle]));
+  const incomingVehicles = Array.isArray(value.vehicles) ? value.vehicles : [];
+  const mergedVehicles = incomingVehicles
+    .filter(isRecord)
+    .map((vehicle) => {
+      const slug = readString(vehicle.slug, "");
+      if (!slug) return null;
+      const fallback = defaultVehiclesBySlug.get(slug) ?? toVehicleSetting(slug);
+      return {
+        slug,
+        model: readString(vehicle.model, fallback.model),
+        basePrice: Math.max(0, readNumber(vehicle.basePrice, fallback.basePrice)),
+        label: readString(vehicle.label, fallback.label),
+        displayName: readString(vehicle.displayName, fallback.displayName),
+        tag: readString(vehicle.tag, fallback.tag),
+        seats: Math.max(1, Math.round(readNumber(vehicle.seats, fallback.seats))),
+        luggage: Math.max(0, Math.round(readNumber(vehicle.luggage, fallback.luggage))),
+        image: readString(vehicle.image, fallback.image),
+        priority: Math.round(readNumber(vehicle.priority, fallback.priority)),
+        margin: normalizeMargin(vehicle.margin, fallback.margin),
+        active: readBoolean(vehicle.active, fallback.active)
+      } satisfies RentCarVehicleSetting;
+    })
+    .filter(Boolean) as RentCarVehicleSetting[];
+
+  const mergedVehicleSlugs = new Set(mergedVehicles.map((vehicle) => vehicle.slug));
+  const vehicles = [
+    ...defaultRentCarFleetSettings.vehicles.filter((vehicle) => !mergedVehicleSlugs.has(vehicle.slug)),
+    ...mergedVehicles
+  ];
+
+  const defaultLocationsById = new Map(defaultRentCarFleetSettings.locations.map((location) => [location.id, location]));
+  const incomingLocations = Array.isArray(value.locations) ? value.locations : [];
+  const mergedLocations = incomingLocations
+    .filter(isRecord)
+    .map((location) => {
+      const id = readString(location.id, "");
+      if (!id) return null;
+      const fallback = defaultLocationsById.get(id) ?? {
+        id,
+        code: id.toUpperCase().slice(0, 4),
+        name: id,
+        regionId: id.toUpperCase().replace(/-/g, "_"),
+        highProfile: false,
+        airportLabel: "",
+        searchTerms: [],
+        multiplier: 1,
+        active: true
+      };
+      return {
+        id,
+        code: readString(location.code, fallback.code),
+        name: readString(location.name, fallback.name),
+        regionId: readString(location.regionId, fallback.regionId),
+        highProfile: readBoolean(location.highProfile, fallback.highProfile),
+        airportLabel: readString(location.airportLabel, fallback.airportLabel),
+        searchTerms: readStringArray(location.searchTerms, fallback.searchTerms),
+        multiplier: Math.max(0, readNumber(location.multiplier, fallback.multiplier)),
+        active: readBoolean(location.active, fallback.active)
+      } satisfies RentCarLocationSetting;
+    })
+    .filter(Boolean) as RentCarLocationSetting[];
+
+  const mergedLocationIds = new Set(mergedLocations.map((location) => location.id));
+  const locations = [
+    ...defaultRentCarFleetSettings.locations.filter((location) => !mergedLocationIds.has(location.id)),
+    ...mergedLocations
+  ];
+
+  return {
+    lastUpdate: readString(value.lastUpdate, defaultRentCarFleetSettings.lastUpdate),
+    currency: readString(value.currency, defaultRentCarFleetSettings.currency),
+    vehicles,
+    locations
+  };
+};
+
 const money = (value: number) => Math.ceil(value / 5) * 5;
 
 export const getRentCarLocalePrefix = (locale: RentCarLocale = "en") =>
@@ -391,11 +557,13 @@ export const getRentCarOptionPath = (
   locale: RentCarLocale = "en"
 ) => `${getRentCarRootPath(locale)}/${locationId}/${categorySlug}`;
 
-export const getRentCarLocationDefaultPath = (locationId: string, locale: RentCarLocale = "en") =>
-  getRentCarOptionPath(locationId, getRentCarOptions(locationId)[0]?.categorySlug ?? "economy", locale);
+export const getRentCarLocationDefaultPath = (
+  locationId: string,
+  locale: RentCarLocale = "en",
+  settings?: RentCarFleetSettings
+) => getRentCarOptionPath(locationId, getRentCarOptions(locationId, settings)[0]?.categorySlug ?? "kia-picanto-2025", locale);
 
-export const getRentCarPrice = (category: RentCarCategorySlug, basePrice: number) => {
-  const margin = categoryMeta[category].margin;
+export const getRentCarPrice = (margin: RentCarMargin, basePrice: number) => {
   if (margin === "economy") return money(basePrice + 8);
   if (margin === "sedan") return money(basePrice + 10);
   if (margin === "suv") return money(basePrice * 1.2);
@@ -408,7 +576,7 @@ export type RentCarOption = {
   regionId: string;
   locationName: string;
   airportLabel: string;
-  categorySlug: RentCarCategorySlug;
+  categorySlug: string;
   categoryLabel: string;
   model: string;
   displayName: string;
@@ -422,49 +590,60 @@ export type RentCarOption = {
   highProfile: boolean;
 };
 
-export const getRentCarLocations = () => Object.values(locationMeta);
+export const getRentCarLocations = (settings: RentCarFleetSettings = defaultRentCarFleetSettings) =>
+  normalizeRentCarFleetSettings(settings).locations.filter((location) => location.active);
 
-export const getRentCarLocation = (locationId: string) => locationMeta[locationId] ?? null;
+export const getRentCarLocation = (locationId: string, settings: RentCarFleetSettings = defaultRentCarFleetSettings) =>
+  getRentCarLocations(settings).find((location) => location.id === locationId) ?? null;
 
-export const getRentCarOptions = (locationId?: string): RentCarOption[] => {
-  const locations = locationId ? [locationMeta[locationId]].filter(Boolean) : Object.values(locationMeta);
+export const getRentCarOptions = (
+  locationId?: string,
+  settings: RentCarFleetSettings = defaultRentCarFleetSettings
+): RentCarOption[] => {
+  const normalized = normalizeRentCarFleetSettings(settings);
+  const vehicles = normalized.vehicles.filter((vehicle) => vehicle.active);
+  const locations = locationId
+    ? normalized.locations.filter((location) => location.active && location.id === locationId)
+    : normalized.locations.filter((location) => location.active);
   return locations.flatMap((location) => {
-    const raw = rawFleet.locations[location.code];
-    const options = Object.entries(raw.categories).map(([categorySlug, category]) => {
-      const slug = categorySlug as RentCarCategorySlug;
-      const meta = categoryMeta[slug];
+    const options = vehicles.map((vehicle) => {
       return {
         locationId: location.id,
         regionId: location.regionId,
         locationName: location.name,
         airportLabel: location.airportLabel,
-        categorySlug: slug,
-        categoryLabel: meta.label,
-        model: category.model,
-        displayName: meta.displayName,
-        tag: meta.tag,
-        price: getRentCarPrice(slug, category.base_price),
-        currency: rawFleet.currency,
-        seats: meta.seats,
-        luggage: meta.luggage,
-        image: meta.image,
-        href: getRentCarOptionPath(location.id, slug, "en"),
+        categorySlug: vehicle.slug,
+        categoryLabel: vehicle.label,
+        model: vehicle.model,
+        displayName: vehicle.displayName,
+        tag: vehicle.tag,
+        price: getRentCarPrice(vehicle.margin, vehicle.basePrice * location.multiplier),
+        currency: normalized.currency,
+        seats: vehicle.seats,
+        luggage: vehicle.luggage,
+        image: vehicle.image,
+        href: getRentCarOptionPath(location.id, vehicle.slug, "en"),
         highProfile: Boolean(location.highProfile)
       };
     });
     return options.sort((a, b) => {
       if (!location.highProfile) return a.price - b.price;
-      return categoryMeta[b.categorySlug].priority - categoryMeta[a.categorySlug].priority;
+      const aPriority = vehicles.find((vehicle) => vehicle.slug === a.categorySlug)?.priority ?? 0;
+      const bPriority = vehicles.find((vehicle) => vehicle.slug === b.categorySlug)?.priority ?? 0;
+      return bPriority - aPriority;
     });
   });
 };
 
-export const getRentCarOption = (locationId: string, categorySlug: string) =>
-  getRentCarOptions(locationId).find((option) => option.categorySlug === categorySlug) ?? null;
+export const getRentCarOption = (
+  locationId: string,
+  categorySlug: string,
+  settings: RentCarFleetSettings = defaultRentCarFleetSettings
+) => getRentCarOptions(locationId, settings).find((option) => option.categorySlug === categorySlug) ?? null;
 
-export const detectRentCarLocationId = (input: string) => {
+export const detectRentCarLocationId = (input: string, settings: RentCarFleetSettings = defaultRentCarFleetSettings) => {
   const text = input.toLowerCase();
-  const match = Object.values(locationMeta).find((location) =>
+  const match = getRentCarLocations(settings).find((location) =>
     location.searchTerms.some((term) => text.includes(term))
   );
   return match?.id ?? "puj-cap-cana";

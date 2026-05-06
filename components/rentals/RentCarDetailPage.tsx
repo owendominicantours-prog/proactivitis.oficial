@@ -14,6 +14,7 @@ import {
   getRentCarOptionPath,
   getRentCarOptions,
   getRentCarRootPath,
+  type RentCarFleetSettings,
   type RentCarLocale
 } from "@/data/rentCarFleet";
 
@@ -21,16 +22,17 @@ type RentCarDetailPageProps = {
   locationId: string;
   categorySlug: string;
   locale?: RentCarLocale;
+  settings?: RentCarFleetSettings;
 };
 
-export default function RentCarDetailPage({ locationId, categorySlug, locale = "en" }: RentCarDetailPageProps) {
-  const option = getRentCarOption(locationId, categorySlug);
-  const location = getRentCarLocation(locationId);
+export default function RentCarDetailPage({ locationId, categorySlug, locale = "en", settings }: RentCarDetailPageProps) {
+  const option = getRentCarOption(locationId, categorySlug, settings);
+  const location = getRentCarLocation(locationId, settings);
   if (!option || !location) notFound();
 
   const copy = getRentCarCopy(locale);
-  const localOptions = getRentCarOptions(locationId);
-  const otherLocations = getRentCarLocations().filter((item) => item.id !== locationId).slice(0, 4);
+  const localOptions = getRentCarOptions(locationId, settings);
+  const otherLocations = getRentCarLocations(settings).filter((item) => item.id !== locationId).slice(0, 4);
   const schema = getRentCarJsonLd(option, locale);
   const h1 = buildRentCarH1(option, locale);
   const description = buildRentCarDescription(option, locale);
@@ -218,7 +220,7 @@ export default function RentCarDetailPage({ locationId, categorySlug, locale = "
               {otherLocations.map((item) => (
                 <Link
                   key={item.id}
-                  href={getRentCarLocationDefaultPath(item.id, locale)}
+                  href={getRentCarLocationDefaultPath(item.id, locale, settings)}
                   className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-800 transition hover:border-sky-300 hover:bg-white"
                 >
                   {item.name}
