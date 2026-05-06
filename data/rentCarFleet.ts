@@ -215,7 +215,22 @@ const categoryMeta: Record<
   }
 };
 
-const money = (value: number) => Math.round(value * 100) / 100;
+const money = (value: number) => Math.ceil(value / 5) * 5;
+
+export const getRentCarLocalePrefix = (locale: RentCarLocale = "en") =>
+  locale === "es" ? "" : `/${locale}`;
+
+export const getRentCarRootPath = (locale: RentCarLocale = "en") =>
+  `${getRentCarLocalePrefix(locale)}/rent-a-car`;
+
+export const getRentCarOptionPath = (
+  locationId: string,
+  categorySlug: RentCarCategorySlug | string,
+  locale: RentCarLocale = "en"
+) => `${getRentCarRootPath(locale)}/${locationId}/${categorySlug}`;
+
+export const getRentCarLocationDefaultPath = (locationId: string, locale: RentCarLocale = "en") =>
+  getRentCarOptionPath(locationId, getRentCarOptions(locationId)[0]?.categorySlug ?? "economy", locale);
 
 export const getRentCarPrice = (category: RentCarCategorySlug, basePrice: number) => {
   if (category === "economy") return money(basePrice + 8);
@@ -269,7 +284,7 @@ export const getRentCarOptions = (locationId?: string): RentCarOption[] => {
         seats: meta.seats,
         luggage: meta.luggage,
         image: meta.image,
-        href: `/en/rent-a-car/${location.id}/${slug}`,
+        href: getRentCarOptionPath(location.id, slug, "en"),
         highProfile: Boolean(location.highProfile)
       };
     });
@@ -291,16 +306,163 @@ export const detectRentCarLocationId = (input: string) => {
   return match?.id ?? "puj-cap-cana";
 };
 
-export const buildRentCarH1 = (option: RentCarOption) =>
-  `${option.displayName.replace("Rental", "Rental")} in ${option.locationName}`;
+export const rentCarCopy = {
+  en: {
+    rootTitle: "Rent a car by travel zone",
+    rootDescription:
+      "Reserve rent-a-car options by exact travel zone with final Proactivitis prices, 2024/2025 model guarantee and VIP Support.",
+    eyebrow: "Proactivitis rent a car",
+    heroTitle: "Choose your car and reserve in minutes",
+    heroBody:
+      "Search by airport, city or beach area. Pick a vehicle class, add pickup and return details, and Proactivitis support confirms the rental.",
+    searchPlaceholder: "Search PUJ, Cap Cana, Santo Domingo, SUV...",
+    searchTitle: "What are you looking for?",
+    zonesTitle: "Choose pickup zone",
+    zonesBody: "Real availability by local area",
+    vehiclesTitle: "Cars ready to reserve",
+    vehiclesBody: "Choose a vehicle that fits your trip",
+    updated: "Updated",
+    viewFleet: "View fleet",
+    reserveNow: "Reserve now",
+    book: "Book",
+    from: "From",
+    day: "day",
+    highDemand: "High demand",
+    modelGuarantee: "Model 2024/2025",
+    vipSupport: "VIP Support",
+    breadcrumb: "Rent a car",
+    rating: "5.0 rating",
+    requests: "100 verified rental requests",
+    operated: "Operated by Original Proactivitis",
+    facts: ["Vehicle", "Seats", "Luggage", "Airport"],
+    passengers: "passengers",
+    bags: "bags",
+    expectEyebrow: "What to expect",
+    expectTitle: "A rental flow built like a Proactivitis experience",
+    expectBody:
+      "Choose the vehicle, set pickup and return details, and send the request with the information ready. Support confirms the class, delivery instructions and next steps.",
+    included: "Included",
+    beforePickup: "Before pickup",
+    localFleet: "Local fleet",
+    otherRegions: "More regions",
+    fleetEditorTitle: "Rent car fleet",
+    fleetEditorBody: "Static fleet source used by the public catalog, hotel widgets and sitemap.",
+    notFoundTitle: "Vehicle zone not available",
+    notFoundBody: "This exact car rental page is not active yet. Choose one of the available Proactivitis zones.",
+    notFoundCta: "View available fleet"
+  },
+  es: {
+    rootTitle: "Rent a car por zona",
+    rootDescription:
+      "Reserva vehiculos por zona real con precios finales Proactivitis, garantia de modelo 2024/2025 y soporte VIP.",
+    eyebrow: "Proactivitis rent a car",
+    heroTitle: "Elige tu vehiculo y reserva en minutos",
+    heroBody:
+      "Busca por aeropuerto, ciudad o zona de playa. Elige la categoria, agrega recogida y devolucion, y soporte Proactivitis confirma la renta.",
+    searchPlaceholder: "Busca PUJ, Cap Cana, Santo Domingo, SUV...",
+    searchTitle: "Que estas buscando?",
+    zonesTitle: "Elige zona de recogida",
+    zonesBody: "Disponibilidad real por area local",
+    vehiclesTitle: "Vehiculos listos para reservar",
+    vehiclesBody: "Elige el vehiculo que encaja con tu viaje",
+    updated: "Actualizado",
+    viewFleet: "Ver flota",
+    reserveNow: "Reservar ahora",
+    book: "Reservar",
+    from: "Desde",
+    day: "dia",
+    highDemand: "Alta demanda",
+    modelGuarantee: "Modelo 2024/2025",
+    vipSupport: "Soporte VIP",
+    breadcrumb: "Rent a car",
+    rating: "5.0 puntuacion",
+    requests: "100 solicitudes verificadas",
+    operated: "Operado por Original Proactivitis",
+    facts: ["Vehiculo", "Asientos", "Equipaje", "Aeropuerto"],
+    passengers: "pasajeros",
+    bags: "maletas",
+    expectEyebrow: "Que esperar",
+    expectTitle: "Una renta organizada como experiencia Proactivitis",
+    expectBody:
+      "Elige el vehiculo, define recogida y devolucion, y envia la solicitud con la informacion lista. Soporte confirma la categoria, instrucciones y proximos pasos.",
+    included: "Incluye",
+    beforePickup: "Antes de recoger",
+    localFleet: "Flota local",
+    otherRegions: "Mas zonas",
+    fleetEditorTitle: "Flota rent car",
+    fleetEditorBody: "Fuente estatica usada por el catalogo publico, widgets de hoteles y sitemap.",
+    notFoundTitle: "Zona o vehiculo no disponible",
+    notFoundBody: "Esta pagina exacta de renta aun no esta activa. Elige una de las zonas disponibles.",
+    notFoundCta: "Ver flota disponible"
+  },
+  fr: {
+    rootTitle: "Location de voiture par zone",
+    rootDescription:
+      "Reservez des voitures par zone reelle avec prix finaux Proactivitis, modele 2024/2025 garanti et support VIP.",
+    eyebrow: "Proactivitis location de voiture",
+    heroTitle: "Choisissez votre voiture et reservez en quelques minutes",
+    heroBody:
+      "Recherchez par aeroport, ville ou zone de plage. Choisissez la categorie, ajoutez la prise en charge et le retour, puis Proactivitis confirme la location.",
+    searchPlaceholder: "Cherchez PUJ, Cap Cana, Saint-Domingue, SUV...",
+    searchTitle: "Que recherchez-vous?",
+    zonesTitle: "Choisissez la zone de prise en charge",
+    zonesBody: "Disponibilite reelle par zone locale",
+    vehiclesTitle: "Voitures pretes a reserver",
+    vehiclesBody: "Choisissez le vehicule adapte a votre voyage",
+    updated: "Mis a jour",
+    viewFleet: "Voir flotte",
+    reserveNow: "Reserver",
+    book: "Reserver",
+    from: "A partir de",
+    day: "jour",
+    highDemand: "Forte demande",
+    modelGuarantee: "Modele 2024/2025",
+    vipSupport: "Support VIP",
+    breadcrumb: "Location de voiture",
+    rating: "Note 5.0",
+    requests: "100 demandes verifiees",
+    operated: "Operé par Original Proactivitis",
+    facts: ["Vehicule", "Sieges", "Bagages", "Aeroport"],
+    passengers: "passagers",
+    bags: "bagages",
+    expectEyebrow: "A quoi s'attendre",
+    expectTitle: "Une location organisee comme une experience Proactivitis",
+    expectBody:
+      "Choisissez le vehicule, indiquez la prise en charge et le retour, puis envoyez une demande complete. Le support confirme la categorie, les instructions et les prochaines etapes.",
+    included: "Inclus",
+    beforePickup: "Avant la prise en charge",
+    localFleet: "Flotte locale",
+    otherRegions: "Autres zones",
+    fleetEditorTitle: "Flotte rent car",
+    fleetEditorBody: "Source statique utilisee par le catalogue public, les widgets hotels et le sitemap.",
+    notFoundTitle: "Zone ou vehicule indisponible",
+    notFoundBody: "Cette page de location n'est pas encore active. Choisissez une zone disponible.",
+    notFoundCta: "Voir la flotte"
+  }
+} satisfies Record<RentCarLocale, Record<string, string | string[]>>;
 
-export const buildRentCarDescription = (option: RentCarOption) => {
+export const getRentCarCopy = (locale: RentCarLocale = "en") => rentCarCopy[locale] ?? rentCarCopy.en;
+
+export const buildRentCarH1 = (option: RentCarOption, locale: RentCarLocale = "en") => {
+  if (locale === "es") return `${option.displayName.replace("Rental", "")} en ${option.locationName}`;
+  if (locale === "fr") return `${option.displayName.replace("Rental", "")} a ${option.locationName}`;
+  return `${option.displayName.replace("Rental", "Rental")} in ${option.locationName}`;
+};
+
+export const buildRentCarDescription = (option: RentCarOption, locale: RentCarLocale = "en") => {
   const tone =
     option.tag === "Boss Mode" || option.tag === "Presidential Arrival"
       ? "built for travelers who want a strong arrival, private control, and a vehicle that matches premium hotels and business movement"
       : option.tag === "Family Command"
         ? "built for families and groups who need space, luggage capacity, and a smoother airport-to-hotel plan"
         : "built for travelers who want a clean, simple, and predictable rental without wasting time at arrival";
+
+  if (locale === "es") {
+    return `${option.model} o similar en ${option.locationName}. Una opcion pensada para moverte con control, recogida organizada y soporte VIP Proactivitis durante la renta.`;
+  }
+  if (locale === "fr") {
+    return `${option.model} ou similaire a ${option.locationName}. Une option concue pour voyager avec controle, prise en charge organisee et support VIP Proactivitis.`;
+  }
 
   return `${option.model} or similar in ${option.locationName}, ${tone}. Proactivitis VIP Support helps coordinate pickup details, local questions, and trip changes so the rental feels managed, not improvised.`;
 };
@@ -317,12 +479,12 @@ export const buildRentCarGeminiPrompt = (option: RentCarOption) =>
     "Return clean JSON with h1, metaTitle, metaDescription, benefits, faq."
   ].join("\n");
 
-export const getRentCarJsonLd = (option: RentCarOption) => ({
+export const getRentCarJsonLd = (option: RentCarOption, locale: RentCarLocale = "en") => ({
   "@context": "https://schema.org",
   "@graph": [
     {
       "@type": ["Product", "Car"],
-      "@id": `https://proactivitis.com${option.href}#rent-car`,
+      "@id": `https://proactivitis.com${getRentCarOptionPath(option.locationId, option.categorySlug, locale)}#rent-car`,
       name: `${option.model} - ${option.locationName}`,
       brand: {
         "@type": "Brand",
@@ -330,7 +492,7 @@ export const getRentCarJsonLd = (option: RentCarOption) => ({
       },
       model: option.model,
       image: `https://proactivitis.com${option.image}`,
-      description: buildRentCarDescription(option),
+      description: buildRentCarDescription(option, locale),
       category: option.categoryLabel,
       vehicleSeatingCapacity: option.seats,
       offers: {
@@ -338,15 +500,15 @@ export const getRentCarJsonLd = (option: RentCarOption) => ({
         priceCurrency: option.currency,
         price: option.price,
         availability: "https://schema.org/InStock",
-        url: `https://proactivitis.com${option.href}`
+        url: `https://proactivitis.com${getRentCarOptionPath(option.locationId, option.categorySlug, locale)}`
       }
     },
     {
       "@type": "LocalBusiness",
-      "@id": `https://proactivitis.com${option.href}#provider`,
+      "@id": `https://proactivitis.com${getRentCarOptionPath(option.locationId, option.categorySlug, locale)}#provider`,
       name: "Proactivitis Rent a Car",
       areaServed: option.locationName,
-      url: `https://proactivitis.com${option.href}`
+      url: `https://proactivitis.com${getRentCarOptionPath(option.locationId, option.categorySlug, locale)}`
     }
   ]
 });

@@ -25,6 +25,15 @@ const publicNavLinks: Array<{
     href: "/traslado"
   },
   {
+    labels: { es: "Rent a car", en: "Rent a car", fr: "Voitures" },
+    href: "/rent-a-car",
+    hrefByLocale: {
+      es: "/rent-a-car",
+      en: "/rent-a-car",
+      fr: "/rent-a-car"
+    }
+  },
+  {
     labels: { es: "Alojamiento", en: "Accommodation", fr: "Hebergement" },
     href: "/hoteles",
     hrefByLocale: {

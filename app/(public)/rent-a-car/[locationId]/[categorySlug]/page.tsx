@@ -18,9 +18,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { locationId, categorySlug } = await params;
   const option = getRentCarOption(locationId, categorySlug);
   if (!option) return {};
-  const title = `${buildRentCarH1(option, "en")} | Proactivitis`;
-  const description = buildRentCarDescription(option, "en");
-  const path = getRentCarOptionPath(option.locationId, option.categorySlug, "en");
+  const title = `${buildRentCarH1(option, "es")} | Proactivitis`;
+  const description = buildRentCarDescription(option, "es");
+  const path = getRentCarOptionPath(option.locationId, option.categorySlug, "es");
   return {
     title,
     description,
@@ -44,5 +44,5 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function Page({ params }: PageProps) {
   const { locationId, categorySlug } = await params;
-  return <RentCarDetailPage locationId={locationId} categorySlug={categorySlug} locale="en" />;
+  return <RentCarDetailPage locationId={locationId} categorySlug={categorySlug} locale="es" />;
 }

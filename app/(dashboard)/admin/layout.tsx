@@ -18,6 +18,7 @@ const adminNav = [
   { label: "App recomendados", href: "/admin/app-recommendations" },
   { label: "Tours", href: "/admin/tours" },
   { label: "Transfer", href: "/admin/transfers" },
+  { label: "Rent a car", href: "/admin/rent-a-car" },
   { label: "Suplidores", href: "/admin/suppliers" },
   { label: "Agencias", href: "/admin/agencies" },
   { label: "Reservas", href: "/admin/bookings" },

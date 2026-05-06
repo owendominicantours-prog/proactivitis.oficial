@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { detectRentCarLocationId, getRentCarOptions } from "@/data/rentCarFleet";
+import { detectRentCarLocationId, getRentCarOptionPath, getRentCarOptions } from "@/data/rentCarFleet";
 
 type RentCarWidgetProps = {
   regionText?: string;
@@ -47,7 +47,7 @@ export default function RentCarWidget({ regionText = "", locationId, title, comp
           </p>
         </div>
         <Link
-          href={`/en/rent-a-car/${resolvedLocationId}/${options[0].categorySlug}`}
+          href={getRentCarOptionPath(resolvedLocationId, options[0].categorySlug, locale)}
           className="hidden rounded-full bg-slate-950 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white sm:inline-flex"
         >
           {copy.cta}
@@ -58,7 +58,7 @@ export default function RentCarWidget({ regionText = "", locationId, title, comp
         {options.map((option) => (
           <Link
             key={`${option.locationId}-${option.categorySlug}`}
-            href={option.href}
+            href={getRentCarOptionPath(option.locationId, option.categorySlug, locale)}
             className="group overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 transition hover:border-emerald-200 hover:bg-emerald-50"
           >
             <div className="relative h-28 bg-white">

@@ -5,14 +5,14 @@ import { getRentCarCopy } from "@/data/rentCarFleet";
 export const runtime = "edge";
 export const revalidate = 86400;
 
-const copy = getRentCarCopy("en");
+const copy = getRentCarCopy("es");
 
 export const metadata: Metadata = {
   title: `${String(copy.rootTitle)} | Proactivitis`,
   description: String(copy.rootDescription),
-  alternates: { canonical: "https://proactivitis.com/en/rent-a-car" }
+  alternates: { canonical: "https://proactivitis.com/rent-a-car" }
 };
 
 export default function Page() {
-  return <RentCarIndexPage locale="en" />;
+  return <RentCarIndexPage locale="es" />;
 }
