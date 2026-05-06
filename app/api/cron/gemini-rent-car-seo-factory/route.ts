@@ -43,27 +43,26 @@ export async function GET(request: NextRequest) {
   }
 
   const manualLimit = Math.min(2, remainingToday);
-  const transferLimitOverride = manualLimit >= 1 ? 1 : 0;
-  const tourLimitOverride = Math.max(0, manualLimit - transferLimitOverride);
   const result = await runGeminiSeoFactoryBatch({
     manualLimit,
-    rentCarLimitOverride: 0,
-    transferLimitOverride,
-    tourLimitOverride
+    rentCarLimitOverride: manualLimit,
+    transferLimitOverride: 0,
+    tourLimitOverride: 0
   });
   const searchConsole =
     result.published > 0
-      ? await submitSeoFactorySitemapsToSearchConsole("gemini-seo-factory-cron")
+      ? await submitSeoFactorySitemapsToSearchConsole("gemini-rent-car-seo-factory-cron")
       : null;
+
   return NextResponse.json({
     ok: true,
     generatedToday,
     remainingToday,
     requested: {
       total: manualLimit,
-      rentCar: 0,
-      transfer: transferLimitOverride,
-      tour: tourLimitOverride
+      rentCar: manualLimit,
+      transfer: 0,
+      tour: 0
     },
     result,
     searchConsole

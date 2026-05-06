@@ -396,6 +396,64 @@ const safeFaqs = (value: unknown): GeminiSeoFaq[] => {
     .slice(0, 8);
 };
 
+const contentIncludesPhrase = (content: GeminiSeoLocaleContent, phrase: string) => {
+  const needle = phrase.toLowerCase();
+  const haystack = [
+    content.h1,
+    content.intro,
+    content.metaDescription,
+    ...content.sections.flatMap((section) => [section.heading, section.body, ...(section.bullets ?? [])]),
+    ...content.faqs.flatMap((faq) => [faq.question, faq.answer])
+  ]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(needle);
+};
+
+const ensureKeywordInVisibleContent = (
+  content: GeminiSeoLocaleContent,
+  candidate: GeminiSeoFactoryCandidate,
+  locale: Locale
+): GeminiSeoLocaleContent => {
+  if (!candidate.keywordPlannerNormalized) return content;
+  const keyword = cleanGeneratedText(candidate.intent.label).slice(0, 120);
+  if (!keyword || contentIncludesPhrase(content, keyword)) {
+    return {
+      ...content,
+      keywords: Array.from(new Set([keyword, ...content.keywords])).slice(0, 16)
+    };
+  }
+
+  const keywordSentence =
+    locale === "es"
+      ? `Si buscas ${keyword}, esta pagina te ayuda a comparar la opcion correcta con precio claro y soporte de Proactivitis.`
+      : locale === "fr"
+        ? `Si vous recherchez ${keyword}, cette page aide a comparer la bonne option avec prix clair et support Proactivitis.`
+        : `If you are searching for ${keyword}, this page helps you compare the right option with clear pricing and Proactivitis support.`;
+  const nextFaqs =
+    content.faqs.length > 0
+      ? [
+          {
+            ...content.faqs[0],
+            answer: `${content.faqs[0].answer} ${keywordSentence}`
+          },
+          ...content.faqs.slice(1)
+        ]
+      : [
+          {
+            question: locale === "es" ? "Como encuentro esta opcion?" : locale === "fr" ? "Comment trouver cette option?" : "How do I find this option?",
+            answer: keywordSentence
+          }
+        ];
+
+  return {
+    ...content,
+    intro: `${content.intro} ${keywordSentence}`,
+    keywords: Array.from(new Set([keyword, ...content.keywords])).slice(0, 16),
+    faqs: nextFaqs
+  };
+};
+
 export async function getGeminiSeoFactoryConfig(): Promise<GeminiSeoFactoryConfig> {
   const record = await prisma.siteContentSetting.findUnique({ where: { key: FACTORY_CONFIG_KEY } });
   if (!record?.content || !isObject(record.content)) return DEFAULT_CONFIG;
@@ -619,7 +677,16 @@ const buildRentCarCandidates = async (limit: number, offset: number): Promise<Ge
           searchQuery: `${keyword.keyword} ${option.model} ${option.locationName}`
         }
       : null;
-    const title = `${option.model} rental in ${option.locationName}`;
+    const genericTitle =
+      option.categoryLabel.toLowerCase().includes("luxury") || option.highProfile
+        ? `Luxury car rental in ${option.locationName}`
+        : option.categoryLabel.toLowerCase().includes("suv")
+          ? `SUV rental in ${option.locationName}`
+          : option.locationId.toLowerCase().includes("airport") || option.airportLabel
+            ? `Airport car rental in ${option.locationName}`
+            : `Car rental in ${option.locationName}`;
+    const shouldUseGenericTitle = Boolean(keyword) || index % 2 === 1;
+    const title = shouldUseGenericTitle ? genericTitle : `${option.model} rental in ${option.locationName}`;
     return {
       type: "rent_car",
       product: {
@@ -669,6 +736,12 @@ Rules:
 - Every locale must be unique and natural, not a literal translation.
 - Write professional commercial copy, not admin language.
 - The page must answer: what this is, why trust it, what happens next.
+- Use the exact Search intent label naturally inside the page content, not only in metadata.
+- Put the primary keyword or closest natural variant in the H1, intro, one section heading, and at least one FAQ answer.
+- Do not keyword-stuff: the keyword must read like normal travel/rental copy.
+- If this is rent_car, sell the need first (airport car rental, SUV rental, luxury rental, daily car rental), then mention the vehicle model as the featured class or confirmed/similar model.
+- Rent_car pages must feel transactional: clear pickup area, daily price, passenger/luggage fit, model 2024/2025 angle, reserve-now CTA, and Proactivitis VIP Support before pickup.
+- Rent_car titles should not always start with the vehicle model; sometimes travelers search by service/category, not by model.
 - Include schema JSON-LD per locale.
 - Schema must include image and thumbnailUrl using the product image.
 - Include WebPage, FAQPage, BreadcrumbList, and either TouristTrip for tours, Service for transfers, or Product/Car for rent car.
@@ -774,7 +847,7 @@ const buildFallbackLocale = (
   ).slice(0, 170);
   const sections = safeSections(parsedLocale?.sections);
   const faqs = safeFaqs(parsedLocale?.faqs);
-  return {
+  const content: GeminiSeoLocaleContent = {
     title,
     metaDescription,
     ogTitle: safeString(parsedLocale?.ogTitle, title),
@@ -817,6 +890,7 @@ const buildFallbackLocale = (
     keywords: safeStringArray(parsedLocale?.keywords),
     schema: isObject(parsedLocale?.schema) ? (parsedLocale?.schema as Record<string, unknown>) : {}
   };
+  return ensureKeywordInVisibleContent(content, candidate, locale);
 };
 
 const buildSafeSchema = ({
