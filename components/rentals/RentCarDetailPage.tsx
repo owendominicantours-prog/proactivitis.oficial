@@ -149,7 +149,7 @@ export default function RentCarDetailPage({ locationId, categorySlug, locale = "
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 70vw"
-                  className="object-contain p-6 md:p-10"
+                  className="object-contain p-0 scale-[1.22]"
                 />
                 <div className="absolute left-4 top-4 rounded-full bg-white/95 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-950 shadow">
                   {option.categoryLabel}
