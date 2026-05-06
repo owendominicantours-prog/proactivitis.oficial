@@ -43,12 +43,11 @@ export async function GET(request: NextRequest) {
   }
 
   const manualLimit = Math.min(2, remainingToday);
-  const transferLimitOverride = manualLimit === 1 && generatedToday % 2 === 1 ? 0 : 1;
-  const tourLimitOverride = Math.max(0, manualLimit - transferLimitOverride);
   const result = await runGeminiSeoFactoryBatch({
     manualLimit,
-    transferLimitOverride,
-    tourLimitOverride
+    rentCarLimitOverride: manualLimit,
+    transferLimitOverride: 0,
+    tourLimitOverride: 0
   });
   const searchConsole =
     result.published > 0
@@ -60,8 +59,9 @@ export async function GET(request: NextRequest) {
     remainingToday,
     requested: {
       total: manualLimit,
-      transfer: transferLimitOverride,
-      tour: tourLimitOverride
+      rentCar: manualLimit,
+      transfer: 0,
+      tour: 0
     },
     result,
     searchConsole

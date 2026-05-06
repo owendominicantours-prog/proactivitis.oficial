@@ -51,6 +51,9 @@ const revalidateGeminiSeoFactory = (slug?: string) => {
     revalidatePath(`/punta-cana/${slug}`);
     revalidatePath(`/en/punta-cana/${slug}`);
     revalidatePath(`/fr/punta-cana/${slug}`);
+    revalidatePath(`/rent-a-car/deals/${slug}`);
+    revalidatePath(`/en/rent-a-car/deals/${slug}`);
+    revalidatePath(`/fr/rent-a-car/deals/${slug}`);
     revalidatePath(`/seo/${slug}`);
     revalidatePath(`/en/seo/${slug}`);
     revalidatePath(`/fr/seo/${slug}`);
@@ -64,15 +67,19 @@ export async function saveGeminiSeoFactorySettingsAction(formData: FormData) {
   const dailyLimit = Number(formData.get("dailyLimit") ?? current.dailyLimit);
   const tourDailyLimit = Number(formData.get("tourDailyLimit") ?? current.tourDailyLimit);
   const transferDailyLimit = Number(formData.get("transferDailyLimit") ?? current.transferDailyLimit);
+  const rentCarDailyLimit = Number(formData.get("rentCarDailyLimit") ?? current.rentCarDailyLimit);
 
   await saveGeminiSeoFactoryConfig({
     enabled: formData.get("enabled") === "on",
     autoPublish: formData.get("autoPublish") === "on",
-    dailyLimit: Number.isFinite(dailyLimit) ? Math.max(1, Math.min(50, dailyLimit)) : current.dailyLimit,
-    tourDailyLimit: Number.isFinite(tourDailyLimit) ? Math.max(0, Math.min(50, tourDailyLimit)) : current.tourDailyLimit,
+    dailyLimit: Number.isFinite(dailyLimit) ? Math.max(1, Math.min(2880, dailyLimit)) : current.dailyLimit,
+    tourDailyLimit: Number.isFinite(tourDailyLimit) ? Math.max(0, Math.min(2880, tourDailyLimit)) : current.tourDailyLimit,
     transferDailyLimit: Number.isFinite(transferDailyLimit)
-      ? Math.max(0, Math.min(50, transferDailyLimit))
+      ? Math.max(0, Math.min(2880, transferDailyLimit))
       : current.transferDailyLimit,
+    rentCarDailyLimit: Number.isFinite(rentCarDailyLimit)
+      ? Math.max(0, Math.min(2880, rentCarDailyLimit))
+      : current.rentCarDailyLimit,
     pausedSchemaAutopilot: true
   });
   revalidateGeminiSeoFactory();

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export type KeywordPlannerIntent =
   | "transfer"
+  | "rent_car"
   | "tour"
   | "taxi"
   | "island"
@@ -23,7 +24,7 @@ export type KeywordPlannerStatus =
   | "duplicate"
   | "ignored";
 
-export type KeywordPlannerConnectedType = "tour" | "transfer" | "content" | "review";
+export type KeywordPlannerConnectedType = "tour" | "transfer" | "rent_car" | "content" | "review";
 
 export type KeywordPlannerRecord = {
   keyword: string;
@@ -173,6 +174,13 @@ export const classifyKeywordPlannerIntent = (keyword: string): KeywordPlannerInt
   if (/(viator|getyourguide|expedia|nexus|otium|caribe|civitatis|tripadvisor)/.test(normalized)) {
     return "competitor";
   }
+  if (
+    /(rent a car|rent car|rental car|car rental|renta car|renta de carro|rentar carro|alquiler de carro|alquiler de coches|alquiler de autos|alquilar carro|alquilar coche|vehiculo de alquiler|vehicle rental|suv rental|luxury car rental|convertible rental)/.test(
+      normalized
+    )
+  ) {
+    return "rent_car";
+  }
   if (/(transfer|transport|transportation|airport|aeropuerto|shuttle|taxi|cab|limo|pickup|pick up)/.test(normalized)) {
     return normalized.includes("taxi") ? "taxi" : "transfer";
   }
@@ -196,6 +204,7 @@ export const classifyKeywordPlannerIntent = (keyword: string): KeywordPlannerInt
 
 const getConnectedType = (intent: KeywordPlannerIntent): KeywordPlannerConnectedType => {
   if (intent === "transfer" || intent === "taxi") return "transfer";
+  if (intent === "rent_car") return "rent_car";
   if (intent === "competitor") return "review";
   if (intent === "informational" || intent === "other") return "content";
   return "tour";
@@ -214,6 +223,9 @@ const getSuggestedAction = (intent: KeywordPlannerIntent, keyword: string) => {
     return normalized.includes("airport") || normalized.includes("aeropuerto")
       ? "Crear landing transaccional de ruta PUJ + hoteles y conectar formulario de traslado."
       : "Crear landing de traslado privado con buscador y precios por zona.";
+  }
+  if (intent === "rent_car") {
+    return "Crear landing de rent car con vehiculo real, precio por dia, zona de recogida y formulario de reserva.";
   }
   if (intent === "catamaran") return "Crear landing de catamaran con galeria, precio desde y disponibilidad.";
   if (intent === "buggy_atv") return "Crear landing de buggy/ATV con urgencia, recogida y reseñas.";
@@ -453,6 +465,7 @@ export async function getKeywordPlannerSummary() {
     pending: store.keywords.filter((keyword) => keyword.status === "pending" || keyword.status === "new").length,
     highPriority: store.keywords.filter((keyword) => keyword.priority === "high").length,
     transfer: store.keywords.filter((keyword) => keyword.connectedType === "transfer").length,
+    rentCar: store.keywords.filter((keyword) => keyword.connectedType === "rent_car").length,
     tour: store.keywords.filter((keyword) => keyword.connectedType === "tour").length,
     content: store.keywords.filter((keyword) => keyword.connectedType === "content").length,
     review: store.keywords.filter((keyword) => keyword.connectedType === "review").length,

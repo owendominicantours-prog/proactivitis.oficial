@@ -59,6 +59,7 @@ const statusLabels: Record<KeywordPlannerStatus, string> = {
 
 const intentLabels: Record<KeywordPlannerIntent, string> = {
   transfer: "Transfer",
+  rent_car: "Rent car",
   tour: "Tour",
   taxi: "Taxi",
   island: "Isla / playa",
@@ -71,6 +72,7 @@ const intentLabels: Record<KeywordPlannerIntent, string> = {
 
 const typeLabels: Record<KeywordPlannerConnectedType, string> = {
   transfer: "Transfer",
+  rent_car: "Rent car",
   tour: "Tour",
   content: "Contenido",
   review: "Competidor"
@@ -122,6 +124,7 @@ export default async function KeywordPlannerAdminPage({ searchParams }: KeywordP
 
   const latestBatches = store.batches.slice(0, 8);
   const transferKeywords = store.keywords.filter((keyword) => keyword.connectedType === "transfer").slice(0, 10);
+  const rentCarKeywords = store.keywords.filter((keyword) => keyword.connectedType === "rent_car").slice(0, 10);
   const tourKeywords = store.keywords.filter((keyword) => keyword.connectedType === "tour").slice(0, 10);
   const selectedStatus = getParamValue(params.status, Object.keys(statusLabels) as KeywordPlannerStatus[]);
   const selectedPriority = getParamValue(params.priority, Object.keys(priorityLabels) as KeywordPlannerPriority[]);
@@ -132,6 +135,7 @@ export default async function KeywordPlannerAdminPage({ searchParams }: KeywordP
 
   const classifiedCounts: Record<KeywordPlannerConnectedType, number> = {
     transfer: store.keywords.filter((keyword) => keyword.connectedType === "transfer").length,
+    rent_car: store.keywords.filter((keyword) => keyword.connectedType === "rent_car").length,
     tour: store.keywords.filter((keyword) => keyword.connectedType === "tour").length,
     content: store.keywords.filter((keyword) => keyword.connectedType === "content").length,
     review: store.keywords.filter((keyword) => keyword.connectedType === "review").length
@@ -178,7 +182,7 @@ export default async function KeywordPlannerAdminPage({ searchParams }: KeywordP
             <h1 className="text-3xl font-black text-slate-950">Banco de busquedas para SEO</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
               Sube CSVs de Google Keyword Planner todas las veces que quieras. El sistema deduplica keywords,
-              actualiza volumen/CPC/competencia y deja una cola clara para landings de tours, transfer y contenido.
+              actualiza volumen/CPC/competencia y deja una cola clara para landings de rent car, tours, transfer y contenido.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -239,6 +243,7 @@ export default async function KeywordPlannerAdminPage({ searchParams }: KeywordP
           <div className="mt-5 rounded-2xl bg-slate-50 p-4 text-xs leading-5 text-slate-600">
             <p className="font-black text-slate-900">Como se marca</p>
             <p>Transfer/taxi: landing con formulario de traslado.</p>
+            <p>Rent car: landing por vehiculo, zona, precio diario y reserva.</p>
             <p>Tour/isla/buggy/catamaran: landing de producto o categoria.</p>
             <p>Informativa: guia que empuja a reservar.</p>
             <p>Competidor: pagina comparativa o alternativa controlada.</p>
@@ -257,7 +262,7 @@ export default async function KeywordPlannerAdminPage({ searchParams }: KeywordP
               </p>
             ) : null}
           </div>
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl border border-slate-200 p-4">
               <p className="text-sm font-black text-slate-950">Transfer listos para atacar</p>
               <div className="mt-3 space-y-2">
@@ -265,6 +270,23 @@ export default async function KeywordPlannerAdminPage({ searchParams }: KeywordP
                   <p className="text-sm text-slate-500">Aun no hay keywords de transfer.</p>
                 ) : (
                   transferKeywords.map((keyword) => (
+                    <div key={keyword.normalizedKeyword} className="rounded-xl bg-slate-50 p-3">
+                      <p className="font-bold text-slate-900">{keyword.keyword}</p>
+                      <p className="text-xs text-slate-500">
+                        {numberFormatter.format(keyword.avgMonthlySearches)} busquedas - {formatBid(keyword.topBidHigh)}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            <div className="rounded-2xl border border-slate-200 p-4">
+              <p className="text-sm font-black text-slate-950">Rent car para generar</p>
+              <div className="mt-3 space-y-2">
+                {rentCarKeywords.length === 0 ? (
+                  <p className="text-sm text-slate-500">Aun no hay keywords de rent car.</p>
+                ) : (
+                  rentCarKeywords.map((keyword) => (
                     <div key={keyword.normalizedKeyword} className="rounded-xl bg-slate-50 p-3">
                       <p className="font-bold text-slate-900">{keyword.keyword}</p>
                       <p className="text-xs text-slate-500">
@@ -307,7 +329,7 @@ export default async function KeywordPlannerAdminPage({ searchParams }: KeywordP
           </p>
         </div>
 
-        <div className="mt-5 grid gap-3 md:grid-cols-4">
+        <div className="mt-5 grid gap-3 md:grid-cols-5">
           {(Object.keys(typeLabels) as KeywordPlannerConnectedType[]).map((type) => (
             <Link
               key={type}

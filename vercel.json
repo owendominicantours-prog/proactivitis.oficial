@@ -6,11 +6,7 @@
     },
     {
       "path": "/api/cron/gemini-seo-factory",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/cron/gemini-global-tours",
-      "schedule": "*/15 * * * *"
+      "schedule": "* * * * *"
     },
     {
       "path": "/api/cron/news-search-console",

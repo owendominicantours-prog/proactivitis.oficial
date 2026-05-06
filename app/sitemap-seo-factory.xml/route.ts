@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listPublishedGeminiSeoLandings } from "@/lib/geminiSeoFactory";
+import { getGeminiSeoPublicPath, listPublishedGeminiSeoLandings } from "@/lib/geminiSeoFactory";
 
 const BASE_URL = "https://proactivitis.com";
 const LOCALES = ["es", "en", "fr"] as const;
@@ -24,10 +24,9 @@ export async function GET() {
   const landings = await listPublishedGeminiSeoLandings();
   const entries = landings.flatMap((landing) =>
     LOCALES.map((locale) => {
-      const prefix = locale === "es" ? "" : `/${locale}`;
       const content = landing.locales[locale] ?? landing.locales.es;
       return {
-        loc: `${BASE_URL}${prefix}/punta-cana/${landing.slug}`,
+        loc: `${BASE_URL}${getGeminiSeoPublicPath(landing.type, landing.slug, locale)}`,
         lastmod: landing.publishedAt ?? landing.generatedAt,
         image: absoluteImage(content.image || landing.product.image),
         imageTitle: content.imageAlt || content.h1

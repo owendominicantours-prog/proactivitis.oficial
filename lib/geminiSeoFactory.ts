@@ -4,8 +4,14 @@ import { allLandings } from "@/data/transfer-landings";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import type { Locale } from "@/lib/translations";
 import { listKeywordPlannerOpportunities, updateKeywordPlannerStatus } from "@/lib/keywordPlanner";
+import {
+  getRentCarOptions,
+  getRentCarOptionPath,
+  getRentCarSpecBadges
+} from "@/data/rentCarFleet";
+import { getRentCarFleetSettings } from "@/lib/rentCarSettings";
 
-export type GeminiSeoLandingType = "tour" | "transfer";
+export type GeminiSeoLandingType = "tour" | "transfer" | "rent_car";
 export type GeminiSeoLandingStatus = "draft" | "published" | "rejected";
 
 export type GeminiSeoSection = {
@@ -58,6 +64,12 @@ export type GeminiSeoLandingRecord = {
     location?: string | null;
     originName?: string | null;
     destinationName?: string | null;
+    vehicleModel?: string | null;
+    seats?: number | null;
+    bags?: number | null;
+    fuelType?: string | null;
+    transmission?: string | null;
+    specs?: string[];
   };
   intent: {
     id: string;
@@ -81,6 +93,7 @@ export type GeminiSeoFactoryConfig = {
   dailyLimit: number;
   tourDailyLimit: number;
   transferDailyLimit: number;
+  rentCarDailyLimit: number;
   cursor: number;
   pausedSchemaAutopilot: boolean;
   lastRunAt?: string | null;
@@ -126,9 +139,10 @@ const LOCALES: Locale[] = ["es", "en", "fr"];
 const DEFAULT_CONFIG: GeminiSeoFactoryConfig = {
   enabled: false,
   autoPublish: false,
-  dailyLimit: 20,
-  tourDailyLimit: 8,
-  transferDailyLimit: 12,
+  dailyLimit: 2880,
+  tourDailyLimit: 0,
+  transferDailyLimit: 0,
+  rentCarDailyLimit: 2,
   cursor: 0,
   pausedSchemaAutopilot: true,
   lastRunAt: null,
@@ -221,6 +235,39 @@ const TRANSFER_INTENTS = [
   }
 ];
 
+const RENT_CAR_INTENTS = [
+  {
+    id: "airport-rental",
+    label: "Airport rent a car",
+    angle: "airport pickup, clear daily price, model guarantee, fast reservation"
+  },
+  {
+    id: "city-driving",
+    label: "City rental",
+    angle: "clean city driving, easy pickup, fuel and luggage expectations"
+  },
+  {
+    id: "family-suv",
+    label: "Family SUV",
+    angle: "space for family, luggage comfort, safe Dominican Republic travel"
+  },
+  {
+    id: "luxury-rental",
+    label: "Luxury car rental",
+    angle: "premium arrival, executive comfort, VIP support"
+  },
+  {
+    id: "price-per-day",
+    label: "Daily price",
+    angle: "final daily price, what is included, why reserve early"
+  },
+  {
+    id: "hotel-delivery",
+    label: "Hotel delivery",
+    angle: "hotel or address pickup, simple handoff, support before pickup"
+  }
+];
+
 const toJson = (value: unknown) => value as Prisma.InputJsonValue;
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
@@ -241,6 +288,12 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/(^-|-$)/g, "");
+
+export const getGeminiSeoPublicPath = (type: GeminiSeoLandingType, slug: string, locale: Locale) => {
+  const prefix = locale === "es" ? "" : `/${locale}`;
+  if (type === "rent_car") return `${prefix}/rent-a-car/deals/${slug}`;
+  return `${prefix}/punta-cana/${slug}`;
+};
 
 const parseJsonArray = (value?: string | null): string[] => {
   if (!value) return [];
@@ -346,9 +399,14 @@ const safeFaqs = (value: unknown): GeminiSeoFaq[] => {
 export async function getGeminiSeoFactoryConfig(): Promise<GeminiSeoFactoryConfig> {
   const record = await prisma.siteContentSetting.findUnique({ where: { key: FACTORY_CONFIG_KEY } });
   if (!record?.content || !isObject(record.content)) return DEFAULT_CONFIG;
+  const stored = record.content as Partial<GeminiSeoFactoryConfig>;
+  const upgradedForRentCarCron = stored.rentCarDailyLimit === undefined;
   return {
     ...DEFAULT_CONFIG,
-    ...(record.content as Partial<GeminiSeoFactoryConfig>)
+    ...stored,
+    dailyLimit: upgradedForRentCarCron
+      ? Math.max(Number(stored.dailyLimit ?? 0), DEFAULT_CONFIG.dailyLimit)
+      : Number(stored.dailyLimit ?? DEFAULT_CONFIG.dailyLimit)
   };
 }
 
@@ -537,6 +595,58 @@ const buildTransferCandidates = async (limit: number, offset: number): Promise<G
   });
 };
 
+const buildRentCarCandidates = async (limit: number, offset: number): Promise<GeminiSeoFactoryCandidate[]> => {
+  if (limit <= 0) return [];
+  const [settings, keywordOpportunities] = await Promise.all([
+    getRentCarFleetSettings(),
+    listKeywordPlannerOpportunities({ limit: Math.max(20, limit + offset + 16), status: "pending" })
+  ]);
+  const rentCarKeywords = keywordOpportunities.filter(
+    (keyword) => keyword.connectedType === "rent_car" || keyword.intent === "rent_car"
+  );
+  const options = getRentCarOptions(undefined, settings);
+
+  return options.slice(offset, offset + limit).map((option, index) => {
+    const keyword = rentCarKeywords.length > 0 ? rentCarKeywords[(offset + index) % rentCarKeywords.length] : null;
+    const fallbackIntent = RENT_CAR_INTENTS[(offset + index) % RENT_CAR_INTENTS.length];
+    const keywordIntent = keyword
+      ? {
+          id: `kp-${slugify(keyword.keyword).slice(0, 56)}`,
+          label: keyword.keyword,
+          angle: `${keyword.suggestedAction} Prioridad ${keyword.priority}, volumen ${keyword.avgMonthlySearches}.`,
+          searchQuery: `${keyword.keyword} ${option.model} ${option.locationName}`
+        }
+      : null;
+    const title = `${option.model} rental in ${option.locationName}`;
+    return {
+      type: "rent_car",
+      product: {
+        id: `${option.locationId}-${option.categorySlug}`,
+        slug: `${option.locationId}-${option.categorySlug}`,
+        title,
+        type: "rent_car",
+        url: `${BASE_URL}${getRentCarOptionPath(option.locationId, option.categorySlug, "en")}`,
+        image: absoluteUrl(option.image),
+        price: option.price,
+        currency: "USD",
+        duration: "per day",
+        location: option.locationName,
+        vehicleModel: option.model,
+        seats: option.seats,
+        bags: option.bags,
+        fuelType: option.fuelType,
+        transmission: option.transmission,
+        specs: getRentCarSpecBadges(option, "en")
+      },
+      intent: {
+        ...(keywordIntent ?? fallbackIntent),
+        searchQuery: keywordIntent?.searchQuery ?? `${title} ${fallbackIntent.label} Dominican Republic rent a car`
+      },
+      keywordPlannerNormalized: keyword?.normalizedKeyword
+    };
+  });
+};
+
 const buildPrompt = (candidate: GeminiSeoFactoryCandidate) => `
 You are Proactivitis SEO Factory, a senior travel SEO strategist and conversion copywriter.
 Use Google Search grounding to understand current search intent, language, competitor angles, and traveler questions.
@@ -559,7 +669,8 @@ Rules:
 - The page must answer: what this is, why trust it, what happens next.
 - Include schema JSON-LD per locale.
 - Schema must include image and thumbnailUrl using the product image.
-- Include WebPage, FAQPage, BreadcrumbList, and either TouristTrip for tours or Service for transfers.
+- Include WebPage, FAQPage, BreadcrumbList, and either TouristTrip for tours, Service for transfers, or Product/Car for rent car.
+- For rent_car pages, write as a rental vehicle landing page with clear daily price, pickup zone, model guarantee, and Proactivitis VIP Support.
 - Avoid fake aggregateRating or review if not provided.
 - Keep schema safe for Google.
 - Use short sections and strong CTAs.
@@ -642,6 +753,12 @@ const buildFallbackLocale = (
         : locale === "en"
           ? "private transfer"
           : "traslado privado"
+      : candidate.type === "rent_car"
+        ? locale === "fr"
+          ? "location de voiture"
+          : locale === "en"
+            ? "car rental"
+            : "rent car"
       : locale === "fr"
         ? "experience"
         : locale === "en"
@@ -709,8 +826,7 @@ const buildSafeSchema = ({
   locale: Locale;
   content: GeminiSeoLocaleContent;
 }) => {
-  const prefix = locale === "es" ? "" : `/${locale}`;
-  const pageUrl = `${BASE_URL}${prefix}/punta-cana/${landing.slug}`;
+  const pageUrl = `${BASE_URL}${getGeminiSeoPublicPath(landing.type, landing.slug, locale)}`;
   const imageUrl = absoluteUrl(content.image || landing.product.image);
   const productNode =
     landing.type === "transfer"
@@ -732,7 +848,36 @@ const buildSafeSchema = ({
             availability: "https://schema.org/InStock"
           }
         }
-      : {
+      : landing.type === "rent_car"
+        ? {
+            "@type": ["Product", "Car"],
+            "@id": `${pageUrl}#rent-car`,
+            name: content.h1,
+            description: content.metaDescription,
+            image: imageUrl,
+            thumbnailUrl: imageUrl,
+            brand: {
+              "@type": "Brand",
+              name: landing.product.vehicleModel ?? landing.product.title
+            },
+            category: "Car rental",
+            provider: { "@id": `${BASE_URL}#organization` },
+            offers: {
+              "@type": "Offer",
+              url: landing.product.url,
+              priceCurrency: landing.product.currency || "USD",
+              price: landing.product.price ?? undefined,
+              availability: "https://schema.org/InStock"
+            },
+            additionalProperty: [
+              { "@type": "PropertyValue", name: "Pickup area", value: landing.product.location ?? undefined },
+              { "@type": "PropertyValue", name: "Seats", value: landing.product.seats ?? undefined },
+              { "@type": "PropertyValue", name: "Bags", value: landing.product.bags ?? undefined },
+              { "@type": "PropertyValue", name: "Fuel type", value: landing.product.fuelType ?? undefined },
+              { "@type": "PropertyValue", name: "Transmission", value: landing.product.transmission ?? undefined }
+            ].filter((property) => property.value !== undefined)
+          }
+        : {
           "@type": "TouristTrip",
           "@id": `${pageUrl}#tour`,
           name: content.h1,
@@ -805,8 +950,13 @@ const buildSafeSchema = ({
           {
             "@type": "ListItem",
             position: 2,
-            name: landing.type === "transfer" ? "Transfers" : "Tours",
-            item: landing.type === "transfer" ? `${BASE_URL}/traslado` : `${BASE_URL}/tours`
+            name: landing.type === "transfer" ? "Transfers" : landing.type === "rent_car" ? "Rent a car" : "Tours",
+            item:
+              landing.type === "transfer"
+                ? `${BASE_URL}/traslado`
+                : landing.type === "rent_car"
+                  ? `${BASE_URL}/rent-a-car`
+                  : `${BASE_URL}/tours`
           },
           {
             "@type": "ListItem",
@@ -945,16 +1095,22 @@ export async function generateGeminiSeoLanding(candidate: GeminiSeoFactoryCandid
 export async function runGeminiSeoFactoryBatch({
   manualLimit,
   transferLimitOverride,
-  tourLimitOverride
+  tourLimitOverride,
+  rentCarLimitOverride
 }: {
   manualLimit?: number;
   transferLimitOverride?: number;
   tourLimitOverride?: number;
+  rentCarLimitOverride?: number;
 } = {}) {
   const config = await getGeminiSeoFactoryConfig();
-  const limit = Math.max(1, Math.min(manualLimit ?? config.dailyLimit, config.dailyLimit, 50));
-  const transferLimit = Math.min(transferLimitOverride ?? config.transferDailyLimit, limit);
-  const tourLimit = Math.min(tourLimitOverride ?? config.tourDailyLimit, Math.max(0, limit - transferLimit));
+  const limit = Math.max(1, Math.min(manualLimit ?? config.dailyLimit, config.dailyLimit, 2880));
+  const rentCarLimit = Math.min(rentCarLimitOverride ?? config.rentCarDailyLimit, limit);
+  const transferLimit = Math.min(transferLimitOverride ?? config.transferDailyLimit, Math.max(0, limit - rentCarLimit));
+  const tourLimit = Math.min(
+    tourLimitOverride ?? config.tourDailyLimit,
+    Math.max(0, limit - rentCarLimit - transferLimit)
+  );
   const cursor = Math.max(0, config.cursor);
 
   if (!config.enabled && !manualLimit) {
@@ -967,13 +1123,15 @@ export async function runGeminiSeoFactoryBatch({
     };
   }
 
-  const [transferCandidates, tourCandidates] = await Promise.all([
+  const [rentCarCandidates, transferCandidates, tourCandidates] = await Promise.all([
+    buildRentCarCandidates(rentCarLimit, cursor),
     buildTransferCandidates(transferLimit, cursor),
     buildTourCandidates(tourLimit, cursor)
   ]);
   const candidates: GeminiSeoFactoryCandidate[] = [];
-  const maxCandidateLength = Math.max(transferCandidates.length, tourCandidates.length);
+  const maxCandidateLength = Math.max(rentCarCandidates.length, transferCandidates.length, tourCandidates.length);
   for (let index = 0; index < maxCandidateLength; index += 1) {
+    if (rentCarCandidates[index]) candidates.push(rentCarCandidates[index]);
     if (transferCandidates[index]) candidates.push(transferCandidates[index]);
     if (tourCandidates[index]) candidates.push(tourCandidates[index]);
   }

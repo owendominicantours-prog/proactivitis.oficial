@@ -77,6 +77,7 @@ const PROACTIVITIS_BASE_URL = "https://proactivitis.com";
 const SEO_FACTORY_SITEMAPS = [
   "/sitemap-index.xml",
   "/sitemap-seo-factory.xml",
+  "/sitemap-rent-a-car.xml",
   "/sitemap-transfer-seo-only.xml",
   "/sitemap-golden-transfer-pages.xml",
   "/sitemap-golden-tour-pages.xml",

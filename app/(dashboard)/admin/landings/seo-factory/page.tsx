@@ -8,7 +8,7 @@ import {
   saveGeminiGlobalTourFactorySettingsAction,
   saveGeminiSeoFactorySettingsAction
 } from "../actions";
-import { getGeminiSeoFactoryConfig, listGeminiSeoLandings } from "@/lib/geminiSeoFactory";
+import { getGeminiSeoFactoryConfig, getGeminiSeoPublicPath, listGeminiSeoLandings } from "@/lib/geminiSeoFactory";
 import {
   getGeminiGlobalTourFactoryConfig,
   getGeminiGlobalToursGeneratedTodayCount,
@@ -34,6 +34,7 @@ export default async function GeminiSeoFactoryAdminPage() {
   const published = landings.filter((item) => item.status === "published").length;
   const drafts = landings.filter((item) => item.status === "draft").length;
   const rejected = landings.filter((item) => item.status === "rejected").length;
+  const rentCarLandings = landings.filter((item) => item.type === "rent_car").length;
 
   return (
     <div className="space-y-8 pb-10">
@@ -43,7 +44,7 @@ export default async function GeminiSeoFactoryAdminPage() {
           <div>
             <h1 className="text-3xl font-black text-slate-950">Landings con Gemini + Google Search</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Genera paginas de tours y transfer con productos reales, schema con miniatura, traducciones ES/EN/FR
+              Genera paginas de rent car, tours y transfer con productos reales, schema con miniatura, traducciones ES/EN/FR
               y publicacion manual al inicio. Cuando actives publicacion automatica, solo se publican las que pasen validacion.
             </p>
           </div>
@@ -64,7 +65,7 @@ export default async function GeminiSeoFactoryAdminPage() {
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-5">
         <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Total</p>
           <p className="mt-2 text-3xl font-black text-slate-950">{landings.length}</p>
@@ -80,6 +81,10 @@ export default async function GeminiSeoFactoryAdminPage() {
         <article className="rounded-2xl border border-rose-200 bg-rose-50 p-5 shadow-sm">
           <p className="text-xs uppercase tracking-[0.28em] text-rose-700">Rechazadas</p>
           <p className="mt-2 text-3xl font-black text-rose-950">{rejected}</p>
+        </article>
+        <article className="rounded-2xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.28em] text-sky-700">Rent car</p>
+          <p className="mt-2 text-3xl font-black text-sky-950">{rentCarLandings}</p>
         </article>
       </section>
 
@@ -110,19 +115,19 @@ export default async function GeminiSeoFactoryAdminPage() {
                 name="dailyLimit"
                 type="number"
                 min={1}
-                max={50}
+                max={2880}
                 defaultValue={config.dailyLimit}
                 className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2"
               />
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 md:grid-cols-3">
               <label className="rounded-2xl border border-slate-200 p-4">
                 <span className="block text-sm font-black text-slate-950">Tours</span>
                 <input
                   name="tourDailyLimit"
                   type="number"
                   min={0}
-                  max={50}
+                  max={2880}
                   defaultValue={config.tourDailyLimit}
                   className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2"
                 />
@@ -133,8 +138,19 @@ export default async function GeminiSeoFactoryAdminPage() {
                   name="transferDailyLimit"
                   type="number"
                   min={0}
-                  max={50}
+                  max={2880}
                   defaultValue={config.transferDailyLimit}
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2"
+                />
+              </label>
+              <label className="rounded-2xl border border-slate-200 p-4">
+                <span className="block text-sm font-black text-slate-950">Rent car</span>
+                <input
+                  name="rentCarDailyLimit"
+                  type="number"
+                  min={0}
+                  max={2880}
+                  defaultValue={config.rentCarDailyLimit}
                   className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2"
                 />
               </label>
@@ -150,19 +166,19 @@ export default async function GeminiSeoFactoryAdminPage() {
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-sky-300">Manual</p>
             <h2 className="mt-2 text-2xl font-black">Generar ahora</h2>
             <p className="mt-2 text-sm leading-6 text-white/70">
-              Al principio recomendamos generar pocos, revisar y publicar manualmente.
+              El cron automatico genera 2 landings de rent car por minuto. Al principio puedes revisar y publicar manualmente.
             </p>
           </div>
           <form action={generateGeminiSeoFactoryBatchAction} className="space-y-3">
             <input type="hidden" name="limit" value="3" />
             <button className="w-full rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-950 hover:bg-slate-100">
-              Generar 3 de prueba
+              Generar prueba manual
             </button>
           </form>
           <form action={generateGeminiSeoFactoryBatchAction} className="space-y-3">
             <input type="hidden" name="limit" value="20" />
             <button className="w-full rounded-2xl border border-white/30 px-5 py-3 text-sm font-black text-white hover:bg-white/10">
-              Generar 20 hoy
+              Generar 20 manual
             </button>
           </form>
           {config.lastResult ? (
@@ -190,16 +206,16 @@ export default async function GeminiSeoFactoryAdminPage() {
       <section className="grid gap-6 lg:grid-cols-[420px_1fr]">
         <form action={saveGeminiGlobalTourFactorySettingsAction} className="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-[0.28em] text-emerald-700">Tours globales</p>
-          <h2 className="mt-2 text-2xl font-black text-emerald-950">2 drafts cada 15 minutos</h2>
+          <h2 className="mt-2 text-2xl font-black text-emerald-950">Tours globales en modo manual</h2>
           <p className="mt-2 text-sm leading-6 text-emerald-900/70">
-            Gemini crea productos reales en borrador, clasificados por pais, destino, zona y categoria. Quedan listos
-            para revisar fotos, disponibilidad y proveedor antes de publicar.
+            El cron automatico de tours globales queda pausado para priorizar rent car. Puedes generar borradores manualmente
+            cuando necesites nuevos productos.
           </p>
           <div className="mt-5 space-y-3">
             <label className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-white p-4">
               <span>
                 <span className="block font-black text-slate-950">Generacion automatica</span>
-                <span className="text-sm text-slate-500">El cron corre cada 15 minutos.</span>
+                <span className="text-sm text-slate-500">Solo aplica si vuelves a activar el cron en Vercel.</span>
               </span>
               <input name="globalEnabled" type="checkbox" defaultChecked={globalConfig.enabled} className="h-5 w-5" />
             </label>
@@ -358,14 +374,14 @@ export default async function GeminiSeoFactoryAdminPage() {
                     </div>
                     <div className="flex flex-wrap gap-2 lg:justify-end">
                       <Link
-                        href={`/punta-cana/${landing.slug}?preview=1`}
+                        href={`${getGeminiSeoPublicPath(landing.type, landing.slug, "es")}?preview=1`}
                         target="_blank"
                         className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
                       >
                         Preview
                       </Link>
                       <Link
-                        href={`/punta-cana/${landing.slug}`}
+                        href={getGeminiSeoPublicPath(landing.type, landing.slug, "es")}
                         target="_blank"
                         className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
                       >

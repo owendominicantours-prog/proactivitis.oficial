@@ -10,6 +10,7 @@ import StructuredData from "@/components/schema/StructuredData";
 import { resolveLocationByAlias } from "@/components/public/TransferLandingPage";
 import {
   getGeminiSeoLanding,
+  getGeminiSeoPublicPath,
   type GeminiSeoLandingRecord,
   type GeminiSeoLocaleContent
 } from "@/lib/geminiSeoFactory";
@@ -19,8 +20,11 @@ import type { Locale } from "@/lib/translations";
 const BASE_URL = "https://proactivitis.com";
 
 const localePrefix = (locale: Locale) => (locale === "es" ? "" : `/${locale}`);
-export const geminiSeoPublicPath = (slug: string, locale: Locale) =>
-  `${localePrefix(locale)}/punta-cana/${slug}`;
+export const geminiSeoPublicPath = (
+  slug: string,
+  locale: Locale,
+  type: GeminiSeoLandingRecord["type"] = "tour"
+) => getGeminiSeoPublicPath(type, slug, locale);
 
 const absoluteUrl = (value?: string | null) => {
   if (!value) return `${BASE_URL}/transfer/sedan.png`;
@@ -214,8 +218,7 @@ export async function buildGeminiSeoLandingMetadata(slug: string, locale: Locale
   const landing = await getGeminiSeoLanding(slug);
   if (!landing) return {};
   const content = cleanGeneratedContent(getContent(landing, locale));
-  const prefix = localePrefix(locale);
-  const pageUrl = `${BASE_URL}${geminiSeoPublicPath(landing.slug, locale)}`;
+  const pageUrl = `${BASE_URL}${geminiSeoPublicPath(landing.slug, locale, landing.type)}`;
   const imageUrl = absoluteUrl(getDisplayImage(landing, content));
   const isPublished = landing.status === "published";
 
@@ -229,10 +232,10 @@ export async function buildGeminiSeoLandingMetadata(slug: string, locale: Locale
     alternates: {
       canonical: pageUrl,
       languages: {
-        es: geminiSeoPublicPath(landing.slug, "es"),
-        en: geminiSeoPublicPath(landing.slug, "en"),
-        fr: geminiSeoPublicPath(landing.slug, "fr"),
-        "x-default": geminiSeoPublicPath(landing.slug, "es")
+        es: geminiSeoPublicPath(landing.slug, "es", landing.type),
+        en: geminiSeoPublicPath(landing.slug, "en", landing.type),
+        fr: geminiSeoPublicPath(landing.slug, "fr", landing.type),
+        "x-default": geminiSeoPublicPath(landing.slug, "es", landing.type)
       }
     },
     openGraph: {
@@ -276,16 +279,16 @@ export default async function GeminiSeoLandingPage({
 
   const content = cleanGeneratedContent(getContent(landing, locale));
   const prefix = localePrefix(locale);
-  const productUrl =
-    landing.type === "transfer"
-      ? `${prefix}${new URL(landing.product.url).pathname}`
-      : `${prefix}${new URL(landing.product.url).pathname}`;
+  const rawProductPath = new URL(landing.product.url).pathname.replace(/^\/(en|fr)(?=\/)/, "");
+  const productUrl = `${prefix}${rawProductPath}`;
   const imageUrl = getDisplayImage(landing, content);
   const { initialOrigin, initialDestination } = await getTransferInitialLocations(landing);
   const tourBookingData = await getTourBookingData(landing);
   const primaryCtaHref =
     landing.type === "transfer"
       ? "#seo-transfer-quote"
+      : landing.type === "rent_car"
+        ? productUrl
       : tourBookingData
         ? "#seo-tour-booking"
         : productUrl;
@@ -324,7 +327,11 @@ export default async function GeminiSeoLandingPage({
           ) : null}
           <div className="max-w-4xl">
             <p className="text-xs font-semibold uppercase tracking-[0.32em] text-sky-200">
-              {landing.type === "transfer" ? "Private transfer" : "Selected experience"}
+              {landing.type === "transfer"
+                ? "Private transfer"
+                : landing.type === "rent_car"
+                  ? "Rent a car"
+                  : "Selected experience"}
             </p>
             <h1 className="mt-3 text-4xl font-black leading-tight tracking-normal sm:text-5xl lg:text-6xl">
               {content.h1}
@@ -359,7 +366,11 @@ export default async function GeminiSeoLandingPage({
           <div className="rounded-2xl border border-sky-200 bg-sky-50 p-3.5">
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-sky-700">Siguiente paso</p>
             <p className="mt-2 font-black text-sky-950">
-              {landing.type === "transfer" ? "Cotiza tu ruta" : "Ver disponibilidad"}
+              {landing.type === "transfer"
+                ? "Cotiza tu ruta"
+                : landing.type === "rent_car"
+                  ? "Reservar vehiculo"
+                  : "Ver disponibilidad"}
             </p>
           </div>
         </div>
@@ -593,7 +604,11 @@ export default async function GeminiSeoLandingPage({
               </div>
               <div className="space-y-4 p-5">
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">
-                  {landing.type === "transfer" ? "Reserva tu traslado" : "Reserva tu tour"}
+                  {landing.type === "transfer"
+                    ? "Reserva tu traslado"
+                    : landing.type === "rent_car"
+                      ? "Reserva tu vehiculo"
+                      : "Reserva tu tour"}
                 </p>
                 <h3 className="text-xl font-black text-slate-950">{landing.product.title}</h3>
                 <p className="text-sm leading-6 text-slate-600">{content.metaDescription}</p>
