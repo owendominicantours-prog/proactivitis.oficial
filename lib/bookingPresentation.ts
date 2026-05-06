@@ -16,11 +16,12 @@ type BookingPresentationInput = {
   meetingPoint?: string | null;
 };
 
-export type BookingServiceKind = "transfer" | "activity";
+export type BookingServiceKind = "transfer" | "activity" | "rent_car";
 
 export function getBookingServiceKind(input: BookingPresentationInput): BookingServiceKind {
   if (input.flowType === "tour") return "activity";
   if (input.flowType === "transfer") return "transfer";
+  if (input.flowType === "rent_car") return "rent_car";
   if (input.originAirport || input.flightNumber) return "transfer";
   if (input.tripType === "round-trip" || input.tripType === "one-way") return "transfer";
   return "activity";
@@ -30,6 +31,31 @@ export function buildBookingPresentation(input: BookingPresentationInput) {
   const kind = getBookingServiceKind(input);
   const routeOrigin = input.originAirport ?? input.pickup ?? input.meetingPoint ?? input.hotel ?? "Pendiente";
   const routeDestination = input.hotel ?? input.pickup ?? input.meetingPoint ?? "Pendiente";
+
+  if (kind === "rent_car") {
+    return {
+      kind,
+      serviceLabel: "Rent car",
+      routeLabel: "Entrega / devolucion",
+      routeValue: `${input.pickup ?? routeOrigin} / ${input.hotel ?? routeDestination}`,
+      notesLabel: "Detalles de la renta",
+      notesValue:
+        input.pickupNotes ??
+        "Reserva formal de rent car con disponibilidad y entrega pendientes de confirmacion operativa.",
+      logisticsLabel: "Operacion de rent car",
+      logisticsValue: [
+        input.startTime ? `Entrega ${input.startTime}` : null,
+        input.returnStartTime ? `Devolucion ${input.returnStartTime}` : null,
+        input.flightNumber ? `Vuelo ${input.flightNumber}` : null
+      ]
+        .filter(Boolean)
+        .join(" - "),
+      primaryDetailsLabel: "Datos de la renta",
+      primaryDetailsValue:
+        input.pickupNotes ??
+        "Entrega, devolucion y documentos coordinados por Proactivitis."
+    };
+  }
 
   if (kind === "transfer") {
     return {

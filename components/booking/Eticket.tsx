@@ -9,6 +9,10 @@ type BookingSummary = {
   startTime?: string | null;
   flowType?: string | null;
   tripType?: string | null;
+  paymentStatus?: string | null;
+  paymentMethod?: string | null;
+  vehicleName?: string | null;
+  vehicleCategory?: string | null;
   returnTravelDate?: Date | null;
   returnStartTime?: string | null;
   totalAmount: number;
@@ -44,14 +48,23 @@ type EticketProps = {
 };
 
 const bringItems = ["Protector solar", "Calzado cómodo", "Documentación", "Ropa ligera"];
+const rentCarBringItems = [
+  "Licencia vigente",
+  "Documento de identidad",
+  "Tarjeta o metodo de garantia",
+  "Confirmacion de reserva"
+];
 
 export default async function Eticket({ booking, tour, supplierName, variant = "full", orderCode }: EticketProps) {
   const qrPayload = `${booking.id}|${tour.slug}|${booking.travelDate.toISOString()}`;
   const qrSize = variant === "full" ? 220 : 160;
   const qrDataUrl = await toDataURL(qrPayload, { width: qrSize, margin: 2 });
   const totalGuests = booking.paxAdults + booking.paxChildren;
+  const isRentCar = booking.flowType === "rent_car";
+  const isPayLater = booking.paymentMethod === "PAY_LATER" || booking.paymentStatus === "PAY_LATER";
   const heroImage = tour.heroImage ?? "/fototours/fototour.jpeg";
-  const meetingPoint = tour.meetingPoint ?? "Punto aún por coordinar";
+  const rentCarPickupLabel = booking.pickupNotes?.match(/Pickup: ([^\n]+)/)?.[1] ?? null;
+  const meetingPoint = isRentCar ? rentCarPickupLabel ?? "Entrega por coordinar" : tour.meetingPoint ?? "Punto aún por coordinar";
   const pickupTime = booking.startTime ?? "Hora por confirmar";
   const arrivalDate = new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(booking.travelDate);
   const returnDateLabel = booking.returnTravelDate
@@ -73,7 +86,7 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
     duration: tour.duration,
     meetingPoint: tour.meetingPoint
   });
-  const meetingLabel = variant === "full" ? "Punto de encuentro" : "Encuentro";
+  const meetingLabel = isRentCar ? "Punto de entrega" : variant === "full" ? "Punto de encuentro" : "Encuentro";
   const containerClass =
     variant === "full"
       ? "rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm"
@@ -95,8 +108,14 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
         </div>
         <div className="text-right">
           <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Estado</p>
-          <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-emerald-700">
-            PAGADO
+          <span
+            className={`inline-flex rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] ${
+              isPayLater
+                ? "border-amber-200 bg-amber-50 text-amber-700"
+                : "border-emerald-200 bg-emerald-50 text-emerald-700"
+            }`}
+          >
+            {isPayLater ? "RESERVADO" : "PAGADO"}
           </span>
         </div>
       </div>
@@ -106,13 +125,13 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
           <p className="text-2xl font-black text-slate-900">{displayOrderCode}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Tour</p>
+          <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">{isRentCar ? "Vehiculo" : "Tour"}</p>
           <p className="text-base font-semibold text-slate-800">{tour.title}</p>
           <p className="text-sm text-slate-500">{arrivalDate}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Pax</p>
-          <p className="text-lg font-semibold text-slate-800">{totalGuests} personas</p>
+          <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">{isRentCar ? "Reserva" : "Pax"}</p>
+          <p className="text-lg font-semibold text-slate-800">{isRentCar ? "Rent car" : `${totalGuests} personas`}</p>
           <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">{pickupTime}</p>
         </div>
       </div>
@@ -188,7 +207,7 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
               </a>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">{presentation.kind === "transfer" ? "Hora del servicio" : "Hora del tour"}</p>
+              <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">{isRentCar ? "Hora de entrega" : presentation.kind === "transfer" ? "Hora del servicio" : "Hora del tour"}</p>
               <p className="text-sm font-semibold text-slate-900">{pickupTime}</p>
               <p className="text-xs text-slate-500">Inicio y pick-up coordinados con tu proveedor.</p>
             </div>
@@ -211,8 +230,9 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
           </div>
           <div className="space-y-2 text-sm text-slate-600">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Total pagado</p>
+              <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">{isPayLater ? "Total estimado" : "Total pagado"}</p>
               <p className="text-lg font-semibold text-slate-900">${booking.totalAmount.toFixed(2)} USD</p>
+              {isPayLater ? <p className="text-xs font-semibold text-amber-700">Pago pendiente de coordinacion</p> : null}
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Titular</p>
@@ -228,7 +248,7 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         <div className="space-y-1">
           <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">
-            {booking.flowType === "transfer" && booking.tripType === "round-trip" ? "Pickup regreso" : "Hotel"}
+            {isRentCar ? "Devolucion" : booking.flowType === "transfer" && booking.tripType === "round-trip" ? "Pickup regreso" : "Hotel"}
           </p>
           <p className="text-sm font-semibold text-slate-900">{booking.hotel ?? "No proporcionado"}</p>
         </div>
@@ -239,7 +259,7 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
         <div className="space-y-1">
           <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Qué llevar</p>
           <ul className="text-sm text-slate-600">
-            {bringItems.map((item) => (
+            {(isRentCar ? rentCarBringItems : bringItems).map((item) => (
               <li key={item}>• {item}</li>
             ))}
           </ul>
@@ -263,7 +283,7 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
         <div className="space-y-1">
           <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Tipo</p>
           <p className="text-sm font-semibold text-slate-900">
-            {booking.tripType === "round-trip" ? "Ida y vuelta" : "Servicio principal"}
+            {isRentCar ? (booking.vehicleCategory ?? "Rent car") : booking.tripType === "round-trip" ? "Ida y vuelta" : "Servicio principal"}
           </p>
         </div>
       </div>
