@@ -136,7 +136,7 @@ export default function RentCarDetailPage({ locationId, categorySlug, locale = "
                   }`}
                 >
                   <div className="absolute inset-x-[18%] bottom-[12%] h-[12%] rounded-full bg-black/15 blur-[10px]" />
-                  <Image src={item.image} alt={item.model} fill sizes="120px" className="object-contain p-3" />
+                  <Image src={item.image} alt={item.model} fill sizes="120px" className="object-contain p-0 scale-[1.18]" />
                 </Link>
               ))}
             </div>
@@ -226,7 +226,7 @@ export default function RentCarDetailPage({ locationId, categorySlug, locale = "
                 >
                   <div className="relative h-44 overflow-hidden bg-[radial-gradient(ellipse_at_50%_45%,#ffffff_0%,#f7f7f5_48%,#ececea_100%)]">
                     <div className="absolute inset-x-[18%] bottom-[12%] h-[12%] rounded-full bg-black/20 blur-[16px]" />
-                    <Image src={item.image} alt={item.model} fill sizes="240px" className="object-contain p-5" />
+                    <Image src={item.image} alt={item.model} fill sizes="240px" className="object-contain p-0 scale-[1.18]" />
                   </div>
                   <div className="p-4">
                     <p className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-700">{item.tag}</p>

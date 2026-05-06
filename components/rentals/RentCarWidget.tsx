@@ -70,7 +70,7 @@ export default async function RentCarWidget({ regionText = "", locationId, title
                 alt={option.model}
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
-                className="object-contain p-4 transition duration-500 group-hover:scale-[1.02]"
+                className="object-contain p-0 scale-[1.18] transition duration-500 group-hover:scale-[1.22]"
                 loading="lazy"
               />
             </div>

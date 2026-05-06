@@ -70,7 +70,7 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 430px"
-                  className="object-contain p-5 transition duration-500 group-hover:scale-[1.02]"
+                  className="object-contain p-0 scale-[1.18] transition duration-500 group-hover:scale-[1.22]"
                 />
               </div>
               <div className="p-5">
@@ -132,7 +132,7 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
                         alt={topOption.model}
                         fill
                         sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-contain p-5 transition duration-500 group-hover:scale-[1.035]"
+                        className="object-contain p-0 scale-[1.18] transition duration-500 group-hover:scale-[1.22]"
                       />
                     ) : null}
                     <div className="absolute left-4 top-4 flex flex-wrap gap-2">
@@ -203,7 +203,7 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
                     alt={option.model}
                     fill
                     sizes="(max-width: 768px) 100vw, 25vw"
-                    className="object-contain p-5 transition duration-500 group-hover:scale-[1.035]"
+                    className="object-contain p-0 scale-[1.18] transition duration-500 group-hover:scale-[1.22]"
                     loading="lazy"
                   />
                   <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-red-700 shadow">
