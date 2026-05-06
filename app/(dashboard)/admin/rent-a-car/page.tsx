@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RentCarVehicleImageField from "@/components/admin/rentcar/RentCarVehicleImageField";
 import { getRentCarFleetSettings } from "@/lib/rentCarSettings";
 import { getRentCarOptions, rentCarMarginTypes } from "@/data/rentCarFleet";
 import {
@@ -91,10 +92,8 @@ export default async function AdminRentCarPage() {
                 </label>
               </div>
 
-              <div className="mt-4 grid gap-3 md:grid-cols-[130px_minmax(0,1fr)]">
-                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                  <img src={vehicle.image} alt={vehicle.model} className="h-28 w-full object-contain p-3" />
-                </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-[170px_minmax(0,1fr)]">
+                <RentCarVehicleImageField defaultValue={vehicle.image} vehicleSlug={vehicle.slug} />
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="space-y-1">
                     <span className={labelClass}>Modelo</span>
@@ -139,10 +138,9 @@ export default async function AdminRentCarPage() {
               </div>
 
               <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_120px]">
-                <label className="space-y-1">
-                  <span className={labelClass}>Imagen</span>
-                  <input name="image" defaultValue={vehicle.image} className={inputClass} />
-                </label>
+                <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold leading-5 text-slate-500">
+                  La foto se sube desde el boton de arriba. Se optimiza y queda conectada al vehiculo automaticamente.
+                </div>
                 <label className="space-y-1">
                   <span className={labelClass}>Prioridad</span>
                   <input name="priority" type="number" step="1" defaultValue={vehicle.priority} className={inputClass} />
@@ -196,10 +194,12 @@ export default async function AdminRentCarPage() {
                 <span className={labelClass}>Badge</span>
                 <input name="tag" placeholder="Boss Mode" className={inputClass} />
               </label>
-              <label className="space-y-1">
+              <div className="sm:col-span-2">
                 <span className={labelClass}>Imagen</span>
-                <input name="image" placeholder="/rent-a-car/fleet/mercedes-benz-glc.webp" className={inputClass} />
-              </label>
+                <div className="mt-1 max-w-xs">
+                  <RentCarVehicleImageField defaultValue="" vehicleSlug="nuevo-rent-car" />
+                </div>
+              </div>
             </div>
 
             <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">

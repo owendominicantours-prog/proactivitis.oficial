@@ -52,7 +52,8 @@ export async function POST(request: Request) {
         .toLowerCase()
         .replace(/[^a-z0-9.-]/g, "") || "image";
     const groupId = tourId || `temp-${Date.now()}`;
-    const key = `tours/${supplierId}/${groupId}/${kind}-${Date.now()}-${safeNameBase}.webp`;
+    const folder = kind.startsWith("rent-car") ? "rent-car" : "tours";
+    const key = `${folder}/${supplierId}/${groupId}/${kind}-${Date.now()}-${safeNameBase}.webp`;
 
     const { url } = await uploadToBlob({ key, body: blob });
 
