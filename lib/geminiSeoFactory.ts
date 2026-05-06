@@ -605,8 +605,10 @@ const buildRentCarCandidates = async (limit: number, offset: number): Promise<Ge
     (keyword) => keyword.connectedType === "rent_car" || keyword.intent === "rent_car"
   );
   const options = getRentCarOptions(undefined, settings);
+  if (options.length === 0) return [];
+  const start = offset % options.length;
 
-  return options.slice(offset, offset + limit).map((option, index) => {
+  return Array.from({ length: Math.min(limit, options.length) }, (_, index) => options[(start + index) % options.length]).map((option, index) => {
     const keyword = rentCarKeywords.length > 0 ? rentCarKeywords[(offset + index) % rentCarKeywords.length] : null;
     const fallbackIntent = RENT_CAR_INTENTS[(offset + index) % RENT_CAR_INTENTS.length];
     const keywordIntent = keyword
