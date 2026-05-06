@@ -23,19 +23,26 @@ type RentCarIndexPageProps = {
 
 type FilterItem = {
   label: string;
+  value?: string;
   from: number;
 };
 
-type FilterGroupKey = "used" | "type" | "capacity" | "specs" | "price";
+type FilterGroupKey = "zone" | "used" | "type" | "capacity" | "specs" | "price";
 
 type SelectedFilters = Record<FilterGroupKey, string[]>;
 
 const emptyFilters: SelectedFilters = {
+  zone: [],
   used: [],
   type: [],
   capacity: [],
   specs: [],
   price: []
+};
+
+const defaultFilters: SelectedFilters = {
+  ...emptyFilters,
+  zone: ["puj-cap-cana"]
 };
 
 const getVehicleType = (option: RentCarOption) => {
@@ -61,6 +68,7 @@ const sortRentCarResults = (options: RentCarOption[]) =>
   });
 
 const optionMatchesFilter = (option: RentCarOption, group: FilterGroupKey, label: string) => {
+  if (group === "zone") return option.locationId === label;
   if (group === "used") return true;
   if (group === "type") return getVehicleType(option) === label;
   if (group === "capacity") {
@@ -108,6 +116,7 @@ const copyByLocale = {
     search: "Search",
     map: "View map",
     filters: "Filter by",
+    zone: "Pickup zone",
     used: "Most used filters",
     type: "Car type",
     capacity: "Capacity",
@@ -159,6 +168,7 @@ const copyByLocale = {
     search: "Buscar",
     map: "Ver mapa",
     filters: "Filtra por",
+    zone: "Zona de recogida",
     used: "Filtros mas usados",
     type: "Tipo de auto",
     capacity: "Capacidad",
@@ -210,6 +220,7 @@ const copyByLocale = {
     search: "Rechercher",
     map: "Voir carte",
     filters: "Filtrer par",
+    zone: "Zone de prise",
     used: "Filtres populaires",
     type: "Type de voiture",
     capacity: "Capacite",
@@ -251,7 +262,7 @@ const copyByLocale = {
 
 export default function RentCarIndexPage({ locale = "en", settings }: RentCarIndexPageProps) {
   const today = new Date().toISOString().slice(0, 10);
-  const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(emptyFilters);
+  const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(defaultFilters);
   const [pickupDate, setPickupDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
   const [pickupTime, setPickupTime] = useState("10:00");
@@ -288,6 +299,11 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
   const vehicleTypes = ["Economy", "Sedan", "SUV", "Luxury", "Convertible", "Van"].map((label) => ({
     label,
     from: minPriceFor(allOptions, (option) => getVehicleType(option) === label)
+  }));
+  const zoneFilters: FilterItem[] = locations.map((location) => ({
+    label: location.name,
+    value: location.id,
+    from: minPriceFor(allOptions, (option) => option.locationId === location.id)
   }));
   const usedFilters: FilterItem[] = [
     { label: ui.cancel as string, from: priceFloor },
@@ -393,13 +409,14 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
                 {activeFilterCount ? (
                   <button
                     type="button"
-                    onClick={() => setSelectedFilters(emptyFilters)}
+                    onClick={() => setSelectedFilters(defaultFilters)}
                     className="text-xs font-black uppercase tracking-[0.16em] text-sky-700"
                   >
-                    {locale === "es" ? "Limpiar" : locale === "fr" ? "Effacer" : "Clear"}
+                    {locale === "es" ? "Reiniciar" : locale === "fr" ? "Reset" : "Reset"}
                   </button>
                 ) : null}
               </div>
+              <FilterGroup title={ui.zone as string} group="zone" items={zoneFilters} selected={selectedFilters.zone} onToggle={toggleFilter} />
               <FilterGroup title={ui.used as string} group="used" items={usedFilters} selected={selectedFilters.used} onToggle={toggleFilter} />
               <FilterGroup title={ui.type as string} group="type" items={vehicleTypes} selected={selectedFilters.type} onToggle={toggleFilter} />
               <FilterGroup title={ui.capacity as string} group="capacity" items={capacities} selected={selectedFilters.capacity} onToggle={toggleFilter} />
@@ -561,20 +578,23 @@ function FilterGroup({
     <div className="border-t border-slate-100 pt-4">
       <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">{title}</p>
       <div className="mt-3 space-y-2">
-        {items.map((item) => (
-          <label key={item.label} className="flex cursor-pointer items-center justify-between gap-3 text-sm font-bold text-slate-700">
+        {items.map((item) => {
+          const value = item.value ?? item.label;
+          return (
+          <label key={value} className="flex cursor-pointer items-center justify-between gap-3 text-sm font-bold text-slate-700">
             <span className="flex min-w-0 items-center gap-2">
               <input
                 type="checkbox"
-                checked={selected.includes(item.label)}
-                onChange={() => onToggle(group, item.label)}
+                checked={selected.includes(value)}
+                onChange={() => onToggle(group, value)}
                 className="h-4 w-4 shrink-0 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
               />
               <span className="truncate">{item.label}</span>
             </span>
             {item.from ? <span className="shrink-0 text-xs font-black text-slate-400">${item.from}</span> : null}
           </label>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
