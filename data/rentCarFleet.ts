@@ -1,6 +1,26 @@
 export type RentCarLocale = "es" | "en" | "fr";
 
-export type RentCarCategorySlug = "economy" | "sedan" | "suv" | "van" | "premium" | "luxury" | "ultra-luxury";
+export type RentCarCategorySlug =
+  | "kia-picanto-2025"
+  | "hyundai-i10-grand"
+  | "hyundai-elantra-n-line"
+  | "toyota-corolla-hybrid"
+  | "hyundai-sonata"
+  | "toyota-camry"
+  | "kia-sportage"
+  | "hyundai-tucson"
+  | "toyota-rav4"
+  | "jeep-grand-cherokee"
+  | "suzuki-jimny-4x4"
+  | "chevrolet-tahoe-z71"
+  | "chevrolet-suburban"
+  | "toyota-prado-vx"
+  | "ford-explorer"
+  | "cadillac-escalade"
+  | "cadillac-escalade-esv"
+  | "ford-mustang-gt-convertible"
+  | "hyundai-h-1"
+  | "toyota-hiace";
 
 type RawFleetCategory = {
   model: string;
@@ -13,63 +33,67 @@ type RawFleetLocation = {
   categories: Partial<Record<RentCarCategorySlug, RawFleetCategory>>;
 };
 
+const fleetTemplate: Record<RentCarCategorySlug, { model: string; base_price: number }> = {
+  "kia-picanto-2025": { model: "Kia Picanto 2025", base_price: 28 },
+  "hyundai-i10-grand": { model: "Hyundai i10 Grand", base_price: 30 },
+  "hyundai-elantra-n-line": { model: "Hyundai Elantra N-Line", base_price: 48 },
+  "toyota-corolla-hybrid": { model: "Toyota Corolla Hybrid", base_price: 52 },
+  "hyundai-sonata": { model: "Hyundai Sonata", base_price: 58 },
+  "toyota-camry": { model: "Toyota Camry", base_price: 62 },
+  "kia-sportage": { model: "Kia Sportage", base_price: 68 },
+  "hyundai-tucson": { model: "Hyundai Tucson", base_price: 70 },
+  "toyota-rav4": { model: "Toyota RAV4", base_price: 78 },
+  "jeep-grand-cherokee": { model: "Jeep Grand Cherokee", base_price: 95 },
+  "suzuki-jimny-4x4": { model: "Suzuki Jimny 4x4", base_price: 72 },
+  "chevrolet-tahoe-z71": { model: "Chevrolet Tahoe Z71", base_price: 145 },
+  "chevrolet-suburban": { model: "Chevrolet Suburban", base_price: 155 },
+  "toyota-prado-vx": { model: "Toyota Prado VX", base_price: 130 },
+  "ford-explorer": { model: "Ford Explorer", base_price: 110 },
+  "cadillac-escalade": { model: "Cadillac Escalade", base_price: 220 },
+  "cadillac-escalade-esv": { model: "Cadillac Escalade ESV", base_price: 250 },
+  "ford-mustang-gt-convertible": { model: "Ford Mustang GT Convertible", base_price: 185 },
+  "hyundai-h-1": { model: "Hyundai H-1", base_price: 125 },
+  "toyota-hiace": { model: "Toyota Hiace", base_price: 135 }
+};
+
+const buildFleet = (multiplier = 1): Partial<Record<RentCarCategorySlug, RawFleetCategory>> =>
+  Object.fromEntries(
+    Object.entries(fleetTemplate).map(([slug, vehicle]) => [
+      slug,
+      {
+        model: vehicle.model,
+        base_price: Math.round(vehicle.base_price * multiplier)
+      }
+    ])
+  ) as Partial<Record<RentCarCategorySlug, RawFleetCategory>>;
+
 const rawFleet = {
   last_update: "2026-05-05",
   currency: "USD",
   locations: {
     PUJ: {
       name: "Punta Cana / Cap Cana",
-      categories: {
-        economy: { model: "Kia Picanto / i10", base_price: 28.0, final_price: 36.0 },
-        sedan: { model: "Hyundai Elantra / Corolla", base_price: 38.0, final_price: 48.0 },
-        suv: { model: "Kia Sportage / Tucson", base_price: 68.0, final_price: 81.6 },
-        van: { model: "Hyundai H-1 / Hiace", base_price: 125.0, final_price: 156.25 }
-      }
+      categories: buildFleet(1)
     },
     SDQ: {
       name: "Santo Domingo (Las Americas / Ciudad)",
-      categories: {
-        economy: { model: "Kia Picanto / i10", base_price: 24.0, final_price: 32.0 },
-        sedan: { model: "Hyundai Elantra / Corolla", base_price: 35.0, final_price: 45.0 },
-        suv: { model: "Kia Sportage / Tucson", base_price: 62.0, final_price: 74.4 },
-        van: { model: "Hyundai H-1 / Hiace", base_price: 115.0, final_price: 143.75 }
-      }
+      categories: buildFleet(0.92)
     },
     STI: {
       name: "Santiago / Cibao",
-      categories: {
-        economy: { model: "Kia Picanto / i10", base_price: 25.0, final_price: 33.0 },
-        sedan: { model: "Hyundai Elantra / Corolla", base_price: 36.0, final_price: 46.0 },
-        suv: { model: "Kia Sportage / Tucson", base_price: 65.0, final_price: 78.0 },
-        van: { model: "Hyundai H-1 / Hiace", base_price: 120.0, final_price: 150.0 }
-      }
+      categories: buildFleet(0.94)
     },
     LRM: {
       name: "La Romana / Bayahibe",
-      categories: {
-        economy: { model: "Kia Picanto / i10", base_price: 27.0, final_price: 35.0 },
-        sedan: { model: "Hyundai Elantra / Corolla", base_price: 37.0, final_price: 47.0 },
-        suv: { model: "Kia Sportage / Tucson", base_price: 66.0, final_price: 79.2 },
-        van: { model: "Hyundai H-1 / Hiace", base_price: 122.0, final_price: 152.5 }
-      }
+      categories: buildFleet(0.98)
     },
     POP: {
       name: "Puerto Plata / Cabarete",
-      categories: {
-        economy: { model: "Kia Picanto / i10", base_price: 26.0, final_price: 34.0 },
-        sedan: { model: "Hyundai Elantra / Corolla", base_price: 36.0, final_price: 46.0 },
-        suv: { model: "Kia Sportage / Tucson", base_price: 65.0, final_price: 78.0 },
-        van: { model: "Hyundai H-1 / Hiace", base_price: 118.0, final_price: 147.5 }
-      }
+      categories: buildFleet(0.95)
     },
     SAM: {
       name: "Samana / Las Terrenas",
-      categories: {
-        economy: { model: "Kia Picanto / i10", base_price: 30.0, final_price: 38.0 },
-        sedan: { model: "Hyundai Elantra / Corolla", base_price: 40.0, final_price: 50.0 },
-        suv: { model: "Kia Sportage / Tucson", base_price: 75.0, final_price: 90.0 },
-        van: { model: "Hyundai H-1 / Hiace", base_price: 135.0, final_price: 168.75 }
-      }
+      categories: buildFleet(1.08)
     }
   } satisfies Record<string, RawFleetLocation>
 };
@@ -148,70 +172,208 @@ const categoryMeta: Record<
     luggage: number;
     image: string;
     priority: number;
+    margin: "economy" | "sedan" | "suv" | "premium" | "luxury";
   }
 > = {
-  economy: {
+  "kia-picanto-2025": {
     label: "Economy",
     displayName: "Smart City Rental",
     tag: "Budget Control",
     seats: 4,
     luggage: 1,
-    image: "/CARR3.png",
-    priority: 30
+    image: "/transfer/sedan.png",
+    priority: 20,
+    margin: "economy"
   },
-  sedan: {
+  "hyundai-i10-grand": {
+    label: "Economy",
+    displayName: "Smart City Rental",
+    tag: "Budget Control",
+    seats: 4,
+    luggage: 1,
+    image: "/transfer/sedan.png",
+    priority: 21,
+    margin: "economy"
+  },
+  "hyundai-elantra-n-line": {
     label: "Sedan",
     displayName: "Comfort Sedan Rental",
     tag: "Clean Business",
     seats: 5,
     luggage: 2,
     image: "/transfer/sedan.png",
-    priority: 40
+    priority: 40,
+    margin: "sedan"
   },
-  suv: {
+  "toyota-corolla-hybrid": {
+    label: "Hybrid Sedan",
+    displayName: "Hybrid Sedan Rental",
+    tag: "Fuel Smart",
+    seats: 5,
+    luggage: 2,
+    image: "/transfer/sedan.png",
+    priority: 42,
+    margin: "sedan"
+  },
+  "hyundai-sonata": {
+    label: "Sedan",
+    displayName: "Comfort Sedan Rental",
+    tag: "Clean Business",
+    seats: 5,
+    luggage: 2,
+    image: "/transfer/sedan.png",
+    priority: 44,
+    margin: "sedan"
+  },
+  "toyota-camry": {
+    label: "Sedan",
+    displayName: "Comfort Sedan Rental",
+    tag: "Executive Comfort",
+    seats: 5,
+    luggage: 2,
+    image: "/transfer/sedan.png",
+    priority: 46,
+    margin: "sedan"
+  },
+  "kia-sportage": {
     label: "SUV",
     displayName: "Executive SUV Rental",
     tag: "Boss Mode",
     seats: 5,
     luggage: 3,
     image: "/transfer/suv.png",
-    priority: 80
+    priority: 80,
+    margin: "suv"
   },
-  van: {
+  "hyundai-tucson": {
+    label: "SUV",
+    displayName: "Executive SUV Rental",
+    tag: "Boss Mode",
+    seats: 5,
+    luggage: 3,
+    image: "/transfer/suv.png",
+    priority: 81,
+    margin: "suv"
+  },
+  "toyota-rav4": {
+    label: "SUV",
+    displayName: "Executive SUV Rental",
+    tag: "Adventure Ready",
+    seats: 5,
+    luggage: 3,
+    image: "/transfer/suv.png",
+    priority: 82,
+    margin: "suv"
+  },
+  "jeep-grand-cherokee": {
+    label: "Premium SUV",
+    displayName: "Premium SUV Rental",
+    tag: "Boss Mode",
+    seats: 5,
+    luggage: 4,
+    image: "/transfer/suv.png",
+    priority: 96,
+    margin: "premium"
+  },
+  "suzuki-jimny-4x4": {
+    label: "4x4",
+    displayName: "Compact 4x4 Rental",
+    tag: "Adventure Ready",
+    seats: 4,
+    luggage: 2,
+    image: "/transfer/suv.png",
+    priority: 83,
+    margin: "suv"
+  },
+  "chevrolet-tahoe-z71": {
+    label: "Luxury SUV",
+    displayName: "Presidential SUV Rental",
+    tag: "Presidential Arrival",
+    seats: 7,
+    luggage: 4,
+    image: "/transfer/suv.png",
+    priority: 105,
+    margin: "luxury"
+  },
+  "chevrolet-suburban": {
+    label: "Luxury SUV",
+    displayName: "Presidential SUV Rental",
+    tag: "Group Luxury",
+    seats: 7,
+    luggage: 5,
+    image: "/transfer/suv.png",
+    priority: 106,
+    margin: "luxury"
+  },
+  "toyota-prado-vx": {
+    label: "Premium SUV",
+    displayName: "Premium SUV Rental",
+    tag: "Boss Mode",
+    seats: 7,
+    luggage: 4,
+    image: "/transfer/suv.png",
+    priority: 98,
+    margin: "premium"
+  },
+  "ford-explorer": {
+    label: "Premium SUV",
+    displayName: "Premium SUV Rental",
+    tag: "Family Command",
+    seats: 7,
+    luggage: 4,
+    image: "/transfer/suv.png",
+    priority: 97,
+    margin: "premium"
+  },
+  "cadillac-escalade": {
+    label: "Luxury",
+    displayName: "Presidential Luxury Rental",
+    tag: "Presidential Arrival",
+    seats: 7,
+    luggage: 4,
+    image: "/transfer/suv.png",
+    priority: 115,
+    margin: "luxury"
+  },
+  "cadillac-escalade-esv": {
+    label: "Ultra Luxury",
+    displayName: "Ultra Luxury Rental",
+    tag: "Presidential Arrival",
+    seats: 7,
+    luggage: 5,
+    image: "/transfer/suv.png",
+    priority: 116,
+    margin: "luxury"
+  },
+  "ford-mustang-gt-convertible": {
+    label: "Convertible",
+    displayName: "Convertible Rental",
+    tag: "Beach Drive",
+    seats: 4,
+    luggage: 1,
+    image: "/transfer/sedan.png",
+    priority: 112,
+    margin: "luxury"
+  },
+  "hyundai-h-1": {
     label: "Premium Van",
     displayName: "Group Van Rental",
     tag: "Family Command",
     seats: 8,
     luggage: 5,
     image: "/transfer/mini van.png",
-    priority: 75
+    priority: 75,
+    margin: "premium"
   },
-  premium: {
-    label: "Premium",
-    displayName: "Presidential Premium Rental",
-    tag: "Boss Mode",
-    seats: 5,
-    luggage: 3,
-    image: "/CARRU1.jpg",
-    priority: 95
-  },
-  luxury: {
-    label: "Luxury",
-    displayName: "Presidential Luxury Rental",
-    tag: "Presidential Arrival",
-    seats: 5,
-    luggage: 4,
-    image: "/CARRU2.jpg",
-    priority: 100
-  },
-  "ultra-luxury": {
-    label: "Ultra Luxury",
-    displayName: "Ultra Luxury Rental",
-    tag: "Presidential Arrival",
-    seats: 6,
-    luggage: 4,
-    image: "/CARRU2.jpg",
-    priority: 110
+  "toyota-hiace": {
+    label: "Premium Van",
+    displayName: "Group Van Rental",
+    tag: "Family Command",
+    seats: 10,
+    luggage: 6,
+    image: "/transfer/mini van.png",
+    priority: 76,
+    margin: "premium"
   }
 };
 
@@ -233,9 +395,11 @@ export const getRentCarLocationDefaultPath = (locationId: string, locale: RentCa
   getRentCarOptionPath(locationId, getRentCarOptions(locationId)[0]?.categorySlug ?? "economy", locale);
 
 export const getRentCarPrice = (category: RentCarCategorySlug, basePrice: number) => {
-  if (category === "economy") return money(basePrice + 8);
-  if (category === "sedan") return money(basePrice + 10);
-  if (category === "suv") return money(basePrice * 1.2);
+  const margin = categoryMeta[category].margin;
+  if (margin === "economy") return money(basePrice + 8);
+  if (margin === "sedan") return money(basePrice + 10);
+  if (margin === "suv") return money(basePrice * 1.2);
+  if (margin === "premium") return money(basePrice * 1.2);
   return money(basePrice * 1.25);
 };
 
