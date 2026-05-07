@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import WorkplaceShell from "@/components/workplace/WorkplaceShell";
+import WorkplaceMentionTextarea, { type WorkplaceMentionOption } from "@/components/workplace/WorkplaceMentionTextarea";
 import { prisma } from "@/lib/prisma";
 import { requireWorkplaceContext, slugifyWorkplace } from "@/lib/workplace";
 import { createWorkplaceChatRoomAction, sendWorkplaceChatMessageAction } from "./actions";
@@ -61,6 +62,40 @@ export default async function WorkplaceChatPage({ searchParams }: Props) {
   const context = await requireWorkplaceContext("chat.view");
   const params = (searchParams ? await searchParams : undefined) ?? {};
   const departments = await ensureBaseRooms();
+  const employees = await prisma.workplaceEmployee.findMany({
+    where: { status: "APPROVED" },
+    select: {
+      id: true,
+      employeeCode: true,
+      jobTitle: true,
+      avatarUrl: true,
+      user: { select: { name: true, email: true } },
+      department: { select: { name: true } }
+    },
+    take: 120
+  });
+  const mentionOptions: WorkplaceMentionOption[] = [
+    ...departments.map((department) => ({
+      id: department.id,
+      type: "department" as const,
+      label: department.name,
+      token: slugifyWorkplace(department.slug || department.name),
+      subtitle: "Departamento"
+    })),
+    ...employees
+      .map((employee) => {
+        const label = employee.user.name || employee.user.email || employee.employeeCode || "Empleado";
+        return {
+          id: employee.id,
+          type: "employee" as const,
+          label,
+          token: slugifyWorkplace(label),
+          subtitle: [employee.department?.name, employee.jobTitle].filter(Boolean).join(" - ") || "Equipo interno",
+          avatarUrl: employee.avatarUrl
+        };
+      })
+      .sort((a, b) => a.label.localeCompare(b.label))
+  ];
 
   const roomWhere = context.isAdmin
     ? {}
@@ -278,11 +313,7 @@ export default async function WorkplaceChatPage({ searchParams }: Props) {
                   {canRespond ? (
                     <form action={sendWorkplaceChatMessageAction} className="grid gap-3">
                       <input type="hidden" name="roomId" value={selectedRoom.id} />
-                      <textarea
-                        name="body"
-                        placeholder="Escribe tu mensaje. Ejemplo: @Soporte revisar esta reserva..."
-                        className="min-h-24 rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-300/50"
-                      />
+                      <WorkplaceMentionTextarea options={mentionOptions} />
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-xs text-slate-500">
                           Tus respuestas se muestran con tu nombre, departamento, cargo y foto de perfil.

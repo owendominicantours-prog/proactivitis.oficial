@@ -74,6 +74,34 @@ async function detectDepartmentMentions(body: string) {
   });
 }
 
+async function detectEmployeeMentions(body: string) {
+  const employees = await prisma.workplaceEmployee.findMany({
+    where: { status: "APPROVED" },
+    select: {
+      id: true,
+      employeeCode: true,
+      jobTitle: true,
+      user: { select: { name: true, email: true } },
+      department: { select: { name: true, slug: true } }
+    }
+  });
+  const normalizedBody = ` ${normalizeText(body)} `;
+
+  return employees.filter((employee) => {
+    const displayName = employee.user.name || employee.user.email || employee.employeeCode || "";
+    const name = normalizeText(displayName).replace(/\s+/g, " ");
+    const slug = slugifyWorkplace(displayName);
+    const code = employee.employeeCode ? normalizeText(employee.employeeCode) : "";
+    const compactName = name.replace(/\s+/g, "-");
+    return (
+      normalizedBody.includes(` @${slug} `) ||
+      normalizedBody.includes(` @${compactName} `) ||
+      normalizedBody.includes(` @${name} `) ||
+      Boolean(code && normalizedBody.includes(` @${code} `))
+    );
+  });
+}
+
 export async function createWorkplaceChatRoomAction(formData: FormData) {
   const context = await requireWorkplaceContext("chat.view");
   const title = sanitize(formData.get("title"));
@@ -121,12 +149,20 @@ export async function sendWorkplaceChatMessageAction(formData: FormData) {
   }
 
   const mentionedDepartments = await detectDepartmentMentions(body);
+  const mentionedEmployees = await detectEmployeeMentions(body);
   const mentionPayload = mentionedDepartments.map((department) => ({
     type: "department",
     id: department.id,
     name: department.name,
     slug: department.slug
-  }));
+  })).concat(
+    mentionedEmployees.map((employee) => ({
+      type: "employee",
+      id: employee.id,
+      name: employee.user.name || employee.user.email || employee.employeeCode || "Empleado",
+      slug: slugifyWorkplace(employee.user.name || employee.user.email || employee.employeeCode || employee.id)
+    }))
+  );
 
   const senderName = context.user.name || context.user.email || "Equipo Proactivitis";
   const senderDepartment = context.employee?.department?.name ?? (context.isAdmin ? "Administracion Proactivitis" : "Workplace");
@@ -148,14 +184,22 @@ export async function sendWorkplaceChatMessageAction(formData: FormData) {
       }
     });
 
-    if (mentionedDepartments.length) {
+    if (mentionedDepartments.length || mentionedEmployees.length) {
       await tx.workplaceChatMention.createMany({
-        data: mentionedDepartments.map((department) => ({
-          roomId,
-          messageId: created.id,
-          departmentId: department.id,
-          status: "OPEN"
-        }))
+        data: [
+          ...mentionedDepartments.map((department) => ({
+            roomId,
+            messageId: created.id,
+            departmentId: department.id,
+            status: "OPEN"
+          })),
+          ...mentionedEmployees.map((employee) => ({
+            roomId,
+            messageId: created.id,
+            employeeId: employee.id,
+            status: "OPEN"
+          }))
+        ]
       });
     }
 
