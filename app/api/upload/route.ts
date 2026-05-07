@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import sharp from "sharp";
 import { uploadToBlob } from "@/lib/blobStorage";
 import { getSessionUser, requireRole, type Role } from "@/lib/session";
+import { userHasWorkplacePermission } from "@/lib/workplace";
 
 export const runtime = "nodejs";
 
 const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/jpg"]);
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
-const ALLOWED_ROLES: Role[] = ["ADMIN", "SUPPLIER"];
+const ALLOWED_ROLES: Role[] = ["ADMIN", "SUPPLIER", "EMPLOYEE"];
 
 export async function POST(request: Request) {
   try {
@@ -16,6 +17,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
     }
     requireRole(user, ALLOWED_ROLES);
+    if (user.role === "EMPLOYEE" && !(await userHasWorkplacePermission(user.id, "tours.media"))) {
+      return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+    }
 
     const form = await request.formData();
     const file = form.get("file");

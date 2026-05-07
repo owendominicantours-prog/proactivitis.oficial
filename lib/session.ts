@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-export type Role = "ADMIN" | "SUPPLIER" | "AGENCY" | "CUSTOMER";
+export type Role = "ADMIN" | "SUPPLIER" | "AGENCY" | "CUSTOMER" | "EMPLOYEE";
 
 export async function getSessionUser(): Promise<{ id: string; role: Role } | null> {
   const session = await getServerSession(authOptions);

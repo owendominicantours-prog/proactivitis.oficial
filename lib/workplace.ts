@@ -1,5 +1,8 @@
 import { Prisma } from "@prisma/client";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const toJson = (value: unknown) => value as Prisma.InputJsonValue;
@@ -207,6 +210,81 @@ export async function userHasWorkplacePermission(userId: string, permissionKey: 
   }
 
   return permissions.has("*") || permissions.has(permissionKey);
+}
+
+export async function getWorkplaceContext() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, name: true, email: true, role: true }
+  });
+  if (!user) return null;
+
+  if (user.role === "ADMIN") {
+    return {
+      user,
+      employee: null,
+      permissions: new Set(workplacePermissions.map((permission) => permission.key)),
+      scope: workplaceEmptyScope,
+      isAdmin: true
+    };
+  }
+
+  const employee = await prisma.workplaceEmployee.findUnique({
+    where: { userId: user.id },
+    include: {
+      department: true,
+      roles: { include: { role: true } }
+    }
+  });
+  if (!employee || employee.status !== "APPROVED") {
+    return { user, employee, permissions: new Set<string>(), scope: workplaceEmptyScope, isAdmin: false };
+  }
+
+  const permissions = new Set<string>();
+  for (const assignment of employee.roles) {
+    if (assignment.expiresAt && assignment.expiresAt < new Date()) continue;
+    if (!assignment.role.active || !Array.isArray(assignment.role.permissions)) continue;
+    for (const permission of assignment.role.permissions) {
+      if (typeof permission === "string") permissions.add(permission);
+    }
+  }
+  if (Array.isArray(employee.permissionOverrides)) {
+    for (const permission of employee.permissionOverrides) {
+      if (typeof permission === "string") permissions.add(permission);
+    }
+  }
+
+  return {
+    user,
+    employee,
+    permissions,
+    scope: {
+      countries: Array.isArray(employee.countryScope) ? employee.countryScope.map(String) : [],
+      cities: Array.isArray(employee.cityScope) ? employee.cityScope.map(String) : [],
+      niches: Array.isArray(employee.nicheScope) ? employee.nicheScope.map(String) : [],
+      products: Array.isArray(employee.productScope) ? employee.productScope.map(String) : [],
+      companies: Array.isArray(employee.companyScope) ? employee.companyScope.map(String) : [],
+      modules: Array.isArray(employee.moduleScope) ? employee.moduleScope.map(String) : []
+    },
+    isAdmin: false
+  };
+}
+
+export async function requireWorkplaceContext(permissionKey?: string) {
+  const context = await getWorkplaceContext();
+  if (!context?.user) {
+    redirect("/auth/login?callbackUrl=/workplace");
+  }
+  if (!context.isAdmin && context.employee?.status !== "APPROVED") {
+    redirect("/workplace");
+  }
+  if (permissionKey && !context.isAdmin && !context.permissions.has(permissionKey)) {
+    redirect("/workplace");
+  }
+  return context;
 }
 
 export const workplaceEmptyScope = {
