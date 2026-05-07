@@ -40,6 +40,8 @@ const TOUR_CARD_PREFIX = "[[TOUR_CARD]]";
 const VISITOR_CONTEXT_PREFIX = "[[VISITOR_CONTEXT]]";
 const SUPPORT_BOOKING_LINK_PREFIX = "[[SUPPORT_BOOKING_LINK]]";
 const SUPPORT_ESCALATION_PREFIX = "[[SUPPORT_ESCALATION]]";
+const CUSTOMER_MESSAGE_ROLES = new Set(["CUSTOMER", "VISITOR"]);
+const TEAM_MESSAGE_ROLES = new Set(["ADMIN", "EMPLOYEE", "SUPPLIER", "AGENCY", "BOT"]);
 
 const parseTourCard = (content: string): EncodedTourCard | null => {
   if (!content.startsWith(TOUR_CARD_PREFIX)) return null;
@@ -98,7 +100,7 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
   const messages: ChatMessage[] = data?.messages ?? [];
   const tours = useMemo(() => toursData?.tours ?? [], [toursData]);
   const unreadInThread = useMemo(
-    () => messages.filter((msg) => msg.senderRole !== "ADMIN" && msg.senderRole !== "SYSTEM").length,
+    () => messages.filter((msg) => CUSTOMER_MESSAGE_ROLES.has(msg.senderRole)).length,
     [messages]
   );
 
@@ -184,7 +186,7 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
           const visitorContext = parseVisitorContext(message.content);
           const bookingLink = parseJsonPrefix<{ bookingCode?: string; service?: string }>(message.content, SUPPORT_BOOKING_LINK_PREFIX);
           const escalation = parseJsonPrefix<{ department?: string; priority?: string; note?: string }>(message.content, SUPPORT_ESCALATION_PREFIX);
-          const isAdminMessage = message.senderRole === "ADMIN";
+          const isTeamMessage = TEAM_MESSAGE_ROLES.has(message.senderRole);
           if (visitorContext) {
             return (
               <div key={message.id} className="rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs text-indigo-800">
@@ -221,7 +223,7 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
               <div
                 key={message.id}
                 className={`rounded-2xl px-4 py-3 text-sm ${
-                  isAdminMessage
+                  isTeamMessage
                     ? "ml-4 border border-sky-200 bg-sky-50 text-slate-700 sm:ml-10"
                     : "mr-4 border border-emerald-200 bg-emerald-50 text-slate-700 sm:mr-10"
                 }`}
@@ -255,7 +257,7 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
             <div
               key={message.id}
               className={`rounded-2xl px-4 py-3 text-sm ${
-                isAdminMessage
+                isTeamMessage
                   ? "ml-4 border border-sky-200 bg-sky-50 text-slate-700 sm:ml-10"
                   : "mr-4 border border-emerald-200 bg-emerald-50 text-slate-700 sm:mr-10"
               }`}
