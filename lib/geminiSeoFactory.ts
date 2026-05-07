@@ -278,6 +278,7 @@ const RENT_CAR_LOCATION_GUARDS = [
   { label: "Puerto Plata / Cabarete", terms: ["puerto plata", "cabarete", "sosua", "pop"] },
   { label: "Samana / Las Terrenas", terms: ["samana", "las terrenas", "azs"] }
 ];
+const PRIMARY_RENT_CAR_LOCATION_ID = "puj-cap-cana";
 
 const toJson = (value: unknown) => value as Prisma.InputJsonValue;
 
@@ -331,6 +332,30 @@ const keywordMatchesRentCarLocation = (
     .map((location) => location.id);
   if (matchedLocationIds.length === 0) return true;
   return matchedLocationIds.includes(option.locationId);
+};
+
+const pickRentCarCandidateOptions = (options: RentCarOption[], limit: number, offset: number) => {
+  if (options.length === 0 || limit <= 0) return [];
+
+  const primaryOptions = options.filter((option) => option.locationId === PRIMARY_RENT_CAR_LOCATION_ID);
+  const secondaryLocationIds = Array.from(new Set(options.map((option) => option.locationId))).filter(
+    (locationId) => locationId !== PRIMARY_RENT_CAR_LOCATION_ID
+  );
+  const selected: RentCarOption[] = [];
+
+  for (let index = 0; index < limit; index += 1) {
+    const shouldUsePrimary = primaryOptions.length > 0 && (index === 0 || index % 2 === 0 || secondaryLocationIds.length === 0);
+    if (shouldUsePrimary) {
+      selected.push(primaryOptions[(offset + Math.floor(index / 2)) % primaryOptions.length]);
+      continue;
+    }
+
+    const secondaryLocationId = secondaryLocationIds[(offset + Math.floor(index / 2)) % secondaryLocationIds.length];
+    const secondaryOptions = options.filter((option) => option.locationId === secondaryLocationId);
+    selected.push(secondaryOptions[(offset + Math.floor(index / 2)) % secondaryOptions.length]);
+  }
+
+  return selected;
 };
 
 const slugify = (value: string) =>
@@ -742,9 +767,9 @@ const buildRentCarCandidates = async (limit: number, offset: number): Promise<Ge
   );
   const options = getRentCarOptions(undefined, settings);
   if (options.length === 0) return [];
-  const start = offset % options.length;
+  const selectedOptions = pickRentCarCandidateOptions(options, Math.min(limit, options.length), offset);
 
-  return Array.from({ length: Math.min(limit, options.length) }, (_, index) => options[(start + index) % options.length]).map((option, index) => {
+  return selectedOptions.map((option, index) => {
     const matchingKeywords = rentCarKeywords.filter((candidateKeyword) =>
       keywordMatchesRentCarLocation(candidateKeyword, option, settings)
     );
