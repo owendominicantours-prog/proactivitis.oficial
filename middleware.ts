@@ -3,6 +3,7 @@ import { withAuth } from "next-auth/middleware";
 
 const roleRoutes = [
   { base: "/admin", roles: ["ADMIN"] },
+  { base: "/workplace", roles: ["EMPLOYEE", "ADMIN"] },
   { base: "/supplier", roles: ["SUPPLIER"] },
   { base: "/agency", roles: ["AGENCY"] },
   { base: "/customer", roles: ["CUSTOMER"] },
@@ -16,6 +17,9 @@ const roleRoutes = [
 
 function matchAllowed(pathname: string, role?: string) {
   const normalized = pathname.toLowerCase();
+  if (normalized === "/workplace/register" || normalized.startsWith("/workplace/register/")) {
+    return true;
+  }
   const match = roleRoutes.find((item) => {
     const base = item.base.toLowerCase();
     return normalized === base || normalized.startsWith(`${base}/`);

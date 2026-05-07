@@ -8,6 +8,7 @@ export const metadata = {
 
 const roleRedirects: Record<string, string> = {
   ADMIN: "/admin",
+  EMPLOYEE: "/workplace",
   SUPPLIER: "/supplier",
   AGENCY: "/agency",
   CUSTOMER: "/customer"

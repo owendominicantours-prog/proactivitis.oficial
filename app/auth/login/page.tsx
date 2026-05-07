@@ -16,6 +16,7 @@ export default function LoginPage() {
 
   const redirectMap: Record<string, string> = {
     ADMIN: "/admin",
+    EMPLOYEE: "/workplace",
     SUPPLIER: "/supplier",
     AGENCY: "/agency",
     CUSTOMER: "/customer"

@@ -12,6 +12,11 @@ const roleLabels: Record<string, { title: string; description: string; dashboard
     description: "Gestión total: tours, landings, reportes, CRM y alertas críticas.",
     dashboard: "/admin"
   },
+  employee: {
+    title: "Admin Workplace",
+    description: "Espacio interno para empleados aprobados, roles, permisos y operaciones asignadas.",
+    dashboard: "/workplace"
+  },
   supplier: {
     title: "Supplier Studio",
     description: "Panel financiero, calendario, reservas y promociones de tus tours.",
@@ -94,7 +99,7 @@ export default async function PortalRolePage({ params }: Props) {
           </>
         ) : (
             <div className="rounded-[28px] border border-red-200 bg-red-50 p-6 text-sm text-red-600 shadow-sm">
-              <p>El portal solicitado ({requestedRole}) no existe. Usa uno de los roles válidos: admin, supplier, agency, customer.</p>
+              <p>El portal solicitado ({requestedRole}) no existe. Usa uno de los roles validos: admin, employee, supplier, agency, customer.</p>
             <Link href="/portal" className="mt-3 inline-flex text-sm font-semibold text-red-700 underline">
               Volver al listado de portales
             </Link>
