@@ -11,11 +11,12 @@ import { formatDurationDisplay } from "@/lib/formatDuration";
 import { BookingConfirmationData } from "./helpers";
 import { useTranslation } from "../../../context/LanguageProvider";
 import BookingPurchaseTracker from "@/components/analytics/BookingPurchaseTracker";
+import { normalizeDisplayText } from "@/lib/text-format";
 
 const InfoRow = ({ label, value }: { label: string; value: string }) => (
   <div className="space-y-1">
-    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{label}</p>
-    <p className="text-sm font-semibold text-slate-900">{value}</p>
+    <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{normalizeDisplayText(label)}</p>
+    <p className="text-sm font-semibold text-slate-900">{normalizeDisplayText(value)}</p>
   </div>
 );
 
@@ -47,7 +48,7 @@ export function BookingConfirmedContent({
     ? t("booking.confirmation.hero.body.transfer")
     : t("booking.confirmation.hero.body.tour");
   const heroNote = isRentCar
-    ? `Enviaremos la confirmacion operativa a ${booking.customerEmail}. No se cargo ninguna tarjeta; el pago se coordina despues de validar disponibilidad.`
+    ? `Enviaremos la confirmación operativa a ${booking.customerEmail}. No se cargó ninguna tarjeta; el pago se coordina después de validar disponibilidad.`
     : isTransfer
     ? t("booking.confirmation.hero.note.transfer", { email: booking.customerEmail })
     : t("booking.confirmation.hero.note.tour", { email: booking.customerEmail });
@@ -64,13 +65,13 @@ export function BookingConfirmedContent({
   ] as const;
   const instructionKeys = isTransfer ? transferInstructionKeys : tourInstructionKeys;
   const rentCarInstructions = [
-    "Nuestro equipo valida disponibilidad real del vehiculo o clase similar.",
-    "Recibiras instrucciones de entrega, documentos requeridos y punto exacto.",
-    "No pagaste ahora; el pago se completa despues de la confirmacion operativa.",
-    "Ten licencia de conducir vigente y documento de identidad al recoger el vehiculo."
+    "Nuestro equipo valida disponibilidad real del vehículo o clase similar.",
+    "Recibirás instrucciones de entrega, documentos requeridos y punto exacto.",
+    "No pagaste ahora; el pago se completa después de la confirmación operativa.",
+    "Ten licencia de conducir vigente y documento de identidad al recoger el vehículo."
   ];
   const serviceLabel = isRentCar
-    ? "Vehiculo"
+    ? "Vehículo"
     : isTransfer
     ? t("booking.confirmation.labels.service")
     : t("booking.confirmation.labels.duration");

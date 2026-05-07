@@ -450,7 +450,7 @@ export default function RentCarIndexPage({ locale = "en", settings }: RentCarInd
                     <p className="text-xs font-black uppercase tracking-[0.22em] text-sky-200">{String(copy.modelGuarantee)}</p>
                     <h2 className="mt-2 text-xl font-black">{ui.loginTitle as string}</h2>
                   </div>
-                  <Link href="/login" className="rounded-full bg-sky-500 px-5 py-3 text-xs font-black uppercase tracking-[0.16em] text-white">
+                  <Link href="/auth/login" className="rounded-full bg-sky-500 px-5 py-3 text-xs font-black uppercase tracking-[0.16em] text-white">
                     {ui.loginCta as string}
                   </Link>
                 </div>

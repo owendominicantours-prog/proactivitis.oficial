@@ -122,7 +122,7 @@ export async function getBookingConfirmationData(
         }
       : null;
 
-  const summary = `${tour.title} · ${booking.paxAdults + booking.paxChildren} pax · ${new Date(
+  const summary = `${tour.title} - ${booking.paxAdults + booking.paxChildren} pax - ${new Date(
     booking.travelDate
   ).toLocaleDateString("es-ES", { dateStyle: "long" })}`;
 
@@ -198,7 +198,7 @@ export async function getBookingConfirmationData(
   const flowType = (booking.flowType ?? "tour") as "tour" | "transfer" | "rent_car";
   const passengerLabel =
     flowType === "rent_car"
-      ? ((booking as any).transferVehicleName ?? "Vehiculo reservado")
+      ? ((booking as any).transferVehicleName ?? "Vehículo reservado")
       : `${booking.paxAdults + booking.paxChildren} pax`;
   const analytics = {
     transactionId: orderCode,
