@@ -6,8 +6,10 @@ import * as SecureStore from "expo-secure-store";
 import {
   BackHandler,
   Alert,
+  Animated,
   AppState,
   Dimensions,
+  Easing,
   Image,
   ImageBackground,
   Linking,
@@ -26,6 +28,7 @@ import {
 import {
   ArrowLeft,
   CalendarCheck,
+  Bell,
   Car,
   CheckCircle2,
   Clock3,
@@ -47,6 +50,7 @@ import {
   ShieldCheck,
   Star,
   User,
+  Users,
   X
 } from "lucide-react-native";
 
@@ -66,6 +70,8 @@ import {
   deleteMobileAccount,
   fetchMobileConfig,
   fetchMobileCustomerSummary,
+  fetchMobileHotels,
+  fetchMobileRentCarCatalog,
   fetchMobileTours,
   fetchMobileTransferLocations,
   fetchMobileTransferRoutes,
@@ -78,10 +84,14 @@ import {
   registerMobileUser,
   saveMobileCustomerPayment,
   saveMobileCustomerPreferences,
+  submitMobileRentCarReservation,
   submitMobileCustomerReview,
   updateMobileCustomerProfile,
   type LocationSummary,
   type MobileCustomerSummary,
+  type MobileHotelSummary,
+  type MobileRentCarLocation,
+  type MobileRentCarVehicle,
   type MobileSession,
   type MobileTour,
   type MobileTourOffer,
@@ -112,8 +122,9 @@ import {
   Geist_900Black
 } from "@expo-google-fonts/geist";
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { VideoView, useVideoPlayer } from "expo-video";
 
-type TabKey = "home" | "tours" | "transfers" | "zones" | "profile";
+type TabKey = "home" | "tours" | "transfers" | "zones" | "profile" | "rentCar" | "hotels";
 type TripType = "one-way" | "round-trip";
 type IconType = ComponentType<{ size?: number; color?: string; strokeWidth?: number; fill?: string }>;
 type AppLanguage = "es" | "en" | "fr";
@@ -202,6 +213,14 @@ const englishText: Record<string, string> = {
   "Idioma de la app": "App language",
   "La app recordara tu preferencia para futuras visitas.": "The app will remember your choice for future visits.",
   "Inicio": "Home",
+  "Encuentra lugares y actividades": "Find places and activities",
+  "Descubre y reserva experiencias": "Discover and book experiences",
+  "Mejores zonas de viaje": "Best travel areas",
+  "Atracciones que no te puedes perder": "Attractions you cannot miss",
+  "Basado en tu busqueda": "Based on your search",
+  "Experiencias de viaje inolvidables": "Unforgettable travel experiences",
+  "Ver zona": "View area",
+  "actividades": "activities",
   "Tours": "Tours",
   "Transfer": "Transfer",
   "Zonas": "Areas",
@@ -217,6 +236,13 @@ const englishText: Record<string, string> = {
   "Ida y vuelta": "Round trip",
   "Origen": "Pickup",
   "Destino": "Drop-off",
+  "Busca facil": "Easy search",
+  "Que estas buscando?": "What are you looking for?",
+  "Tours, hoteles o aeropuertos": "Tours, hotels, or airports",
+  "Tours encontrados": "Tours found",
+  "Lugares para transfer": "Transfer places",
+  "Abrir transfer con este lugar": "Open transfer with this place",
+  "Ver esta experiencia": "View this experience",
   "Aeropuerto, hotel o zona": "Airport, hotel, or area",
   "Hotel, villa o zona": "Hotel, villa, or area",
   "Seleccionado. Puedes tocar el campo para editar.": "Selected. Tap the field to edit.",
@@ -293,7 +319,22 @@ const englishText: Record<string, string> = {
   "Email": "Email",
   "Teléfono": "Phone",
   "Recogida y preferencias": "Pickup and preferences",
+  "Datos del traslado": "Transfer details",
+  "Vuelo": "Flight",
+  "Ruta seleccionada": "Selected route",
+  "Usamos tu ruta seleccionada. No tienes que escribir el hotel otra vez.":
+    "We use your selected route. You do not need to type the hotel again.",
+  "Numero de vuelo": "Flight number",
+  "Indica el numero de vuelo.": "Enter the flight number.",
+  "Tu conductor usa este dato para monitorear la llegada y coordinar la recogida.":
+    "Your driver uses this to monitor arrival and coordinate pickup.",
+  "Notas para el conductor": "Notes for the driver",
+  "Equipaje, silla de bebe, terminal o detalles especiales": "Luggage, child seat, terminal, or special details",
   "Punto principal": "Main pickup point",
+  "Confirma hotel, aeropuerto o punto de recogida": "Confirm hotel, airport, or pickup point",
+  "Selecciona una ubicacion real o deja escrito tu punto exacto.": "Select a real place or leave your exact pickup point typed.",
+  "Ubicacion seleccionada de la lista real.": "Place selected from the real list.",
+  "No vemos ese punto exacto. Usaremos lo que escribiste como recogida.": "We do not see that exact point. We will use what you typed as pickup.",
   "Hotel o punto de recogida": "Hotel or pickup point",
   "Busca tu hotel o escribe un punto de recogida": "Search your hotel or type a pickup point",
   "Ej: hotel, villa o punto de encuentro": "Ex: hotel, villa, or meeting point",
@@ -312,24 +353,24 @@ const englishText: Record<string, string> = {
   "Procesando...": "Processing...",
   "Eliminando...": "Deleting...",
   "Procesando eliminación...": "Processing deletion...",
-  "Pagar en navegador": "Pay in browser",
   "Confirmar por WhatsApp": "Confirm by WhatsApp",
   "Volver": "Back",
   "Indica el nombre.": "Enter your first name.",
   "Indica el apellido.": "Enter your last name.",
   "Indica un email válido.": "Enter a valid email.",
   "Indica hotel o punto de recogida.": "Enter hotel or pickup point.",
-  "Stripe nativo no está disponible en la vista web. Usa checkout web o prueba en Android/iOS.":
-    "Native Stripe is not available in web view. Use web checkout or test on Android/iOS.",
+  "Stripe nativo no está disponible en esta plataforma.":
+    "Native Stripe is not available on this platform.",
   "Stripe aún no está configurado en esta build. Revisa NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.":
     "Stripe is not configured in this build yet. Check NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.",
+  "No pudimos cargar Stripe en esta build. Contacta por chat directo y lo revisamos.":
+    "We could not load Stripe in this build. Contact direct chat and we will review it.",
   "Preparando pago seguro...": "Preparing secure payment...",
   "Stripe no devolvió client secret para abrir el pago.": "Stripe did not return a client secret to open payment.",
   "Abriendo pago seguro...": "Opening secure payment...",
   "El pago fue cancelado o no se completo.": "The payment was canceled or not completed.",
   "Pago confirmado. Tu reserva quedó registrada en Proactivitis.": "Payment confirmed. Your booking is registered with Proactivitis.",
   "No se pudo completar el pago.": "The payment could not be completed.",
-  "Abriendo checkout web de Proactivitis...": "Opening Proactivitis web checkout...",
   "Cuenta": "Account",
   "Contacto y soporte": "Contact and support",
   "Habla con Proactivitis antes o después de reservar.": "Talk to Proactivitis before or after booking.",
@@ -352,6 +393,8 @@ const englishText: Record<string, string> = {
   "Cancelar": "Cancel",
   "Eliminar": "Delete",
   "WhatsApp": "WhatsApp",
+  "Chat directo": "Direct chat",
+  "WhatsApp / CRM de reservas": "WhatsApp / booking CRM",
   "Soporte directo": "Direct support",
   "Web": "Website",
   "Entra a Proactivitis": "Sign in to Proactivitis",
@@ -601,6 +644,14 @@ const frenchText: Record<string, string> = {
   "Idioma de la app": "Langue de l'app",
   "La app recordara tu preferencia para futuras visitas.": "L'app gardera votre preference pour les prochaines visites.",
   "Inicio": "Accueil",
+  "Encuentra lugares y actividades": "Trouvez des lieux et activites",
+  "Descubre y reserva experiencias": "Decouvrez et reservez des experiences",
+  "Mejores zonas de viaje": "Meilleures zones de voyage",
+  "Atracciones que no te puedes perder": "Attractions a ne pas manquer",
+  "Basado en tu busqueda": "Selon votre recherche",
+  "Experiencias de viaje inolvidables": "Experiences de voyage inoubliables",
+  "Ver zona": "Voir la zone",
+  "actividades": "activites",
   "Tours": "Tours",
   "Transfer": "Transfert",
   "Zonas": "Zones",
@@ -616,6 +667,13 @@ const frenchText: Record<string, string> = {
   "Ida y vuelta": "Aller-retour",
   "Origen": "Depart",
   "Destino": "Arrivee",
+  "Busca facil": "Recherche facile",
+  "Que estas buscando?": "Que recherchez-vous ?",
+  "Tours, hoteles o aeropuertos": "Tours, hotels ou aeroports",
+  "Tours encontrados": "Tours trouves",
+  "Lugares para transfer": "Lieux pour transfert",
+  "Abrir transfer con este lugar": "Ouvrir le transfert avec ce lieu",
+  "Ver esta experiencia": "Voir cette experience",
   "Aeropuerto, hotel o zona": "Aeroport, hotel ou zone",
   "Hotel, villa o zona": "Hotel, villa ou zone",
   "Seleccionado. Puedes tocar el campo para editar.": "Selectionne. Touchez le champ pour modifier.",
@@ -693,7 +751,22 @@ const frenchText: Record<string, string> = {
   "Email": "Email",
   "Teléfono": "Telephone",
   "Recogida y preferencias": "Prise en charge et preferences",
+  "Datos del traslado": "Details du transfert",
+  "Vuelo": "Vol",
+  "Ruta seleccionada": "Trajet selectionne",
+  "Usamos tu ruta seleccionada. No tienes que escribir el hotel otra vez.":
+    "Nous utilisons votre trajet selectionne. Vous n'avez pas besoin de saisir l'hotel a nouveau.",
+  "Numero de vuelo": "Numero de vol",
+  "Indica el numero de vuelo.": "Indiquez le numero de vol.",
+  "Tu conductor usa este dato para monitorear la llegada y coordinar la recogida.":
+    "Votre chauffeur utilise cette information pour suivre l'arrivee et coordonner la prise en charge.",
+  "Notas para el conductor": "Notes pour le chauffeur",
+  "Equipaje, silla de bebe, terminal o detalles especiales": "Bagages, siege bebe, terminal ou details speciaux",
   "Punto principal": "Point principal",
+  "Confirma hotel, aeropuerto o punto de recogida": "Confirmez hotel, aeroport ou point de prise en charge",
+  "Selecciona una ubicacion real o deja escrito tu punto exacto.": "Selectionnez un lieu reel ou laissez votre point exact saisi.",
+  "Ubicacion seleccionada de la lista real.": "Lieu selectionne dans la liste reelle.",
+  "No vemos ese punto exacto. Usaremos lo que escribiste como recogida.": "Nous ne voyons pas ce point exact. Nous utiliserons ce que vous avez saisi.",
   "Hotel o punto de recogida": "Hotel ou point de prise en charge",
   "Busca tu hotel o escribe un punto de recogida": "Cherchez votre hotel ou ecrivez un point de prise en charge",
   "Ej: hotel, villa o punto de encuentro": "Ex: hotel, villa ou point de rencontre",
@@ -712,24 +785,24 @@ const frenchText: Record<string, string> = {
   "Procesando...": "Traitement...",
   "Eliminando...": "Suppression...",
   "Procesando eliminación...": "Suppression en cours...",
-  "Pagar en navegador": "Payer dans le navigateur",
   "Confirmar por WhatsApp": "Confirmer par WhatsApp",
   "Volver": "Retour",
   "Indica el nombre.": "Ajoutez le prenom.",
   "Indica el apellido.": "Ajoutez le nom.",
   "Indica un email válido.": "Ajoutez un email valide.",
   "Indica hotel o punto de recogida.": "Ajoutez l'hotel ou le point de prise en charge.",
-  "Stripe nativo no está disponible en la vista web. Usa checkout web o prueba en Android/iOS.":
-    "Stripe natif n'est pas disponible dans la vue web. Utilisez le checkout web ou testez sur Android/iOS.",
+  "Stripe nativo no está disponible en esta plataforma.":
+    "Stripe natif n'est pas disponible sur cette plateforme.",
   "Stripe aún no está configurado en esta build. Revisa NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.":
     "Stripe n'est pas encore configure dans cette build. Verifiez NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.",
+  "No pudimos cargar Stripe en esta build. Contacta por chat directo y lo revisamos.":
+    "Impossible de charger Stripe dans cette build. Contactez le chat direct et nous verifierons.",
   "Preparando pago seguro...": "Preparation du paiement securise...",
   "Stripe no devolvió client secret para abrir el pago.": "Stripe n'a pas renvoye le client secret pour ouvrir le paiement.",
   "Abriendo pago seguro...": "Ouverture du paiement securise...",
   "El pago fue cancelado o no se completo.": "Le paiement a ete annule ou n'a pas abouti.",
   "Pago confirmado. Tu reserva quedó registrada en Proactivitis.": "Paiement confirme. Votre reservation est enregistree chez Proactivitis.",
   "No se pudo completar el pago.": "Impossible de completer le paiement.",
-  "Abriendo checkout web de Proactivitis...": "Ouverture du checkout web Proactivitis...",
   "Cuenta": "Compte",
   "Contacto y soporte": "Contact et assistance",
   "Habla con Proactivitis antes o después de reservar.": "Parlez avec Proactivitis avant ou apres la reservation.",
@@ -752,6 +825,8 @@ const frenchText: Record<string, string> = {
   "Cancelar": "Annuler",
   "Eliminar": "Supprimer",
   "WhatsApp": "WhatsApp",
+  "Chat directo": "Chat direct",
+  "WhatsApp / CRM de reservas": "WhatsApp / CRM de reservations",
   "Soporte directo": "Assistance directe",
   "Web": "Web",
   "Entra a Proactivitis": "Connectez-vous a Proactivitis",
@@ -1048,6 +1123,112 @@ function Text({ children, ...props }: TextProps) {
   );
 }
 
+function MotionPressable({
+  children,
+  style,
+  onPress,
+  disabled = false,
+  scaleTo = 0.975
+}: {
+  children: ReactNode;
+  style?: StyleProp<any>;
+  onPress?: () => void;
+  disabled?: boolean;
+  scaleTo?: number;
+}) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
+
+  const animate = (nextScale: number, nextOpacity: number) => {
+    Animated.parallel([
+      Animated.timing(scale, {
+        toValue: nextScale,
+        duration: 120,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true
+      }),
+      Animated.timing(opacity, {
+        toValue: nextOpacity,
+        duration: 120,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true
+      })
+    ]).start();
+  };
+
+  return (
+    <Pressable
+      disabled={disabled}
+      onPress={onPress}
+      onPressIn={() => !disabled && animate(scaleTo, 0.94)}
+      onPressOut={() => animate(1, 1)}
+    >
+      <Animated.View style={[style, { transform: [{ scale }], opacity: disabled ? 0.58 : opacity }]}>
+        {children}
+      </Animated.View>
+    </Pressable>
+  );
+}
+
+function OpeningVideoSplash({ visible, onDone }: { visible: boolean; onDone: () => void }) {
+  const finishedRef = useRef(false);
+  const opacity = useRef(new Animated.Value(1)).current;
+  const player = useVideoPlayer(openingSplashVideo, (nextPlayer) => {
+    nextPlayer.loop = false;
+    nextPlayer.muted = true;
+    nextPlayer.volume = 0;
+    nextPlayer.play();
+  });
+
+  const finish = useCallback(() => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    Animated.timing(opacity, {
+      toValue: 0,
+      duration: 260,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true
+    }).start(() => onDone());
+  }, [onDone, opacity]);
+
+  useEffect(() => {
+    player.loop = false;
+    player.muted = true;
+    player.volume = 0;
+    player.play();
+
+    const endSubscription = player.addListener("playToEnd", () => {
+      setTimeout(finish, 120);
+    });
+    const statusSubscription = player.addListener("statusChange", ({ status }) => {
+      if (status === "error") finish();
+    });
+    const fallbackTimer = setTimeout(finish, 4800);
+
+    return () => {
+      clearTimeout(fallbackTimer);
+      endSubscription.remove();
+      statusSubscription.remove();
+    };
+  }, [finish, player]);
+
+  return (
+    <Animated.View pointerEvents={visible ? "auto" : "none"} style={[styles.openingSplash, { opacity }]}>
+      <VideoView
+        player={player}
+        style={styles.openingSplashVideo}
+        nativeControls={false}
+        contentFit="cover"
+        allowsFullscreen={false}
+        allowsPictureInPicture={false}
+        surfaceType="textureView"
+      />
+      <View pointerEvents="none" style={styles.openingSplashShade} />
+      <Pressable style={styles.openingSplashTapArea} onPress={finish} />
+    </Animated.View>
+  );
+}
+
 declare const process:
   | {
       env?: Record<string, string | undefined>;
@@ -1167,6 +1348,7 @@ type CheckoutDraft = {
   email: string;
   phone: string;
   pickupLocation: string;
+  flightNumber?: string;
   notes: string;
   savedAt: number;
 };
@@ -1174,6 +1356,7 @@ type CheckoutDraft = {
 const heroImage =
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
 const transferHeroSource = require("./assets/photos/transfer-hero.jpeg");
+const openingSplashVideo = require("./assets/animations/splash.mp4");
 const fallbackTourImage =
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/tours/4b7182fc-2041-4f02-a7cb-c34a56b9ae8f/temp-1771700516443/cover-1771700516443-118071monkey-land-KNCIgv5ywCaw7hyuyMYq3HYOkUjqX6.webp";
 const mobileSessionStorageKey = "proactivitis_mobile_session";
@@ -1181,6 +1364,7 @@ const transferDraftStorageKey = "proactivitis_transfer_draft";
 const checkoutDraftStorageKey = "proactivitis_checkout_draft";
 const languageStorageKey = "proactivitis_language";
 const privacyConsentStorageKey = "proactivitis_privacy_consent";
+const homeRecentSearchStorageKey = "proactivitis_home_recent_search";
 const secureStoreOptions: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY
 };
@@ -1634,13 +1818,19 @@ const transferSearchAliases: Record<string, string[]> = {
   puj: ["punta", "cana", "airport", "aeropuerto"],
   sdq: ["santo", "domingo", "airport", "aeropuerto", "las", "americas"],
   lrm: ["romana", "airport", "aeropuerto"],
+  aero: ["aeropuerto", "airport"],
+  aeropurto: ["aeropuerto", "airport"],
   airport: ["aeropuerto"],
   aeropuerto: ["airport"],
   bavaro: ["bavaro", "bávaro", "punta", "cana"],
   bahia: ["bahia", "principe"],
+  bahai: ["bahia", "principe"],
   bávaro: ["bavaro", "punta", "cana"],
+  cap: ["cap", "cana", "punta"],
+  cana: ["punta", "puj"],
   romana: ["la", "romana"],
   santo: ["santo", "domingo"],
+  punta: ["punta", "cana", "puj"],
   zona: ["area", "sector"]
 };
 
@@ -1678,7 +1868,7 @@ const tokenMatchScore = (token: string, haystackTokens: string[]) => {
     else if (item.startsWith(token) || token.startsWith(item)) score = Math.max(score, 9);
     else if (item.includes(token) || token.includes(item)) score = Math.max(score, 7);
     else if (token.length >= 4 && item.length >= 4 && editDistance(token, item) <= 1) score = Math.max(score, 6);
-    else if (token.length >= 6 && item.length >= 6 && editDistance(token, item) <= 2) score = Math.max(score, 5);
+    else if (token.length >= 5 && item.length >= 5 && editDistance(token, item) <= 2) score = Math.max(score, 5);
   });
   return score;
 };
@@ -1686,7 +1876,7 @@ const tokenMatchScore = (token: string, haystackTokens: string[]) => {
 const transferLocationScore = (location: LocationSummary, query: string) => {
   const queryTokens = expandSearchTokens(searchTokens(query));
   if (!queryTokens.length) return 0;
-  const haystack = `${location.name} ${location.zoneName ?? ""} ${location.type}`;
+  const haystack = `${location.name} ${location.slug} ${location.zoneName ?? ""} ${location.type}`;
   const haystackTokens = searchTokens(haystack);
   const fullText = normalizeLocationSearch(haystack);
   const normalizedQuery = normalizeLocationSearch(query);
@@ -1714,7 +1904,173 @@ const mergeLocations = (...groups: LocationSummary[][]) => {
 const collectRouteLocations = (routes: MobileTransferRoute[]) =>
   mergeLocations(routes.map((route) => route.origin), routes.map((route) => route.destination));
 
-const fallbackTransferLocations = mergeLocations(staticMobileTransferLocations, collectRouteLocations(fallbackTransferRoutes));
+const buildZoneLocations = (locations: LocationSummary[]) => {
+  const zones = new Map<string, LocationSummary>();
+  locations.forEach((location) => {
+    if (!location.zoneName) return;
+    const key = normalizeLocationSearch(location.zoneName);
+    if (zones.has(key)) return;
+    zones.set(key, {
+      id: `zone-${location.zoneId ?? slugify(location.zoneName)}`,
+      name: `Zona ${location.zoneName}`,
+      slug: `zona-${slugify(location.zoneName)}`,
+      type: "ZONE",
+      zoneName: location.zoneName,
+      zoneId: location.zoneId ?? null
+    });
+  });
+
+  const puntaCanaZone = Array.from(zones.values()).find((zone) => normalizeLocationSearch(zone.zoneName ?? "") === "punta cana");
+  if (puntaCanaZone) {
+    ["Bavaro", "Cap Cana", "Uvero Alto", "Macao"].forEach((name) => {
+      zones.set(normalizeLocationSearch(name), {
+        ...puntaCanaZone,
+        id: `zone-${slugify(name)}`,
+        name: `Zona ${name}`,
+        slug: `zona-${slugify(name)}`
+      });
+    });
+  }
+
+  return Array.from(zones.values());
+};
+
+const fallbackTransferLocations = mergeLocations(
+  staticMobileTransferLocations,
+  collectRouteLocations(fallbackTransferRoutes),
+  buildZoneLocations(staticMobileTransferLocations)
+);
+
+const fallbackRentCarLocations: MobileRentCarLocation[] = [
+  {
+    id: "puj-cap-cana",
+    code: "PUJ",
+    name: "Punta Cana / Cap Cana",
+    regionId: "PUJ_CAP_CANA",
+    airportLabel: "PUJ",
+    priceFrom: 35,
+    image: "/transfer/sedan.png",
+    featuredModel: "Kia Picanto 2025",
+    vehicleCount: 20,
+    href: "/rent-a-car/puj-cap-cana/kia-picanto-2025"
+  },
+  {
+    id: "santo-domingo-sdq",
+    code: "SDQ",
+    name: "Santo Domingo / Las Americas",
+    regionId: "SDQ_SANTO_DOMINGO",
+    airportLabel: "SDQ",
+    priceFrom: 35,
+    image: "/transfer/sedan.png",
+    featuredModel: "Hyundai i10 Grand",
+    vehicleCount: 20,
+    href: "/rent-a-car/santo-domingo-sdq/hyundai-i10-grand"
+  },
+  {
+    id: "puerto-plata-cabarete",
+    code: "POP",
+    name: "Puerto Plata / Cabarete",
+    regionId: "POP_CABARETE",
+    airportLabel: "POP",
+    priceFrom: 40,
+    image: "/transfer/suv.png",
+    featuredModel: "Kia Sportage",
+    vehicleCount: 20,
+    href: "/rent-a-car/puerto-plata-cabarete/kia-sportage"
+  }
+];
+
+const fallbackRentCarVehicles: MobileRentCarVehicle[] = [
+  {
+    id: "puj-cap-cana-kia-picanto-2025",
+    locationId: "puj-cap-cana",
+    regionId: "PUJ_CAP_CANA",
+    locationName: "Punta Cana / Cap Cana",
+    airportLabel: "PUJ",
+    categorySlug: "kia-picanto-2025",
+    categoryLabel: "Economy",
+    model: "Kia Picanto 2025",
+    displayName: "Smart City Rental",
+    tag: "High demand",
+    price: 35,
+    currency: "USD",
+    seats: 4,
+    luggage: 2,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    bags: 2,
+    largeBags: 1,
+    image: "/transfer/sedan.png",
+    badges: ["4 pasajeros", "4 puertas", "Automático", "Gasolina"],
+    href: "/rent-a-car/puj-cap-cana/kia-picanto-2025",
+    highProfile: false
+  },
+  {
+    id: "puj-cap-cana-kia-sportage",
+    locationId: "puj-cap-cana",
+    regionId: "PUJ_CAP_CANA",
+    locationName: "Punta Cana / Cap Cana",
+    airportLabel: "PUJ",
+    categorySlug: "kia-sportage",
+    categoryLabel: "SUV Standard",
+    model: "Kia Sportage",
+    displayName: "SUV Rental",
+    tag: "Family ready",
+    price: 85,
+    currency: "USD",
+    seats: 5,
+    luggage: 5,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    bags: 5,
+    largeBags: 3,
+    image: "/transfer/suv.png",
+    badges: ["5 pasajeros", "SUV", "Automático", "A/C"],
+    href: "/rent-a-car/puj-cap-cana/kia-sportage",
+    highProfile: false
+  },
+  {
+    id: "puj-cap-cana-cadillac-escalade",
+    locationId: "puj-cap-cana",
+    regionId: "PUJ_CAP_CANA",
+    locationName: "Punta Cana / Cap Cana",
+    airportLabel: "PUJ",
+    categorySlug: "cadillac-escalade",
+    categoryLabel: "SUV Luxury",
+    model: "Cadillac Escalade",
+    displayName: "Presidential SUV",
+    tag: "VIP arrival",
+    price: 275,
+    currency: "USD",
+    seats: 7,
+    luggage: 6,
+    doors: 4,
+    transmission: "Automatic",
+    fuelType: "Gasoline",
+    bags: 6,
+    largeBags: 5,
+    image: "/transfer/suv.png",
+    badges: ["7 pasajeros", "Luxury SUV", "Automático", "VIP"],
+    href: "/rent-a-car/puj-cap-cana/cadillac-escalade",
+    highProfile: true
+  }
+];
+
+const fallbackHotelSummaries: MobileHotelSummary[] = fallbackTransferLocations
+  .filter((location) => normalizeLocationSearch(location.type).includes("hotel"))
+  .slice(0, 12)
+  .map((location, index) => ({
+    id: location.id,
+    slug: location.slug,
+    name: location.name,
+    zoneName: location.zoneName ?? "Punta Cana",
+    description: "Alojamiento conectado con traslados privados, tours cercanos y soporte local Proactivitis.",
+    image: "/fototours/fotosimple.jpg",
+    rating: 4.7 + (index % 3) / 10,
+    href: `/hoteles/${location.slug}`
+  }));
 
 const transferLocationMatches = (locations: LocationSummary[], query: string) => {
   const normalizedQuery = normalizeLocationSearch(query);
@@ -1737,18 +2093,22 @@ const pickupHotelMatchesForTour = (locations: LocationSummary[], query: string, 
   const normalizedQuery = normalizeLocationSearch(query);
   if (normalizedQuery.length < 2) return [];
   const zoneParts = tourZoneParts(tourLocation);
-  return mergeLocations(locations)
+  const scoredMatches = mergeLocations(locations)
     .filter((location) => location.type === "HOTEL")
-    .filter((location) =>
-      normalizeLocationSearch(`${location.name} ${location.zoneName ?? ""}`).includes(normalizedQuery)
-    )
-    .filter((location) => {
-      if (!zoneParts.length) return true;
-      const zoneText = normalizeLocationSearch(`${location.name} ${location.zoneName ?? ""}`);
-      const zoneName = normalizeLocationSearch(location.zoneName ?? "");
-      return zoneParts.some((part) => zoneText.includes(part) || (zoneName.length > 2 && part.includes(zoneName)));
-    })
-    .slice(0, 7);
+    .map((location) => ({ location, score: transferLocationScore(location, query) }))
+    .filter((item) => item.score >= 7)
+    .sort((a, b) => b.score - a.score || a.location.name.localeCompare(b.location.name))
+    .map((item) => item.location);
+
+  if (!zoneParts.length) return scoredMatches.slice(0, 7);
+
+  const zoneMatches = scoredMatches.filter((location) => {
+    const zoneText = normalizeLocationSearch(`${location.name} ${location.zoneName ?? ""}`);
+    const zoneName = normalizeLocationSearch(location.zoneName ?? "");
+    return zoneParts.some((part) => zoneText.includes(part) || (zoneName.length > 2 && part.includes(zoneName)));
+  });
+
+  return (zoneMatches.length ? zoneMatches : scoredMatches).slice(0, 7);
 };
 
 const readUrlParams = (href: string) => {
@@ -1813,46 +2173,18 @@ const readCheckoutSummary = (url: string): CheckoutSummary => {
   };
 };
 
-const addCheckoutContactParams = ({
-  checkoutUrl,
-  firstName,
-  lastName,
-  email,
-  phone,
-  pickupLocation,
-  specialRequirements
-}: {
-  checkoutUrl: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  pickupLocation: string;
-  specialRequirements: string;
-}) => {
-  try {
-    const parsed = new URL(checkoutUrl);
-    const params = parsed.searchParams;
-    params.set("mobileCheckout", "1");
-    params.set("firstName", firstName.trim());
-    params.set("lastName", lastName.trim());
-    params.set("email", email.trim().toLowerCase());
-    if (phone.trim()) params.set("phone", phone.trim());
-    params.set("travelerName", `${firstName} ${lastName}`.trim());
-    if (pickupLocation.trim()) params.set("pickupLocation", pickupLocation.trim());
-    if (specialRequirements.trim()) params.set("specialRequirements", specialRequirements.trim());
-    return parsed.toString();
-  } catch {
-    return checkoutUrl;
-  }
-};
+const defaultStripePublishableKey =
+  "pk_live_51O95bAIbnx7AUk1qBdTAIlSDvHd8WjRlwDZ9dAsKH9O1NF1VbgqGfggtZpmF0qWfzIB25mK1UAd7RRcdgmTMAS1h00Oj1ZgLVc";
 
 const normalizeStripePublishableKey = (value?: string | null) => {
   const key = value?.trim();
   return key && key.startsWith("pk_") ? key : "";
 };
 
-const buildStripePublishableKey = normalizeStripePublishableKey(process?.env?.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+const buildStripePublishableKey =
+  normalizeStripePublishableKey(process?.env?.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY) ||
+  normalizeStripePublishableKey(process?.env?.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) ||
+  defaultStripePublishableKey;
 
 export default function App() {
   const [fontsLoaded, fontLoadError] = useFonts(appFonts);
@@ -1861,6 +2193,7 @@ export default function App() {
   const [languageReady, setLanguageReady] = useState(false);
   const [privacyConsent, setPrivacyConsent] = useState<PrivacyConsent | null>(null);
   const [privacyReady, setPrivacyReady] = useState(false);
+  const [showOpeningSplash, setShowOpeningSplash] = useState(true);
 
   useEffect(() => {
     let active = true;
@@ -1920,15 +2253,18 @@ export default function App() {
         <AppStripeProvider publishableKey={stripePublishableKey}>
           <StripeDeepLinkHandler />
           {appReady ? (
-            language ? (
-              privacyConsent ? (
-                <MobileApp stripeReady={Boolean(stripePublishableKey)} />
+            <View style={styles.appRoot}>
+              {language ? (
+                privacyConsent ? (
+                  <MobileApp stripeReady={Boolean(stripePublishableKey)} />
+                ) : (
+                  <PrivacyConsentGate onAccept={updatePrivacyConsent} />
+                )
               ) : (
-                <PrivacyConsentGate onAccept={updatePrivacyConsent} />
-              )
-            ) : (
-              <LanguageGate onSelect={updateLanguage} />
-            )
+                <LanguageGate onSelect={updateLanguage} />
+              )}
+              <OpeningVideoSplash visible={showOpeningSplash} onDone={() => setShowOpeningSplash(false)} />
+            </View>
           ) : (
             <SafeAreaView style={styles.safeArea}>
               <StatusBar style="light" />
@@ -2128,6 +2464,7 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
   const [mobileSession, setMobileSession] = useState<MobileSession | null>(null);
   const [productBookingY, setProductBookingY] = useState(0);
   const [productFloatingVisible, setProductFloatingVisible] = useState(true);
+  const [transferPrefillLocation, setTransferPrefillLocation] = useState<LocationSummary | null>(null);
 
   const updateMobileSession = (session: MobileSession | null) => {
     setMobileSession(session);
@@ -2308,6 +2645,8 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
     if (activeTab === "transfers") {
       return (
         <TransfersScreen
+          prefillLocation={transferPrefillLocation}
+          onPrefillConsumed={() => setTransferPrefillLocation(null)}
           onSaveQuote={(quote) => {
             setSavedQuote(quote);
             setActiveTab("profile");
@@ -2325,6 +2664,19 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
           onFavorite={toggleFavorite}
           onReserveTour={setActiveProduct}
           onOpenTransfers={() => setActiveTab("transfers")}
+        />
+      );
+    }
+
+    if (activeTab === "rentCar") {
+      return <RentCarScreen session={mobileSession} onOpenHotels={() => setActiveTab("hotels")} />;
+    }
+
+    if (activeTab === "hotels") {
+      return (
+        <HotelsScreen
+          onOpenTransfers={() => setActiveTab("transfers")}
+          onOpenRentCar={() => setActiveTab("rentCar")}
         />
       );
     }
@@ -2349,7 +2701,15 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
       <HomeScreen
         onOpenTours={() => setActiveTab("tours")}
         onOpenTransfers={() => setActiveTab("transfers")}
+        onOpenZones={() => setActiveTab("zones")}
+        onOpenRentCar={() => setActiveTab("rentCar")}
+        onOpenHotels={() => setActiveTab("hotels")}
+        onOpenTransferLocation={(location) => {
+          setTransferPrefillLocation(location);
+          setActiveTab("transfers");
+        }}
         onReserveTour={setActiveProduct}
+        transferLocations={fallbackTransferLocations}
         tours={tours}
       />
     );
@@ -2417,35 +2777,224 @@ function MobileApp({ stripeReady }: { stripeReady: boolean }) {
 function HomeScreen({
   onOpenTours,
   onOpenTransfers,
+  onOpenZones,
+  onOpenRentCar,
+  onOpenHotels,
+  onOpenTransferLocation,
   onReserveTour,
+  transferLocations,
   tours
 }: {
   onOpenTours: () => void;
   onOpenTransfers: () => void;
+  onOpenZones: () => void;
+  onOpenRentCar: () => void;
+  onOpenHotels: () => void;
+  onOpenTransferLocation: (location: LocationSummary) => void;
   onReserveTour: (tour: AppTour) => void;
+  transferLocations: LocationSummary[];
   tours: AppTour[];
 }) {
+  const tr = useTranslate();
+  const [homeSearch, setHomeSearch] = useState("");
+  const [recentHomeSearch, setRecentHomeSearch] = useState("");
   const heroTour = tours.find((tour) => tour.title.toLowerCase().includes("saona")) ?? tours[0];
   const homeHeroImage = heroTour?.image ?? heroImage;
+  const normalizedHomeSearch = normalizeLocationSearch(homeSearch);
+  const normalizedRecentHomeSearch = normalizeLocationSearch(recentHomeSearch);
+  const homeLocationMatches = useMemo(
+    () => transferLocationMatches(transferLocations, homeSearch).slice(0, 3),
+    [homeSearch, transferLocations]
+  );
+  const homeTourMatches = useMemo(() => {
+    if (normalizedHomeSearch.length < 2) return [];
+    const queryTokens = expandSearchTokens(searchTokens(homeSearch));
+    return tours
+      .map((tour) => {
+        const haystack = `${tour.title} ${tour.location} ${tour.category} ${tour.description}`;
+        const haystackTokens = searchTokens(haystack);
+        const fullText = normalizeLocationSearch(haystack);
+        const score =
+          (fullText.includes(normalizedHomeSearch) ? 35 : 0) +
+          queryTokens.reduce((total, token) => total + tokenMatchScore(token, haystackTokens), 0);
+        return { tour, score };
+      })
+      .filter((item) => item.score >= 7)
+      .sort((a, b) => b.score - a.score || a.tour.title.localeCompare(b.tour.title))
+      .map((item) => item.tour)
+      .slice(0, 2);
+  }, [homeSearch, normalizedHomeSearch, tours]);
+  const homeDestinationCards = useMemo(() => {
+    const areas = ["Punta Cana", "Bavaro", "Cap Cana", "La Romana", "Santo Domingo"];
+    return areas.map((area, index) => {
+      const normalizedArea = normalizeLocationSearch(area);
+      const areaTours = tours.filter((tour) => normalizeLocationSearch(`${tour.location} ${tour.title}`).includes(normalizedArea));
+      return {
+        area,
+        count: areaTours.length || Math.max(1, Math.round(tours.length / 4)),
+        image: areaTours[0]?.image ?? tours[index % Math.max(1, tours.length)]?.image ?? fallbackTourImage
+      };
+    });
+  }, [tours]);
+  const homeAttractionCards = useMemo(
+    () =>
+      tourCategories
+        .filter((item) => item !== "Todos")
+        .slice(0, 6)
+        .map((category, index) => {
+          const categoryTours = tours.filter((tour) => normalizeLocationSearch(tour.category).includes(normalizeLocationSearch(category)));
+          return {
+            category,
+            count: categoryTours.length || 1,
+            image: categoryTours[0]?.image ?? tours[index % Math.max(1, tours.length)]?.image ?? fallbackTourImage
+          };
+        }),
+    [tours]
+  );
+  const personalizedTours = useMemo(() => {
+    const query = normalizedHomeSearch || normalizedRecentHomeSearch;
+    if (!query) return tours.slice(0, 5);
+    const queryTokens = expandSearchTokens(searchTokens(query));
+    return tours
+      .map((tour) => {
+        const haystack = `${tour.title} ${tour.location} ${tour.category} ${tour.description}`;
+        const haystackTokens = searchTokens(haystack);
+        const score =
+          (normalizeLocationSearch(haystack).includes(query) ? 35 : 0) +
+          queryTokens.reduce((total, token) => total + tokenMatchScore(token, haystackTokens), 0);
+        return { tour, score };
+      })
+      .filter((item) => item.score >= 5)
+      .sort((a, b) => b.score - a.score || b.tour.rating - a.tour.rating)
+      .map((item) => item.tour)
+      .slice(0, 5);
+  }, [normalizedHomeSearch, normalizedRecentHomeSearch, tours]);
+  const showHomeSearchResults = normalizedHomeSearch.length >= 2;
+  const rememberHomeSearch = (value: string) => {
+    const query = value.trim();
+    if (!query) return;
+    setRecentHomeSearch(query);
+    void writeStoredJson(homeRecentSearchStorageKey, { query, savedAt: Date.now() });
+  };
+
+  useEffect(() => {
+    let active = true;
+    readStoredJson<{ query?: string }>(homeRecentSearchStorageKey).then((stored) => {
+      if (active && stored?.query) setRecentHomeSearch(stored.query);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const submitHomeSearch = () => {
+    if (homeLocationMatches[0]) {
+      rememberHomeSearch(homeSearch || homeLocationMatches[0].name);
+      onOpenTransferLocation(homeLocationMatches[0]);
+      setHomeSearch("");
+      return;
+    }
+    if (homeTourMatches[0]) {
+      rememberHomeSearch(homeSearch || homeTourMatches[0].title);
+      onReserveTour(homeTourMatches[0]);
+      setHomeSearch("");
+      return;
+    }
+    rememberHomeSearch(homeSearch);
+    onOpenTours();
+  };
 
   return (
     <View style={styles.homeScreen}>
       <ImageBackground source={{ uri: absoluteImageUrl(homeHeroImage) }} style={styles.hero} imageStyle={styles.heroImage as StyleProp<ImageStyle>}>
         <View style={styles.heroOverlay} />
+        <View pointerEvents="none" style={styles.heroTextScrim} />
         <View style={styles.heroContent}>
-          <View style={styles.heroBrand}>
-            <View style={styles.heroBrandIconShell}>
-              <Image source={require("./assets/icon.png")} style={styles.heroBrandIcon} />
+          <View style={styles.heroTopSearchRow}>
+            <View style={styles.heroSearchWide}>
+              <Search size={15} color={colors.skyDark} />
+              <TextInput
+                value={homeSearch}
+                onChangeText={setHomeSearch}
+                onSubmitEditing={submitHomeSearch}
+                placeholder={tr("Encuentra lugares y actividades") ?? undefined}
+                placeholderTextColor={colors.muted}
+                returnKeyType="search"
+                style={styles.heroSearchInput}
+              />
             </View>
-            <View style={styles.flexText}>
-              <Text style={styles.heroBrandName}>Proactivitis</Text>
-              <Text style={styles.heroBrandLine}>Tours & Transfers</Text>
-            </View>
+            <Pressable style={styles.heroBellButton} onPress={onOpenTours}>
+              <Bell size={21} color={colors.ink} />
+            </Pressable>
           </View>
-          <Text style={styles.eyebrow}>Experiencias y traslados</Text>
-          <Text style={styles.heroTitle}>Reserva traslados y tours confiables en República Dominicana</Text>
+          {showHomeSearchResults ? (
+            <View style={styles.homeSearchPanel}>
+              {homeLocationMatches.length ? (
+                <View style={styles.homeSearchGroup}>
+                  <Text style={styles.homeSearchSectionLabel}>Lugares para transfer</Text>
+                  {homeLocationMatches.map((location) => (
+                    <Pressable
+                      key={`location-${location.id}`}
+                      style={styles.homeSearchSuggestion}
+                      onPress={() => {
+                        rememberHomeSearch(homeSearch || location.name);
+                        setHomeSearch("");
+                        onOpenTransferLocation(location);
+                      }}
+                    >
+                      <View style={styles.homeSearchSuggestionIcon}>
+                        <Car size={15} color={colors.skyDark} />
+                      </View>
+                      <View style={styles.flexText}>
+                        <Text style={styles.homeSearchSuggestionTitle} numberOfLines={1}>{location.name}</Text>
+                        <Text style={styles.homeSearchSuggestionMeta} numberOfLines={1}>
+                          {location.zoneName ?? "Proactivitis"} | Abrir transfer con este lugar
+                        </Text>
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
+              ) : null}
+              {homeTourMatches.length ? (
+                <View style={styles.homeSearchGroup}>
+                  <Text style={styles.homeSearchSectionLabel}>Tours encontrados</Text>
+                  {homeTourMatches.map((tour) => (
+                    <Pressable
+                      key={`tour-${tour.id}`}
+                      style={styles.homeSearchSuggestion}
+                      onPress={() => {
+                        rememberHomeSearch(homeSearch || tour.title);
+                        setHomeSearch("");
+                        onReserveTour(tour);
+                      }}
+                    >
+                      <View style={styles.homeSearchSuggestionIcon}>
+                        <Compass size={15} color={colors.skyDark} />
+                      </View>
+                      <View style={styles.flexText}>
+                        <Text style={styles.homeSearchSuggestionTitle} numberOfLines={1}>{tour.title}</Text>
+                        <Text style={styles.homeSearchSuggestionMeta} numberOfLines={1}>
+                          {tour.location} | Ver esta experiencia
+                        </Text>
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
+              ) : null}
+              {!homeLocationMatches.length && !homeTourMatches.length ? (
+                <Text style={styles.homeSearchEmpty}>
+                  No encontramos ese lugar exacto. Prueba con hotel, aeropuerto o zona cercana.
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+          <View style={styles.heroMiniBrand}>
+            <Image source={require("./assets/icon.png")} style={styles.heroMiniLogo} />
+            <Text style={styles.heroMiniText}>Proactivitis Tours & Transfers</Text>
+          </View>
+          <Text style={styles.heroTitle}>Descubre y reserva experiencias</Text>
           <Text style={styles.heroSubtitle}>
-            Precio claro, soporte humano y coordinación local desde que reservas.
+            Tours y traslados confiables en República Dominicana, con precio claro y soporte humano.
           </Text>
           <View style={styles.heroTrustRow}>
             <Text style={styles.heroTrustPill}>Fotos verificadas</Text>
@@ -2467,6 +3016,20 @@ function HomeScreen({
         ))}
       </View>
 
+      <SectionHeader title="Mejores zonas de viaje" actionLabel="Ver zonas" onPress={onOpenZones} />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.homeDestinationList}>
+        {homeDestinationCards.map((item) => (
+          <Pressable key={item.area} style={styles.homeDestinationCard} onPress={onOpenZones}>
+            <RemoteImage uri={item.image} style={styles.homeDestinationImage} />
+            <View style={styles.homeDestinationOverlay} />
+            <View style={styles.homeDestinationBody}>
+              <Text style={styles.homeDestinationName}>{item.area}</Text>
+              <Text style={styles.homeDestinationMeta}>{item.count} actividades</Text>
+            </View>
+          </Pressable>
+        ))}
+      </ScrollView>
+
       <View style={styles.homeBookingGrid}>
         <Pressable style={styles.homeBookingCard} onPress={onOpenTours}>
           <Text style={styles.homeBookingEmoji}>🏝️</Text>
@@ -2478,24 +3041,39 @@ function HomeScreen({
           <Text style={styles.homeBookingTitle}>Traslados privados</Text>
           <Text style={styles.homeBookingText}>Busca tu hotel, aeropuerto o zona y ve el precio antes de reservar.</Text>
         </Pressable>
+        <Pressable style={styles.homeBookingCard} onPress={onOpenRentCar}>
+          <Text style={styles.homeBookingEmoji}>CAR</Text>
+          <Text style={styles.homeBookingTitle}>Rent a car</Text>
+          <Text style={styles.homeBookingText}>Vehiculos por zona, precio claro y reserva formal sin pago adelantado.</Text>
+        </Pressable>
+        <Pressable style={styles.homeBookingCard} onPress={onOpenHotels}>
+          <Text style={styles.homeBookingEmoji}>HOTEL</Text>
+          <Text style={styles.homeBookingTitle}>Hoteles y alojamientos</Text>
+          <Text style={styles.homeBookingText}>Compara hoteles, villas y zonas conectadas con tours y traslados.</Text>
+        </Pressable>
       </View>
 
-      <SectionHeader title="🔥 Recomendados" actionLabel="Ver todos" onPress={onOpenTours} />
+      <SectionHeader
+        title={recentHomeSearch ? "Basado en tu busqueda" : "Experiencias de viaje inolvidables"}
+        actionLabel="Ver todos"
+        onPress={onOpenTours}
+      />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
-        {tours.slice(0, 5).map((tour) => (
+        {(personalizedTours.length ? personalizedTours : tours).slice(0, 5).map((tour) => (
           <FeaturedTourCard key={tour.id} tour={tour} onPress={() => onReserveTour(tour)} />
         ))}
       </ScrollView>
 
-      <SectionHeader title="🧭 Categorias" actionLabel="Explorar" onPress={onOpenTours} />
-      <View style={styles.categoryGrid}>
-        {tourCategories.filter((item) => item !== "Todos").map((item) => (
-          <Pressable key={item} style={styles.categoryCard} onPress={onOpenTours}>
-            <Text style={styles.categoryTitle}>{item}</Text>
-            <Text style={styles.categoryText}>Ver experiencias</Text>
+      <SectionHeader title="Atracciones que no te puedes perder" actionLabel="Explorar" onPress={onOpenTours} />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.homeAttractionList}>
+        {homeAttractionCards.map((item) => (
+          <Pressable key={item.category} style={styles.homeAttractionCard} onPress={onOpenTours}>
+            <RemoteImage uri={item.image} style={styles.homeAttractionImage} />
+            <Text style={styles.homeAttractionTitle} numberOfLines={2}>{item.category}</Text>
+            <Text style={styles.homeAttractionMeta}>{item.count} actividades</Text>
           </Pressable>
         ))}
-      </View>
+      </ScrollView>
 
       <SectionHeader title="🚐 Rutas populares" actionLabel="Cotizar" onPress={onOpenTransfers} />
       <View style={styles.homeRouteGrid}>
@@ -2757,6 +3335,7 @@ function ProductFloatingBar({
   const displayPrice = applyOfferDiscount(tour.price, tour.activeOffer).total;
   return (
     <View style={[styles.productFloatingBar, { paddingBottom: 18 + bottomInset }]}>
+      <View pointerEvents="none" style={styles.productFloatingAccent} />
       <View style={styles.productFloatingPriceBlock}>
         <Text style={styles.productFloatingLabel}>Desde</Text>
         <View style={styles.productFloatingPriceRow}>
@@ -2764,11 +3343,15 @@ function ProductFloatingBar({
           <Text style={styles.productFloatingPrice}>{money(displayPrice)}</Text>
         </View>
         <Text style={styles.productFloatingSub}>por adulto</Text>
+        <View style={styles.productFloatingTrust}>
+          <ShieldCheck size={13} color={colors.green} />
+          <Text style={styles.productFloatingTrustText}>Pago seguro</Text>
+        </View>
       </View>
-      <Pressable style={styles.productFloatingButton} onPress={onPress}>
+      <MotionPressable style={styles.productFloatingButton} onPress={onPress} scaleTo={0.965}>
         <CalendarCheck size={20} color={colors.white} />
         <Text style={styles.productFloatingButtonText}>Ver disponibilidad</Text>
-      </Pressable>
+      </MotionPressable>
     </View>
   );
 }
@@ -2793,6 +3376,7 @@ function ProductScreen({
   const productPanelY = useRef(0);
   const bookingFormY = useRef(0);
   const heroCarouselRef = useRef<ScrollView>(null);
+  const panelEntrance = useRef(new Animated.Value(0)).current;
   const galleryImages = useMemo(() => (tour.gallery.length ? tour.gallery : [tour.image]).slice(0, 18), [tour.gallery, tour.image]);
   const [selectedImage, setSelectedImage] = useState(galleryImages[0] ?? tour.image);
   const [galleryOpen, setGalleryOpen] = useState(false);
@@ -2847,6 +3431,16 @@ function ProductScreen({
   useEffect(() => {
     setSelectedImage(galleryImages[0] ?? tour.image);
   }, [tour.id, galleryImages, tour.image]);
+
+  useEffect(() => {
+    panelEntrance.setValue(0);
+    Animated.timing(panelEntrance, {
+      toValue: 1,
+      duration: 260,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true
+    }).start();
+  }, [panelEntrance, tour.id]);
 
   useEffect(() => {
     const nextDate = tomorrow();
@@ -2975,6 +3569,7 @@ function ProductScreen({
           ))}
         </ScrollView>
         <View pointerEvents="none" style={styles.productOverlay} />
+        <View pointerEvents="none" style={styles.productTextScrim} />
         <Pressable style={styles.backButton} onPress={onBack}>
           <ArrowLeft size={22} color={colors.ink} />
         </Pressable>
@@ -2984,6 +3579,10 @@ function ProductScreen({
             {Math.max(1, galleryImages.indexOf(selectedImage) + 1)}/{galleryImages.length}
           </Text>
         </Pressable>
+        <View style={styles.productHeroSignal}>
+          <ShieldCheck size={14} color={colors.white} />
+          <Text style={styles.productHeroSignalText}>Fotos verificadas</Text>
+        </View>
         <View style={styles.productHeroDots}>
           {galleryImages.slice(0, 6).map((image, index) => (
             <View
@@ -3003,8 +3602,21 @@ function ProductScreen({
         </View>
       </View>
 
-      <View
-        style={styles.productPanel}
+      <Animated.View
+        style={[
+          styles.productPanel,
+          {
+            opacity: panelEntrance,
+            transform: [
+              {
+                translateY: panelEntrance.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [18, 0]
+                })
+              }
+            ]
+          }
+        ]}
         onLayout={(event) => {
           productPanelY.current = event.nativeEvent.layout.y;
           updateBookingOffset();
@@ -3015,7 +3627,7 @@ function ProductScreen({
             <Text style={styles.productPriceLabel}>Desde</Text>
             {tour.activeOffer ? <Text style={styles.productOldPrice}>{money(tour.price)}</Text> : null}
             <Text style={styles.productPrice}>{money(applyOfferDiscount(tour.price, tour.activeOffer).total)}</Text>
-            <Text style={styles.smallMuted}>por adulto, actualizado antes de pagar.</Text>
+            <Text style={styles.smallMuted}>por adulto. Precio final antes de pagar.</Text>
             {tour.activeOffer ? (
               <View style={styles.offerBadge}>
                 <Text style={styles.offerBadgeText}>{offerLabel(tour.activeOffer)}</Text>
@@ -3256,7 +3868,7 @@ function ProductScreen({
             <ActionButton label={bookingActionLabel} icon={bookingActionIcon} onPress={bookingActionPress} />
           </View>
         </View>
-      </View>
+      </Animated.View>
       <CalendarPickerModal
         visible={calendarOpen}
         selectedDate={date}
@@ -3275,10 +3887,391 @@ function ProductScreen({
   );
 }
 
+function RentCarScreen({
+  session,
+  onOpenHotels
+}: {
+  session: MobileSession | null;
+  onOpenHotels: () => void;
+}) {
+  const { language } = useLanguage();
+  const dateLocale = language === "en" ? "en-US" : language === "fr" ? "fr-FR" : "es-DO";
+  const [locations, setLocations] = useState<MobileRentCarLocation[]>(fallbackRentCarLocations);
+  const [vehicles, setVehicles] = useState<MobileRentCarVehicle[]>(fallbackRentCarVehicles);
+  const [selectedLocationId, setSelectedLocationId] = useState(fallbackRentCarLocations[0]?.id ?? "");
+  const [query, setQuery] = useState("");
+  const [selectedVehicle, setSelectedVehicle] = useState<MobileRentCarVehicle | null>(fallbackRentCarVehicles[0] ?? null);
+  const [customerName, setCustomerName] = useState(session?.user.name ?? "");
+  const [customerEmail, setCustomerEmail] = useState(session?.user.email ?? "");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [driverName, setDriverName] = useState("");
+  const [pickupPlace, setPickupPlace] = useState(fallbackRentCarLocations[0]?.name ?? "");
+  const [dropoffPlace, setDropoffPlace] = useState(fallbackRentCarLocations[0]?.name ?? "");
+  const [pickupDate, setPickupDate] = useState(tomorrow());
+  const [returnDate, setReturnDate] = useState(addDays(4));
+  const [pickupTime, setPickupTime] = useState("10:00");
+  const [returnTime, setReturnTime] = useState("10:00");
+  const [flightNumber, setFlightNumber] = useState("");
+  const [calendarTarget, setCalendarTarget] = useState<"pickup" | "return" | null>(null);
+  const [calendarMonth, setCalendarMonth] = useState(() => monthStart(tomorrow()));
+  const [submitting, setSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchMobileRentCarCatalog(language)
+      .then((catalog) => {
+        const nextLocations = catalog.locations.length ? catalog.locations : fallbackRentCarLocations;
+        const nextVehicles = catalog.vehicles.length ? catalog.vehicles : fallbackRentCarVehicles;
+        setLocations(nextLocations);
+        setVehicles(nextVehicles);
+        const preferredLocation = nextLocations.find((item) => item.id === "puj-cap-cana") ?? nextLocations[0];
+        if (preferredLocation) {
+          setSelectedLocationId((current) => current || preferredLocation.id);
+          setPickupPlace((current) => current || preferredLocation.name);
+          setDropoffPlace((current) => current || preferredLocation.name);
+        }
+      })
+      .catch(() => undefined);
+  }, [language]);
+
+  useEffect(() => {
+    setCustomerName((current) => current || session?.user.name || "");
+    setCustomerEmail((current) => current || session?.user.email || "");
+  }, [session?.user.email, session?.user.name]);
+
+  const selectedLocation = locations.find((location) => location.id === selectedLocationId) ?? locations[0] ?? null;
+  const normalizedQuery = normalizeLocationSearch(query);
+  const visibleVehicles = vehicles
+    .filter((vehicle) => vehicle.locationId === selectedLocationId)
+    .filter((vehicle) => {
+      if (!normalizedQuery) return true;
+      return normalizeLocationSearch(`${vehicle.model} ${vehicle.categoryLabel} ${vehicle.locationName} ${vehicle.badges.join(" ")}`).includes(normalizedQuery);
+    })
+    .sort((a, b) => (b.highProfile ? 1 : 0) - (a.highProfile ? 1 : 0) || a.price - b.price);
+
+  useEffect(() => {
+    const first = visibleVehicles[0] ?? vehicles.find((vehicle) => vehicle.locationId === selectedLocationId) ?? vehicles[0] ?? null;
+    if (first && (!selectedVehicle || selectedVehicle.locationId !== selectedLocationId)) {
+      setSelectedVehicle(first);
+    }
+  }, [selectedLocationId, selectedVehicle, vehicles, visibleVehicles]);
+
+  const rentalDays = useMemo(() => {
+    const diff = parseDateKey(returnDate).getTime() - parseDateKey(pickupDate).getTime();
+    return Math.max(1, Math.ceil(diff / 86400000));
+  }, [pickupDate, returnDate]);
+  const estimatedTotal = selectedVehicle ? selectedVehicle.price * rentalDays : 0;
+
+  const openCalendarFor = (target: "pickup" | "return") => {
+    setCalendarTarget(target);
+    setCalendarMonth(monthStart(target === "pickup" ? pickupDate : returnDate));
+  };
+
+  const submitReservation = async () => {
+    if (!selectedVehicle) return;
+    if (!customerName.trim() || !customerEmail.includes("@") || !customerPhone.trim()) {
+      setFeedback("Completa nombre, correo y WhatsApp para registrar la reserva.");
+      return;
+    }
+    setSubmitting(true);
+    setFeedback("Registrando reserva formal...");
+    try {
+      const result = await submitMobileRentCarReservation({
+        locationId: selectedVehicle.locationId,
+        categorySlug: selectedVehicle.categorySlug,
+        locale: language,
+        customerName,
+        customerEmail,
+        customerPhone,
+        driverName: driverName || customerName,
+        pickupPlace,
+        dropoffPlace,
+        pickupDate,
+        pickupTime,
+        returnDate,
+        returnTime,
+        flightNumber
+      });
+      if (!result.ok) throw new Error(result.error ?? "No pudimos registrar la reserva.");
+      setFeedback(`Reserva recibida: ${result.bookingCode ?? "codigo pendiente"}. No se cargo tarjeta; el equipo confirma disponibilidad.`);
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "No pudimos registrar la reserva.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <View style={styles.screen}>
+      <View style={styles.toursHeroPanel}>
+        <Text style={styles.eyebrowDark}>Proactivitis rent a car</Text>
+        <Text style={styles.toursHeroTitle}>Reserva vehiculo por zona</Text>
+        <Text style={styles.toursHeroCopy}>
+          Flota 2024/2025, precio claro por dia y reserva formal sin pago adelantado.
+        </Text>
+        <View style={styles.toursTrustRow}>
+          <Text style={styles.toursTrustPill}>Soporte VIP</Text>
+          <Text style={styles.toursTrustPill}>Sin tarjeta ahora</Text>
+          <Text style={styles.toursTrustPill}>Entrega coordinada</Text>
+        </View>
+      </View>
+
+      <View style={styles.searchBox}>
+        <Search size={18} color={colors.skyDark} />
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Busca SUV, economico, Cap Cana, aeropuerto..."
+          placeholderTextColor={colors.muted}
+          style={styles.searchInput}
+        />
+      </View>
+
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
+        {locations.map((location) => (
+          <Chip
+            key={location.id}
+            label={location.name}
+            active={location.id === selectedLocationId}
+            onPress={() => {
+              setSelectedLocationId(location.id);
+              setPickupPlace(location.name);
+              setDropoffPlace(location.name);
+            }}
+          />
+        ))}
+      </ScrollView>
+
+      {selectedLocation ? (
+        <View style={styles.rentZoneCard}>
+          <RemoteImage uri={selectedLocation.image} style={styles.rentZoneImage} resizeMode="contain" />
+          <View style={styles.flexText}>
+            <Text style={styles.featuredMeta}>{selectedLocation.code}</Text>
+            <Text style={styles.sectionTitle}>{selectedLocation.name}</Text>
+            <Text style={styles.smallMuted}>
+              {selectedLocation.vehicleCount} vehiculos desde {money(selectedLocation.priceFrom)}/dia
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
+      <View style={styles.cardStack}>
+        {visibleVehicles.map((vehicle) => (
+          <MotionPressable
+            key={vehicle.id}
+            style={[styles.rentVehicleCard, selectedVehicle?.id === vehicle.id ? styles.rentVehicleCardActive : null]}
+            onPress={() => setSelectedVehicle(vehicle)}
+            scaleTo={0.985}
+          >
+            <View style={styles.rentVehicleImageShell}>
+              <RemoteImage uri={vehicle.image} style={styles.rentVehicleImage} resizeMode="contain" />
+            </View>
+            <View style={styles.rentVehicleBody}>
+              <View style={styles.rowBetween}>
+                <Text style={styles.featuredMeta}>{vehicle.categoryLabel}</Text>
+                <Text style={styles.homeRoutePrice}>Desde {money(vehicle.price)}/dia</Text>
+              </View>
+              <Text style={styles.tourTitle}>{vehicle.model}</Text>
+              <Text style={styles.bodyText} numberOfLines={2}>
+                {vehicle.locationName} | modelo 2024/2025 o clase similar confirmada por Proactivitis.
+              </Text>
+              <View style={styles.rentSpecGrid}>
+                <InfoPill icon={Users} label="Pasajeros" value={`${vehicle.seats}`} />
+                <InfoPill icon={Car} label="Puertas" value={`${vehicle.doors}`} />
+                <InfoPill icon={ShieldCheck} label="Equipaje" value={`${vehicle.bags} / ${vehicle.largeBags} grandes`} />
+                <InfoPill icon={Clock3} label="Caja" value={vehicle.transmission} />
+              </View>
+            </View>
+          </MotionPressable>
+        ))}
+      </View>
+
+      {selectedVehicle ? (
+        <View style={styles.checkoutBox}>
+          <View style={styles.rowBetween}>
+            <View style={styles.flexText}>
+              <Text style={styles.sectionTitle}>Reservar {selectedVehicle.model}</Text>
+              <Text style={styles.smallMuted}>No pagas ahora. Registramos la reserva y confirmamos disponibilidad.</Text>
+            </View>
+            <Text style={styles.checkoutBadge}>{money(estimatedTotal)}</Text>
+          </View>
+
+          <InputField label="Nombre del cliente" value={customerName} onChangeText={setCustomerName} />
+          <InputField label="Correo" value={customerEmail} onChangeText={setCustomerEmail} keyboardType="email-address" />
+          <InputField label="WhatsApp" value={customerPhone} onChangeText={setCustomerPhone} keyboardType="phone-pad" />
+          <InputField label="Nombre del conductor" value={driverName} onChangeText={setDriverName} placeholder="Si es diferente al cliente" />
+          <InputField label="Entrega" value={pickupPlace} onChangeText={setPickupPlace} />
+          <InputField label="Devolucion" value={dropoffPlace} onChangeText={setDropoffPlace} />
+          <View style={styles.formTwoColumns}>
+            <Pressable style={styles.bookingDateButton} onPress={() => openCalendarFor("pickup")}>
+              <CalendarCheck size={18} color={colors.skyDark} />
+              <View style={styles.flexText}>
+                <Text style={styles.bookingDateLabel}>Fecha entrega</Text>
+                <Text style={styles.bookingDateValue}>{shortPickerDate(pickupDate, dateLocale)}</Text>
+              </View>
+            </Pressable>
+            <InputField label="Hora entrega" value={pickupTime} onChangeText={setPickupTime} />
+          </View>
+          <View style={styles.formTwoColumns}>
+            <Pressable style={styles.bookingDateButton} onPress={() => openCalendarFor("return")}>
+              <CalendarCheck size={18} color={colors.skyDark} />
+              <View style={styles.flexText}>
+                <Text style={styles.bookingDateLabel}>Fecha devolucion</Text>
+                <Text style={styles.bookingDateValue}>{shortPickerDate(returnDate, dateLocale)}</Text>
+              </View>
+            </Pressable>
+            <InputField label="Hora devolucion" value={returnTime} onChangeText={setReturnTime} />
+          </View>
+          <InputField label="Vuelo" value={flightNumber} onChangeText={setFlightNumber} placeholder="Solo si llega por aeropuerto" />
+
+          <View style={styles.noticePanel}>
+            <ShieldCheck size={20} color={colors.skyDark} />
+            <View style={styles.flexText}>
+              <Text style={styles.noticeTitle}>Reserva formal sin cargo online</Text>
+              <Text style={styles.noticeText}>
+                Total estimado {money(estimatedTotal)} por {rentalDays} dia(s). El equipo confirma modelo, entrega y requisitos.
+              </Text>
+            </View>
+          </View>
+          {feedback ? <Text style={styles.inputError}>{feedback}</Text> : null}
+          <ActionButton
+            label={submitting ? "Registrando..." : "Reservar vehiculo"}
+            icon={CalendarCheck}
+            disabled={submitting}
+            onPress={submitReservation}
+          />
+          <ActionButton label="Ver hoteles conectados" icon={Home} variant="outlineDark" onPress={onOpenHotels} />
+        </View>
+      ) : null}
+
+      <CalendarPickerModal
+        visible={Boolean(calendarTarget)}
+        selectedDate={calendarTarget === "return" ? returnDate : pickupDate}
+        month={calendarMonth}
+        locale={dateLocale}
+        onMonthChange={setCalendarMonth}
+        onClose={() => setCalendarTarget(null)}
+        onSelect={(date) => {
+          if (calendarTarget === "return") setReturnDate(date);
+          else setPickupDate(date);
+          setCalendarTarget(null);
+        }}
+      />
+    </View>
+  );
+}
+
+function HotelsScreen({
+  onOpenTransfers,
+  onOpenRentCar
+}: {
+  onOpenTransfers: () => void;
+  onOpenRentCar: () => void;
+}) {
+  const { language } = useLanguage();
+  const [hotels, setHotels] = useState<MobileHotelSummary[]>(fallbackHotelSummaries);
+  const [directoryHref, setDirectoryHref] = useState("/hoteles");
+  const [query, setQuery] = useState("");
+  const [zone, setZone] = useState("Todas");
+
+  useEffect(() => {
+    fetchMobileHotels(language)
+      .then((catalog) => {
+        setHotels(catalog.hotels.length ? catalog.hotels : fallbackHotelSummaries);
+        setDirectoryHref(catalog.href || "/hoteles");
+      })
+      .catch(() => undefined);
+  }, [language]);
+
+  const zones = useMemo(() => ["Todas", ...Array.from(new Set(hotels.map((hotel) => hotel.zoneName))).sort()], [hotels]);
+  const normalizedQuery = normalizeLocationSearch(query);
+  const visibleHotels = hotels.filter((hotel) => {
+    const zoneMatch = zone === "Todas" || hotel.zoneName === zone;
+    const textMatch =
+      !normalizedQuery ||
+      normalizeLocationSearch(`${hotel.name} ${hotel.zoneName} ${hotel.description}`).includes(normalizedQuery);
+    return zoneMatch && textMatch;
+  });
+
+  return (
+    <View style={styles.screen}>
+      <View style={styles.toursHeroPanel}>
+        <Text style={styles.eyebrowDark}>Proactivitis alojamientos</Text>
+        <Text style={styles.toursHeroTitle}>Hoteles, villas y zonas conectadas</Text>
+        <Text style={styles.toursHeroCopy}>
+          Encuentra donde quedarte y conecta la estadia con traslados, tours y soporte local.
+        </Text>
+        <View style={styles.heroActions}>
+          <ActionButton label="Cotizar traslado" icon={Car} onPress={onOpenTransfers} />
+          <ActionButton label="Rent a car" icon={Car} variant="outlineDark" onPress={onOpenRentCar} />
+        </View>
+      </View>
+
+      <View style={styles.searchBox}>
+        <Search size={18} color={colors.skyDark} />
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Busca hotel, zona, villa o resort..."
+          placeholderTextColor={colors.muted}
+          style={styles.searchInput}
+        />
+      </View>
+
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
+        {zones.map((item) => (
+          <Chip key={item} label={item} active={item === zone} onPress={() => setZone(item)} />
+        ))}
+      </ScrollView>
+
+      <View style={styles.toursResultBar}>
+        <View>
+          <Text style={styles.resultSummaryText}>{visibleHotels.length} alojamientos</Text>
+          <Text style={styles.toursResultMeta}>{zone === "Todas" ? "Todas las zonas" : zone}</Text>
+        </View>
+        <Pressable onPress={() => openUrl(customerUrl(directoryHref))}>
+          <Text style={styles.sectionAction}>Ver web</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.cardStack}>
+        {visibleHotels.map((hotel) => (
+          <MotionPressable key={hotel.id} style={styles.hotelCard} onPress={() => openUrl(customerUrl(hotel.href))} scaleTo={0.985}>
+            <RemoteImage uri={hotel.image} style={styles.hotelCardImage} />
+            <View style={styles.hotelCardBody}>
+              <View style={styles.rowBetween}>
+                <Text style={styles.featuredMeta}>{hotel.zoneName}</Text>
+                <View style={styles.ratingPill}>
+                  <Star size={13} color={colors.amberDark} fill={colors.amberDark} />
+                  <Text style={styles.ratingText}>{hotel.rating.toFixed(1)}</Text>
+                </View>
+              </View>
+              <Text style={styles.tourTitle}>{hotel.name}</Text>
+              <Text style={styles.bodyText} numberOfLines={2}>{hotel.description}</Text>
+              <View style={styles.hotelActions}>
+                <Pressable style={styles.nativeSmallButton} onPress={() => openUrl(customerUrl(hotel.href))}>
+                  <Text style={styles.nativeSmallButtonText}>Ver hotel</Text>
+                </Pressable>
+                <Pressable style={styles.nativeSmallButtonGhost} onPress={onOpenTransfers}>
+                  <Text style={styles.nativeSmallButtonGhostText}>Traslado</Text>
+                </Pressable>
+              </View>
+            </View>
+          </MotionPressable>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 function TransfersScreen({
+  prefillLocation,
+  onPrefillConsumed,
   onSaveQuote,
   onOpenCheckout
 }: {
+  prefillLocation: LocationSummary | null;
+  onPrefillConsumed: () => void;
   onSaveQuote: (quote: SavedQuote) => void;
   onOpenCheckout: (url: string) => void;
 }) {
@@ -3459,6 +4452,25 @@ function TransfersScreen({
     setQuoteNotice(null);
   };
 
+  useEffect(() => {
+    if (!prefillLocation) return;
+    const isAirport =
+      normalizeLocationSearch(`${prefillLocation.type} ${prefillLocation.name}`).includes("airport") ||
+      normalizeLocationSearch(`${prefillLocation.type} ${prefillLocation.name}`).includes("aeropuerto");
+    if (isAirport) {
+      setOrigin(prefillLocation);
+      setOriginQuery(prefillLocation.name);
+      setOriginOptions([]);
+    } else {
+      setDestination(prefillLocation);
+      setDestinationQuery(prefillLocation.name);
+      setDestinationOptions([]);
+    }
+    setSelectedRouteId("");
+    resetQuote();
+    onPrefillConsumed();
+  }, [prefillLocation, onPrefillConsumed]);
+
   const selectRoute = (route: MobileTransferRoute) => {
     setSelectedRouteId(route.id);
     setOrigin(route.origin);
@@ -3574,6 +4586,7 @@ function TransfersScreen({
     <View style={styles.transferScreen}>
       <ImageBackground source={transferHeroSource} style={styles.transferHero} imageStyle={styles.heroImage as StyleProp<ImageStyle>}>
         <View style={styles.heroOverlay} />
+        <View pointerEvents="none" style={styles.heroTextScrim} />
         <View style={styles.transferHeroContent}>
           <Text style={styles.eyebrow}>Traslados privados</Text>
           <Text style={styles.heroTitle}>Reserva tu traslado privado</Text>
@@ -3647,17 +4660,18 @@ function TransfersScreen({
         <Text style={styles.fieldLabel}>Rutas populares</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.routeList}>
           {routeSuggestions.map((route) => (
-            <Pressable
+            <MotionPressable
               key={route.id}
               style={[styles.routeShortcut, route.id === selectedRouteId ? styles.routeShortcutActive : null]}
               onPress={() => selectRoute(route)}
+              scaleTo={0.965}
             >
               <Text style={styles.routeMeta}>Origen</Text>
               <Text style={styles.routeTitle} numberOfLines={1}>{route.origin.name}</Text>
               <Text style={styles.routeMeta}>Destino</Text>
               <Text style={styles.routeTitle} numberOfLines={1}>{route.destination.name}</Text>
               <Text style={styles.routePrice}>Desde {money(route.priceFrom)}</Text>
-            </Pressable>
+            </MotionPressable>
           ))}
         </ScrollView>
 
@@ -3675,7 +4689,12 @@ function TransfersScreen({
         <TrustMiniList
           items={["Precio fijo sin sorpresas", "Conductor te espera con tu nombre", "Soporte por WhatsApp"]}
         />
-        <ActionButton label={quoteLoading ? "Buscando..." : "Ver precio ahora"} icon={Search} onPress={quoteRoute} />
+        <ActionButton
+          label={quoteLoading ? "Buscando precio..." : "Ver precio ahora"}
+          icon={Search}
+          disabled={quoteLoading}
+          onPress={quoteRoute}
+        />
       </View>
 
       {quoteError ? (
@@ -3701,10 +4720,11 @@ function TransfersScreen({
             const price = Math.round(vehicle.price * roundTripMultiplier);
             const active = vehicle.id === selectedVehicle?.id;
             return (
-              <Pressable
+              <MotionPressable
                 key={vehicle.id}
                 style={[styles.vehicleCard, active ? styles.vehicleCardActive : null]}
                 onPress={() => setSelectedVehicleId(vehicle.id)}
+                scaleTo={0.985}
               >
                 {vehicle.imageUrl ? (
                   <Image source={{ uri: absoluteImageUrl(vehicle.imageUrl) }} style={styles.vehicleImage as StyleProp<ImageStyle>} resizeMode="contain" />
@@ -3725,7 +4745,7 @@ function TransfersScreen({
                     <Text style={styles.smallButtonText}>Reservar</Text>
                   </Pressable>
                 </View>
-              </Pressable>
+              </MotionPressable>
             );
           })}
           {selectedVehicle && selectedPrice !== null ? (
@@ -3742,6 +4762,7 @@ function TransfersScreen({
               <ActionButton
                 label="Reservar ahora"
                 icon={CreditCard}
+                disabled={quoteLoading}
                 onPress={() => reserveVehicle(selectedVehicle, selectedPrice)}
               />
             </View>
@@ -3775,11 +4796,14 @@ function CheckoutScreen({
   const [lastName, setLastName] = useState(nameParts.slice(1).join(" "));
   const [email, setEmail] = useState(session?.user.email ?? "");
   const [phone, setPhone] = useState("");
-  const [pickupLocation, setPickupLocation] = useState(summary.destination ?? "");
+  const [pickupLocation, setPickupLocation] = useState(
+    summary.flowType === "transfer" ? summary.origin ?? "" : summary.destination ?? ""
+  );
   const [pickupSelected, setPickupSelected] = useState<LocationSummary | null>(null);
   const [pickupOptions, setPickupOptions] = useState<LocationSummary[]>([]);
   const [pickupLoading, setPickupLoading] = useState(false);
   const [pickupInfo, setPickupInfo] = useState<string | null>(null);
+  const [flightNumber, setFlightNumber] = useState("");
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -3801,7 +4825,10 @@ function CheckoutScreen({
         setLastName(draft.lastName ?? "");
         setEmail(draft.email ?? "");
         setPhone(draft.phone ?? "");
-        setPickupLocation(draft.pickupLocation ?? "");
+        setPickupLocation(
+          summary.flowType === "transfer" ? summary.origin ?? draft.pickupLocation ?? "" : draft.pickupLocation ?? ""
+        );
+        setFlightNumber(draft.flightNumber ?? "");
         setNotes(draft.notes ?? "");
       })
       .finally(() => {
@@ -3810,7 +4837,7 @@ function CheckoutScreen({
     return () => {
       active = false;
     };
-  }, [url]);
+  }, [summary.flowType, summary.origin, url]);
 
   useEffect(() => {
     if (!draftReady) return;
@@ -3820,6 +4847,7 @@ function CheckoutScreen({
       Boolean(email.trim()) ||
       Boolean(phone.trim()) ||
       Boolean(pickupLocation.trim()) ||
+      Boolean(flightNumber.trim()) ||
       Boolean(notes.trim());
 
     if (!hasDraft) {
@@ -3834,13 +4862,14 @@ function CheckoutScreen({
       email,
       phone,
       pickupLocation,
+      flightNumber,
       notes,
       savedAt: Date.now()
     } satisfies CheckoutDraft);
-  }, [draftReady, email, firstName, lastName, notes, phone, pickupLocation, url]);
+  }, [draftReady, email, firstName, flightNumber, lastName, notes, phone, pickupLocation, url]);
 
   useEffect(() => {
-    if (summary.flowType !== "tour") {
+    if (summary.flowType === "transfer") {
       setPickupOptions([]);
       setPickupLoading(false);
       setPickupInfo(null);
@@ -3851,7 +4880,7 @@ function CheckoutScreen({
     if (pickupSelected?.name === query) {
       setPickupOptions([]);
       setPickupLoading(false);
-      setPickupInfo("Hotel seleccionado de la lista real.");
+      setPickupInfo(summary.flowType === "tour" ? "Hotel seleccionado de la lista real." : "Ubicacion seleccionada de la lista real.");
       return;
     }
 
@@ -3862,24 +4891,41 @@ function CheckoutScreen({
       return;
     }
 
+    const localMatches = pickupHotelMatchesForTour(fallbackTransferLocations, query, summary.tourLocation);
+    setPickupOptions(localMatches);
+    setPickupInfo(
+      localMatches.length
+        ? "Selecciona un hotel de la lista o deja escrito tu punto de recogida."
+        : "Buscando hoteles conectados..."
+    );
+
     let active = true;
     const timer = setTimeout(() => {
       setPickupLoading(true);
       fetchTransferLocations(query)
         .then((locations) => {
           if (!active) return;
-          const matches = pickupHotelMatchesForTour(locations, query, summary.tourLocation);
-          setPickupOptions(matches);
+          const matches = pickupHotelMatchesForTour(
+            mergeLocations(locations, fallbackTransferLocations),
+            query,
+            summary.tourLocation
+          );
+          const visibleMatches = matches.length ? matches : localMatches;
+          setPickupOptions(visibleMatches);
           setPickupInfo(
-            matches.length
+            visibleMatches.length
               ? "Selecciona un hotel de la lista o deja escrito tu punto de recogida."
               : "No lo vemos en la lista de hoteles de esta zona. Usaremos lo que escribiste como punto de recogida."
           );
         })
         .catch(() => {
           if (!active) return;
-          setPickupOptions([]);
-          setPickupInfo("No pudimos buscar hoteles ahora. Usaremos lo que escribiste como punto de recogida.");
+          setPickupOptions(localMatches);
+          setPickupInfo(
+            localMatches.length
+              ? "Selecciona un hotel de la lista o deja escrito tu punto de recogida."
+              : "No pudimos buscar hoteles ahora. Usaremos lo que escribiste como punto de recogida."
+          );
         })
         .finally(() => {
           if (active) setPickupLoading(false);
@@ -3897,7 +4943,10 @@ function CheckoutScreen({
     if (!firstName.trim()) nextErrors.firstName = "Indica el nombre.";
     if (!lastName.trim()) nextErrors.lastName = "Indica el apellido.";
     if (!email.trim() || !email.includes("@")) nextErrors.email = "Indica un email válido.";
-    if (!pickupLocation.trim()) nextErrors.pickupLocation = "Indica hotel o punto de recogida.";
+    if (!phone.trim()) nextErrors.phone = "Indica un teléfono de contacto.";
+    if (!summary.totalPrice || summary.totalPrice <= 0) nextErrors.payment = "No pudimos validar el total de esta reserva.";
+    if (summary.flowType === "tour" && !pickupLocation.trim()) nextErrors.pickupLocation = "Indica hotel o punto de recogida.";
+    if (summary.flowType === "transfer" && !flightNumber.trim()) nextErrors.flightNumber = "Indica el numero de vuelo.";
     setErrors(nextErrors);
     return !Object.keys(nextErrors).length;
   };
@@ -3915,27 +4964,33 @@ function CheckoutScreen({
     payload.email = email.trim().toLowerCase();
     payload.phone = phone.trim();
     payload.pickupPreference = "pickup";
-    payload.pickupLocation = pickupLocation.trim();
+    payload.pickupLocation = summary.flowType === "transfer" ? summary.origin ?? pickupLocation.trim() : pickupLocation.trim();
+    payload.flightNumber = flightNumber.trim();
     payload.specialRequirements = notes.trim();
     payload.paymentOption = "now";
     payload.totalPrice = payload.totalPrice ?? String(summary.totalPrice);
     return payload;
   };
 
+  const openCheckoutFallback = (message: string) => {
+    setFeedback(`${message} El pago no se completo. Contacta por chat directo para ayuda con tu reserva.`);
+  };
+
   const continueToPay = async () => {
     if (paymentLoading) return;
     if (!validateCheckout()) return;
     if (!nativeStripeAvailable) {
-      setFeedback("Stripe nativo no está disponible en la vista web. Usa checkout web o prueba en Android/iOS.");
+      openCheckoutFallback("El pago nativo no está disponible en esta plataforma.");
       return;
     }
     if (!stripeReady) {
-      setFeedback("Stripe aún no está configurado en esta build. Revisa NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.");
+      openCheckoutFallback("No pudimos cargar Stripe en esta build.");
       return;
     }
 
     setPaymentLoading(true);
     setFeedback("Preparando pago seguro...");
+    let paymentAccepted = false;
     try {
       const intent = await createMobilePaymentIntent(buildPaymentPayload(), session?.token);
       if (!intent.clientSecret) {
@@ -3962,6 +5017,7 @@ function CheckoutScreen({
         setFeedback(paymentError.message ?? "El pago fue cancelado o no se completo.");
         return;
       }
+      paymentAccepted = true;
 
       const confirmed = await confirmMobileBooking({
         bookingId: intent.bookingId,
@@ -3981,26 +5037,24 @@ function CheckoutScreen({
       void writeStoredJson(transferDraftStorageKey, null);
       setFeedback("Pago confirmado. Tu e-ticket fue enviado por correo y tu cuenta quedó lista en la app.");
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "No se pudo completar el pago.");
+      const message = error instanceof Error ? error.message : "No se pudo completar el pago.";
+      if (paymentAccepted) {
+        setFeedback(`${message} Si el banco marco el pago, contacta por chat directo para confirmar tu reserva.`);
+      } else {
+        openCheckoutFallback(message);
+      }
     } finally {
       setPaymentLoading(false);
     }
   };
 
-  const openWebCheckout = () => {
-    if (!validateCheckout()) return;
-    const checkout = addCheckoutContactParams({
-      checkoutUrl: url,
-      firstName,
-      lastName,
-      email,
-      phone,
-      pickupLocation,
-      specialRequirements: notes
-    });
-    setFeedback("Abriendo checkout web de Proactivitis...");
-    openUrl(checkout);
-  };
+  const isTransferCheckout = summary.flowType === "transfer";
+  const pickupFieldLabel = "Busca tu hotel o escribe un punto de recogida";
+  const pickupFieldPlaceholder = "Ej: hotel, villa o punto de encuentro";
+  const transferPickupLabel = summary.origin ?? pickupLocation;
+  const transferDestinationLabel = summary.destination ?? "Destino pendiente";
+  const notesLabel = isTransferCheckout ? "Notas para el conductor" : "Notas especiales";
+  const notesPlaceholder = isTransferCheckout ? "Equipaje, silla de bebe, terminal o detalles especiales" : undefined;
 
   return (
     <View style={styles.checkoutScreen}>
@@ -4016,19 +5070,26 @@ function CheckoutScreen({
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.checkoutHero}>
-          <Text style={styles.eyebrowDark}>Reserva segura</Text>
-          <Text style={styles.checkoutHeroTitle}>Confirma tu experiencia en minutos</Text>
-          <Text style={styles.bodyText}>
-            Revisa tu reserva, deja tus datos y paga seguro con Proactivitis.
+          <View style={styles.checkoutHeroHeader}>
+            <View style={styles.checkoutHeroIcon}>
+              <ShieldCheck size={20} color={colors.white} />
+            </View>
+            <View style={styles.flexText}>
+              <Text style={styles.eyebrowDark}>Reserva segura</Text>
+              <Text style={styles.checkoutHeroTitle}>Confirma tu experiencia en minutos</Text>
+            </View>
+          </View>
+          <Text style={styles.checkoutHeroCopy}>
+            Revisa los detalles, deja tus datos y paga dentro de la app con confirmacion de Proactivitis.
           </Text>
           <View style={styles.checkoutStepRow}>
-            <View style={styles.checkoutStep}>
+            <View style={[styles.checkoutStep, styles.checkoutStepActive]}>
               <Text style={styles.checkoutStepNumber}>1</Text>
               <Text style={styles.checkoutStepText}>Datos</Text>
             </View>
-            <View style={styles.checkoutStep}>
+            <View style={[styles.checkoutStep, isTransferCheckout ? styles.checkoutStepActive : null]}>
               <Text style={styles.checkoutStepNumber}>2</Text>
-              <Text style={styles.checkoutStepText}>Recogida</Text>
+              <Text style={styles.checkoutStepText}>{isTransferCheckout ? "Vuelo" : "Recogida"}</Text>
             </View>
             <View style={styles.checkoutStep}>
               <Text style={styles.checkoutStepNumber}>3</Text>
@@ -4054,7 +5115,10 @@ function CheckoutScreen({
             </View>
           )}
           <View style={styles.flexText}>
-            <Text style={styles.summaryType}>{summary.flowType === "transfer" ? "Transfer privado" : "Tour"}</Text>
+            <View style={styles.summaryTopRow}>
+              <Text style={styles.summaryType}>{summary.flowType === "transfer" ? "Transfer privado" : "Tour"}</Text>
+              <Text style={styles.summaryPricePill}>{money(summary.totalPrice)}</Text>
+            </View>
             <Text style={styles.summaryTitle}>{summary.title}</Text>
             {summary.optionName ? <Text style={styles.smallMuted}>{summary.optionName}</Text> : null}
             {summary.origin || summary.destination ? (
@@ -4070,34 +5134,154 @@ function CheckoutScreen({
           <InfoPill icon={CreditCard} label="Total" value={money(summary.totalPrice)} />
         </View>
 
+        <View style={styles.checkoutConfidenceStrip}>
+          <View style={styles.checkoutConfidenceItem}>
+            <ShieldCheck size={17} color={colors.green} />
+            <Text style={styles.checkoutConfidenceText}>Pago seguro</Text>
+          </View>
+          <View style={styles.checkoutConfidenceItem}>
+            <CheckCircle2 size={17} color={colors.green} />
+            <Text style={styles.checkoutConfidenceText}>E-ticket por correo</Text>
+          </View>
+          <View style={styles.checkoutConfidenceItem}>
+            <MessageCircle size={17} color={colors.green} />
+            <Text style={styles.checkoutConfidenceText}>Soporte humano</Text>
+          </View>
+        </View>
+
         <View style={styles.formPanel}>
-          <Text style={styles.sectionTitle}>Datos de contacto</Text>
+          <View style={styles.formPanelHeader}>
+            <View style={styles.formPanelNumber}>
+              <Text style={styles.formPanelNumberText}>1</Text>
+            </View>
+            <View style={styles.flexText}>
+              <Text style={styles.sectionTitle}>Datos de contacto</Text>
+              <Text style={styles.smallMuted}>Usaremos estos datos para confirmar tu reserva.</Text>
+            </View>
+          </View>
           <View style={styles.dateGrid}>
-            <InputField label="Nombre" value={firstName} onChangeText={setFirstName} error={errors.firstName} />
-            <InputField label="Apellido" value={lastName} onChangeText={setLastName} error={errors.lastName} />
+            <InputField
+              label="Nombre"
+              value={firstName}
+              onChangeText={(value) => {
+                setFirstName(value);
+                setErrors((current) => {
+                  const next = { ...current };
+                  delete next.firstName;
+                  return next;
+                });
+              }}
+              error={errors.firstName}
+            />
+            <InputField
+              label="Apellido"
+              value={lastName}
+              onChangeText={(value) => {
+                setLastName(value);
+                setErrors((current) => {
+                  const next = { ...current };
+                  delete next.lastName;
+                  return next;
+                });
+              }}
+              error={errors.lastName}
+            />
           </View>
           <InputField
             label="Email"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(value) => {
+              setEmail(value);
+              setErrors((current) => {
+                const next = { ...current };
+                delete next.email;
+                return next;
+              });
+            }}
             error={errors.email}
             keyboardType="email-address"
           />
-          <InputField label="Teléfono" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+          <InputField
+            label="Teléfono"
+            value={phone}
+            onChangeText={(value) => {
+              setPhone(value);
+              setErrors((current) => {
+                const next = { ...current };
+                delete next.phone;
+                return next;
+              });
+            }}
+            error={errors.phone}
+            keyboardType="phone-pad"
+          />
         </View>
 
         <View style={styles.formPanel}>
-          <Text style={styles.sectionTitle}>Recogida y preferencias</Text>
-          {summary.flowType === "tour" ? (
+          <View style={styles.formPanelHeader}>
+            <View style={styles.formPanelNumber}>
+              <Text style={styles.formPanelNumberText}>2</Text>
+            </View>
+            <View style={styles.flexText}>
+              <Text style={styles.sectionTitle}>{isTransferCheckout ? "Datos del traslado" : "Recogida y preferencias"}</Text>
+              <Text style={styles.smallMuted}>
+                {isTransferCheckout ? "La ruta ya viene preparada desde transfer." : "Elige o escribe el punto exacto de recogida."}
+              </Text>
+            </View>
+          </View>
+          {isTransferCheckout ? (
+            <View style={styles.cardStack}>
+              <View style={styles.transferCheckoutRoute}>
+                <View style={styles.rowBetween}>
+                  <Text style={styles.transferCheckoutRouteLabel}>Ruta seleccionada</Text>
+                  <CheckCircle2 size={18} color={colors.green} />
+                </View>
+                <View style={styles.transferRouteLine}>
+                  <View style={styles.transferRouteDot} />
+                  <View style={styles.flexText}>
+                    <Text style={styles.infoLabel}>Recogida</Text>
+                    <Text style={styles.transferRouteText}>{transferPickupLabel}</Text>
+                  </View>
+                </View>
+                <View style={styles.transferRouteLine}>
+                  <View style={[styles.transferRouteDot, styles.transferRouteDotEnd]} />
+                  <View style={styles.flexText}>
+                    <Text style={styles.infoLabel}>Destino</Text>
+                    <Text style={styles.transferRouteText}>{transferDestinationLabel}</Text>
+                  </View>
+                </View>
+                <Text style={styles.pickupHelperText}>
+                  Usamos tu ruta seleccionada. No tienes que escribir el hotel otra vez.
+                </Text>
+              </View>
+              <InputField
+                label="Numero de vuelo"
+                value={flightNumber}
+                onChangeText={(value) => {
+                  setFlightNumber(value.toUpperCase());
+                  setErrors((current) => {
+                    const next = { ...current };
+                    delete next.flightNumber;
+                    return next;
+                  });
+                }}
+                placeholder="Ej: AA1234 / IB6501"
+                error={errors.flightNumber}
+              />
+              <Text style={styles.pickupHelperText}>
+                Tu conductor usa este dato para monitorear la llegada y coordinar la recogida.
+              </Text>
+            </View>
+          ) : (
             <View style={styles.cardStack}>
               <LocationSearchInput
-                label="Busca tu hotel o escribe un punto de recogida"
+                label={pickupFieldLabel}
                 icon={MapPin}
                 value={pickupLocation}
                 selected={pickupSelected}
                 loading={pickupLoading}
                 options={pickupOptions}
-                placeholder="Ej: hotel, villa o punto de encuentro"
+                placeholder={pickupFieldPlaceholder}
                 onChange={(value) => {
                   setPickupLocation(value);
                   setPickupSelected(null);
@@ -4122,39 +5306,41 @@ function CheckoutScreen({
               />
               {pickupInfo ? <Text style={styles.pickupHelperText}>{pickupInfo}</Text> : null}
             </View>
-          ) : (
-            <InputField
-              label="Punto principal"
-              value={pickupLocation}
-              onChangeText={setPickupLocation}
-              error={errors.pickupLocation}
-            />
           )}
-          <InputField label="Notas especiales" value={notes} onChangeText={setNotes} multiline />
+          <InputField label={notesLabel} value={notes} onChangeText={setNotes} placeholder={notesPlaceholder} multiline />
         </View>
 
         <View style={styles.payPanel}>
+          <View style={styles.payPanelHeader}>
+            <View style={styles.formPanelNumberDark}>
+              <Text style={styles.formPanelNumberTextDark}>3</Text>
+            </View>
+            <View style={styles.flexText}>
+              <Text style={styles.payPanelTitle}>Pago seguro</Text>
+              <Text style={styles.payPanelSubtitle}>Stripe procesa el pago dentro de la app.</Text>
+            </View>
+          </View>
           <View style={styles.checkoutSecureNote}>
             <ShieldCheck size={18} color={colors.skySoft} />
             <Text style={styles.checkoutSecureText}>Pago protegido por Stripe y confirmación por Proactivitis.</Text>
           </View>
           <TrustMiniList
             dark
-            items={["Pago seguro con Stripe", "Confirmación por WhatsApp", "Soporte antes y después de reservar"]}
+            items={["Pago nativo dentro de la app", "Confirmación por WhatsApp", "Soporte antes y después de reservar"]}
           />
-          <View style={styles.rowBetween}>
+          <View style={styles.checkoutPaySummary}>
             <View>
               <Text style={styles.checkoutPayLabel}>Total a pagar</Text>
               <Text style={styles.checkoutTotal}>{money(summary.totalPrice)}</Text>
             </View>
-            <ActionButton label={paymentLoading ? "Procesando..." : "Pagar seguro con Stripe"} icon={CreditCard} onPress={continueToPay} />
+            <ActionButton
+              label={paymentLoading ? "Procesando pago..." : "Pagar seguro con Stripe"}
+              icon={CreditCard}
+              disabled={paymentLoading}
+              onPress={continueToPay}
+            />
           </View>
-          <ActionButton
-            label="Pagar en navegador"
-            icon={CreditCard}
-            variant="outlineDark"
-            onPress={openWebCheckout}
-          />
+          {errors.payment ? <Text style={styles.payFeedbackText}>{errors.payment}</Text> : null}
           <ActionButton
             label="Confirmar por WhatsApp"
             icon={MessageCircle}
@@ -4162,12 +5348,16 @@ function CheckoutScreen({
             onPress={() =>
               openUrl(
                 whatsappUrl(
-                  `Hola Proactivitis. Quiero reservar ${summary.title}. Fecha ${summary.date}, total ${money(summary.totalPrice)}.`
+                  `Hola Proactivitis. Quiero reservar ${summary.title}. Fecha ${summary.date}, total ${money(summary.totalPrice)}.${
+                    isTransferCheckout
+                      ? ` Ruta: ${transferPickupLabel} -> ${transferDestinationLabel}. Vuelo: ${flightNumber || "pendiente"}.`
+                      : ""
+                  }`
                 )
               )
             }
           />
-          {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
+          {feedback ? <Text style={styles.payFeedbackText}>{feedback}</Text> : null}
           {confirmedBooking ? (
             <View style={styles.confirmedActions}>
               <View style={styles.confirmedBadge}>
@@ -4186,6 +5376,8 @@ function CheckoutScreen({
             </View>
           ) : null}
         </View>
+
+        <ContactPanel compact />
 
         <PolicyLinksPanel compact />
       </ScrollView>
@@ -5645,35 +6837,41 @@ function ActionButton({
   label,
   icon: Icon,
   onPress,
-  variant = "primary"
+  variant = "primary",
+  disabled = false
 }: {
   label: string;
   icon: IconType;
   onPress: () => void;
   variant?: "primary" | "outline" | "outlineDark";
+  disabled?: boolean;
 }) {
   const darkOutline = variant === "outlineDark";
   const lightOutline = variant === "outline";
   return (
-    <Pressable
+    <MotionPressable
       style={[
         styles.actionButton,
         variant === "primary" ? styles.actionButtonPrimary : null,
         lightOutline ? styles.actionButtonOutline : null,
-        darkOutline ? styles.actionButtonOutlineDark : null
+        darkOutline ? styles.actionButtonOutlineDark : null,
+        disabled ? styles.actionButtonDisabled : null
       ]}
+      disabled={disabled}
       onPress={onPress}
+      scaleTo={0.96}
     >
-      <Icon size={18} color={variant === "primary" || lightOutline ? colors.white : colors.skyDark} />
+      <Icon size={18} color={disabled ? colors.muted : variant === "primary" || lightOutline ? colors.white : colors.skyDark} />
       <Text
         style={[
           styles.actionButtonText,
-          darkOutline ? styles.actionButtonTextDark : null
+          darkOutline ? styles.actionButtonTextDark : null,
+          disabled ? styles.actionButtonTextDisabled : null
         ]}
       >
         {label}
       </Text>
-    </Pressable>
+    </MotionPressable>
   );
 }
 
@@ -5735,7 +6933,7 @@ function ScreenHeader({ eyebrow, title, description }: { eyebrow: string; title:
 
 function FeaturedTourCard({ tour, onPress }: { tour: AppTour; onPress: () => void }) {
   return (
-    <Pressable style={styles.featuredCard} onPress={onPress}>
+    <MotionPressable style={styles.featuredCard} onPress={onPress} scaleTo={0.965}>
       <RemoteImage uri={tour.image} style={styles.featuredImage} />
       <View style={styles.featuredBody}>
         <Text style={styles.featuredMeta}>{tour.location}</Text>
@@ -5750,7 +6948,7 @@ function FeaturedTourCard({ tour, onPress }: { tour: AppTour; onPress: () => voi
           </View>
         </View>
       </View>
-    </Pressable>
+    </MotionPressable>
   );
 }
 
@@ -5778,7 +6976,7 @@ function TourCard({
 }) {
   const offerAdultPrice = applyOfferDiscount(tour.price, tour.activeOffer).total;
   return (
-    <Pressable style={styles.tourCard} onPress={onReserve}>
+    <MotionPressable style={styles.tourCard} onPress={onReserve} scaleTo={0.985}>
       <View style={styles.tourImageWrap}>
         <RemoteImage uri={tour.image} style={styles.tourImage} />
         <View style={styles.tourImageOverlay} />
@@ -5816,7 +7014,7 @@ function TourCard({
           <ActionButton label="Ver disponibilidad" icon={CalendarCheck} onPress={onReserve} />
         </View>
       </View>
-    </Pressable>
+    </MotionPressable>
   );
 }
 
@@ -5892,8 +7090,8 @@ function ContactPanel({ compact = false }: { compact?: boolean }) {
       <View style={styles.contactGrid}>
         <LinkRow
           icon={MessageCircle}
-          title="WhatsApp"
-          subtitle="Respuesta rápida para reservas"
+          title="Chat directo"
+          subtitle="WhatsApp / CRM de reservas"
           onPress={() => openUrl(links.whatsapp)}
         />
         <LinkRow
@@ -6008,18 +7206,41 @@ function RemoteImage({
 }) {
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const pulse = useRef(new Animated.Value(0.45)).current;
 
   useEffect(() => {
     setFailed(false);
     setLoading(true);
   }, [uri]);
 
+  useEffect(() => {
+    if (!loading) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, {
+          toValue: 0.9,
+          duration: 720,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true
+        }),
+        Animated.timing(pulse, {
+          toValue: 0.45,
+          duration: 720,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true
+        })
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [loading, pulse]);
+
   return (
     <View style={[style, styles.remoteImageShell]}>
       {loading ? (
-        <View style={styles.remoteImageSkeleton}>
+        <Animated.View style={[styles.remoteImageSkeleton, { opacity: pulse }]}>
           <ImageIcon size={18} color={colors.skyDark} />
-        </View>
+        </Animated.View>
       ) : null}
       <Image
         source={{ uri: failed ? fallbackTourImage : absoluteImageUrl(uri) }}
@@ -6044,7 +7265,7 @@ function TabBar({
   onChange: (tab: TabKey) => void;
 }) {
   const tabs: Array<{ key: TabKey; label: string; icon: IconType }> = [
-    { key: "home", label: "Inicio", icon: Home },
+    { key: "home", label: "Explorar", icon: Search },
     { key: "tours", label: "Tours", icon: Compass },
     { key: "transfers", label: "Transfer", icon: Car },
     { key: "zones", label: "Zonas", icon: MapPin },
@@ -6069,6 +7290,24 @@ const styles = StyleSheet.create({
   appRoot: {
     flex: 1,
     backgroundColor: colors.ink
+  },
+  openingSplash: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 100,
+    elevation: 100,
+    backgroundColor: colors.ink
+  },
+  openingSplashVideo: {
+    ...StyleSheet.absoluteFillObject,
+    width: "100%",
+    height: "100%"
+  },
+  openingSplashShade: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(6,17,31,0.04)"
+  },
+  openingSplashTapArea: {
+    ...StyleSheet.absoluteFillObject
   },
   safeArea: {
     flex: 1,
@@ -6312,7 +7551,15 @@ const styles = StyleSheet.create({
   },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(6, 17, 31, 0.34)"
+    backgroundColor: "rgba(6, 17, 31, 0.28)"
+  },
+  heroTextScrim: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: "66%",
+    backgroundColor: "rgba(6,17,31,0.44)"
   },
   heroContent: {
     gap: 11,
@@ -6320,9 +7567,46 @@ const styles = StyleSheet.create({
     paddingTop: 38,
     paddingBottom: 34
   },
+  heroTopSearchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10
+  },
+  heroSearchWide: {
+    flex: 1,
+    minHeight: 58,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.72)",
+    backgroundColor: "rgba(255,255,255,0.96)",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 9,
+    paddingHorizontal: 17,
+    shadowColor: "#020617",
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6
+  },
+  heroBellButton: {
+    width: 58,
+    height: 58,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.96)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.72)",
+    shadowColor: "#020617",
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6
+  },
   heroBrand: {
-    alignSelf: "flex-start",
-    maxWidth: "92%",
+    alignSelf: "stretch",
+    maxWidth: "100%",
     minHeight: 58,
     borderRadius: 999,
     borderWidth: 1,
@@ -6338,6 +7622,11 @@ const styles = StyleSheet.create({
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 8 },
     elevation: 5
+  },
+  heroBrandTextBlock: {
+    minWidth: 105,
+    maxWidth: 138,
+    gap: 4
   },
   heroBrandIconShell: {
     width: 42,
@@ -6363,6 +7652,110 @@ const styles = StyleSheet.create({
     lineHeight: 14,
     fontWeight: "900",
     textTransform: "uppercase"
+  },
+  heroSearchBox: {
+    flex: 1,
+    minWidth: 132,
+    minHeight: 42,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.22)",
+    backgroundColor: "rgba(240,249,255,0.95)",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    paddingHorizontal: 12
+  },
+  heroSearchInput: {
+    flex: 1,
+    minWidth: 0,
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "900",
+    paddingVertical: 0
+  },
+  heroMiniBrand: {
+    alignSelf: "flex-start",
+    minHeight: 38,
+    maxWidth: "100%",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.28)",
+    backgroundColor: "rgba(6,17,31,0.38)",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6
+  },
+  heroMiniLogo: {
+    width: 26,
+    height: 26,
+    borderRadius: 999
+  },
+  heroMiniText: {
+    flexShrink: 1,
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  homeSearchPanel: {
+    maxHeight: 250,
+    overflow: "hidden",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.42)",
+    backgroundColor: "rgba(255,255,255,0.97)",
+    padding: 9,
+    gap: 8,
+    shadowColor: "#020617",
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6
+  },
+  homeSearchGroup: {
+    gap: 6
+  },
+  homeSearchSectionLabel: {
+    color: colors.skyDark,
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  homeSearchSuggestion: {
+    minHeight: 48,
+    borderRadius: 8,
+    backgroundColor: colors.surface,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8
+  },
+  homeSearchSuggestionIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.skySoft
+  },
+  homeSearchSuggestionTitle: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  homeSearchSuggestionMeta: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: "700"
+  },
+  homeSearchEmpty: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "800",
+    lineHeight: 17
   },
   eyebrow: {
     color: colors.skySoft,
@@ -6434,10 +7827,15 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: "#e5effa",
     backgroundColor: colors.card,
     padding: 12,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4
   },
   statValue: {
     color: colors.text,
@@ -6450,6 +7848,50 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase"
   },
+  homeDestinationList: {
+    gap: 14,
+    paddingRight: 16
+  },
+  homeDestinationCard: {
+    width: 170,
+    height: 138,
+    overflow: "hidden",
+    borderRadius: 8,
+    backgroundColor: colors.ink,
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.12,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6
+  },
+  homeDestinationImage: {
+    ...StyleSheet.absoluteFillObject
+  },
+  homeDestinationOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(6,17,31,0.22)"
+  },
+  homeDestinationBody: {
+    flex: 1,
+    justifyContent: "flex-end",
+    gap: 3,
+    padding: 12
+  },
+  homeDestinationName: {
+    color: colors.white,
+    fontSize: 18,
+    lineHeight: 22,
+    fontWeight: "900",
+    textShadowColor: "rgba(6,17,31,0.7)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 8
+  },
+  homeDestinationMeta: {
+    color: colors.skySoft,
+    fontSize: 12,
+    fontWeight: "900"
+  },
   homeBookingGrid: {
     flexDirection: "row",
     gap: 10
@@ -6460,10 +7902,17 @@ const styles = StyleSheet.create({
     gap: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderTopWidth: 3,
+    borderColor: "#e5effa",
+    borderTopColor: colors.sky,
     backgroundColor: colors.card,
     padding: 13,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 9 },
+    elevation: 5
   },
   homeBookingEmoji: {
     display: "none"
@@ -6479,6 +7928,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
     fontWeight: "700"
+  },
+  homeAttractionList: {
+    gap: 14,
+    paddingRight: 16
+  },
+  homeAttractionCard: {
+    width: 170,
+    gap: 8
+  },
+  homeAttractionImage: {
+    width: "100%",
+    height: 112,
+    borderRadius: 8,
+    backgroundColor: colors.line
+  },
+  homeAttractionTitle: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: "900"
+  },
+  homeAttractionMeta: {
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: "800"
   },
   sectionHeader: {
     flexDirection: "row",
@@ -6501,17 +7975,24 @@ const styles = StyleSheet.create({
     paddingRight: 16
   },
   featuredCard: {
-    width: 260,
+    width: 268,
     overflow: "hidden",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderBottomWidth: 2,
+    borderColor: "#e5effa",
+    borderBottomColor: "#bae6fd",
     backgroundColor: colors.card,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.13,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 7
   },
   featuredImage: {
     width: "100%",
-    height: 150,
+    height: 158,
     backgroundColor: colors.line
   },
   featuredBody: {
@@ -6541,10 +8022,15 @@ const styles = StyleSheet.create({
     gap: 5,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: "#e5effa",
     backgroundColor: colors.card,
     padding: 13,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4
   },
   categoryTitle: {
     color: colors.text,
@@ -6700,10 +8186,15 @@ const styles = StyleSheet.create({
     gap: 6,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: "#e5effa",
     backgroundColor: colors.card,
     padding: 14,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 9 },
+    elevation: 5
   },
   routeTitle: {
     color: colors.text,
@@ -6718,9 +8209,17 @@ const styles = StyleSheet.create({
     fontWeight: "700"
   },
   routePrice: {
-    color: colors.skyDark,
+    alignSelf: "flex-start",
+    overflow: "hidden",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#a7f3d0",
+    backgroundColor: "#ecfdf5",
+    color: "#047857",
     fontSize: 14,
-    fontWeight: "900"
+    fontWeight: "900",
+    paddingHorizontal: 9,
+    paddingVertical: 4
   },
   homeRoutePrice: {
     alignSelf: "flex-start",
@@ -6758,6 +8257,90 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
     fontWeight: "700"
+  },
+  rentZoneCard: {
+    minHeight: 120,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#d7f5e7",
+    backgroundColor: "#f0fdf4",
+    padding: 14,
+    ...shadows.card,
+    shadowColor: "#047857",
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4
+  },
+  rentZoneImage: {
+    width: 116,
+    height: 76
+  },
+  rentVehicleCard: {
+    overflow: "hidden",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e5effa",
+    backgroundColor: colors.card,
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.1,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5
+  },
+  rentVehicleCardActive: {
+    borderColor: colors.green,
+    backgroundColor: "#fbfffd"
+  },
+  rentVehicleImageShell: {
+    height: 178,
+    backgroundColor: "#f5f5f2"
+  },
+  rentVehicleImage: {
+    width: "100%",
+    height: "100%"
+  },
+  rentVehicleBody: {
+    gap: 10,
+    padding: 14
+  },
+  rentSpecGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  formTwoColumns: {
+    gap: 10
+  },
+  hotelCard: {
+    overflow: "hidden",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e5effa",
+    backgroundColor: colors.card,
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.1,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5
+  },
+  hotelCardImage: {
+    width: "100%",
+    height: 172
+  },
+  hotelCardBody: {
+    gap: 10,
+    padding: 14
+  },
+  hotelActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
   },
   screenHeader: {
     gap: 7,
@@ -6904,7 +8487,9 @@ const styles = StyleSheet.create({
   tourDecisionTag: {
     overflow: "hidden",
     borderRadius: 999,
-    backgroundColor: colors.skySoft,
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+    backgroundColor: "#eefaff",
     color: colors.skyDark,
     fontSize: 11,
     fontWeight: "900",
@@ -7116,6 +8701,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "900"
   },
+  nativeSmallButtonGhost: {
+    minHeight: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    backgroundColor: "#f0fdf4",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12
+  },
+  nativeSmallButtonGhostText: {
+    color: colors.green,
+    fontSize: 12,
+    fontWeight: "900"
+  },
   nativeSmallButtonDark: {
     minHeight: 36,
     borderRadius: 999,
@@ -7213,12 +8813,19 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderBottomWidth: 2,
+    borderColor: "#e5effa",
+    borderBottomColor: "#bae6fd",
     backgroundColor: colors.card,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.12,
+    shadowRadius: 28,
+    shadowOffset: { width: 0, height: 14 },
+    elevation: 8
   },
   tourImageWrap: {
-    height: 226,
+    height: 236,
     overflow: "hidden",
     backgroundColor: colors.line
   },
@@ -7245,6 +8852,8 @@ const styles = StyleSheet.create({
   tourCategoryBadge: {
     overflow: "hidden",
     borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(14,165,233,0.18)",
     backgroundColor: "rgba(255,255,255,0.92)",
     color: colors.skyDark,
     fontSize: 11,
@@ -7282,8 +8891,8 @@ const styles = StyleSheet.create({
     fontWeight: "900"
   },
   tourBody: {
-    gap: 11,
-    padding: 15
+    gap: 12,
+    padding: 16
   },
   tourTitle: {
     color: colors.text,
@@ -7336,7 +8945,12 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(6,17,31,0.5)"
+    backgroundColor: "rgba(6,17,31,0.58)",
+    shadowColor: "#020617",
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 5
   },
   metaRow: {
     flexDirection: "row",
@@ -7368,9 +8982,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#86efac",
-    backgroundColor: "#f0fdf4",
+    backgroundColor: "#ecfdf5",
     paddingHorizontal: 10,
-    paddingVertical: 7
+    paddingVertical: 7,
+    shadowColor: "#16a34a",
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3
   },
   tourPriceLabel: {
     color: "#166534",
@@ -7457,7 +9076,15 @@ const styles = StyleSheet.create({
   },
   productOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(6,17,31,0.12)"
+    backgroundColor: "rgba(6,17,31,0.06)"
+  },
+  productTextScrim: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: "54%",
+    backgroundColor: "rgba(6,17,31,0.46)"
   },
   backButton: {
     position: "absolute",
@@ -7509,6 +9136,28 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "900"
   },
+  productHeroSignal: {
+    position: "absolute",
+    top: 84,
+    left: 16,
+    zIndex: 2,
+    minHeight: 34,
+    maxWidth: "74%",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.26)",
+    backgroundColor: "rgba(6,17,31,0.46)",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    paddingHorizontal: 12
+  },
+  productHeroSignalText: {
+    flexShrink: 1,
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "900"
+  },
   productHeroDots: {
     position: "absolute",
     left: 0,
@@ -7543,7 +9192,10 @@ const styles = StyleSheet.create({
     fontSize: 34,
     lineHeight: 39,
     fontWeight: "900",
-    letterSpacing: 0
+    letterSpacing: 0,
+    textShadowColor: "rgba(6,17,31,0.76)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 10
   },
   metaPill: {
     minHeight: 31,
@@ -7566,7 +9218,7 @@ const styles = StyleSheet.create({
   productPanel: {
     gap: 18,
     marginHorizontal: 16,
-    marginTop: -24,
+    marginTop: -30,
     paddingBottom: 6
   },
   productTrustPanel: {
@@ -7576,7 +9228,12 @@ const styles = StyleSheet.create({
     borderColor: "#bbf7d0",
     backgroundColor: "#f0fdf4",
     padding: 14,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#16a34a",
+    shadowOpacity: 0.09,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5
   },
   productTrustGrid: {
     gap: 9
@@ -7601,10 +9258,17 @@ const styles = StyleSheet.create({
     gap: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderTopWidth: 3,
+    borderColor: "#e5effa",
+    borderTopColor: colors.green,
     backgroundColor: colors.card,
     padding: 16,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.13,
+    shadowRadius: 28,
+    shadowOffset: { width: 0, height: 14 },
+    elevation: 8
   },
   productFloatingBar: {
     position: "absolute",
@@ -7613,7 +9277,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     minHeight: 94,
     borderTopWidth: 1,
-    borderColor: colors.line,
+    borderColor: "#e5effa",
     backgroundColor: "rgba(255,255,255,0.98)",
     flexDirection: "row",
     alignItems: "center",
@@ -7622,11 +9286,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingTop: 12,
     paddingBottom: 18,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.16,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: -6 },
-    elevation: 12
+    shadowColor: "#075985",
+    shadowOpacity: 0.18,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: -8 },
+    elevation: 14
+  },
+  productFloatingAccent: {
+    position: "absolute",
+    top: 0,
+    left: 18,
+    right: 18,
+    height: 3,
+    borderRadius: 999,
+    backgroundColor: colors.green
   },
   productFloatingPriceBlock: {
     flexShrink: 1,
@@ -7650,7 +9323,7 @@ const styles = StyleSheet.create({
     textDecorationLine: "line-through"
   },
   productFloatingPrice: {
-    color: colors.ink,
+    color: "#047857",
     fontSize: 24,
     lineHeight: 28,
     fontWeight: "900"
@@ -7659,6 +9332,17 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 12,
     fontWeight: "800"
+  },
+  productFloatingTrust: {
+    marginTop: 3,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5
+  },
+  productFloatingTrustText: {
+    color: colors.green,
+    fontSize: 11,
+    fontWeight: "900"
   },
   productFloatingButton: {
     minHeight: 58,
@@ -7669,7 +9353,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    paddingHorizontal: 19
+    paddingHorizontal: 19,
+    shadowColor: colors.skyDark,
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6
   },
   productFloatingButtonText: {
     color: colors.white,
@@ -7695,10 +9384,15 @@ const styles = StyleSheet.create({
     gap: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: "#e5effa",
     backgroundColor: colors.card,
     padding: 16,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.09,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5
   },
   productPriceLabel: {
     color: colors.muted,
@@ -7713,7 +9407,7 @@ const styles = StyleSheet.create({
     textDecorationLine: "line-through"
   },
   productPrice: {
-    color: colors.skyDark,
+    color: "#047857",
     fontSize: 30,
     fontWeight: "900"
   },
@@ -7757,10 +9451,15 @@ const styles = StyleSheet.create({
     gap: 7,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: "#e5effa",
     backgroundColor: colors.card,
     padding: 13,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4
   },
   productFactIcon: {
     width: 38,
@@ -7780,10 +9479,15 @@ const styles = StyleSheet.create({
     gap: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: "#e5effa",
     backgroundColor: colors.card,
     padding: 14,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.09,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5
   },
   galleryList: {
     gap: 10,
@@ -7795,10 +9499,16 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: colors.line
+    borderColor: "#e5effa",
+    backgroundColor: colors.line
   },
   galleryThumbActive: {
-    borderColor: colors.sky
+    borderColor: colors.green,
+    shadowColor: "#16a34a",
+    shadowOpacity: 0.16,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4
   },
   galleryThumbImage: {
     width: "100%",
@@ -7832,6 +9542,8 @@ const styles = StyleSheet.create({
     fontWeight: "700"
   },
   infoGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10
   },
   infoRow: {
@@ -7855,10 +9567,15 @@ const styles = StyleSheet.create({
     gap: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: "#e5effa",
     backgroundColor: colors.card,
     padding: 14,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4
   },
   bulletRow: {
     flexDirection: "row",
@@ -7888,12 +9605,13 @@ const styles = StyleSheet.create({
     gap: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: "#e5effa",
+    backgroundColor: colors.white,
     padding: 12
   },
   optionRowActive: {
-    borderColor: colors.sky,
-    backgroundColor: colors.skySoft
+    borderColor: colors.green,
+    backgroundColor: "#f0fdf4"
   },
   optionTitle: {
     color: colors.text,
@@ -7909,10 +9627,17 @@ const styles = StyleSheet.create({
     gap: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderTopWidth: 3,
+    borderColor: "#e5effa",
+    borderTopColor: colors.sky,
     backgroundColor: colors.card,
     padding: 14,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.12,
+    shadowRadius: 26,
+    shadowOffset: { width: 0, height: 13 },
+    elevation: 7
   },
   checkoutBadge: {
     color: colors.green,
@@ -8230,6 +9955,41 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     fontWeight: "800"
   },
+  transferCheckoutRoute: {
+    gap: 11,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    backgroundColor: "#f0fdf4",
+    padding: 12
+  },
+  transferCheckoutRouteLabel: {
+    color: colors.green,
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  transferRouteLine: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10
+  },
+  transferRouteDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 999,
+    marginTop: 4,
+    backgroundColor: colors.sky
+  },
+  transferRouteDotEnd: {
+    backgroundColor: colors.green
+  },
+  transferRouteText: {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: "900"
+  },
   trustMiniList: {
     gap: 8,
     borderRadius: 8,
@@ -8417,16 +10177,26 @@ const styles = StyleSheet.create({
   },
   routeShortcut: {
     width: 220,
-    gap: 6,
+    minHeight: 142,
+    gap: 7,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderBottomWidth: 2,
+    borderColor: "#e5effa",
+    borderBottomColor: "#bae6fd",
     backgroundColor: colors.card,
-    padding: 12
+    padding: 13,
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.1,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 9 },
+    elevation: 5
   },
   routeShortcutActive: {
     borderColor: colors.sky,
-    backgroundColor: colors.skySoft
+    borderBottomColor: colors.sky,
+    backgroundColor: "#eefaff"
   },
   stepperRow: {
     minHeight: 64,
@@ -8479,16 +10249,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    minHeight: 86,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderLeftWidth: 4,
+    borderColor: "#e5effa",
+    borderLeftColor: "#bae6fd",
     backgroundColor: colors.card,
-    padding: 12,
-    ...shadows.card
+    padding: 14,
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.1,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6
   },
   vehicleCardActive: {
     borderColor: colors.sky,
-    backgroundColor: "#f0f9ff"
+    borderLeftColor: colors.green,
+    backgroundColor: "#f0fdf4"
   },
   vehicleImage: {
     width: 56,
@@ -8512,7 +10291,7 @@ const styles = StyleSheet.create({
     gap: 7
   },
   vehiclePrice: {
-    color: colors.text,
+    color: "#047857",
     fontSize: 18,
     fontWeight: "900"
   },
@@ -8537,12 +10316,17 @@ const styles = StyleSheet.create({
   checkoutTopbar: {
     minHeight: 62,
     borderBottomWidth: 1,
-    borderBottomColor: colors.line,
+    borderBottomColor: "#e5effa",
     backgroundColor: colors.card,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 14
+    paddingHorizontal: 14,
+    shadowColor: "#075985",
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 3
   },
   backSoft: {
     flexDirection: "row",
@@ -8566,19 +10350,45 @@ const styles = StyleSheet.create({
     paddingBottom: 64
   },
   checkoutHero: {
-    gap: 8,
+    gap: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderTopWidth: 3,
+    borderColor: "#e5effa",
+    borderTopColor: colors.green,
     backgroundColor: colors.card,
     padding: 16,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.1,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6
+  },
+  checkoutHeroHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12
+  },
+  checkoutHeroIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.green
   },
   checkoutHeroTitle: {
     color: colors.text,
     fontSize: 24,
     lineHeight: 29,
     fontWeight: "900"
+  },
+  checkoutHeroCopy: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: "800"
   },
   checkoutStepRow: {
     flexDirection: "row",
@@ -8588,11 +10398,17 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 52,
     borderRadius: 8,
-    backgroundColor: colors.skySoft,
+    borderWidth: 1,
+    borderColor: "#dff4ff",
+    backgroundColor: "#f8fafc",
     alignItems: "center",
     justifyContent: "center",
     gap: 3,
     padding: 8
+  },
+  checkoutStepActive: {
+    borderColor: "#bbf7d0",
+    backgroundColor: "#f0fdf4"
   },
   checkoutStepNumber: {
     color: colors.skyDark,
@@ -8609,10 +10425,15 @@ const styles = StyleSheet.create({
     gap: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: "#e5effa",
     backgroundColor: colors.card,
     padding: 12,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.1,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6
   },
   summaryImage: {
     width: 82,
@@ -8634,6 +10455,25 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     textTransform: "uppercase"
   },
+  summaryTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  summaryPricePill: {
+    overflow: "hidden",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#a7f3d0",
+    backgroundColor: "#ecfdf5",
+    color: "#047857",
+    fontSize: 13,
+    fontWeight: "900",
+    paddingHorizontal: 9,
+    paddingVertical: 4
+  },
   summaryTitle: {
     color: colors.text,
     fontSize: 17,
@@ -8641,24 +10481,86 @@ const styles = StyleSheet.create({
     fontWeight: "900"
   },
   infoPill: {
+    width: "48%",
     minHeight: 56,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: "#e5effa",
     backgroundColor: colors.card,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
+    padding: 12,
+    shadowColor: "#075985",
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3
+  },
+  checkoutConfidenceStrip: {
+    gap: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    backgroundColor: "#f0fdf4",
     padding: 12
+  },
+  checkoutConfidenceItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8
+  },
+  checkoutConfidenceText: {
+    flex: 1,
+    color: colors.text,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "900"
   },
   formPanel: {
     gap: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: "#e5effa",
     backgroundColor: colors.card,
     padding: 14,
-    ...shadows.card
+    ...shadows.card,
+    shadowColor: "#075985",
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 5
+  },
+  formPanelHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 11
+  },
+  formPanelNumber: {
+    width: 34,
+    height: 34,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.skySoft
+  },
+  formPanelNumberText: {
+    color: colors.skyDark,
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  formPanelNumberDark: {
+    width: 34,
+    height: 34,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(125,211,252,0.18)"
+  },
+  formPanelNumberTextDark: {
+    color: colors.skySoft,
+    fontSize: 13,
+    fontWeight: "900"
   },
   contactPanelCompact: {
     gap: 12,
@@ -8705,8 +10607,31 @@ const styles = StyleSheet.create({
   payPanel: {
     gap: 12,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(125,211,252,0.16)",
     backgroundColor: colors.ink,
-    padding: 16
+    padding: 16,
+    shadowColor: "#020617",
+    shadowOpacity: 0.2,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 8
+  },
+  payPanelHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 11
+  },
+  payPanelTitle: {
+    color: colors.white,
+    fontSize: 20,
+    fontWeight: "900"
+  },
+  payPanelSubtitle: {
+    color: colors.mutedOnDark,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "800"
   },
   checkoutSecureNote: {
     flexDirection: "row",
@@ -8728,6 +10653,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "900",
     textTransform: "uppercase"
+  },
+  checkoutPaySummary: {
+    minHeight: 82,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(187,247,208,0.24)",
+    backgroundColor: "rgba(240,253,244,0.08)",
+    padding: 12
   },
   policyMiniPanel: {
     gap: 8,
@@ -8781,6 +10719,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "800"
   },
+  payFeedbackText: {
+    color: colors.skySoft,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "800"
+  },
   confirmedActions: {
     gap: 10,
     borderRadius: 8,
@@ -8801,7 +10745,7 @@ const styles = StyleSheet.create({
   galleryViewer: {
     flex: 1,
     minHeight: windowHeight,
-    backgroundColor: colors.white,
+    backgroundColor: "#f8fafc",
     paddingTop: 10
   },
   galleryTopbar: {
@@ -8820,12 +10764,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.line,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.14,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 5
+    borderColor: "#e5effa",
+    shadowColor: "#075985",
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 7 },
+    elevation: 6
   },
   backSoftDark: {
     flexDirection: "row",
@@ -8851,7 +10795,7 @@ const styles = StyleSheet.create({
   galleryLarge: {
     width: "100%",
     height: Math.max(360, windowHeight * 0.54),
-    backgroundColor: colors.white
+    backgroundColor: "#f8fafc"
   },
   galleryViewerSlide: {
     width: windowWidth,
@@ -8884,30 +10828,35 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: colors.line,
+    borderColor: "#e5effa",
     backgroundColor: colors.line
   },
   galleryViewerGridItemActive: {
-    borderColor: colors.sky
+    borderColor: colors.green
   },
   galleryViewerBottom: {
     paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 30,
-    backgroundColor: colors.white
+    backgroundColor: "#f8fafc"
   },
   galleryAvailabilityButton: {
     minHeight: 58,
     borderRadius: 999,
-    borderWidth: 3,
-    borderColor: colors.ink,
+    borderWidth: 1,
+    borderColor: colors.sky,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.white,
-    paddingHorizontal: 18
+    backgroundColor: colors.sky,
+    paddingHorizontal: 18,
+    shadowColor: colors.skyDark,
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6
   },
   galleryAvailabilityText: {
-    color: colors.ink,
+    color: colors.white,
     fontSize: 16,
     fontWeight: "900"
   },
@@ -9036,6 +10985,9 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     backgroundColor: colors.card
   },
+  actionButtonDisabled: {
+    opacity: 0.58
+  },
   actionButtonText: {
     color: colors.white,
     fontSize: 15,
@@ -9043,6 +10995,9 @@ const styles = StyleSheet.create({
   },
   actionButtonTextDark: {
     color: colors.skyDark
+  },
+  actionButtonTextDisabled: {
+    color: colors.muted
   },
   googleButton: {
     minHeight: 52,

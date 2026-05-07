@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { Prisma } from "@prisma/client";
+import { Building2, CheckCircle2, Filter, PackageCheck } from "lucide-react";
 
 import WorkplaceShell from "@/components/workplace/WorkplaceShell";
 import { prisma } from "@/lib/prisma";
@@ -78,7 +79,10 @@ export default async function WorkplaceSuppliersPage({ searchParams }: Props) {
     >
       <div className="space-y-7 pb-10">
         <section>
-          <p className="text-xs font-bold text-slate-400">Inicio / Suplidores</p>
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-lime-300/15 text-lime-100">
+            <Building2 className="h-6 w-6" aria-hidden />
+          </span>
+          <p className="mt-4 text-xs font-bold text-slate-400">Inicio / Suplidores</p>
           <h1 className="mt-2 text-4xl font-black tracking-tight">Suplidores</h1>
           <p className="mt-2 text-sm text-slate-400">Soporte operativo para proveedores dentro de tu alcance.</p>
         </section>
@@ -100,17 +104,23 @@ export default async function WorkplaceSuppliersPage({ searchParams }: Props) {
             <option value="approved">Aprobados</option>
             <option value="pending">Pendientes</option>
           </select>
-          <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-white">Filtrar</button>
+          <button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-white">
+            <Filter className="h-4 w-4" aria-hidden />
+            <span>Filtrar</span>
+          </button>
         </form>
 
         <section className="grid gap-4 md:grid-cols-3">
           {[
-            ["Suplidores", total],
-            ["Aprobados", approved],
-            ["Productos activos", productsEnabled]
-          ].map(([label, value]) => (
+            { label: "Suplidores", value: total, Icon: Building2 },
+            { label: "Aprobados", value: approved, Icon: CheckCircle2 },
+            { label: "Productos activos", value: productsEnabled, Icon: PackageCheck }
+          ].map(({ label, value, Icon }) => (
             <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-              <p className="text-sm font-bold text-slate-400">{label}</p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-bold text-slate-400">{label}</p>
+                <Icon className="h-5 w-5 text-cyan-200" aria-hidden />
+              </div>
               <p className="mt-3 text-3xl font-black text-white">{value}</p>
             </div>
           ))}

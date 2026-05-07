@@ -197,6 +197,91 @@ export type MobileTour = {
   options: MobileTourOption[];
 };
 
+export type MobileRentCarLocation = {
+  id: string;
+  code: string;
+  name: string;
+  regionId: string;
+  airportLabel: string;
+  priceFrom: number;
+  image: string;
+  featuredModel: string;
+  vehicleCount: number;
+  href: string;
+};
+
+export type MobileRentCarVehicle = {
+  id: string;
+  locationId: string;
+  regionId: string;
+  locationName: string;
+  airportLabel: string;
+  categorySlug: string;
+  categoryLabel: string;
+  model: string;
+  displayName: string;
+  tag: string;
+  price: number;
+  currency: string;
+  seats: number;
+  luggage: number;
+  doors: number;
+  transmission: string;
+  fuelType: string;
+  bags: number;
+  largeBags: number;
+  image: string;
+  badges: string[];
+  href: string;
+  highProfile: boolean;
+};
+
+export type MobileRentCarCatalog = {
+  locations: MobileRentCarLocation[];
+  vehicles: MobileRentCarVehicle[];
+};
+
+export type MobileHotelSummary = {
+  id: string;
+  slug: string;
+  name: string;
+  zoneName: string;
+  description: string;
+  image: string;
+  rating: number;
+  href: string;
+};
+
+export type MobileHotelCatalog = {
+  href: string;
+  hotels: MobileHotelSummary[];
+};
+
+export type MobileRentCarReservationPayload = {
+  locationId: string;
+  categorySlug: string;
+  locale?: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  driverName?: string;
+  pickupPlace: string;
+  dropoffPlace: string;
+  pickupDate: string;
+  pickupTime: string;
+  returnDate: string;
+  returnTime: string;
+  flightNumber?: string;
+};
+
+export type MobileRentCarReservationResponse = {
+  ok: boolean;
+  bookingId?: string;
+  bookingCode?: string;
+  confirmationUrl?: string;
+  error?: string;
+};
+
 const getBrowserLocalApiBaseUrl = () => {
   if (Platform.OS !== "web") return null;
   if (typeof window === "undefined") return null;
@@ -233,6 +318,7 @@ const jsonFetch = async <T>(path: string, init?: RequestInit) => {
   const headers = {
     "X-Proactivitis-Client": "mobile",
     "X-Proactivitis-Platform": Platform.OS,
+    ...(Platform.OS === "web" ? {} : { "User-Agent": "AppProactivitis" }),
     ...((init?.headers as Record<string, string> | undefined) ?? {})
   };
   let response: Response;
@@ -248,8 +334,25 @@ const jsonFetch = async <T>(path: string, init?: RequestInit) => {
         : `No se pudo conectar con Proactivitis (${baseUrl}).`
     );
   }
-  const body = await response.json().catch(() => null);
-  if (!response.ok) throw new Error(body?.error ?? "No se pudo conectar con Proactivitis.");
+  const rawBody = await response.text().catch(() => "");
+  const body = rawBody
+    ? (() => {
+        try {
+          return JSON.parse(rawBody);
+        } catch {
+          return null;
+        }
+      })()
+    : null;
+  if (!response.ok) {
+    if (response.status === 429 && rawBody.includes("Vercel Security Checkpoint")) {
+      throw new Error("Vercel esta bloqueando la conexion segura de la app. Revisa el bypass del Firewall para la API movil.");
+    }
+    throw new Error(body?.error ?? "No se pudo conectar con Proactivitis.");
+  }
+  if (!body && rawBody.trim()) {
+    throw new Error("Proactivitis respondio en un formato inesperado. Intenta de nuevo.");
+  }
   return body as T;
 };
 
@@ -451,6 +554,23 @@ export const fetchMobileTours = async (locale = "es") => {
   const data = await jsonFetch<{ tours: MobileTour[] }>(`/api/mobile/tours?${params.toString()}`);
   return data.tours ?? [];
 };
+
+export const fetchMobileRentCarCatalog = async (locale = "es") => {
+  const params = new URLSearchParams({ locale });
+  return jsonFetch<MobileRentCarCatalog>(`/api/mobile/rent-car?${params.toString()}`);
+};
+
+export const fetchMobileHotels = async (locale = "es") => {
+  const params = new URLSearchParams({ locale, limit: "42" });
+  return jsonFetch<MobileHotelCatalog>(`/api/mobile/hotels?${params.toString()}`);
+};
+
+export const submitMobileRentCarReservation = (payload: MobileRentCarReservationPayload) =>
+  jsonFetch<MobileRentCarReservationResponse>("/api/rent-car/reservations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
 
 const todayPlus = (days: number) => {
   const date = new Date(Date.now() + days * 24 * 60 * 60 * 1000);

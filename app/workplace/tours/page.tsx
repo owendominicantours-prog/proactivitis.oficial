@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { Prisma } from "@prisma/client";
+import { Building2, CircleOff, Filter, Plus, ShoppingBag, Upload } from "lucide-react";
 
 import WorkplaceShell from "@/components/workplace/WorkplaceShell";
 import { prisma } from "@/lib/prisma";
@@ -126,13 +127,22 @@ export default async function WorkplaceToursPage({ searchParams }: Props) {
       <div className="space-y-7 pb-10">
         <section className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-xs font-bold text-slate-400">Inicio / Tours</p>
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-300/15 text-violet-100">
+              <ShoppingBag className="h-6 w-6" aria-hidden />
+            </span>
+            <p className="mt-4 text-xs font-bold text-slate-400">Inicio / Tours</p>
             <h1 className="mt-2 text-4xl font-black tracking-tight">Tours</h1>
             <p className="mt-2 text-sm text-slate-400">Gestiona y visualiza los tours asignados a tu area.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-slate-200">Exportar</button>
-            <button className="rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-black text-slate-950">Nuevo Tour</button>
+            <button className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-slate-200">
+              <Upload className="h-4 w-4" aria-hidden />
+              Exportar
+            </button>
+            <button className="inline-flex items-center gap-2 rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-black text-slate-950">
+              <Plus className="h-4 w-4" aria-hidden />
+              Nuevo Tour
+            </button>
           </div>
         </section>
 
@@ -201,20 +211,24 @@ export default async function WorkplaceToursPage({ searchParams }: Props) {
             defaultValue={params.date ?? ""}
             className="rounded-2xl border border-white/10 bg-[#0b1728] px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/60"
           />
-          <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-white hover:border-cyan-300/50">
-            Filtros
+          <button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-white hover:border-cyan-300/50">
+            <Filter className="h-4 w-4" aria-hidden />
+            <span>Filtros</span>
           </button>
         </form>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
-            ["Tours totales", scoped.length],
-            ["Tours activos", activeCount],
-            ["Tours inactivos", inactiveCount],
-            ["Proveedores", providers.length]
-          ].map(([label, value]) => (
+            { label: "Tours totales", value: scoped.length, Icon: ShoppingBag },
+            { label: "Tours activos", value: activeCount, Icon: Plus },
+            { label: "Tours inactivos", value: inactiveCount, Icon: CircleOff },
+            { label: "Proveedores", value: providers.length, Icon: Building2 }
+          ].map(({ label, value, Icon }) => (
             <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-              <p className="text-sm font-bold text-slate-400">{label}</p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-bold text-slate-400">{label}</p>
+                <Icon className="h-5 w-5 text-cyan-200" aria-hidden />
+              </div>
               <p className="mt-3 text-3xl font-black text-white">{value}</p>
             </div>
           ))}

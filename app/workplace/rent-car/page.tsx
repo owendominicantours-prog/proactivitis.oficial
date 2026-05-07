@@ -7,6 +7,7 @@ import { getRentCarFleetSettings } from "@/lib/rentCarSettings";
 import { requireWorkplaceContext } from "@/lib/workplace";
 import { buildWorkplaceBookingWhere } from "@/lib/workplaceBookings";
 import { formatScopeLine, isGlobalScope, textMatchesScope } from "@/lib/workplaceFilters";
+import { BadgeDollarSign, BriefcaseBusiness, Car, Filter, MapPin } from "lucide-react";
 
 type SearchParams = {
   q?: string;
@@ -65,7 +66,10 @@ export default async function WorkplaceRentCarPage({ searchParams }: Props) {
     <WorkplaceShell active="rent_car" employeeName={context.user.name} department={context.employee?.department?.name ?? "Rent Car"} permissions={context.permissions} scope={context.scope}>
       <div className="space-y-7 pb-10">
         <section>
-          <p className="text-xs font-bold text-slate-400">Inicio / Rent Car</p>
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-300/15 text-cyan-100">
+            <Car className="h-6 w-6" aria-hidden />
+          </span>
+          <p className="mt-4 text-xs font-bold text-slate-400">Inicio / Rent Car</p>
           <h1 className="mt-2 text-4xl font-black tracking-tight">Rent Car</h1>
           <p className="mt-2 text-sm text-slate-400">Flota, ubicaciones y reservas formales dentro de tu alcance.</p>
         </section>
@@ -80,18 +84,24 @@ export default async function WorkplaceRentCarPage({ searchParams }: Props) {
             <option value="all">Todas las zonas</option>
             {locationOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
           </select>
-          <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-white">Filtrar</button>
+          <button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-white">
+            <Filter className="h-4 w-4" aria-hidden />
+            <span>Filtrar</span>
+          </button>
         </form>
 
         <section className="grid gap-4 md:grid-cols-4">
           {[
-            ["Vehiculos visibles", rows.length],
-            ["Zonas", locationOptions.length],
-            ["Reservas rent car", rentBookings.length],
-            ["Precio inicial", rows.length ? money.format(Math.min(...rows.map((row) => row.price))) : "$0"]
-          ].map(([label, value]) => (
+            { label: "Vehiculos visibles", value: rows.length, Icon: Car },
+            { label: "Zonas", value: locationOptions.length, Icon: MapPin },
+            { label: "Reservas rent car", value: rentBookings.length, Icon: BriefcaseBusiness },
+            { label: "Precio inicial", value: rows.length ? money.format(Math.min(...rows.map((row) => row.price))) : "$0", Icon: BadgeDollarSign }
+          ].map(({ label, value, Icon }) => (
             <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-              <p className="text-sm font-bold text-slate-400">{label}</p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-bold text-slate-400">{label}</p>
+                <Icon className="h-5 w-5 text-cyan-200" aria-hidden />
+              </div>
               <p className="mt-3 text-2xl font-black text-white">{value}</p>
             </div>
           ))}

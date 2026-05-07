@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { Prisma } from "@prisma/client";
+import { BadgeDollarSign, BriefcaseBusiness, CheckCircle2, Clock3, Filter, ListChecks, XCircle } from "lucide-react";
 
 import WorkplaceShell from "@/components/workplace/WorkplaceShell";
 import { prisma } from "@/lib/prisma";
@@ -94,7 +95,10 @@ export default async function WorkplaceBookingsPage({ searchParams }: Props) {
     >
       <div className="space-y-7 pb-10">
         <section>
-          <p className="text-xs font-bold text-slate-400">Inicio / Reservas</p>
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-300/15 text-amber-100">
+            <BriefcaseBusiness className="h-6 w-6" aria-hidden />
+          </span>
+          <p className="mt-4 text-xs font-bold text-slate-400">Inicio / Reservas</p>
           <h1 className="mt-2 text-4xl font-black tracking-tight">Reservas</h1>
           <p className="mt-2 text-sm text-slate-400">Reservas visibles segun tu zona, nicho, proveedor y permisos.</p>
         </section>
@@ -118,19 +122,25 @@ export default async function WorkplaceBookingsPage({ searchParams }: Props) {
             <option value="rent_car">Rent Car</option>
           </select>
           <input name="date" type="date" defaultValue={params.date ?? ""} className="rounded-2xl border border-white/10 bg-[#0b1728] px-4 py-3 text-sm text-white" />
-          <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-white">Filtrar</button>
+          <button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-white">
+            <Filter className="h-4 w-4" aria-hidden />
+            <span>Filtrar</span>
+          </button>
         </form>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           {[
-            ["Reservas", scopedCount],
-            ["Confirmadas", confirmedCount],
-            ["Pendientes", pendingCount],
-            ["Canceladas", cancelledCount],
-            ["Total visible", money.format(amount._sum.totalAmount ?? 0)]
-          ].map(([label, value]) => (
+            { label: "Reservas", value: scopedCount, Icon: ListChecks },
+            { label: "Confirmadas", value: confirmedCount, Icon: CheckCircle2 },
+            { label: "Pendientes", value: pendingCount, Icon: Clock3 },
+            { label: "Canceladas", value: cancelledCount, Icon: XCircle },
+            { label: "Total visible", value: money.format(amount._sum.totalAmount ?? 0), Icon: BadgeDollarSign }
+          ].map(({ label, value, Icon }) => (
             <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-              <p className="text-sm font-bold text-slate-400">{label}</p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-bold text-slate-400">{label}</p>
+                <Icon className="h-5 w-5 text-cyan-200" aria-hidden />
+              </div>
               <p className="mt-3 text-2xl font-black text-white">{value}</p>
             </div>
           ))}

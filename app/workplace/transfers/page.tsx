@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { Prisma } from "@prisma/client";
+import { Car, CircleCheck, CircleOff, Filter, MapPin, MapPinned, Plane } from "lucide-react";
 
 import WorkplaceShell from "@/components/workplace/WorkplaceShell";
 import { prisma } from "@/lib/prisma";
@@ -88,7 +89,10 @@ export default async function WorkplaceTransfersPage({ searchParams }: Props) {
     <WorkplaceShell active="transfers" employeeName={context.user.name} department={context.employee?.department?.name ?? "Transfer"} permissions={context.permissions} scope={context.scope}>
       <div className="space-y-7 pb-10">
         <section>
-          <p className="text-xs font-bold text-slate-400">Inicio / Transfer</p>
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-300/15 text-blue-100">
+            <Plane className="h-6 w-6" aria-hidden />
+          </span>
+          <p className="mt-4 text-xs font-bold text-slate-400">Inicio / Transfer</p>
           <h1 className="mt-2 text-4xl font-black tracking-tight">Transfer</h1>
           <p className="mt-2 text-sm text-slate-400">Rutas, zonas y precios visibles segun tu mercado asignado.</p>
         </section>
@@ -104,19 +108,25 @@ export default async function WorkplaceTransfersPage({ searchParams }: Props) {
             <option value="active">Activas</option>
             <option value="inactive">Inactivas</option>
           </select>
-          <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-white">Filtrar</button>
+          <button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-white">
+            <Filter className="h-4 w-4" aria-hidden />
+            <span>Filtrar</span>
+          </button>
         </form>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           {[
-            ["Rutas", total],
-            ["Activas", active],
-            ["Zonas", zones],
-            ["Ubicaciones", locations],
-            ["Vehiculos", vehicles]
-          ].map(([label, value]) => (
+            { label: "Rutas", value: total, Icon: MapPinned },
+            { label: "Activas", value: active, Icon: CircleCheck },
+            { label: "Zonas", value: zones, Icon: MapPin },
+            { label: "Ubicaciones", value: locations, Icon: CircleOff },
+            { label: "Vehiculos", value: vehicles, Icon: Car }
+          ].map(({ label, value, Icon }) => (
             <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-              <p className="text-sm font-bold text-slate-400">{label}</p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-bold text-slate-400">{label}</p>
+                <Icon className="h-5 w-5 text-cyan-200" aria-hidden />
+              </div>
               <p className="mt-3 text-2xl font-black text-white">{value}</p>
             </div>
           ))}

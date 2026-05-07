@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { Prisma } from "@prisma/client";
+import { BadgeDollarSign, BarChart3, BriefcaseBusiness, Building2, Car, CheckCircle2, ClipboardList, Clock3, ShoppingBag } from "lucide-react";
 
 import WorkplaceShell from "@/components/workplace/WorkplaceShell";
 import { getRentCarOptions } from "@/data/rentCarFleet";
@@ -44,7 +45,10 @@ export default async function WorkplaceReportsPage() {
     <WorkplaceShell active="reports" employeeName={context.user.name} department={context.employee?.department?.name ?? "Reportes"} permissions={context.permissions} scope={context.scope}>
       <div className="space-y-7 pb-10">
         <section>
-          <p className="text-xs font-bold text-slate-400">Inicio / Reportes</p>
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-300/15 text-rose-100">
+            <BarChart3 className="h-6 w-6" aria-hidden />
+          </span>
+          <p className="mt-4 text-xs font-bold text-slate-400">Inicio / Reportes</p>
           <h1 className="mt-2 text-4xl font-black tracking-tight">Reportes</h1>
           <p className="mt-2 text-sm text-slate-400">Resumen operativo filtrado por tu alcance real.</p>
         </section>
@@ -55,17 +59,20 @@ export default async function WorkplaceReportsPage() {
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
-            ["Tours visibles", tourTotal],
-            ["Tours activos", tourActive],
-            ["Reservas visibles", bookingTotal],
-            ["Ventas visibles", money.format(bookingAmount._sum.totalAmount ?? 0)],
-            ["Suplidores visibles", suppliers],
-            ["Rent car visible", rentOptions.length],
-            ["Aprobaciones pendientes", approvals],
-            ["Eventos auditados", auditLogs.length]
-          ].map(([label, value]) => (
+            { label: "Tours visibles", value: tourTotal, Icon: ShoppingBag },
+            { label: "Tours activos", value: tourActive, Icon: CheckCircle2 },
+            { label: "Reservas visibles", value: bookingTotal, Icon: BriefcaseBusiness },
+            { label: "Ventas visibles", value: money.format(bookingAmount._sum.totalAmount ?? 0), Icon: BadgeDollarSign },
+            { label: "Suplidores visibles", value: suppliers, Icon: Building2 },
+            { label: "Rent car visible", value: rentOptions.length, Icon: Car },
+            { label: "Aprobaciones pendientes", value: approvals, Icon: Clock3 },
+            { label: "Eventos auditados", value: auditLogs.length, Icon: ClipboardList }
+          ].map(({ label, value, Icon }) => (
             <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-              <p className="text-sm font-bold text-slate-400">{label}</p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-bold text-slate-400">{label}</p>
+                <Icon className="h-5 w-5 text-cyan-200" aria-hidden />
+              </div>
               <p className="mt-3 text-2xl font-black text-white">{value}</p>
             </div>
           ))}

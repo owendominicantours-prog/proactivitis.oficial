@@ -33,6 +33,8 @@ export const links = {
   home: "https://proactivitis.com",
   tours: "https://proactivitis.com/tours",
   transfers: "https://proactivitis.com/transfer",
+  rentCar: "https://proactivitis.com/rent-a-car",
+  hotels: "https://proactivitis.com/hoteles",
   terms: "https://proactivitis.com/legal/terms",
   privacy: "https://proactivitis.com/legal/privacy",
   cookies: "https://proactivitis.com/legal/cookies",

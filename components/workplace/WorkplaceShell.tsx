@@ -1,6 +1,22 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ReactNode } from "react";
+import {
+  BarChart3,
+  BriefcaseBusiness,
+  Building2,
+  Car,
+  Headphones,
+  Home,
+  Image as ImageIcon,
+  KeyRound,
+  LogOut,
+  MessageSquareText,
+  Plane,
+  ShieldCheck,
+  ShoppingBag,
+  type LucideIcon
+} from "lucide-react";
 
 type Props = {
   children: ReactNode;
@@ -18,32 +34,33 @@ type Props = {
   };
 };
 
-const navItems = [
-  { label: "Inicio", href: "/workplace", key: "home", permission: null },
-  { label: "Chat", href: "/workplace/chat", key: "chat", permission: "chat.view" },
-  { label: "Asistencia", href: "/workplace/support", key: "support", permission: "chat.respond" },
-  { label: "Reservas", href: "/workplace/bookings", key: "bookings", permission: "bookings.view" },
-  { label: "Tours", href: "/workplace/tours", key: "tours", permission: "tours.view" },
-  { label: "Transfer", href: "/workplace/transfers", key: "transfers", permission: "transfers.view" },
-  { label: "Rent Car", href: "/workplace/rent-car", key: "rent_car", permission: "rent_car.view" },
-  { label: "Suplidores", href: "/workplace/suppliers", key: "suppliers", permission: "suppliers.view" },
-  { label: "Reportes", href: "/workplace/reports", key: "reports", permission: "reports.view" }
+const navItems: Array<{ label: string; href: string; key: string; permission: string | null; icon: LucideIcon }> = [
+  { label: "Inicio", href: "/workplace", key: "home", permission: null, icon: Home },
+  { label: "Chat", href: "/workplace/chat", key: "chat", permission: "chat.view", icon: MessageSquareText },
+  { label: "Asistencia", href: "/workplace/support", key: "support", permission: "chat.respond", icon: Headphones },
+  { label: "Reservas", href: "/workplace/bookings", key: "bookings", permission: "bookings.view", icon: BriefcaseBusiness },
+  { label: "Tours", href: "/workplace/tours", key: "tours", permission: "tours.view", icon: ShoppingBag },
+  { label: "Transfer", href: "/workplace/transfers", key: "transfers", permission: "transfers.view", icon: Plane },
+  { label: "Rent Car", href: "/workplace/rent-car", key: "rent_car", permission: "rent_car.view", icon: Car },
+  { label: "Suplidores", href: "/workplace/suppliers", key: "suppliers", permission: "suppliers.view", icon: Building2 },
+  { label: "Reportes", href: "/workplace/reports", key: "reports", permission: "reports.view", icon: BarChart3 }
 ];
 
 const shortScope = (items: string[], fallback: string) => (items.length ? items.slice(0, 3).join(", ") : fallback);
+type PermissionLabel = { label: string; icon: LucideIcon };
 
 export default function WorkplaceShell({ children, active, employeeName, department, permissions, scope }: Props) {
   const visibleNav = navItems.filter((item) => !item.permission || permissions.has(item.permission));
   const activePermissionLabels = [
-    permissions.has("tours.view") ? "Ver tours" : null,
-    permissions.has("tours.edit") ? "Editar tours" : null,
-    permissions.has("tours.media") ? "Gestionar fotos" : null,
-    permissions.has("bookings.view") ? "Ver reservas" : null,
-    permissions.has("rent_car.view") ? "Ver rent car" : null,
-    permissions.has("suppliers.view") ? "Ver suplidores" : null,
-    permissions.has("chat.view") ? "Ver chat" : null,
-    permissions.has("chat.respond") ? "Responder chat" : null
-  ].filter(Boolean);
+    permissions.has("tours.view") ? { label: "Ver tours", icon: ShoppingBag } : null,
+    permissions.has("tours.edit") ? { label: "Editar tours", icon: KeyRound } : null,
+    permissions.has("tours.media") ? { label: "Gestionar fotos", icon: ImageIcon } : null,
+    permissions.has("bookings.view") ? { label: "Ver reservas", icon: BriefcaseBusiness } : null,
+    permissions.has("rent_car.view") ? { label: "Ver rent car", icon: Car } : null,
+    permissions.has("suppliers.view") ? { label: "Ver suplidores", icon: Building2 } : null,
+    permissions.has("chat.view") ? { label: "Ver chat", icon: MessageSquareText } : null,
+    permissions.has("chat.respond") ? { label: "Responder chat", icon: Headphones } : null
+  ].filter((item): item is PermissionLabel => Boolean(item));
 
   return (
     <main className="min-h-screen bg-[#071120] text-white">
@@ -56,22 +73,35 @@ export default function WorkplaceShell({ children, active, employeeName, departm
         </Link>
 
         <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs text-slate-400">Mi area de trabajo</p>
-          <p className="mt-1 font-black">{department ?? "Area pendiente"}</p>
+          <div className="flex items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-cyan-300/15 text-cyan-200">
+              <ShieldCheck className="h-5 w-5" aria-hidden />
+            </span>
+            <div>
+              <p className="text-xs text-slate-400">Mi area de trabajo</p>
+              <p className="mt-1 font-black">{department ?? "Area pendiente"}</p>
+            </div>
+          </div>
         </div>
 
         <nav className="mt-8 space-y-2">
-          {visibleNav.map((item) => (
+          {visibleNav.map((item) => {
+            const Icon = item.icon;
+            return (
             <Link
               key={item.href}
               href={item.href}
-              className={`block rounded-2xl px-4 py-3 text-sm font-bold transition ${
-                active === item.key ? "bg-cyan-400/15 text-cyan-200" : "text-slate-300 hover:bg-white/5 hover:text-white"
+              className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition ${
+                active === item.key ? "bg-cyan-400/15 text-cyan-100 shadow-lg shadow-cyan-950/20" : "text-slate-300 hover:bg-white/5 hover:text-white"
               }`}
             >
-              {item.label}
+              <span className={`grid h-9 w-9 place-items-center rounded-xl ${active === item.key ? "bg-cyan-300 text-slate-950" : "bg-white/5 text-cyan-200"}`}>
+                <Icon className="h-4 w-4" aria-hidden />
+              </span>
+              <span>{item.label}</span>
             </Link>
-          ))}
+          );
+          })}
         </nav>
 
         <div className="absolute bottom-5 left-5 right-5 space-y-4">
@@ -79,11 +109,15 @@ export default function WorkplaceShell({ children, active, employeeName, departm
             <p className="text-xs text-slate-400">Permisos activos</p>
             <div className="mt-3 space-y-2">
               {activePermissionLabels.length ? (
-                activePermissionLabels.map((label) => (
-                  <p key={String(label)} className="text-xs font-bold text-slate-200">
-                    <span className="mr-2 text-cyan-300">+</span>{label}
+                activePermissionLabels.map((item) => {
+                  const Icon = item.icon ?? ShieldCheck;
+                  return (
+                  <p key={item.label} className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                    <Icon className="h-3.5 w-3.5 text-cyan-300" aria-hidden />
+                    <span>{item.label}</span>
                   </p>
-                ))
+                );
+                })
               ) : (
                 <p className="text-xs text-slate-400">Sin permisos operativos.</p>
               )}
@@ -94,8 +128,9 @@ export default function WorkplaceShell({ children, active, employeeName, departm
               <p>Proveedor: {shortScope(scope.companies, "Global")}</p>
             </div>
           </div>
-          <Link href="/api/auth/signout" className="block rounded-2xl border border-rose-400/30 px-4 py-3 text-center text-sm font-bold text-rose-200">
-            Cerrar sesion
+          <Link href="/api/auth/signout" className="flex items-center justify-center gap-2 rounded-2xl border border-rose-400/30 px-4 py-3 text-center text-sm font-bold text-rose-200">
+            <LogOut className="h-4 w-4" aria-hidden />
+            <span>Cerrar sesion</span>
           </Link>
         </div>
       </aside>

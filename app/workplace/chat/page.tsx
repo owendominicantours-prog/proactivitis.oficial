@@ -1,6 +1,16 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import {
+  AtSign,
+  Building2,
+  Camera,
+  Globe2,
+  MessageCirclePlus,
+  MessageSquareText,
+  Send,
+  UserCircle2
+} from "lucide-react";
 
 import WorkplaceShell from "@/components/workplace/WorkplaceShell";
 import { prisma } from "@/lib/prisma";
@@ -113,6 +123,9 @@ export default async function WorkplaceChatPage({ searchParams }: Props) {
       <div className="space-y-6 pb-10">
         <section className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-300/15 text-cyan-100">
+              <MessageSquareText className="h-6 w-6" aria-hidden />
+            </span>
             <p className="text-xs font-bold text-slate-400">Inicio / Chat</p>
             <h1 className="mt-2 text-4xl font-black tracking-tight">Chat corporativo</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-400">
@@ -120,15 +133,19 @@ export default async function WorkplaceChatPage({ searchParams }: Props) {
               El admin ve todos los canales y puede responder.
             </p>
           </div>
-          <Link href="/workplace/profile" className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-slate-200 hover:border-cyan-300/50">
-            Mi foto de perfil
+          <Link href="/workplace/profile" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-slate-200 hover:border-cyan-300/50">
+            <Camera className="h-4 w-4" aria-hidden />
+            <span>Mi foto de perfil</span>
           </Link>
         </section>
 
         <section className="grid gap-5 xl:grid-cols-[360px,1fr]">
           <aside className="space-y-4">
             <form action={createWorkplaceChatRoomAction} className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-4">
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-200">Nueva sala</p>
+              <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.24em] text-cyan-200">
+                <MessageCirclePlus className="h-4 w-4" aria-hidden />
+                <span>Nueva sala</span>
+              </p>
               <input
                 name="title"
                 placeholder="Tema o incidencia interna"
@@ -158,7 +175,10 @@ export default async function WorkplaceChatPage({ searchParams }: Props) {
                   </select>
                 ) : null}
               </div>
-              <button className="mt-3 w-full rounded-2xl bg-cyan-400 px-4 py-3 text-sm font-black text-slate-950">Crear sala</button>
+              <button className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-4 py-3 text-sm font-black text-slate-950">
+                <MessageCirclePlus className="h-4 w-4" aria-hidden />
+                <span>Crear sala</span>
+              </button>
             </form>
 
             <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04]">
@@ -178,7 +198,10 @@ export default async function WorkplaceChatPage({ searchParams }: Props) {
                         <div className="min-w-0">
                           <p className="truncate font-black text-white">{room.title}</p>
                           <p className="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
-                            {room.visibility === "GLOBAL" ? "Global" : room.department?.name ?? "Departamento"}
+                            <span className="inline-flex items-center gap-1.5">
+                              {room.visibility === "GLOBAL" ? <Globe2 className="h-3.5 w-3.5" aria-hidden /> : <Building2 className="h-3.5 w-3.5" aria-hidden />}
+                              {room.visibility === "GLOBAL" ? "Global" : room.department?.name ?? "Departamento"}
+                            </span>
                           </p>
                         </div>
                         <span className="rounded-full bg-white/10 px-2 py-1 text-[10px] font-black text-slate-300">{room._count.messages}</span>
@@ -203,7 +226,10 @@ export default async function WorkplaceChatPage({ searchParams }: Props) {
                   <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                       <p className="text-[11px] font-black uppercase tracking-[0.28em] text-cyan-200">
-                        {selectedRoom.visibility === "GLOBAL" ? "Canal global" : selectedRoom.department?.name ?? "Departamento"}
+                        <span className="inline-flex items-center gap-2">
+                          {selectedRoom.visibility === "GLOBAL" ? <Globe2 className="h-4 w-4" aria-hidden /> : <Building2 className="h-4 w-4" aria-hidden />}
+                          {selectedRoom.visibility === "GLOBAL" ? "Canal global" : selectedRoom.department?.name ?? "Departamento"}
+                        </span>
                       </p>
                       <h2 className="mt-1 text-2xl font-black text-white">{selectedRoom.title}</h2>
                     </div>
@@ -223,7 +249,7 @@ export default async function WorkplaceChatPage({ searchParams }: Props) {
                           <img src={message.senderAvatarUrl} alt={message.senderName ?? "Empleado"} className="h-full w-full object-cover" />
                         ) : (
                           <div className="grid h-full w-full place-items-center text-sm font-black text-cyan-200">
-                            {(message.senderName ?? "P").slice(0, 1).toUpperCase()}
+                            {message.senderName ? (message.senderName ?? "P").slice(0, 1).toUpperCase() : <UserCircle2 className="h-5 w-5" aria-hidden />}
                           </div>
                         )}
                       </div>
@@ -242,6 +268,7 @@ export default async function WorkplaceChatPage({ searchParams }: Props) {
                     </div>
                   )) : (
                     <div className="rounded-3xl border border-dashed border-white/10 p-8 text-center text-sm text-slate-400">
+                      <AtSign className="mx-auto mb-3 h-8 w-8 text-cyan-200" aria-hidden />
                       No hay mensajes. Inicia la conversacion y menciona un departamento si necesitas su apoyo.
                     </div>
                   )}
@@ -260,7 +287,10 @@ export default async function WorkplaceChatPage({ searchParams }: Props) {
                         <p className="text-xs text-slate-500">
                           Tus respuestas se muestran con tu nombre, departamento, cargo y foto de perfil.
                         </p>
-                        <button className="rounded-2xl bg-cyan-400 px-6 py-3 text-sm font-black text-slate-950">Enviar mensaje</button>
+                        <button className="inline-flex items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-6 py-3 text-sm font-black text-slate-950">
+                          <Send className="h-4 w-4" aria-hidden />
+                          <span>Enviar mensaje</span>
+                        </button>
                       </div>
                     </form>
                   ) : (
