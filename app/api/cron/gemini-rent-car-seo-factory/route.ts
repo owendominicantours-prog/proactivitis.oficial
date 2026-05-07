@@ -7,6 +7,7 @@ import {
 import { submitSeoFactorySitemapsToSearchConsole } from "@/lib/googleSearchConsole";
 
 export const maxDuration = 300;
+const GEMINI_CRON_INTERVAL_MS = 48 * 60 * 60 * 1000;
 
 const getBearerToken = (request: NextRequest) => {
   const header = request.headers.get("authorization") ?? "";
@@ -28,6 +29,17 @@ export async function GET(request: NextRequest) {
   const config = await getGeminiSeoFactoryConfig();
   if (!config.enabled) {
     return NextResponse.json({ ok: true, skipped: true, reason: "Gemini SEO Factory pausado." });
+  }
+  const force = request.nextUrl.searchParams.get("force") === "1";
+  const lastRunAt = config.lastRunAt ? new Date(config.lastRunAt).getTime() : 0;
+  if (!force && lastRunAt && Date.now() - lastRunAt < GEMINI_CRON_INTERVAL_MS) {
+    return NextResponse.json({
+      ok: true,
+      skipped: true,
+      reason: "Gemini Rent Car SEO Factory espera 48 horas entre lotes.",
+      lastRunAt: config.lastRunAt,
+      nextRunAt: new Date(lastRunAt + GEMINI_CRON_INTERVAL_MS).toISOString()
+    });
   }
 
   const generatedToday = await getGeminiSeoGeneratedTodayCount();

@@ -6,11 +6,11 @@
     },
     {
       "path": "/api/cron/gemini-seo-factory",
-      "schedule": "0 * * * *"
+      "schedule": "0 3 */2 * *"
     },
     {
       "path": "/api/cron/gemini-rent-car-seo-factory",
-      "schedule": "*/30 * * * *"
+      "schedule": "0 4 */2 * *"
     },
     {
       "path": "/api/cron/news-search-console",

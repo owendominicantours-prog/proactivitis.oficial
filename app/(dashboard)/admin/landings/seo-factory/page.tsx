@@ -166,7 +166,7 @@ export default async function GeminiSeoFactoryAdminPage() {
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-sky-300">Manual</p>
             <h2 className="mt-2 text-2xl font-black">Generar ahora</h2>
             <p className="mt-2 text-sm leading-6 text-white/70">
-              El cron de tours + transfer sigue cada hora. Rent car genera 2 landings cada 30 minutos en un cron separado.
+              Los cron de Gemini ahora esperan 48 horas entre lotes. Tours + transfer y rent car corren en procesos separados.
             </p>
           </div>
           <form action={generateGeminiSeoFactoryBatchAction} className="space-y-3">
