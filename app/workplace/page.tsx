@@ -77,18 +77,30 @@ export default async function WorkplaceHomePage() {
 
         <section className="grid gap-4 md:grid-cols-3">
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-            <ShieldCheck className="h-6 w-6 text-emerald-200" aria-hidden />
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400">Acceso</p>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400">Acceso</p>
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-300/10 text-emerald-200">
+                <ShieldCheck className="h-4 w-4" aria-hidden />
+              </span>
+            </div>
             <p className="mt-2 text-3xl font-black text-white">Activo</p>
           </div>
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-            <KeyRound className="h-6 w-6 text-cyan-200" aria-hidden />
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400">Permisos</p>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400">Permisos</p>
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-cyan-300/10 text-cyan-200">
+                <KeyRound className="h-4 w-4" aria-hidden />
+              </span>
+            </div>
             <p className="mt-2 text-3xl font-black text-white">{permissionLabels.length}</p>
           </div>
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-            <BriefcaseBusiness className="h-6 w-6 text-amber-200" aria-hidden />
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400">Codigo</p>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400">Codigo</p>
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-amber-300/10 text-amber-200">
+                <BriefcaseBusiness className="h-4 w-4" aria-hidden />
+              </span>
+            </div>
             <p className="mt-2 text-3xl font-black text-white">{context.employee?.employeeCode ?? "ADMIN"}</p>
           </div>
         </section>
