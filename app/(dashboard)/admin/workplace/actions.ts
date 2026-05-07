@@ -120,6 +120,37 @@ export async function createWorkplaceRoleAction(formData: FormData) {
   revalidateWorkplace();
 }
 
+export async function deleteWorkplaceRoleAction(formData: FormData) {
+  const session = await requireAdminSession();
+  const roleId = sanitize(formData.get("roleId"));
+  if (!roleId) throw new Error("Rol invalido.");
+
+  const role = await prisma.workplaceRole.findUnique({
+    where: { id: roleId },
+    include: { _count: { select: { assignments: true } } }
+  });
+  if (!role) throw new Error("Rol no encontrado.");
+
+  await prisma.$transaction([
+    prisma.workplaceRoleAssignment.deleteMany({ where: { roleId } }),
+    prisma.workplaceRole.delete({ where: { id: roleId } })
+  ]);
+
+  await recordWorkplaceAuditLog({
+    actorUserId: session.user.id,
+    actionKey: "workplace.role.delete",
+    moduleKey: "security",
+    resourceType: "role",
+    resourceId: roleId,
+    beforeData: {
+      name: role.name,
+      slug: role.slug,
+      assignmentsRemoved: role._count.assignments
+    }
+  });
+  revalidateWorkplace();
+}
+
 export async function createWorkplaceEmployeeAction(formData: FormData) {
   const session = await requireAdminSession();
   const name = sanitize(formData.get("name"));

@@ -75,6 +75,7 @@ const defaultRoles = [
     name: "Director Regional",
     slug: "director-regional",
     departmentSlug: "operaciones",
+    description: "Supervisa operaciones por pais o region. Puede ver reservas, productos principales, reportes y responder casos operativos.",
     level: 80,
     permissions: ["bookings.view", "bookings.edit", "tours.view", "rent_car.view", "hotels.view", "chat.view", "chat.respond", "reports.view", "security.audit"]
   },
@@ -82,6 +83,7 @@ const defaultRoles = [
     name: "Manager Pais",
     slug: "manager-pais",
     departmentSlug: "operaciones",
+    description: "Coordina la operacion de un pais: reservas, suplidores, agencias y reportes sin permisos sensibles de seguridad.",
     level: 60,
     permissions: ["bookings.view", "bookings.edit", "suppliers.view", "agencies.view", "reports.view"]
   },
@@ -89,27 +91,119 @@ const defaultRoles = [
     name: "Supervisor Soporte",
     slug: "supervisor-soporte",
     departmentSlug: "soporte",
+    description: "Gestiona asistencia publica, chat interno y soporte a suplidores/agencias. Ideal para liderar el Support Desk.",
     level: 45,
     permissions: ["bookings.view", "chat.view", "chat.respond", "suppliers.support", "agencies.support"]
+  },
+  {
+    name: "Agente Asistencia Cliente",
+    slug: "agente-asistencia-cliente",
+    departmentSlug: "soporte",
+    description: "Responde clientes, busca reservas operativas y escala casos a departamentos. No edita productos ni precios.",
+    level: 25,
+    permissions: ["bookings.view", "chat.view", "chat.respond"]
   },
   {
     name: "Editor Tours",
     slug: "editor-tours",
     departmentSlug: "tours",
+    description: "Edita informacion, horarios, descripcion y fotos de tours dentro de su alcance.",
     level: 30,
     permissions: ["tours.view", "tours.edit", "tours.media"]
+  },
+  {
+    name: "Supervisor Tours",
+    slug: "supervisor-tours",
+    departmentSlug: "tours",
+    description: "Supervisa tours, edicion, media, reservas relacionadas y reportes. No elimina tours sin aprobacion.",
+    level: 45,
+    permissions: ["tours.view", "tours.edit", "tours.media", "bookings.view", "reports.view", "chat.view", "chat.respond"]
+  },
+  {
+    name: "Media Tours",
+    slug: "media-tours",
+    departmentSlug: "tours",
+    description: "Solo gestiona fotos y galeria de tours. Util para personal de contenido visual.",
+    level: 20,
+    permissions: ["tours.view", "tours.media"]
   },
   {
     name: "Operador Rent Car",
     slug: "operador-rent-car",
     departmentSlug: "rent-car",
+    description: "Gestiona vehiculos de rent car y revisa reservas relacionadas.",
     level: 30,
     permissions: ["rent_car.view", "rent_car.edit", "bookings.view"]
+  },
+  {
+    name: "Supervisor Rent Car",
+    slug: "supervisor-rent-car",
+    departmentSlug: "rent-car",
+    description: "Supervisa flota, reservas, soporte y reportes de rent car. Los cambios de precio critico siguen siendo sensibles.",
+    level: 45,
+    permissions: ["rent_car.view", "rent_car.edit", "bookings.view", "chat.view", "chat.respond", "reports.view"]
+  },
+  {
+    name: "Editor Hoteles",
+    slug: "editor-hoteles",
+    departmentSlug: "hoteles",
+    description: "Gestiona contenido de hoteles, apartamentos y casas vacacionales dentro del alcance asignado.",
+    level: 30,
+    permissions: ["hotels.view", "hotels.edit"]
+  },
+  {
+    name: "Coordinador Transfer",
+    slug: "coordinador-transfer",
+    departmentSlug: "operaciones",
+    description: "Gestiona traslados, rutas, tarifas operativas y seguimiento de reservas de transfer.",
+    level: 35,
+    permissions: ["transfers.view", "transfers.edit", "bookings.view", "chat.view", "chat.respond"]
+  },
+  {
+    name: "Atencion Suplidores",
+    slug: "atencion-suplidores",
+    departmentSlug: "soporte",
+    description: "Ayuda a proveedores con configuraciones y dudas, sin desactivar cuentas ni tocar comisiones.",
+    level: 25,
+    permissions: ["suppliers.view", "suppliers.support", "chat.view", "chat.respond"]
+  },
+  {
+    name: "Atencion Agencias",
+    slug: "atencion-agencias",
+    departmentSlug: "soporte",
+    description: "Da soporte a agencias aliadas y revisa cuentas permitidas.",
+    level: 25,
+    permissions: ["agencies.view", "agencies.support", "chat.view", "chat.respond"]
+  },
+  {
+    name: "Analista Reportes",
+    slug: "analista-reportes",
+    departmentSlug: "operaciones",
+    description: "Consulta reportes y reservas para seguimiento operativo. No edita productos.",
+    level: 20,
+    permissions: ["bookings.view", "reports.view"]
+  },
+  {
+    name: "Contabilidad Operativa",
+    slug: "contabilidad-operativa",
+    departmentSlug: "contabilidad",
+    description: "Consulta finanzas, reservas y reportes. Cambios de comision siguen como accion sensible.",
+    level: 40,
+    permissions: ["finance.view", "bookings.view", "reports.view"]
+  },
+  {
+    name: "Gestor Reembolsos",
+    slug: "gestor-reembolsos",
+    departmentSlug: "contabilidad",
+    description: "Gestiona reembolsos bajo control de auditoria. Usar solo con personal de confianza.",
+    level: 50,
+    permissions: ["finance.view", "refunds.manage", "bookings.view", "chat.view", "chat.respond"]
   },
   {
     name: "Auditor Seguridad",
     slug: "auditor-seguridad",
     departmentSlug: "seguridad",
+    description: "Revisa auditoria, aprueba acciones sensibles y controla riesgos internos.",
     level: 70,
     permissions: ["chat.view", "security.audit", "security.approve", "workplace.manage"]
   }
@@ -146,10 +240,17 @@ export async function ensureWorkplaceDefaults() {
     const department = await prisma.workplaceDepartment.findUnique({ where: { slug: role.departmentSlug } });
     await prisma.workplaceRole.upsert({
       where: { slug: role.slug },
-      update: {},
+      update: {
+        name: role.name,
+        description: role.description,
+        departmentId: department?.id,
+        level: role.level,
+        active: true
+      },
       create: {
         name: role.name,
         slug: role.slug,
+        description: role.description,
         departmentId: department?.id,
         level: role.level,
         permissions: toJson(role.permissions),

@@ -9,6 +9,7 @@ import {
   createWorkplaceDepartmentAction,
   createWorkplaceEmployeeAction,
   createWorkplaceRoleAction,
+  deleteWorkplaceRoleAction,
   decideWorkplaceApprovalRequestAction,
   seedWorkplaceDefaultsAction,
   toggleWorkplaceDepartmentAction,
@@ -67,6 +68,10 @@ export default async function AdminWorkplacePage() {
   const approvedEmployees = employees.filter((employee) => employee.status === "APPROVED").length;
   const pendingEmployees = employees.filter((employee) => employee.status === "PENDING").length;
   const pendingApprovals = approvals.filter((approval) => approval.status === "PENDING").length;
+  const permissionsByModule = workplaceModules.map((module) => ({
+    ...module,
+    permissions: workplacePermissions.filter((permission) => permission.module === module.key)
+  })).filter((module) => module.permissions.length > 0);
 
   return (
     <div className="space-y-8 pb-12">
@@ -283,6 +288,21 @@ export default async function AdminWorkplacePage() {
         <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-slate-500">Roles dinamicos</p>
           <h2 className="mt-1 text-2xl font-black text-slate-950">Crear o actualizar rol</h2>
+          <details className="mt-4 rounded-2xl border border-sky-100 bg-sky-50 p-4 text-sm text-slate-700">
+            <summary className="cursor-pointer font-black text-slate-950">
+              ? Guia rapida para no confundirte
+            </summary>
+            <div className="mt-3 space-y-2 leading-relaxed">
+              <p>
+                Lo normal es usar primero <strong>Instalar base recomendada</strong>. Eso deja creados los roles principales
+                para soporte, tours, rent car, hoteles, transfer, contabilidad, reportes y seguridad.
+              </p>
+              <p>
+                Crea un rol manual solo si necesitas una combinacion especial. El <strong>nivel</strong> es jerarquia:
+                80 supervisa mas que 30. Los permisos sensibles deben asignarse solo a personas de confianza.
+              </p>
+            </div>
+          </details>
           <form action={createWorkplaceRoleAction} className="mt-5 grid gap-3">
             <div className="grid gap-3 md:grid-cols-2">
               <input name="name" placeholder="Nombre del rol" className="rounded-2xl border border-slate-200 px-4 py-3 text-sm" />
@@ -295,15 +315,24 @@ export default async function AdminWorkplacePage() {
               ))}
             </select>
             <textarea name="description" placeholder="Descripcion del rol" className="min-h-20 rounded-2xl border border-slate-200 px-4 py-3 text-sm" />
-            <div className="grid gap-3 sm:grid-cols-2">
-              {workplacePermissions.map((permission) => (
-                <label key={permission.key} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm">
-                  <input type="checkbox" name="permissions" value={permission.key} className="mt-1" />
-                  <span>
-                    <strong className="block text-slate-900">{permission.label}</strong>
-                    <span className="text-xs text-slate-500">{permission.module}{"sensitive" in permission && permission.sensitive ? " - sensible" : ""}</span>
-                  </span>
-                </label>
+            <div className="space-y-3">
+              {permissionsByModule.map((module) => (
+                <details key={module.key} className="rounded-2xl border border-slate-200 bg-slate-50 p-3" open={["tours", "bookings", "chat"].includes(module.key)}>
+                  <summary className="cursor-pointer text-sm font-black text-slate-950">
+                    {module.label} <span className="text-xs font-bold text-slate-400">({module.permissions.length})</span>
+                  </summary>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    {module.permissions.map((permission) => (
+                      <label key={permission.key} className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-3 text-sm">
+                        <input type="checkbox" name="permissions" value={permission.key} className="mt-1" />
+                        <span>
+                          <strong className="block text-slate-900">{permission.label}</strong>
+                          <span className="text-xs text-slate-500">Clave: {permission.key}{"sensitive" in permission && permission.sensitive ? " - sensible" : ""}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </details>
               ))}
             </div>
             <button className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white">Guardar rol</button>
@@ -322,11 +351,27 @@ export default async function AdminWorkplacePage() {
                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
                       Nivel {role.level} - {role.department?.name ?? "Global"} - {role._count.assignments} asignaciones
                     </p>
+                    {role.description ? <p className="mt-2 text-sm leading-relaxed text-slate-600">{role.description}</p> : null}
                   </div>
-                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${role.active ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"}`}>
-                    {role.active ? "Activo" : "Pausado"}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${role.active ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"}`}>
+                      {role.active ? "Activo" : "Pausado"}
+                    </span>
+                    <form action={deleteWorkplaceRoleAction}>
+                      <input type="hidden" name="roleId" value={role.id} />
+                      <button className="rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-black text-rose-700 hover:bg-rose-50">
+                        Eliminar
+                      </button>
+                    </form>
+                  </div>
                 </div>
+                <details className="mt-3 rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-600">
+                  <summary className="cursor-pointer font-black text-slate-800">? Que permite este rol</summary>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                    Este rol activa los permisos listados abajo. Si el empleado tiene varios roles, el sistema suma los permisos
+                    de todos y luego aplica alcance por pais, ciudad, nicho, producto y proveedor.
+                  </p>
+                </details>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {Array.isArray(role.permissions) ? (
                     role.permissions.map((permission) => (
