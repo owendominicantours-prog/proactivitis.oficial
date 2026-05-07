@@ -25,8 +25,6 @@ const adminNavSections: AdminNavSection[] = [
       { label: "Transfer", href: "/admin/transfers", description: "Rutas, zonas, vehiculos y tarifas" },
       { label: "Rent a car", href: "/admin/rent-a-car", description: "Flota, zonas y precios de renta" },
       { label: "Hoteles", href: "/admin/hoteles", description: "Alojamientos y contenido hotelero" },
-      { label: "Resorts", href: "/admin/resorts", description: "Resorts y paginas de hoteles" },
-      { label: "Hotel landings", href: "/admin/hotel-landings", description: "Landings de hoteles" },
       { label: "App recomendados", href: "/admin/app-recommendations", description: "Tours destacados en la app" }
     ]
   },
