@@ -152,6 +152,8 @@ export default function RentCarDetailPage({ locationId, categorySlug, locale = "
   const description = buildRentCarDescription(option, locale);
   const specs = getRentCarSpecBadges(option, locale);
   const rootPath = getRentCarRootPath(locale);
+  const currentPath = getRentCarOptionPath(option.locationId, option.categorySlug, locale);
+  const loginHref = `/auth/login?callbackUrl=${encodeURIComponent(currentPath)}`;
   const facts = [
     `${option.seats} ${String(copy.passengers)}`,
     `${option.doors} doors`,
@@ -235,7 +237,7 @@ export default function RentCarDetailPage({ locationId, categorySlug, locale = "
           <section className="rounded-[1.2rem] bg-slate-950 p-5 text-white shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <p className="max-w-xl text-base font-black">{labels.memberTitle}</p>
-              <Link href="/login" className="rounded-full bg-sky-600 px-5 py-3 text-xs font-black uppercase tracking-[0.16em] text-white">
+              <Link href={loginHref} className="rounded-full bg-sky-600 px-5 py-3 text-xs font-black uppercase tracking-[0.16em] text-white">
                 {labels.signIn}
               </Link>
             </div>
