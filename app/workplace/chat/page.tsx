@@ -14,6 +14,7 @@ import {
 
 import WorkplaceShell from "@/components/workplace/WorkplaceShell";
 import WorkplaceMentionTextarea, { type WorkplaceMentionOption } from "@/components/workplace/WorkplaceMentionTextarea";
+import WorkplaceMentionSeenMarker from "@/components/workplace/WorkplaceMentionSeenMarker";
 import { prisma } from "@/lib/prisma";
 import { requireWorkplaceContext, slugifyWorkplace } from "@/lib/workplace";
 import { createWorkplaceChatRoomAction, sendWorkplaceChatMessageAction } from "./actions";
@@ -29,6 +30,17 @@ const formatTime = (value: Date) =>
     hour: "2-digit",
     minute: "2-digit"
   }).format(value);
+
+const renderMessageBody = (body: string) =>
+  body.split(/(@[\p{L}\p{N}_-]+)/gu).map((part, index) =>
+    part.startsWith("@") ? (
+      <span key={`${part}-${index}`} className="rounded-full bg-cyan-300/15 px-1.5 py-0.5 font-black text-cyan-100">
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
 
 async function ensureBaseRooms() {
   const departments = await prisma.workplaceDepartment.findMany({ where: { active: true }, select: { id: true, name: true, slug: true } });
@@ -257,6 +269,7 @@ export default async function WorkplaceChatPage({ searchParams }: Props) {
           <article className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.035]">
             {selectedRoom ? (
               <>
+                <WorkplaceMentionSeenMarker roomId={selectedRoom.id} />
                 <header className="border-b border-white/10 bg-white/[0.04] px-5 py-4">
                   <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
                     <div>
@@ -298,7 +311,7 @@ export default async function WorkplaceChatPage({ searchParams }: Props) {
                           </div>
                           <p className="text-xs text-slate-500">{formatTime(message.createdAt)}</p>
                         </div>
-                        <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-200">{message.body}</p>
+                        <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-200">{renderMessageBody(message.body)}</p>
                       </div>
                     </div>
                   )) : (
