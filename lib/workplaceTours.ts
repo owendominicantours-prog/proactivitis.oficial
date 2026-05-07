@@ -1,5 +1,16 @@
 import { Prisma } from "@prisma/client";
 
+import {
+  containsInsensitive,
+  countryMatchesScopeText,
+  formatScopeLine,
+  isDominicanRepublicScope,
+  isGlobalScope,
+  normalizeScopeText,
+  textMatchesScope,
+  uniqueScopeItems
+} from "@/lib/workplaceFilters";
+
 type WorkplaceScope = {
   countries: string[];
   cities: string[];
@@ -43,42 +54,11 @@ export type ScopedTourRecord = {
 
 const insensitive = Prisma.QueryMode.insensitive;
 
-export const normalizeWorkplaceText = (value?: string | null) =>
-  String(value ?? "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim();
-
-const uniqueTerms = (items: string[]) =>
-  Array.from(new Set(items.map((item) => item.trim()).filter(Boolean))).slice(0, 30);
-
-const isGlobalScope = (items: string[]) => {
-  if (!items.length) return true;
-  return items.some((item) => {
-    const normalized = normalizeWorkplaceText(item);
-    return normalized === "*" || normalized === "global" || normalized === "all" || normalized === "todos";
-  });
-};
-
-const containsText = (value: string): Prisma.StringFilter => ({
-  contains: value,
-  mode: insensitive
-});
-
+export const normalizeWorkplaceText = normalizeScopeText;
+const uniqueTerms = uniqueScopeItems;
+const containsText = containsInsensitive;
 const normalizeSlugTerm = (value: string) => normalizeWorkplaceText(value).replace(/\s+/g, "-");
-
-const isDominicanRepublicTerm = (value: string) => {
-  const normalized = normalizeWorkplaceText(value);
-  return (
-    normalized === "rd" ||
-    normalized === "do" ||
-    normalized.includes("dominican republic") ||
-    normalized.includes("dominican republica") ||
-    normalized.includes("republica dominicana") ||
-    normalized.includes("dominicana")
-  );
-};
+const isDominicanRepublicTerm = isDominicanRepublicScope;
 
 const countryConditionsForTerm = (term: string): Prisma.TourWhereInput[] => {
   if (isDominicanRepublicTerm(term)) {
@@ -101,12 +81,7 @@ const countryConditionsForTerm = (term: string): Prisma.TourWhereInput[] => {
 };
 
 const textMatchesAny = (haystack: string, terms: string[]) => {
-  if (isGlobalScope(terms)) return true;
-  const normalizedHaystack = normalizeWorkplaceText(haystack);
-  return terms.some((term) => {
-    const normalizedTerm = normalizeWorkplaceText(term);
-    return normalizedHaystack.includes(normalizedTerm) || normalizedTerm.includes(normalizedHaystack);
-  });
+  return textMatchesScope(haystack, terms);
 };
 
 export function workplaceScopeAllowsTours(scope: WorkplaceScope) {
@@ -236,7 +211,7 @@ export function tourMatchesWorkplaceScope(tour: ScopedTourRecord, scope: Workpla
     const countryText = [tour.countryId, tour.country?.code, tour.country?.name, tour.country?.slug, tour.location, countryAliases]
       .filter(Boolean)
       .join(" ");
-    if (!textMatchesAny(countryText, scope.countries)) return false;
+    if (!countryMatchesScopeText(countryText, scope.countries)) return false;
   }
   if (!isGlobalScope(scope.cities)) {
     const zoneText = [
@@ -262,12 +237,5 @@ export function tourMatchesWorkplaceScope(tour: ScopedTourRecord, scope: Workpla
 }
 
 export function formatWorkplaceTourScope(scope: WorkplaceScope) {
-  const city = isGlobalScope(scope.cities) ? "todas las zonas asignadas" : scope.cities.slice(0, 3).join(", ");
-  const country = isGlobalScope(scope.countries)
-    ? "Republica Dominicana"
-    : scope.countries
-        .slice(0, 2)
-        .map((item) => (isDominicanRepublicTerm(item) ? "Republica Dominicana" : item))
-        .join(", ");
-  return `${city}, ${country}`;
+  return formatScopeLine(scope).replace(" - ", ", ");
 }
