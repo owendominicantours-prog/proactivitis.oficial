@@ -14,6 +14,7 @@ type VisitorMessage = {
   senderRole: string;
   mine: boolean;
   senderName: string;
+  senderTitle?: string;
 };
 
 type TourCardPayload = {
@@ -198,7 +199,11 @@ export default function VisitorSalesChat() {
                   if (tourCard) {
                     return (
                       <div className="max-w-[90%] rounded-2xl border border-sky-200 bg-white px-3 py-2 text-sm text-slate-800">
-                        {!message.mine && <p className="mb-1 text-[10px] font-semibold uppercase text-slate-500">{message.senderName}</p>}
+                        {!message.mine && (
+                          <p className="mb-1 text-[10px] font-semibold uppercase text-slate-500">
+                            {message.senderName}{message.senderTitle ? ` · ${message.senderTitle}` : ""}
+                          </p>
+                        )}
                         <div className="flex items-center gap-2">
                           {tourCard.image ? (
                             <Image
@@ -235,7 +240,11 @@ export default function VisitorSalesChat() {
                         message.mine ? "bg-emerald-500 text-white" : "bg-white text-slate-800 border border-slate-200"
                       }`}
                     >
-                      {!message.mine && <p className="mb-1 text-[10px] font-semibold uppercase text-slate-500">{message.senderName}</p>}
+                      {!message.mine && (
+                        <p className="mb-1 text-[10px] font-semibold uppercase text-slate-500">
+                          {message.senderName}{message.senderTitle ? ` · ${message.senderTitle}` : ""}
+                        </p>
+                      )}
                       {formatMessage(message.content)}
                     </div>
                   );

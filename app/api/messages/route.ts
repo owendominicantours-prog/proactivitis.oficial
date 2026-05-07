@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
+import { canAccessSupportConversation, getSupportDeskContext } from "@/lib/supportDesk";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -30,12 +31,14 @@ export async function POST(request: NextRequest) {
 
   const isAdmin = session.user.role === "ADMIN";
   const isParticipant = conversation.ConversationParticipant.some((item) => item.userId === session.user.id);
+  const supportContext = !isParticipant && !isAdmin ? await getSupportDeskContext() : null;
+  const canUseSupportDesk = supportContext ? await canAccessSupportConversation(supportContext, conversation.id) : false;
 
-  if (!isParticipant && !isAdmin) {
+  if (!isParticipant && !isAdmin && !canUseSupportDesk) {
     return NextResponse.json({ error: "No eres parte de esta conversacion" }, { status: 403 });
   }
 
-  if (!isParticipant && isAdmin) {
+  if (!isParticipant && (isAdmin || canUseSupportDesk)) {
     await prisma.conversationParticipant.create({
       data: {
         conversationId,

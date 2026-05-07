@@ -30,7 +30,14 @@ export async function GET(request: NextRequest) {
         senderId: true,
         User: {
           select: {
-            name: true
+            name: true,
+            role: true,
+            WorkplaceEmployee: {
+              select: {
+                jobTitle: true,
+                department: { select: { name: true } }
+              }
+            }
           }
         }
       }
@@ -45,7 +52,13 @@ export async function GET(request: NextRequest) {
         createdAt: message.createdAt,
         senderRole: message.senderRole,
         mine: message.senderId === session.visitorUserId,
-        senderName: message.User?.name ?? "Soporte"
+        senderName: message.User?.name ?? "Soporte",
+        senderTitle:
+          message.User?.WorkplaceEmployee?.department?.name || message.User?.WorkplaceEmployee?.jobTitle
+            ? `${message.User?.WorkplaceEmployee?.department?.name ?? "Proactivitis"}${message.User?.WorkplaceEmployee?.jobTitle ? ` - ${message.User.WorkplaceEmployee.jobTitle}` : ""}`
+            : message.User?.role === "ADMIN"
+              ? "Administracion Proactivitis"
+              : "Asistencia Proactivitis"
         }))
     });
 
@@ -106,7 +119,7 @@ export async function POST(request: NextRequest) {
       data: { updatedAt: new Date() }
     });
 
-    const adminChatUrl = "https://proactivitis.com/admin/chat";
+    const adminChatUrl = "https://proactivitis.com/workplace/support";
     const safeMessage = content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const html = buildEmailShell({
       eyebrow: "Chat web",

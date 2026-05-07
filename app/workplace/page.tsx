@@ -10,6 +10,7 @@ export const metadata = {
 
 const modules = [
   { key: "chat.view", label: "Chat interno", href: "/workplace/chat", helper: "Conversaciones corporativas por departamento, menciones y soporte global." },
+  { key: "chat.respond", label: "Asistencia", href: "/workplace/support", helper: "Responder clientes, consultar reservas y escalar casos a departamentos." },
   { key: "tours.view", label: "Tours", href: "/workplace/tours", helper: "Editor de experiencias por zona, proveedor y nicho." },
   { key: "bookings.view", label: "Reservas", href: "/workplace/bookings", helper: "Reservas asignadas al alcance operativo." },
   { key: "rent_car.view", label: "Rent Car", href: "/workplace/rent-car", helper: "Flota y reservas de vehiculos por mercado." },

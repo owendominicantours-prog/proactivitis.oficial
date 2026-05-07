@@ -1,0 +1,52 @@
+export const dynamic = "force-dynamic";
+
+import { redirect } from "next/navigation";
+
+import SupportDeskClient from "@/components/workplace/SupportDeskClient";
+import WorkplaceShell from "@/components/workplace/WorkplaceShell";
+import { prisma } from "@/lib/prisma";
+import { getWorkplaceContext } from "@/lib/workplace";
+
+type Props = {
+  searchParams?: Promise<{ conversationId?: string }>;
+};
+
+export const metadata = {
+  title: "Asistencia | Workplace"
+};
+
+export default async function WorkplaceSupportPage({ searchParams }: Props) {
+  const context = await getWorkplaceContext();
+  if (!context?.user) redirect("/auth/login?callbackUrl=/workplace/support");
+  if (!context.isAdmin && !context.permissions.has("chat.respond")) redirect("/workplace");
+
+  const params = (searchParams ? await searchParams : undefined) ?? {};
+  const departments = await prisma.workplaceDepartment.findMany({
+    where: { active: true },
+    select: { id: true, name: true, slug: true },
+    orderBy: { name: "asc" }
+  });
+
+  return (
+    <WorkplaceShell
+      active="support"
+      employeeName={context.user.name}
+      department={context.employee?.department?.name ?? "Asistencia"}
+      permissions={context.permissions}
+      scope={context.scope}
+    >
+      <div className="space-y-6 pb-10">
+        <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-7">
+          <p className="text-[11px] font-bold uppercase tracking-[0.34em] text-cyan-200">Asistencia publica</p>
+          <h1 className="mt-3 text-4xl font-black tracking-tight">Support Desk de clientes.</h1>
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-300">
+            Responde chats de la web, vincula reservas por codigo, consulta datos operativos seguros y escala casos
+            tecnicos a departamentos sin perder el historial con el cliente.
+          </p>
+        </section>
+
+        <SupportDeskClient departments={departments} initialConversationId={params.conversationId ?? null} />
+      </div>
+    </WorkplaceShell>
+  );
+}

@@ -20,6 +20,7 @@ type Props = {
 const navItems = [
   { label: "Inicio", href: "/workplace", key: "home", permission: null },
   { label: "Chat", href: "/workplace/chat", key: "chat", permission: "chat.view" },
+  { label: "Asistencia", href: "/workplace/support", key: "support", permission: "chat.respond" },
   { label: "Reservas", href: "/workplace/bookings", key: "bookings", permission: "bookings.view" },
   { label: "Tours", href: "/workplace/tours", key: "tours", permission: "tours.view" },
   { label: "Transfer", href: "/workplace/transfers", key: "transfers", permission: "transfers.view" },

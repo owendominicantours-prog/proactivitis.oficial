@@ -117,13 +117,31 @@ model Conversation {
   id                      String                    @id
   type                    String                    @default("SUPPORT")
   reservationId           String?                   @unique
+  linkedBookingId         String?
+  status                  String                    @default("OPEN")
+  priority                String                    @default("NORMAL")
+  assignedDepartmentId    String?
+  assignedEmployeeId      String?
+  escalatedAt             DateTime?
+  closedAt                DateTime?
+  internalNote            String?                   @db.Text
   createdById             String
   createdAt               DateTime                  @default(now())
   updatedAt               DateTime
   User                    User                      @relation(fields: [createdById], references: [id], onDelete: Cascade)
   Booking                 Booking?                  @relation(fields: [reservationId], references: [id])
+  assignedDepartment      WorkplaceDepartment?      @relation("SupportAssignedDepartment", fields: [assignedDepartmentId], references: [id], onDelete: SetNull)
+  assignedEmployee        WorkplaceEmployee?        @relation("SupportAssignedEmployee", fields: [assignedEmployeeId], references: [id], onDelete: SetNull)
   ConversationParticipant ConversationParticipant[]
   Message                 Message[]
+
+  @@index([type])
+  @@index([status])
+  @@index([priority])
+  @@index([linkedBookingId])
+  @@index([assignedDepartmentId])
+  @@index([assignedEmployeeId])
+  @@index([updatedAt])
 }
 
 model ConversationParticipant {
@@ -837,6 +855,7 @@ model WorkplaceDepartment {
   roles       WorkplaceRole[]
   chatRooms   WorkplaceChatRoom[]
   chatMentions WorkplaceChatMention[]
+  assignedSupportConversations Conversation[] @relation("SupportAssignedDepartment")
 
   @@index([active])
 }
@@ -888,6 +907,7 @@ model WorkplaceEmployee {
   createdChatRooms    WorkplaceChatRoom[]       @relation("WorkplaceChatRoomCreatedBy")
   chatMessages        WorkplaceChatMessage[]
   chatMentions        WorkplaceChatMention[]
+  assignedSupportConversations Conversation[]   @relation("SupportAssignedEmployee")
 
   @@index([status])
   @@index([departmentId])

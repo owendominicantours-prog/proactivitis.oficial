@@ -38,6 +38,8 @@ type EncodedTourCard = {
 
 const TOUR_CARD_PREFIX = "[[TOUR_CARD]]";
 const VISITOR_CONTEXT_PREFIX = "[[VISITOR_CONTEXT]]";
+const SUPPORT_BOOKING_LINK_PREFIX = "[[SUPPORT_BOOKING_LINK]]";
+const SUPPORT_ESCALATION_PREFIX = "[[SUPPORT_ESCALATION]]";
 
 const parseTourCard = (content: string): EncodedTourCard | null => {
   if (!content.startsWith(TOUR_CARD_PREFIX)) return null;
@@ -65,6 +67,15 @@ const parseVisitorContext = (content: string): VisitorContextPayload | null => {
   if (!content.startsWith(VISITOR_CONTEXT_PREFIX)) return null;
   try {
     return JSON.parse(content.slice(VISITOR_CONTEXT_PREFIX.length)) as VisitorContextPayload;
+  } catch {
+    return null;
+  }
+};
+
+const parseJsonPrefix = <T,>(content: string, prefix: string): T | null => {
+  if (!content.startsWith(prefix)) return null;
+  try {
+    return JSON.parse(content.slice(prefix.length)) as T;
   } catch {
     return null;
   }
@@ -171,6 +182,8 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
         {messages.map((message) => {
           const tourCard = parseTourCard(message.content);
           const visitorContext = parseVisitorContext(message.content);
+          const bookingLink = parseJsonPrefix<{ bookingCode?: string; service?: string }>(message.content, SUPPORT_BOOKING_LINK_PREFIX);
+          const escalation = parseJsonPrefix<{ department?: string; priority?: string; note?: string }>(message.content, SUPPORT_ESCALATION_PREFIX);
           const isAdminMessage = message.senderRole === "ADMIN";
           if (visitorContext) {
             return (
@@ -182,6 +195,24 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
                   {visitorContext.region ? ` · ${visitorContext.region}` : ""}
                 </p>
                 <p className="line-clamp-1">{visitorContext.pageTitle ?? visitorContext.pagePath ?? "Pagina N/D"}</p>
+              </div>
+            );
+          }
+          if (bookingLink) {
+            return (
+              <div key={message.id} className="rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-xs text-cyan-900">
+                <p className="font-semibold uppercase tracking-[0.2em]">Reserva vinculada</p>
+                <p className="mt-1 text-sm font-bold">{bookingLink.bookingCode ?? "Codigo pendiente"}</p>
+                <p>{bookingLink.service ?? "Servicio Proactivitis"}</p>
+              </div>
+            );
+          }
+          if (escalation) {
+            return (
+              <div key={message.id} className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">
+                <p className="font-semibold uppercase tracking-[0.2em]">Caso escalado</p>
+                <p className="mt-1 text-sm font-bold">{escalation.department ?? "Departamento interno"}</p>
+                {escalation.note ? <p className="mt-1">{escalation.note}</p> : null}
               </div>
             );
           }
