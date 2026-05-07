@@ -822,6 +822,133 @@ model User {
   BlogPosts               BlogPost[]
   TourReviews             TourReview[]
   TransferReviews         TransferReview[]
+  WorkplaceEmployee       WorkplaceEmployee?
+}
+
+model WorkplaceDepartment {
+  id          String              @id @default(cuid())
+  name        String
+  slug        String              @unique
+  description String?             @db.Text
+  active      Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  employees   WorkplaceEmployee[]
+  roles       WorkplaceRole[]
+
+  @@index([active])
+}
+
+model WorkplaceRole {
+  id           String                    @id @default(cuid())
+  departmentId String?
+  name         String
+  slug         String                    @unique
+  description  String?                   @db.Text
+  level        Int                       @default(10)
+  active       Boolean                   @default(true)
+  permissions  Json
+  scope        Json?
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  department   WorkplaceDepartment?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  assignments  WorkplaceRoleAssignment[]
+
+  @@index([departmentId])
+  @@index([active])
+}
+
+model WorkplaceEmployee {
+  id                  String                    @id @default(cuid())
+  userId              String                    @unique
+  departmentId        String?
+  employeeCode        String?                   @unique
+  jobTitle            String?
+  status              String                    @default("PENDING")
+  countryScope        Json?
+  cityScope           Json?
+  nicheScope          Json?
+  productScope        Json?
+  companyScope        Json?
+  moduleScope         Json?
+  permissionOverrides Json?
+  accessExpiresAt     DateTime?
+  approvedAt          DateTime?
+  approvedById        String?
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  user                User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department          WorkplaceDepartment?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  roles               WorkplaceRoleAssignment[]
+  auditLogs           WorkplaceAuditLog[]
+  approvalRequests    WorkplaceApprovalRequest[]
+
+  @@index([status])
+  @@index([departmentId])
+}
+
+model WorkplaceRoleAssignment {
+  id           String            @id @default(cuid())
+  employeeId   String
+  roleId       String
+  assignedById String?
+  expiresAt    DateTime?
+  createdAt    DateTime          @default(now())
+  employee     WorkplaceEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  role         WorkplaceRole     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, roleId])
+  @@index([roleId])
+  @@index([expiresAt])
+}
+
+model WorkplaceApprovalRequest {
+  id            String              @id @default(cuid())
+  employeeId    String?
+  requestedById String?
+  actionKey     String
+  moduleKey     String?
+  resourceType  String?
+  resourceId    String?
+  title         String
+  description   String?             @db.Text
+  payload       Json?
+  status        String              @default("PENDING")
+  decisionNote  String?             @db.Text
+  decidedById   String?
+  decidedAt     DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  employee      WorkplaceEmployee?  @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([employeeId])
+  @@index([actionKey])
+  @@index([moduleKey])
+}
+
+model WorkplaceAuditLog {
+  id           String              @id @default(cuid())
+  actorUserId  String?
+  employeeId   String?
+  actionKey    String
+  moduleKey    String?
+  resourceType String?
+  resourceId   String?
+  ipAddress    String?
+  country      String?
+  device       String?
+  metadata     Json?
+  beforeData   Json?
+  afterData    Json?
+  createdAt    DateTime            @default(now())
+  employee     WorkplaceEmployee?  @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId])
+  @@index([employeeId])
+  @@index([actionKey])
+  @@index([moduleKey])
+  @@index([createdAt])
 }
 
 model TransferReview {

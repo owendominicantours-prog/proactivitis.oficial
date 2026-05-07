@@ -5,7 +5,7 @@ import { deleteUserAction, resetUserPreferencesAction } from "./actions";
 
 type SearchParams = {
   q?: string;
-  role?: "all" | "ADMIN" | "SUPPLIER" | "AGENCY" | "CUSTOMER";
+  role?: "all" | "ADMIN" | "EMPLOYEE" | "SUPPLIER" | "AGENCY" | "CUSTOMER";
 };
 
 type Props = {
@@ -14,6 +14,7 @@ type Props = {
 
 const roleStyles: Record<string, string> = {
   ADMIN: "bg-slate-900 text-white",
+  EMPLOYEE: "bg-cyan-100 text-cyan-800",
   SUPPLIER: "bg-emerald-100 text-emerald-800",
   AGENCY: "bg-sky-100 text-sky-800",
   CUSTOMER: "bg-amber-100 text-amber-800"
@@ -47,6 +48,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
 
   const byRole = {
     admin: users.filter((user) => user.role === "ADMIN").length,
+    employee: users.filter((user) => user.role === "EMPLOYEE").length,
     supplier: users.filter((user) => user.role === "SUPPLIER").length,
     agency: users.filter((user) => user.role === "AGENCY").length,
     customer: users.filter((user) => user.role === "CUSTOMER").length
@@ -72,10 +74,11 @@ export default async function AdminUsersPage({ searchParams }: Props) {
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
         {[
           { label: "Total", value: users.length },
           { label: "Admin", value: byRole.admin },
+          { label: "Employee", value: byRole.employee },
           { label: "Supplier", value: byRole.supplier },
           { label: "Agency", value: byRole.agency },
           { label: "Customer", value: byRole.customer }
@@ -107,6 +110,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
             >
               <option value="all">Todos</option>
               <option value="ADMIN">Admin</option>
+              <option value="EMPLOYEE">Employee</option>
               <option value="SUPPLIER">Supplier</option>
               <option value="AGENCY">Agency</option>
               <option value="CUSTOMER">Customer</option>

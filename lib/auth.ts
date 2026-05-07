@@ -8,6 +8,7 @@ import { prisma } from "./prisma";
 
 const roleRedirects: Record<string, string> = {
   ADMIN: "/portal/admin",
+  EMPLOYEE: "/workplace",
   SUPPLIER: "/portal/supplier",
   AGENCY: "/portal/agency",
   CUSTOMER: "/portal/customer"
@@ -68,7 +69,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const needsApproval = ["SUPPLIER", "AGENCY"].includes(user.role ?? "");
+        const needsApproval = ["SUPPLIER", "AGENCY", "EMPLOYEE"].includes(user.role ?? "");
         if (needsApproval && user.accountStatus !== "APPROVED") {
           const defaultMessage =
             user.accountStatus === "REJECTED"
@@ -131,7 +132,7 @@ export const authOptions: NextAuthOptions = {
             }
           });
 
-          const needsApproval = ["SUPPLIER", "AGENCY"].includes(existingUser.role ?? "");
+          const needsApproval = ["SUPPLIER", "AGENCY", "EMPLOYEE"].includes(existingUser.role ?? "");
           if (needsApproval && existingUser.accountStatus !== "APPROVED") {
             const defaultMessage =
               existingUser.accountStatus === "REJECTED"
