@@ -46,7 +46,9 @@ export const workplacePermissions = [
   { key: "finance.view", module: "finance", label: "Ver finanzas" },
   { key: "finance.commission", module: "finance", label: "Cambiar comisiones", sensitive: true },
   { key: "refunds.manage", module: "refunds", label: "Gestionar reembolsos", sensitive: true },
+  { key: "chat.view", module: "chat", label: "Ver chat interno" },
   { key: "chat.respond", module: "chat", label: "Responder chat" },
+  { key: "chat.manage", module: "chat", label: "Administrar salas de chat", sensitive: true },
   { key: "reports.view", module: "reports", label: "Ver reportes" },
   { key: "security.audit", module: "security", label: "Ver auditoria" },
   { key: "security.approve", module: "security", label: "Aprobar acciones sensibles", sensitive: true },
@@ -74,7 +76,7 @@ const defaultRoles = [
     slug: "director-regional",
     departmentSlug: "operaciones",
     level: 80,
-    permissions: ["bookings.view", "bookings.edit", "tours.view", "rent_car.view", "hotels.view", "reports.view", "security.audit"]
+    permissions: ["bookings.view", "bookings.edit", "tours.view", "rent_car.view", "hotels.view", "chat.view", "chat.respond", "reports.view", "security.audit"]
   },
   {
     name: "Manager Pais",
@@ -88,7 +90,7 @@ const defaultRoles = [
     slug: "supervisor-soporte",
     departmentSlug: "soporte",
     level: 45,
-    permissions: ["bookings.view", "chat.respond", "suppliers.support", "agencies.support"]
+    permissions: ["bookings.view", "chat.view", "chat.respond", "suppliers.support", "agencies.support"]
   },
   {
     name: "Editor Tours",
@@ -109,7 +111,7 @@ const defaultRoles = [
     slug: "auditor-seguridad",
     departmentSlug: "seguridad",
     level: 70,
-    permissions: ["security.audit", "security.approve", "workplace.manage"]
+    permissions: ["chat.view", "security.audit", "security.approve", "workplace.manage"]
   }
 ] as const;
 

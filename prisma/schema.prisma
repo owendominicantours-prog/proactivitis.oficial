@@ -835,6 +835,8 @@ model WorkplaceDepartment {
   updatedAt   DateTime            @updatedAt
   employees   WorkplaceEmployee[]
   roles       WorkplaceRole[]
+  chatRooms   WorkplaceChatRoom[]
+  chatMentions WorkplaceChatMention[]
 
   @@index([active])
 }
@@ -864,6 +866,7 @@ model WorkplaceEmployee {
   departmentId        String?
   employeeCode        String?                   @unique
   jobTitle            String?
+  avatarUrl           String?
   status              String                    @default("PENDING")
   countryScope        Json?
   cityScope           Json?
@@ -882,6 +885,9 @@ model WorkplaceEmployee {
   roles               WorkplaceRoleAssignment[]
   auditLogs           WorkplaceAuditLog[]
   approvalRequests    WorkplaceApprovalRequest[]
+  createdChatRooms    WorkplaceChatRoom[]       @relation("WorkplaceChatRoomCreatedBy")
+  chatMessages        WorkplaceChatMessage[]
+  chatMentions        WorkplaceChatMention[]
 
   @@index([status])
   @@index([departmentId])
@@ -949,6 +955,68 @@ model WorkplaceAuditLog {
   @@index([actionKey])
   @@index([moduleKey])
   @@index([createdAt])
+}
+
+model WorkplaceChatRoom {
+  id           String                    @id @default(cuid())
+  title        String
+  slug         String                    @unique
+  description  String?                   @db.Text
+  departmentId String?
+  visibility   String                    @default("DEPARTMENT")
+  status       String                    @default("OPEN")
+  createdById  String?
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  department   WorkplaceDepartment?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdBy    WorkplaceEmployee?        @relation("WorkplaceChatRoomCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  messages     WorkplaceChatMessage[]
+  mentions     WorkplaceChatMention[]
+
+  @@index([departmentId])
+  @@index([visibility])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model WorkplaceChatMessage {
+  id               String                    @id @default(cuid())
+  roomId           String
+  employeeId       String?
+  senderUserId     String?
+  senderName       String?
+  senderDepartment String?
+  senderPosition   String?
+  senderAvatarUrl  String?
+  body             String                    @db.Text
+  mentions         Json?
+  createdAt        DateTime                  @default(now())
+  room             WorkplaceChatRoom         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  employee         WorkplaceEmployee?        @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  mentionRecords   WorkplaceChatMention[]
+
+  @@index([roomId, createdAt])
+  @@index([employeeId])
+  @@index([senderUserId])
+}
+
+model WorkplaceChatMention {
+  id           String                    @id @default(cuid())
+  roomId       String
+  messageId    String?
+  departmentId String?
+  employeeId   String?
+  status       String                    @default("OPEN")
+  createdAt    DateTime                  @default(now())
+  room         WorkplaceChatRoom         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  message      WorkplaceChatMessage?     @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  department   WorkplaceDepartment?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  employee     WorkplaceEmployee?        @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+
+  @@index([departmentId, status])
+  @@index([employeeId, status])
+  @@index([roomId])
+  @@index([messageId])
 }
 
 model TransferReview {

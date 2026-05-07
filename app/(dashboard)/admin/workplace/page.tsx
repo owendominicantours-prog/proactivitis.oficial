@@ -126,12 +126,24 @@ export default async function AdminWorkplacePage() {
               employees.map((employee) => (
                 <div key={employee.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
-                      <p className="text-base font-black text-slate-950">{employee.user.name ?? "Empleado sin nombre"}</p>
-                      <p className="text-sm text-slate-600">{employee.user.email}</p>
-                      <p className="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
-                        {employee.jobTitle ?? "Sin cargo"} - {employee.department?.name ?? "Sin departamento"}
-                      </p>
+                    <div className="flex items-start gap-3">
+                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-slate-200">
+                        {employee.avatarUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={employee.avatarUrl} alt={employee.user.name ?? "Empleado"} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="grid h-full w-full place-items-center text-sm font-black text-slate-600">
+                            {(employee.user.name ?? "P").slice(0, 1).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-base font-black text-slate-950">{employee.user.name ?? "Empleado sin nombre"}</p>
+                        <p className="text-sm text-slate-600">{employee.user.email}</p>
+                        <p className="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
+                          {employee.jobTitle ?? "Sin cargo"} - {employee.department?.name ?? "Sin departamento"}
+                        </p>
+                      </div>
                     </div>
                     <span className={`w-fit rounded-full px-3 py-1 text-xs font-black ${statusStyles[employee.status] ?? statusStyles.PENDING}`}>
                       {employee.status}

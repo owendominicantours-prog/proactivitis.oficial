@@ -19,6 +19,7 @@ type Props = {
 
 const navItems = [
   { label: "Inicio", href: "/workplace", key: "home", permission: null },
+  { label: "Chat", href: "/workplace/chat", key: "chat", permission: "chat.view" },
   { label: "Reservas", href: "/workplace/bookings", key: "bookings", permission: "bookings.view" },
   { label: "Tours", href: "/workplace/tours", key: "tours", permission: "tours.view" },
   { label: "Transfer", href: "/workplace/transfers", key: "transfers", permission: "transfers.view" },
@@ -37,7 +38,9 @@ export default function WorkplaceShell({ children, active, employeeName, departm
     permissions.has("tours.media") ? "Gestionar fotos" : null,
     permissions.has("bookings.view") ? "Ver reservas" : null,
     permissions.has("rent_car.view") ? "Ver rent car" : null,
-    permissions.has("suppliers.view") ? "Ver suplidores" : null
+    permissions.has("suppliers.view") ? "Ver suplidores" : null,
+    permissions.has("chat.view") ? "Ver chat" : null,
+    permissions.has("chat.respond") ? "Responder chat" : null
   ].filter(Boolean);
 
   return (
@@ -104,8 +107,10 @@ export default function WorkplaceShell({ children, active, employeeName, departm
               <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-cyan-300">Workplace</p>
             </div>
             <div className="ml-auto text-right">
-              <p className="font-black">{employeeName ?? "Equipo Proactivitis"}</p>
-              <p className="text-xs text-slate-400">{department ?? "Workplace"}</p>
+              <Link href="/workplace/profile" className="block rounded-2xl px-3 py-2 transition hover:bg-white/5">
+                <p className="font-black">{employeeName ?? "Equipo Proactivitis"}</p>
+                <p className="text-xs text-slate-400">{department ?? "Workplace"}</p>
+              </Link>
             </div>
           </div>
         </header>
