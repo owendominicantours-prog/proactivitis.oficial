@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 const webStripeError = {
-  message: "Stripe nativo no esta disponible en la vista web. Usa checkout web o prueba en Android/iOS."
+  message: "Stripe nativo no esta disponible en esta plataforma."
 };
 
 export function AppStripeProvider({ children }: { publishableKey: string; children: ReactNode }) {
