@@ -1,4 +1,4 @@
-﻿-- Admin Workplace: empleados internos, roles dinamicos, permisos, aprobaciones y auditoria.
+-- Admin Workplace: empleados internos, roles dinamicos, permisos, aprobaciones y auditoria.
 CREATE TABLE "WorkplaceDepartment" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
