@@ -5,7 +5,6 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { sensitiveWorkplaceActions, workplaceModules, workplacePermissions } from "@/lib/workplace";
 import {
-  assignWorkplaceRoleAction,
   createWorkplaceApprovalRequestAction,
   createWorkplaceDepartmentAction,
   createWorkplaceEmployeeAction,
@@ -13,6 +12,7 @@ import {
   decideWorkplaceApprovalRequestAction,
   seedWorkplaceDefaultsAction,
   toggleWorkplaceDepartmentAction,
+  updateWorkplaceEmployeeRolesAction,
   updateWorkplaceEmployeeStatusAction
 } from "./actions";
 
@@ -159,7 +159,7 @@ export default async function AdminWorkplacePage() {
                     )}
                   </div>
 
-                  <div className="mt-4 grid gap-2 md:grid-cols-[1fr,1fr]">
+                  <div className="mt-4 grid gap-3 md:grid-cols-[0.8fr,1.2fr]">
                     <form action={updateWorkplaceEmployeeStatusAction} className="grid gap-2 sm:grid-cols-[1fr,auto]">
                       <input type="hidden" name="employeeId" value={employee.id} />
                       <select name="status" defaultValue={employee.status} className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm">
@@ -170,14 +170,29 @@ export default async function AdminWorkplacePage() {
                       </select>
                       <button className="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-bold text-white">Guardar</button>
                     </form>
-                    <form action={assignWorkplaceRoleAction} className="grid gap-2 sm:grid-cols-[1fr,auto]">
+                    <form action={updateWorkplaceEmployeeRolesAction} className="rounded-2xl border border-slate-200 bg-white p-3">
                       <input type="hidden" name="employeeId" value={employee.id} />
-                      <select name="roleId" className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                      <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Roles del perfil</p>
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
                         {roles.map((role) => (
-                          <option key={role.id} value={role.id}>{role.name}</option>
+                          <label key={role.id} className="flex items-start gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+                            <input
+                              type="checkbox"
+                              name="roleIds"
+                              value={role.id}
+                              defaultChecked={employee.roles.some((assignment) => assignment.roleId === role.id)}
+                              className="mt-0.5"
+                            />
+                            <span>
+                              <strong className="block text-slate-900">{role.name}</strong>
+                              <span>{role.department?.name ?? "Global"} - nivel {role.level}</span>
+                            </span>
+                          </label>
                         ))}
-                      </select>
-                      <button className="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-800">Asignar rol</button>
+                      </div>
+                      <button className="mt-3 rounded-2xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-800">
+                        Guardar roles
+                      </button>
                     </form>
                   </div>
                 </div>

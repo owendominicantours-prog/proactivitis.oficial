@@ -257,6 +257,52 @@ export async function assignWorkplaceRoleAction(formData: FormData) {
   revalidateWorkplace();
 }
 
+export async function updateWorkplaceEmployeeRolesAction(formData: FormData) {
+  const session = await requireAdminSession();
+  const employeeId = sanitize(formData.get("employeeId"));
+  const roleIds = Array.from(new Set(formData.getAll("roleIds").map(String).filter(Boolean)));
+  if (!employeeId) throw new Error("Empleado invalido.");
+
+  const employee = await prisma.workplaceEmployee.findUnique({
+    where: { id: employeeId },
+    select: { id: true, userId: true }
+  });
+  if (!employee) throw new Error("Empleado no encontrado.");
+
+  if (roleIds.length) {
+    const existingRoles = await prisma.workplaceRole.findMany({
+      where: { id: { in: roleIds } },
+      select: { id: true }
+    });
+    const validRoleIds = new Set(existingRoles.map((role) => role.id));
+
+    await prisma.workplaceRoleAssignment.deleteMany({
+      where: { employeeId, roleId: { notIn: Array.from(validRoleIds) } }
+    });
+
+    for (const roleId of validRoleIds) {
+      await prisma.workplaceRoleAssignment.upsert({
+        where: { employeeId_roleId: { employeeId, roleId } },
+        update: { assignedById: session.user.id, expiresAt: null },
+        create: { employeeId, roleId, assignedById: session.user.id }
+      });
+    }
+  } else {
+    await prisma.workplaceRoleAssignment.deleteMany({ where: { employeeId } });
+  }
+
+  await recordWorkplaceAuditLog({
+    actorUserId: session.user.id,
+    employeeId,
+    actionKey: "workplace.roles.sync",
+    moduleKey: "security",
+    resourceType: "employee",
+    resourceId: employeeId,
+    afterData: { roleIds }
+  });
+  revalidateWorkplace();
+}
+
 export async function createWorkplaceApprovalRequestAction(formData: FormData) {
   const session = await requireAdminSession();
   const title = sanitize(formData.get("title"));
