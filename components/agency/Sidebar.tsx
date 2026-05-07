@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const menu = [
   { label: "Dashboard", href: "/agency" },
@@ -16,7 +17,9 @@ const menu = [
 
 export const AgencySidebar = () => (
   <aside className="fixed left-0 top-0 h-screen w-64 bg-slate-900/95 p-6 text-white shadow-xl">
-    <div className="mb-10 text-sm uppercase tracking-[0.4em] text-slate-400">Agency HQ</div>
+    <Link href="/agency" className="mb-10 inline-flex rounded-2xl bg-white px-4 py-3">
+      <Image src="/logo.png" alt="Proactivitis" width={170} height={50} className="h-9 w-auto object-contain" />
+    </Link>
     <nav className="space-y-2 text-sm">
       {menu.map((item) => (
         <Link key={item.label} href={item.href} className="block rounded-2xl px-4 py-2 transition hover:bg-slate-800">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ReactNode } from "react";
 
 type Props = {
@@ -47,12 +48,11 @@ export default function WorkplaceShell({ children, active, employeeName, departm
   return (
     <main className="min-h-screen bg-[#071120] text-white">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-white/10 bg-[#081324] p-5 lg:block">
-        <Link href="/workplace" className="flex items-center gap-3">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-cyan-400 text-xl font-black text-slate-950">P</div>
-          <div>
-            <p className="text-sm font-black uppercase tracking-[0.18em]">Proactivitis</p>
-            <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-cyan-300">Workplace</p>
-          </div>
+        <Link href="/workplace" className="block">
+          <span className="inline-flex rounded-[22px] border border-white/10 bg-white px-4 py-3 shadow-lg shadow-cyan-950/30">
+            <Image src="/logo.png" alt="Proactivitis" width={180} height={54} className="h-10 w-auto object-contain" priority />
+          </span>
+          <span className="mt-3 block text-[10px] font-bold uppercase tracking-[0.35em] text-cyan-300">Workplace</span>
         </Link>
 
         <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -104,8 +104,9 @@ export default function WorkplaceShell({ children, active, employeeName, departm
         <header className="sticky top-0 z-20 border-b border-white/10 bg-[#071120]/95 px-4 py-4 backdrop-blur lg:px-8">
           <div className="flex items-center justify-between gap-4">
             <div className="lg:hidden">
-              <p className="text-sm font-black uppercase tracking-[0.18em]">Proactivitis</p>
-              <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-cyan-300">Workplace</p>
+              <Link href="/workplace" className="inline-flex rounded-2xl bg-white px-3 py-2">
+                <Image src="/logo.png" alt="Proactivitis" width={138} height={42} className="h-7 w-auto object-contain" />
+              </Link>
             </div>
             <div className="ml-auto text-right">
               <Link href="/workplace/profile" className="block rounded-2xl px-3 py-2 transition hover:bg-white/5">

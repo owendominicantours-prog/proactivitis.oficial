@@ -1,5 +1,6 @@
-﻿import { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { ReactNode } from "react";
 
 export const metadata = {
   title: "Customer | Proactivitis"
@@ -10,8 +11,8 @@ export default function CustomerLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-transparent text-slate-900">
       <header className="border-b border-slate-200/70 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="text-lg font-semibold text-slate-900">
-            Proactivitis
+          <Link href="/" className="inline-flex rounded-2xl bg-white px-3 py-2 shadow-sm">
+            <Image src="/logo.png" alt="Proactivitis" width={155} height={46} className="h-8 w-auto object-contain" />
           </Link>
           <nav className="flex items-center gap-6 text-sm font-semibold text-slate-700">
             <Link href="/dashboard/customer" className="text-slate-900">

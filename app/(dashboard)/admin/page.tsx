@@ -122,7 +122,7 @@ export default async function AdminDashboard() {
       <section className="overflow-hidden rounded-[34px] border border-white/70 bg-slate-950 text-white shadow-2xl shadow-cyan-950/10">
         <div className="grid gap-8 p-6 sm:p-8 xl:grid-cols-[1.25fr,0.75fr]">
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.34em] text-cyan-200">Admin OS</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.34em] text-cyan-200">Panel admin</p>
             <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
               Control operativo claro para vender, supervisar y corregir rapido.
             </h1>

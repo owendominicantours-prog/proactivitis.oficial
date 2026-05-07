@@ -8,14 +8,14 @@ export const Header = () => {
   const { data: session } = useSession();
 
   return (
-    <header className="w-full border-b border-slate-200 bg-white/70 shadow-sm sticky top-0 z-50 backdrop-blur">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/70 shadow-sm backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <div>
           <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo/logo.png" alt="Proactivitis logo" width={140} height={40} className="object-contain" />
+            <Image src="/logo.png" alt="Proactivitis logo" width={170} height={52} className="h-10 w-auto object-contain" />
             <div className="hidden flex-col text-xs uppercase tracking-[0.3em] text-slate-400 lg:flex">
               <span>Marketplace</span>
-              <span>SaaS turístico</span>
+              <span>SaaS turistico</span>
             </div>
           </Link>
         </div>
@@ -36,7 +36,7 @@ export const Header = () => {
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-600 transition hover:border-slate-400"
               >
-                Cerrar sesión
+                Cerrar sesion
               </button>
             </div>
           ) : (

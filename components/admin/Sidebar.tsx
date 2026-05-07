@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const sections = [
   { name: "Dashboard", href: "/admin", icon: "dashboard" },
@@ -19,7 +20,9 @@ const sections = [
 
 export const Sidebar = () => (
   <aside className="fixed left-0 top-0 h-screen w-64 border-r border-slate-900/20 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 text-white shadow-xl">
-    <div className="mb-10 text-xs font-semibold uppercase tracking-[0.6em] text-slate-400">Proactivitis Admin</div>
+    <Link href="/admin" className="mb-10 inline-flex rounded-2xl bg-white px-4 py-3">
+      <Image src="/logo.png" alt="Proactivitis" width={170} height={50} className="h-9 w-auto object-contain" />
+    </Link>
     <div className="space-y-2 text-sm">
       {sections.map((section) => (
         <Link

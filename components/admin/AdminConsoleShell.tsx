@@ -178,13 +178,12 @@ function AdminSidebar({
   return (
     <aside className="flex h-full min-h-0 flex-col">
       <div className="border-b border-white/10 px-6 py-6">
-        <Link href="/admin" onClick={onNavigate} className="flex items-center gap-3">
-          <span className="grid h-12 w-12 place-items-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-cyan-950/30">
-            <Image src="/icon.png" alt="Proactivitis" width={44} height={44} className="h-11 w-11 object-cover" />
+        <Link href="/admin" onClick={onNavigate} className="block">
+          <span className="inline-flex rounded-[22px] border border-white/10 bg-white px-4 py-3 shadow-lg shadow-cyan-950/30">
+            <Image src="/logo.png" alt="Proactivitis" width={180} height={54} className="h-10 w-auto object-contain" priority />
           </span>
-          <span>
-            <span className="block text-sm font-black uppercase tracking-[0.18em]">Proactivitis</span>
-            <span className="block text-[10px] font-black uppercase tracking-[0.34em] text-cyan-300">Admin OS</span>
+          <span className="mt-3 block text-[10px] font-black uppercase tracking-[0.34em] text-cyan-300">
+            Panel admin
           </span>
         </Link>
       </div>

@@ -69,7 +69,7 @@ const adminNavSections: AdminNavSection[] = [
 ];
 
 export const metadata = {
-  title: "Admin OS Proactivitis"
+  title: "Admin Proactivitis"
 };
 
 export default async function AdminDashboardLayout({ children }: { children: ReactNode }) {

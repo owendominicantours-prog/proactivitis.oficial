@@ -11,10 +11,12 @@ export const SupplierTopbar = () => {
   return (
     <div className="flex items-center justify-between bg-white px-6 py-4 shadow">
       <div className="flex items-center gap-3">
-        <Image src="/logo/logo.png" alt="Proactivitis" width={32} height={32} className="rounded-full object-contain" />
+        <span className="inline-flex rounded-2xl border border-slate-100 bg-white px-3 py-2 shadow-sm">
+          <Image src="/logo.png" alt="Proactivitis" width={150} height={45} className="h-8 w-auto object-contain" />
+        </span>
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Supplier Panel</p>
-          <p className="text-lg font-semibold text-slate-900">Supplier · Proactivitis</p>
+          <p className="text-lg font-semibold text-slate-900">Supplier - Proactivitis</p>
         </div>
       </div>
       <div className="flex items-center gap-3">
@@ -24,7 +26,7 @@ export const SupplierTopbar = () => {
           rel="noreferrer"
           className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600"
         >
-          Ver web pública
+          Ver web publica
         </Link>
         <button className="text-sm font-semibold text-slate-600">Notificaciones</button>
         <div className="flex items-center gap-3 rounded-2xl border border-slate-200 px-3 py-2">
