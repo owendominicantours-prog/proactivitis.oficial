@@ -66,6 +66,40 @@ const containsText = (value: string): Prisma.StringFilter => ({
   mode: insensitive
 });
 
+const normalizeSlugTerm = (value: string) => normalizeWorkplaceText(value).replace(/\s+/g, "-");
+
+const isDominicanRepublicTerm = (value: string) => {
+  const normalized = normalizeWorkplaceText(value);
+  return (
+    normalized === "rd" ||
+    normalized === "do" ||
+    normalized.includes("dominican republic") ||
+    normalized.includes("dominican republica") ||
+    normalized.includes("republica dominicana") ||
+    normalized.includes("dominicana")
+  );
+};
+
+const countryConditionsForTerm = (term: string): Prisma.TourWhereInput[] => {
+  if (isDominicanRepublicTerm(term)) {
+    return [
+      { countryId: { equals: "RD", mode: insensitive } },
+      { country: { is: { code: { equals: "RD", mode: insensitive } } } },
+      { country: { is: { name: containsText("Dominican") } } },
+      { country: { is: { name: containsText("Republica Dominicana") } } },
+      { location: containsText("Republica Dominicana") },
+      { location: containsText("Dominican Republic") }
+    ];
+  }
+
+  return [
+    { countryId: { equals: term.toUpperCase(), mode: insensitive } },
+    { country: { is: { code: { equals: term.toUpperCase(), mode: insensitive } } } },
+    { country: { is: { name: containsText(term) } } },
+    { country: { is: { slug: containsText(normalizeSlugTerm(term)) } } }
+  ];
+};
+
 const textMatchesAny = (haystack: string, terms: string[]) => {
   if (isGlobalScope(terms)) return true;
   const normalizedHaystack = normalizeWorkplaceText(haystack);
@@ -100,12 +134,7 @@ export function buildWorkplaceTourWhere(scope: WorkplaceScope, filters: Workplac
   const countryTerms = uniqueTerms(scope.countries);
   if (!isGlobalScope(countryTerms)) {
     and.push({
-      OR: countryTerms.flatMap((term) => [
-        { countryId: { equals: term.toUpperCase(), mode: insensitive } },
-        { country: { is: { code: { equals: term.toUpperCase(), mode: insensitive } } } },
-        { country: { is: { name: containsText(term) } } },
-        { country: { is: { slug: containsText(normalizeWorkplaceText(term).replace(/\s+/g, "-")) } } }
-      ])
+      OR: countryTerms.flatMap((term) => countryConditionsForTerm(term))
     });
   }
 
@@ -115,9 +144,9 @@ export function buildWorkplaceTourWhere(scope: WorkplaceScope, filters: Workplac
       OR: cityTerms.flatMap((term) => [
         { location: containsText(term) },
         { destination: { is: { name: containsText(term) } } },
-        { destination: { is: { slug: containsText(normalizeWorkplaceText(term).replace(/\s+/g, "-")) } } },
+        { destination: { is: { slug: containsText(normalizeSlugTerm(term)) } } },
         { microZone: { is: { name: containsText(term) } } },
-        { microZone: { is: { slug: containsText(normalizeWorkplaceText(term).replace(/\s+/g, "-")) } } },
+        { microZone: { is: { slug: containsText(normalizeSlugTerm(term)) } } },
         { departureDestination: { is: { name: containsText(term) } } }
       ])
     });
@@ -139,7 +168,7 @@ export function buildWorkplaceTourWhere(scope: WorkplaceScope, filters: Workplac
         { id: { equals: term } },
         { productId: containsText(term) },
         { title: containsText(term) },
-        { slug: containsText(normalizeWorkplaceText(term).replace(/\s+/g, "-")) }
+        { slug: containsText(normalizeSlugTerm(term)) }
       ])
     });
   }
@@ -149,7 +178,7 @@ export function buildWorkplaceTourWhere(scope: WorkplaceScope, filters: Workplac
     and.push({
       OR: [
         { title: containsText(q) },
-        { slug: containsText(normalizeWorkplaceText(q).replace(/\s+/g, "-")) },
+        { slug: containsText(normalizeSlugTerm(q)) },
         { productId: containsText(q) },
         { location: containsText(q) },
         { SupplierProfile: { is: { company: containsText(q) } } }
@@ -203,7 +232,10 @@ export function getTourPrimaryImage(tour: Pick<ScopedTourRecord, "heroImage" | "
 export function tourMatchesWorkplaceScope(tour: ScopedTourRecord, scope: WorkplaceScope) {
   if (!workplaceScopeAllowsTours(scope)) return false;
   if (!isGlobalScope(scope.countries)) {
-    const countryText = [tour.countryId, tour.country?.code, tour.country?.name, tour.country?.slug].filter(Boolean).join(" ");
+    const countryAliases = tour.countryId === "RD" || tour.country?.code === "RD" ? "Republica Dominicana Dominican Republic Dominican Republica RD" : "";
+    const countryText = [tour.countryId, tour.country?.code, tour.country?.name, tour.country?.slug, tour.location, countryAliases]
+      .filter(Boolean)
+      .join(" ");
     if (!textMatchesAny(countryText, scope.countries)) return false;
   }
   if (!isGlobalScope(scope.cities)) {
@@ -235,7 +267,7 @@ export function formatWorkplaceTourScope(scope: WorkplaceScope) {
     ? "Republica Dominicana"
     : scope.countries
         .slice(0, 2)
-        .map((item) => (normalizeWorkplaceText(item) === "rd" ? "Republica Dominicana" : item))
+        .map((item) => (isDominicanRepublicTerm(item) ? "Republica Dominicana" : item))
         .join(", ");
   return `${city}, ${country}`;
 }
