@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
+import { PRODISCOVERY_LOGO_URL } from "@/lib/prodiscoveryBrand";
 import type { Locale } from "@/lib/translations";
 
 type Props = {
@@ -11,34 +13,34 @@ type Props = {
 const COPY = {
   es: {
     brand: "ProDiscovery",
-    tagline: "Concierge y viajes a medida",
-    home: "Inicio",
-    tours: "Catalogo",
-    transfers: "Traslados",
-    hotels: "Hoteles",
-    rankings: "Rankings",
+    tagline: "Viajes privados para grupos",
+    home: "Planificador",
+    dominican: "Republica Dominicana",
+    corporate: "Empresas",
+    weddings: "Bodas",
+    families: "Familias",
     language: "Idioma",
     book: "Planificar"
   },
   en: {
     brand: "ProDiscovery",
-    tagline: "Concierge and custom trips",
-    home: "Home",
-    tours: "Catalog",
-    transfers: "Transfers",
-    hotels: "Hotels",
-    rankings: "Rankings",
+    tagline: "Private trips for groups",
+    home: "Planner",
+    dominican: "Dominican Republic",
+    corporate: "Companies",
+    weddings: "Weddings",
+    families: "Families",
     language: "Language",
     book: "Plan"
   },
   fr: {
     brand: "ProDiscovery",
-    tagline: "Concierge et voyages sur mesure",
-    home: "Accueil",
-    tours: "Catalogue",
-    transfers: "Transferts",
-    hotels: "Hotels",
-    rankings: "Classements",
+    tagline: "Voyages prives pour groupes",
+    home: "Planificateur",
+    dominican: "Republique dominicaine",
+    corporate: "Entreprises",
+    weddings: "Mariages",
+    families: "Familles",
     language: "Langue",
     book: "Planifier"
   }
@@ -74,13 +76,17 @@ export default function ProDiscoveryHeader({ locale }: Props) {
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link href={base} className="flex min-w-0 items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-lg font-black text-white shadow-sm">
-              <span className="relative flex h-6 w-6 items-center justify-center rounded-full border-2 border-white/90">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              </span>
+            <span className="inline-flex rounded-2xl bg-white">
+              <Image
+                src={PRODISCOVERY_LOGO_URL}
+                alt={t.brand}
+                width={170}
+                height={52}
+                className="h-10 w-auto object-contain"
+                priority
+              />
             </span>
-            <span>
-              <span className="block text-lg font-black tracking-tight text-slate-900">{t.brand}</span>
+            <span className="hidden sm:block">
               <span className="block text-xs font-medium text-slate-500">{t.tagline}</span>
             </span>
           </Link>
@@ -115,24 +121,17 @@ export default function ProDiscoveryHeader({ locale }: Props) {
             <Link href={base} className={navClass(normalizedPath === "/prodiscovery")}>
               {t.home}
             </Link>
-            <Link href={`${base}?type=tour`} className={navClass(query.includes("type=tour"))}>
-              {t.tours}
+            <Link href={`${base}/republica-dominicana`} className={navClass(normalizedPath === "/prodiscovery/republica-dominicana")}>
+              {t.dominican}
             </Link>
-            <Link href={`${base}?type=transfer`} className={navClass(query.includes("type=transfer"))}>
-              {t.transfers}
+            <Link href={`${base}/grupos-corporativos`} className={navClass(normalizedPath === "/prodiscovery/grupos-corporativos")}>
+              {t.corporate}
             </Link>
-            <Link href={`${base}?type=hotel`} className={navClass(query.includes("type=hotel"))}>
-              {t.hotels}
+            <Link href={`${base}/bodas-y-celebraciones`} className={navClass(normalizedPath === "/prodiscovery/bodas-y-celebraciones")}>
+              {t.weddings}
             </Link>
-            <Link
-              href={`${base}/top/punta-cana/tours`}
-              className={
-                normalizedPath.includes("/prodiscovery/top")
-                  ? "rounded-full bg-emerald-600 px-3 py-1.5 font-semibold text-white shadow-sm"
-                  : "rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700 hover:bg-emerald-100"
-              }
-            >
-              {t.rankings}
+            <Link href={`${base}/familias-y-amigos`} className={navClass(normalizedPath === "/prodiscovery/familias-y-amigos")}>
+              {t.families}
             </Link>
           </div>
         </nav>

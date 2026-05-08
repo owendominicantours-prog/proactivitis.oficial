@@ -4,9 +4,13 @@ import { updateProDiscoveryOpportunityAction } from "./actions";
 
 import { prisma } from "@/lib/prisma";
 import {
+  ADDITIONAL_SERVICE_LABELS,
+  ASSISTANCE_LABELS,
   BUDGET_TIER_LABELS,
   GROUP_TYPE_LABELS,
+  HOLIDAY_STYLE_LABELS,
   INTEREST_LABELS,
+  LANGUAGE_LABELS,
   type ProDiscoveryItineraryDraft
 } from "@/lib/prodiscoveryGroupOpportunity";
 
@@ -161,6 +165,10 @@ export default async function ProDiscoveryOpportunitiesPage({ searchParams }: Pr
         {opportunities.length ? (
           opportunities.map((opportunity) => {
             const interests = jsonArray(opportunity.interests).map((item) => INTEREST_LABELS[item] ?? item);
+            const languages = jsonArray(opportunity.languages).map((item) => LANGUAGE_LABELS[item] ?? item);
+            const assistance = jsonArray(opportunity.assistance).map((item) => ASSISTANCE_LABELS[item] ?? item);
+            const styles = jsonArray(opportunity.holidayStyles).map((item) => HOLIDAY_STYLE_LABELS[item] ?? item);
+            const additionalServices = jsonArray(opportunity.additionalServices).map((item) => ADDITIONAL_SERVICE_LABELS[item] ?? item);
             const draft = itineraryDraft(opportunity.itineraryDraft);
             const selected = params.opportunityId === opportunity.id;
             const acceptedBudget = opportunity.acceptedBudget ?? opportunity.estimatedBudget ?? 0;
@@ -177,6 +185,11 @@ export default async function ProDiscoveryOpportunitiesPage({ searchParams }: Pr
                       <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusClass(opportunity.status)}`}>
                         {statusLabel[opportunity.status] ?? opportunity.status}
                       </span>
+                      {opportunity.leadPriority === "PRIORIDAD_VIP" ? (
+                        <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
+                          PRIORIDAD VIP
+                        </span>
+                      ) : null}
                     </div>
                     <p className="mt-1 text-sm text-slate-600">
                       {opportunity.requestCode} - {opportunity.contactName} - {opportunity.contactEmail}
@@ -212,12 +225,35 @@ export default async function ProDiscoveryOpportunitiesPage({ searchParams }: Pr
                   </div>
                 </div>
 
+                <div className="mt-4 grid gap-3 text-sm text-slate-600 md:grid-cols-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Idiomas guia</p>
+                    <p className="font-semibold text-slate-800">{languages.join(", ") || "Por confirmar"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Horarios</p>
+                    <p className="font-semibold text-slate-800">
+                      {opportunity.flexibleTiming
+                        ? "No esta seguro"
+                        : `${opportunity.preferredStartTime ?? "Inicio"} - ${opportunity.preferredEndTime ?? "Fin"}`}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Asistencia</p>
+                    <p className="font-semibold text-slate-800">{assistance.join(", ") || "Por confirmar"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Extras</p>
+                    <p className="font-semibold text-slate-800">{additionalServices.join(", ") || "Sin extras"}</p>
+                  </div>
+                </div>
+
                 <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-4">
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Sueno del cliente</p>
                   <p className="mt-2 text-sm leading-7 text-slate-700">{opportunity.dream}</p>
-                  {interests.length ? (
+                  {interests.length || styles.length ? (
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {interests.map((item) => (
+                      {Array.from(new Set([...styles, ...interests])).map((item) => (
                         <span key={item} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
                           {item}
                         </span>
@@ -228,7 +264,7 @@ export default async function ProDiscoveryOpportunitiesPage({ searchParams }: Pr
 
                 {draft ? (
                   <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-                    <p className="text-xs uppercase tracking-[0.2em] text-emerald-700">Borrador IA / operativo</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-emerald-700">Borrador inicial</p>
                     <p className="mt-2 text-sm leading-7 text-emerald-950">{draft.summary}</p>
                     <div className="mt-3 grid gap-2 md:grid-cols-2">
                       {draft.days.slice(0, 2).map((day) => (

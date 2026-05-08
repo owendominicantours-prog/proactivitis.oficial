@@ -1,14 +1,30 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles } from "lucide-react";
-import type { Locale } from "@/lib/translations";
+import { useMemo, useState, type ComponentType, type ReactNode } from "react";
 import {
-  BUDGET_TIER_LABELS,
-  GROUP_TYPE_LABELS,
-  INTEREST_LABELS,
-  type ProDiscoveryItineraryDraft
-} from "@/lib/prodiscoveryGroupPlannerShared";
+  Activity,
+  ArrowLeft,
+  ArrowRight,
+  Building2,
+  Bus,
+  CalendarDays,
+  Camera,
+  Check,
+  Heart,
+  Languages,
+  Leaf,
+  Loader2,
+  MapPin,
+  Mountain,
+  Music,
+  ShieldCheck,
+  Sparkles,
+  Users,
+  Utensils,
+  Waves
+} from "lucide-react";
+import type { Locale } from "@/lib/translations";
+import type { ProDiscoveryItineraryDraft } from "@/lib/prodiscoveryGroupPlannerShared";
 
 type PlannerFormProps = {
   locale: Locale;
@@ -18,8 +34,6 @@ type PlannerFormProps = {
 type PlannerResult = {
   requestCode: string;
   itinerary: ProDiscoveryItineraryDraft;
-  emailStatus: string;
-  geminiStatus: string;
 };
 
 type FormState = {
@@ -27,10 +41,16 @@ type FormState = {
   country: string;
   arrivalDate: string;
   departureDate: string;
+  flexibleTiming: boolean;
+  preferredStartTime: string;
+  preferredEndTime: string;
+  languages: string[];
+  assistance: string[];
   groupType: string;
   groupSize: string;
   budgetTier: string;
-  interests: string[];
+  holidayStyles: string[];
+  additionalServices: string[];
   dream: string;
   contactName: string;
   contactEmail: string;
@@ -38,115 +58,199 @@ type FormState = {
   companyName: string;
 };
 
+type ToggleKey = "languages" | "assistance" | "holidayStyles" | "additionalServices";
+type Option = { value: string; labels: Record<Locale, string>; icon?: ComponentType<{ className?: string }> };
+
 const copy = {
   es: {
-    steps: ["Destino", "Grupo", "Idea", "Contacto"],
-    destinationTitle: "Destino y fechas",
-    groupTitle: "Perfil del grupo",
-    dreamTitle: "La idea del viaje",
-    contactTitle: "Contacto",
-    city: "Ciudad o destino",
+    steps: ["Logistica", "Deseos", "Contacto"],
+    logisticsTitle: "Base del viaje",
+    wishTitle: "Lo que quieren vivir",
+    contactTitle: "Datos para responderte",
+    city: "Destino",
+    cityPlaceholder: "Punta Cana, Santo Domingo, Bayahibe...",
     country: "Pais",
+    countryPlaceholder: "Republica Dominicana",
+    dates: "Fechas",
     arrivalDate: "Llegada",
     departureDate: "Salida",
+    times: "Horarios aproximados",
+    startTime: "Inicio",
+    endTime: "Fin",
+    flexibleTiming: "No estoy seguro de mis horarios",
+    languages: "Guia que hable",
+    assistance: "Necesito asistencia con",
     groupType: "Tipo de grupo",
     groupSize: "Tamano del grupo",
     budget: "Presupuesto estimado",
-    interests: "Intereses criticos",
-    dream: "Describe el viaje ideal",
-    dreamPlaceholder: "Ej: somos 24 personas, queremos transporte privado, guia local, cena especial y una experiencia que no sea masiva...",
+    styles: "Tipo de experiencia",
+    extras: "Servicios adicionales",
+    dream: "Your Requirements",
+    dreamPlaceholder: "Ej: es la boda de mi hermana, somos 24 personas, queremos transporte privado, guia en espanol e ingles, cena especial y una experiencia que no sea masiva...",
     contactName: "Nombre",
     contactEmail: "Email",
     contactPhone: "Telefono / WhatsApp",
     companyName: "Empresa o grupo",
     next: "Siguiente",
     back: "Volver",
-    submit: "Solicitar propuesta",
+    submit: "Solicitar propuesta privada",
     submitting: "Disenando propuesta",
     successTitle: "Solicitud recibida",
-    successBody: "Ya tenemos un borrador inicial. Tambien lo enviamos al correo indicado si el servidor de email esta activo.",
+    successBody: "Preparamos una primera idea para tu grupo. Tambien la enviamos al correo indicado y el equipo la revisara para afinar fechas, cupos y estilo.",
     code: "Codigo",
-    email: "Email",
+    nextStep: "Siguiente paso",
+    nextStepBody: "Un planner revisara tu solicitud y te respondera con ajustes para convertirla en propuesta final.",
     errorFallback: "No pudimos enviar la solicitud. Revisa los campos e intenta otra vez.",
     required: "Completa los campos principales para continuar."
   },
   en: {
-    steps: ["Destination", "Group", "Idea", "Contact"],
-    destinationTitle: "Destination and dates",
-    groupTitle: "Group profile",
-    dreamTitle: "Trip idea",
-    contactTitle: "Contact",
-    city: "City or destination",
+    steps: ["Logistics", "Wishes", "Contact"],
+    logisticsTitle: "Trip base",
+    wishTitle: "What they want to experience",
+    contactTitle: "Details to reply",
+    city: "Destination",
+    cityPlaceholder: "Punta Cana, Santo Domingo, Bayahibe...",
     country: "Country",
+    countryPlaceholder: "Dominican Republic",
+    dates: "Dates",
     arrivalDate: "Arrival",
     departureDate: "Departure",
+    times: "Approximate timing",
+    startTime: "Start",
+    endTime: "End",
+    flexibleTiming: "I am not sure about my timing",
+    languages: "Guide language",
+    assistance: "I need help with",
     groupType: "Group type",
     groupSize: "Group size",
     budget: "Estimated budget",
-    interests: "Critical interests",
-    dream: "Describe the ideal trip",
-    dreamPlaceholder: "Example: we are 24 people, need private transport, a local guide, a special dinner and a non-mass experience...",
+    styles: "Experience type",
+    extras: "Additional services",
+    dream: "Your Requirements",
+    dreamPlaceholder: "Example: it is my sister's wedding, we are 24 people, need private transport, Spanish and English guide, a special dinner and a non-mass experience...",
     contactName: "Name",
     contactEmail: "Email",
     contactPhone: "Phone / WhatsApp",
     companyName: "Company or group",
     next: "Next",
     back: "Back",
-    submit: "Request proposal",
+    submit: "Request private proposal",
     submitting: "Designing proposal",
     successTitle: "Request received",
-    successBody: "We have an initial draft. It was also sent by email if the email server is active.",
+    successBody: "We prepared a first idea for your group. It was also sent to your email and the team will refine dates, capacity and style.",
     code: "Code",
-    email: "Email",
+    nextStep: "Next step",
+    nextStepBody: "A planner will review your request and reply with adjustments before turning it into a final proposal.",
     errorFallback: "We could not send the request. Check the fields and try again.",
     required: "Complete the main fields to continue."
   },
   fr: {
-    steps: ["Destination", "Groupe", "Idee", "Contact"],
-    destinationTitle: "Destination et dates",
-    groupTitle: "Profil du groupe",
-    dreamTitle: "Idee du voyage",
-    contactTitle: "Contact",
-    city: "Ville ou destination",
+    steps: ["Logistique", "Envies", "Contact"],
+    logisticsTitle: "Base du voyage",
+    wishTitle: "Ce que le groupe veut vivre",
+    contactTitle: "Details pour repondre",
+    city: "Destination",
+    cityPlaceholder: "Punta Cana, Santo Domingo, Bayahibe...",
     country: "Pays",
+    countryPlaceholder: "Republique dominicaine",
+    dates: "Dates",
     arrivalDate: "Arrivee",
     departureDate: "Depart",
+    times: "Horaires approximatifs",
+    startTime: "Debut",
+    endTime: "Fin",
+    flexibleTiming: "Je ne suis pas sur de mes horaires",
+    languages: "Langue du guide",
+    assistance: "Besoin d assistance avec",
     groupType: "Type de groupe",
     groupSize: "Taille du groupe",
     budget: "Budget estime",
-    interests: "Interets critiques",
-    dream: "Decrivez le voyage ideal",
-    dreamPlaceholder: "Exemple : nous sommes 24 personnes, transport prive, guide local, diner special et experience non massive...",
+    styles: "Type d experience",
+    extras: "Services additionnels",
+    dream: "Your Requirements",
+    dreamPlaceholder: "Exemple : c est le mariage de ma soeur, nous sommes 24 personnes, transport prive, guide en espagnol et anglais, diner special et experience non massive...",
     contactName: "Nom",
     contactEmail: "Email",
     contactPhone: "Telephone / WhatsApp",
     companyName: "Entreprise ou groupe",
     next: "Suivant",
     back: "Retour",
-    submit: "Demander proposition",
+    submit: "Demander proposition privee",
     submitting: "Creation de la proposition",
     successTitle: "Demande recue",
-    successBody: "Nous avons une premiere ebauche. Elle a aussi ete envoyee par email si le serveur email est actif.",
+    successBody: "Nous avons prepare une premiere idee pour votre groupe. Elle est aussi envoyee par email et l equipe affinera dates, capacite et style.",
     code: "Code",
-    email: "Email",
+    nextStep: "Prochaine etape",
+    nextStepBody: "Un planner examinera votre demande et repondra avec les ajustements avant la proposition finale.",
     errorFallback: "Impossible d envoyer la demande. Verifiez les champs et reessayez.",
     required: "Completez les champs principaux pour continuer."
   }
-};
+} as const;
 
-const groupOptions = Object.entries(GROUP_TYPE_LABELS);
-const budgetOptions = Object.entries(BUDGET_TIER_LABELS);
-const interestOptions = Object.entries(INTEREST_LABELS);
+const groupOptions: Option[] = [
+  { value: "companies", labels: { es: "Empresas / incentivos", en: "Companies / incentives", fr: "Entreprises / incentives" }, icon: Building2 },
+  { value: "families", labels: { es: "Familias", en: "Families", fr: "Familles" }, icon: Users },
+  { value: "weddings", labels: { es: "Bodas", en: "Weddings", fr: "Mariages" }, icon: Heart },
+  { value: "bachelor", labels: { es: "Despedidas", en: "Bachelor trips", fr: "Enterrements" }, icon: Music }
+];
 
-const initialState = (initialCity?: string): FormState => ({
+const budgetOptions: Option[] = [
+  { value: "low", labels: { es: "Bajo", en: "Low", fr: "Bas" } },
+  { value: "mid", labels: { es: "Medio", en: "Medium", fr: "Moyen" } },
+  { value: "premium", labels: { es: "Premium", en: "Premium", fr: "Premium" } },
+  { value: "vip", labels: { es: "VIP", en: "VIP", fr: "VIP" } }
+];
+
+const languageOptions: Option[] = [
+  { value: "es", labels: { es: "Espanol", en: "Spanish", fr: "Espagnol" }, icon: Languages },
+  { value: "en", labels: { es: "Ingles", en: "English", fr: "Anglais" }, icon: Languages },
+  { value: "fr", labels: { es: "Frances", en: "French", fr: "Francais" }, icon: Languages },
+  { value: "de", labels: { es: "Aleman", en: "German", fr: "Allemand" }, icon: Languages }
+];
+
+const assistanceOptions: Option[] = [
+  { value: "transport", labels: { es: "Transporte", en: "Transport", fr: "Transport" }, icon: Bus },
+  { value: "accommodation", labels: { es: "Alojamiento", en: "Accommodation", fr: "Hebergement" }, icon: Building2 },
+  { value: "group-logistics", labels: { es: "Logistica de grupo", en: "Group logistics", fr: "Logistique groupe" }, icon: Users },
+  { value: "private-dinner", labels: { es: "Cenas privadas", en: "Private dinners", fr: "Diners prives" }, icon: Utensils },
+  { value: "events", labels: { es: "Eventos", en: "Events", fr: "Evenements" }, icon: Sparkles }
+];
+
+const styleOptions: Option[] = [
+  { value: "active", labels: { es: "Activo", en: "Active", fr: "Actif" }, icon: Activity },
+  { value: "local", labels: { es: "Vida local", en: "Local living", fr: "Vie locale" }, icon: MapPin },
+  { value: "nature", labels: { es: "Naturaleza", en: "Nature", fr: "Nature" }, icon: Leaf },
+  { value: "offbeat", labels: { es: "Diferente", en: "Offbeat", fr: "Original" }, icon: Mountain },
+  { value: "relax", labels: { es: "Relax", en: "Relaxing", fr: "Relax" }, icon: Waves },
+  { value: "gastronomy", labels: { es: "Gastronomia", en: "Gastronomy", fr: "Gastronomie" }, icon: Utensils }
+];
+
+const additionalOptions: Option[] = [
+  { value: "insurance", labels: { es: "Seguro grupal", en: "Group insurance", fr: "Assurance groupe" }, icon: ShieldCheck },
+  { value: "photographer", labels: { es: "Fotografo privado", en: "Private photographer", fr: "Photographe prive" }, icon: Camera },
+  { value: "private-dinner", labels: { es: "Cena privada", en: "Private dinner", fr: "Diner prive" }, icon: Utensils },
+  { value: "nightlife", labels: { es: "Vida nocturna", en: "Nightlife", fr: "Vie nocturne" }, icon: Music },
+  { value: "culture", labels: { es: "Ruta cultural", en: "Cultural route", fr: "Route culturelle" }, icon: MapPin }
+];
+
+const defaultCountry = (locale: Locale) =>
+  locale === "en" ? "Dominican Republic" : locale === "fr" ? "Republique dominicaine" : "Republica Dominicana";
+
+const initialState = (initialCity: string | undefined, locale: Locale): FormState => ({
   city: initialCity ?? "",
-  country: "",
+  country: defaultCountry(locale),
   arrivalDate: "",
   departureDate: "",
-  groupType: "companies",
+  flexibleTiming: true,
+  preferredStartTime: "",
+  preferredEndTime: "",
+  languages: ["es", "en"],
+  assistance: ["transport", "group-logistics"],
+  groupType: "families",
   groupSize: "12",
   budgetTier: "mid",
-  interests: ["transport"],
+  holidayStyles: ["local"],
+  additionalServices: [],
   dream: "",
   contactName: "",
   contactEmail: "",
@@ -157,31 +261,34 @@ const initialState = (initialCity?: string): FormState => ({
 export default function ProDiscoveryPlannerForm({ locale, initialCity }: PlannerFormProps) {
   const t = copy[locale] ?? copy.es;
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<FormState>(() => initialState(initialCity));
+  const [form, setForm] = useState<FormState>(() => initialState(initialCity, locale));
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PlannerResult | null>(null);
 
   const canContinue = useMemo(() => {
-    if (step === 0) return form.city.trim().length >= 2;
-    if (step === 1) return Number(form.groupSize) >= 2 && form.groupType && form.budgetTier && form.interests.length > 0;
-    if (step === 2) return form.dream.trim().length >= 20;
+    if (step === 0) {
+      const timingReady = form.flexibleTiming || Boolean(form.preferredStartTime && form.preferredEndTime);
+      return form.city.trim().length >= 2 && Number(form.groupSize) >= 2 && form.languages.length > 0 && form.assistance.length > 0 && timingReady;
+    }
+    if (step === 1) return form.holidayStyles.length > 0 && form.budgetTier && form.dream.trim().length >= 20;
     return form.contactName.trim().length >= 2 && form.contactEmail.includes("@");
   }, [form, step]);
 
-  const update = (key: keyof FormState, value: string) => {
+  const update = (key: keyof FormState, value: string | boolean) => {
     setError("");
     setForm((current) => ({ ...current, [key]: value }));
   };
 
-  const toggleInterest = (value: string) => {
+  const toggleArray = (key: ToggleKey, value: string) => {
     setError("");
     setForm((current) => {
-      const exists = current.interests.includes(value);
-      const interests = exists
-        ? current.interests.filter((item) => item !== value)
-        : [...current.interests, value];
-      return { ...current, interests };
+      const currentValues = current[key];
+      const exists = currentValues.includes(value);
+      return {
+        ...current,
+        [key]: exists ? currentValues.filter((item) => item !== value) : [...currentValues, value]
+      };
     });
   };
 
@@ -205,12 +312,14 @@ export default function ProDiscoveryPlannerForm({ locale, initialCity }: Planner
       const response = await fetch("/api/prodiscovery/group-opportunities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, locale })
+        body: JSON.stringify({
+          ...form,
+          locale,
+          interests: [...form.holidayStyles, ...form.assistance, ...form.additionalServices]
+        })
       });
       const payload = await response.json();
-      if (!response.ok || !payload.success) {
-        throw new Error(payload.error ?? t.errorFallback);
-      }
+      if (!response.ok || !payload.success) throw new Error(payload.error ?? t.errorFallback);
       setResult(payload as PlannerResult);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : t.errorFallback);
@@ -221,264 +330,243 @@ export default function ProDiscoveryPlannerForm({ locale, initialCity }: Planner
 
   if (result) {
     return (
-      <div className="rounded-[32px] border border-slate-200 bg-white p-5 shadow-xl shadow-slate-200/70">
-        <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
-          <Check className="h-6 w-6" aria-hidden />
+      <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-lg shadow-slate-200/70 sm:p-5">
+        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+          <Check className="h-5 w-5" aria-hidden />
         </span>
-        <p className="mt-5 text-xs font-black uppercase tracking-[0.28em] text-emerald-700">{t.successTitle}</p>
-        <h2 className="mt-2 text-3xl font-black leading-tight text-slate-950">{result.itinerary.summary}</h2>
+        <p className="mt-4 text-xs font-black uppercase tracking-[0.24em] text-emerald-700">{t.successTitle}</p>
+        <h2 className="mt-2 text-2xl font-black leading-tight text-slate-950">{result.itinerary.summary}</h2>
         <p className="mt-3 text-sm leading-7 text-slate-600">{t.successBody}</p>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-[11px] font-black uppercase tracking-[0.24em] text-slate-500">{t.code}</p>
-            <p className="mt-2 text-xl font-black text-slate-950">{result.requestCode}</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">{t.code}</p>
+            <p className="mt-2 text-lg font-black text-slate-950">{result.requestCode}</p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-[11px] font-black uppercase tracking-[0.24em] text-slate-500">{t.email}</p>
-            <p className="mt-2 text-xl font-black text-slate-950">{result.emailStatus}</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">{t.nextStep}</p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-slate-700">{t.nextStepBody}</p>
           </div>
-        </div>
-        <div className="mt-5 space-y-3">
-          {result.itinerary.days.slice(0, 3).map((day) => (
-            <article key={day.title} className="rounded-2xl border border-slate-200 p-4">
-              <h3 className="font-black text-slate-950">{day.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{day.logistics}</p>
-            </article>
-          ))}
         </div>
       </div>
     );
   }
 
+  const title = step === 0 ? t.logisticsTitle : step === 1 ? t.wishTitle : t.contactTitle;
+
   return (
-    <div className="rounded-[32px] border border-slate-200 bg-white p-5 shadow-xl shadow-slate-200/70">
+    <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-lg shadow-slate-200/70 sm:p-5">
       <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
-          <Sparkles className="h-6 w-6" aria-hidden />
+        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+          {step === 0 ? <CalendarDays className="h-5 w-5" aria-hidden /> : step === 1 ? <Sparkles className="h-5 w-5" aria-hidden /> : <Users className="h-5 w-5" aria-hidden />}
         </span>
-        <div className="flex gap-1.5">
+        <div className="flex flex-1 items-center justify-end gap-2">
           {t.steps.map((label, index) => (
             <button
               key={label}
               type="button"
               onClick={() => setStep(index)}
-              className={`h-2.5 rounded-full transition-all ${step === index ? "w-10 bg-emerald-600" : "w-2.5 bg-slate-200"}`}
+              className={`flex h-8 min-w-8 items-center justify-center rounded-full text-xs font-black transition ${
+                step === index ? "bg-slate-950 text-white" : index < step ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"
+              }`}
               aria-label={label}
-            />
+            >
+              {index < step ? <Check className="h-4 w-4" aria-hidden /> : index + 1}
+            </button>
           ))}
         </div>
       </div>
 
-      <div className="mt-5">
-        <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-700">{t.steps[step]}</p>
-        <h2 className="mt-2 text-3xl font-black leading-tight text-slate-950">
-          {step === 0 ? t.destinationTitle : step === 1 ? t.groupTitle : step === 2 ? t.dreamTitle : t.contactTitle}
-        </h2>
+      <div className="mt-4">
+        <p className="text-xs font-black uppercase tracking-[0.24em] text-emerald-700">{t.steps[step]}</p>
+        <h2 className="mt-2 text-2xl font-black leading-tight text-slate-950">{title}</h2>
       </div>
 
-      <div className="mt-5 space-y-4">
+      <div className="mt-4 space-y-4">
         {step === 0 ? (
           <>
-            <label className="block">
-              <span className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">{t.city}</span>
-              <input
-                value={form.city}
-                onChange={(event) => update("city", event.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-950 outline-none ring-emerald-200 focus:ring-2"
-                placeholder="Paris, Rome, Punta Cana..."
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">{t.country}</span>
-              <input
-                value={form.country}
-                onChange={(event) => update("country", event.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-950 outline-none ring-emerald-200 focus:ring-2"
-                placeholder="Dominican Republic, France, Italy..."
-              />
-            </label>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block">
-                <span className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">{t.arrivalDate}</span>
-                <input
-                  type="date"
-                  value={form.arrivalDate}
-                  onChange={(event) => update("arrivalDate", event.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-950 outline-none ring-emerald-200 focus:ring-2"
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">{t.departureDate}</span>
-                <input
-                  type="date"
-                  value={form.departureDate}
-                  onChange={(event) => update("departureDate", event.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-950 outline-none ring-emerald-200 focus:ring-2"
-                />
-              </label>
+            <div className="grid gap-3 sm:grid-cols-[1fr_0.8fr]">
+              <Field label={t.city}>
+                <input value={form.city} onChange={(event) => update("city", event.target.value)} className={inputClass} placeholder={t.cityPlaceholder} />
+              </Field>
+              <Field label={t.country}>
+                <input value={form.country} onChange={(event) => update("country", event.target.value)} className={inputClass} placeholder={t.countryPlaceholder} />
+              </Field>
             </div>
+
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">{t.dates}</p>
+              <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                <Field label={t.arrivalDate}>
+                  <input type="date" value={form.arrivalDate} onChange={(event) => update("arrivalDate", event.target.value)} className={inputClass} />
+                </Field>
+                <Field label={t.departureDate}>
+                  <input type="date" value={form.departureDate} onChange={(event) => update("departureDate", event.target.value)} className={inputClass} />
+                </Field>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <label className="flex items-center gap-3 text-sm font-black text-slate-800">
+                <input
+                  type="checkbox"
+                  checked={form.flexibleTiming}
+                  onChange={(event) => update("flexibleTiming", event.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-emerald-600"
+                />
+                {t.flexibleTiming}
+              </label>
+              {!form.flexibleTiming ? (
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <Field label={t.startTime}>
+                    <input type="time" value={form.preferredStartTime} onChange={(event) => update("preferredStartTime", event.target.value)} className={inputClass} />
+                  </Field>
+                  <Field label={t.endTime}>
+                    <input type="time" value={form.preferredEndTime} onChange={(event) => update("preferredEndTime", event.target.value)} className={inputClass} />
+                  </Field>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-[0.75fr_1fr]">
+              <Field label={t.groupSize}>
+                <input type="number" min="2" max="1000" value={form.groupSize} onChange={(event) => update("groupSize", event.target.value)} className={inputClass} />
+              </Field>
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">{t.groupType}</p>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {groupOptions.map((option) => (
+                    <SegmentButton key={option.value} option={option} locale={locale} active={form.groupType === option.value} onClick={() => update("groupType", option.value)} />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <OptionGrid label={t.languages} options={languageOptions} selected={form.languages} locale={locale} onToggle={(value) => toggleArray("languages", value)} compact />
+            <OptionGrid label={t.assistance} options={assistanceOptions} selected={form.assistance} locale={locale} onToggle={(value) => toggleArray("assistance", value)} />
           </>
         ) : null}
 
         {step === 1 ? (
           <>
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">{t.groupType}</p>
-              <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                {groupOptions.map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => update("groupType", value)}
-                    className={`rounded-2xl border px-4 py-3 text-left text-sm font-black ${
-                      form.groupType === value ? "border-emerald-500 bg-emerald-50 text-emerald-800" : "border-slate-200 text-slate-700"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <label className="block">
-              <span className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">{t.groupSize}</span>
-              <input
-                type="number"
-                min="2"
-                max="1000"
-                value={form.groupSize}
-                onChange={(event) => update("groupSize", event.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-950 outline-none ring-emerald-200 focus:ring-2"
-              />
-            </label>
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">{t.budget}</p>
-              <div className="mt-2 grid gap-2 sm:grid-cols-4">
-                {budgetOptions.map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => update("budgetTier", value)}
-                    className={`rounded-2xl border px-3 py-3 text-sm font-black ${
-                      form.budgetTier === value ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 text-slate-700"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">{t.interests}</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {interestOptions.map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => toggleInterest(value)}
-                    className={`rounded-full border px-3 py-2 text-xs font-black uppercase tracking-[0.14em] ${
-                      form.interests.includes(value)
-                        ? "border-emerald-500 bg-emerald-50 text-emerald-800"
-                        : "border-slate-200 text-slate-600"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <Field label={t.dream}>
+              <textarea value={form.dream} onChange={(event) => update("dream", event.target.value)} rows={5} className={`${inputClass} resize-none leading-7`} placeholder={t.dreamPlaceholder} />
+            </Field>
+            <OptionGrid label={t.styles} options={styleOptions} selected={form.holidayStyles} locale={locale} onToggle={(value) => toggleArray("holidayStyles", value)} />
+            <OptionGrid label={t.extras} options={additionalOptions} selected={form.additionalServices} locale={locale} onToggle={(value) => toggleArray("additionalServices", value)} />
+            <OptionGrid label={t.budget} options={budgetOptions} selected={[form.budgetTier]} locale={locale} onToggle={(value) => update("budgetTier", value)} compact single />
           </>
         ) : null}
 
         {step === 2 ? (
-          <label className="block">
-            <span className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">{t.dream}</span>
-            <textarea
-              value={form.dream}
-              onChange={(event) => update("dream", event.target.value)}
-              rows={8}
-              className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold leading-7 text-slate-950 outline-none ring-emerald-200 focus:ring-2"
-              placeholder={t.dreamPlaceholder}
-            />
-          </label>
-        ) : null}
-
-        {step === 3 ? (
           <>
-            <label className="block">
-              <span className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">{t.contactName}</span>
-              <input
-                value={form.contactName}
-                onChange={(event) => update("contactName", event.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-950 outline-none ring-emerald-200 focus:ring-2"
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">{t.contactEmail}</span>
-              <input
-                type="email"
-                value={form.contactEmail}
-                onChange={(event) => update("contactEmail", event.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-950 outline-none ring-emerald-200 focus:ring-2"
-              />
-            </label>
+            <Field label={t.contactName}>
+              <input value={form.contactName} onChange={(event) => update("contactName", event.target.value)} className={inputClass} />
+            </Field>
+            <Field label={t.contactEmail}>
+              <input type="email" value={form.contactEmail} onChange={(event) => update("contactEmail", event.target.value)} className={inputClass} />
+            </Field>
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block">
-                <span className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">{t.contactPhone}</span>
-                <input
-                  value={form.contactPhone}
-                  onChange={(event) => update("contactPhone", event.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-950 outline-none ring-emerald-200 focus:ring-2"
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">{t.companyName}</span>
-                <input
-                  value={form.companyName}
-                  onChange={(event) => update("companyName", event.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-950 outline-none ring-emerald-200 focus:ring-2"
-                />
-              </label>
+              <Field label={t.contactPhone}>
+                <input value={form.contactPhone} onChange={(event) => update("contactPhone", event.target.value)} className={inputClass} />
+              </Field>
+              <Field label={t.companyName}>
+                <input value={form.companyName} onChange={(event) => update("companyName", event.target.value)} className={inputClass} />
+              </Field>
             </div>
           </>
         ) : null}
       </div>
 
-      {error ? (
-        <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700">
-          {error}
-        </div>
-      ) : null}
+      {error ? <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700">{error}</div> : null}
 
-      <div className="mt-6 flex items-center justify-between gap-3">
+      <div className="mt-5 flex items-center justify-between gap-3">
         <button
           type="button"
           onClick={() => setStep((current) => Math.max(current - 1, 0))}
           disabled={step === 0 || loading}
-          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black text-slate-700 disabled:opacity-40"
+          className="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-black text-slate-700 disabled:opacity-40"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
           {t.back}
         </button>
         {step < t.steps.length - 1 ? (
-          <button
-            type="button"
-            onClick={goNext}
-            className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white"
-          >
+          <button type="button" onClick={goNext} className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-slate-950 px-5 py-2 text-sm font-black text-white">
             {t.next}
             <ArrowRight className="h-4 w-4" aria-hidden />
           </button>
         ) : (
-          <button
-            type="button"
-            onClick={submit}
-            disabled={loading}
-            className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white disabled:opacity-60"
-          >
+          <button type="button" onClick={submit} disabled={loading} className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-2 text-sm font-black text-white disabled:opacity-60">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Sparkles className="h-4 w-4" aria-hidden />}
             {loading ? t.submitting : t.submit}
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+const inputClass =
+  "mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-950 outline-none ring-emerald-200 focus:ring-2";
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function SegmentButton({ option, locale, active, onClick }: { option: Option; locale: Locale; active: boolean; onClick: () => void }) {
+  const Icon = option.icon;
+  return (
+    <button type="button" onClick={onClick} className={`min-h-12 rounded-2xl border px-3 py-2 text-left text-sm font-black ${active ? "border-emerald-500 bg-emerald-50 text-emerald-800" : "border-slate-200 bg-white text-slate-700"}`}>
+      <span className="flex items-center gap-2">
+        {Icon ? <Icon className="h-4 w-4" aria-hidden /> : null}
+        {option.labels[locale]}
+      </span>
+    </button>
+  );
+}
+
+function OptionGrid({
+  label,
+  options,
+  selected,
+  locale,
+  onToggle,
+  compact = false,
+  single = false
+}: {
+  label: string;
+  options: Option[];
+  selected: string[];
+  locale: Locale;
+  onToggle: (value: string) => void;
+  compact?: boolean;
+  single?: boolean;
+}) {
+  return (
+    <div>
+      <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">{label}</p>
+      <div className={`mt-2 grid gap-2 ${compact ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2 sm:grid-cols-3"}`}>
+        {options.map((option) => {
+          const Icon = option.icon;
+          const active = selected.includes(option.value);
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => onToggle(option.value)}
+              className={`min-h-[72px] rounded-2xl border px-3 py-3 text-center text-sm font-black transition ${
+                active ? "border-emerald-500 bg-emerald-50 text-emerald-800 shadow-sm" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+              } ${single ? "min-h-12" : ""}`}
+            >
+              {Icon ? <Icon className="mx-auto mb-2 h-5 w-5" aria-hidden /> : null}
+              <span className="block leading-tight">{option.labels[locale]}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

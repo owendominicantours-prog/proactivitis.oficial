@@ -51,6 +51,14 @@ export async function POST(request: NextRequest) {
       budgetMin: data.budgetMin,
       budgetMax: data.budgetMax,
       interests: toJsonValue(data.interests),
+      languages: toJsonValue(data.languages),
+      assistance: toJsonValue(data.assistance),
+      holidayStyles: toJsonValue(data.holidayStyles),
+      additionalServices: toJsonValue(data.additionalServices),
+      flexibleTiming: data.flexibleTiming,
+      preferredStartTime: data.preferredStartTime,
+      preferredEndTime: data.preferredEndTime,
+      leadPriority: data.leadPriority,
       dream: data.dream,
       contactName: data.contactName,
       contactEmail: data.contactEmail,
@@ -77,7 +85,7 @@ export async function POST(request: NextRequest) {
     });
     const result = await sendEmail({
       to: data.contactEmail,
-      subject: `Estamos diseñando su experiencia en ${data.city} - Propuesta Inicial #${requestCode}`,
+      subject: `Estamos disenando su experiencia en ${data.city} - Propuesta Inicial #${requestCode}`,
       html: emailHtml,
       from: NOTIFY_FROM_EMAIL
     });
@@ -102,14 +110,15 @@ export async function POST(request: NextRequest) {
   await createNotification({
     type: "ADMIN_PRODISCOVERY_GROUP_OPPORTUNITY",
     role: "ADMIN",
-    title: `Nueva oportunidad ProDiscovery ${requestCode}`,
+    title: `${data.leadPriority === "PRIORIDAD_VIP" ? "PRIORIDAD VIP - " : ""}Nueva oportunidad ProDiscovery ${requestCode}`,
     message: `${data.city} - ${data.groupSize} personas - ${data.contactName}`,
     metadata: {
       referenceUrl: `/admin/prodiscovery-opportunities?opportunityId=${opportunity.id}`,
       opportunityId: opportunity.id,
       requestCode,
       city: data.city,
-      groupSize: data.groupSize
+      groupSize: data.groupSize,
+      leadPriority: data.leadPriority
     }
   });
 
@@ -118,6 +127,7 @@ export async function POST(request: NextRequest) {
     requestCode,
     opportunityId: opportunity.id,
     itinerary: generated.draft,
+    leadPriority: data.leadPriority,
     emailStatus,
     geminiStatus: generated.status
   });

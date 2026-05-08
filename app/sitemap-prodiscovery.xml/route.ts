@@ -37,6 +37,11 @@ export async function GET() {
     }),
     Promise.resolve(allLandings().map((item) => item.landingSlug)),
     prisma.destination.findMany({
+      where: {
+        country: {
+          code: { in: ["RD", "DO"] }
+        }
+      },
       select: { slug: true },
       take: 1000
     })
@@ -51,6 +56,20 @@ export async function GET() {
       changefreq: "daily",
       priority: 0.9
     });
+
+    for (const nichePath of [
+      "/prodiscovery/republica-dominicana",
+      "/prodiscovery/grupos-corporativos",
+      "/prodiscovery/bodas-y-celebraciones",
+      "/prodiscovery/familias-y-amigos"
+    ]) {
+      entries.push({
+        loc: `${BASE_URL}${withLocale(locale, nichePath)}`,
+        lastmod: nowIso,
+        changefreq: "weekly",
+        priority: 0.82
+      });
+    }
 
     for (const destination of PRODISCOVERY_DESTINATIONS) {
       for (const category of PRODISCOVERY_CATEGORIES) {
@@ -69,14 +88,11 @@ export async function GET() {
       ...plannerDestinations.map((destination) => destination.slug),
       "punta-cana",
       "santo-domingo",
-      "paris",
-      "rome",
-      "barcelona",
-      "new-york",
-      "cancun",
-      "dubai",
-      "cartagena",
-      "cusco"
+      "bayahibe",
+      "la-romana",
+      "puerto-plata",
+      "samana",
+      "sosua"
     ])
   );
 

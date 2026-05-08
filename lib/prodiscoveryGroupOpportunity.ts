@@ -1,16 +1,24 @@
 import { Prisma } from "@prisma/client";
 import { buildEmailShell } from "@/lib/emailTemplates";
 import {
+  ADDITIONAL_SERVICE_LABELS,
+  ASSISTANCE_LABELS,
   BUDGET_TIER_LABELS,
   GROUP_TYPE_LABELS,
+  HOLIDAY_STYLE_LABELS,
   INTEREST_LABELS,
+  LANGUAGE_LABELS,
   type ProDiscoveryItineraryDraft
 } from "@/lib/prodiscoveryGroupPlannerShared";
 
 export {
+  ADDITIONAL_SERVICE_LABELS,
+  ASSISTANCE_LABELS,
   BUDGET_TIER_LABELS,
   GROUP_TYPE_LABELS,
+  HOLIDAY_STYLE_LABELS,
   INTEREST_LABELS,
+  LANGUAGE_LABELS,
   type ProDiscoveryItineraryDraft
 } from "@/lib/prodiscoveryGroupPlannerShared";
 
@@ -24,6 +32,13 @@ export type ProDiscoveryGroupPayload = {
   groupSize?: number | string;
   budgetTier?: string;
   interests?: string[] | string;
+  languages?: string[] | string;
+  assistance?: string[] | string;
+  holidayStyles?: string[] | string;
+  additionalServices?: string[] | string;
+  flexibleTiming?: boolean | string;
+  preferredStartTime?: string;
+  preferredEndTime?: string;
   dream?: string;
   contactName?: string;
   contactEmail?: string;
@@ -43,6 +58,14 @@ export type NormalizedProDiscoveryGroupPayload = {
   budgetMin: number;
   budgetMax: number;
   interests: string[];
+  languages: string[];
+  assistance: string[];
+  holidayStyles: string[];
+  additionalServices: string[];
+  flexibleTiming: boolean;
+  preferredStartTime?: string | null;
+  preferredEndTime?: string | null;
+  leadPriority: "NORMAL" | "PRIORIDAD_VIP";
   dream: string;
   contactName: string;
   contactEmail: string;
@@ -95,6 +118,46 @@ const normalizeInterests = (value: unknown) => {
   ).slice(0, 8);
 };
 
+const normalizeList = (value: unknown, allowed: Record<string, string>, maxItems = 8) => {
+  const raw = Array.isArray(value) ? value : typeof value === "string" ? value.split(",") : [];
+  return Array.from(
+    new Set(
+      raw
+        .map((item) => asString(item).toLowerCase())
+        .filter((item) => item in allowed)
+    )
+  ).slice(0, maxItems);
+};
+
+const normalizeBoolean = (value: unknown) => value === true || asString(value).toLowerCase() === "true";
+
+export const detectProDiscoveryLeadPriority = (dream: string, groupType?: string, additionalServices: string[] = []) => {
+  const text = `${dream} ${groupType ?? ""} ${additionalServices.join(" ")}`.toLowerCase();
+  const vipSignals = [
+    "boda",
+    "wedding",
+    "mariage",
+    "honeymoon",
+    "luna de miel",
+    "vip",
+    "incentivo",
+    "incentive",
+    "empresa",
+    "corporate",
+    "ceo",
+    "executive",
+    "ejecutivo",
+    "hermana",
+    "hermano",
+    "celebracion",
+    "celebration",
+    "photographer",
+    "fotografo",
+    "private-dinner"
+  ];
+  return vipSignals.some((signal) => text.includes(signal)) ? "PRIORIDAD_VIP" : "NORMAL";
+};
+
 const roundMoney = (value: number) => Math.round(value * 100) / 100;
 
 export const calculateGroupOpportunityAccounting = ({
@@ -138,6 +201,13 @@ export function normalizeProDiscoveryGroupPayload(input: ProDiscoveryGroupPayloa
   const budgetTier = asString(input.budgetTier).toLowerCase();
   const groupSize = Number(input.groupSize);
   const interests = normalizeInterests(input.interests);
+  const languages = normalizeList(input.languages, LANGUAGE_LABELS, 6);
+  const assistance = normalizeList(input.assistance, ASSISTANCE_LABELS, 8);
+  const holidayStyles = normalizeList(input.holidayStyles, HOLIDAY_STYLE_LABELS, 8);
+  const additionalServices = normalizeList(input.additionalServices, ADDITIONAL_SERVICE_LABELS, 8);
+  const flexibleTiming = normalizeBoolean(input.flexibleTiming);
+  const preferredStartTime = sanitizeText(input.preferredStartTime, 20) || null;
+  const preferredEndTime = sanitizeText(input.preferredEndTime, 20) || null;
   const dream = sanitizeText(input.dream);
   const contactName = sanitizeText(input.contactName, 120);
   const contactEmail = asString(input.contactEmail).toLowerCase();
@@ -153,7 +223,9 @@ export function normalizeProDiscoveryGroupPayload(input: ProDiscoveryGroupPayloa
     errors.push("El tamano del grupo debe estar entre 2 y 1000 personas.");
   }
   if (!(budgetTier in BUDGET_TIER_LABELS)) errors.push("Selecciona un presupuesto.");
-  if (!interests.length) errors.push("Selecciona al menos un interes.");
+  if (!languages.length) errors.push("Selecciona al menos un idioma.");
+  if (!assistance.length) errors.push("Selecciona al menos una asistencia.");
+  if (!holidayStyles.length && !interests.length) errors.push("Selecciona al menos un estilo de viaje.");
   if (dream.length < 20) errors.push("Describe el viaje ideal con un poco mas de detalle.");
   if (!contactName) errors.push("Indica el nombre de contacto.");
   if (!EMAIL_PATTERN.test(contactEmail)) errors.push("Indica un email valido.");
@@ -164,6 +236,8 @@ export function normalizeProDiscoveryGroupPayload(input: ProDiscoveryGroupPayloa
   if (errors.length) return { ok: false, errors };
 
   const accounting = calculateGroupOpportunityAccounting({ groupSize, budgetTier });
+  const combinedInterests = Array.from(new Set([...interests, ...holidayStyles, ...assistance, ...additionalServices]));
+  const leadPriority = detectProDiscoveryLeadPriority(dream, groupType, additionalServices);
 
   return {
     ok: true,
@@ -178,7 +252,15 @@ export function normalizeProDiscoveryGroupPayload(input: ProDiscoveryGroupPayloa
       budgetTier,
       budgetMin: accounting.budgetMin,
       budgetMax: accounting.budgetMax,
-      interests,
+      interests: combinedInterests,
+      languages,
+      assistance,
+      holidayStyles,
+      additionalServices,
+      flexibleTiming,
+      preferredStartTime,
+      preferredEndTime,
+      leadPriority,
       dream,
       contactName,
       contactEmail,
@@ -208,13 +290,14 @@ export function buildFallbackItineraryDraft(
 ): ProDiscoveryItineraryDraft {
   const interests = labelList(data.interests, INTEREST_LABELS);
   const groupType = GROUP_TYPE_LABELS[data.groupType] ?? data.groupType;
+  const assistance = labelList(data.assistance, ASSISTANCE_LABELS);
 
   return {
-    summary: `Propuesta inicial ${requestCode} para ${data.groupSize} viajeros en ${data.city}. El enfoque combina ${interests.toLowerCase()} con coordinacion operativa para un grupo de tipo ${groupType.toLowerCase()}.`,
+    summary: `Propuesta inicial ${requestCode} para ${data.groupSize} viajeros en ${data.city}. La idea combina ${interests.toLowerCase()} con asistencia en ${assistance.toLowerCase()} para un grupo de tipo ${groupType.toLowerCase()}.`,
     days: [
       {
-        title: `Llegada y ajuste operativo en ${data.city}`,
-        morning: "Recepcion, validacion de horarios, coordinacion de transporte y revision del plan con el lider del grupo.",
+        title: `Llegada y bienvenida en ${data.city}`,
+        morning: "Bienvenida del grupo, revision sencilla del plan y traslado privado hacia la primera experiencia.",
         afternoon: "Actividad suave de bienvenida segun intereses principales y distancia real desde el alojamiento.",
         evening: "Cena o experiencia privada de apertura con control de tiempos y traslados."
       },
@@ -226,18 +309,19 @@ export function buildFallbackItineraryDraft(
       }
     ].map((day) => ({
       ...day,
-      logistics: "Confirmar alojamientos, accesos, tiempos de espera, capacidad de vehiculos y plan B por clima o trafico."
+      logistics: "Se afinan alojamiento, accesos, tiempos de espera, vehiculos y alternativas por clima o trafico."
     })),
     supplierNeeds: [
-      "Guia lider bilingue o coordinador operativo",
-      "Transporte privado dimensionado al grupo",
-      "Reservas o accesos con cupos confirmados",
-      "Contacto local para cambios de ultimo minuto"
+      "Guia privado o anfitrion principal para el grupo",
+      "Transporte privado ajustado al tamano del grupo",
+      "Accesos o reservas pensadas para evitar esperas innecesarias",
+      "Contacto local para cambios de ultimo minuto",
+      ...data.additionalServices.map((item) => ADDITIONAL_SERVICE_LABELS[item] ?? item)
     ],
     riskNotes: [
-      "Validar fechas y ciudad antes de bloquear proveedores.",
-      "El deposito recomendado es del 20% para reservar agenda y logistica.",
-      "Los precios finales dependen de disponibilidad, rutas y nivel de servicio."
+      "Confirmar fechas y ciudad antes de reservar espacios.",
+      "El deposito recomendado es del 20% para apartar la experiencia.",
+      "El precio final depende de disponibilidad, rutas y nivel de privacidad."
     ],
     nextQuestions: [
       "Cual es el hotel o zona exacta del grupo?",
@@ -279,7 +363,7 @@ function normalizeDraftShape(value: Partial<ProDiscoveryItineraryDraft> | null, 
           morning: sanitizeText(day?.morning, 280) || "Actividad por definir.",
           afternoon: sanitizeText(day?.afternoon, 280) || "Actividad por definir.",
           evening: sanitizeText(day?.evening, 280) || "Cierre flexible.",
-          logistics: sanitizeText(day?.logistics, 280) || "Logistica pendiente de confirmacion."
+          logistics: sanitizeText(day?.logistics, 280) || "Detalles pendientes de confirmacion."
         }))
         .slice(0, 5)
     : fallback.days;
@@ -311,8 +395,8 @@ export async function generateProDiscoveryItineraryDraft(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8500);
   const prompt = `
-Eres un planner senior de viajes privados y grupos. Crea un borrador inicial para ProDiscovery.
-No vendas tickets estandar. Enfocate en concierge, guia lider, transporte, tiempos, proveedores y riesgos.
+Eres un planner senior de viajes privados y grupos. Crea un borrador inicial para el cliente de ProDiscovery.
+No vendas tickets estandar. Enfocate en experiencia privada, guia, transporte, tiempos claros y momentos memorables.
 
 Solicitud:
 - Codigo: ${requestCode}
@@ -320,6 +404,12 @@ Solicitud:
 - Pais: ${data.country ?? "por confirmar"}
 - Grupo: ${GROUP_TYPE_LABELS[data.groupType]} (${data.groupSize} personas)
 - Presupuesto: ${BUDGET_TIER_LABELS[data.budgetTier]} USD ${data.budgetMin}-${data.budgetMax}
+- Idiomas guia: ${labelList(data.languages, LANGUAGE_LABELS)}
+- Horarios: ${data.flexibleTiming ? "flexibles / por confirmar" : `${data.preferredStartTime ?? "inicio por confirmar"} a ${data.preferredEndTime ?? "fin por confirmar"}`}
+- Asistencia solicitada: ${labelList(data.assistance, ASSISTANCE_LABELS)}
+- Estilo de viaje: ${labelList(data.holidayStyles, HOLIDAY_STYLE_LABELS)}
+- Servicios adicionales: ${data.additionalServices.length ? labelList(data.additionalServices, ADDITIONAL_SERVICE_LABELS) : "ninguno indicado"}
+- Prioridad interna: ${data.leadPriority}
 - Intereses: ${labelList(data.interests, INTEREST_LABELS)}
 - Sueno del cliente: ${data.dream}
 
@@ -395,7 +485,7 @@ export function buildProDiscoveryOpportunityEmail({
           <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:#475569;"><strong>Manana:</strong> ${escapeHtml(day.morning)}</p>
           <p style="margin:6px 0 0;font-size:14px;line-height:1.7;color:#475569;"><strong>Tarde:</strong> ${escapeHtml(day.afternoon)}</p>
           <p style="margin:6px 0 0;font-size:14px;line-height:1.7;color:#475569;"><strong>Noche:</strong> ${escapeHtml(day.evening)}</p>
-          <p style="margin:10px 0 0;font-size:13px;line-height:1.7;color:#64748b;"><strong>Logistica:</strong> ${escapeHtml(day.logistics)}</p>
+          <p style="margin:10px 0 0;font-size:13px;line-height:1.7;color:#64748b;"><strong>Detalles a coordinar:</strong> ${escapeHtml(day.logistics)}</p>
         </div>
       `
     )
@@ -404,10 +494,10 @@ export function buildProDiscoveryOpportunityEmail({
   return buildEmailShell({
     eyebrow: "ProDiscovery Concierge",
     title: `Propuesta inicial #${requestCode}`,
-    intro: `Hola ${data.contactName}, recibimos la solicitud para ${data.city} y ya preparamos un primer borrador operativo.`,
+    intro: `Hola ${data.contactName}, recibimos la solicitud para ${data.city} y ya preparamos una primera idea de viaje.`,
     baseUrl,
     tone: "success",
-    footerNote: "Este borrador es inicial. El equipo ProDiscovery revisara disponibilidad, proveedores y tiempos reales antes de enviarte una propuesta final.",
+    footerNote: "Este borrador es inicial. El equipo ProDiscovery revisara disponibilidad, horarios y detalles antes de enviarte una propuesta final.",
     disclaimer:
       "Este correo confirma una solicitud de viaje a medida. No es una reserva confirmada ni un cargo de pago.",
     reasonWhyReceived: "Recibes este correo porque completaste el planificador de ProDiscovery.",
@@ -420,11 +510,23 @@ export function buildProDiscoveryOpportunityEmail({
             BUDGET_TIER_LABELS[data.budgetTier]
           )}. Deposito recomendado para bloquear agenda: ${data.depositPercent}%.
         </p>
+        <p style="margin:8px 0 0;font-size:13px;line-height:1.7;color:#64748b;">
+          Idiomas: ${escapeHtml(labelList(data.languages, LANGUAGE_LABELS))}. Horarios: ${escapeHtml(
+            data.flexibleTiming
+              ? "flexibles / por confirmar"
+              : `${data.preferredStartTime ?? "inicio por confirmar"} a ${data.preferredEndTime ?? "fin por confirmar"}`
+          )}.
+        </p>
+        <p style="margin:8px 0 0;font-size:13px;line-height:1.7;color:#64748b;">
+          Asistencia: ${escapeHtml(labelList(data.assistance, ASSISTANCE_LABELS))}. Extras: ${escapeHtml(
+            data.additionalServices.length ? labelList(data.additionalServices, ADDITIONAL_SERVICE_LABELS) : "por definir"
+          )}.
+        </p>
       </div>
       <div style="margin-top:18px;">${dayCards}</div>
       <div style="display:grid;gap:12px;margin-top:18px;">
         <div style="padding:18px;border-radius:18px;background:#f8fafc;border:1px solid rgba(15,23,42,0.08);">
-          <p style="margin:0 0 10px;font-size:12px;letter-spacing:0.24em;text-transform:uppercase;color:#94a3b8;">Necesidades operativas</p>
+          <p style="margin:0 0 10px;font-size:12px;letter-spacing:0.24em;text-transform:uppercase;color:#94a3b8;">Lo que podemos incluir</p>
           <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.7;color:#475569;">${buildList(draft.supplierNeeds)}</ul>
         </div>
         <div style="padding:18px;border-radius:18px;background:#fff7ed;border:1px solid rgba(251,146,60,0.28);">

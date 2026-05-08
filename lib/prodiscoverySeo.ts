@@ -75,9 +75,9 @@ const HOME_TITLE: Record<Locale, string> = {
 };
 
 const HOME_DESCRIPTION: Record<Locale, string> = {
-  es: "Solicita viajes privados, guias lideres e itinerarios custom para grupos con logistica, proveedores y deposito estimado desde ProDiscovery.",
-  en: "Request private trips, lead guides and custom group itineraries with logistics, suppliers and estimated deposit from ProDiscovery.",
-  fr: "Demandez voyages prives, guides leaders et itineraires groupe sur mesure avec logistique, fournisseurs et acompte estime depuis ProDiscovery."
+  es: "Solicita viajes privados para grupos en Republica Dominicana con guia, transporte, experiencias a medida y una propuesta pensada para tu celebracion, empresa o familia.",
+  en: "Request private group trips in the Dominican Republic with guide, transport, tailored experiences and a proposal made for your celebration, company or family.",
+  fr: "Demandez des voyages prives pour groupes en Republique dominicaine avec guide, transport, experiences sur mesure et proposition adaptee a votre celebration, entreprise ou famille."
 };
 
 const CATEGORY_LABELS: Record<Locale, Record<ProDiscoveryCategory, string>> = {

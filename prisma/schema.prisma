@@ -50,67 +50,67 @@ model AgencyProfile {
 }
 
 model Booking {
-  id                    String         @id @default(cuid())
-  tourId                String
-  tourOptionId          String?
-  tourOptionName        String?
-  tourOptionType        String?
-  tourOptionPrice       Float?
-  userId                String
-  status                String         @default("CONFIRMED")
-  source                String         @default("WEB")
-  customerName          String
-  customerEmail         String
-  customerPhone         String?
-  bookingCode           String?        @unique
-  travelDate            DateTime       @map("date")
-  paxAdults             Int            @default(1)
-  paxChildren           Int            @default(0)
-  passengers            Int?
-  pickup                String?
-  hotel                 String?
-  originAirport         String?
-  pickupNotes           String?
-  discountPercent       Float?
-  discountAmount        Float?
-  totalAmount           Float
-  stripeSessionId       String?        @map("stripe_session_id")
-  stripePaymentIntentId String?        @map("stripe_payment_intent_id")
-  stripeCheckoutUrl     String?        @map("stripe_checkout_url")
-  paymentStatus         String?        @map("payment_status")
-  supplierAmount        Float?
-  platformFee           Float?
-  agencyFee             Float?
-  startTime             String?
-  tripType              String?        @default("one-way")
-  returnTravelDate      DateTime?
-  returnStartTime       String?
-  flightNumber          String?
-  flowType              String?        @default("tour")
-  transferVehicleId     String?
-  transferVehicleName   String?
+  id                      String                  @id @default(cuid())
+  tourId                  String
+  tourOptionId            String?
+  tourOptionName          String?
+  tourOptionType          String?
+  tourOptionPrice         Float?
+  userId                  String
+  status                  String                  @default("CONFIRMED")
+  source                  String                  @default("WEB")
+  customerName            String
+  customerEmail           String
+  customerPhone           String?
+  bookingCode             String?                 @unique
+  travelDate              DateTime                @map("date")
+  paxAdults               Int                     @default(1)
+  paxChildren             Int                     @default(0)
+  passengers              Int?
+  pickup                  String?
+  hotel                   String?
+  originAirport           String?
+  pickupNotes             String?
+  discountPercent         Float?
+  discountAmount          Float?
+  totalAmount             Float
+  stripeSessionId         String?                 @map("stripe_session_id")
+  stripePaymentIntentId   String?                 @map("stripe_payment_intent_id")
+  stripeCheckoutUrl       String?                 @map("stripe_checkout_url")
+  paymentStatus           String?                 @map("payment_status")
+  supplierAmount          Float?
+  platformFee             Float?
+  agencyFee               Float?
+  startTime               String?
+  tripType                String?                 @default("one-way")
+  returnTravelDate        DateTime?
+  returnStartTime         String?
+  flightNumber            String?
+  flowType                String?                 @default("tour")
+  transferVehicleId       String?
+  transferVehicleName     String?
   transferVehicleCategory String?
-  cancellationReason    String?
-  cancellationByRole    String?
-  cancellationAt        DateTime?
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime?      @updatedAt
-  User                  User           @relation(fields: [userId], references: [id])
-  Tour                  Tour           @relation(fields: [tourId], references: [id])
-  TourOption            TourOption?    @relation(fields: [tourOptionId], references: [id], onDelete: SetNull)
-  AgencyProLink         AgencyProLink? @relation("AgencyProBookings", fields: [agencyProLinkId], references: [id])
-  agencyProLinkId       String?
-  AgencyTransferLink    AgencyTransferLink? @relation("AgencyTransferBookings", fields: [agencyTransferLinkId], references: [id])
-  agencyTransferLinkId  String?
-  agencyMarkupAmount    Float?
-  agencyPricingMode     Boolean        @default(false)
-  Conversation          Conversation?
-  paymentBrand          String?        @map("payment_brand")
-  paymentLast4          String?        @map("payment_last4")
-  paymentMethod         String?        @map("payment_method")
-  TourReviews           TourReview[]
-  TransferReviews       TransferReview[]
-  TransferReviewReminder TransferReviewReminder?
+  cancellationReason      String?
+  cancellationByRole      String?
+  cancellationAt          DateTime?
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime?               @updatedAt
+  User                    User                    @relation(fields: [userId], references: [id])
+  Tour                    Tour                    @relation(fields: [tourId], references: [id])
+  TourOption              TourOption?             @relation(fields: [tourOptionId], references: [id], onDelete: SetNull)
+  AgencyProLink           AgencyProLink?          @relation("AgencyProBookings", fields: [agencyProLinkId], references: [id])
+  agencyProLinkId         String?
+  AgencyTransferLink      AgencyTransferLink?     @relation("AgencyTransferBookings", fields: [agencyTransferLinkId], references: [id])
+  agencyTransferLinkId    String?
+  agencyMarkupAmount      Float?
+  agencyPricingMode       Boolean                 @default(false)
+  Conversation            Conversation?
+  paymentBrand            String?                 @map("payment_brand")
+  paymentLast4            String?                 @map("payment_last4")
+  paymentMethod           String?                 @map("payment_method")
+  TourReviews             TourReview[]
+  TransferReviews         TransferReview[]
+  TransferReviewReminder  TransferReviewReminder?
 }
 
 model Conversation {
@@ -254,19 +254,19 @@ model PartnerApplication {
 }
 
 model Offer {
-  id          String   @id @default(cuid())
-  supplierId  String
-  tourId      String
-  title       String
-  description String
-  discountType String  @default("PERCENT")
-  discountValue Float  @default(0)
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  Tour        Tour     @relation(fields: [tourId], references: [id])
-  Supplier    SupplierProfile @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  OfferTours  OfferTour[]
+  id            String          @id @default(cuid())
+  supplierId    String
+  tourId        String
+  title         String
+  description   String
+  discountType  String          @default("PERCENT")
+  discountValue Float           @default(0)
+  active        Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  Tour          Tour            @relation(fields: [tourId], references: [id])
+  Supplier      SupplierProfile @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  OfferTours    OfferTour[]
 }
 
 model OfferTour {
@@ -275,8 +275,8 @@ model OfferTour {
   tourId    String
   createdAt DateTime @default(now())
 
-  Offer     Offer @relation(fields: [offerId], references: [id], onDelete: Cascade)
-  Tour      Tour  @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  Offer Offer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  Tour  Tour  @relation(fields: [tourId], references: [id], onDelete: Cascade)
 
   @@unique([offerId, tourId])
   @@index([tourId])
@@ -284,21 +284,21 @@ model OfferTour {
 
 /// Fase 1: definición de países/destinos públicos para catálogo. Las relaciones y migraciones se aplicarán después.
 model Country {
-  id               String        @id @default(cuid())
-  name             String
-  slug             String        @unique
-  code             String        @unique
-  shortDescription String?
-  heroImage        String?
-  destinations     Destination[]
-  locations        Location[]    @relation("CountryLocations")
-  tours            Tour[]        @relation("CountryTours")
-  microZones       MicroZone[]   @relation("CountryMicroZones")
-  transferZones    TransferZone[]
-  transferRates    TransferRate[]
-  transferZonesV2  TransferZoneV2[]
+  id                  String             @id @default(cuid())
+  name                String
+  slug                String             @unique
+  code                String             @unique
+  shortDescription    String?
+  heroImage           String?
+  destinations        Destination[]
+  locations           Location[]         @relation("CountryLocations")
+  tours               Tour[]             @relation("CountryTours")
+  microZones          MicroZone[]        @relation("CountryMicroZones")
+  transferZones       TransferZone[]
+  transferRates       TransferRate[]
+  transferZonesV2     TransferZoneV2[]
   transferLocationsV2 TransferLocation[]
-  transferRoutesV2 TransferRoute[]
+  transferRoutesV2    TransferRoute[]
 }
 
 model Destination {
@@ -345,90 +345,90 @@ model Location {
 }
 
 model TransferPoint {
-  id          String              @id @default(cuid())
-  name        String
-  code        String?             @unique
-  slug        String              @unique
-  type        String              @default("general")
-  description String?
-  meta        Json?
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-  zones       TransferZone[]
+  id           String                @id @default(cuid())
+  name         String
+  code         String?               @unique
+  slug         String                @unique
+  type         String                @default("general")
+  description  String?
+  meta         Json?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  zones        TransferZone[]
   destinations TransferDestination[]
 
   @@map("TransferOrigin")
 }
 
 model TransferZone {
-  id          String      @id @default(cuid())
-  name        String
-  slug        String      @unique
-  countryCode String
-  description String?
-  meta        Json?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  country     Country     @relation(fields: [countryCode], references: [code])
-  originId    String?
-  origin      TransferPoint? @relation(fields: [originId], references: [id])
-  destinations TransferDestination[]
-  originRates TransferRate[] @relation("OriginRates")
-  destinationRates TransferRate[] @relation("DestinationRates")
+  id               String                @id @default(cuid())
+  name             String
+  slug             String                @unique
+  countryCode      String
+  description      String?
+  meta             Json?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  country          Country               @relation(fields: [countryCode], references: [code])
+  originId         String?
+  origin           TransferPoint?        @relation(fields: [originId], references: [id])
+  destinations     TransferDestination[]
+  originRates      TransferRate[]        @relation("OriginRates")
+  destinationRates TransferRate[]        @relation("DestinationRates")
 }
 
 model TransferDestination {
-  id               String           @id @default(cuid())
+  id               String   @id @default(cuid())
   name             String
-  slug             String           @unique
+  slug             String   @unique
   description      String?
   heroImage        String?
   zoneId           String
   originId         String?
   pricingOverrides Json?
   locationSlug     String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  zone   TransferZone  @relation(fields: [zoneId], references: [id])
+  zone   TransferZone   @relation(fields: [zoneId], references: [id])
   origin TransferPoint? @relation(fields: [originId], references: [id])
 
   @@index([zoneId])
 }
 
 model TransferRate {
-  id                 String          @id @default(cuid())
-  originZoneId       String
-  destinationZoneId  String
-  countryCode        String
-  vehicleCategory    VehicleCategory
-  price              Float
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  id                String          @id @default(cuid())
+  originZoneId      String
+  destinationZoneId String
+  countryCode       String
+  vehicleCategory   VehicleCategory
+  price             Float
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 
-  originZone         TransferZone    @relation("OriginRates", fields: [originZoneId], references: [id])
-  destinationZone    TransferZone    @relation("DestinationRates", fields: [destinationZoneId], references: [id])
-  country            Country         @relation(fields: [countryCode], references: [code])
+  originZone      TransferZone @relation("OriginRates", fields: [originZoneId], references: [id])
+  destinationZone TransferZone @relation("DestinationRates", fields: [destinationZoneId], references: [id])
+  country         Country      @relation(fields: [countryCode], references: [code])
 
   @@unique([originZoneId, destinationZoneId, vehicleCategory])
   @@index([countryCode])
 }
 
 model TransferZoneV2 {
-  id          String       @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
-  slug        String       @unique
+  slug        String   @unique
   description String?
   countryCode String
-  active      Boolean      @default(true)
+  active      Boolean  @default(true)
   metadata    Json?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  country      Country            @relation(fields: [countryCode], references: [code])
-  locations    TransferLocation[]
-  zoneARoutes  TransferRoute[]     @relation("ZoneARoutes")
-  zoneBRoutes  TransferRoute[]     @relation("ZoneBRoutes")
+  country     Country            @relation(fields: [countryCode], references: [code])
+  locations   TransferLocation[]
+  zoneARoutes TransferRoute[]    @relation("ZoneARoutes")
+  zoneBRoutes TransferRoute[]    @relation("ZoneBRoutes")
 }
 
 model TransferLocation {
@@ -445,43 +445,43 @@ model TransferLocation {
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
 
-  zone                  TransferZoneV2                  @relation(fields: [zoneId], references: [id])
-  country               Country                         @relation(fields: [countryCode], references: [code])
-  originOverrides       TransferRoutePriceOverride[]    @relation("OriginOverrides")
-  destinationOverrides  TransferRoutePriceOverride[]    @relation("DestinationOverrides")
-  originAgencyTransferLinks AgencyTransferLink[]        @relation("AgencyTransferOrigin")
-  destinationAgencyTransferLinks AgencyTransferLink[]   @relation("AgencyTransferDestination")
+  zone                           TransferZoneV2               @relation(fields: [zoneId], references: [id])
+  country                        Country                      @relation(fields: [countryCode], references: [code])
+  originOverrides                TransferRoutePriceOverride[] @relation("OriginOverrides")
+  destinationOverrides           TransferRoutePriceOverride[] @relation("DestinationOverrides")
+  originAgencyTransferLinks      AgencyTransferLink[]         @relation("AgencyTransferOrigin")
+  destinationAgencyTransferLinks AgencyTransferLink[]         @relation("AgencyTransferDestination")
 }
 
 model TransferVehicle {
-  id          String          @id @default(cuid())
-  name        String
-  slug        String          @unique
-  minPax      Int
-  maxPax      Int
-  category    VehicleCategory
-  imageUrl    String?         @map("image_url")
-  active      Boolean         @default(true)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id        String          @id @default(cuid())
+  name      String
+  slug      String          @unique
+  minPax    Int
+  maxPax    Int
+  category  VehicleCategory
+  imageUrl  String?         @map("image_url")
+  active    Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 
-  routePrices TransferRoutePrice[]
-  overrides   TransferRoutePriceOverride[]
+  routePrices         TransferRoutePrice[]
+  overrides           TransferRoutePriceOverride[]
   agencyTransferLinks AgencyTransferLink[]
 }
 
 model TransferRoute {
-  id          String                  @id @default(cuid())
+  id          String   @id @default(cuid())
   zoneAId     String
   zoneBId     String
   countryCode String
-  active      Boolean                 @default(true)
-  createdAt   DateTime                @default(now())
-  updatedAt   DateTime                @updatedAt
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  zoneA     TransferZoneV2          @relation("ZoneARoutes", fields: [zoneAId], references: [id])
-  zoneB     TransferZoneV2          @relation("ZoneBRoutes", fields: [zoneBId], references: [id])
-  country   Country                 @relation(fields: [countryCode], references: [code])
+  zoneA     TransferZoneV2               @relation("ZoneARoutes", fields: [zoneAId], references: [id])
+  zoneB     TransferZoneV2               @relation("ZoneBRoutes", fields: [zoneBId], references: [id])
+  country   Country                      @relation(fields: [countryCode], references: [code])
   prices    TransferRoutePrice[]
   overrides TransferRoutePriceOverride[]
 
@@ -490,33 +490,33 @@ model TransferRoute {
 }
 
 model TransferRoutePrice {
-  id        String          @id @default(cuid())
+  id        String   @id @default(cuid())
   routeId   String
   vehicleId String
   price     Float
-  currency  String          @default("USD")
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  currency  String   @default("USD")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  route   TransferRoute  @relation(fields: [routeId], references: [id])
+  route   TransferRoute   @relation(fields: [routeId], references: [id])
   vehicle TransferVehicle @relation(fields: [vehicleId], references: [id])
 
   @@unique([routeId, vehicleId])
 }
 
 model TransferRoutePriceOverride {
-  id                    String               @id @default(cuid())
+  id                    String   @id @default(cuid())
   routeId               String
   vehicleId             String
   originLocationId      String?
   destinationLocationId String?
   price                 Float
   notes                 String?
-  createdAt             DateTime             @default(now())
-  updatedAt             DateTime             @updatedAt
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  route               TransferRoute   @relation(fields: [routeId], references: [id])
-  vehicle             TransferVehicle @relation(fields: [vehicleId], references: [id])
+  route               TransferRoute     @relation(fields: [routeId], references: [id])
+  vehicle             TransferVehicle   @relation(fields: [vehicleId], references: [id])
   originLocation      TransferLocation? @relation("OriginOverrides", fields: [originLocationId], references: [id])
   destinationLocation TransferLocation? @relation("DestinationOverrides", fields: [destinationLocationId], references: [id])
 
@@ -534,46 +534,46 @@ model Session {
 }
 
 model SupplierProfile {
-  id              String      @id
-  userId          String      @unique
-  company         String
-  approved        Boolean     @default(false)
-  productsEnabled Boolean     @default(false)
-  stripeAccountId String?     @map("stripe_account_id")
-  User            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Tour            Tour[]
-  offers          Offer[]
-  drafts          TourDraft[]
-  minisite        SupplierMinisite?
+  id                             String                         @id
+  userId                         String                         @unique
+  company                        String
+  approved                       Boolean                        @default(false)
+  productsEnabled                Boolean                        @default(false)
+  stripeAccountId                String?                        @map("stripe_account_id")
+  User                           User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Tour                           Tour[]
+  offers                         Offer[]
+  drafts                         TourDraft[]
+  minisite                       SupplierMinisite?
   proDiscoveryGroupOpportunities ProDiscoveryGroupOpportunity[]
 }
 
 model SupplierMinisite {
-  id         String          @id @default(cuid())
-  supplierId String          @unique
-  slug       String          @unique
-  isActive   Boolean         @default(false)
-  themeId    Int             @default(1)
+  id         String   @id @default(cuid())
+  supplierId String   @unique
+  slug       String   @unique
+  isActive   Boolean  @default(false)
+  themeId    Int      @default(1)
   brandName  String
   logoUrl    String?
   whatsapp   String?
   phone      String?
   email      String?
-  bio        String?         @db.Text
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
+  bio        String?  @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  Supplier   SupplierProfile @relation(fields: [supplierId], references: [id])
-  clicks     SupplierMinisiteClick[]
+  Supplier SupplierProfile         @relation(fields: [supplierId], references: [id])
+  clicks   SupplierMinisiteClick[]
 }
 
 model SupplierMinisiteClick {
-  id         String             @id @default(cuid())
+  id         String   @id @default(cuid())
   minisiteId String
   tourSlug   String
-  createdAt  DateTime           @default(now())
+  createdAt  DateTime @default(now())
 
-  Minisite   SupplierMinisite   @relation(fields: [minisiteId], references: [id])
+  Minisite SupplierMinisite @relation(fields: [minisiteId], references: [id])
 }
 
 model TourDraft {
@@ -646,17 +646,17 @@ enum TranslationStatus {
 }
 
 model Tour {
-  id                     String                     @id
+  id                     String            @id
   title                  String
-  slug                   String                     @unique
-  productId              String                     @unique @default(uuid())
+  slug                   String            @unique
+  productId              String            @unique @default(uuid())
   price                  Float
   priceChild             Float?
   priceYouth             Float?
   duration               String
-  description            String                     @db.Text
+  description            String            @db.Text
   subtitle               String?
-  shortDescription       String?                    @db.Text
+  shortDescription       String?           @db.Text
   category               String?
   physicalLevel          String?
   minAge                 Int?
@@ -679,25 +679,25 @@ model Tour {
   notIncludedList        Json?
   location               String
   supplierId             String
-  featured               Boolean                    @default(false)
-  status                 String                     @default("draft")
+  featured               Boolean           @default(false)
+  status                 String            @default("draft")
   adminNote              String?
-  createdAt              DateTime                   @default(now())
+  createdAt              DateTime          @default(now())
   gallery                String?
   heroImage              String?
   departureDestinationId String?
-  departureDestination   Destination?               @relation("TourDepartureDestination", fields: [departureDestinationId], references: [id])
+  departureDestination   Destination?      @relation("TourDepartureDestination", fields: [departureDestinationId], references: [id])
   Booking                Booking[]
   Offer                  Offer[]
   OfferTours             OfferTour[]
-  platformSharePercent   Int                        @default(20)
-  SupplierProfile        SupplierProfile            @relation(fields: [supplierId], references: [id])
+  platformSharePercent   Int               @default(20)
+  SupplierProfile        SupplierProfile   @relation(fields: [supplierId], references: [id])
   AgencyProLinks         AgencyProLink[]
-  country                Country                    @relation("CountryTours", fields: [countryId], references: [code])
-  countryId              String                     @default("RD")
-  destination            Destination?               @relation("TourDestination", fields: [destinationId], references: [id])
+  country                Country           @relation("CountryTours", fields: [countryId], references: [code])
+  countryId              String            @default("RD")
+  destination            Destination?      @relation("TourDestination", fields: [destinationId], references: [id])
   destinationId          String?
-  microZone              MicroZone?                 @relation("TourMicroZone", fields: [microZoneId], references: [id])
+  microZone              MicroZone?        @relation("TourMicroZone", fields: [microZoneId], references: [id])
   microZoneId            String?
   translationHash        String?
   translations           TourTranslation[]
@@ -707,47 +707,47 @@ model Tour {
 }
 
 model TourOption {
-  id                   String   @id @default(cuid())
-  tourId               String
-  name                 String
-  type                 String?
-  description          String?
-  imageUrl             String?
-  pricePerPerson       Float?
-  basePrice            Float?
-  baseCapacity         Int?
-  extraPricePerPerson  Float?
-  pickupTimes          Json?
-  isDefault            Boolean  @default(false)
-  active               Boolean  @default(true)
-  sortOrder            Int      @default(0)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  tourId              String
+  name                String
+  type                String?
+  description         String?
+  imageUrl            String?
+  pricePerPerson      Float?
+  basePrice           Float?
+  baseCapacity        Int?
+  extraPricePerPerson Float?
+  pickupTimes         Json?
+  isDefault           Boolean  @default(false)
+  active              Boolean  @default(true)
+  sortOrder           Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
-  Tour                 Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
-  Bookings             Booking[]
+  Tour     Tour      @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  Bookings Booking[]
 
   @@index([tourId])
 }
 
 model TourReview {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   tourId        String
   bookingId     String?
   userId        String?
   customerName  String
   customerEmail String
-  locale        String   @default("es")
+  locale        String    @default("es")
   rating        Int
   title         String?
-  body          String   @db.Text
-  status        String   @default("PENDING")
-  createdAt     DateTime @default(now())
+  body          String    @db.Text
+  status        String    @default("PENDING")
+  createdAt     DateTime  @default(now())
   approvedAt    DateTime?
 
-  Tour     Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
-  Booking  Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  User     User?    @relation(fields: [userId], references: [id])
+  Tour    Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  Booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  User    User?    @relation(fields: [userId], references: [id])
 
   @@index([tourId])
   @@index([bookingId])
@@ -774,39 +774,39 @@ model TourVariant {
 }
 
 model TourTranslation {
-  id             String                @id @default(cuid())
-  tourId         String
-  locale         String
-  title          String?
-  subtitle       String?
-  shortDescription String?             @db.Text
-  description    String?               @db.Text
-  includesList   Json?
-  notIncludedList Json?
-  itineraryStops Json?
-  highlights     Json?
-  durationUnit   String?
-  status         TourTranslationStatus @default(PENDING)
-  sourceHash     String?
-  createdAt      DateTime              @default(now())
-  updatedAt      DateTime              @updatedAt
-  Tour           Tour                  @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  id               String                @id @default(cuid())
+  tourId           String
+  locale           String
+  title            String?
+  subtitle         String?
+  shortDescription String?               @db.Text
+  description      String?               @db.Text
+  includesList     Json?
+  notIncludedList  Json?
+  itineraryStops   Json?
+  highlights       Json?
+  durationUnit     String?
+  status           TourTranslationStatus @default(PENDING)
+  sourceHash       String?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  Tour             Tour                  @relation(fields: [tourId], references: [id], onDelete: Cascade)
 
   @@unique([tourId, locale])
 }
 
 model InfoPageTranslation {
-  id        String           @id @default(cuid())
-  pageKey   String
-  locale    String
-  seoTitle  String?
+  id             String            @id @default(cuid())
+  pageKey        String
+  locale         String
+  seoTitle       String?
   seoDescription String?
-  hero      Json
-  sections  Json
-  status    TranslationStatus @default(PENDING)
-  sourceHash String?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  hero           Json
+  sections       Json
+  status         TranslationStatus @default(PENDING)
+  sourceHash     String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 
   @@unique([pageKey, locale])
 }
@@ -835,7 +835,7 @@ model User {
   SupplierProfile         SupplierProfile?
   PartnerApplication      PartnerApplication[]
   CustomerPayment         CustomerPayment?
-  CustomerPreference     CustomerPreference?
+  CustomerPreference      CustomerPreference?
   AgencyProLinks          AgencyProLink[]
   AgencyTransferLinks     AgencyTransferLink[]
   BlogPosts               BlogPost[]
@@ -845,18 +845,18 @@ model User {
 }
 
 model WorkplaceDepartment {
-  id          String              @id @default(cuid())
-  name        String
-  slug        String              @unique
-  description String?             @db.Text
-  active      Boolean             @default(true)
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-  employees   WorkplaceEmployee[]
-  roles       WorkplaceRole[]
-  chatRooms   WorkplaceChatRoom[]
-  chatMentions WorkplaceChatMention[]
-  assignedSupportConversations Conversation[] @relation("SupportAssignedDepartment")
+  id                           String                 @id @default(cuid())
+  name                         String
+  slug                         String                 @unique
+  description                  String?                @db.Text
+  active                       Boolean                @default(true)
+  createdAt                    DateTime               @default(now())
+  updatedAt                    DateTime               @updatedAt
+  employees                    WorkplaceEmployee[]
+  roles                        WorkplaceRole[]
+  chatRooms                    WorkplaceChatRoom[]
+  chatMentions                 WorkplaceChatMention[]
+  assignedSupportConversations Conversation[]         @relation("SupportAssignedDepartment")
 
   @@index([active])
 }
@@ -881,34 +881,34 @@ model WorkplaceRole {
 }
 
 model WorkplaceEmployee {
-  id                  String                    @id @default(cuid())
-  userId              String                    @unique
-  departmentId        String?
-  employeeCode        String?                   @unique
-  jobTitle            String?
-  avatarUrl           String?
-  status              String                    @default("PENDING")
-  countryScope        Json?
-  cityScope           Json?
-  nicheScope          Json?
-  productScope        Json?
-  companyScope        Json?
-  moduleScope         Json?
-  permissionOverrides Json?
-  accessExpiresAt     DateTime?
-  approvedAt          DateTime?
-  approvedById        String?
-  createdAt           DateTime                  @default(now())
-  updatedAt           DateTime                  @updatedAt
-  user                User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  department          WorkplaceDepartment?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  roles               WorkplaceRoleAssignment[]
-  auditLogs           WorkplaceAuditLog[]
-  approvalRequests    WorkplaceApprovalRequest[]
-  createdChatRooms    WorkplaceChatRoom[]       @relation("WorkplaceChatRoomCreatedBy")
-  chatMessages        WorkplaceChatMessage[]
-  chatMentions        WorkplaceChatMention[]
-  assignedSupportConversations Conversation[]   @relation("SupportAssignedEmployee")
+  id                                     String                         @id @default(cuid())
+  userId                                 String                         @unique
+  departmentId                           String?
+  employeeCode                           String?                        @unique
+  jobTitle                               String?
+  avatarUrl                              String?
+  status                                 String                         @default("PENDING")
+  countryScope                           Json?
+  cityScope                              Json?
+  nicheScope                             Json?
+  productScope                           Json?
+  companyScope                           Json?
+  moduleScope                            Json?
+  permissionOverrides                    Json?
+  accessExpiresAt                        DateTime?
+  approvedAt                             DateTime?
+  approvedById                           String?
+  createdAt                              DateTime                       @default(now())
+  updatedAt                              DateTime                       @updatedAt
+  user                                   User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department                             WorkplaceDepartment?           @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  roles                                  WorkplaceRoleAssignment[]
+  auditLogs                              WorkplaceAuditLog[]
+  approvalRequests                       WorkplaceApprovalRequest[]
+  createdChatRooms                       WorkplaceChatRoom[]            @relation("WorkplaceChatRoomCreatedBy")
+  chatMessages                           WorkplaceChatMessage[]
+  chatMentions                           WorkplaceChatMention[]
+  assignedSupportConversations           Conversation[]                 @relation("SupportAssignedEmployee")
   assignedProDiscoveryGroupOpportunities ProDiscoveryGroupOpportunity[]
 
   @@index([status])
@@ -929,6 +929,14 @@ model ProDiscoveryGroupOpportunity {
   budgetMin               Float?
   budgetMax               Float?
   interests               Json
+  languages               Json?
+  assistance              Json?
+  holidayStyles           Json?
+  additionalServices      Json?
+  flexibleTiming          Boolean            @default(false)
+  preferredStartTime      String?
+  preferredEndTime        String?
+  leadPriority            String             @default("NORMAL")
   dream                   String             @db.Text
   contactName             String
   contactEmail            String
@@ -962,6 +970,7 @@ model ProDiscoveryGroupOpportunity {
   @@index([city])
   @@index([leaderGuideId])
   @@index([assignedToEmployeeId])
+  @@index([leadPriority])
 }
 
 model WorkplaceRoleAssignment {
@@ -980,7 +989,7 @@ model WorkplaceRoleAssignment {
 }
 
 model WorkplaceApprovalRequest {
-  id            String              @id @default(cuid())
+  id            String             @id @default(cuid())
   employeeId    String?
   requestedById String?
   actionKey     String
@@ -988,15 +997,15 @@ model WorkplaceApprovalRequest {
   resourceType  String?
   resourceId    String?
   title         String
-  description   String?             @db.Text
+  description   String?            @db.Text
   payload       Json?
-  status        String              @default("PENDING")
-  decisionNote  String?             @db.Text
+  status        String             @default("PENDING")
+  decisionNote  String?            @db.Text
   decidedById   String?
   decidedAt     DateTime?
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
-  employee      WorkplaceEmployee?  @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  employee      WorkplaceEmployee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([employeeId])
@@ -1005,7 +1014,7 @@ model WorkplaceApprovalRequest {
 }
 
 model WorkplaceAuditLog {
-  id           String              @id @default(cuid())
+  id           String             @id @default(cuid())
   actorUserId  String?
   employeeId   String?
   actionKey    String
@@ -1018,8 +1027,8 @@ model WorkplaceAuditLog {
   metadata     Json?
   beforeData   Json?
   afterData    Json?
-  createdAt    DateTime            @default(now())
-  employee     WorkplaceEmployee?  @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  createdAt    DateTime           @default(now())
+  employee     WorkplaceEmployee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
 
   @@index([actorUserId])
   @@index([employeeId])
@@ -1029,18 +1038,18 @@ model WorkplaceAuditLog {
 }
 
 model WorkplaceChatRoom {
-  id           String                    @id @default(cuid())
+  id           String                 @id @default(cuid())
   title        String
-  slug         String                    @unique
-  description  String?                   @db.Text
+  slug         String                 @unique
+  description  String?                @db.Text
   departmentId String?
-  visibility   String                    @default("DEPARTMENT")
-  status       String                    @default("OPEN")
+  visibility   String                 @default("DEPARTMENT")
+  status       String                 @default("OPEN")
   createdById  String?
-  createdAt    DateTime                  @default(now())
-  updatedAt    DateTime                  @updatedAt
-  department   WorkplaceDepartment?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  createdBy    WorkplaceEmployee?        @relation("WorkplaceChatRoomCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  department   WorkplaceDepartment?   @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdBy    WorkplaceEmployee?     @relation("WorkplaceChatRoomCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   messages     WorkplaceChatMessage[]
   mentions     WorkplaceChatMention[]
 
@@ -1051,7 +1060,7 @@ model WorkplaceChatRoom {
 }
 
 model WorkplaceChatMessage {
-  id               String                    @id @default(cuid())
+  id               String                 @id @default(cuid())
   roomId           String
   employeeId       String?
   senderUserId     String?
@@ -1059,11 +1068,11 @@ model WorkplaceChatMessage {
   senderDepartment String?
   senderPosition   String?
   senderAvatarUrl  String?
-  body             String                    @db.Text
+  body             String                 @db.Text
   mentions         Json?
-  createdAt        DateTime                  @default(now())
-  room             WorkplaceChatRoom         @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  employee         WorkplaceEmployee?        @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  createdAt        DateTime               @default(now())
+  room             WorkplaceChatRoom      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  employee         WorkplaceEmployee?     @relation(fields: [employeeId], references: [id], onDelete: SetNull)
   mentionRecords   WorkplaceChatMention[]
 
   @@index([roomId, createdAt])
@@ -1072,17 +1081,17 @@ model WorkplaceChatMessage {
 }
 
 model WorkplaceChatMention {
-  id           String                    @id @default(cuid())
+  id           String                @id @default(cuid())
   roomId       String
   messageId    String?
   departmentId String?
   employeeId   String?
-  status       String                    @default("OPEN")
-  createdAt    DateTime                  @default(now())
-  room         WorkplaceChatRoom         @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  message      WorkplaceChatMessage?     @relation(fields: [messageId], references: [id], onDelete: SetNull)
-  department   WorkplaceDepartment?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  employee     WorkplaceEmployee?        @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  status       String                @default("OPEN")
+  createdAt    DateTime              @default(now())
+  room         WorkplaceChatRoom     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  message      WorkplaceChatMessage? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  department   WorkplaceDepartment?  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  employee     WorkplaceEmployee?    @relation(fields: [employeeId], references: [id], onDelete: SetNull)
 
   @@index([departmentId, status])
   @@index([employeeId, status])
@@ -1091,23 +1100,23 @@ model WorkplaceChatMention {
 }
 
 model TransferReview {
-  id            String   @id @default(cuid())
-  bookingId      String?  @unique
-  transferLandingSlug String?
+  id                   String    @id @default(cuid())
+  bookingId            String?   @unique
+  transferLandingSlug  String?
   transferServiceLabel String?
-  userId         String?
-  customerName   String
-  customerEmail  String
-  locale         String   @default("es")
-  rating         Int
-  title          String?
-  body           String   @db.Text
-  status         String   @default("PENDING")
-  createdAt      DateTime @default(now())
-  approvedAt     DateTime?
+  userId               String?
+  customerName         String
+  customerEmail        String
+  locale               String    @default("es")
+  rating               Int
+  title                String?
+  body                 String    @db.Text
+  status               String    @default("PENDING")
+  createdAt            DateTime  @default(now())
+  approvedAt           DateTime?
 
   Booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  User    User?   @relation(fields: [userId], references: [id])
+  User    User?    @relation(fields: [userId], references: [id])
 
   @@index([status])
   @@index([customerEmail])
@@ -1115,14 +1124,14 @@ model TransferReview {
 }
 
 model TransferReviewReminder {
-  id         String   @id @default(cuid())
-  bookingId  String   @unique
-  sendCount  Int      @default(0)
+  id         String    @id @default(cuid())
+  bookingId  String    @unique
+  sendCount  Int       @default(0)
   lastSentAt DateTime?
   stoppedAt  DateTime?
   stopReason String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   Booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
@@ -1130,49 +1139,49 @@ model TransferReviewReminder {
 }
 
 model CustomerPreference {
-  id                     String   @id @default(cuid())
-  userId                 String   @unique
-  preferredCountries     Json?
-  preferredDestinations  Json?
-  preferredProductTypes  Json?
-  discountEligible       Boolean  @default(false)
-  discountGrantedAt      DateTime?
-  discountRedeemedAt     DateTime?
-  completedAt            DateTime?
-  consentMarketing       Boolean  @default(false)
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
-  User                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  preferredCountries    Json?
+  preferredDestinations Json?
+  preferredProductTypes Json?
+  discountEligible      Boolean   @default(false)
+  discountGrantedAt     DateTime?
+  discountRedeemedAt    DateTime?
+  completedAt           DateTime?
+  consentMarketing      Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  User                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model EmailSuppression {
-  id            String   @id @default(cuid())
-  email         String
-  scope         String   @default("optional")
-  source        String?
-  reason        String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id        String   @id @default(cuid())
+  email     String
+  scope     String   @default("optional")
+  source    String?
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([email, scope])
   @@index([email])
 }
 
 model BlogPost {
-  id          String          @id @default(cuid())
-  title       String
-  slug        String          @unique
-  excerpt     String?
-  coverImage  String?
-  contentHtml String          @db.Text
-  status      String          @default("DRAFT")
-  publishedAt DateTime?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  authorId    String?
-  author      User?           @relation(fields: [authorId], references: [id])
-  tours       BlogPostTour[]
-  comments    BlogComment[]
+  id           String                @id @default(cuid())
+  title        String
+  slug         String                @unique
+  excerpt      String?
+  coverImage   String?
+  contentHtml  String                @db.Text
+  status       String                @default("DRAFT")
+  publishedAt  DateTime?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  authorId     String?
+  author       User?                 @relation(fields: [authorId], references: [id])
+  tours        BlogPostTour[]
+  comments     BlogComment[]
   translations BlogPostTranslation[]
 }
 
@@ -1186,15 +1195,15 @@ model BlogPostTour {
 }
 
 model BlogComment {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   blogPostId String
   name       String
   email      String
-  body       String   @db.Text
-  status     String   @default("PENDING")
-  createdAt  DateTime @default(now())
+  body       String    @db.Text
+  status     String    @default("PENDING")
+  createdAt  DateTime  @default(now())
   approvedAt DateTime?
-  blogPost   BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  blogPost   BlogPost  @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
 }
 
 model BlogPostTranslation {
@@ -1219,9 +1228,9 @@ model CustomerPayment {
   method                String?
   brand                 String?
   last4                 String?
-  stripeCustomerId       String?  @map("stripe_customer_id")
-  stripePaymentMethodId  String?  @map("stripe_payment_method_id")
-  stripeSetupIntentId    String?  @map("stripe_setup_intent_id")
+  stripeCustomerId      String?  @map("stripe_customer_id")
+  stripePaymentMethodId String?  @map("stripe_payment_method_id")
+  stripeSetupIntentId   String?  @map("stripe_setup_intent_id")
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 

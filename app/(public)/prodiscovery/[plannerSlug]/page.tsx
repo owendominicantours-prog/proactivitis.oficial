@@ -28,11 +28,11 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
   return {
     title: `Planificador de grupos en ${city} | ProDiscovery`,
-    description: `Solicita itinerarios privados, guia lider y logistica de grupo en ${city} con ProDiscovery.`,
+    description: `Solicita una propuesta privada para grupos en ${city} con guia, transporte y experiencias adaptadas a tu viaje.`,
     alternates: { canonical },
     openGraph: {
       title: `Planificador de grupos en ${city} | ProDiscovery`,
-      description: `Custom itinerary builder, private guide and group travel logistics in ${city}.`,
+      description: `Custom group travel proposal in ${city} with private guide, transport and tailored experiences.`,
       url: canonical,
       type: "website"
     },
