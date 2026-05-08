@@ -80,9 +80,9 @@ export default function ProDiscoveryHeader({ locale }: Props) {
               <Image
                 src={PRODISCOVERY_LOGO_URL}
                 alt={t.brand}
-                width={170}
-                height={52}
-                className="h-10 w-auto object-contain"
+                width={510}
+                height={156}
+                className="h-[120px] w-auto object-contain"
                 priority
               />
             </span>
