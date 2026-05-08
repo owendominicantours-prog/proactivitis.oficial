@@ -315,6 +315,10 @@ export async function userHasWorkplacePermission(userId: string, permissionKey: 
   return permissions.has("*") || permissions.has(permissionKey);
 }
 
+function workplaceAccessExpired(employee: { accessExpiresAt?: Date | null }) {
+  return Boolean(employee.accessExpiresAt && employee.accessExpiresAt < new Date());
+}
+
 export async function getWorkplaceContext() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
@@ -342,7 +346,7 @@ export async function getWorkplaceContext() {
       roles: { include: { role: true } }
     }
   });
-  if (!employee || employee.status !== "APPROVED") {
+  if (!employee || employee.status !== "APPROVED" || workplaceAccessExpired(employee)) {
     return { user, employee, permissions: new Set<string>(), scope: workplaceEmptyScope, isAdmin: false };
   }
 
@@ -381,7 +385,10 @@ export async function requireWorkplaceContext(permissionKey?: string) {
   if (!context?.user) {
     redirect("/auth/login?callbackUrl=/workplace");
   }
-  if (!context.isAdmin && context.employee?.status !== "APPROVED") {
+  if (
+    !context.isAdmin &&
+    (!context.employee || context.employee.status !== "APPROVED" || workplaceAccessExpired(context.employee))
+  ) {
     redirect("/workplace");
   }
   if (permissionKey && !context.isAdmin && !context.permissions.has(permissionKey)) {

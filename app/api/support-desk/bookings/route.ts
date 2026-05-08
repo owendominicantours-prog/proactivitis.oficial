@@ -9,6 +9,6 @@ export async function GET(request: NextRequest) {
   }
 
   const q = request.nextUrl.searchParams.get("q") ?? "";
-  const bookings = await findSupportBookings(q);
+  const bookings = await findSupportBookings(context, q);
   return NextResponse.json({ bookings });
 }

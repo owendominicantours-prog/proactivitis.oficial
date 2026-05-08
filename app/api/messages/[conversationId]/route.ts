@@ -38,8 +38,12 @@ export async function GET(
   }
 
   const isAdmin = session.user.role === "ADMIN";
+  const isEmployee = session.user.role === "EMPLOYEE";
   const isParticipant = conversation.ConversationParticipant.some((item) => item.userId === session.user.id);
-  const supportContext = !isParticipant && !isAdmin ? await getSupportDeskContext() : null;
+  const supportContext = isEmployee || (!isParticipant && !isAdmin) ? await getSupportDeskContext() : null;
+  if (isEmployee && !supportContext) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+  }
   const canUseSupportDesk = supportContext ? await canAccessSupportConversation(supportContext, conversation.id) : false;
   if (!isParticipant && !isAdmin && !canUseSupportDesk) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });

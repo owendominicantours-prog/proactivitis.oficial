@@ -1,8 +1,6 @@
-import { redirect } from "next/navigation";
-
 import WorkplaceAvatarUploader from "@/components/workplace/WorkplaceAvatarUploader";
 import WorkplaceShell from "@/components/workplace/WorkplaceShell";
-import { getWorkplaceContext } from "@/lib/workplace";
+import { requireWorkplaceContext } from "@/lib/workplace";
 import { updateWorkplaceProfileAction } from "./actions";
 
 export const metadata = {
@@ -10,8 +8,7 @@ export const metadata = {
 };
 
 export default async function WorkplaceProfilePage() {
-  const context = await getWorkplaceContext();
-  if (!context?.user) redirect("/auth/login?callbackUrl=/workplace/profile");
+  const context = await requireWorkplaceContext();
 
   return (
     <WorkplaceShell

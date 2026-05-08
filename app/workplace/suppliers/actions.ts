@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
 import { recordWorkplaceAuditLog, requireWorkplaceContext } from "@/lib/workplace";
+import { containsInsensitive, isGlobalScope, uniqueScopeItems } from "@/lib/workplaceFilters";
+import { buildWorkplaceTourWhere } from "@/lib/workplaceTours";
 
 const toJson = (value: unknown) => value as Prisma.InputJsonValue;
 const sanitize = (value: FormDataEntryValue | null) => (typeof value === "string" ? value.trim() : "");
@@ -14,11 +16,29 @@ export async function requestSupplierDisableApprovalAction(formData: FormData) {
   const supplierId = sanitize(formData.get("supplierId"));
   if (!supplierId) throw new Error("Suplidor invalido.");
   const context = await requireWorkplaceContext("suppliers.view");
-  const supplier = await prisma.supplierProfile.findUnique({
-    where: { id: supplierId },
+
+  const and: Prisma.SupplierProfileWhereInput[] = [{ id: supplierId }];
+  if (!context.isAdmin) {
+    const companyTerms = uniqueScopeItems(context.scope.companies);
+    if (!isGlobalScope(companyTerms)) {
+      and.push({ OR: companyTerms.map((term) => ({ company: containsInsensitive(term) })) });
+    }
+    and.push({
+      Tour: {
+        some: buildWorkplaceTourWhere({
+          ...context.scope,
+          niches: context.scope.niches.length ? context.scope.niches : ["tours"],
+          modules: context.scope.modules.length ? context.scope.modules : ["tours"]
+        })
+      }
+    });
+  }
+
+  const supplier = await prisma.supplierProfile.findFirst({
+    where: { AND: and },
     select: { id: true, company: true, userId: true }
   });
-  if (!supplier) throw new Error("Suplidor no encontrado.");
+  if (!supplier) throw new Error("Suplidor no encontrado o fuera de tu alcance.");
 
   const existing = await prisma.workplaceApprovalRequest.findFirst({
     where: {

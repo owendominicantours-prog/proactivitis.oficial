@@ -35,7 +35,12 @@ export default async function WorkplaceHomePage() {
   const context = await getWorkplaceContext();
   if (!context?.user) redirect("/auth/login?callbackUrl=/workplace");
 
-  if (!context.isAdmin && (!context.employee || context.employee.status !== "APPROVED")) {
+  if (
+    !context.isAdmin &&
+    (!context.employee ||
+      context.employee.status !== "APPROVED" ||
+      (context.employee.accessExpiresAt && context.employee.accessExpiresAt < new Date()))
+  ) {
     return (
       <main className="min-h-screen bg-slate-950 px-4 py-10 text-white">
         <section className="mx-auto max-w-3xl rounded-[2rem] border border-white/10 bg-white/10 p-8">

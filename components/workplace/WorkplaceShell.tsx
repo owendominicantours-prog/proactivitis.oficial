@@ -2,9 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ReactNode } from "react";
 import {
-  AtSign,
   BarChart3,
-  Bell,
   BriefcaseBusiness,
   Building2,
   Car,
@@ -19,8 +17,15 @@ import {
   ShoppingBag,
   type LucideIcon
 } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { getWorkplaceContext } from "@/lib/workplace";
+import {
+  WorkplaceHeaderNotifications,
+  WorkplaceNavNotificationBadge
+} from "@/components/workplace/WorkplaceLiveNotifications";
+import {
+  emptyWorkplaceNotificationSummary,
+  getWorkplaceNotificationSummary
+} from "@/lib/workplaceNotifications";
 
 type Props = {
   children: ReactNode;
@@ -53,43 +58,11 @@ const navItems: Array<{ label: string; href: string; key: string; permission: st
 const shortScope = (items: string[], fallback: string) => (items.length ? items.slice(0, 3).join(", ") : fallback);
 type PermissionLabel = { label: string; icon: LucideIcon };
 
-async function getNotificationSummary(permissions: Set<string>) {
-  const context = await getWorkplaceContext();
-  if (!context?.user) return { mentions: 0, support: 0, approvals: 0, total: 0, primaryHref: "/workplace" };
-
-  const mentionWhere = context.isAdmin
-    ? { status: "OPEN" }
-    : {
-        status: "OPEN",
-        OR: [
-          context.employee?.id ? { employeeId: context.employee.id } : { id: "__none__" },
-          context.employee?.departmentId ? { departmentId: context.employee.departmentId } : { id: "__none__" }
-        ]
-      };
-
-  const supportWhere = context.isAdmin
-    ? { status: { in: ["OPEN", "ESCALATED"] } }
-    : {
-        status: { in: ["OPEN", "ESCALATED"] },
-        OR: [
-          context.employee?.id ? { assignedEmployeeId: context.employee.id } : { id: "__none__" },
-          context.employee?.departmentId ? { assignedDepartmentId: context.employee.departmentId } : { id: "__none__" },
-          { assignedDepartmentId: null }
-        ]
-      };
-
-  const [mentions, support, approvals] = await Promise.all([
-    context.isAdmin || permissions.has("chat.view") ? prisma.workplaceChatMention.count({ where: mentionWhere }) : 0,
-    context.isAdmin || permissions.has("chat.respond") ? prisma.conversation.count({ where: supportWhere }) : 0,
-    context.isAdmin ? prisma.workplaceApprovalRequest.count({ where: { status: "PENDING" } }) : 0
-  ]);
-  const total = mentions + support + approvals;
-  const primaryHref = mentions ? "/workplace/chat" : support ? "/workplace/support" : approvals ? "/admin/workplace" : "/workplace";
-  return { mentions, support, approvals, total, primaryHref };
-}
-
 export default async function WorkplaceShell({ children, active, employeeName, department, permissions, scope }: Props) {
-  const notifications = await getNotificationSummary(permissions);
+  const notificationContext = await getWorkplaceContext();
+  const notifications = notificationContext?.user
+    ? await getWorkplaceNotificationSummary(notificationContext)
+    : emptyWorkplaceNotificationSummary;
   const visibleNav = navItems.filter((item) => !item.permission || permissions.has(item.permission));
   const activePermissionLabels = [
     permissions.has("tours.view") ? { label: "Ver tours", icon: ShoppingBag } : null,
@@ -127,7 +100,6 @@ export default async function WorkplaceShell({ children, active, employeeName, d
         <nav className="mt-8 space-y-2">
           {visibleNav.map((item) => {
             const Icon = item.icon;
-            const badge = item.key === "chat" ? notifications.mentions : item.key === "support" ? notifications.support : 0;
             return (
             <Link
               key={item.href}
@@ -140,8 +112,8 @@ export default async function WorkplaceShell({ children, active, employeeName, d
                 <Icon className="h-4 w-4" aria-hidden />
               </span>
               <span className="min-w-0 flex-1">{item.label}</span>
-              {badge ? (
-                <span className="rounded-full bg-cyan-300 px-2 py-0.5 text-[10px] font-black text-slate-950">{badge > 99 ? "99+" : badge}</span>
+              {item.key === "chat" || item.key === "support" ? (
+                <WorkplaceNavNotificationBadge kind={item.key} initial={notifications} />
               ) : null}
             </Link>
           );
@@ -188,24 +160,7 @@ export default async function WorkplaceShell({ children, active, employeeName, d
               </Link>
             </div>
             <div className="ml-auto flex items-center gap-3">
-              <Link
-                href={notifications.primaryHref}
-                className="relative grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-white/5 text-cyan-100 transition hover:border-cyan-300/50 hover:bg-cyan-300/10"
-                aria-label="Notificaciones workplace"
-              >
-                <Bell className="h-5 w-5" aria-hidden />
-                {notifications.total ? (
-                  <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-cyan-300 px-1 text-[10px] font-black text-slate-950">
-                    {notifications.total > 99 ? "99+" : notifications.total}
-                  </span>
-                ) : null}
-              </Link>
-              {notifications.mentions ? (
-                <Link href="/workplace/chat" className="hidden items-center gap-2 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-xs font-black text-cyan-100 sm:inline-flex">
-                  <AtSign className="h-4 w-4" aria-hidden />
-                  {notifications.mentions} menciones
-                </Link>
-              ) : null}
+              <WorkplaceHeaderNotifications initial={notifications} />
             <div className="text-right">
               <Link href="/workplace/profile" className="block rounded-2xl px-3 py-2 transition hover:bg-white/5">
                 <p className="font-black">{employeeName ?? "Equipo Proactivitis"}</p>

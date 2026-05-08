@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 
 import { prisma as prismaLike } from "@/lib/prisma";
 import { getWorkplaceContext } from "@/lib/workplace";
+import { buildWorkplaceBookingWhere } from "@/lib/workplaceBookings";
 
 export const supportConversationTypes = ["SUPPORT", "VISITOR_CHAT", "RESERVATION"] as const;
 
@@ -153,7 +154,7 @@ export function formatSupportBooking(booking: SupportBookingRecord) {
   };
 }
 
-export async function findSupportBookings(query: string) {
+export async function findSupportBookings(context: SupportDeskContext, query: string) {
   const q = query.trim();
   if (q.length < 3) return [];
   const insensitive = Prisma.QueryMode.insensitive;
@@ -168,7 +169,10 @@ export async function findSupportBookings(query: string) {
   }
   const rows = await prismaLike.booking.findMany({
     where: {
-      OR: or
+      AND: [
+        buildWorkplaceBookingWhere(context.scope),
+        { OR: or }
+      ]
     },
     select: supportBookingSelect,
     orderBy: { createdAt: "desc" },

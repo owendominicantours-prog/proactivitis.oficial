@@ -8,6 +8,9 @@ export async function POST(request: NextRequest) {
   if (!context?.user) {
     return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 401 });
   }
+  if (!context.isAdmin && (!context.employee || !context.permissions.has("chat.view"))) {
+    return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 403 });
+  }
 
   const body = await request.json().catch(() => ({}));
   const roomId = typeof body.roomId === "string" ? body.roomId : "";

@@ -8,6 +8,7 @@ import {
   getSupportDeskContext,
   supportBookingSelect
 } from "@/lib/supportDesk";
+import { buildWorkplaceBookingWhere } from "@/lib/workplaceBookings";
 
 export async function POST(
   request: NextRequest,
@@ -25,8 +26,13 @@ export async function POST(
   const bookingId = String(body.bookingId ?? "").trim();
   if (!bookingId) return NextResponse.json({ error: "bookingId requerido" }, { status: 400 });
 
-  const booking = await prisma.booking.findUnique({
-    where: { id: bookingId },
+  const booking = await prisma.booking.findFirst({
+    where: {
+      AND: [
+        { id: bookingId },
+        buildWorkplaceBookingWhere(supportContext.scope)
+      ]
+    },
     select: supportBookingSelect
   });
   if (!booking) return NextResponse.json({ error: "Reserva no encontrada" }, { status: 404 });

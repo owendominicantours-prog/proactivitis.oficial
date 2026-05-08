@@ -20,9 +20,12 @@ export async function POST(request: Request) {
     if (user.role === "EMPLOYEE") {
       const employee = await prisma.workplaceEmployee.findUnique({
         where: { userId: user.id },
-        select: { status: true }
+        select: { status: true, accessExpiresAt: true }
       });
-      if (employee?.status !== "APPROVED") {
+      if (
+        employee?.status !== "APPROVED" ||
+        (employee.accessExpiresAt && employee.accessExpiresAt < new Date())
+      ) {
         return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
       }
     }

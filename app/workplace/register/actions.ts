@@ -23,17 +23,17 @@ export async function submitWorkplaceApplicationAction(formData: FormData) {
     throw new Error("Completa nombre, email y una contrasena de 8 caracteres o mas.");
   }
 
-  const passwordHash = await bcrypt.hash(password, 10);
-  const user = await prisma.user.upsert({
+  const existingUser = await prisma.user.findUnique({
     where: { email },
-    update: {
-      name,
-      password: passwordHash,
-      role: "EMPLOYEE",
-      accountStatus: "PENDING",
-      statusMessage: "Solicitud Workplace pendiente de aprobacion."
-    },
-    create: {
+    select: { id: true }
+  });
+  if (existingUser) {
+    throw new Error("Ya existe una cuenta con este email. Inicia sesion o contacta a un administrador.");
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  const user = await prisma.user.create({
+    data: {
       name,
       email,
       password: passwordHash,
@@ -43,16 +43,8 @@ export async function submitWorkplaceApplicationAction(formData: FormData) {
     }
   });
 
-  const employee = await prisma.workplaceEmployee.upsert({
-    where: { userId: user.id },
-    update: {
-      jobTitle: jobTitle || null,
-      status: "PENDING",
-      countryScope: toJson(countryScope),
-      cityScope: toJson(cityScope),
-      nicheScope: toJson(nicheScope)
-    },
-    create: {
+  const employee = await prisma.workplaceEmployee.create({
+    data: {
       userId: user.id,
       jobTitle: jobTitle || null,
       status: "PENDING",
