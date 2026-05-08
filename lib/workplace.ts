@@ -4,60 +4,16 @@ import { redirect } from "next/navigation";
 
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { expandWorkplacePermissions, workplacePermissions } from "@/lib/workplaceAccess";
+
+export {
+  expandWorkplacePermissions,
+  sensitiveWorkplaceActions,
+  workplaceModules,
+  workplacePermissions
+} from "@/lib/workplaceAccess";
 
 const toJson = (value: unknown) => value as Prisma.InputJsonValue;
-
-export const workplaceModules = [
-  { key: "tours", label: "Tours" },
-  { key: "rent_car", label: "Rent Car" },
-  { key: "hotels", label: "Hoteles" },
-  { key: "transfers", label: "Transfer" },
-  { key: "suppliers", label: "Suplidores" },
-  { key: "agencies", label: "Agencias" },
-  { key: "bookings", label: "Reservas" },
-  { key: "finance", label: "Finanzas" },
-  { key: "refunds", label: "Reembolsos" },
-  { key: "chat", label: "Chat" },
-  { key: "reports", label: "Reportes" },
-  { key: "security", label: "Seguridad" }
-] as const;
-
-export const workplacePermissions = [
-  { key: "tours.view", module: "tours", label: "Ver tours" },
-  { key: "tours.edit", module: "tours", label: "Editar tours" },
-  { key: "tours.media", module: "tours", label: "Subir o borrar fotos" },
-  { key: "tours.price", module: "tours", label: "Modificar precios criticos", sensitive: true },
-  { key: "tours.delete", module: "tours", label: "Eliminar tour", sensitive: true },
-  { key: "rent_car.view", module: "rent_car", label: "Ver rent car" },
-  { key: "rent_car.edit", module: "rent_car", label: "Editar vehiculos" },
-  { key: "rent_car.price", module: "rent_car", label: "Cambiar precios rent car", sensitive: true },
-  { key: "hotels.view", module: "hotels", label: "Ver hoteles" },
-  { key: "hotels.edit", module: "hotels", label: "Editar hoteles" },
-  { key: "transfers.view", module: "transfers", label: "Ver traslados" },
-  { key: "transfers.edit", module: "transfers", label: "Editar rutas y tarifas" },
-  { key: "bookings.view", module: "bookings", label: "Ver reservas" },
-  { key: "bookings.edit", module: "bookings", label: "Editar reservas" },
-  { key: "bookings.delete", module: "bookings", label: "Eliminar reservas", sensitive: true },
-  { key: "suppliers.view", module: "suppliers", label: "Ver suplidores" },
-  { key: "suppliers.support", module: "suppliers", label: "Soporte a suplidores" },
-  { key: "suppliers.disable", module: "suppliers", label: "Desactivar suplidor", sensitive: true },
-  { key: "agencies.view", module: "agencies", label: "Ver agencias" },
-  { key: "agencies.support", module: "agencies", label: "Soporte a agencias" },
-  { key: "finance.view", module: "finance", label: "Ver finanzas" },
-  { key: "finance.commission", module: "finance", label: "Cambiar comisiones", sensitive: true },
-  { key: "refunds.manage", module: "refunds", label: "Gestionar reembolsos", sensitive: true },
-  { key: "chat.view", module: "chat", label: "Ver chat interno" },
-  { key: "chat.respond", module: "chat", label: "Responder chat" },
-  { key: "chat.manage", module: "chat", label: "Administrar salas de chat", sensitive: true },
-  { key: "reports.view", module: "reports", label: "Ver reportes" },
-  { key: "security.audit", module: "security", label: "Ver auditoria" },
-  { key: "security.approve", module: "security", label: "Aprobar acciones sensibles", sensitive: true },
-  { key: "workplace.manage", module: "security", label: "Administrar Workplace", sensitive: true }
-] as const;
-
-export const sensitiveWorkplaceActions = workplacePermissions.filter(
-  (permission) => "sensitive" in permission && permission.sensitive
-);
 
 const defaultDepartments = [
   ["Operaciones", "operaciones", "Coordina reservas, productos y calidad operativa."],
@@ -312,7 +268,7 @@ export async function userHasWorkplacePermission(userId: string, permissionKey: 
     }
   }
 
-  return permissions.has("*") || permissions.has(permissionKey);
+  return expandWorkplacePermissions(permissions).has(permissionKey);
 }
 
 function workplaceAccessExpired(employee: { accessExpiresAt?: Date | null }) {
@@ -364,10 +320,12 @@ export async function getWorkplaceContext() {
     }
   }
 
+  const expandedPermissions = expandWorkplacePermissions(permissions);
+
   return {
     user,
     employee,
-    permissions,
+    permissions: expandedPermissions,
     scope: {
       countries: Array.isArray(employee.countryScope) ? employee.countryScope.map(String) : [],
       cities: Array.isArray(employee.cityScope) ? employee.cityScope.map(String) : [],
