@@ -30,12 +30,16 @@ export async function GET() {
   const now = new Date();
   const nowIso = now.toISOString();
 
-  const [tours, transfers] = await Promise.all([
+  const [tours, transfers, plannerDestinations] = await Promise.all([
     prisma.tour.findMany({
       where: { status: { in: ["published", "seo_only"] } },
       select: { slug: true }
     }),
-    Promise.resolve(allLandings().map((item) => item.landingSlug))
+    Promise.resolve(allLandings().map((item) => item.landingSlug)),
+    prisma.destination.findMany({
+      select: { slug: true },
+      take: 1000
+    })
   ]);
 
   const entries: UrlEntry[] = [];
@@ -58,6 +62,31 @@ export async function GET() {
         });
       }
     }
+  }
+
+  const plannerSlugs = Array.from(
+    new Set([
+      ...plannerDestinations.map((destination) => destination.slug),
+      "punta-cana",
+      "santo-domingo",
+      "paris",
+      "rome",
+      "barcelona",
+      "new-york",
+      "cancun",
+      "dubai",
+      "cartagena",
+      "cusco"
+    ])
+  );
+
+  for (const slug of plannerSlugs) {
+    entries.push({
+      loc: `${BASE_URL}/prodiscovery/planificador-grupos-${slug}`,
+      lastmod: nowIso,
+      changefreq: "weekly",
+      priority: 0.75
+    });
   }
 
   for (const tour of tours) {

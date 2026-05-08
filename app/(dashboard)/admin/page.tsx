@@ -80,6 +80,7 @@ export default async function AdminDashboard() {
       description: "Lo que mueve reservas y clientes.",
       links: [
         { label: "Reservas", href: "/admin/bookings" },
+        { label: "ProDiscovery Leads", href: "/admin/prodiscovery-opportunities" },
         { label: "Calendario", href: "/admin/calendar" },
         { label: "Alertas", href: "/admin/alerts" },
         { label: "Soporte publico", href: "/workplace/support" }

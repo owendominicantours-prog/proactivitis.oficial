@@ -11,6 +11,7 @@ export type NotificationType =
   | "ADMIN_SYSTEM_ALERT"
   | "ADMIN_CONTACT_REQUEST"
   | "ADMIN_PARTNER_APPLICATION"
+  | "ADMIN_PRODISCOVERY_GROUP_OPPORTUNITY"
   | "SUPPLIER_BOOKING_CREATED"
   | "SUPPLIER_BOOKING_CANCELLED"
   | "SUPPLIER_BOOKING_MODIFIED"
@@ -88,6 +89,7 @@ export const notificationTypeConfig: Record<NotificationType, NotificationDispla
   ADMIN_SYSTEM_ALERT: createConfig("Alerta del sistema", "warning"),
   ADMIN_CONTACT_REQUEST: createConfig("Solicitud de contacto", "info"),
   ADMIN_PARTNER_APPLICATION: createConfig("Nueva solicitud", "primary"),
+  ADMIN_PRODISCOVERY_GROUP_OPPORTUNITY: createConfig("Oportunidad ProDiscovery", "primary"),
   SUPPLIER_BOOKING_CREATED: createConfig(
     "Nueva reserva",
     "primary",

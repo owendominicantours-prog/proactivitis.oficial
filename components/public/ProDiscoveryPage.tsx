@@ -1,6 +1,7 @@
 import { Suspense, type ComponentProps } from "react";
 import NextLink from "next/link";
 import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
+import ProDiscoveryPlannerPage from "@/components/public/ProDiscoveryPlannerPage";
 import StructuredData from "@/components/schema/StructuredData";
 import { allLandings } from "@/data/transfer-landings";
 import TrasladoSearchV2 from "@/components/traslado/TrasladoSearchV2";
@@ -136,6 +137,14 @@ const TRUST_BADGES: Record<Locale, string[]> = {
   en: ["Verified reviews", "Secure booking", "Real local support"],
   fr: ["Avis verifies", "Reservation securisee", "Support local reel"]
 };
+
+const shouldShowCatalog = (searchParams: Record<string, string | string[] | undefined>) =>
+  ["view", "type", "q", "destination", "minRating", "sort", "page", "compare"]
+    .some((key) => {
+      const value = searchParams[key];
+      if (Array.isArray(value)) return value.length > 0;
+      return Boolean(value);
+    });
 
 const COPY: Record<Locale, DiscoveryCopy> = {
   es: {
@@ -437,7 +446,15 @@ function BubbleRating({ rating, label }: { rating: number; label: string }) {
   );
 }
 
-export default async function ProDiscoveryPage({ locale, searchParams = {} }: Props) {
+export default async function ProDiscoveryPage(props: Props) {
+  if (!shouldShowCatalog(props.searchParams ?? {})) {
+    return <ProDiscoveryPlannerPage locale={props.locale} />;
+  }
+
+  return <ProDiscoveryCatalogPage {...props} />;
+}
+
+async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
   const t = normalizeTextDeep(COPY[locale]);
   const typeFilter = (firstParam(searchParams.type) || "all") as "all" | ItemType;
   const destinationFilter = (firstParam(searchParams.destination) || "all") as Destination;

@@ -69,15 +69,15 @@ const TRANSFER_DESCRIPTION_SUFFIX: Record<Locale, string> = {
 };
 
 const HOME_TITLE: Record<Locale, string> = {
-  es: "ProDiscovery | Compara tours, hoteles y traslados antes de reservar",
-  en: "ProDiscovery | Compare tours, hotels and transfers before booking",
-  fr: "ProDiscovery | Comparez excursions, hotels et transferts avant de reserver"
+  es: "ProDiscovery | Planificador de viajes privados y grupos",
+  en: "ProDiscovery | Private group travel planner",
+  fr: "ProDiscovery | Planificateur de voyages prives et groupes"
 };
 
 const HOME_DESCRIPTION: Record<Locale, string> = {
-  es: "Compara tours, hoteles y traslados con resenas verificadas, fotos reales, filtros inteligentes y acceso directo a la reserva en Proactivitis.",
-  en: "Compare tours, hotels, and transfers with verified reviews, real photos, smart filters, and direct booking access on Proactivitis.",
-  fr: "Comparez excursions, hotels et transferts avec avis verifies, vraies photos, filtres intelligents et acces direct a la reservation sur Proactivitis."
+  es: "Solicita viajes privados, guias lideres e itinerarios custom para grupos con logistica, proveedores y deposito estimado desde ProDiscovery.",
+  en: "Request private trips, lead guides and custom group itineraries with logistics, suppliers and estimated deposit from ProDiscovery.",
+  fr: "Demandez voyages prives, guides leaders et itineraires groupe sur mesure avec logistique, fournisseurs et acompte estime depuis ProDiscovery."
 };
 
 const CATEGORY_LABELS: Record<Locale, Record<ProDiscoveryCategory, string>> = {

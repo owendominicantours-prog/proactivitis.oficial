@@ -545,6 +545,7 @@ model SupplierProfile {
   offers          Offer[]
   drafts          TourDraft[]
   minisite        SupplierMinisite?
+  proDiscoveryGroupOpportunities ProDiscoveryGroupOpportunity[]
 }
 
 model SupplierMinisite {
@@ -908,9 +909,59 @@ model WorkplaceEmployee {
   chatMessages        WorkplaceChatMessage[]
   chatMentions        WorkplaceChatMention[]
   assignedSupportConversations Conversation[]   @relation("SupportAssignedEmployee")
+  assignedProDiscoveryGroupOpportunities ProDiscoveryGroupOpportunity[]
 
   @@index([status])
   @@index([departmentId])
+}
+
+model ProDiscoveryGroupOpportunity {
+  id                      String             @id @default(cuid())
+  requestCode             String             @unique
+  locale                  String             @default("es")
+  city                    String
+  country                 String?
+  arrivalDate             DateTime?
+  departureDate           DateTime?
+  groupType               String
+  groupSize               Int
+  budgetTier              String
+  budgetMin               Float?
+  budgetMax               Float?
+  interests               Json
+  dream                   String             @db.Text
+  contactName             String
+  contactEmail            String
+  contactPhone            String?
+  companyName             String?
+  status                  String             @default("NEW")
+  source                  String             @default("PRODISCOVERY_PLANNER")
+  estimatedBudget         Float?
+  acceptedBudget          Float?
+  depositPercent          Float              @default(20)
+  depositAmount           Float?
+  leaderGuideId           String?
+  leaderGuideName         String?
+  leaderGuideEmail        String?
+  leaderCommissionPercent Float?
+  leaderCommissionAmount  Float?
+  itineraryDraft          Json?
+  itinerarySummary        String?            @db.Text
+  geminiStatus            String             @default("PENDING")
+  geminiError             String?            @db.Text
+  emailStatus             String             @default("PENDING")
+  emailError              String?            @db.Text
+  assignedToEmployeeId    String?
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+  leaderGuide             SupplierProfile?   @relation(fields: [leaderGuideId], references: [id], onDelete: SetNull)
+  assignedToEmployee      WorkplaceEmployee? @relation(fields: [assignedToEmployeeId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([contactEmail])
+  @@index([city])
+  @@index([leaderGuideId])
+  @@index([assignedToEmployeeId])
 }
 
 model WorkplaceRoleAssignment {

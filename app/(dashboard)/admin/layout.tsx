@@ -12,6 +12,7 @@ const adminNavSections: AdminNavSection[] = [
       { label: "Dashboard", href: "/admin", description: "Vista general de la operacion" },
       { label: "Workplace", href: "/admin/workplace", description: "Empleados, roles y permisos" },
       { label: "Reservas", href: "/admin/bookings", description: "Control de reservas y clientes" },
+      { label: "ProDiscovery Leads", href: "/admin/prodiscovery-opportunities", description: "Viajes privados y oportunidades de grupo" },
       { label: "Calendario", href: "/admin/calendar", description: "Operaciones por fecha" },
       { label: "Alertas", href: "/admin/alerts", description: "Riesgos operativos activos" },
       { label: "Notificaciones", href: "/admin/notifications", description: "Centro de avisos" }

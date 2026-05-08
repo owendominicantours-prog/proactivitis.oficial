@@ -11,36 +11,36 @@ type Props = {
 const COPY = {
   es: {
     brand: "ProDiscovery",
-    tagline: "Reseñas reales de Proactivitis",
+    tagline: "Concierge y viajes a medida",
     home: "Inicio",
-    tours: "Tours",
+    tours: "Catalogo",
     transfers: "Traslados",
     hotels: "Hoteles",
     rankings: "Rankings",
     language: "Idioma",
-    book: "Reservar"
+    book: "Planificar"
   },
   en: {
     brand: "ProDiscovery",
-    tagline: "Real reviews by Proactivitis",
+    tagline: "Concierge and custom trips",
     home: "Home",
-    tours: "Tours",
+    tours: "Catalog",
     transfers: "Transfers",
     hotels: "Hotels",
     rankings: "Rankings",
     language: "Language",
-    book: "Book"
+    book: "Plan"
   },
   fr: {
     brand: "ProDiscovery",
-    tagline: "Avis réels de Proactivitis",
+    tagline: "Concierge et voyages sur mesure",
     home: "Accueil",
-    tours: "Excursions",
+    tours: "Catalogue",
     transfers: "Transferts",
     hotels: "Hotels",
     rankings: "Classements",
     language: "Langue",
-    book: "Reserver"
+    book: "Planifier"
   }
 } as const;
 
@@ -53,7 +53,8 @@ const stripLocalePrefix = (pathname: string) => {
 };
 const buildLocaleHref = (locale: Locale, pathname: string, query: string) => {
   const normalized = stripLocalePrefix(pathname || "/");
-  const localizedPath = locale === "es" ? normalized : `/${locale}${normalized}`;
+  const safePath = normalized.startsWith("/prodiscovery/planificador-grupos-") ? "/prodiscovery" : normalized;
+  const localizedPath = locale === "es" ? safePath : `/${locale}${safePath}`;
   return `${localizedPath}${query ? `?${query}` : ""}`;
 };
 
@@ -85,7 +86,7 @@ export default function ProDiscoveryHeader({ locale }: Props) {
           </Link>
           <div className="flex items-center gap-2">
             <Link
-              href={`${localePrefix(locale)}/tours`}
+              href={base}
               className="hidden rounded-full bg-emerald-600 px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-white hover:bg-emerald-700 sm:inline-flex"
             >
               {t.book}
@@ -99,9 +100,7 @@ export default function ProDiscoveryHeader({ locale }: Props) {
                     key={targetLocale}
                     href={buildLocaleHref(targetLocale, pathname, query)}
                     className={`rounded-full px-2.5 py-1 font-semibold uppercase tracking-[0.08em] ${
-                      active
-                        ? "bg-slate-900 text-white"
-                        : "border border-slate-300 text-slate-700 hover:border-slate-400"
+                      active ? "bg-slate-900 text-white" : "border border-slate-300 text-slate-700 hover:border-slate-400"
                     }`}
                   >
                     {targetLocale}
@@ -113,28 +112,16 @@ export default function ProDiscoveryHeader({ locale }: Props) {
         </div>
         <nav className="-mx-1 flex overflow-x-auto pb-1 text-sm [scrollbar-width:none]">
           <div className="flex min-w-max items-center gap-2 px-1">
-            <Link
-              href={base}
-              className={navClass(normalizedPath === "/prodiscovery")}
-            >
+            <Link href={base} className={navClass(normalizedPath === "/prodiscovery")}>
               {t.home}
             </Link>
-            <Link
-              href={`${base}?type=tour`}
-              className={navClass(query.includes("type=tour"))}
-            >
+            <Link href={`${base}?type=tour`} className={navClass(query.includes("type=tour"))}>
               {t.tours}
             </Link>
-            <Link
-              href={`${base}?type=transfer`}
-              className={navClass(query.includes("type=transfer"))}
-            >
+            <Link href={`${base}?type=transfer`} className={navClass(query.includes("type=transfer"))}>
               {t.transfers}
             </Link>
-            <Link
-              href={`${base}?type=hotel`}
-              className={navClass(query.includes("type=hotel"))}
-            >
+            <Link href={`${base}?type=hotel`} className={navClass(query.includes("type=hotel"))}>
               {t.hotels}
             </Link>
             <Link
