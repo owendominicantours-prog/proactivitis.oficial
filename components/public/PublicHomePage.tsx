@@ -12,45 +12,33 @@ import { getHomeContentOverrides } from "@/lib/siteContent";
 import { getPriceValidUntil, PROACTIVITIS_URL } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
-import { CalendarCheck, Car, Compass, CreditCard, MapPinned, MessageCircle, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
+import { localizedCountryName, localizedDestinationName } from "@/lib/localizedPlaces";
+import {
+  BedDouble,
+  Building2,
+  CalendarCheck,
+  Car,
+  Compass,
+  CreditCard,
+  Globe2,
+  MapPinned,
+  MessageCircle,
+  Plane,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Tags
+} from "lucide-react";
 
 type PublicHomePageProps = {
   locale: Locale;
 };
 
-const PUNTA_CANA_LINKS = [
-  { slug: "tour-en-buggy-en-punta-cana", labelKey: "puntaCana.links.item.1" },
-  { slug: "excursion-en-buggy-y-atv-en-punta-cana", labelKey: "puntaCana.links.item.2" },
-  { slug: "tour-isla-saona-desde-bayhibe-la-romana", labelKey: "puntaCana.links.item.3" },
-  { slug: "tour-y-entrada-para-de-isla-saona-desde-punta-cana", labelKey: "puntaCana.links.item.4" },
-  { slug: "sunset-catamaran-snorkel", labelKey: "puntaCana.links.item.5" },
-  { slug: "parasailing-punta-cana", labelKey: "puntaCana.links.item.6" },
-  { slug: "cayo-levantado-luxury-beach-day", labelKey: "puntaCana.links.item.7" },
-  { slug: "excursion-de-un-dia-a-santo-domingo-desde-punta-cana", labelKey: "puntaCana.links.item.8" },
-  { slug: "tour-de-safari-cultural-por-el-pais-de-republica-dominicana-desde-punta-cana", labelKey: "puntaCana.links.item.9" },
-  { slug: "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana", labelKey: "puntaCana.links.item.10" }
-] as const;
-
-const SOSUA_PARTY_BOAT_LINKS = [
-  {
-    slug: "party-boat-sosua",
-    es: "Sosua Party Boat: precios y opciones VIP",
-    en: "Sosua Party Boat: prices and VIP options",
-    fr: "Sosua Party Boat : prix et options VIP"
-  },
-  {
-    slug: "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua",
-    es: "Barco privado en Sosua desde Puerto Plata",
-    en: "Private party boat in Sosua from Puerto Plata",
-    fr: "Bateau prive a Sosua depuis Puerto Plata"
-  }
-] as const;
-
 export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
     translate(locale, key, replacements);
   const transferHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
-  const tourHref = (slug: string) => (locale === "es" ? `/tours/${slug}` : `/${locale}/tours/${slug}`);
   const homeOverrides = await getHomeContentOverrides(locale);
   const transferBannerImage =
     homeOverrides.transferBanner?.backgroundImage ??
@@ -58,7 +46,14 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   const priceValidUntil = getPriceValidUntil();
   const localePrefix = locale === "es" ? "" : `/${locale}`;
   const localePath = (path: string) => `${localePrefix}${path}`;
+  const toursQueryHref = (params: Record<string, string>) => {
+    const query = new URLSearchParams(params).toString();
+    return `${localePath("/tours")}${query ? `?${query}` : ""}`;
+  };
   const localizedPath = (path: string) => `${PROACTIVITIS_URL}${locale === "es" ? path : `/${locale}${path}`}`;
+  const rentCarHref = localePath("/rent-a-car");
+  const hotelsHref = locale === "es" ? "/hoteles" : `/${locale}/hotels`;
+  const proDiscoveryHref = localePath("/prodiscovery");
   const tripStartCards = [
     {
       icon: Compass,
@@ -77,10 +72,10 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
             : "Find real activities",
       body:
         locale === "es"
-          ? "Saona, buggy, catamarán, safari y experiencias con recogida coordinada."
+          ? "Actividades, entradas, aventura, cultura y planes privados en los destinos activos."
           : locale === "fr"
-            ? "Saona, buggy, catamaran, safari et experiences avec pickup coordonne."
-            : "Saona, buggy, catamaran, safari, and experiences with coordinated pickup."
+            ? "Activites, billets, aventure, culture et plans prives dans les destinations actives."
+            : "Activities, tickets, adventure, culture, and private plans in active destinations."
     },
     {
       icon: Car,
@@ -109,22 +104,126 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
       href: localePath("/destinos"),
       label:
         locale === "es"
-          ? "Zonas populares"
+          ? "Destinos disponibles"
           : locale === "fr"
-            ? "Zones populaires"
-            : "Popular areas",
+            ? "Destinations disponibles"
+            : "Available destinations",
       title:
         locale === "es"
-          ? "Planifica por zona"
+          ? "Planifica por destino"
           : locale === "fr"
-            ? "Planifiez par zone"
-            : "Plan by area",
+            ? "Planifiez par destination"
+            : "Plan by destination",
       body:
         locale === "es"
-          ? "Explora Punta Cana, Bávaro, Cap Cana, Macao, Bayahibe y más."
+          ? "Explora ciudades, playas, islas y zonas con servicios disponibles."
           : locale === "fr"
-            ? "Explorez Punta Cana, Bavaro, Cap Cana, Macao, Bayahibe et plus."
-            : "Explore Punta Cana, Bavaro, Cap Cana, Macao, Bayahibe, and more."
+            ? "Explorez villes, plages, iles et zones avec services disponibles."
+            : "Explore cities, beaches, islands, and areas with available services."
+    }
+  ];
+  const serviceCards = [
+    {
+      icon: Compass,
+      href: localePath("/tours"),
+      label: locale === "es" ? "Tours" : locale === "fr" ? "Tours" : "Tours",
+      title:
+        locale === "es"
+          ? "Experiencias y actividades"
+          : locale === "fr"
+            ? "Experiences et activites"
+            : "Experiences and activities",
+      body:
+        locale === "es"
+          ? "Tours, excursiones, entradas, aventura, cultura y planes privados."
+          : locale === "fr"
+            ? "Tours, excursions, billets, aventure, culture et plans prives."
+            : "Tours, day trips, tickets, adventure, culture, and private plans."
+    },
+    {
+      icon: Plane,
+      href: transferHref,
+      label: locale === "es" ? "Traslados" : locale === "fr" ? "Transferts" : "Transfers",
+      title:
+        locale === "es"
+          ? "Llegada y rutas privadas"
+          : locale === "fr"
+            ? "Arrivee et routes privees"
+            : "Arrival and private routes",
+      body:
+        locale === "es"
+          ? "Aeropuerto, hotel, ida y vuelta, grupos y rutas entre zonas."
+          : locale === "fr"
+            ? "Aeroport, hotel, aller-retour, groupes et routes entre zones."
+            : "Airport, hotel, round trip, groups, and routes between areas."
+    },
+    {
+      icon: Car,
+      href: rentCarHref,
+      label: "Rent a car",
+      title:
+        locale === "es"
+          ? "Vehiculos para moverte"
+          : locale === "fr"
+            ? "Vehicules pour bouger"
+            : "Vehicles to move around",
+      body:
+        locale === "es"
+          ? "Opciones por zona, categoria y tipo de viaje con soporte antes de la entrega."
+          : locale === "fr"
+            ? "Options par zone, categorie et type de voyage avec support avant livraison."
+            : "Options by area, category, and trip style with support before handoff."
+    },
+    {
+      icon: BedDouble,
+      href: hotelsHref,
+      label: locale === "es" ? "Alojamiento" : locale === "fr" ? "Hebergement" : "Accommodation",
+      title:
+        locale === "es"
+          ? "Hoteles y zonas para quedarte"
+          : locale === "fr"
+            ? "Hotels et zones ou sejourner"
+            : "Hotels and areas to stay",
+      body:
+        locale === "es"
+          ? "Guias de hoteles, cosas que hacer cerca y conexiones con tours y traslados."
+          : locale === "fr"
+            ? "Guides d hotels, choses a faire autour et connexions avec tours et transferts."
+          : "Hotel guides, nearby things to do, and connections to tours and transfers."
+    },
+    {
+      icon: Sparkles,
+      href: proDiscoveryHref,
+      label: "ProDiscovery",
+      title:
+        locale === "es"
+          ? "Comparar lo mejor por zona"
+          : locale === "fr"
+            ? "Comparer le meilleur par zone"
+            : "Compare the best by area",
+      body:
+        locale === "es"
+          ? "Guias y rankings para descubrir opciones fuertes sin depender de un solo destino."
+          : locale === "fr"
+            ? "Guides et classements pour decouvrir des options fortes sans un seul lieu."
+            : "Guides and rankings to discover strong options beyond one destination."
+    },
+    {
+      icon: Building2,
+      href: "/become-a-supplier",
+      label: locale === "es" ? "Partners" : locale === "fr" ? "Partenaires" : "Partners",
+      title:
+        locale === "es"
+          ? "Agencias y suplidores"
+          : locale === "fr"
+            ? "Agences et fournisseurs"
+            : "Agencies and suppliers",
+      body:
+        locale === "es"
+          ? "Un ecosistema para vender, operar y conectar servicios de viaje."
+          : locale === "fr"
+            ? "Un ecosysteme pour vendre, operer et connecter des services de voyage."
+            : "An ecosystem to sell, operate, and connect travel services."
     }
   ];
   const trustNotes = [
@@ -206,8 +305,35 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
 
   const [publishedTours, tourRatingAgg, transferRatingAgg] = await Promise.all([
     prisma.tour.findMany({
-      where: { status: { in: ["published", "seo_only"] } },
-      select: { id: true, slug: true, title: true, price: true, shortDescription: true },
+      where: {
+        status: { in: ["published", "seo_only"] },
+        slug: { not: HIDDEN_TRANSFER_SLUG }
+      },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        status: true,
+        price: true,
+        shortDescription: true,
+        category: true,
+        location: true,
+        country: { select: { name: true, slug: true } },
+        destination: {
+          select: {
+            name: true,
+            slug: true,
+            country: { select: { name: true, slug: true } }
+          }
+        },
+        departureDestination: {
+          select: {
+            name: true,
+            slug: true,
+            country: { select: { name: true, slug: true } }
+          }
+        }
+      },
       orderBy: { createdAt: "desc" }
     }),
     prisma.tourReview.groupBy({
@@ -250,6 +376,101 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         }
       ])
   );
+  const visibleHomeTours = uniquePublishedTours.filter((tour) => tour.status === "published");
+  const destinationMap = new Map<
+    string,
+    {
+      name: string;
+      countryName?: string;
+      href: string;
+      count: number;
+      category?: string | null;
+      location?: string | null;
+    }
+  >();
+
+  for (const tour of visibleHomeTours) {
+    const destination = tour.departureDestination ?? tour.destination;
+    const country = destination?.country ?? tour.country;
+    const countrySlug = country?.slug;
+    const countryName = country ? localizedCountryName(country, locale) : undefined;
+    const destinationName = destination ? localizedDestinationName(destination, locale) : null;
+    const fallbackName = tour.location?.split(",")[0]?.trim() || countryName || tour.location || "Proactivitis";
+    const key = destination && countrySlug ? `${countrySlug}:${destination.slug}` : countrySlug ? `country:${countrySlug}` : fallbackName;
+    const href =
+      destination && countrySlug
+        ? toursQueryHref({ country: countrySlug, destination: destination.slug })
+        : countrySlug
+          ? toursQueryHref({ country: countrySlug })
+          : localePath("/tours");
+    const current = destinationMap.get(key);
+    if (current) {
+      current.count += 1;
+      if (!current.category && tour.category) current.category = tour.category;
+      continue;
+    }
+    destinationMap.set(key, {
+      name: destinationName ?? fallbackName,
+      countryName,
+      href,
+      count: 1,
+      category: tour.category,
+      location: tour.location
+    });
+  }
+
+  const destinationCards = Array.from(destinationMap.values())
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+    .slice(0, 8);
+
+  const categoryMap = new Map<string, { name: string; count: number; sampleDestination?: string }>();
+  for (const tour of visibleHomeTours) {
+    const category = tour.category?.trim();
+    if (!category) continue;
+    const current = categoryMap.get(category.toLowerCase());
+    const destination = tour.departureDestination ?? tour.destination;
+    const sampleDestination = destination ? localizedDestinationName(destination, locale) : tour.location?.split(",")[0]?.trim();
+    if (current) {
+      current.count += 1;
+      if (!current.sampleDestination && sampleDestination) current.sampleDestination = sampleDestination;
+      continue;
+    }
+    categoryMap.set(category.toLowerCase(), { name: category, count: 1, sampleDestination });
+  }
+
+  const categoryCards = Array.from(categoryMap.values())
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+    .slice(0, 8);
+
+  const inventoryStats = [
+    {
+      label:
+        locale === "es"
+          ? "Tours activos"
+          : locale === "fr"
+            ? "Tours actifs"
+            : "Active tours",
+      value: visibleHomeTours.length
+    },
+    {
+      label:
+        locale === "es"
+          ? "Destinos conectados"
+          : locale === "fr"
+            ? "Destinations connectees"
+            : "Connected destinations",
+      value: destinationMap.size
+    },
+    {
+      label:
+        locale === "es"
+          ? "Categorias vivas"
+          : locale === "fr"
+            ? "Categories actives"
+            : "Live categories",
+      value: categoryMap.size
+    }
+  ];
 
   const tourCatalogItems = uniquePublishedTours.map((tour, index) => ({
     "@type": "ListItem",
@@ -396,15 +617,18 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     { path: "/", name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home" },
     { path: "/tours", name: locale === "es" ? "Tours" : locale === "fr" ? "Excursions" : "Tours" },
     { path: "/traslado", name: locale === "es" ? "Traslados" : locale === "fr" ? "Transferts" : "Transfers" },
+    {
+      path: "/destinos",
+      name: locale === "es" ? "Destinos" : locale === "fr" ? "Destinations" : "Destinations"
+    },
     { path: "/prodiscovery", name: "ProDiscovery" },
+    { path: "/rent-a-car", name: "Rent a car" },
     { path: "/news", name: locale === "es" ? "Noticias" : locale === "fr" ? "Actualites" : "News" },
     {
       path: locale === "es" ? "/hoteles" : "/hotels",
       name: locale === "es" ? "Hoteles" : locale === "fr" ? "Hotels" : "Hotels"
     },
-    { path: "/punta-cana/tours", name: "Punta Cana Tours" },
-    { path: "/punta-cana/traslado", name: "Punta Cana Transfers" },
-    { path: "/punta-cana/premium-transfer-services", name: "Premium Transfer Services" }
+    { path: "/agency-program", name: locale === "fr" ? "Programme agences" : "Agency Program" }
   ];
 
   const allPublicPageUrls = Array.from(
@@ -679,51 +903,139 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         <div className="mx-auto max-w-6xl space-y-5 px-4 py-12 sm:px-6">
           <HomeRecommendedHeader locale={locale} overrides={homeOverrides.recommended} />
           <HomeTourSearchSection locale={locale} />
+          <div className="rounded-3xl border border-slate-100 bg-white/90 p-6 shadow-sm">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                  {locale === "es"
+                    ? "Plataforma de viaje"
+                    : locale === "fr"
+                      ? "Plateforme de voyage"
+                      : "Travel platform"}
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+                  {locale === "es"
+                    ? "Todo el viaje conectado desde una sola busqueda"
+                    : locale === "fr"
+                      ? "Tout le voyage connecte depuis une seule recherche"
+                      : "The whole trip connected from one search"}
+                </h2>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {inventoryStats.map((stat) => (
+                  <span
+                    key={stat.label}
+                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700"
+                  >
+                    {stat.value.toLocaleString()} {stat.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {serviceCards.map((service) => {
+                const Icon = service.icon;
+                return (
+                  <Link
+                    key={service.href}
+                    href={service.href}
+                    className="rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:bg-white"
+                  >
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-sky-700 ring-1 ring-slate-200">
+                      <Icon className="h-5 w-5" aria-hidden />
+                    </span>
+                    <p className="mt-4 text-[11px] font-black uppercase tracking-[0.22em] text-slate-500">{service.label}</p>
+                    <h3 className="mt-2 text-base font-black leading-tight text-slate-950">{service.title}</h3>
+                    <p className="mt-2 text-sm font-medium leading-6 text-slate-600">{service.body}</p>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
           <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
             <FeaturedToursSection locale={locale} />
           </div>
-          <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-              {homeOverrides.puntaCana?.subtitle ?? t("puntaCana.links.subtitle")}
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-              {homeOverrides.puntaCana?.title ?? t("puntaCana.links.title")}
-            </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {PUNTA_CANA_LINKS.map((item) => (
+          {destinationCards.length ? (
+            <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                    {locale === "es"
+                      ? "Actividades donde vayas"
+                      : locale === "fr"
+                        ? "Activites ou vous allez"
+                        : "Activities wherever you go"}
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+                    {locale === "es"
+                      ? "Descubre experiencias segun el destino disponible"
+                      : locale === "fr"
+                        ? "Decouvrez les experiences selon la destination"
+                        : "Discover experiences by available destination"}
+                  </h2>
+                </div>
                 <Link
-                  key={item.slug}
-                  href={tourHref(item.slug)}
-                  className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
+                  href={localePath("/tours")}
+                  className="w-fit rounded-full border border-slate-200 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-300"
                 >
-                  {t(item.labelKey)}
+                  {locale === "es" ? "Ver todo" : locale === "fr" ? "Tout voir" : "See all"}
                 </Link>
-              ))}
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {destinationCards.map((item) => (
+                  <Link
+                    key={`${item.name}-${item.countryName ?? ""}`}
+                    href={item.href}
+                    className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 transition hover:-translate-y-0.5 hover:bg-white"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-sky-700 ring-1 ring-slate-200">
+                        <Globe2 className="h-5 w-5" aria-hidden />
+                      </span>
+                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-emerald-700">
+                        {item.count} {locale === "es" ? "planes" : locale === "fr" ? "plans" : "plans"}
+                      </span>
+                    </div>
+                    <h3 className="mt-4 text-lg font-black leading-tight text-slate-950">{item.name}</h3>
+                    <p className="mt-1 text-sm font-semibold text-slate-500">{item.countryName ?? item.location}</p>
+                    {item.category ? <p className="mt-3 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">{item.category}</p> : null}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-              Sosua Party Boat
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-              {locale === "es"
-                ? "Reserva tu party boat en Sosua al mejor precio"
-                : locale === "en"
-                  ? "Book your Sosua party boat at the best price"
-                  : "Reservez votre party boat a Sosua au meilleur prix"}
-            </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {SOSUA_PARTY_BOAT_LINKS.map((item) => (
-                <Link
-                  key={item.slug}
-                  href={tourHref(item.slug)}
-                  className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
-                >
-                  {locale === "es" ? item.es : locale === "en" ? item.en : item.fr}
-                </Link>
-              ))}
+          ) : null}
+          {categoryCards.length ? (
+            <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                {locale === "es" ? "Categorias activas" : locale === "fr" ? "Categories actives" : "Active categories"}
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+                {locale === "es"
+                  ? "Explora por tipo de experiencia"
+                  : locale === "fr"
+                    ? "Explorez par type d experience"
+                    : "Explore by experience type"}
+              </h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {categoryCards.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={toursQueryHref({ category: item.name })}
+                    className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
+                  >
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-sky-700 ring-1 ring-slate-200">
+                      <Tags className="h-4 w-4" aria-hidden />
+                    </span>
+                    <span className="mt-4 block text-lg font-black leading-tight text-slate-950">{item.name}</span>
+                    <span className="mt-1 block text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                      {item.count} {locale === "es" ? "opciones" : locale === "fr" ? "options" : "options"}
+                    </span>
+                    {item.sampleDestination ? <span className="mt-2 block text-xs text-slate-500">{item.sampleDestination}</span> : null}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
       </section>
 

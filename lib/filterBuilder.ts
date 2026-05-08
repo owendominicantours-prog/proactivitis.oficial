@@ -5,6 +5,7 @@ export type TourSearchParams = {
   maxPrice?: string;
   language?: string;
   duration?: string;
+  category?: string;
   sort?: string;
 };
 
@@ -101,6 +102,11 @@ export function buildTourFilter(params: TourSearchParams = {}) {
 
   if (params.duration) {
     where.duration = params.duration;
+  }
+
+  const category = params.category?.trim();
+  if (category) {
+    where.category = { contains: category, mode: "insensitive" };
   }
 
   return where;

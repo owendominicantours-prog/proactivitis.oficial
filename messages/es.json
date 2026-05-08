@@ -743,6 +743,7 @@
   "tours.filter.active.destination": "Zona: {value}",
   "tours.filter.active.duration": "Duraci\u00f3n: {value}",
   "tours.filter.active.language": "Idioma: {value}",
+  "tours.filter.active.category": "Categor\u00eda: {value}",
   "tours.filter.active.maxPrice": "M\u00e1x: ${value}",
   "tours.filter.active.minPrice": "M\u00edn: ${value}",
   "tours.filter.intro": "Filtro inteligente (m\u00f3vil friendly)",
