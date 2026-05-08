@@ -56,7 +56,7 @@ export default async function PublicTransferPage({
       ? "/punta-cana/premium-transfer-services"
       : `/${locale}/punta-cana/premium-transfer-services`;
   const proDiscoveryTransfersHref =
-    locale === "es" ? "/prodiscovery?type=transfer" : `/${locale}/prodiscovery?type=transfer`;
+    locale === "es" ? "/prodiscovery?dest=Republica%20Dominicana" : `/${locale}/prodiscovery?dest=Dominican%20Republic`;
   const transferHref = (slug: string) => (locale === "es" ? `/transfer/${slug}` : `/${locale}/transfer/${slug}`);
   const featuredGenericTransferLandings = genericTransferLandings.slice(0, 8);
   let options: LocationOption[] = [];

@@ -16,6 +16,7 @@ import {
 } from "@/lib/geminiGlobalTourFactory";
 
 export const maxDuration = 300;
+export const dynamic = "force-dynamic";
 
 const statusStyles = {
   published: "bg-emerald-100 text-emerald-800 border-emerald-200",

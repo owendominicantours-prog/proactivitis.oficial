@@ -344,7 +344,8 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
   const puntaCanaHubHref = locale === "es" ? "/punta-cana/tours" : `/${locale}/punta-cana/tours`;
   const transfersHubHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
   const hotelsHubHref = locale === "es" ? "/hoteles" : `/${locale}/hotels`;
-  const proDiscoveryToursHref = locale === "es" ? "/prodiscovery?type=tour" : `/${locale}/prodiscovery?type=tour`;
+  const proDiscoveryToursHref =
+    locale === "es" ? "/prodiscovery?dest=Republica%20Dominicana" : `/${locale}/prodiscovery?dest=Dominican%20Republic`;
   const premiumTransferHref =
     locale === "es"
       ? "/punta-cana/premium-transfer-services"

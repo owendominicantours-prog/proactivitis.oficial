@@ -13,7 +13,7 @@ type Props = {
 const COPY = {
   es: {
     brand: "ProDiscovery",
-    tagline: "Viajes privados para grupos",
+    tagline: "Custom Group Planner",
     home: "Planificador",
     dominican: "Republica Dominicana",
     corporate: "Empresas",
@@ -24,7 +24,7 @@ const COPY = {
   },
   en: {
     brand: "ProDiscovery",
-    tagline: "Private trips for groups",
+    tagline: "Custom Group Planner",
     home: "Planner",
     dominican: "Dominican Republic",
     corporate: "Companies",
@@ -35,7 +35,7 @@ const COPY = {
   },
   fr: {
     brand: "ProDiscovery",
-    tagline: "Voyages prives pour groupes",
+    tagline: "Custom Group Planner",
     home: "Planificateur",
     dominican: "Republique dominicaine",
     corporate: "Entreprises",
@@ -87,7 +87,7 @@ export default function ProDiscoveryHeader({ locale }: Props) {
               />
             </span>
             <span className="hidden sm:block">
-              <span className="block text-xs font-medium text-slate-500">{t.tagline}</span>
+              <span className="block text-sm font-black tracking-tight text-slate-950">ProDiscovery: {t.tagline}</span>
             </span>
           </Link>
           <div className="flex items-center gap-2">

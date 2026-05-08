@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import ProDiscoveryFooter from "@/components/public/ProDiscoveryFooter";
 import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import ProDiscoveryPlannerForm from "@/components/public/ProDiscoveryPlannerForm";
 import StructuredData from "@/components/schema/StructuredData";
@@ -26,6 +27,9 @@ const copy = {
     proof: ["Empresas, familias y bodas", "Guia privado", "Experiencias sin ruta masiva"],
     primaryCta: "Empezar mi propuesta",
     secondaryCta: "Ver ideas en RD",
+    searchLabel: "Buscador de destinos para grupos",
+    searchPlaceholder: "Ej: Punta Cana, Santo Domingo, Bayahibe",
+    searchButton: "Planificar destino",
     cards: [
       {
         title: "Para grupos que quieren algo propio",
@@ -63,6 +67,9 @@ const copy = {
     proof: ["Companies, families and weddings", "Private guide", "No mass-route experience"],
     primaryCta: "Start my proposal",
     secondaryCta: "See DR ideas",
+    searchLabel: "Group destination search",
+    searchPlaceholder: "Example: Punta Cana, Santo Domingo, Bayahibe",
+    searchButton: "Plan destination",
     cards: [
       {
         title: "For groups that want something of their own",
@@ -100,6 +107,9 @@ const copy = {
     proof: ["Entreprises, familles et mariages", "Guide prive", "Pas de route massive"],
     primaryCta: "Commencer ma proposition",
     secondaryCta: "Voir idees RD",
+    searchLabel: "Recherche de destination groupe",
+    searchPlaceholder: "Exemple : Punta Cana, Santo Domingo, Bayahibe",
+    searchButton: "Planifier destination",
     cards: [
       {
         title: "Pour les groupes qui veulent leur propre voyage",
@@ -156,13 +166,30 @@ export default async function ProDiscoveryPlannerPage({ locale, initialCity, lan
       <StructuredData data={schema} />
       <ProDiscoveryHeader locale={locale} />
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto grid max-w-7xl gap-7 px-4 py-7 sm:px-6 lg:grid-cols-[minmax(0,1fr)_460px] lg:px-8 lg:py-9">
-          <div className="flex flex-col justify-center">
+        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8 lg:py-6">
+          <div id="planner">
+            <ProDiscoveryPlannerForm locale={locale} initialCity={initialCity ?? defaultPlannerCity(locale)} />
+          </div>
+          <aside className="flex flex-col justify-center rounded-[24px] border border-slate-200 bg-slate-50 p-4">
             <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-700">{t.eyebrow}</p>
-            <h1 className="mt-3 max-w-4xl text-4xl font-black tracking-tight text-slate-950 md:text-6xl">
+            <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">
               {initialCity ? `${t.title}: ${initialCity}` : t.title}
             </h1>
-            <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">{t.body}</p>
+            <p className="mt-3 text-sm leading-7 text-slate-600">{t.body}</p>
+            <form action={`${localePrefix(locale)}/prodiscovery`} method="get" className="mt-4 rounded-2xl border border-slate-200 bg-white p-3">
+              <label className="block">
+                <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">{t.searchLabel}</span>
+                <input
+                  name="dest"
+                  defaultValue={initialCity ?? ""}
+                  placeholder={t.searchPlaceholder}
+                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-950 outline-none ring-emerald-200 focus:ring-2"
+                />
+              </label>
+              <button className="mt-3 w-full rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white">
+                {t.searchButton}
+              </button>
+            </form>
             <div className="mt-5 flex flex-wrap gap-2">
               {t.proof.map((item) => (
                 <span
@@ -173,7 +200,15 @@ export default async function ProDiscoveryPlannerPage({ locale, initialCity, lan
                 </span>
               ))}
             </div>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-4 space-y-2">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">{t.socialTitle}</p>
+              {t.socialCases.slice(0, 2).map((item) => (
+                <div key={item} className="rounded-2xl border border-slate-200 bg-white p-3">
+                  <p className="text-sm font-semibold leading-6 text-slate-700">{item}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 flex flex-wrap gap-3">
               <Link
                 href="#planner"
                 className="inline-flex rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white hover:bg-emerald-700"
@@ -187,34 +222,8 @@ export default async function ProDiscoveryPlannerPage({ locale, initialCity, lan
                 {t.secondaryCta}
               </Link>
             </div>
-          </div>
-          <div id="planner">
-            <ProDiscoveryPlannerForm locale={locale} initialCity={initialCity ?? defaultPlannerCity(locale)} />
-          </div>
+          </aside>
         </div>
-      </section>
-
-      <section className="mx-auto mt-5 grid max-w-7xl gap-4 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
-        <div className="grid gap-3 md:grid-cols-3">
-          {t.cards.map((card) => (
-            <article key={card.title} className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm">
-              <h2 className="text-base font-black leading-snug text-slate-950">{card.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{card.body}</p>
-            </article>
-          ))}
-        </div>
-        <article className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">{t.badgeLabel}</p>
-          <h2 className="mt-2 text-xl font-black text-slate-950">{t.socialTitle}</h2>
-          <div className="mt-3 space-y-3">
-            {t.socialCases.map((item) => (
-              <div key={item} className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
-                <p className="text-sm font-semibold leading-6 text-slate-700">{item}</p>
-              </div>
-            ))}
-          </div>
-          <p className="mt-3 text-sm leading-6 text-slate-600">{t.sideBody}</p>
-        </article>
       </section>
 
       {ideas.length ? (
@@ -251,7 +260,7 @@ export default async function ProDiscoveryPlannerPage({ locale, initialCity, lan
                     <h3 className="mt-2 line-clamp-2 text-base font-black leading-tight text-slate-950">{idea.title}</h3>
                     <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{idea.description}</p>
                     <p className="mt-2 line-clamp-2 text-sm font-semibold leading-6 text-slate-800">{idea.groupAngle}</p>
-                    <Link href="#planner" className="mt-3 inline-flex rounded-2xl bg-slate-950 px-4 py-2 text-sm font-black text-white">
+                    <Link href={`${localePrefix(locale)}/prodiscovery?dest=${encodeURIComponent(idea.destination)}#planner`} className="mt-3 inline-flex rounded-2xl bg-slate-950 px-4 py-2 text-sm font-black text-white">
                       {t.ideaCta}
                     </Link>
                   </div>
@@ -261,6 +270,7 @@ export default async function ProDiscoveryPlannerPage({ locale, initialCity, lan
           </div>
         </section>
       ) : null}
+      <ProDiscoveryFooter locale={locale} />
     </main>
   );
 }

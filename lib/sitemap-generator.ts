@@ -6,7 +6,6 @@ import { allLandings } from "@/data/transfer-landings";
 import { buildTransferHotelVariantSlug, TRANSFER_HOTEL_SALES_VARIANTS } from "@/data/transfer-hotel-sales-variants";
 import { TRANSFER_QUESTION_SALES_LANDINGS } from "@/data/transfer-question-sales-landings";
 import { warnOnce } from "@/lib/logOnce";
-import { PRODISCOVERY_CATEGORIES, PRODISCOVERY_DESTINATIONS } from "@/lib/prodiscovery";
 import { TOUR_MARKET_INTENTS, buildTourMarketVariantSlug, isTourMarketVariantEligible } from "@/lib/tourMarketVariants";
 import { getIndexableTourMarketIntentIds, getIndexableTransferVariantIds } from "@/lib/seo-index-policy";
 
@@ -59,14 +58,6 @@ const TRANSFER_QUESTION_SALES_URLS = TRANSFER_QUESTION_SALES_LANDINGS.map((landi
   url: `${BASE_URL}/punta-cana/premium-transfer-services/questions/${landing.slug}`,
   priority: 0.76
 }));
-const PRODISCOVERY_TOP_URLS: RouteEntry[] = PRODISCOVERY_DESTINATIONS.flatMap((destination) =>
-  PRODISCOVERY_CATEGORIES.flatMap((category) => [
-    { url: `${BASE_URL}/prodiscovery/top/${destination}/${category}`, priority: 0.76 },
-    { url: `${BASE_URL}/en/prodiscovery/top/${destination}/${category}`, priority: 0.76 },
-    { url: `${BASE_URL}/fr/prodiscovery/top/${destination}/${category}`, priority: 0.76 }
-  ])
-);
-
 export type RouteEntry = { url: string; priority: number };
 
 export interface TourHotelHybridLink {
@@ -228,7 +219,18 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
     { url: `${BASE_URL}/prodiscovery`, priority: 0.9 },
     { url: `${BASE_URL}/en/prodiscovery`, priority: 0.9 },
     { url: `${BASE_URL}/fr/prodiscovery`, priority: 0.9 },
-    ...PRODISCOVERY_TOP_URLS,
+    { url: `${BASE_URL}/prodiscovery/republica-dominicana`, priority: 0.82 },
+    { url: `${BASE_URL}/prodiscovery/grupos-corporativos`, priority: 0.82 },
+    { url: `${BASE_URL}/prodiscovery/bodas-y-celebraciones`, priority: 0.82 },
+    { url: `${BASE_URL}/prodiscovery/familias-y-amigos`, priority: 0.82 },
+    { url: `${BASE_URL}/en/prodiscovery/republica-dominicana`, priority: 0.82 },
+    { url: `${BASE_URL}/en/prodiscovery/grupos-corporativos`, priority: 0.82 },
+    { url: `${BASE_URL}/en/prodiscovery/bodas-y-celebraciones`, priority: 0.82 },
+    { url: `${BASE_URL}/en/prodiscovery/familias-y-amigos`, priority: 0.82 },
+    { url: `${BASE_URL}/fr/prodiscovery/republica-dominicana`, priority: 0.82 },
+    { url: `${BASE_URL}/fr/prodiscovery/grupos-corporativos`, priority: 0.82 },
+    { url: `${BASE_URL}/fr/prodiscovery/bodas-y-celebraciones`, priority: 0.82 },
+    { url: `${BASE_URL}/fr/prodiscovery/familias-y-amigos`, priority: 0.82 },
     { url: `${BASE_URL}/tours`, priority: 0.9 },
     { url: `${BASE_URL}/traslado`, priority: 0.9 },
     { url: `${BASE_URL}/hoteles`, priority: 0.85 },
@@ -253,16 +255,6 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
       url: `${BASE_URL}/tours/${tour.slug}`,
       priority: 0.8
     })),
-    ...tours.flatMap((tour) => [
-      { url: `${BASE_URL}/prodiscovery/tour/${tour.slug}`, priority: 0.72 },
-      { url: `${BASE_URL}/en/prodiscovery/tour/${tour.slug}`, priority: 0.72 },
-      { url: `${BASE_URL}/fr/prodiscovery/tour/${tour.slug}`, priority: 0.72 }
-    ]),
-    ...allLandings().flatMap((landing) => [
-      { url: `${BASE_URL}/prodiscovery/transfer/${landing.landingSlug}`, priority: 0.7 },
-      { url: `${BASE_URL}/en/prodiscovery/transfer/${landing.landingSlug}`, priority: 0.7 },
-      { url: `${BASE_URL}/fr/prodiscovery/transfer/${landing.landingSlug}`, priority: 0.7 }
-    ]),
     ...countries.map((country) => ({
       url: `${BASE_URL}/traslado/${country.slug}`,
       priority: 0.7
@@ -353,7 +345,10 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
       { url: `${BASE_URL}/prodiscovery`, priority: 0.9 },
       { url: `${BASE_URL}/en/prodiscovery`, priority: 0.9 },
       { url: `${BASE_URL}/fr/prodiscovery`, priority: 0.9 },
-      ...PRODISCOVERY_TOP_URLS,
+      { url: `${BASE_URL}/prodiscovery/republica-dominicana`, priority: 0.82 },
+      { url: `${BASE_URL}/prodiscovery/grupos-corporativos`, priority: 0.82 },
+      { url: `${BASE_URL}/prodiscovery/bodas-y-celebraciones`, priority: 0.82 },
+      { url: `${BASE_URL}/prodiscovery/familias-y-amigos`, priority: 0.82 },
       { url: `${BASE_URL}/tours`, priority: 0.9 },
       { url: `${BASE_URL}/traslado`, priority: 0.9 },
       { url: `${BASE_URL}/hoteles`, priority: 0.85 },

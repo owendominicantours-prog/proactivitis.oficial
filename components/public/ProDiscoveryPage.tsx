@@ -138,13 +138,31 @@ const TRUST_BADGES: Record<Locale, string[]> = {
   fr: ["Avis verifies", "Reservation securisee", "Support local reel"]
 };
 
+const getSearchValue = (searchParams: Record<string, string | string[] | undefined>, key: string) => {
+  const value = searchParams[key];
+  if (Array.isArray(value)) return value[0] ?? "";
+  return value ?? "";
+};
+
+const titleFromDestinationValue = (value: string) =>
+  decodeURIComponent(value)
+    .replace(/^planificador-grupos-/i, "")
+    .replace(/[-_+]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+
+const plannerCityFromSearch = (searchParams: Record<string, string | string[] | undefined>) => {
+  const raw = getSearchValue(searchParams, "dest") || getSearchValue(searchParams, "destination") || getSearchValue(searchParams, "q");
+  const city = titleFromDestinationValue(raw);
+  return city.length >= 2 ? city : undefined;
+};
+
 const shouldShowCatalog = (searchParams: Record<string, string | string[] | undefined>) =>
-  ["view", "type", "q", "destination", "minRating", "sort", "page", "compare"]
-    .some((key) => {
-      const value = searchParams[key];
-      if (Array.isArray(value)) return value.length > 0;
-      return Boolean(value);
-    });
+  getSearchValue(searchParams, "view").toLowerCase() === "archive";
 
 const COPY: Record<Locale, DiscoveryCopy> = {
   es: {
@@ -448,7 +466,7 @@ function BubbleRating({ rating, label }: { rating: number; label: string }) {
 
 export default async function ProDiscoveryPage(props: Props) {
   if (!shouldShowCatalog(props.searchParams ?? {})) {
-    return <ProDiscoveryPlannerPage locale={props.locale} />;
+    return <ProDiscoveryPlannerPage locale={props.locale} initialCity={plannerCityFromSearch(props.searchParams ?? {})} />;
   }
 
   return <ProDiscoveryCatalogPage {...props} />;

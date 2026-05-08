@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import ProDiscoveryFooter from "@/components/public/ProDiscoveryFooter";
 import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import ProDiscoveryPlannerForm from "@/components/public/ProDiscoveryPlannerForm";
 import StructuredData from "@/components/schema/StructuredData";
@@ -428,7 +429,7 @@ export async function ProDiscoveryNichePage({ locale, niche }: Props) {
                     <h3 className="mt-2 line-clamp-2 text-base font-black leading-tight text-slate-950">{idea.title}</h3>
                     <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{idea.description}</p>
                     <p className="mt-2 line-clamp-2 text-sm font-semibold leading-6 text-slate-800">{idea.groupAngle}</p>
-                    <Link href="#planner" className="mt-3 inline-flex rounded-2xl bg-slate-950 px-4 py-2 text-sm font-black text-white">
+                    <Link href={`${localePrefix(locale)}/prodiscovery?dest=${encodeURIComponent(idea.destination)}#planner`} className="mt-3 inline-flex rounded-2xl bg-slate-950 px-4 py-2 text-sm font-black text-white">
                       {t.ideaCta}
                     </Link>
                   </div>
@@ -438,6 +439,7 @@ export async function ProDiscoveryNichePage({ locale, niche }: Props) {
           </div>
         </section>
       ) : null}
+      <ProDiscoveryFooter locale={locale} />
     </main>
   );
 }

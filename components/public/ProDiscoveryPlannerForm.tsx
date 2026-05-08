@@ -63,9 +63,11 @@ type Option = { value: string; labels: Record<Locale, string>; icon?: ComponentT
 
 const copy = {
   es: {
-    steps: ["Logistica", "Deseos", "Contacto"],
-    logisticsTitle: "Base del viaje",
+    steps: ["Destino", "Grupo", "Deseos", "Servicios", "Contacto"],
+    logisticsTitle: "Destino, fechas y horarios",
+    groupTitle: "Grupo, idiomas y asistencia",
     wishTitle: "Lo que quieren vivir",
+    servicesTitle: "Extras y presupuesto",
     contactTitle: "Datos para responderte",
     city: "Destino",
     cityPlaceholder: "Punta Cana, Santo Domingo, Bayahibe...",
@@ -104,9 +106,11 @@ const copy = {
     required: "Completa los campos principales para continuar."
   },
   en: {
-    steps: ["Logistics", "Wishes", "Contact"],
-    logisticsTitle: "Trip base",
+    steps: ["Destination", "Group", "Wishes", "Services", "Contact"],
+    logisticsTitle: "Destination, dates and timing",
+    groupTitle: "Group, languages and assistance",
     wishTitle: "What they want to experience",
+    servicesTitle: "Extras and budget",
     contactTitle: "Details to reply",
     city: "Destination",
     cityPlaceholder: "Punta Cana, Santo Domingo, Bayahibe...",
@@ -145,9 +149,11 @@ const copy = {
     required: "Complete the main fields to continue."
   },
   fr: {
-    steps: ["Logistique", "Envies", "Contact"],
-    logisticsTitle: "Base du voyage",
+    steps: ["Destination", "Groupe", "Envies", "Services", "Contact"],
+    logisticsTitle: "Destination, dates et horaires",
+    groupTitle: "Groupe, langues et assistance",
     wishTitle: "Ce que le groupe veut vivre",
+    servicesTitle: "Extras et budget",
     contactTitle: "Details pour repondre",
     city: "Destination",
     cityPlaceholder: "Punta Cana, Santo Domingo, Bayahibe...",
@@ -269,9 +275,11 @@ export default function ProDiscoveryPlannerForm({ locale, initialCity }: Planner
   const canContinue = useMemo(() => {
     if (step === 0) {
       const timingReady = form.flexibleTiming || Boolean(form.preferredStartTime && form.preferredEndTime);
-      return form.city.trim().length >= 2 && Number(form.groupSize) >= 2 && form.languages.length > 0 && form.assistance.length > 0 && timingReady;
+      return form.city.trim().length >= 2 && timingReady;
     }
-    if (step === 1) return form.holidayStyles.length > 0 && form.budgetTier && form.dream.trim().length >= 20;
+    if (step === 1) return Number(form.groupSize) >= 2 && form.groupType && form.languages.length > 0 && form.assistance.length > 0;
+    if (step === 2) return form.holidayStyles.length > 0 && form.dream.trim().length >= 20;
+    if (step === 3) return Boolean(form.budgetTier);
     return form.contactName.trim().length >= 2 && form.contactEmail.includes("@");
   }, [form, step]);
 
@@ -351,7 +359,7 @@ export default function ProDiscoveryPlannerForm({ locale, initialCity }: Planner
     );
   }
 
-  const title = step === 0 ? t.logisticsTitle : step === 1 ? t.wishTitle : t.contactTitle;
+  const title = step === 0 ? t.logisticsTitle : step === 1 ? t.groupTitle : step === 2 ? t.wishTitle : step === 3 ? t.servicesTitle : t.contactTitle;
 
   return (
     <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-lg shadow-slate-200/70 sm:p-5">
@@ -427,6 +435,11 @@ export default function ProDiscoveryPlannerForm({ locale, initialCity }: Planner
               ) : null}
             </div>
 
+          </>
+        ) : null}
+
+        {step === 1 ? (
+          <>
             <div className="grid gap-3 sm:grid-cols-[0.75fr_1fr]">
               <Field label={t.groupSize}>
                 <input type="number" min="2" max="1000" value={form.groupSize} onChange={(event) => update("groupSize", event.target.value)} className={inputClass} />
@@ -446,18 +459,23 @@ export default function ProDiscoveryPlannerForm({ locale, initialCity }: Planner
           </>
         ) : null}
 
-        {step === 1 ? (
+        {step === 2 ? (
           <>
             <Field label={t.dream}>
               <textarea value={form.dream} onChange={(event) => update("dream", event.target.value)} rows={5} className={`${inputClass} resize-none leading-7`} placeholder={t.dreamPlaceholder} />
             </Field>
             <OptionGrid label={t.styles} options={styleOptions} selected={form.holidayStyles} locale={locale} onToggle={(value) => toggleArray("holidayStyles", value)} />
+          </>
+        ) : null}
+
+        {step === 3 ? (
+          <>
             <OptionGrid label={t.extras} options={additionalOptions} selected={form.additionalServices} locale={locale} onToggle={(value) => toggleArray("additionalServices", value)} />
             <OptionGrid label={t.budget} options={budgetOptions} selected={[form.budgetTier]} locale={locale} onToggle={(value) => update("budgetTier", value)} compact single />
           </>
         ) : null}
 
-        {step === 2 ? (
+        {step === 4 ? (
           <>
             <Field label={t.contactName}>
               <input value={form.contactName} onChange={(event) => update("contactName", event.target.value)} className={inputClass} />

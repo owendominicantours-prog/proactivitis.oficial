@@ -110,6 +110,18 @@ const socialLinks = [
   { label: "TikTok", href: "https://www.tiktok.com/@proactivitis" }
 ];
 
+const shouldHidePublicFooter = (pathname: string | null) => {
+  if (!pathname) return false;
+  return (
+    pathname === "/prodiscovery" ||
+    pathname.startsWith("/prodiscovery/") ||
+    pathname === "/en/prodiscovery" ||
+    pathname.startsWith("/en/prodiscovery/") ||
+    pathname === "/fr/prodiscovery" ||
+    pathname.startsWith("/fr/prodiscovery/")
+  );
+};
+
 const normalizeLocale = (value: string | null): Locale => {
   if (!value) return "es";
   const segment = value.split("/").filter(Boolean)[0];
@@ -121,7 +133,9 @@ const normalizeLocale = (value: string | null): Locale => {
 
 export function PublicFooter() {
   const [openGroup, setOpenGroup] = useState<string | null>(null);
-  const locale = normalizeLocale(usePathname());
+  const pathname = usePathname();
+  if (shouldHidePublicFooter(pathname)) return null;
+  const locale = normalizeLocale(pathname);
   const copy = FOOTER_TRANSLATIONS[locale] ?? FOOTER_TRANSLATIONS.es;
   const honorHref = locale === "es" ? "/cliente-de-honor" : `/${locale}/cliente-de-honor`;
   const honorLabel =
