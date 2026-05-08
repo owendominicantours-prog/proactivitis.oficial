@@ -5,6 +5,7 @@ const BASE_URL = "https://proactivitis.com";
 const LOCALES = ["es", "en", "fr"] as const;
 
 export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 const escapeXml = (value: string) =>
   value
@@ -52,6 +53,9 @@ ${entries
 </urlset>`;
 
   return new NextResponse(xml, {
-    headers: { "Content-Type": "application/xml" }
+    headers: {
+      "Content-Type": "application/xml",
+      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400"
+    }
   });
 }

@@ -1,8 +1,9 @@
 "use client";
 
 import useSWR from "swr";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+  AlertTriangle,
   BadgeDollarSign,
   BriefcaseBusiness,
   CalendarClock,
@@ -10,8 +11,11 @@ import {
   Headphones,
   Inbox,
   Link2,
+  MessageSquareQuote,
   Plane,
   Search,
+  StickyNote,
+  UserCog,
   UserRound
 } from "lucide-react";
 
@@ -19,6 +23,7 @@ import { ChatBox } from "@/components/ChatBox";
 import { fetcher } from "@/lib/fetcher";
 
 type Department = { id: string; name: string; slug: string };
+type Employee = { id: string; departmentId?: string | null; name: string; email?: string | null; jobTitle?: string | null };
 
 type SupportBooking = {
   id: string;
@@ -49,7 +54,21 @@ type SupportConversation = {
   priority: string;
   updatedAt: string;
   assignedDepartment?: Department | null;
+  assignedEmployee?: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    jobTitle?: string | null;
+    avatarUrl?: string | null;
+  } | null;
   booking?: SupportBooking | null;
+  internalNote?: string | null;
+  sla?: {
+    state: string;
+    label: string;
+    minutesWaiting: number;
+    shouldEscalate: boolean;
+  };
   visitorPresence?: { active: boolean; lastSeenAt?: string | null } | null;
   visitorContext?: { country?: string | null; city?: string | null; pageTitle?: string | null; pagePath?: string | null } | null;
   pendingForMe?: boolean;
@@ -64,6 +83,8 @@ type SupportConversation = {
 
 type Props = {
   departments: Department[];
+  employees: Employee[];
+  canSupervisor: boolean;
   initialConversationId?: string | null;
 };
 
@@ -89,26 +110,58 @@ const formatDate = (value?: string | null) => {
 
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
-export default function SupportDeskClient({ departments, initialConversationId }: Props) {
+const supportTemplates = [
+  "Hola, gracias por escribirnos. Estoy revisando tu caso ahora mismo.",
+  "Puedes confirmarme tu numero de reserva o el email usado para reservar?",
+  "Ya escale este caso al departamento correspondiente. Te aviso en cuanto tenga respuesta.",
+  "Gracias por esperar. Estamos coordinando los detalles para darte una respuesta precisa.",
+  "Listo, quedo actualizado. Hay algo mas en lo que pueda ayudarte?"
+];
+
+const slaStyles: Record<string, string> = {
+  fresh: "bg-emerald-400/15 text-emerald-100",
+  due: "bg-cyan-400/15 text-cyan-100",
+  warning: "bg-amber-300/15 text-amber-100",
+  breached: "bg-rose-400/15 text-rose-100",
+  ok: "bg-white/10 text-slate-300"
+};
+
+export default function SupportDeskClient({ departments, employees, canSupervisor, initialConversationId }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(initialConversationId ?? null);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<"mine" | "team">("mine");
   const [bookingQuery, setBookingQuery] = useState("");
   const [escalationNote, setEscalationNote] = useState("");
   const [departmentId, setDepartmentId] = useState(departments[0]?.id ?? "");
+  const [noteDraft, setNoteDraft] = useState("");
+  const [assignDepartmentId, setAssignDepartmentId] = useState("");
+  const [assignEmployeeId, setAssignEmployeeId] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const conversationsUrl = `/api/support-desk/conversations?status=${encodeURIComponent(statusFilter)}`;
-  const { data, mutate } = useSWR<{ conversations: SupportConversation[] }>(conversationsUrl, fetcher, {
+  const conversationsUrl = `/api/support-desk/conversations?status=${encodeURIComponent(statusFilter)}${
+    canSupervisor && viewMode === "team" ? "&view=team" : ""
+  }`;
+  const { data, mutate } = useSWR<{ conversations: SupportConversation[]; canSupervisor?: boolean }>(conversationsUrl, fetcher, {
     refreshInterval: 5000
   });
   const bookingUrl = bookingQuery.trim().length >= 3 ? `/api/support-desk/bookings?q=${encodeURIComponent(bookingQuery.trim())}` : null;
   const { data: bookingData } = useSWR<{ bookings: SupportBooking[] }>(bookingUrl, fetcher, { refreshInterval: 0 });
 
-  const conversations = data?.conversations ?? [];
+  const conversations = useMemo(() => data?.conversations ?? [], [data?.conversations]);
   const selected = useMemo(
     () => conversations.find((conversation) => conversation.id === selectedId) ?? conversations[0] ?? null,
     [conversations, selectedId]
   );
+  const assignableEmployees = useMemo(
+    () => employees.filter((employee) => !assignDepartmentId || employee.departmentId === assignDepartmentId),
+    [assignDepartmentId, employees]
+  );
+
+  useEffect(() => {
+    setNoteDraft(selected?.internalNote ?? "");
+    setAssignDepartmentId(selected?.assignedDepartment?.id ?? "");
+    setAssignEmployeeId(selected?.assignedEmployee?.id ?? "");
+  }, [selected?.id, selected?.internalNote, selected?.assignedDepartment?.id, selected?.assignedEmployee?.id]);
 
   const patchConversation = async (payload: Record<string, string>) => {
     if (!selected) return;
@@ -123,6 +176,17 @@ export default function SupportDeskClient({ departments, initialConversationId }
     } finally {
       setBusy(false);
     }
+  };
+
+  const saveInternalNote = async () => {
+    await patchConversation({ internalNote: noteDraft });
+  };
+
+  const assignConversation = async () => {
+    await patchConversation({
+      assignedDepartmentId: assignDepartmentId,
+      assignedEmployeeId: assignEmployeeId
+    });
   };
 
   const linkBooking = async (bookingId: string) => {
@@ -165,6 +229,25 @@ export default function SupportDeskClient({ departments, initialConversationId }
             <Inbox className="h-4 w-4" aria-hidden />
             <span>Bandeja</span>
           </p>
+          {canSupervisor ? (
+            <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/5 p-1">
+              {[
+                ["mine", "Mia"],
+                ["team", "Supervisor"]
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setViewMode(value as "mine" | "team")}
+                  className={`rounded-xl px-3 py-2 text-xs font-black ${
+                    viewMode === value ? "bg-cyan-300 text-slate-950" : "text-slate-300"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value)}
@@ -213,6 +296,12 @@ export default function SupportDeskClient({ departments, initialConversationId }
                 {conversation.visitorPresence?.active ? (
                   <span className="rounded-full bg-emerald-400/15 px-2 py-1 text-emerald-100">Activo ahora</span>
                 ) : null}
+                {conversation.sla ? (
+                  <span className={`rounded-full px-2 py-1 ${slaStyles[conversation.sla.state] ?? slaStyles.ok}`}>
+                    {conversation.sla.label}
+                    {conversation.sla.minutesWaiting ? ` ${conversation.sla.minutesWaiting}m` : ""}
+                  </span>
+                ) : null}
               </div>
               <p className="mt-3 line-clamp-2 text-xs leading-relaxed text-slate-400">
                 {conversation.lastMessage?.content ?? "Sin mensajes visibles."}
@@ -228,10 +317,98 @@ export default function SupportDeskClient({ departments, initialConversationId }
       </aside>
 
       <section className="min-h-[760px]">
-        <ChatBox conversationId={selected?.id} enableTourCards />
+        <ChatBox conversationId={selected?.id} enableTourCards quickReplies={supportTemplates} />
       </section>
 
       <aside className="space-y-4">
+        {selected?.sla && selected.sla.state !== "ok" ? (
+          <section className={`rounded-[2rem] border border-white/10 p-4 ${slaStyles[selected.sla.state] ?? slaStyles.ok}`}>
+            <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.24em]">
+              <AlertTriangle className="h-4 w-4" aria-hidden />
+              <span>SLA</span>
+            </p>
+            <p className="mt-2 text-sm font-black">{selected.sla.label}</p>
+            <p className="mt-1 text-xs opacity-80">
+              {selected.sla.minutesWaiting ? `${selected.sla.minutesWaiting} minutos esperando respuesta.` : "Caso al dia."}
+            </p>
+          </section>
+        ) : null}
+
+        {canSupervisor ? (
+          <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-4">
+            <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.24em] text-cyan-200">
+              <UserCog className="h-4 w-4" aria-hidden />
+              <span>Supervisor</span>
+            </p>
+            <select
+              value={assignDepartmentId}
+              onChange={(event) => {
+                setAssignDepartmentId(event.target.value);
+                setAssignEmployeeId("");
+              }}
+              className="mt-3 w-full rounded-2xl border border-white/10 bg-[#0b1728] px-4 py-3 text-sm text-white outline-none"
+            >
+              <option value="">Sin departamento</option>
+              {departments.map((department) => (
+                <option key={department.id} value={department.id}>{department.name}</option>
+              ))}
+            </select>
+            <select
+              value={assignEmployeeId}
+              onChange={(event) => setAssignEmployeeId(event.target.value)}
+              className="mt-3 w-full rounded-2xl border border-white/10 bg-[#0b1728] px-4 py-3 text-sm text-white outline-none"
+            >
+              <option value="">Sin agente especifico</option>
+              {assignableEmployees.map((employee) => (
+                <option key={employee.id} value={employee.id}>
+                  {employee.name}{employee.jobTitle ? ` - ${employee.jobTitle}` : ""}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              disabled={busy || !selected}
+              onClick={() => void assignConversation()}
+              className="mt-3 w-full rounded-2xl bg-cyan-400 px-4 py-3 text-sm font-black text-slate-950 disabled:opacity-50"
+            >
+              Asignar caso
+            </button>
+          </section>
+        ) : null}
+
+        <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-4">
+          <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.24em] text-cyan-200">
+            <StickyNote className="h-4 w-4" aria-hidden />
+            <span>Notas internas</span>
+          </p>
+          <textarea
+            value={noteDraft}
+            onChange={(event) => setNoteDraft(event.target.value)}
+            placeholder="Nota privada del equipo. No se muestra al cliente."
+            className="mt-3 min-h-28 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-300/50"
+          />
+          <button
+            type="button"
+            disabled={busy || !selected}
+            onClick={() => void saveInternalNote()}
+            className="mt-3 w-full rounded-2xl border border-cyan-300/30 px-4 py-3 text-sm font-black text-cyan-100 disabled:opacity-50"
+          >
+            Guardar nota
+          </button>
+        </section>
+
+        <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-4">
+          <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.24em] text-cyan-200">
+            <MessageSquareQuote className="h-4 w-4" aria-hidden />
+            <span>Plantillas</span>
+          </p>
+          <div className="mt-3 space-y-2 text-xs text-slate-400">
+            {supportTemplates.slice(0, 4).map((template) => (
+              <p key={template} className="rounded-2xl border border-white/10 bg-white/5 p-3">{template}</p>
+            ))}
+          </div>
+        </section>
+
         <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-4">
           <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.24em] text-cyan-200">
             <BriefcaseBusiness className="h-4 w-4" aria-hidden />

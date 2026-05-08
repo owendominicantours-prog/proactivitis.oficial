@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import {
+  applySupportSlaUpdates,
   buildSupportConversationWhere,
   formatSupportBooking,
+  getSupportSla,
   getSupportDeskContext,
+  isSupportSupervisor,
   supportBookingSelect
 } from "@/lib/supportDesk";
 import { parseVisitorContext } from "@/lib/visitorChatContext";
@@ -19,7 +22,9 @@ export async function GET(request: NextRequest) {
 
   const type = request.nextUrl.searchParams.get("type");
   const status = request.nextUrl.searchParams.get("status");
-  const where = buildSupportConversationWhere(context, type);
+  const view = request.nextUrl.searchParams.get("view");
+  const where = buildSupportConversationWhere(context, type, view);
+  const canSupervisor = isSupportSupervisor(context);
   const conversations = await prisma.conversation.findMany({
     where: {
       AND: [
@@ -43,6 +48,7 @@ export async function GET(request: NextRequest) {
     orderBy: { updatedAt: "desc" },
     take: 120
   });
+  await applySupportSlaUpdates(conversations, context.user.id);
 
   const linkedIds = Array.from(new Set(conversations.map((item) => item.linkedBookingId).filter(Boolean) as string[]));
   const linkedBookings = linkedIds.length
@@ -68,14 +74,17 @@ export async function GET(request: NextRequest) {
       : conversation.linkedBookingId
         ? linkedMap.get(conversation.linkedBookingId) ?? null
         : null;
+    const sla = getSupportSla(conversation, context.user.id);
+    const effectiveStatus = sla.shouldEscalate && conversation.status === "OPEN" ? "ESCALATED" : conversation.status;
 
     return {
       id: conversation.id,
       type: conversation.type,
-      status: conversation.status,
-      priority: conversation.priority,
+      status: effectiveStatus,
+      priority: sla.suggestedPriority,
       updatedAt: conversation.updatedAt,
       createdAt: conversation.createdAt,
+      internalNote: conversation.internalNote,
       assignedDepartment: conversation.assignedDepartment,
       assignedEmployee: conversation.assignedEmployee
         ? {
@@ -105,7 +114,8 @@ export async function GET(request: NextRequest) {
             senderRole: nonSystem.senderRole
           }
         : null,
-      pendingForMe: nonSystem ? nonSystem.senderId !== context.user.id : false,
+      pendingForMe: sla.pendingForMe,
+      sla,
       participants: conversation.ConversationParticipant.map((participant) => ({
         id: participant.User?.id ?? participant.userId,
         name: participant.User?.name ?? participant.userId,
@@ -115,5 +125,5 @@ export async function GET(request: NextRequest) {
     };
   });
 
-  return NextResponse.json({ conversations: payload });
+  return NextResponse.json({ conversations: payload, canSupervisor });
 }

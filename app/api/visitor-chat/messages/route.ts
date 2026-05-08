@@ -116,7 +116,11 @@ export async function POST(request: NextRequest) {
 
     await prisma.conversation.update({
       where: { id: session.conversationId },
-      data: { updatedAt: new Date() }
+      data: {
+        status: "OPEN",
+        closedAt: null,
+        updatedAt: new Date()
+      }
     });
 
     const adminChatUrl = "https://proactivitis.com/workplace/support";

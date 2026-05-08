@@ -16,11 +16,99 @@ import {
 
 const toJson = (value: unknown) => value as Prisma.InputJsonValue;
 const sanitize = (value: FormDataEntryValue | null) => (typeof value === "string" ? value.trim() : "");
+const asPayloadObject = (value: Prisma.JsonValue | null | undefined) =>
+  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 
 const revalidateWorkplace = () => {
   revalidatePath("/admin/workplace");
   revalidatePath("/workplace");
 };
+
+async function executeApprovedWorkplaceRequest(
+  request: {
+    id: string;
+    actionKey: string;
+    resourceType: string | null;
+    resourceId: string | null;
+    payload: Prisma.JsonValue | null;
+  },
+  actorUserId: string,
+  decisionNote?: string | null
+) {
+  const payload = asPayloadObject(request.payload);
+  const note = decisionNote || `Ejecutado por aprobacion Workplace ${request.id}`;
+
+  if (request.actionKey === "tours.delete") {
+    const tourId = request.resourceId || (typeof payload.tourId === "string" ? payload.tourId : "");
+    if (!tourId) throw new Error("La aprobacion no tiene tour asociado.");
+
+    const tour = await prisma.tour.findUnique({
+      where: { id: tourId },
+      select: { id: true, title: true, status: true, adminNote: true }
+    });
+    if (!tour) throw new Error("Tour no encontrado para ejecutar la aprobacion.");
+
+    await prisma.tour.update({
+      where: { id: tourId },
+      data: {
+        status: "inactive",
+        adminNote: [tour.adminNote, `Baja aprobada: ${note}`].filter(Boolean).join("\n")
+      }
+    });
+
+    await recordWorkplaceAuditLog({
+      actorUserId,
+      actionKey: "workplace.approval.execute.tour_disable",
+      moduleKey: "tours",
+      resourceType: "tour",
+      resourceId: tourId,
+      beforeData: { status: tour.status },
+      afterData: { status: "inactive", approvalRequestId: request.id }
+    });
+    revalidatePath("/workplace/tours");
+    revalidatePath(`/workplace/tours/${tourId}`);
+    revalidatePath("/admin/tours");
+    return;
+  }
+
+  if (request.actionKey === "suppliers.disable") {
+    const supplierId = request.resourceId || (typeof payload.supplierId === "string" ? payload.supplierId : "");
+    if (!supplierId) throw new Error("La aprobacion no tiene suplidor asociado.");
+
+    const supplier = await prisma.supplierProfile.findUnique({
+      where: { id: supplierId },
+      select: { id: true, company: true, userId: true, approved: true, productsEnabled: true }
+    });
+    if (!supplier) throw new Error("Suplidor no encontrado para ejecutar la aprobacion.");
+
+    await prisma.$transaction([
+      prisma.supplierProfile.update({
+        where: { id: supplier.id },
+        data: { approved: false, productsEnabled: false }
+      }),
+      prisma.user.update({
+        where: { id: supplier.userId },
+        data: {
+          supplierApproved: false,
+          accountStatus: "PENDING",
+          statusMessage: `Suplidor desactivado por aprobacion interna. ${note}`
+        }
+      })
+    ]);
+
+    await recordWorkplaceAuditLog({
+      actorUserId,
+      actionKey: "workplace.approval.execute.supplier_disable",
+      moduleKey: "suppliers",
+      resourceType: "supplier",
+      resourceId: supplier.id,
+      beforeData: { approved: supplier.approved, productsEnabled: supplier.productsEnabled },
+      afterData: { approved: false, productsEnabled: false, approvalRequestId: request.id }
+    });
+    revalidatePath("/workplace/suppliers");
+    revalidatePath("/admin/suppliers");
+  }
+}
 
 export async function seedWorkplaceDefaultsAction() {
   const session = await requireAdminSession();
@@ -378,6 +466,13 @@ export async function decideWorkplaceApprovalRequestAction(formData: FormData) {
     throw new Error("Decision invalida.");
   }
 
+  const existingRequest = await prisma.workplaceApprovalRequest.findUnique({
+    where: { id: requestId },
+    select: { id: true, status: true }
+  });
+  if (!existingRequest) throw new Error("Solicitud no encontrada.");
+  if (existingRequest.status !== "PENDING") throw new Error("Esta solicitud ya fue decidida.");
+
   const request = await prisma.workplaceApprovalRequest.update({
     where: { id: requestId },
     data: {
@@ -387,6 +482,10 @@ export async function decideWorkplaceApprovalRequestAction(formData: FormData) {
       decidedAt: new Date()
     }
   });
+
+  if (decision === "APPROVED") {
+    await executeApprovedWorkplaceRequest(request, session.user.id, decisionNote || null);
+  }
 
   await recordWorkplaceAuditLog({
     actorUserId: session.user.id,

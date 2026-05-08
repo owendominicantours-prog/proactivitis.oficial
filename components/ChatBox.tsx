@@ -8,6 +8,7 @@ import { formatDurationDisplay } from "@/lib/formatDuration";
 type Props = {
   conversationId?: string;
   enableTourCards?: boolean;
+  quickReplies?: string[];
 };
 
 type ChatMessage = {
@@ -83,7 +84,7 @@ const parseJsonPrefix = <T,>(content: string, prefix: string): T | null => {
   }
 };
 
-export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
+export const ChatBox = ({ conversationId, enableTourCards = false, quickReplies = [] }: Props) => {
   const { data, mutate } = useSWR(conversationId ? `/api/messages/${conversationId}` : null, fetcher, {
     refreshInterval: 5000
   });
@@ -97,7 +98,7 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
     refreshInterval: 0
   });
 
-  const messages: ChatMessage[] = data?.messages ?? [];
+  const messages: ChatMessage[] = useMemo(() => data?.messages ?? [], [data?.messages]);
   const tours = useMemo(() => toursData?.tours ?? [], [toursData]);
   const unreadInThread = useMemo(
     () => messages.filter((msg) => CUSTOMER_MESSAGE_ROLES.has(msg.senderRole)).length,
@@ -270,6 +271,20 @@ export const ChatBox = ({ conversationId, enableTourCards = false }: Props) => {
       </div>
 
       <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row">
+        {quickReplies.length ? (
+          <div className="flex flex-wrap gap-2 sm:col-span-2">
+            {quickReplies.map((reply) => (
+              <button
+                key={reply}
+                type="button"
+                onClick={() => setText((current) => (current ? `${current}\n${reply}` : reply))}
+                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:border-sky-300 hover:text-sky-700"
+              >
+                {reply.slice(0, 34)}
+              </button>
+            ))}
+          </div>
+        ) : null}
         <input
           type="text"
           placeholder="Escribe un mensaje..."

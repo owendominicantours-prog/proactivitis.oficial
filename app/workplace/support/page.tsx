@@ -7,6 +7,7 @@ import SupportDeskClient from "@/components/workplace/SupportDeskClient";
 import WorkplaceShell from "@/components/workplace/WorkplaceShell";
 import { prisma } from "@/lib/prisma";
 import { getWorkplaceContext } from "@/lib/workplace";
+import { isSupportSupervisor } from "@/lib/supportDesk";
 
 type Props = {
   searchParams?: Promise<{ conversationId?: string }>;
@@ -27,6 +28,18 @@ export default async function WorkplaceSupportPage({ searchParams }: Props) {
     select: { id: true, name: true, slug: true },
     orderBy: { name: "asc" }
   });
+  const employees = await prisma.workplaceEmployee.findMany({
+    where: { status: "APPROVED" },
+    select: {
+      id: true,
+      departmentId: true,
+      jobTitle: true,
+      user: { select: { name: true, email: true } }
+    },
+    orderBy: [{ department: { name: "asc" } }, { user: { name: "asc" } }],
+    take: 160
+  });
+  const canSupervisor = isSupportSupervisor(context);
 
   return (
     <WorkplaceShell
@@ -49,7 +62,18 @@ export default async function WorkplaceSupportPage({ searchParams }: Props) {
           </p>
         </section>
 
-        <SupportDeskClient departments={departments} initialConversationId={params.conversationId ?? null} />
+        <SupportDeskClient
+          departments={departments}
+          employees={employees.map((employee) => ({
+            id: employee.id,
+            departmentId: employee.departmentId,
+            name: employee.user.name ?? employee.user.email ?? "Empleado",
+            email: employee.user.email,
+            jobTitle: employee.jobTitle
+          }))}
+          canSupervisor={canSupervisor}
+          initialConversationId={params.conversationId ?? null}
+        />
       </div>
     </WorkplaceShell>
   );

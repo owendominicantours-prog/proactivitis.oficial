@@ -5,6 +5,11 @@ import { getWorkplaceContext } from "@/lib/workplace";
 import { buildWorkplaceBookingWhere } from "@/lib/workplaceBookings";
 
 export const supportConversationTypes = ["SUPPORT", "VISITOR_CHAT", "RESERVATION"] as const;
+export const supportSlaMinutes = {
+  due: 3,
+  warning: 5,
+  breached: 10
+} as const;
 
 export type SupportDeskContext = NonNullable<Awaited<ReturnType<typeof getWorkplaceContext>>>;
 
@@ -16,13 +21,30 @@ export async function getSupportDeskContext() {
   return null;
 }
 
-export function buildSupportConversationWhere(context: SupportDeskContext, type?: string | null): Prisma.ConversationWhereInput {
+export function isSupportSupervisor(context: SupportDeskContext) {
+  if (context.isAdmin) return true;
+  if (context.permissions.has("chat.manage") || context.permissions.has("workplace.manage")) return true;
+  if (!context.permissions.has("chat.respond")) return false;
+
+  return Boolean(
+    context.employee?.roles.some((assignment) => {
+      if (assignment.expiresAt && assignment.expiresAt < new Date()) return false;
+      return assignment.role.active && assignment.role.level >= 45;
+    })
+  );
+}
+
+export function buildSupportConversationWhere(
+  context: SupportDeskContext,
+  type?: string | null,
+  view?: string | null
+): Prisma.ConversationWhereInput {
   const normalizedType = type?.trim().toUpperCase();
   const typeWhere = normalizedType
     ? { type: normalizedType }
     : { type: { in: [...supportConversationTypes] } };
 
-  if (context.isAdmin) return typeWhere;
+  if (context.isAdmin || (view === "team" && isSupportSupervisor(context))) return typeWhere;
 
   const employeeId = context.employee?.id ?? "__none__";
   const departmentId = context.employee?.departmentId ?? "__none__";
@@ -54,13 +76,118 @@ export async function canAccessSupportConversation(context: SupportDeskContext, 
     }
   });
   if (!conversation) return false;
-  if (context.isAdmin) return true;
+  if (context.isAdmin || isSupportSupervisor(context)) return true;
   if (!supportConversationTypes.includes(conversation.type as any)) return false;
   if (conversation.ConversationParticipant.some((participant) => participant.userId === context.user.id)) return true;
   if (!conversation.assignedDepartmentId && !conversation.assignedEmployeeId) return true;
   return (
     conversation.assignedEmployeeId === context.employee?.id ||
     conversation.assignedDepartmentId === context.employee?.departmentId
+  );
+}
+
+const customerMessageRoles = new Set(["CUSTOMER", "VISITOR"]);
+const supportActiveStatuses = new Set(["OPEN", "ESCALATED"]);
+
+type SupportSlaConversation = {
+  status: string;
+  priority: string;
+  Message: Array<{
+    senderRole: string;
+    senderId: string;
+    createdAt: Date;
+  }>;
+};
+
+const priorityRank: Record<string, number> = {
+  LOW: 1,
+  NORMAL: 2,
+  HIGH: 3,
+  URGENT: 4
+};
+
+export function getSupportSla(conversation: SupportSlaConversation, currentUserId: string, now = new Date()) {
+  const latestNonSystem = conversation.Message.find((message) => message.senderRole !== "SYSTEM") ?? null;
+  const isPendingCustomer =
+    Boolean(latestNonSystem) &&
+    customerMessageRoles.has(latestNonSystem?.senderRole ?? "") &&
+    supportActiveStatuses.has(conversation.status);
+
+  if (!latestNonSystem || !isPendingCustomer) {
+    return {
+      state: "ok",
+      label: "Al dia",
+      minutesWaiting: 0,
+      pendingForMe: latestNonSystem ? latestNonSystem.senderId !== currentUserId : false,
+      suggestedPriority: conversation.priority,
+      shouldEscalate: false
+    };
+  }
+
+  const minutesWaiting = Math.max(0, Math.floor((now.getTime() - latestNonSystem.createdAt.getTime()) / 60000));
+  const state =
+    minutesWaiting >= supportSlaMinutes.breached
+      ? "breached"
+      : minutesWaiting >= supportSlaMinutes.warning
+        ? "warning"
+        : minutesWaiting >= supportSlaMinutes.due
+          ? "due"
+          : "fresh";
+  const suggestedPriority =
+    state === "breached"
+      ? "URGENT"
+      : state === "warning"
+        ? "HIGH"
+        : conversation.priority;
+
+  return {
+    state,
+    label:
+      state === "breached"
+        ? "SLA vencido"
+        : state === "warning"
+          ? "Atencion requerida"
+          : state === "due"
+            ? "Responder pronto"
+            : "Nuevo",
+    minutesWaiting,
+    pendingForMe: latestNonSystem.senderId !== currentUserId,
+    suggestedPriority:
+      (priorityRank[suggestedPriority] ?? 0) > (priorityRank[conversation.priority] ?? 0)
+        ? suggestedPriority
+        : conversation.priority,
+    shouldEscalate: state === "breached"
+  };
+}
+
+export async function applySupportSlaUpdates(
+  conversations: Array<SupportSlaConversation & { id: string }>,
+  currentUserId: string
+) {
+  const updates = conversations
+    .map((conversation) => {
+      const sla = getSupportSla(conversation, currentUserId);
+      const data: Prisma.ConversationUpdateInput = {};
+      if ((priorityRank[sla.suggestedPriority] ?? 0) > (priorityRank[conversation.priority] ?? 0)) {
+        data.priority = sla.suggestedPriority;
+      }
+      if (sla.shouldEscalate && conversation.status === "OPEN") {
+        data.status = "ESCALATED";
+        data.escalatedAt = new Date();
+      }
+      return Object.keys(data).length ? { id: conversation.id, data } : null;
+    })
+    .filter((item): item is { id: string; data: Prisma.ConversationUpdateInput } => Boolean(item));
+
+  if (!updates.length) return;
+
+  await Promise.all(
+    updates.map((update) =>
+      prismaLike.conversation.update({
+        where: { id: update.id },
+        data: { ...update.data, updatedAt: new Date() }
+      })
+    )
   );
 }
 
