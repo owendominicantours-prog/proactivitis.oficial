@@ -172,10 +172,6 @@ type TourDurationRow = Prisma.TourGetPayload<{
   select: { duration: true };
 }>;
 
-type TourCategoryRow = Prisma.TourGetPayload<{
-  select: { category: true };
-}>;
-
 const PUBLIC_TOUR_OPTION_WHERE: Prisma.TourWhereInput = {
   status: "published",
   slug: { not: "transfer-privado-proactivitis" }
@@ -415,20 +411,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
     logPrismaError("loading durations", error);
   }
 
-  let categoriesRaw: TourCategoryRow[] = [];
-  try {
-    categoriesRaw = await prisma.tour.findMany({
-      where: PUBLIC_TOUR_OPTION_WHERE,
-      select: { category: true }
-    });
-  } catch (error) {
-    logPrismaError("loading categories", error);
-  }
-
   const uniqueLanguages = Array.from(new Set(languagesRaw.map((entry) => entry.language).filter(Boolean)));
-  const uniqueCategories = Array.from(
-    new Set(categoriesRaw.map((entry) => entry.category?.trim()).filter((item): item is string => Boolean(item)))
-  ).sort((a, b) => a.localeCompare(b));
   const t = (key: TranslationKey, replacements?: Parameters<typeof translate>[2]) =>
     translate(locale, key, replacements);
   const durationOptions = buildDurationOptions(durationsRaw.map((entry) => entry.duration), locale, t);
@@ -549,7 +532,6 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
       t("tours.filter.active.duration", {
         value: durationLabelLookup.get(params.duration) ?? params.duration
       }),
-    params.category && t("tours.filter.active.category", { value: params.category }),
     params.minPrice && t("tours.filter.active.minPrice", { value: params.minPrice }),
     params.maxPrice && t("tours.filter.active.maxPrice", { value: params.maxPrice })
   ].filter(Boolean);
@@ -685,11 +667,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
               languages={uniqueLanguages}
               durations={durationOptions}
               mobileFriendly
-              categories={
-                uniqueCategories.length
-                  ? uniqueCategories
-                  : ["Aventura", "Cultura", "Gastronomía", "Privados", "Acuáticos"]
-              }
+              categories={["Aventura", "Cultura", "Gastronomía", "Privados", "Acuáticos"]}
             />
             <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">{t("tours.filter.intro")}</p>

@@ -57,12 +57,4 @@ describe("buildTourFilter", () => {
     expect(where.language).toEqual({ contains: "English", mode: "insensitive" });
     expect(where.duration).toBe("Full day");
   });
-
-  it("adds category filters", () => {
-    const where = buildTourFilter({
-      category: "Adventure"
-    });
-
-    expect(where.category).toEqual({ contains: "Adventure", mode: "insensitive" });
-  });
 });

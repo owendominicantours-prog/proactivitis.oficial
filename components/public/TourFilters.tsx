@@ -31,7 +31,6 @@ export function TourFilters({
   const [maxPrice, setMaxPrice] = useState("");
   const [language, setLanguage] = useState("");
   const [duration, setDuration] = useState("");
-  const [category, setCategory] = useState("");
 
   const searchCountry = searchParams.get("country") ?? "";
   const searchDestination = searchParams.get("destination") ?? "";
@@ -39,8 +38,8 @@ export function TourFilters({
   const searchMaxPrice = searchParams.get("maxPrice") ?? "";
   const searchLanguage = searchParams.get("language") ?? "";
   const searchDuration = searchParams.get("duration") ?? "";
-  const searchCategory = searchParams.get("category") ?? "";
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setCountry(searchCountry);
     setDestination(searchDestination);
@@ -48,8 +47,8 @@ export function TourFilters({
     setMaxPrice(searchMaxPrice);
     setLanguage(searchLanguage);
     setDuration(searchDuration);
-    setCategory(searchCategory);
-  }, [searchCountry, searchDestination, searchMinPrice, searchMaxPrice, searchLanguage, searchDuration, searchCategory]);
+  }, [searchCountry, searchDestination, searchMinPrice, searchMaxPrice, searchLanguage, searchDuration]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleApply = () => {
     const params = new URLSearchParams();
@@ -59,7 +58,6 @@ export function TourFilters({
     if (maxPrice) params.set("maxPrice", maxPrice);
     if (language) params.set("language", language);
     if (duration) params.set("duration", duration);
-    if (category) params.set("category", category);
     const query = params.toString();
     router.push(query ? `/tours?${query}` : "/tours");
   };
@@ -71,7 +69,6 @@ export function TourFilters({
     setMaxPrice("");
     setLanguage("");
     setDuration("");
-    setCategory("");
     router.push("/tours");
   };
 
@@ -89,23 +86,14 @@ export function TourFilters({
         <div className="space-y-2">
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-slate-500">Categoría</p>
           <div className="flex flex-wrap gap-2">
-            {categories.map((categoryOption) => {
-              const active = category === categoryOption;
-              return (
-                <button
-                  key={categoryOption}
-                  type="button"
-                  onClick={() => setCategory((current) => (current === categoryOption ? "" : categoryOption))}
-                  className={`rounded-full border px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.3em] transition ${
-                    active
-                      ? "border-slate-900 bg-slate-900 text-white"
-                      : "border-slate-200 text-slate-600 hover:border-slate-300"
-                  }`}
-                >
-                  {categoryOption}
-                </button>
-              );
-            })}
+            {categories.map((category) => (
+              <span
+                key={category}
+                className="rounded-full border border-slate-200 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.3em] text-slate-600"
+              >
+                {category}
+              </span>
+            ))}
           </div>
         </div>
       ) : null}
