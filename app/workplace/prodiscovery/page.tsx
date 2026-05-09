@@ -18,7 +18,10 @@ import {
   type ProDiscoveryItineraryDraft
 } from "@/lib/prodiscoveryGroupOpportunity";
 import { requireWorkplaceContext } from "@/lib/workplace";
-import { updateWorkplaceProDiscoveryOpportunityAction } from "./actions";
+import {
+  sendWorkplaceProDiscoveryCustomerMessageAction,
+  updateWorkplaceProDiscoveryOpportunityAction
+} from "./actions";
 
 type SearchParams = {
   q?: string;
@@ -202,6 +205,10 @@ export default async function WorkplaceProDiscoveryPage({ searchParams }: Props)
               const deposit = acceptedBudget ? opportunity.depositAmount ?? acceptedBudget * (opportunity.depositPercent / 100) : null;
               const assigneeName =
                 opportunity.assignedToEmployee?.user.name ?? opportunity.assignedToEmployee?.user.email ?? "Sin responsable";
+              const communicationSummary = opportunity.itinerarySummary ?? draft?.summary ?? "";
+              const defaultClientMessage = communicationSummary
+                ? `Hola ${opportunity.contactName},\n\nYa revisamos tu solicitud para ${opportunity.city}. Esta es la propuesta que tenemos para tu grupo:\n\n${communicationSummary}\n\nPuedes entrar a tu cuenta para revisar el estado y el deposito cuando este habilitado.`
+                : `Hola ${opportunity.contactName},\n\nYa revisamos tu solicitud para ${opportunity.city}. Te escribimos para avanzar con la propuesta de tu grupo y confirmar los detalles necesarios.\n\nPuedes entrar a tu cuenta para revisar el estado y el deposito cuando este habilitado.`;
 
               return (
                 <article
@@ -274,77 +281,123 @@ export default async function WorkplaceProDiscoveryPage({ searchParams }: Props)
                   </div>
 
                   {canManage ? (
-                    <form action={updateWorkplaceProDiscoveryOpportunityAction} className="mt-5 grid gap-3 rounded-3xl border border-white/10 bg-[#071120] p-4 xl:grid-cols-6">
-                      <input type="hidden" name="opportunityId" value={opportunity.id} />
-                      <WorkplaceField label="Estado">
-                        <select name="status" defaultValue={opportunity.status} className={inputClass}>
-                          {statusOptions.map((option) => (
-                            <option key={option} value={option}>
-                              {statusLabel[option] ?? option}
-                            </option>
-                          ))}
-                        </select>
-                      </WorkplaceField>
-                      <WorkplaceField label="Responsable">
-                        <select name="assignedToEmployeeId" defaultValue={opportunity.assignedToEmployeeId ?? context.employee?.id ?? ""} className={inputClass}>
-                          <option value="">Sin asignar</option>
-                          {employees.map((employee) => (
-                            <option key={employee.id} value={employee.id}>
-                              {employee.user.name ?? employee.user.email ?? "Empleado"}
-                            </option>
-                          ))}
-                        </select>
-                      </WorkplaceField>
-                      <WorkplaceField label="Guia lider">
-                        <select name="leaderGuideId" defaultValue={opportunity.leaderGuideId ?? ""} className={inputClass}>
-                          <option value="">Sin asignar</option>
-                          {suppliers.map((supplier) => (
-                            <option key={supplier.id} value={supplier.id}>
-                              {supplier.company}
-                            </option>
-                          ))}
-                        </select>
-                      </WorkplaceField>
-                      <WorkplaceField label="Total aceptado">
-                        <input
-                          name="acceptedBudget"
-                          type="number"
-                          min="0"
-                          step="1"
-                          defaultValue={opportunity.acceptedBudget ?? ""}
-                          disabled={!canFinance}
-                          className={inputClass}
-                          placeholder={String(Math.round(opportunity.estimatedBudget ?? 0))}
-                        />
-                      </WorkplaceField>
-                      <WorkplaceField label="Deposito %">
-                        <input name="depositPercent" type="number" min="0" max="100" step="1" defaultValue={opportunity.depositPercent} disabled={!canFinance} className={inputClass} />
-                      </WorkplaceField>
-                      <WorkplaceField label="Comision guia %">
-                        <input
-                          name="leaderCommissionPercent"
-                          type="number"
-                          min="0"
-                          max="100"
-                          step="0.5"
-                          defaultValue={opportunity.leaderCommissionPercent ?? 10}
-                          disabled={!canFinance}
-                          className={inputClass}
-                        />
-                      </WorkplaceField>
-                      <label className="xl:col-span-5">
-                        <span className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Resumen visible en la cuenta del cliente</span>
-                        <textarea
-                          name="itinerarySummary"
-                          defaultValue={opportunity.itinerarySummary ?? draft?.summary ?? ""}
-                          rows={3}
-                          className={`${inputClass} min-h-24 resize-y leading-6`}
-                        />
-                      </label>
-                      <button className="self-end rounded-2xl bg-cyan-300 px-5 py-3 text-sm font-black text-slate-950 hover:bg-cyan-200">
-                        Guardar trabajo
-                      </button>
-                    </form>
+                    <>
+                      <form action={updateWorkplaceProDiscoveryOpportunityAction} className="mt-5 grid gap-3 rounded-3xl border border-white/10 bg-[#071120] p-4 xl:grid-cols-6">
+                        <input type="hidden" name="opportunityId" value={opportunity.id} />
+                        <WorkplaceField label="Estado">
+                          <select name="status" defaultValue={opportunity.status} className={inputClass}>
+                            {statusOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {statusLabel[option] ?? option}
+                              </option>
+                            ))}
+                          </select>
+                        </WorkplaceField>
+                        <WorkplaceField label="Responsable">
+                          <select name="assignedToEmployeeId" defaultValue={opportunity.assignedToEmployeeId ?? context.employee?.id ?? ""} className={inputClass}>
+                            <option value="">Sin asignar</option>
+                            {employees.map((employee) => (
+                              <option key={employee.id} value={employee.id}>
+                                {employee.user.name ?? employee.user.email ?? "Empleado"}
+                              </option>
+                            ))}
+                          </select>
+                        </WorkplaceField>
+                        <WorkplaceField label="Guia lider">
+                          <select name="leaderGuideId" defaultValue={opportunity.leaderGuideId ?? ""} className={inputClass}>
+                            <option value="">Sin asignar</option>
+                            {suppliers.map((supplier) => (
+                              <option key={supplier.id} value={supplier.id}>
+                                {supplier.company}
+                              </option>
+                            ))}
+                          </select>
+                        </WorkplaceField>
+                        <WorkplaceField label="Total aceptado">
+                          <input
+                            name="acceptedBudget"
+                            type="number"
+                            min="0"
+                            step="1"
+                            defaultValue={opportunity.acceptedBudget ?? ""}
+                            disabled={!canFinance}
+                            className={inputClass}
+                            placeholder={String(Math.round(opportunity.estimatedBudget ?? 0))}
+                          />
+                        </WorkplaceField>
+                        <WorkplaceField label="Deposito %">
+                          <input name="depositPercent" type="number" min="0" max="100" step="1" defaultValue={opportunity.depositPercent} disabled={!canFinance} className={inputClass} />
+                        </WorkplaceField>
+                        <WorkplaceField label="Comision guia %">
+                          <input
+                            name="leaderCommissionPercent"
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="0.5"
+                            defaultValue={opportunity.leaderCommissionPercent ?? 10}
+                            disabled={!canFinance}
+                            className={inputClass}
+                          />
+                        </WorkplaceField>
+                        <label className="xl:col-span-5">
+                          <span className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Resumen visible en la cuenta del cliente</span>
+                          <textarea
+                            name="itinerarySummary"
+                            defaultValue={communicationSummary}
+                            rows={3}
+                            className={`${inputClass} min-h-24 resize-y leading-6`}
+                          />
+                        </label>
+                        <button className="self-end rounded-2xl bg-cyan-300 px-5 py-3 text-sm font-black text-slate-950 hover:bg-cyan-200">
+                          Guardar trabajo
+                        </button>
+                      </form>
+
+                      <form action={sendWorkplaceProDiscoveryCustomerMessageAction} className="mt-4 grid gap-3 rounded-3xl border border-emerald-300/20 bg-emerald-300/10 p-4 xl:grid-cols-6">
+                        <input type="hidden" name="opportunityId" value={opportunity.id} />
+                        <input type="hidden" name="itinerarySummary" value={communicationSummary} />
+                        <WorkplaceField label="Asunto">
+                          <input
+                            name="subject"
+                            defaultValue={`Propuesta ProDiscovery #${opportunity.requestCode} - ${opportunity.city}`}
+                            className={inputClass}
+                          />
+                        </WorkplaceField>
+                        <WorkplaceField label="Total">
+                          <input
+                            name="acceptedBudget"
+                            type="number"
+                            min="0"
+                            step="1"
+                            defaultValue={opportunity.acceptedBudget ?? ""}
+                            disabled={!canFinance}
+                            className={inputClass}
+                            placeholder={String(Math.round(opportunity.estimatedBudget ?? 0))}
+                          />
+                        </WorkplaceField>
+                        <WorkplaceField label="Deposito %">
+                          <input name="depositPercent" type="number" min="0" max="100" step="1" defaultValue={opportunity.depositPercent} disabled={!canFinance} className={inputClass} />
+                        </WorkplaceField>
+                        <div className="xl:col-span-3 rounded-2xl border border-white/10 bg-white/5 p-3 text-xs leading-5 text-emerald-50">
+                          <p className="font-black text-white">Correo al cliente</p>
+                          <p className="mt-1">Enviar propuesta marca el caso como propuesta lista. Responder mantiene el flujo abierto y tambien llega por email.</p>
+                          <p className="mt-2 text-emerald-100/80">Ultimo email: {opportunity.emailStatus}{opportunity.emailError ? ` - ${opportunity.emailError.slice(0, 120)}` : ""}</p>
+                        </div>
+                        <label className="xl:col-span-6">
+                          <span className="text-xs font-black uppercase tracking-[0.18em] text-emerald-100">Mensaje</span>
+                          <textarea name="clientMessage" defaultValue={defaultClientMessage} rows={7} className={`${inputClass} min-h-44 resize-y leading-6`} />
+                        </label>
+                        <div className="flex flex-wrap gap-3 xl:col-span-6">
+                          <button name="messageIntent" value="proposal" className="rounded-2xl bg-emerald-300 px-5 py-3 text-sm font-black text-slate-950 hover:bg-emerald-200">
+                            Enviar propuesta por correo
+                          </button>
+                          <button name="messageIntent" value="reply" className="rounded-2xl border border-emerald-200/40 px-5 py-3 text-sm font-black text-emerald-50 hover:bg-white/10">
+                            Responder por correo
+                          </button>
+                        </div>
+                      </form>
+                    </>
                   ) : (
                     <div className="mt-5 rounded-3xl border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
                       Tienes permiso para ver esta solicitud. Para editarla necesitas permiso de trabajo ProDiscovery.
