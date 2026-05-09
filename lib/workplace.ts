@@ -84,6 +84,14 @@ const defaultRoles = [
     permissions: ["tours.view", "tours.media"]
   },
   {
+    name: "Revisor Borradores Tours",
+    slug: "revisor-borradores-tours",
+    departmentSlug: "tours",
+    description: "Consulta todos los tours en borrador sin acceso a publicados, precios sensibles, edicion, fotos ni eliminacion.",
+    level: 15,
+    permissions: ["tours.drafts.view"]
+  },
+  {
     name: "Operador Rent Car",
     slug: "operador-rent-car",
     departmentSlug: "rent-car",

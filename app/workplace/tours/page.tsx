@@ -1,18 +1,20 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { Building2, CircleOff, Filter, Plus, ShoppingBag, Upload } from "lucide-react";
 
 import WorkplaceShell from "@/components/workplace/WorkplaceShell";
 import { prisma } from "@/lib/prisma";
-import { requireWorkplaceContext } from "@/lib/workplace";
+import { requireWorkplaceContext, workplaceEmptyScope } from "@/lib/workplace";
 import {
   buildWorkplaceTourWhere,
   formatWorkplaceTourScope,
   getTourPrimaryImage,
   getTourZoneLabel,
   ScopedTourRecord,
+  tourMatchesWorkplaceScope,
   WorkplaceTourFilters
 } from "@/lib/workplaceTours";
 import { requestTourDeleteApprovalAction } from "./actions";
@@ -79,18 +81,37 @@ const statusClass = (status: string) => {
 const unique = (items: string[]) => Array.from(new Set(items.filter(Boolean))).sort((a, b) => a.localeCompare(b));
 
 export default async function WorkplaceToursPage({ searchParams }: Props) {
-  const context = await requireWorkplaceContext("tours.view");
+  const context = await requireWorkplaceContext();
+  const canViewScopedTours = context.isAdmin || context.permissions.has("tours.view");
+  const hasDraftTourAccess = !context.isAdmin && context.permissions.has("tours.drafts.view");
+  if (!canViewScopedTours && !hasDraftTourAccess) redirect("/workplace");
+
+  const draftOnlyAccess = !canViewScopedTours && hasDraftTourAccess;
   const params = (searchParams ? await searchParams : undefined) ?? {};
   const filters: WorkplaceTourFilters = {
     q: params.q,
-    status: params.status,
+    status: draftOnlyAccess ? "draft" : params.status,
     provider: params.provider,
     zone: params.zone,
     date: params.date
   };
 
-  const scopedWhere = buildWorkplaceTourWhere(context.scope);
-  const filteredWhere = buildWorkplaceTourWhere(context.scope, filters);
+  const filtersAllowDrafts = (tourFilters: WorkplaceTourFilters = {}) => {
+    const status = tourFilters.status?.toLowerCase();
+    return !status || status === "all" || status === "draft";
+  };
+  const buildAccessibleTourWhere = (tourFilters: WorkplaceTourFilters = {}) => {
+    const parts: Prisma.TourWhereInput[] = [];
+    if (canViewScopedTours) parts.push(buildWorkplaceTourWhere(context.scope, tourFilters));
+    if (hasDraftTourAccess && filtersAllowDrafts(tourFilters)) {
+      parts.push(buildWorkplaceTourWhere(workplaceEmptyScope, { ...tourFilters, status: "draft" }));
+    }
+    if (parts.length === 1) return parts[0];
+    return parts.length ? ({ OR: parts } satisfies Prisma.TourWhereInput) : ({ id: "__no_tour_access__" } satisfies Prisma.TourWhereInput);
+  };
+
+  const scopedWhere = buildAccessibleTourWhere(draftOnlyAccess ? { status: "draft" } : {});
+  const filteredWhere = buildAccessibleTourWhere(filters);
 
   const [scopedTours, tours] = await Promise.all([
     prisma.tour.findMany({
@@ -115,6 +136,24 @@ export default async function WorkplaceToursPage({ searchParams }: Props) {
   const zones = unique(scoped.map((tour) => getTourZoneLabel(tour)));
   const canEdit = context.isAdmin || context.permissions.has("tours.edit");
   const canMedia = context.isAdmin || context.permissions.has("tours.media");
+  const scopeLabel = draftOnlyAccess
+    ? "Todos los tours en borrador"
+    : hasDraftTourAccess
+      ? `${formatWorkplaceTourScope(context.scope)} + todos los borradores`
+      : formatWorkplaceTourScope(context.scope);
+  const summaryCards = draftOnlyAccess
+    ? [
+        { label: "Borradores", value: scoped.length, Icon: ShoppingBag },
+        { label: "Resultados", value: rows.length, Icon: Filter },
+        { label: "Proveedores", value: providers.length, Icon: Building2 },
+        { label: "Zonas", value: zones.length, Icon: CircleOff }
+      ]
+    : [
+        { label: "Tours totales", value: scoped.length, Icon: ShoppingBag },
+        { label: "Tours activos", value: activeCount, Icon: Plus },
+        { label: "Tours inactivos", value: inactiveCount, Icon: CircleOff },
+        { label: "Proveedores", value: providers.length, Icon: Building2 }
+      ];
 
   return (
     <WorkplaceShell
@@ -131,18 +170,22 @@ export default async function WorkplaceToursPage({ searchParams }: Props) {
               <ShoppingBag className="h-6 w-6" aria-hidden />
             </span>
             <p className="mt-4 text-xs font-bold text-slate-400">Inicio / Tours</p>
-            <h1 className="mt-2 text-4xl font-black tracking-tight">Tours</h1>
-            <p className="mt-2 text-sm text-slate-400">Gestiona y visualiza los tours asignados a tu area.</p>
+            <h1 className="mt-2 text-4xl font-black tracking-tight">{draftOnlyAccess ? "Tours borradores" : "Tours"}</h1>
+            <p className="mt-2 text-sm text-slate-400">
+              {draftOnlyAccess ? "Consulta todos los tours que todavia no estan publicados." : "Gestiona y visualiza los tours asignados a tu area."}
+            </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <button className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-5 py-3 text-sm font-black text-slate-200">
               <Upload className="h-4 w-4" aria-hidden />
               Exportar
             </button>
-            <button className="inline-flex items-center gap-2 rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-black text-slate-950">
-              <Plus className="h-4 w-4" aria-hidden />
-              Nuevo Tour
-            </button>
+            {canEdit ? (
+              <button className="inline-flex items-center gap-2 rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-black text-slate-950">
+                <Plus className="h-4 w-4" aria-hidden />
+                Nuevo Tour
+              </button>
+            ) : null}
           </div>
         </section>
 
@@ -155,10 +198,10 @@ export default async function WorkplaceToursPage({ searchParams }: Props) {
         <section className="rounded-3xl border border-cyan-300/20 bg-cyan-400/10 px-5 py-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <p className="font-black text-white">
-              Estas viendo tours de: <span className="text-cyan-200">{formatWorkplaceTourScope(context.scope)}</span>
+              Estas viendo: <span className="text-cyan-200">{scopeLabel}</span>
             </p>
             <span className="w-fit rounded-2xl border border-cyan-300/30 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-cyan-100">
-              Alcance controlado
+              {draftOnlyAccess ? "Solo lectura" : "Alcance controlado"}
             </span>
           </div>
         </section>
@@ -170,17 +213,30 @@ export default async function WorkplaceToursPage({ searchParams }: Props) {
             placeholder="Buscar tour, proveedor o codigo..."
             className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-300/60"
           />
-          <select
-            name="status"
-            defaultValue={params.status ?? "all"}
-            className="rounded-2xl border border-white/10 bg-[#0b1728] px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/60"
-          >
-            <option value="all">Estado: todos</option>
-            <option value="published">Activos</option>
-            <option value="draft">Borradores</option>
-            <option value="inactive">Inactivos</option>
-            <option value="pending_review">Revision</option>
-          </select>
+          {draftOnlyAccess ? (
+            <>
+              <input type="hidden" name="status" value="draft" />
+              <select
+                disabled
+                defaultValue="draft"
+                className="rounded-2xl border border-white/10 bg-[#0b1728] px-4 py-3 text-sm text-white opacity-80 outline-none"
+              >
+                <option value="draft">Estado: borradores</option>
+              </select>
+            </>
+          ) : (
+            <select
+              name="status"
+              defaultValue={params.status ?? "all"}
+              className="rounded-2xl border border-white/10 bg-[#0b1728] px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/60"
+            >
+              <option value="all">Estado: todos</option>
+              <option value="published">Activos</option>
+              <option value="draft">Borradores</option>
+              <option value="inactive">Inactivos</option>
+              <option value="pending_review">Revision</option>
+            </select>
+          )}
           <select
             name="provider"
             defaultValue={params.provider ?? "all"}
@@ -218,12 +274,7 @@ export default async function WorkplaceToursPage({ searchParams }: Props) {
         </form>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {[
-            { label: "Tours totales", value: scoped.length, Icon: ShoppingBag },
-            { label: "Tours activos", value: activeCount, Icon: Plus },
-            { label: "Tours inactivos", value: inactiveCount, Icon: CircleOff },
-            { label: "Proveedores", value: providers.length, Icon: Building2 }
-          ].map(({ label, value, Icon }) => (
+          {summaryCards.map(({ label, value, Icon }) => (
             <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-bold text-slate-400">{label}</p>
@@ -252,6 +303,9 @@ export default async function WorkplaceToursPage({ searchParams }: Props) {
                 {rows.length ? (
                   rows.map((tour) => {
                     const image = getTourPrimaryImage(tour);
+                    const rowHasScopedAccess = context.isAdmin || (canViewScopedTours && tourMatchesWorkplaceScope(tour, context.scope));
+                    const canEditTour = rowHasScopedAccess && canEdit;
+                    const canMediaTour = rowHasScopedAccess && canMedia;
                     return (
                       <tr key={tour.id} className="align-middle text-slate-200">
                         <td className="px-5 py-4">
@@ -277,15 +331,13 @@ export default async function WorkplaceToursPage({ searchParams }: Props) {
                         <td className="px-5 py-4 text-slate-300">{formatDate(tour.createdAt)}</td>
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-2">
-                            {canEdit ? (
-                              <Link
-                                href={`/workplace/tours/${tour.id}`}
-                                className="rounded-xl border border-white/10 px-3 py-2 text-xs font-black text-cyan-100 hover:border-cyan-300/50"
-                              >
-                                Editar
-                              </Link>
-                            ) : null}
-                            {canMedia ? (
+                            <Link
+                              href={`/workplace/tours/${tour.id}`}
+                              className="rounded-xl border border-white/10 px-3 py-2 text-xs font-black text-cyan-100 hover:border-cyan-300/50"
+                            >
+                              {canEditTour ? "Editar" : "Ver"}
+                            </Link>
+                            {canMediaTour ? (
                               <Link
                                 href={`/workplace/tours/${tour.id}#media`}
                                 className="rounded-xl border border-white/10 px-3 py-2 text-xs font-black text-cyan-100 hover:border-cyan-300/50"
@@ -293,12 +345,14 @@ export default async function WorkplaceToursPage({ searchParams }: Props) {
                                 Fotos
                               </Link>
                             ) : null}
-                            <form action={requestTourDeleteApprovalAction}>
-                              <input type="hidden" name="tourId" value={tour.id} />
-                              <button className="rounded-xl border border-amber-300/30 px-3 py-2 text-xs font-black text-amber-100 hover:bg-amber-300/10">
-                                Solicitar baja
-                              </button>
-                            </form>
+                            {rowHasScopedAccess && canViewScopedTours ? (
+                              <form action={requestTourDeleteApprovalAction}>
+                                <input type="hidden" name="tourId" value={tour.id} />
+                                <button className="rounded-xl border border-amber-300/30 px-3 py-2 text-xs font-black text-amber-100 hover:bg-amber-300/10">
+                                  Solicitar baja
+                                </button>
+                              </form>
+                            ) : null}
                           </div>
                         </td>
                       </tr>
@@ -315,8 +369,8 @@ export default async function WorkplaceToursPage({ searchParams }: Props) {
             </table>
           </div>
           <div className="flex items-center justify-between border-t border-white/10 px-5 py-4 text-xs text-slate-400">
-            <p>Mostrando {rows.length} de {scoped.length} resultados asignados.</p>
-            <p>Las acciones peligrosas pasan por aprobacion.</p>
+            <p>Mostrando {rows.length} de {scoped.length} {draftOnlyAccess ? "borradores" : "resultados asignados"}.</p>
+            <p>{draftOnlyAccess ? "Este permiso no permite editar ni eliminar." : "Las acciones peligrosas pasan por aprobacion."}</p>
           </div>
         </section>
       </div>

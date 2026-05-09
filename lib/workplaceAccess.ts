@@ -16,6 +16,7 @@ export const workplaceModules = [
 
 export const workplacePermissions = [
   { key: "tours.view", module: "tours", label: "Ver tours" },
+  { key: "tours.drafts.view", module: "tours", label: "Ver todos los borradores de tours" },
   { key: "tours.edit", module: "tours", label: "Editar tours" },
   { key: "tours.media", module: "tours", label: "Subir o borrar fotos" },
   { key: "tours.price", module: "tours", label: "Modificar precios criticos", sensitive: true },

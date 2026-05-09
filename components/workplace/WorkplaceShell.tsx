@@ -44,13 +44,15 @@ type Props = {
   };
 };
 
-const navItems: Array<{ label: string; href: string; key: string; permission: string | null; icon: LucideIcon }> = [
+type NavPermission = string | string[] | null;
+
+const navItems: Array<{ label: string; href: string; key: string; permission: NavPermission; icon: LucideIcon }> = [
   { label: "Inicio", href: "/workplace", key: "home", permission: null, icon: Home },
   { label: "Chat", href: "/workplace/chat", key: "chat", permission: "chat.view", icon: MessageSquareText },
   { label: "Asistencia", href: "/workplace/support", key: "support", permission: "chat.respond", icon: Headphones },
   { label: "ProDiscovery", href: "/workplace/prodiscovery", key: "prodiscovery", permission: "prodiscovery.view", icon: Sparkles },
   { label: "Reservas", href: "/workplace/bookings", key: "bookings", permission: "bookings.view", icon: BriefcaseBusiness },
-  { label: "Tours", href: "/workplace/tours", key: "tours", permission: "tours.view", icon: ShoppingBag },
+  { label: "Tours", href: "/workplace/tours", key: "tours", permission: ["tours.view", "tours.drafts.view"], icon: ShoppingBag },
   { label: "Transfer", href: "/workplace/transfers", key: "transfers", permission: "transfers.view", icon: Plane },
   { label: "Rent Car", href: "/workplace/rent-car", key: "rent_car", permission: "rent_car.view", icon: Car },
   { label: "Suplidores", href: "/workplace/suppliers", key: "suppliers", permission: "suppliers.view", icon: Building2 },
@@ -59,15 +61,20 @@ const navItems: Array<{ label: string; href: string; key: string; permission: st
 
 const shortScope = (items: string[], fallback: string) => (items.length ? items.slice(0, 3).join(", ") : fallback);
 type PermissionLabel = { label: string; icon: LucideIcon };
+const hasNavPermission = (permissions: Set<string>, permission: NavPermission) => {
+  if (!permission) return true;
+  return Array.isArray(permission) ? permission.some((item) => permissions.has(item)) : permissions.has(permission);
+};
 
 export default async function WorkplaceShell({ children, active, employeeName, department, permissions, scope }: Props) {
   const notificationContext = await getWorkplaceContext();
   const notifications = notificationContext?.user
     ? await getWorkplaceNotificationSummary(notificationContext)
     : emptyWorkplaceNotificationSummary;
-  const visibleNav = navItems.filter((item) => !item.permission || permissions.has(item.permission));
+  const visibleNav = navItems.filter((item) => hasNavPermission(permissions, item.permission));
   const activePermissionLabels = [
     permissions.has("tours.view") ? { label: "Ver tours", icon: ShoppingBag } : null,
+    permissions.has("tours.drafts.view") ? { label: "Ver borradores", icon: ShoppingBag } : null,
     permissions.has("tours.edit") ? { label: "Editar tours", icon: KeyRound } : null,
     permissions.has("tours.media") ? { label: "Gestionar fotos", icon: ImageIcon } : null,
     permissions.has("prodiscovery.view") ? { label: "Ver ProDiscovery", icon: Sparkles } : null,

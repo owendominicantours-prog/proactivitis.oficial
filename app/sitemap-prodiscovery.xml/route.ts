@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getGeminiSeoPublicPath, listPublishedGeminiSeoLandings } from "@/lib/geminiSeoFactory";
 
 export const revalidate = 21600;
 
@@ -28,7 +29,7 @@ export async function GET() {
   const now = new Date();
   const nowIso = now.toISOString();
 
-  const [plannerDestinations, tours] = await Promise.all([
+  const [plannerDestinations, tours, geminiLandings] = await Promise.all([
     prisma.destination.findMany({
       where: {
         country: {
@@ -49,7 +50,8 @@ export async function GET() {
       select: { slug: true, createdAt: true },
       orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
       take: 300
-    })
+    }),
+    listPublishedGeminiSeoLandings()
   ]);
 
   const entries: UrlEntry[] = [];
@@ -92,12 +94,14 @@ export async function GET() {
   );
 
   for (const slug of plannerSlugs) {
-    entries.push({
-      loc: `${BASE_URL}/prodiscovery/planificador-grupos-${slug}`,
-      lastmod: nowIso,
-      changefreq: "weekly",
-      priority: 0.75
-    });
+    for (const locale of LOCALES) {
+      entries.push({
+        loc: `${BASE_URL}${withLocale(locale, `/prodiscovery/planificador-grupos-${slug}`)}`,
+        lastmod: nowIso,
+        changefreq: "weekly",
+        priority: 0.75
+      });
+    }
   }
 
   for (const tour of tours) {
@@ -107,6 +111,17 @@ export async function GET() {
         lastmod: tour.createdAt.toISOString(),
         changefreq: "weekly",
         priority: 0.78
+      });
+    }
+  }
+
+  for (const landing of geminiLandings.filter((item) => item.type !== "rent_car")) {
+    for (const locale of LOCALES) {
+      entries.push({
+        loc: `${BASE_URL}${getGeminiSeoPublicPath(landing.type, landing.slug, locale)}`,
+        lastmod: landing.publishedAt ?? landing.generatedAt,
+        changefreq: "weekly",
+        priority: 0.76
       });
     }
   }

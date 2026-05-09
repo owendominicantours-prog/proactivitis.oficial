@@ -5,7 +5,7 @@ import type { Locale } from "@/lib/translations";
 
 const copy = {
   es: {
-    title: "ProDiscovery: Custom Group Planner",
+    title: "Viajes privados para grupos",
     body:
       "Planificamos viajes privados para grupos en Republica Dominicana: empresas, familias, bodas, despedidas, incentivos y celebraciones con guia, transporte, cenas privadas, fotografia y logistica de grupo.",
     cta: "Diseñar mi viaje privado",
@@ -34,7 +34,7 @@ const copy = {
       "Custom itinerary builder Dominican Republic, private tour guide for groups in Punta Cana, group travel logistics Santo Domingo, presupuesto viaje de incentivo Republica Dominicana."
   },
   en: {
-    title: "ProDiscovery: Custom Group Planner",
+    title: "Private group travel planning",
     body:
       "We plan private group trips in the Dominican Republic for companies, families, weddings, bachelor trips, incentives and celebrations with guide, transport, private dinners, photography and group logistics.",
     cta: "Design my private trip",
@@ -63,7 +63,7 @@ const copy = {
       "Custom itinerary builder Dominican Republic, private tour guide for groups in Punta Cana, group travel logistics Santo Domingo, incentive travel budget Dominican Republic."
   },
   fr: {
-    title: "ProDiscovery: Custom Group Planner",
+    title: "Voyages prives pour groupes",
     body:
       "Nous planifions des voyages prives pour groupes en Republique dominicaine: entreprises, familles, mariages, enterrements, incentives et celebrations avec guide, transport, diners prives, photographie et logistique groupe.",
     cta: "Concevoir mon voyage prive",

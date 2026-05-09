@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import WorkplaceShell from "@/components/workplace/WorkplaceShell";
 import WorkplaceTourMediaFields from "@/components/workplace/WorkplaceTourMediaFields";
@@ -22,7 +23,11 @@ const galleryLines = (value?: string | null) =>
     .join("\n");
 
 export default async function WorkplaceTourEditPage({ params, searchParams }: Props) {
-  const context = await requireWorkplaceContext("tours.view");
+  const context = await requireWorkplaceContext();
+  const canViewScopedTours = context.isAdmin || context.permissions.has("tours.view");
+  const hasDraftTourAccess = !context.isAdmin && context.permissions.has("tours.drafts.view");
+  if (!canViewScopedTours && !hasDraftTourAccess) redirect("/workplace");
+
   const { id } = await params;
   const resolvedSearch = (searchParams ? await searchParams : undefined) ?? {};
   const tour = await prisma.tour.findUnique({
@@ -53,7 +58,13 @@ export default async function WorkplaceTourEditPage({ params, searchParams }: Pr
     }
   });
 
-  if (!tour || (!context.isAdmin && !tourMatchesWorkplaceScope(tour as ScopedTourRecord, context.scope))) {
+  const tourRecord = tour as ScopedTourRecord | null;
+  const isDraftTour = tourRecord?.status.toLowerCase() === "draft";
+  const hasScopedAccess = Boolean(tourRecord && (context.isAdmin || (canViewScopedTours && tourMatchesWorkplaceScope(tourRecord, context.scope))));
+  const hasDraftAccess = Boolean(tourRecord && hasDraftTourAccess && isDraftTour);
+  const canAccessTour = hasScopedAccess || hasDraftAccess;
+
+  if (!tour || !tourRecord || !canAccessTour) {
     return (
       <WorkplaceShell
         active="tours"
@@ -64,7 +75,7 @@ export default async function WorkplaceTourEditPage({ params, searchParams }: Pr
       >
         <div className="rounded-3xl border border-rose-300/20 bg-rose-400/10 p-6">
           <h1 className="text-2xl font-black">Tour no disponible</h1>
-          <p className="mt-2 text-sm text-rose-100">Este producto no existe o no pertenece a tu alcance asignado.</p>
+          <p className="mt-2 text-sm text-rose-100">Este producto no existe o no esta permitido para tu rol actual.</p>
           <Link href="/workplace/tours" className="mt-4 inline-flex rounded-2xl border border-white/10 px-4 py-2 text-sm font-black">
             Volver a tours
           </Link>
@@ -73,9 +84,10 @@ export default async function WorkplaceTourEditPage({ params, searchParams }: Pr
     );
   }
 
-  const canEdit = context.isAdmin || context.permissions.has("tours.edit");
-  const canMedia = context.isAdmin || context.permissions.has("tours.media");
+  const canEdit = hasScopedAccess && (context.isAdmin || context.permissions.has("tours.edit"));
+  const canMedia = hasScopedAccess && (context.isAdmin || context.permissions.has("tours.media"));
   const readOnly = !canEdit;
+  const draftOnlyAccess = !hasScopedAccess && hasDraftAccess;
 
   return (
     <WorkplaceShell
@@ -88,7 +100,7 @@ export default async function WorkplaceTourEditPage({ params, searchParams }: Pr
       <div className="mx-auto max-w-6xl space-y-6 pb-10">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold text-slate-400">Tours / Editor</p>
+            <p className="text-xs font-bold text-slate-400">Tours / {draftOnlyAccess ? "Borrador" : "Editor"}</p>
             <h1 className="mt-2 text-4xl font-black tracking-tight">{tour.title}</h1>
             <p className="mt-2 text-sm text-slate-400">
               {tour.SupplierProfile.company} - {getTourZoneLabel(tour as ScopedTourRecord)} - codigo {tour.productId}
@@ -106,7 +118,9 @@ export default async function WorkplaceTourEditPage({ params, searchParams }: Pr
         ) : null}
 
         <section className="rounded-3xl border border-cyan-300/20 bg-cyan-400/10 px-5 py-4 text-sm text-cyan-100">
-          Estas editando dentro de tu alcance asignado. El sistema no muestra ni permite tocar productos fuera de tu zona, nicho o proveedor.
+          {draftOnlyAccess
+            ? "Vista solo lectura de borradores. Este rol no puede editar fotos, publicar, eliminar ni tocar productos activos."
+            : "Estas editando dentro de tu alcance asignado. El sistema no muestra ni permite tocar productos fuera de tu zona, nicho o proveedor."}
         </section>
 
         <form action={updateWorkplaceTourAction} className="grid gap-6 xl:grid-cols-[1fr,0.45fr]">
@@ -216,16 +230,18 @@ export default async function WorkplaceTourEditPage({ params, searchParams }: Pr
           </aside>
         </form>
 
-        <section className="rounded-3xl border border-amber-300/20 bg-amber-300/10 p-5">
-          <p className="text-sm font-black text-amber-100">Accion bloqueada por seguridad</p>
-          <p className="mt-1 text-sm text-amber-100/80">Eliminar un tour requiere aprobacion de un administrador.</p>
-          <form action={requestTourDeleteApprovalAction} className="mt-4">
-            <input type="hidden" name="tourId" value={tour.id} />
-            <button className="rounded-2xl border border-amber-300/30 px-5 py-3 text-sm font-black text-amber-100 hover:bg-amber-300/10">
-              Solicitar eliminacion
-            </button>
-          </form>
-        </section>
+        {hasScopedAccess && canViewScopedTours ? (
+          <section className="rounded-3xl border border-amber-300/20 bg-amber-300/10 p-5">
+            <p className="text-sm font-black text-amber-100">Accion bloqueada por seguridad</p>
+            <p className="mt-1 text-sm text-amber-100/80">Eliminar un tour requiere aprobacion de un administrador.</p>
+            <form action={requestTourDeleteApprovalAction} className="mt-4">
+              <input type="hidden" name="tourId" value={tour.id} />
+              <button className="rounded-2xl border border-amber-300/30 px-5 py-3 text-sm font-black text-amber-100 hover:bg-amber-300/10">
+                Solicitar eliminacion
+              </button>
+            </form>
+          </section>
+        ) : null}
       </div>
     </WorkplaceShell>
   );

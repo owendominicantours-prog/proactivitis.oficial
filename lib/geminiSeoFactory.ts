@@ -379,7 +379,7 @@ const slugify = (value: string) =>
 export const getGeminiSeoPublicPath = (type: GeminiSeoLandingType, slug: string, locale: Locale) => {
   const prefix = locale === "es" ? "" : `/${locale}`;
   if (type === "rent_car") return `${prefix}/rent-a-car/deals/${slug}`;
-  return `${prefix}/punta-cana/${slug}`;
+  return `${prefix}/prodiscovery/seo/${slug}`;
 };
 
 const parseJsonArray = (value?: string | null): string[] => {
@@ -844,7 +844,7 @@ const buildPrompt = (candidate: GeminiSeoFactoryCandidate) => `
 You are Proactivitis SEO Factory, a senior travel SEO strategist and conversion copywriter.
 Use Google Search grounding to understand current search intent, language, competitor angles, and traveler questions.
 
-Create one high-converting landing page for the real Proactivitis product below.
+Create one high-converting ProDiscovery landing page for the real Proactivitis product below.
 Return strict JSON only. Do not wrap in markdown.
 
 Product:
@@ -860,6 +860,11 @@ Rules:
 - Every locale must be unique and natural, not a literal translation.
 - Write professional commercial copy, not admin language.
 - The page must answer: what this is, why trust it, what happens next.
+- For tour and transfer products, write as ProDiscovery concierge/group planning, not as a standard ticket checkout page.
+- For tour and transfer products, sell private groups, custom itinerary planning, guide/transport coordination, logistics, celebrations, companies, families, and VIP groups.
+- For tour and transfer products, do not show a fixed ticket price in visible copy; position the product as an idea base for a custom group proposal.
+- For tour and transfer products, CTAs should invite the traveler to request or design a private group proposal with ProDiscovery.
+- For tour and transfer products, mention ProDiscovery naturally in each locale and keep the tone client-facing.
 - Use the exact Search intent label naturally inside the page content, not only in metadata.
 - Put the primary keyword or closest natural variant in the H1, intro, one section heading, and at least one FAQ answer.
 - Do not keyword-stuff: the keyword must read like normal travel/rental copy.

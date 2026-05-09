@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+
 import ProDiscoveryPlannerPage from "@/components/public/ProDiscoveryPlannerPage";
 import {
   buildProDiscoveryPlannerMetadata,
   isProDiscoveryPlannerSlug,
   titleFromPlannerSlug
 } from "@/lib/prodiscoveryPlannerLanding";
-import { es } from "@/lib/translations";
+import { en } from "@/lib/translations";
 
 type Params = {
   plannerSlug: string;
@@ -14,12 +15,12 @@ type Params = {
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { plannerSlug } = await params;
-  return buildProDiscoveryPlannerMetadata(es, plannerSlug);
+  return buildProDiscoveryPlannerMetadata(en, plannerSlug);
 }
 
-export default async function ProDiscoveryGroupPlannerLanding({ params }: { params: Promise<Params> }) {
+export default async function ProDiscoveryEnglishGroupPlannerLanding({ params }: { params: Promise<Params> }) {
   const { plannerSlug } = await params;
   if (!isProDiscoveryPlannerSlug(plannerSlug)) notFound();
 
-  return <ProDiscoveryPlannerPage locale={es} initialCity={titleFromPlannerSlug(plannerSlug)} landingSlug={plannerSlug} />;
+  return <ProDiscoveryPlannerPage locale={en} initialCity={titleFromPlannerSlug(plannerSlug)} landingSlug={plannerSlug} />;
 }
