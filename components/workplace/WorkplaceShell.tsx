@@ -124,30 +124,40 @@ export default async function WorkplaceShell({ children, active, employeeName, d
           })}
         </nav>
 
-        <div className="absolute bottom-5 left-5 right-5 space-y-4">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm">
-            <p className="text-xs text-slate-400">Permisos activos</p>
-            <div className="mt-3 space-y-2">
+        <div className="absolute bottom-5 left-5 right-5 space-y-3">
+          <details className="group rounded-2xl border border-white/10 bg-white/5 p-3 text-sm">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-bold text-slate-300">
+              <span>Permisos</span>
+              <span className="rounded-full bg-cyan-300/10 px-2 py-0.5 text-[10px] font-black text-cyan-200">
+                {activePermissionLabels.length || 0}
+              </span>
+            </summary>
+            <div className="mt-3 flex flex-wrap gap-1.5">
               {activePermissionLabels.length ? (
-                activePermissionLabels.map((item) => {
+                activePermissionLabels.slice(0, 8).map((item) => {
                   const Icon = item.icon ?? ShieldCheck;
                   return (
-                  <p key={item.label} className="flex items-center gap-2 text-xs font-bold text-slate-200">
-                    <Icon className="h-3.5 w-3.5 text-cyan-300" aria-hidden />
-                    <span>{item.label}</span>
-                  </p>
-                );
+                    <span key={item.label} className="inline-flex items-center gap-1 rounded-full bg-white/5 px-2 py-1 text-[10px] font-bold text-slate-200">
+                      <Icon className="h-3 w-3 text-cyan-300" aria-hidden />
+                      <span>{item.label}</span>
+                    </span>
+                  );
                 })
               ) : (
                 <p className="text-xs text-slate-400">Sin permisos operativos.</p>
               )}
+              {activePermissionLabels.length > 8 ? (
+                <span className="rounded-full bg-white/5 px-2 py-1 text-[10px] font-bold text-slate-300">
+                  +{activePermissionLabels.length - 8}
+                </span>
+              ) : null}
             </div>
-            <div className="mt-4 space-y-1 text-xs text-slate-300">
+            <div className="mt-3 grid gap-1 text-[11px] text-slate-400">
               <p>Zona: {shortScope(scope.cities, "Global")}</p>
               <p>Nicho: {shortScope(scope.niches, "Global")}</p>
               <p>Proveedor: {shortScope(scope.companies, "Global")}</p>
             </div>
-          </div>
+          </details>
           <Link href="/api/auth/signout" className="flex items-center justify-center gap-2 rounded-2xl border border-rose-400/30 px-4 py-3 text-center text-sm font-bold text-rose-200">
             <LogOut className="h-4 w-4" aria-hidden />
             <span>Cerrar sesion</span>
