@@ -40,8 +40,8 @@ type Copy = {
 const COPY: Record<Locale, Copy> = {
   es: {
     back: "Volver a ProDiscovery",
-    reviews: "ReseÃ±as verificadas",
-    noReviews: "Este traslado aÃºn no tiene reseÃ±as aprobadas.",
+    reviews: "resenas verificadas",
+    noReviews: "Este traslado aun no tiene resenas aprobadas.",
     from: "Desde",
     book: "Cotizar y reservar",
     quoteNow: "Ver tarifa final",
@@ -49,7 +49,7 @@ const COPY: Record<Locale, Copy> = {
     reviewCountLabel: "opiniones aprobadas",
     details: "Lo que incluye",
     map: "Ver en mapa",
-    reviewFilter: "Filtrar reseÃ±as por tema",
+    reviewFilter: "Filtrar resenas por tema",
     clear: "Limpiar",
     plannerTitle: "Reserva este traslado ahora",
     plannerBody: "Completa origen y destino para ver tarifa final y reservar sin salir de ProDiscovery.",
@@ -131,7 +131,7 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
   const reserveNowLabel = localeLabel(locale, "Abrir reserva", "Open booking", "Ouvrir la reservation");
   const plannerJumpLabel = localeLabel(locale, "Usar cotizador", "Use planner", "Utiliser le devis");
   const trustBadges = [
-    localeLabel(locale, "ReseÃ±as verificadas", "Verified reviews", "Avis verifies"),
+    localeLabel(locale, "resenas verificadas", "Verified reviews", "Avis verifies"),
     localeLabel(locale, "Reserva segura", "Secure booking", "Reservation securisee"),
     localeLabel(locale, "Soporte local", "Local support", "Support local")
   ].map(normalizeDisplayText);
@@ -445,7 +445,7 @@ export default async function ProDiscoveryTransferDetailPage({ locale, landingSl
                 {reviews.length > initialVisibleReviews ? (
                   <details className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                     <summary className="cursor-pointer list-none text-sm font-semibold text-emerald-700">
-                      {normalizeDisplayText(localeLabel(locale, "Ver mÃ¡s reseÃ±as", "See more reviews", "Voir plus d avis"))}
+                      {normalizeDisplayText(localeLabel(locale, "Ver mas resenas", "See more reviews", "Voir plus d avis"))}
                     </summary>
                     <div className="mt-4 space-y-3">
                       {reviews.slice(initialVisibleReviews).map((review) => (

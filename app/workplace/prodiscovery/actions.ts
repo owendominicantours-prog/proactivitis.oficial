@@ -155,11 +155,15 @@ export async function sendWorkplaceProDiscoveryCustomerMessageAction(formData: F
   if (!opportunity) throw new Error("Solicitud ProDiscovery no encontrada.");
 
   const intent = readString(formData, "messageIntent") === "reply" ? "reply" : "proposal";
+  const proposalSubject = `Propuesta ProDiscovery #${opportunity.requestCode} - ${opportunity.city}`;
+  const replySubject = `Respuesta ProDiscovery #${opportunity.requestCode}`;
+  const rawSubject = readString(formData, "subject");
   const subject =
-    readString(formData, "subject") ||
-    (intent === "proposal"
-      ? `Propuesta ProDiscovery #${opportunity.requestCode} - ${opportunity.city}`
-      : `Respuesta ProDiscovery #${opportunity.requestCode}`);
+    rawSubject && !(intent === "reply" && rawSubject === proposalSubject)
+      ? rawSubject
+      : intent === "proposal"
+        ? proposalSubject
+        : replySubject;
   const message = readString(formData, "clientMessage");
   if (message.length < 12) throw new Error("Escribe un mensaje util para el cliente antes de enviar.");
 

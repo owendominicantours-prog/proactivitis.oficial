@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
+import { Star } from "lucide-react";
 import { PRODISCOVERY_LOGO_URL } from "@/lib/prodiscoveryBrand";
 import type { Locale } from "@/lib/translations";
 
@@ -112,7 +113,7 @@ export default function ProDiscoveryHeader({ locale, reviewTrust }: Props) {
             <div className="hidden min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 sm:block">
               <div className="flex items-center gap-1 text-amber-500">
                 {Array.from({ length: 5 }).map((_, index) => (
-                  <span key={index} className="text-xs leading-none">★</span>
+                  <Star key={index} className="h-3 w-3 fill-current" aria-hidden />
                 ))}
                 <span className="ml-1 text-xs font-black text-slate-950">{reviewTrust.average.toFixed(1)}</span>
               </div>
@@ -122,10 +123,10 @@ export default function ProDiscoveryHeader({ locale, reviewTrust }: Props) {
             </div>
           ) : null}
           <div className="flex items-center gap-2">
-            <div className="group relative hidden sm:block">
+            <div className="group relative">
               <button
                 type="button"
-                className="rounded-full border border-slate-300 px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-slate-700 hover:border-slate-500 hover:text-slate-950"
+                className="rounded-full border border-slate-300 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-slate-700 hover:border-slate-500 hover:text-slate-950 sm:px-4"
               >
                 {t.account}
               </button>

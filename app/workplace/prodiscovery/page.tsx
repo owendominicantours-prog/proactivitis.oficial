@@ -356,7 +356,6 @@ export default async function WorkplaceProDiscoveryPage({ searchParams }: Props)
 
                       <form action={sendWorkplaceProDiscoveryCustomerMessageAction} className="mt-4 grid gap-3 rounded-3xl border border-emerald-300/20 bg-emerald-300/10 p-4 xl:grid-cols-6">
                         <input type="hidden" name="opportunityId" value={opportunity.id} />
-                        <input type="hidden" name="itinerarySummary" value={communicationSummary} />
                         <WorkplaceField label="Asunto">
                           <input
                             name="subject"
@@ -387,6 +386,16 @@ export default async function WorkplaceProDiscoveryPage({ searchParams }: Props)
                         <label className="xl:col-span-6">
                           <span className="text-xs font-black uppercase tracking-[0.18em] text-emerald-100">Mensaje</span>
                           <textarea name="clientMessage" defaultValue={defaultClientMessage} rows={7} className={`${inputClass} min-h-44 resize-y leading-6`} />
+                        </label>
+                        <label className="xl:col-span-6">
+                          <span className="text-xs font-black uppercase tracking-[0.18em] text-emerald-100">Resumen que quedara en la cuenta del cliente</span>
+                          <textarea
+                            name="itinerarySummary"
+                            defaultValue={communicationSummary}
+                            rows={3}
+                            className={`${inputClass} min-h-24 resize-y leading-6`}
+                            placeholder="Resumen corto de la propuesta visible en el panel del cliente."
+                          />
                         </label>
                         <div className="flex flex-wrap gap-3 xl:col-span-6">
                           <button name="messageIntent" value="proposal" className="rounded-2xl bg-emerald-300 px-5 py-3 text-sm font-black text-slate-950 hover:bg-emerald-200">
