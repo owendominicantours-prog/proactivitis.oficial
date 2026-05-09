@@ -54,9 +54,9 @@ const revalidateGeminiSeoFactory = (slug?: string) => {
     revalidatePath(`/rent-a-car/deals/${slug}`);
     revalidatePath(`/en/rent-a-car/deals/${slug}`);
     revalidatePath(`/fr/rent-a-car/deals/${slug}`);
-    revalidatePath(`/prodiscovery/seo/${slug}`);
-    revalidatePath(`/en/prodiscovery/seo/${slug}`);
-    revalidatePath(`/fr/prodiscovery/seo/${slug}`);
+    revalidatePath(`/prodiscovery/experiencias/${slug}`);
+    revalidatePath(`/en/prodiscovery/experiencias/${slug}`);
+    revalidatePath(`/fr/prodiscovery/experiencias/${slug}`);
     revalidatePath(`/seo/${slug}`);
     revalidatePath(`/en/seo/${slug}`);
     revalidatePath(`/fr/seo/${slug}`);

@@ -379,7 +379,7 @@ const slugify = (value: string) =>
 export const getGeminiSeoPublicPath = (type: GeminiSeoLandingType, slug: string, locale: Locale) => {
   const prefix = locale === "es" ? "" : `/${locale}`;
   if (type === "rent_car") return `${prefix}/rent-a-car/deals/${slug}`;
-  return `${prefix}/prodiscovery/seo/${slug}`;
+  return `${prefix}/prodiscovery/experiencias/${slug}`;
 };
 
 const parseJsonArray = (value?: string | null): string[] => {
