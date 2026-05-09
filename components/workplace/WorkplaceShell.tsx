@@ -15,6 +15,7 @@ import {
   Plane,
   ShieldCheck,
   ShoppingBag,
+  Sparkles,
   type LucideIcon
 } from "lucide-react";
 import { getWorkplaceContext } from "@/lib/workplace";
@@ -47,6 +48,7 @@ const navItems: Array<{ label: string; href: string; key: string; permission: st
   { label: "Inicio", href: "/workplace", key: "home", permission: null, icon: Home },
   { label: "Chat", href: "/workplace/chat", key: "chat", permission: "chat.view", icon: MessageSquareText },
   { label: "Asistencia", href: "/workplace/support", key: "support", permission: "chat.respond", icon: Headphones },
+  { label: "ProDiscovery", href: "/workplace/prodiscovery", key: "prodiscovery", permission: "prodiscovery.view", icon: Sparkles },
   { label: "Reservas", href: "/workplace/bookings", key: "bookings", permission: "bookings.view", icon: BriefcaseBusiness },
   { label: "Tours", href: "/workplace/tours", key: "tours", permission: "tours.view", icon: ShoppingBag },
   { label: "Transfer", href: "/workplace/transfers", key: "transfers", permission: "transfers.view", icon: Plane },
@@ -68,6 +70,8 @@ export default async function WorkplaceShell({ children, active, employeeName, d
     permissions.has("tours.view") ? { label: "Ver tours", icon: ShoppingBag } : null,
     permissions.has("tours.edit") ? { label: "Editar tours", icon: KeyRound } : null,
     permissions.has("tours.media") ? { label: "Gestionar fotos", icon: ImageIcon } : null,
+    permissions.has("prodiscovery.view") ? { label: "Ver ProDiscovery", icon: Sparkles } : null,
+    permissions.has("prodiscovery.manage") ? { label: "Trabajar propuestas", icon: KeyRound } : null,
     permissions.has("bookings.view") ? { label: "Ver reservas", icon: BriefcaseBusiness } : null,
     permissions.has("rent_car.view") ? { label: "Ver rent car", icon: Car } : null,
     permissions.has("suppliers.view") ? { label: "Ver suplidores", icon: Building2 } : null,
@@ -112,7 +116,7 @@ export default async function WorkplaceShell({ children, active, employeeName, d
                 <Icon className="h-4 w-4" aria-hidden />
               </span>
               <span className="min-w-0 flex-1">{item.label}</span>
-              {item.key === "chat" || item.key === "support" ? (
+              {item.key === "chat" || item.key === "support" || item.key === "prodiscovery" ? (
                 <WorkplaceNavNotificationBadge kind={item.key} initial={notifications} />
               ) : null}
             </Link>

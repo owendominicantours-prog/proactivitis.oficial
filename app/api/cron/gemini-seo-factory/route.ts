@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getGeminiSeoFactoryConfig,
   getGeminiSeoGeneratedTodayCount,
-  runGeminiSeoFactoryBatch
+  runGeminiSeoFactoryBatch,
+  saveGeminiSeoFactoryConfig
 } from "@/lib/geminiSeoFactory";
 import { submitSeoFactorySitemapsToSearchConsole } from "@/lib/googleSearchConsole";
 
 export const maxDuration = 300;
-const GEMINI_CRON_INTERVAL_MS = 48 * 60 * 60 * 1000;
 
 const getBearerToken = (request: NextRequest) => {
   const header = request.headers.get("authorization") ?? "";
@@ -30,15 +30,26 @@ export async function GET(request: NextRequest) {
   if (!config.enabled) {
     return NextResponse.json({ ok: true, skipped: true, reason: "Gemini SEO Factory pausado." });
   }
-  const force = request.nextUrl.searchParams.get("force") === "1";
-  const lastRunAt = config.lastRunAt ? new Date(config.lastRunAt).getTime() : 0;
-  if (!force && lastRunAt && Date.now() - lastRunAt < GEMINI_CRON_INTERVAL_MS) {
+
+  const now = new Date();
+  let activeUntilIso = config.cronActiveUntil ?? null;
+  let activeUntil = activeUntilIso ? new Date(activeUntilIso) : null;
+  if (!activeUntil || !Number.isFinite(activeUntil.getTime())) {
+    activeUntil = new Date(now.getTime() + config.cronDurationHours * 60 * 60 * 1000);
+    activeUntilIso = activeUntil.toISOString();
+    await saveGeminiSeoFactoryConfig({
+      cronStartedAt: now.toISOString(),
+      cronActiveUntil: activeUntilIso
+    });
+  }
+
+  if (activeUntil.getTime() < now.getTime()) {
+    await saveGeminiSeoFactoryConfig({ enabled: false, cronActiveUntil: null });
     return NextResponse.json({
       ok: true,
       skipped: true,
-      reason: "Gemini SEO Factory espera 48 horas entre lotes.",
-      lastRunAt: config.lastRunAt,
-      nextRunAt: new Date(lastRunAt + GEMINI_CRON_INTERVAL_MS).toISOString()
+      reason: "Ventana de 48 horas terminada. Gemini SEO Factory fue pausado automaticamente.",
+      activeUntil: activeUntilIso
     });
   }
 
@@ -54,7 +65,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const manualLimit = Math.min(2, remainingToday);
+  const manualLimit = Math.min(Math.max(1, config.cronBatchSize || 2), 2, remainingToday);
   const transferLimitOverride = manualLimit >= 1 ? 1 : 0;
   const tourLimitOverride = Math.max(0, manualLimit - transferLimitOverride);
   const result = await runGeminiSeoFactoryBatch({
@@ -77,6 +88,7 @@ export async function GET(request: NextRequest) {
       transfer: transferLimitOverride,
       tour: tourLimitOverride
     },
+    activeUntil: activeUntilIso,
     result,
     searchConsole
   });

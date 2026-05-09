@@ -28,7 +28,7 @@ export async function GET() {
   const now = new Date();
   const nowIso = now.toISOString();
 
-  const [plannerDestinations] = await Promise.all([
+  const [plannerDestinations, tours] = await Promise.all([
     prisma.destination.findMany({
       where: {
         country: {
@@ -37,6 +37,18 @@ export async function GET() {
       },
       select: { slug: true },
       take: 1000
+    }),
+    prisma.tour.findMany({
+      where: {
+        status: { in: ["published", "seo_only"] },
+        OR: [
+          { countryId: { in: ["RD", "DO"] } },
+          { country: { slug: { in: ["republica-dominicana", "dominican-republic", "dominican-republic-rd"] } } }
+        ]
+      },
+      select: { slug: true, createdAt: true },
+      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+      take: 300
     })
   ]);
 
@@ -86,6 +98,17 @@ export async function GET() {
       changefreq: "weekly",
       priority: 0.75
     });
+  }
+
+  for (const tour of tours) {
+    for (const locale of LOCALES) {
+      entries.push({
+        loc: `${BASE_URL}${withLocale(locale, `/prodiscovery/tour/${tour.slug}`)}`,
+        lastmod: tour.createdAt.toISOString(),
+        changefreq: "weekly",
+        priority: 0.78
+      });
+    }
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

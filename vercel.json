@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/gemini-seo-factory",
-      "schedule": "0 3 */2 * *"
+      "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/cron/gemini-rent-car-seo-factory",

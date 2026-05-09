@@ -68,6 +68,14 @@ export async function saveGeminiSeoFactorySettingsAction(formData: FormData) {
   const tourDailyLimit = Number(formData.get("tourDailyLimit") ?? current.tourDailyLimit);
   const transferDailyLimit = Number(formData.get("transferDailyLimit") ?? current.transferDailyLimit);
   const rentCarDailyLimit = Number(formData.get("rentCarDailyLimit") ?? current.rentCarDailyLimit);
+  const cronBatchSize = Number(formData.get("cronBatchSize") ?? current.cronBatchSize);
+  const cronDurationHours = Number(formData.get("cronDurationHours") ?? current.cronDurationHours);
+  const cronActiveUntilRaw = String(formData.get("cronActiveUntil") ?? "").trim();
+  const cronActiveUntilDate = cronActiveUntilRaw ? new Date(cronActiveUntilRaw) : null;
+  const cronActiveUntil =
+    cronActiveUntilDate && Number.isFinite(cronActiveUntilDate.getTime())
+      ? cronActiveUntilDate.toISOString()
+      : current.cronActiveUntil ?? null;
 
   await saveGeminiSeoFactoryConfig({
     enabled: formData.get("enabled") === "on",
@@ -80,6 +88,11 @@ export async function saveGeminiSeoFactorySettingsAction(formData: FormData) {
     rentCarDailyLimit: Number.isFinite(rentCarDailyLimit)
       ? Math.max(0, Math.min(2880, rentCarDailyLimit))
       : current.rentCarDailyLimit,
+    cronBatchSize: Number.isFinite(cronBatchSize) ? Math.max(1, Math.min(2, cronBatchSize)) : current.cronBatchSize,
+    cronDurationHours: Number.isFinite(cronDurationHours)
+      ? Math.max(1, Math.min(168, cronDurationHours))
+      : current.cronDurationHours,
+    cronActiveUntil,
     pausedSchemaAutopilot: true
   });
   revalidateGeminiSeoFactory();

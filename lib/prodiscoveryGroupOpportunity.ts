@@ -293,7 +293,7 @@ export function buildFallbackItineraryDraft(
   const assistance = labelList(data.assistance, ASSISTANCE_LABELS);
 
   return {
-    summary: `Propuesta inicial ${requestCode} para ${data.groupSize} viajeros en ${data.city}. La idea combina ${interests.toLowerCase()} con asistencia en ${assistance.toLowerCase()} para un grupo de tipo ${groupType.toLowerCase()}.`,
+    summary: `Solicitud ${requestCode} para ${data.groupSize} viajeros en ${data.city}. La propuesta puede combinar ${interests.toLowerCase()} con asistencia en ${assistance.toLowerCase()} para un grupo de tipo ${groupType.toLowerCase()}.`,
     days: [
       {
         title: `Llegada y bienvenida en ${data.city}`,
@@ -395,7 +395,7 @@ export async function generateProDiscoveryItineraryDraft(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8500);
   const prompt = `
-Eres un planner senior de viajes privados y grupos. Crea un borrador inicial para el cliente de ProDiscovery.
+Eres un planner senior de viajes privados y grupos. Crea una propuesta de trabajo para el equipo de ProDiscovery.
 No vendas tickets estandar. Enfocate en experiencia privada, guia, transporte, tiempos claros y momentos memorables.
 
 Solicitud:
@@ -493,11 +493,11 @@ export function buildProDiscoveryOpportunityEmail({
 
   return buildEmailShell({
     eyebrow: "ProDiscovery Concierge",
-    title: `Propuesta inicial #${requestCode}`,
-    intro: `Hola ${data.contactName}, recibimos la solicitud para ${data.city} y ya preparamos una primera idea de viaje.`,
+    title: `Solicitud ProDiscovery #${requestCode}`,
+    intro: `Hola ${data.contactName}, recibimos tu solicitud para ${data.city}. Nuestro equipo ya tiene los detalles para revisar disponibilidad, tiempos y servicios.`,
     baseUrl,
     tone: "success",
-    footerNote: "Este borrador es inicial. El equipo ProDiscovery revisara disponibilidad, horarios y detalles antes de enviarte una propuesta final.",
+    footerNote: "El equipo ProDiscovery revisara disponibilidad, horarios y detalles antes de enviarte la propuesta.",
     disclaimer:
       "Este correo confirma una solicitud de viaje a medida. No es una reserva confirmada ni un cargo de pago.",
     reasonWhyReceived: "Recibes este correo porque completaste el planificador de ProDiscovery.",

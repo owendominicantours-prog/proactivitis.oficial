@@ -255,6 +255,13 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
       url: `${BASE_URL}/tours/${tour.slug}`,
       priority: 0.8
     })),
+    ...tours
+      .filter((tour) => ["RD", "DO"].includes(tour.countryId))
+      .flatMap((tour) => [
+        { url: `${BASE_URL}/prodiscovery/tour/${tour.slug}`, priority: 0.78 },
+        { url: `${BASE_URL}/en/prodiscovery/tour/${tour.slug}`, priority: 0.78 },
+        { url: `${BASE_URL}/fr/prodiscovery/tour/${tour.slug}`, priority: 0.78 }
+      ]),
     ...countries.map((country) => ({
       url: `${BASE_URL}/traslado/${country.slug}`,
       priority: 0.7

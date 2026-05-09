@@ -96,6 +96,10 @@ export type GeminiSeoFactoryConfig = {
   tourDailyLimit: number;
   transferDailyLimit: number;
   rentCarDailyLimit: number;
+  cronBatchSize: number;
+  cronDurationHours: number;
+  cronStartedAt?: string | null;
+  cronActiveUntil?: string | null;
   cursor: number;
   pausedSchemaAutopilot: boolean;
   lastRunAt?: string | null;
@@ -145,6 +149,10 @@ const DEFAULT_CONFIG: GeminiSeoFactoryConfig = {
   tourDailyLimit: 0,
   transferDailyLimit: 0,
   rentCarDailyLimit: 2,
+  cronBatchSize: 2,
+  cronDurationHours: 48,
+  cronStartedAt: null,
+  cronActiveUntil: null,
   cursor: 0,
   pausedSchemaAutopilot: true,
   lastRunAt: null,
@@ -562,12 +570,22 @@ export async function getGeminiSeoFactoryConfig(): Promise<GeminiSeoFactoryConfi
   if (!record?.content || !isObject(record.content)) return DEFAULT_CONFIG;
   const stored = record.content as Partial<GeminiSeoFactoryConfig>;
   const upgradedForRentCarCron = stored.rentCarDailyLimit === undefined;
+  const storedCronBatchSize = Number(stored.cronBatchSize ?? DEFAULT_CONFIG.cronBatchSize);
+  const storedCronDurationHours = Number(stored.cronDurationHours ?? DEFAULT_CONFIG.cronDurationHours);
   return {
     ...DEFAULT_CONFIG,
     ...stored,
     dailyLimit: upgradedForRentCarCron
       ? Math.max(Number(stored.dailyLimit ?? 0), DEFAULT_CONFIG.dailyLimit)
-      : Number(stored.dailyLimit ?? DEFAULT_CONFIG.dailyLimit)
+      : Number(stored.dailyLimit ?? DEFAULT_CONFIG.dailyLimit),
+    cronBatchSize: Number.isFinite(storedCronBatchSize)
+      ? Math.max(1, Math.min(2, storedCronBatchSize))
+      : DEFAULT_CONFIG.cronBatchSize,
+    cronDurationHours: Number.isFinite(storedCronDurationHours)
+      ? Math.max(1, Math.min(168, storedCronDurationHours))
+      : DEFAULT_CONFIG.cronDurationHours,
+    cronStartedAt: typeof stored.cronStartedAt === "string" ? stored.cronStartedAt : null,
+    cronActiveUntil: typeof stored.cronActiveUntil === "string" ? stored.cronActiveUntil : null
   };
 }
 
@@ -853,7 +871,8 @@ Rules:
 - If Product.location is Punta Cana / Cap Cana, do not use Cabarete, Puerto Plata, Santo Domingo, Samana, or La Romana as search targets.
 - Include schema JSON-LD per locale.
 - Schema must include image and thumbnailUrl using the product image.
-- Include WebPage, FAQPage, BreadcrumbList, and either TouristTrip for tours, Service for transfers, or Product/Car for rent car.
+- Include one @graph with Organization, WebSite, WebPage, FAQPage, BreadcrumbList, and either TouristTrip for tours, Service for transfers, or Product/Car for rent car.
+- Connect schema nodes with stable @id values, mainEntity, isPartOf, provider, publisher, primaryImageOfPage, and the canonical page URL.
 - For rent_car pages, write as a rental vehicle landing page with clear daily price, pickup zone, model guarantee, and Proactivitis VIP Support.
 - Avoid fake aggregateRating or review if not provided.
 - Keep schema safe for Google.
@@ -1013,15 +1032,22 @@ const buildSafeSchema = ({
 }) => {
   const pageUrl = `${BASE_URL}${getGeminiSeoPublicPath(landing.type, landing.slug, locale)}`;
   const imageUrl = absoluteUrl(content.image || landing.product.image);
+  const productNodeId =
+    landing.type === "transfer"
+      ? `${pageUrl}#service`
+      : landing.type === "rent_car"
+        ? `${pageUrl}#rent-car`
+        : `${pageUrl}#tour`;
   const productNode =
     landing.type === "transfer"
       ? {
           "@type": "Service",
-          "@id": `${pageUrl}#service`,
+          "@id": productNodeId,
           name: content.h1,
           serviceType: "Private airport transfer",
           description: content.metaDescription,
           provider: { "@id": `${BASE_URL}#organization` },
+          mainEntityOfPage: { "@id": `${pageUrl}#webpage` },
           image: imageUrl,
           thumbnailUrl: imageUrl,
           areaServed: landing.product.location || "Punta Cana, Dominican Republic",
@@ -1036,11 +1062,12 @@ const buildSafeSchema = ({
       : landing.type === "rent_car"
         ? {
             "@type": ["Product", "Car"],
-            "@id": `${pageUrl}#rent-car`,
+            "@id": productNodeId,
             name: content.h1,
             description: content.metaDescription,
             image: imageUrl,
             thumbnailUrl: imageUrl,
+            mainEntityOfPage: { "@id": `${pageUrl}#webpage` },
             brand: {
               "@type": "Brand",
               name: landing.product.vehicleModel ?? landing.product.title
@@ -1064,12 +1091,13 @@ const buildSafeSchema = ({
           }
         : {
           "@type": "TouristTrip",
-          "@id": `${pageUrl}#tour`,
+          "@id": productNodeId,
           name: content.h1,
           description: content.metaDescription,
           image: imageUrl,
           thumbnailUrl: imageUrl,
-          touristType: "Travelers visiting Punta Cana",
+          mainEntityOfPage: { "@id": `${pageUrl}#webpage` },
+          touristType: landing.product.location ? `Travelers visiting ${landing.product.location}` : "Travelers visiting Dominican Republic",
           provider: { "@id": `${BASE_URL}#organization` },
           offers: {
             "@type": "Offer",
@@ -1091,6 +1119,19 @@ const buildSafeSchema = ({
         logo: `${BASE_URL}/icon.png`
       },
       {
+        "@type": "WebSite",
+        "@id": `${BASE_URL}#website`,
+        url: BASE_URL,
+        name: "Proactivitis",
+        publisher: { "@id": `${BASE_URL}#organization` },
+        inLanguage: locale,
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${BASE_URL}/search?q={search_term_string}`,
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
         "@type": "WebPage",
         "@id": `${pageUrl}#webpage`,
         url: pageUrl,
@@ -1098,8 +1139,12 @@ const buildSafeSchema = ({
         description: content.metaDescription,
         inLanguage: locale,
         isPartOf: { "@id": `${BASE_URL}#website` },
+        publisher: { "@id": `${BASE_URL}#organization` },
         primaryImageOfPage: { "@id": `${pageUrl}#image` },
-        mainEntity: { "@id": productNode["@id"] }
+        mainEntity: { "@id": productNodeId },
+        about: { "@id": productNodeId },
+        datePublished: landing.publishedAt ?? landing.generatedAt,
+        dateModified: landing.generatedAt
       },
       {
         "@type": "ImageObject",

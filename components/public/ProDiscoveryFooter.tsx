@@ -8,7 +8,7 @@ const copy = {
     title: "ProDiscovery: Custom Group Planner",
     body:
       "Planificamos viajes privados para grupos en Republica Dominicana: empresas, familias, bodas, despedidas, incentivos y celebraciones con guia, transporte, cenas privadas, fotografia y logistica de grupo.",
-    cta: "Disenar mi viaje privado",
+    cta: "Diseñar mi viaje privado",
     signature: "Concierge para grupos privados, incentivos y celebraciones.",
     columns: [
       {

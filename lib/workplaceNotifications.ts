@@ -6,6 +6,7 @@ import { getWorkplaceContext } from "@/lib/workplace";
 export type WorkplaceNotificationSummary = {
   mentions: number;
   support: number;
+  proDiscovery: number;
   approvals: number;
   total: number;
   primaryHref: string;
@@ -16,6 +17,7 @@ export type WorkplaceNotificationContext = NonNullable<Awaited<ReturnType<typeof
 export const emptyWorkplaceNotificationSummary: WorkplaceNotificationSummary = {
   mentions: 0,
   support: 0,
+  proDiscovery: 0,
   approvals: 0,
   total: 0,
   primaryHref: "/workplace"
@@ -63,8 +65,23 @@ export async function getWorkplaceNotificationSummary(context: WorkplaceNotifica
     context.isAdmin ? prisma.workplaceApprovalRequest.count({ where: { status: "PENDING" } }) : 0
   ]);
 
-  const total = mentions + support + approvals;
-  const primaryHref = mentions ? "/workplace/chat" : support ? "/workplace/support" : approvals ? "/admin/workplace" : "/workplace";
+  const proDiscovery =
+    context.isAdmin || context.permissions.has("prodiscovery.view")
+      ? await prisma.proDiscoveryGroupOpportunity.count({
+          where: { status: { in: ["NEW", "REVIEWING", "QUOTED", "ACCEPTED"] } }
+        })
+      : 0;
 
-  return { mentions, support, approvals, total, primaryHref };
+  const total = mentions + support + proDiscovery + approvals;
+  const primaryHref = mentions
+    ? "/workplace/chat"
+    : support
+      ? "/workplace/support"
+      : proDiscovery
+        ? "/workplace/prodiscovery"
+        : approvals
+          ? "/admin/workplace"
+          : "/workplace";
+
+  return { mentions, support, proDiscovery, approvals, total, primaryHref };
 }

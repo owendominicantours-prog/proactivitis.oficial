@@ -1,6 +1,8 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 import { localizedDestinationName } from "@/lib/localizedPlaces";
+import { getProDiscoveryGroupTitleStore, resolveProDiscoveryGroupTitle } from "@/lib/prodiscoveryGroupTitles";
 import type { Locale } from "@/lib/translations";
 
 export type ProDiscoveryDominicanIdea = {
@@ -55,14 +57,14 @@ const cleanDescription = (value: string | null | undefined, locale: Locale) => {
   return (value ?? fallback).replace(/\s+/g, " ").trim().slice(0, 170);
 };
 
-const santoDomingoPriority = (tour: {
+const tourSearchText = (tour: {
   slug: string;
   title: string;
   location: string;
   destination?: { name: string | null; slug: string } | null;
   departureDestination?: { name: string | null; slug: string } | null;
-}) => {
-  const text = [
+}) =>
+  [
     tour.slug,
     tour.title,
     tour.location,
@@ -74,42 +76,95 @@ const santoDomingoPriority = (tour: {
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
+
+const isSantoDomingoTour = (tour: {
+  slug: string;
+  title: string;
+  location: string;
+  destination?: { name: string | null; slug: string } | null;
+  departureDestination?: { name: string | null; slug: string } | null;
+}) => tourSearchText(tour).includes("santo domingo");
+
+const santoDomingoPriority = (tour: {
+  slug: string;
+  title: string;
+  location: string;
+  status?: string;
+  destination?: { name: string | null; slug: string } | null;
+  departureDestination?: { name: string | null; slug: string } | null;
+}) => {
+  const text = tourSearchText(tour);
   const hasSantoDomingo = text.includes("santo domingo");
   const hasPuntaCana = text.includes("punta cana") || text.includes("punta-cana");
-  if (hasSantoDomingo && hasPuntaCana) return 0;
-  if (hasSantoDomingo) return 1;
-  return 2;
+  const isPublished = tour.status === "published";
+  if (hasSantoDomingo && hasPuntaCana && isPublished) return 0;
+  if (hasSantoDomingo && hasPuntaCana) return 1;
+  if (hasSantoDomingo && isPublished) return 2;
+  if (hasSantoDomingo) return 3;
+  return 4;
 };
 
 export async function getDominicanGroupIdeas(locale: Locale, limit = 6): Promise<ProDiscoveryDominicanIdea[]> {
-  const tours = await prisma.tour.findMany({
-    where: {
+  const baseWhere: Prisma.TourWhereInput = {
       status: { in: ["published", "seo_only"] },
       slug: { not: HIDDEN_TRANSFER_SLUG },
       OR: [
         { countryId: { in: ["RD", "DO"] } },
         { country: { slug: { in: ["republica-dominicana", "dominican-republic", "dominican-republic-rd"] } } }
       ]
-    },
-    select: {
-      slug: true,
-      title: true,
-      shortDescription: true,
-      description: true,
-      heroImage: true,
-      gallery: true,
-      category: true,
-      location: true,
-      destination: { select: { name: true, slug: true } },
-      departureDestination: { select: { name: true, slug: true } }
-    },
-    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-    take: Math.max(limit * 4, 24)
-  });
+  };
+  const select = {
+    slug: true,
+    title: true,
+    shortDescription: true,
+    description: true,
+    heroImage: true,
+    gallery: true,
+    category: true,
+    location: true,
+    status: true,
+    destination: { select: { name: true, slug: true } },
+    departureDestination: { select: { name: true, slug: true } }
+  } satisfies Prisma.TourSelect;
+
+  const [generalTours, santoDomingoTours, titleStore] = await Promise.all([
+    prisma.tour.findMany({
+      where: baseWhere,
+      select,
+      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+      take: Math.max(limit * 8, 48)
+    }),
+    prisma.tour.findMany({
+      where: {
+        AND: [
+          baseWhere,
+          {
+            OR: [
+              { slug: { contains: "santo-domingo" } },
+              { title: { contains: "Santo Domingo" } },
+              { location: { contains: "Santo Domingo" } },
+              { category: { contains: "Santo Domingo" } },
+              { shortDescription: { contains: "Santo Domingo" } },
+              { description: { contains: "Santo Domingo" } }
+            ]
+          }
+        ]
+      },
+      select,
+      orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+      take: Math.max(12, Math.ceil(limit / 2))
+    }),
+    getProDiscoveryGroupTitleStore()
+  ]);
+
+  const featuredSantoDomingo = [...santoDomingoTours, ...generalTours.filter(isSantoDomingoTour)].sort(
+    (a, b) => santoDomingoPriority(a) - santoDomingoPriority(b)
+  )[0];
+  const generalWithoutSantoDomingo = generalTours.filter((tour) => !isSantoDomingoTour(tour));
+  const tours = featuredSantoDomingo ? [featuredSantoDomingo, ...generalWithoutSantoDomingo] : generalTours;
 
   const seen = new Set<string>();
   return tours
-    .sort((a, b) => santoDomingoPriority(a) - santoDomingoPriority(b))
     .filter((tour) => {
       if (seen.has(tour.slug)) return false;
       seen.add(tour.slug);
@@ -118,17 +173,29 @@ export async function getDominicanGroupIdeas(locale: Locale, limit = 6): Promise
     .slice(0, limit)
     .map((tour) => {
       const destination = tour.departureDestination ?? tour.destination;
+      const destinationLabel = destination ? localizedDestinationName(destination, locale) : tour.location;
       const gallery = tour.gallery
         ?.split(",")
         .map((item) => item.trim())
         .filter(Boolean);
       return {
         slug: tour.slug,
-        title: tour.title,
+        title: resolveProDiscoveryGroupTitle(
+          {
+            slug: tour.slug,
+            title: tour.title,
+            category: tour.category,
+            destination: destinationLabel,
+            location: tour.location
+          },
+          locale,
+          titleStore,
+          "cardTitle"
+        ),
         description: cleanDescription(tour.shortDescription ?? tour.description, locale),
         image: tour.heroImage ?? gallery?.[0] ?? fallbackImage,
         category: tour.category ?? "Experiencia privada",
-        destination: destination ? localizedDestinationName(destination, locale) : tour.location,
+        destination: destinationLabel,
         groupAngle: groupAngleFor(tour.category, locale)
       };
     });

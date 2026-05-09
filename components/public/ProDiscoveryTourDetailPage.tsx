@@ -1,344 +1,543 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import ProDiscoveryFooter from "@/components/public/ProDiscoveryFooter";
 import ProDiscoveryHeader from "@/components/public/ProDiscoveryHeader";
 import StructuredData from "@/components/schema/StructuredData";
+import { formatDurationDisplay } from "@/lib/formatDuration";
+import { localizedDestinationName } from "@/lib/localizedPlaces";
 import { prisma } from "@/lib/prisma";
-import { PROACTIVITIS_URL, getPriceValidUntil } from "@/lib/seo";
+import { getProDiscoveryGroupTitleStore, resolveProDiscoveryGroupTitle } from "@/lib/prodiscoveryGroupTitles";
+import { PROACTIVITIS_URL } from "@/lib/seo";
 import type { Locale } from "@/lib/translations";
 
 type Props = {
   locale: Locale;
   slug: string;
-  reviewKeyword?: string;
 };
 
-const COPY: Record<Locale, { back: string; reviews: string; noReviews: string; from: string; book: string; highlights: string; map: string; reviewFilter: string; clear: string }> = {
+type Copy = {
+  back: string;
+  eyebrow: string;
+  groupLabel: string;
+  request: string;
+  consult: string;
+  snapshot: string;
+  duration: string;
+  destination: string;
+  pickup: string;
+  groupFit: string;
+  privatePlan: string;
+  privatePlanBody: string;
+  howItWorks: string;
+  included: string;
+  adjust: string;
+  logistics: string;
+  gallery: string;
+  related: string;
+  relatedCta: string;
+  noPublicPrice: string;
+  baseExperience: string;
+  fallbackDescription: string;
+  details: string[];
+};
+
+const COPY: Record<Locale, Copy> = {
   es: {
     back: "Volver a ProDiscovery",
-    reviews: "Resenas verificadas",
-    noReviews: "Este producto aun no tiene resenas aprobadas.",
-    from: "Desde",
-    book: "Ir a reserva",
-    highlights: "Resumen rapido",
-    map: "Ver en mapa",
-    reviewFilter: "Filtrar reseñas por tema",
-    clear: "Limpiar"
+    eyebrow: "Experiencia base para grupos",
+    groupLabel: "Version privada para grupos",
+    request: "Solicitar propuesta para mi grupo",
+    consult: "Consultar esta experiencia",
+    snapshot: "Resumen para decidir",
+    duration: "Duracion base",
+    destination: "Destino",
+    pickup: "Recogida o punto de encuentro",
+    groupFit: "Ideal para",
+    privatePlan: "Como se transforma para tu grupo",
+    privatePlanBody:
+      "Tomamos esta experiencia como punto de partida y la ajustamos con horarios, transporte, guia, comida, ritmo y nivel de privacidad segun el grupo.",
+    howItWorks: "Como puede funcionar",
+    included: "Base de la experiencia",
+    adjust: "Ajustes para grupos",
+    logistics: "Logistica que podemos coordinar",
+    gallery: "Referencia visual",
+    related: "Mas ideas para grupos",
+    relatedCta: "Ver idea",
+    noPublicPrice: "Sin precio publico: el presupuesto depende de personas, fecha, transporte y privacidad.",
+    baseExperience: "Inspirado en un producto real de Proactivitis",
+    fallbackDescription:
+      "Esta experiencia se puede convertir en un plan privado para empresas, familias, bodas o grupos de amigos con una propuesta hecha a medida.",
+    details: [
+      "Horario privado o flexible",
+      "Transporte coordinado para todo el grupo",
+      "Guia lider segun idioma necesario",
+      "Paradas y ritmo adaptados",
+      "Opciones de comida, fotografia o celebracion"
+    ]
   },
   en: {
     back: "Back to ProDiscovery",
-    reviews: "Verified reviews",
-    noReviews: "This product has no approved reviews yet.",
-    from: "From",
-    book: "Go to booking",
-    highlights: "Quick summary",
-    map: "View map",
-    reviewFilter: "Filter reviews by topic",
-    clear: "Clear"
+    eyebrow: "Base experience for groups",
+    groupLabel: "Private version for groups",
+    request: "Request proposal for my group",
+    consult: "Ask about this experience",
+    snapshot: "Decision snapshot",
+    duration: "Base duration",
+    destination: "Destination",
+    pickup: "Pickup or meeting point",
+    groupFit: "Best for",
+    privatePlan: "How it becomes private for your group",
+    privatePlanBody:
+      "We use this experience as a starting point and adjust timing, transport, guide, meals, rhythm and privacy level around the group.",
+    howItWorks: "How it can work",
+    included: "Experience base",
+    adjust: "Group adjustments",
+    logistics: "Logistics we can coordinate",
+    gallery: "Visual reference",
+    related: "More group ideas",
+    relatedCta: "View idea",
+    noPublicPrice: "No public price: the proposal depends on people, date, transport and privacy.",
+    baseExperience: "Inspired by a real Proactivitis product",
+    fallbackDescription:
+      "This experience can become a private plan for companies, families, weddings or groups of friends with a tailored proposal.",
+    details: [
+      "Private or flexible timing",
+      "Transport coordinated for the whole group",
+      "Lead guide by required language",
+      "Stops and pace adapted",
+      "Meal, photography or celebration options"
+    ]
   },
   fr: {
     back: "Retour a ProDiscovery",
-    reviews: "Avis verifies",
-    noReviews: "Ce produit n a pas encore d avis approuves.",
-    from: "A partir de",
-    book: "Aller a la reservation",
-    highlights: "Resume rapide",
-    map: "Voir la carte",
-    reviewFilter: "Filtrer les avis par theme",
-    clear: "Effacer"
+    eyebrow: "Experience de base pour groupes",
+    groupLabel: "Version privee pour groupes",
+    request: "Demander proposition pour mon groupe",
+    consult: "Consulter cette experience",
+    snapshot: "Resume pour decider",
+    duration: "Duree de base",
+    destination: "Destination",
+    pickup: "Pickup ou point de rencontre",
+    groupFit: "Ideal pour",
+    privatePlan: "Comment elle devient privee pour votre groupe",
+    privatePlanBody:
+      "Nous utilisons cette experience comme point de depart et ajustons horaires, transport, guide, repas, rythme et confidentialite selon le groupe.",
+    howItWorks: "Comment cela peut fonctionner",
+    included: "Base de l experience",
+    adjust: "Ajustements groupe",
+    logistics: "Logistique possible",
+    gallery: "Reference visuelle",
+    related: "Plus d idees groupe",
+    relatedCta: "Voir idee",
+    noPublicPrice: "Sans prix public: le budget depend des personnes, de la date, du transport et de la confidentialite.",
+    baseExperience: "Inspire d un vrai produit Proactivitis",
+    fallbackDescription:
+      "Cette experience peut devenir un plan prive pour entreprises, familles, mariages ou groupes d amis avec une proposition sur mesure.",
+    details: [
+      "Horaire prive ou flexible",
+      "Transport coordonne pour tout le groupe",
+      "Guide leader selon la langue necessaire",
+      "Arrets et rythme adaptes",
+      "Options repas, photographie ou celebration"
+    ]
   }
 };
 
 const localePrefix = (locale: Locale) => (locale === "es" ? "" : `/${locale}`);
-const toTourHref = (locale: Locale, slug: string) => `${localePrefix(locale)}/tours/${slug}`;
-const toDiscoveryHref = (locale: Locale) => `${localePrefix(locale)}/prodiscovery`;
+
+const plainText = (value?: string | null) =>
+  (value ?? "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
 const parseGallery = (gallery?: string | null) => {
   if (!gallery) return [];
-  try {
-    const parsed = JSON.parse(gallery) as unknown;
-    return Array.isArray(parsed) ? (parsed as string[]) : [];
-  } catch {
-    return [];
+  const trimmed = gallery.trim();
+  if (!trimmed) return [];
+  if (trimmed.startsWith("[")) {
+    try {
+      const parsed = JSON.parse(trimmed) as unknown;
+      return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string" && item.trim().length > 0) : [];
+    } catch {
+      return [];
+    }
   }
+  return trimmed
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 };
 
-const toAbs = (src: string) => (src.startsWith("http") ? src : `${PROACTIVITIS_URL}${src.startsWith("/") ? src : `/${src}`}`);
-const formatDate = (date: Date, locale: Locale) => new Intl.DateTimeFormat(locale === "es" ? "es-DO" : locale === "fr" ? "fr-FR" : "en-US", { dateStyle: "medium" }).format(date);
-const round1 = (value: number) => Math.round(value * 10) / 10;
+const listFromJson = (value: unknown) =>
+  Array.isArray(value)
+    ? value
+        .map((item) => (typeof item === "string" ? item.trim() : ""))
+        .filter(Boolean)
+        .slice(0, 6)
+    : [];
 
-function BubbleRating({ rating }: { rating: number }) {
-  return (
-    <div className="inline-flex items-center gap-1.5" aria-label={`rating ${rating}/5`}>
-      {Array.from({ length: 5 }).map((_, idx) => {
-        const n = idx + 1;
-        const filled = rating >= n;
-        const partial = !filled && rating > idx && rating < n;
-        const percent = partial ? Math.max(10, Math.min(90, (rating - idx) * 100)) : 0;
-        return (
-          <span key={n} className="relative h-3.5 w-3.5 rounded-full border border-emerald-700/40 bg-white">
-            <span className="absolute inset-0 rounded-full bg-emerald-600" style={{ width: filled ? "100%" : partial ? `${percent}%` : "0%" }} />
-          </span>
-        );
-      })}
-    </div>
-  );
-}
+const listFromText = (value?: string | null) =>
+  plainText(value)
+    .split(/\n|;|\.\s+|,\s+/)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 2)
+    .slice(0, 6);
 
-export default async function ProDiscoveryTourDetailPage({ locale, slug, reviewKeyword }: Props) {
-  const t = COPY[locale];
+const groupFitFor = (category: string | null | undefined, locale: Locale) => {
+  const text = (category ?? "").toLowerCase();
+  if (text.includes("buggy") || text.includes("atv") || text.includes("aventura")) {
+    return locale === "en" ? "Active groups and incentives" : locale === "fr" ? "Groupes actifs et incentives" : "Grupos activos e incentivos";
+  }
+  if (text.includes("isla") || text.includes("playa") || text.includes("boat") || text.includes("catamaran")) {
+    return locale === "en" ? "Celebrations, families and beach groups" : locale === "fr" ? "Celebrations, familles et groupes plage" : "Celebraciones, familias y grupos de playa";
+  }
+  if (text.includes("cultura") || text.includes("ciudad") || text.includes("santo domingo")) {
+    return locale === "en" ? "Companies, culture groups and VIP guests" : locale === "fr" ? "Entreprises, groupes culturels et VIP" : "Empresas, grupos culturales e invitados VIP";
+  }
+  return locale === "en" ? "Private groups that need a custom rhythm" : locale === "fr" ? "Groupes prives avec rythme sur mesure" : "Grupos privados que necesitan ritmo propio";
+};
+
+async function getTour(slug: string, locale: Locale) {
   const tour = await prisma.tour.findFirst({
     where: { slug, status: { in: ["published", "seo_only"] } },
     select: {
       id: true,
       slug: true,
       title: true,
+      subtitle: true,
       shortDescription: true,
       description: true,
-      price: true,
+      duration: true,
+      category: true,
       location: true,
       heroImage: true,
       gallery: true,
-      translations: { where: { locale }, select: { title: true, shortDescription: true, description: true } }
+      includes: true,
+      includesList: true,
+      highlights: true,
+      pickup: true,
+      meetingPoint: true,
+      requirements: true,
+      physicalLevel: true,
+      minAge: true,
+      destinationId: true,
+      destination: { select: { name: true, slug: true } },
+      departureDestination: { select: { name: true, slug: true } },
+      translations: { where: { locale }, select: { title: true, subtitle: true, shortDescription: true, description: true } }
     }
   });
 
+  return tour;
+}
+
+export async function getProDiscoveryTourGroupMetadata(locale: Locale, slug: string): Promise<Metadata> {
+  const t = COPY[locale] ?? COPY.es;
+  const tour = await getTour(slug, locale);
+  if (!tour) {
+    return {
+      title: "ProDiscovery",
+      robots: { index: false, follow: false }
+    };
+  }
+  const tr = tour.translations[0];
+  const rawTitle = tr?.title || tour.title;
+  const destination = tour.departureDestination ?? tour.destination;
+  const destinationLabel = destination ? localizedDestinationName(destination, locale) : tour.location || "Republica Dominicana";
+  const titleStore = await getProDiscoveryGroupTitleStore();
+  const title = resolveProDiscoveryGroupTitle(
+    {
+      slug: tour.slug,
+      title: rawTitle,
+      category: tour.category,
+      destination: destinationLabel,
+      location: tour.location
+    },
+    locale,
+    titleStore,
+    "title"
+  );
+  const description = plainText(tr?.shortDescription || tour.shortDescription || tr?.description || tour.description || t.fallbackDescription).slice(0, 155);
+  const canonicalPath = `${localePrefix(locale)}/prodiscovery/tour/${tour.slug}`;
+  const canonical = `${PROACTIVITIS_URL}${canonicalPath}`;
+
+  return {
+    title: `${title} | ProDiscovery`,
+    description: `${description} Propuesta privada para grupos, sin precio publico por ticket.`,
+    alternates: {
+      canonical,
+      languages: {
+        es: `/prodiscovery/tour/${tour.slug}`,
+        en: `/en/prodiscovery/tour/${tour.slug}`,
+        fr: `/fr/prodiscovery/tour/${tour.slug}`,
+        "x-default": `/prodiscovery/tour/${tour.slug}`
+      }
+    },
+    openGraph: {
+      title: `${title} | ProDiscovery`,
+      description,
+      url: canonical,
+      type: "website",
+      images: tour.heroImage ? [{ url: tour.heroImage }] : undefined
+    },
+    robots: { index: true, follow: true }
+  };
+}
+
+export default async function ProDiscoveryTourDetailPage({ locale, slug }: Props) {
+  const t = COPY[locale] ?? COPY.es;
+  const tour = await getTour(slug, locale);
   if (!tour) return notFound();
 
   const tr = tour.translations[0];
-  const title = tr?.title || tour.title;
-  const description = tr?.shortDescription || tr?.description || tour.shortDescription || tour.description;
+  const rawTitle = tr?.title || tour.title;
+  const description = plainText(tr?.shortDescription || tour.shortDescription || tr?.description || tour.description || t.fallbackDescription);
+  const destination = tour.departureDestination ?? tour.destination;
+  const destinationLabel = destination ? localizedDestinationName(destination, locale) : tour.location || "Republica Dominicana";
+  const titleStore = await getProDiscoveryGroupTitleStore();
+  const title = resolveProDiscoveryGroupTitle(
+    {
+      slug: tour.slug,
+      title: rawTitle,
+      category: tour.category,
+      destination: destinationLabel,
+      location: tour.location
+    },
+    locale,
+    titleStore,
+    "title"
+  );
+  const subtitle =
+    resolveProDiscoveryGroupTitle(
+      {
+        slug: tour.slug,
+        title: rawTitle,
+        category: tour.category,
+        destination: destinationLabel,
+        location: tour.location
+      },
+      locale,
+      titleStore,
+      "subtitle"
+    ) ||
+    tr?.subtitle ||
+    tour.subtitle ||
+    t.groupLabel;
   const gallery = [tour.heroImage, ...parseGallery(tour.gallery)].filter(Boolean) as string[];
   const hero = gallery[0] || "/fototours/fotosimple.jpg";
-
-  const [reviewsRaw, relatedTours] = await Promise.all([
-    prisma.tourReview.findMany({
-      where: { tourId: tour.id, status: "APPROVED" },
-      orderBy: { createdAt: "desc" },
-      take: 14,
-      select: { id: true, customerName: true, rating: true, title: true, body: true, createdAt: true }
-    }),
-    prisma.tour.findMany({
-      where: { status: { in: ["published", "seo_only"] }, slug: { not: slug }, location: tour.location || undefined },
-      select: { id: true, slug: true, title: true, heroImage: true, price: true },
-      take: 4
-    })
-  ]);
-  const keyword = reviewKeyword?.trim().toLowerCase() || "";
-  const reviews = keyword
-    ? reviewsRaw.filter((review) => review.body.toLowerCase().includes(keyword) || (review.title ?? "").toLowerCase().includes(keyword))
-    : reviewsRaw;
-  const keywordPool = reviewsRaw
-    .flatMap((review) => review.body.toLowerCase().split(/[^a-zA-ZÀ-ÿ0-9]+/g))
-    .filter((word) => word.length >= 5 && !["punta", "cana", "hotel", "tour", "great", "excelente", "proactivitis", "service"].includes(word))
-    .slice(0, 400);
-  const keywordCounts = new Map<string, number>();
-  keywordPool.forEach((word) => keywordCounts.set(word, (keywordCounts.get(word) ?? 0) + 1));
-  const keywordSuggestions = Array.from(keywordCounts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([word]) => word);
-
-  const average = reviews.length ? round1(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) : 0;
-  const bookHref = toTourHref(locale, tour.slug);
+  const includes = listFromJson(tour.includesList);
+  const highlights = listFromJson(tour.highlights);
+  const baseItems = highlights.length ? highlights : includes.length ? includes : listFromText(tour.includes || tour.description);
+  const requestHref = `${localePrefix(locale)}/prodiscovery?dest=${encodeURIComponent(destinationLabel)}#planner`;
   const pageUrl = `${PROACTIVITIS_URL}${localePrefix(locale)}/prodiscovery/tour/${tour.slug}`;
 
-  const priceValidUntil = getPriceValidUntil();
+  const relatedWhere =
+    tour.destinationId || tour.location
+      ? {
+          status: { in: ["published", "seo_only"] },
+          slug: { not: tour.slug },
+          OR: [
+            ...(tour.destinationId ? [{ destinationId: tour.destinationId }] : []),
+            ...(tour.location ? [{ location: tour.location }] : [])
+          ]
+        }
+      : {
+          status: { in: ["published", "seo_only"] },
+          slug: { not: tour.slug }
+        };
+
+  const relatedTours = await prisma.tour.findMany({
+    where: {
+      ...relatedWhere
+    },
+    select: { id: true, slug: true, title: true, heroImage: true, category: true },
+    take: 3
+  });
 
   const schema = {
     "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Product",
-        "@id": `${pageUrl}#product`,
-        name: title,
-        description,
-        image: gallery.slice(0, 6).map((img) => toAbs(img)),
-        url: pageUrl,
-        offers: {
-          "@type": "Offer",
-          price: tour.price,
-          priceCurrency: "USD",
-          priceValidUntil,
-          availability: "https://schema.org/InStock",
-          url: `${PROACTIVITIS_URL}${bookHref}`,
-          shippingDetails: {
-            "@type": "OfferShippingDetails",
-            shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USD" },
-            shippingDestination: {
-              "@type": "DefinedRegion",
-              addressCountry: "DO"
-            },
-        deliveryTime: {
-          "@type": "ShippingDeliveryTime",
-          handlingTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d"
-          },
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d"
-          }
-        }
-          },
-          hasMerchantReturnPolicy: {
-            "@type": "MerchantReturnPolicy",
-            returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
-            merchantReturnDays: 2,
-            applicableCountry: "DO",
-        returnMethod: "https://schema.org/ReturnByMail",
-        returnFees: "https://schema.org/FreeReturn"
-          }
-        },
-        ...(reviews.length
-          ? {
-              aggregateRating: {
-                "@type": "AggregateRating",
-                ratingValue: average,
-                reviewCount: reviews.length
-              }
-            }
-          : {})
-      },
-      {
-        "@type": "BreadcrumbList",
-        "@id": `${pageUrl}#breadcrumbs`,
-        itemListElement: [
-          {
-            "@type": "ListItem",
-            position: 1,
-            name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
-            item: `${PROACTIVITIS_URL}${locale === "es" ? "/" : `/${locale}`}`
-          },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "ProDiscovery",
-            item: `${PROACTIVITIS_URL}${localePrefix(locale)}/prodiscovery`
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: title,
-            item: pageUrl
-          }
-        ]
-      }
-    ]
+    "@type": "Service",
+    name: title,
+    serviceType: "Custom group travel planning",
+    provider: {
+      "@type": "Organization",
+      name: "Proactivitis",
+      url: PROACTIVITIS_URL
+    },
+    areaServed: destinationLabel,
+    image: hero.startsWith("http") ? hero : `${PROACTIVITIS_URL}${hero.startsWith("/") ? hero : `/${hero}`}`,
+    url: pageUrl,
+    description
   };
 
   return (
-    <main className="bg-[#f5f7f9] pb-12">
+    <main className="travel-surface bg-[#f5f7f9]">
       <StructuredData data={schema} />
       <ProDiscoveryHeader locale={locale} />
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <Link href={toDiscoveryHref(locale)} className="text-sm font-semibold text-emerald-700">
-          {t.back}
-        </Link>
 
-        <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <section className="rounded-2xl border border-slate-200 bg-white">
-            <div className="relative h-80 overflow-hidden rounded-t-2xl bg-slate-100">
-              <img src={hero} alt={title} className="h-full w-full object-cover" />
-            </div>
-            <div className="p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{tour.location || "Punta Cana"}</p>
-              <h1 className="mt-2 text-3xl font-black text-slate-900">{title}</h1>
-              <div className="mt-3 flex items-center gap-2 text-sm text-slate-700">
-                <BubbleRating rating={average} />
-                <span className="font-bold">{average.toFixed(1)}</span>
-                <span>({reviews.length})</span>
-              </div>
-              <p className="mt-4 leading-relaxed text-slate-700">{description}</p>
-            </div>
-          </section>
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+          <Link href={`${localePrefix(locale)}/prodiscovery`} className="text-sm font-black text-emerald-700 hover:text-emerald-800">
+            {t.back}
+          </Link>
 
-          <aside className="space-y-4">
-            <section className="rounded-2xl border border-slate-200 bg-white p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{t.highlights}</p>
-              <p className="mt-3 text-2xl font-black text-slate-900">
-                {t.from} USD {Math.round(tour.price)}
-              </p>
-              <p className="mt-2 text-sm text-slate-600">{reviews.length > 0 ? `${reviews.length} ${t.reviews.toLowerCase()}` : t.noReviews}</p>
-              <div className="mt-3 flex items-center gap-2">
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${title} ${tour.location || "Punta Cana"}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700"
-                >
-                  {t.map}
-                </a>
+          <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+            <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50">
+              <div className="relative h-[360px] bg-slate-200">
+                <Image src={hero} alt={title} fill priority sizes="(min-width: 1024px) 65vw, 100vw" className="object-cover" />
               </div>
-              <Link href={bookHref} className="mt-3 inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
-                {t.book}
+              <div className="p-5 sm:p-6">
+                <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-700">{t.eyebrow}</p>
+                <h1 className="mt-3 text-4xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">{title}</h1>
+                <p className="mt-3 text-lg font-semibold leading-8 text-slate-700">{subtitle}</p>
+                <p className="mt-4 max-w-4xl text-base leading-8 text-slate-600">{description}</p>
+              </div>
+            </div>
+
+            <aside className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">{t.snapshot}</p>
+              <div className="mt-4 space-y-3">
+                <InfoRow label={t.destination} value={destinationLabel} />
+                <InfoRow label={t.duration} value={formatDurationDisplay(tour.duration, locale === "fr" ? "Duree flexible" : locale === "en" ? "Flexible duration" : "Duracion flexible")} />
+                <InfoRow label={t.pickup} value={tour.pickup || tour.meetingPoint || (locale === "en" ? "To coordinate with the group" : locale === "fr" ? "A coordonner avec le groupe" : "A coordinar con el grupo")} />
+                <InfoRow label={t.groupFit} value={groupFitFor(tour.category, locale)} />
+              </div>
+              <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                <p className="text-sm font-black leading-6 text-emerald-950">{t.noPublicPrice}</p>
+              </div>
+              <Link href={requestHref} className="mt-4 inline-flex w-full justify-center rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white hover:bg-emerald-700">
+                {t.request}
               </Link>
-            </section>
+            </aside>
+          </div>
+        </div>
+      </section>
 
-            {gallery.length > 1 ? (
-              <section className="rounded-2xl border border-slate-200 bg-white p-4">
-                <div className="grid grid-cols-3 gap-2">
-                  {gallery.slice(1, 7).map((img) => (
-                    <img key={img} src={img} alt={title} className="h-20 w-full rounded-lg object-cover" loading="lazy" />
-                  ))}
+      <section className="mx-auto mt-5 grid max-w-7xl gap-5 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
+        <div className="space-y-5">
+          <article className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-emerald-700">{t.baseExperience}</p>
+            <h2 className="mt-2 text-2xl font-black text-slate-950">{t.privatePlan}</h2>
+            <p className="mt-3 text-sm leading-7 text-slate-600">{t.privatePlanBody}</p>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {t.details.map((item) => (
+                <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-sm font-semibold leading-6 text-slate-800">{item}</p>
                 </div>
-              </section>
-            ) : null}
-          </aside>
+              ))}
+            </div>
+          </article>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            <DetailPanel title={t.howItWorks} items={baseItems.length ? baseItems : [description]} />
+            <DetailPanel
+              title={t.adjust}
+              items={[
+                locale === "en" ? "Private start time according to the group agenda" : locale === "fr" ? "Heure de depart privee selon l agenda" : "Hora de salida privada segun la agenda",
+                locale === "en" ? "Route and stops adjusted before confirming" : locale === "fr" ? "Route et arrets ajustes avant confirmation" : "Ruta y paradas ajustadas antes de confirmar",
+                locale === "en" ? "Support for bilingual or mixed-language groups" : locale === "fr" ? "Support pour groupes bilingues" : "Soporte para grupos bilingues"
+              ]}
+            />
+          </div>
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <section className="rounded-2xl border border-slate-200 bg-white p-6">
-            <h2 className="text-2xl font-bold text-slate-900">{t.reviews}</h2>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{t.reviewFilter}</span>
-              {keywordSuggestions.map((term) => (
-                <Link key={term} href={`${localePrefix(locale)}/prodiscovery/tour/${slug}?kw=${encodeURIComponent(term)}`} className="rounded-full border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                  {term}
-                </Link>
-              ))}
-              {keyword ? (
-                <Link href={`${localePrefix(locale)}/prodiscovery/tour/${slug}`} className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
-                  {t.clear}
-                </Link>
-              ) : null}
-            </div>
-            {!reviews.length ? (
-              <p className="mt-3 text-slate-600">{t.noReviews}</p>
-            ) : (
-              <div className="mt-4 space-y-3">
-                {reviews.map((review) => (
-                  <article key={review.id} className="rounded-xl border border-slate-200 p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-slate-900">{review.customerName}</p>
-                      <div className="flex items-center gap-2">
-                        <BubbleRating rating={review.rating} />
-                        <span className="text-xs text-slate-500">{formatDate(review.createdAt, locale)}</span>
-                      </div>
-                    </div>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-700">{review.body}</p>
-                  </article>
+        <aside className="space-y-5">
+          <article className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-xl font-black text-slate-950">{t.logistics}</h2>
+            <ul className="mt-4 space-y-3">
+              {[
+                tour.requirements,
+                tour.physicalLevel ? `${locale === "en" ? "Activity level" : locale === "fr" ? "Niveau" : "Nivel"}: ${tour.physicalLevel}` : "",
+                tour.minAge ? `${locale === "en" ? "Minimum age" : locale === "fr" ? "Age minimum" : "Edad minima"}: ${tour.minAge}` : "",
+                locale === "en" ? "Deposit and final budget are defined after proposal" : locale === "fr" ? "Depot et budget final apres proposition" : "Deposito y presupuesto final se definen en la propuesta"
+              ]
+                .filter(Boolean)
+                .map((item) => (
+                  <li key={item} className="border-b border-slate-100 pb-3 text-sm font-semibold leading-6 text-slate-700 last:border-0 last:pb-0">
+                    {plainText(item)}
+                  </li>
+                ))}
+            </ul>
+          </article>
+
+          {gallery.length > 1 ? (
+            <article className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+              <h2 className="text-lg font-black text-slate-950">{t.gallery}</h2>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {gallery.slice(1, 5).map((image) => (
+                  <div key={image} className="relative h-28 overflow-hidden rounded-2xl bg-slate-100">
+                    <Image src={image} alt={title} fill sizes="180px" className="object-cover" />
+                  </div>
                 ))}
               </div>
-            )}
-          </section>
+            </article>
+          ) : null}
+        </aside>
+      </section>
 
-          <aside className="rounded-2xl border border-slate-200 bg-white p-5">
-            <h3 className="text-lg font-bold text-slate-900">More options</h3>
-            <div className="mt-3 space-y-3">
+      {relatedTours.length ? (
+        <section className="mx-auto mt-5 max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-2xl font-black text-slate-950">{t.related}</h2>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
               {relatedTours.map((item) => (
-                <Link key={item.id} href={`${localePrefix(locale)}/prodiscovery/tour/${item.slug}`} className="block rounded-xl border border-slate-200 p-3 hover:border-emerald-300">
-                  <p className="line-clamp-2 text-sm font-semibold text-slate-900">{item.title}</p>
-                  <p className="mt-1 text-xs text-slate-600">USD {Math.round(item.price)}</p>
+                <Link key={item.id} href={`${localePrefix(locale)}/prodiscovery/tour/${item.slug}`} className="overflow-hidden rounded-[18px] border border-slate-200 bg-slate-50 hover:border-emerald-300">
+                  <div className="relative h-28 bg-slate-100">
+                    <Image src={item.heroImage || "/fototours/fotosimple.jpg"} alt={item.title} fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover" />
+                  </div>
+                  <div className="p-3">
+                    <p className="text-[11px] font-black uppercase tracking-[0.16em] text-emerald-700">{item.category || t.groupLabel}</p>
+                    <h3 className="mt-2 line-clamp-2 text-sm font-black leading-6 text-slate-950">{item.title}</h3>
+                    <p className="mt-2 text-sm font-black text-slate-700">{t.relatedCta}</p>
+                  </div>
                 </Link>
               ))}
             </div>
-          </aside>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="mx-auto mt-5 max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="rounded-[24px] border border-slate-200 bg-slate-950 p-5 text-white shadow-sm sm:p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-emerald-300">{t.groupLabel}</p>
+              <h2 className="mt-2 text-2xl font-black">{t.consult}</h2>
+            </div>
+            <Link href={requestHref} className="inline-flex w-fit rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-950 hover:bg-slate-100">
+              {t.request}
+            </Link>
+          </div>
         </div>
-      </div>
+      </section>
+
+      <ProDiscoveryFooter locale={locale} />
     </main>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+      <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">{label}</p>
+      <p className="mt-1 text-sm font-black leading-6 text-slate-950">{value}</p>
+    </div>
+  );
+}
+
+function DetailPanel({ title, items }: { title: string; items: string[] }) {
+  return (
+    <article className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 className="text-xl font-black text-slate-950">{title}</h2>
+      <ul className="mt-4 space-y-3">
+        {items.slice(0, 6).map((item) => (
+          <li key={item} className="text-sm font-semibold leading-7 text-slate-700">
+            {plainText(item)}
+          </li>
+        ))}
+      </ul>
+    </article>
   );
 }

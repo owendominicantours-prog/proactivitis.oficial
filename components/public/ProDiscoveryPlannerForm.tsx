@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState, type ComponentType, type ReactNode } from "react";
+import { signIn } from "next-auth/react";
 import {
   Activity,
   ArrowLeft,
@@ -96,12 +98,26 @@ const copy = {
     next: "Siguiente",
     back: "Volver",
     submit: "Solicitar propuesta privada",
-    submitting: "Disenando propuesta",
+    submitting: "Diseñando propuesta",
     successTitle: "Solicitud recibida",
-    successBody: "Preparamos una primera idea para tu grupo. Tambien la enviamos al correo indicado y el equipo la revisara para afinar fechas, cupos y estilo.",
+    successBody: "Registramos tu solicitud y tambien la enviamos al correo indicado. El equipo la revisara para afinar fechas, cupos y estilo.",
     code: "Codigo",
     nextStep: "Siguiente paso",
     nextStepBody: "Un planner revisara tu solicitud y te respondera con ajustes para convertirla en propuesta final.",
+    accountTitle: "Crea tu acceso para ver la propuesta",
+    accountBody: "Cuando el equipo termine la propuesta, aparecera en tu cuenta para revisar detalles y pagar el deposito si decides confirmar.",
+    password: "Contrasena",
+    confirmPassword: "Confirmar contrasena",
+    createAccount: "Guardar acceso",
+    creatingAccount: "Creando acceso",
+    accountReady: "Cuenta lista. Ya puedes entrar a tu panel.",
+    accountExisting: "Este correo ya tenia cuenta. Inicia sesion para ver tu propuesta.",
+    goDashboard: "Ir a mi cuenta",
+    earlyAccount: "Puedes crear tu cuenta antes de completar la solicitud o iniciar sesion si ya tienes una.",
+    earlyCreateAccount: "Crear cuenta",
+    earlyLogin: "Iniciar sesion",
+    passwordMismatch: "Las contrasenas no coinciden.",
+    passwordShort: "La contrasena debe tener al menos 8 caracteres.",
     errorFallback: "No pudimos enviar la solicitud. Revisa los campos e intenta otra vez.",
     required: "Completa los campos principales para continuar."
   },
@@ -141,10 +157,24 @@ const copy = {
     submit: "Request private proposal",
     submitting: "Designing proposal",
     successTitle: "Request received",
-    successBody: "We prepared a first idea for your group. It was also sent to your email and the team will refine dates, capacity and style.",
+    successBody: "We registered your request and also sent it to your email. The team will refine dates, capacity and style.",
     code: "Code",
     nextStep: "Next step",
     nextStepBody: "A planner will review your request and reply with adjustments before turning it into a final proposal.",
+    accountTitle: "Create access to view the proposal",
+    accountBody: "When the team finishes the proposal, it will appear in your account so you can review details and pay the deposit if you confirm.",
+    password: "Password",
+    confirmPassword: "Confirm password",
+    createAccount: "Save access",
+    creatingAccount: "Creating access",
+    accountReady: "Account ready. You can now open your dashboard.",
+    accountExisting: "This email already has an account. Sign in to view your proposal.",
+    goDashboard: "Go to my account",
+    earlyAccount: "You can create your account before completing the request or sign in if you already have one.",
+    earlyCreateAccount: "Create account",
+    earlyLogin: "Sign in",
+    passwordMismatch: "Passwords do not match.",
+    passwordShort: "Password must be at least 8 characters.",
     errorFallback: "We could not send the request. Check the fields and try again.",
     required: "Complete the main fields to continue."
   },
@@ -188,6 +218,20 @@ const copy = {
     code: "Code",
     nextStep: "Prochaine etape",
     nextStepBody: "Un planner examinera votre demande et repondra avec les ajustements avant la proposition finale.",
+    accountTitle: "Creez votre acces pour voir la proposition",
+    accountBody: "Quand l equipe termine la proposition, elle apparaitra dans votre compte pour revoir les details et payer le depot si vous confirmez.",
+    password: "Mot de passe",
+    confirmPassword: "Confirmer mot de passe",
+    createAccount: "Enregistrer acces",
+    creatingAccount: "Creation acces",
+    accountReady: "Compte pret. Vous pouvez ouvrir votre espace.",
+    accountExisting: "Cet email a deja un compte. Connectez-vous pour voir votre proposition.",
+    goDashboard: "Aller a mon compte",
+    earlyAccount: "Vous pouvez creer votre compte avant de finaliser la demande ou vous connecter si vous en avez deja un.",
+    earlyCreateAccount: "Creer compte",
+    earlyLogin: "Connexion",
+    passwordMismatch: "Les mots de passe ne correspondent pas.",
+    passwordShort: "Le mot de passe doit avoir au moins 8 caracteres.",
     errorFallback: "Impossible d envoyer la demande. Verifiez les champs et reessayez.",
     required: "Completez les champs principaux pour continuer."
   }
@@ -266,11 +310,17 @@ const initialState = (initialCity: string | undefined, locale: Locale): FormStat
 
 export default function ProDiscoveryPlannerForm({ locale, initialCity }: PlannerFormProps) {
   const t = copy[locale] ?? copy.es;
+  const plannerPath = `${locale === "es" ? "" : `/${locale}`}/prodiscovery#planner`;
+  const authCallback = encodeURIComponent(plannerPath);
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(() => initialState(initialCity, locale));
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PlannerResult | null>(null);
+  const [accountPassword, setAccountPassword] = useState("");
+  const [accountConfirmPassword, setAccountConfirmPassword] = useState("");
+  const [accountLoading, setAccountLoading] = useState(false);
+  const [accountMessage, setAccountMessage] = useState("");
 
   const canContinue = useMemo(() => {
     if (step === 0) {
@@ -336,6 +386,54 @@ export default function ProDiscoveryPlannerForm({ locale, initialCity }: Planner
     }
   };
 
+  const createAccountAccess = async () => {
+    if (!result) return;
+    setError("");
+    setAccountMessage("");
+    if (accountPassword.length < 8) {
+      setError(t.passwordShort);
+      return;
+    }
+    if (accountPassword !== accountConfirmPassword) {
+      setError(t.passwordMismatch);
+      return;
+    }
+    setAccountLoading(true);
+    try {
+      const response = await fetch("/api/prodiscovery/account-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestCode: result.requestCode,
+          email: form.contactEmail,
+          name: form.contactName,
+          password: accountPassword
+        })
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.success) throw new Error(payload.error ?? t.errorFallback);
+      if (payload.existingAccount) {
+        setAccountMessage(t.accountExisting);
+        return;
+      }
+      const signInResult = await signIn("credentials", {
+        redirect: false,
+        email: form.contactEmail,
+        password: accountPassword,
+        callbackUrl: "/dashboard/customer"
+      });
+      if (signInResult?.error) {
+        setAccountMessage(t.accountReady);
+        return;
+      }
+      window.location.href = "/dashboard/customer";
+    } catch (accountError) {
+      setError(accountError instanceof Error ? accountError.message : t.errorFallback);
+    } finally {
+      setAccountLoading(false);
+    }
+  };
+
   if (result) {
     return (
       <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-lg shadow-slate-200/70 sm:p-5">
@@ -353,6 +451,49 @@ export default function ProDiscoveryPlannerForm({ locale, initialCity }: Planner
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">{t.nextStep}</p>
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-700">{t.nextStepBody}</p>
+          </div>
+        </div>
+        <div className="mt-4 rounded-[22px] border border-emerald-200 bg-emerald-50 p-4">
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">{t.accountTitle}</p>
+          <p className="mt-2 text-sm font-semibold leading-6 text-emerald-950">{t.accountBody}</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <Field label={t.password}>
+              <input
+                type="password"
+                value={accountPassword}
+                onChange={(event) => setAccountPassword(event.target.value)}
+                className={inputClass}
+                minLength={8}
+              />
+            </Field>
+            <Field label={t.confirmPassword}>
+              <input
+                type="password"
+                value={accountConfirmPassword}
+                onChange={(event) => setAccountConfirmPassword(event.target.value)}
+                className={inputClass}
+                minLength={8}
+              />
+            </Field>
+          </div>
+          {accountMessage ? <p className="mt-3 text-sm font-bold leading-6 text-emerald-950">{accountMessage}</p> : null}
+          {error ? <div className="mt-3 rounded-2xl border border-rose-200 bg-white px-4 py-3 text-sm font-bold text-rose-700">{error}</div> : null}
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={createAccountAccess}
+              disabled={accountLoading}
+              className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-slate-950 px-5 py-2 text-sm font-black text-white disabled:opacity-60"
+            >
+              {accountLoading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <ShieldCheck className="h-4 w-4" aria-hidden />}
+              {accountLoading ? t.creatingAccount : t.createAccount}
+            </button>
+            <a
+              href="/dashboard/customer"
+              className="inline-flex min-h-11 items-center rounded-2xl border border-emerald-300 bg-white px-5 py-2 text-sm font-black text-emerald-900"
+            >
+              {t.goDashboard}
+            </a>
           </div>
         </div>
       </div>
@@ -381,6 +522,24 @@ export default function ProDiscoveryPlannerForm({ locale, initialCity }: Planner
               {index < step ? <Check className="h-4 w-4" aria-hidden /> : index + 1}
             </button>
           ))}
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-3">
+        <p className="text-xs font-semibold leading-5 text-emerald-950">{t.earlyAccount}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link
+            href={`/auth/register?callbackUrl=${authCallback}`}
+            className="inline-flex min-h-10 items-center rounded-2xl bg-slate-950 px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-white"
+          >
+            {t.earlyCreateAccount}
+          </Link>
+          <Link
+            href={`/auth/login?callbackUrl=${authCallback}`}
+            className="inline-flex min-h-10 items-center rounded-2xl border border-emerald-300 bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-emerald-900"
+          >
+            {t.earlyLogin}
+          </Link>
         </div>
       </div>
 

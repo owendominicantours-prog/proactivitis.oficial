@@ -8,6 +8,10 @@ import type { Locale } from "@/lib/translations";
 
 type Props = {
   locale: Locale;
+  reviewTrust?: {
+    count: number;
+    average: number;
+  };
 };
 
 const COPY = {
@@ -20,7 +24,12 @@ const COPY = {
     weddings: "Bodas",
     families: "Familias",
     language: "Idioma",
-    book: "Planificar"
+    book: "Planificar",
+    readyTicket: "Tickets listos",
+    reviews: "resenas",
+    account: "Cuenta",
+    createAccount: "Crear cuenta",
+    login: "Iniciar sesion"
   },
   en: {
     brand: "ProDiscovery",
@@ -31,7 +40,12 @@ const COPY = {
     weddings: "Weddings",
     families: "Families",
     language: "Language",
-    book: "Plan"
+    book: "Plan",
+    readyTicket: "Ready tickets",
+    reviews: "reviews",
+    account: "Account",
+    createAccount: "Create account",
+    login: "Sign in"
   },
   fr: {
     brand: "ProDiscovery",
@@ -42,7 +56,12 @@ const COPY = {
     weddings: "Mariages",
     families: "Familles",
     language: "Langue",
-    book: "Planifier"
+    book: "Planifier",
+    readyTicket: "Tickets prets",
+    reviews: "avis",
+    account: "Compte",
+    createAccount: "Creer compte",
+    login: "Connexion"
   }
 } as const;
 
@@ -60,12 +79,14 @@ const buildLocaleHref = (locale: Locale, pathname: string, query: string) => {
   return `${localizedPath}${query ? `?${query}` : ""}`;
 };
 
-export default function ProDiscoveryHeader({ locale }: Props) {
+export default function ProDiscoveryHeader({ locale, reviewTrust }: Props) {
   const t = COPY[locale];
   const pathname = usePathname() || "/";
   const searchParams = useSearchParams();
   const query = searchParams?.toString() ?? "";
   const base = `${localePrefix(locale)}/prodiscovery`;
+  const currentPath = `${pathname}${query ? `?${query}` : ""}`;
+  const authCallback = encodeURIComponent(`${currentPath}#planner`);
   const normalizedPath = stripLocalePrefix(pathname);
   const navClass = (active: boolean) =>
     active
@@ -86,14 +107,52 @@ export default function ProDiscoveryHeader({ locale }: Props) {
                 priority
               />
             </span>
-            <span className="hidden sm:block">
-              <span className="block text-sm font-black tracking-tight text-slate-950">ProDiscovery: {t.tagline}</span>
-            </span>
           </Link>
+          {reviewTrust && reviewTrust.count > 0 ? (
+            <div className="hidden min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 sm:block">
+              <div className="flex items-center gap-1 text-amber-500">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <span key={index} className="text-xs leading-none">★</span>
+                ))}
+                <span className="ml-1 text-xs font-black text-slate-950">{reviewTrust.average.toFixed(1)}</span>
+              </div>
+              <p className="mt-1 whitespace-nowrap text-[11px] font-bold text-slate-500">
+                {new Intl.NumberFormat(locale === "es" ? "es-DO" : locale === "fr" ? "fr-FR" : "en-US").format(reviewTrust.count)} {t.reviews}
+              </p>
+            </div>
+          ) : null}
           <div className="flex items-center gap-2">
+            <div className="group relative hidden sm:block">
+              <button
+                type="button"
+                className="rounded-full border border-slate-300 px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-slate-700 hover:border-slate-500 hover:text-slate-950"
+              >
+                {t.account}
+              </button>
+              <div className="invisible absolute right-0 top-full z-40 mt-2 w-48 rounded-2xl border border-slate-200 bg-white p-2 opacity-0 shadow-xl shadow-slate-900/10 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                <Link
+                  href={`/auth/register?callbackUrl=${authCallback}`}
+                  className="block rounded-xl px-3 py-2 text-sm font-black text-slate-900 hover:bg-emerald-50 hover:text-emerald-800"
+                >
+                  {t.createAccount}
+                </Link>
+                <Link
+                  href={`/auth/login?callbackUrl=${authCallback}`}
+                  className="block rounded-xl px-3 py-2 text-sm font-black text-slate-700 hover:bg-slate-50 hover:text-slate-950"
+                >
+                  {t.login}
+                </Link>
+              </div>
+            </div>
+            <Link
+              href={`${localePrefix(locale)}/tours`}
+              className="hidden rounded-full border border-slate-300 px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-slate-700 hover:border-slate-500 hover:text-slate-950 lg:inline-flex"
+            >
+              {t.readyTicket}
+            </Link>
             <Link
               href={base}
-              className="hidden rounded-full bg-emerald-600 px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-white hover:bg-emerald-700 sm:inline-flex"
+              className="hidden rounded-full bg-emerald-600 px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-white hover:bg-emerald-700 lg:inline-flex"
             >
               {t.book}
             </Link>

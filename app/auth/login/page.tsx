@@ -21,6 +21,8 @@ export default function LoginPage() {
     AGENCY: "/agency",
     CUSTOMER: "/customer"
   };
+  const rawCallbackUrl = searchParams.get("callbackUrl") ?? "";
+  const callbackUrl = rawCallbackUrl.startsWith("/") && !rawCallbackUrl.startsWith("//") ? rawCallbackUrl : "";
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -31,7 +33,7 @@ export default function LoginPage() {
       redirect: false,
       email,
       password,
-      callbackUrl: "/"
+      callbackUrl: callbackUrl || "/"
     });
 
     setLoading(false);
@@ -49,6 +51,10 @@ export default function LoginPage() {
 
     const sessionData = await sessionResponse.json();
     const role = sessionData?.user?.role ?? "CUSTOMER";
+    if (callbackUrl) {
+      router.push(callbackUrl);
+      return;
+    }
     router.push(redirectMap[role] || "/portal");
   };
 
@@ -96,7 +102,7 @@ export default function LoginPage() {
           </p>
         </div>
         <div className="mt-6 space-y-3">
-          <GoogleAuthButton label="Entrar con Google" callbackUrl="/portal" />
+          <GoogleAuthButton label="Entrar con Google" callbackUrl={callbackUrl || "/portal"} />
           <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-slate-400">
             <span className="h-px flex-1 bg-slate-200" />
             O usa tu correo
@@ -143,7 +149,7 @@ export default function LoginPage() {
             Restablecer contrasena
           </Link>
           <Link
-            href="/auth/register"
+            href={`/auth/register${callbackUrl ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
             className="rounded-2xl border border-brand px-4 py-2 font-semibold text-brand hover:bg-brand/10"
           >
             Crear cuenta de cliente

@@ -46,14 +46,14 @@ const COPY: Record<Locale, LocalePageCopy> = {
     ideasTitle: "Ideas dominicanas para convertir en plan privado",
     ideasBody:
       "Estas experiencias sirven como punto de partida. Tu propuesta se ajusta segun cantidad de personas, fechas, transporte, guia, comida y nivel de privacidad.",
-    ideaCta: "Solicitar algo parecido",
+    ideaCta: "Ver experiencia para grupos",
     serviceType: "Planificacion de viajes privados para grupos",
     areaServed: "Republica Dominicana",
     pages: {
       dominican: {
         path: "/prodiscovery/republica-dominicana",
         eyebrow: "Republica Dominicana privada",
-        title: "Viajes de grupo en Republica Dominicana, disenados a medida",
+        title: "Viajes de grupo en Republica Dominicana, diseñados a medida",
         body:
           "Planificamos experiencias privadas para grupos que quieren playa, cultura, transporte, cenas, aventura o celebraciones con un ritmo propio.",
         proof: ["Punta Cana", "Bayahibe", "Santo Domingo", "Puerto Plata"],
@@ -124,7 +124,7 @@ const COPY: Record<Locale, LocalePageCopy> = {
         eyebrow: "Familias y amigos",
         title: "Viajes privados para familias y grupos de amigos",
         body:
-          "Disenamos experiencias para grupos que quieren moverse juntos, evitar esperas y tener un plan flexible en Republica Dominicana.",
+          "Diseñamos experiencias para grupos que quieren moverse juntos, evitar esperas y tener un plan flexible en Republica Dominicana.",
         proof: ["Familias", "Amigos", "Multigeneracional", "Ritmo flexible"],
         plannerCity: "Republica Dominicana",
         sections: [
@@ -150,7 +150,7 @@ const COPY: Record<Locale, LocalePageCopy> = {
     ideasTitle: "Dominican ideas we can turn into a private plan",
     ideasBody:
       "These experiences are starting points. Your proposal is adjusted by group size, dates, transport, guide, meals and privacy level.",
-    ideaCta: "Request something similar",
+    ideaCta: "View group experience",
     serviceType: "Private group travel planning",
     areaServed: "Dominican Republic",
     pages: {
@@ -254,7 +254,7 @@ const COPY: Record<Locale, LocalePageCopy> = {
     ideasTitle: "Idees dominicaines a transformer en plan prive",
     ideasBody:
       "Ces experiences sont des points de depart. Votre proposition s ajuste selon le nombre de personnes, les dates, le transport, le guide, les repas et le niveau de confidentialite.",
-    ideaCta: "Demander une idee similaire",
+    ideaCta: "Voir experience groupe",
     serviceType: "Planification de voyages prives pour groupes",
     areaServed: "Republique dominicaine",
     pages: {
@@ -375,7 +375,7 @@ export async function ProDiscoveryNichePage({ locale, niche }: Props) {
   };
 
   return (
-    <main className="travel-surface bg-[#f5f7f9] pb-24">
+    <main className="travel-surface bg-[#f5f7f9]">
       <StructuredData data={schema} />
       <ProDiscoveryHeader locale={locale} />
       <section className="border-b border-slate-200 bg-white">
@@ -429,7 +429,7 @@ export async function ProDiscoveryNichePage({ locale, niche }: Props) {
                     <h3 className="mt-2 line-clamp-2 text-base font-black leading-tight text-slate-950">{idea.title}</h3>
                     <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{idea.description}</p>
                     <p className="mt-2 line-clamp-2 text-sm font-semibold leading-6 text-slate-800">{idea.groupAngle}</p>
-                    <Link href={`${localePrefix(locale)}/prodiscovery?dest=${encodeURIComponent(idea.destination)}#planner`} className="mt-3 inline-flex rounded-2xl bg-slate-950 px-4 py-2 text-sm font-black text-white">
+                    <Link href={`${localePrefix(locale)}/prodiscovery/tour/${idea.slug}`} className="mt-3 inline-flex rounded-2xl bg-slate-950 px-4 py-2 text-sm font-black text-white">
                       {t.ideaCta}
                     </Link>
                   </div>

@@ -24,6 +24,13 @@ const statusStyles = {
   rejected: "bg-rose-100 text-rose-800 border-rose-200"
 };
 
+const toDateTimeLocal = (value?: string | null) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+  return date.toISOString().slice(0, 16);
+};
+
 export default async function GeminiSeoFactoryAdminPage() {
   const [config, landings, globalConfig, globalGeneratedToday, globalDrafts] = await Promise.all([
     getGeminiSeoFactoryConfig(),
@@ -121,6 +128,40 @@ export default async function GeminiSeoFactoryAdminPage() {
                 className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2"
               />
             </label>
+            <label className="rounded-2xl border border-slate-200 p-4">
+              <span className="block text-sm font-black text-slate-950">Por cron</span>
+              <input
+                name="cronBatchSize"
+                type="number"
+                min={1}
+                max={2}
+                defaultValue={config.cronBatchSize}
+                className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2"
+              />
+              <span className="mt-2 block text-xs leading-5 text-slate-500">Maximo 2 landings por ejecucion.</span>
+            </label>
+            <label className="rounded-2xl border border-slate-200 p-4">
+              <span className="block text-sm font-black text-slate-950">Activo hasta</span>
+              <input
+                name="cronActiveUntil"
+                type="datetime-local"
+                defaultValue={toDateTimeLocal(config.cronActiveUntil)}
+                className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2"
+              />
+              <span className="mt-2 block text-xs leading-5 text-slate-500">Al vencer, el cron se pausa solo.</span>
+            </label>
+            <label className="rounded-2xl border border-slate-200 p-4">
+              <span className="block text-sm font-black text-slate-950">Duracion horas</span>
+              <input
+                name="cronDurationHours"
+                type="number"
+                min={1}
+                max={168}
+                defaultValue={config.cronDurationHours}
+                className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2"
+              />
+              <span className="mt-2 block text-xs leading-5 text-slate-500">Si no hay fecha activa, la primera ejecucion inicia esta ventana.</span>
+            </label>
             <div className="grid gap-3 md:grid-cols-3">
               <label className="rounded-2xl border border-slate-200 p-4">
                 <span className="block text-sm font-black text-slate-950">Tours</span>
@@ -167,7 +208,7 @@ export default async function GeminiSeoFactoryAdminPage() {
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-sky-300">Manual</p>
             <h2 className="mt-2 text-2xl font-black">Generar ahora</h2>
             <p className="mt-2 text-sm leading-6 text-white/70">
-              Los cron de Gemini ahora esperan 48 horas entre lotes. Tours + transfer y rent car corren en procesos separados.
+              El cron principal puede correr cada 15 minutos y se apaga solo cuando vence la fecha configurada. Tours + transfer y rent car corren en procesos separados.
             </p>
           </div>
           <form action={generateGeminiSeoFactoryBatchAction} className="space-y-3">

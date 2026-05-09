@@ -10,7 +10,7 @@ type NotificationsResponse = {
   notifications: WorkplaceNotificationSummary;
 };
 
-type BadgeKind = "chat" | "support";
+type BadgeKind = "chat" | "support" | "prodiscovery";
 
 const fetchNotifications = async (url: string) => {
   const response = await fetch(url);
@@ -40,7 +40,8 @@ export function WorkplaceNavNotificationBadge({
   initial: WorkplaceNotificationSummary;
 }) {
   const notifications = useWorkplaceNotifications(initial);
-  const value = kind === "chat" ? notifications.mentions : notifications.support;
+  const value =
+    kind === "chat" ? notifications.mentions : kind === "support" ? notifications.support : notifications.proDiscovery;
 
   if (!value) return null;
 

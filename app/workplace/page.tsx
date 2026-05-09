@@ -24,6 +24,7 @@ export const metadata = {
 const modules: Array<{ key: string; label: string; href: string; helper: string; icon: LucideIcon; accent: string }> = [
   { key: "chat.view", label: "Chat interno", href: "/workplace/chat", helper: "Conversaciones corporativas por departamento, menciones y soporte global.", icon: MessageSquareText, accent: "from-cyan-300/25 to-sky-400/10 text-cyan-100" },
   { key: "chat.respond", label: "Asistencia", href: "/workplace/support", helper: "Responder clientes, consultar reservas y escalar casos a departamentos.", icon: Headphones, accent: "from-emerald-300/25 to-teal-400/10 text-emerald-100" },
+  { key: "prodiscovery.view", label: "ProDiscovery", href: "/workplace/prodiscovery", helper: "Solicitudes privadas de grupos, propuesta, deposito y guia lider.", icon: Sparkles, accent: "from-emerald-300/25 to-cyan-400/10 text-emerald-100" },
   { key: "tours.view", label: "Tours", href: "/workplace/tours", helper: "Editor de experiencias por zona, proveedor y nicho.", icon: ShoppingBag, accent: "from-violet-300/25 to-fuchsia-400/10 text-violet-100" },
   { key: "bookings.view", label: "Reservas", href: "/workplace/bookings", helper: "Reservas asignadas al alcance operativo.", icon: BriefcaseBusiness, accent: "from-amber-300/25 to-orange-400/10 text-amber-100" },
   { key: "rent_car.view", label: "Rent Car", href: "/workplace/rent-car", helper: "Flota y reservas de vehiculos por mercado.", icon: Car, accent: "from-blue-300/25 to-cyan-400/10 text-blue-100" },

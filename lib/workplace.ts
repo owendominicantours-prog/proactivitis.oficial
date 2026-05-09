@@ -31,33 +31,33 @@ const defaultRoles = [
     name: "Director Regional",
     slug: "director-regional",
     departmentSlug: "operaciones",
-    description: "Supervisa operaciones por pais o region. Puede ver reservas, productos principales, reportes y responder casos operativos.",
+    description: "Supervisa operaciones por pais o region. Puede ver reservas, productos principales, ProDiscovery, reportes y responder casos operativos.",
     level: 80,
-    permissions: ["bookings.view", "bookings.edit", "tours.view", "rent_car.view", "hotels.view", "chat.view", "chat.respond", "reports.view", "security.audit"]
+    permissions: ["bookings.view", "bookings.edit", "tours.view", "rent_car.view", "hotels.view", "prodiscovery.view", "prodiscovery.manage", "prodiscovery.finance", "chat.view", "chat.respond", "reports.view", "security.audit"]
   },
   {
     name: "Manager Pais",
     slug: "manager-pais",
     departmentSlug: "operaciones",
-    description: "Coordina la operacion de un pais: reservas, suplidores, agencias y reportes sin permisos sensibles de seguridad.",
+    description: "Coordina la operacion de un pais: reservas, ProDiscovery, suplidores, agencias y reportes sin permisos sensibles de seguridad.",
     level: 60,
-    permissions: ["bookings.view", "bookings.edit", "suppliers.view", "agencies.view", "reports.view"]
+    permissions: ["bookings.view", "bookings.edit", "prodiscovery.view", "prodiscovery.manage", "suppliers.view", "agencies.view", "reports.view"]
   },
   {
     name: "Supervisor Soporte",
     slug: "supervisor-soporte",
     departmentSlug: "soporte",
-    description: "Gestiona asistencia publica, chat interno y soporte a suplidores/agencias. Ideal para liderar el Support Desk.",
+    description: "Gestiona asistencia publica, ProDiscovery, chat interno y soporte a suplidores/agencias. Ideal para liderar el Support Desk.",
     level: 45,
-    permissions: ["bookings.view", "chat.view", "chat.respond", "suppliers.support", "agencies.support"]
+    permissions: ["bookings.view", "prodiscovery.view", "prodiscovery.manage", "chat.view", "chat.respond", "suppliers.support", "agencies.support"]
   },
   {
     name: "Agente Asistencia Cliente",
     slug: "agente-asistencia-cliente",
     departmentSlug: "soporte",
-    description: "Responde clientes, busca reservas operativas y escala casos a departamentos. No edita productos ni precios.",
+    description: "Responde clientes, busca reservas operativas, ve solicitudes ProDiscovery y escala casos a departamentos. No edita productos ni precios.",
     level: 25,
-    permissions: ["bookings.view", "chat.view", "chat.respond"]
+    permissions: ["bookings.view", "prodiscovery.view", "chat.view", "chat.respond"]
   },
   {
     name: "Editor Tours",
@@ -143,9 +143,9 @@ const defaultRoles = [
     name: "Contabilidad Operativa",
     slug: "contabilidad-operativa",
     departmentSlug: "contabilidad",
-    description: "Consulta finanzas, reservas y reportes. Cambios de comision siguen como accion sensible.",
+    description: "Consulta finanzas, reservas, depositos ProDiscovery y reportes. Cambios de comision siguen como accion sensible.",
     level: 40,
-    permissions: ["finance.view", "bookings.view", "reports.view"]
+    permissions: ["finance.view", "bookings.view", "prodiscovery.view", "prodiscovery.finance", "reports.view"]
   },
   {
     name: "Gestor Reembolsos",
@@ -194,6 +194,15 @@ export async function ensureWorkplaceDefaults() {
 
   for (const role of defaultRoles) {
     const department = await prisma.workplaceDepartment.findUnique({ where: { slug: role.departmentSlug } });
+    const existingRole = await prisma.workplaceRole.findUnique({
+      where: { slug: role.slug },
+      select: { permissions: true }
+    });
+    const existingPermissions = Array.isArray(existingRole?.permissions)
+      ? existingRole.permissions.filter((permission): permission is string => typeof permission === "string")
+      : [];
+    const mergedPermissions = Array.from(new Set([...existingPermissions, ...role.permissions]));
+
     await prisma.workplaceRole.upsert({
       where: { slug: role.slug },
       update: {
@@ -201,7 +210,8 @@ export async function ensureWorkplaceDefaults() {
         description: role.description,
         departmentId: department?.id,
         level: role.level,
-        active: true
+        active: true,
+        permissions: toJson(mergedPermissions)
       },
       create: {
         name: role.name,
@@ -209,7 +219,7 @@ export async function ensureWorkplaceDefaults() {
         description: role.description,
         departmentId: department?.id,
         level: role.level,
-        permissions: toJson(role.permissions),
+        permissions: toJson(mergedPermissions),
         scope: toJson({ countries: [], cities: [], niches: [], products: [], companies: [], modules: [] })
       }
     });

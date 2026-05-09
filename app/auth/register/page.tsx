@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,6 +20,8 @@ export default function RegisterPage() {
     AGENCY: "/portal/agency",
     CUSTOMER: "/portal/customer"
   };
+  const rawCallbackUrl = searchParams.get("callbackUrl") ?? "";
+  const callbackUrl = rawCallbackUrl.startsWith("/") && !rawCallbackUrl.startsWith("//") ? rawCallbackUrl : "";
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,7 +46,7 @@ export default function RegisterPage() {
       redirect: false,
       email,
       password,
-      callbackUrl: "/"
+      callbackUrl: callbackUrl || "/"
     });
 
     if (signResult?.error) {
@@ -60,6 +63,10 @@ export default function RegisterPage() {
 
     const sessionData = await sessionResponse.json();
     const role = sessionData?.user?.role ?? "CUSTOMER";
+    if (callbackUrl) {
+      router.push(callbackUrl);
+      return;
+    }
     router.push(redirectMap[role] || "/portal");
   };
 
@@ -68,7 +75,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md rounded-[32px] bg-white p-8 shadow-card">
         <h1 className="text-2xl font-semibold text-slate-900">Registrate</h1>
         <div className="mt-6 space-y-3">
-          <GoogleAuthButton label="Crear cuenta con Google" callbackUrl="/portal" />
+          <GoogleAuthButton label="Crear cuenta con Google" callbackUrl={callbackUrl || "/portal"} />
           <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-slate-400">
             <span className="h-px flex-1 bg-slate-200" />
             O crea tu cuenta con correo

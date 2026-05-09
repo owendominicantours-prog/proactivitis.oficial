@@ -24,13 +24,14 @@ type Props = {
   searchParams?: Promise<SearchParams>;
 };
 
-const statusOptions = ["NEW", "REVIEWING", "QUOTED", "ACCEPTED", "WON", "LOST"];
+const statusOptions = ["NEW", "REVIEWING", "QUOTED", "ACCEPTED", "PAYMENT_STARTED", "WON", "LOST"];
 
 const statusLabel: Record<string, string> = {
   NEW: "Nueva",
   REVIEWING: "Revision",
   QUOTED: "Cotizada",
   ACCEPTED: "Aceptada",
+  PAYMENT_STARTED: "Pago iniciado",
   WON: "Ganada",
   LOST: "Perdida"
 };
@@ -49,6 +50,7 @@ const formatDate = (value: Date) =>
 const statusClass = (status: string) => {
   if (status === "WON" || status === "ACCEPTED") return "border-emerald-200 bg-emerald-50 text-emerald-700";
   if (status === "LOST") return "border-rose-200 bg-rose-50 text-rose-700";
+  if (status === "PAYMENT_STARTED") return "border-cyan-200 bg-cyan-50 text-cyan-700";
   if (status === "QUOTED") return "border-sky-200 bg-sky-50 text-sky-700";
   if (status === "REVIEWING") return "border-amber-200 bg-amber-50 text-amber-700";
   return "border-slate-200 bg-slate-50 text-slate-700";
@@ -264,7 +266,7 @@ export default async function ProDiscoveryOpportunitiesPage({ searchParams }: Pr
 
                 {draft ? (
                   <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-                    <p className="text-xs uppercase tracking-[0.2em] text-emerald-700">Borrador inicial</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-emerald-700">Resumen de trabajo</p>
                     <p className="mt-2 text-sm leading-7 text-emerald-950">{draft.summary}</p>
                     <div className="mt-3 grid gap-2 md:grid-cols-2">
                       {draft.days.slice(0, 2).map((day) => (

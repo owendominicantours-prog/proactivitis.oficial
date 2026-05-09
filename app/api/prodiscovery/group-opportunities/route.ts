@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     });
     const result = await sendEmail({
       to: data.contactEmail,
-      subject: `Estamos disenando su experiencia en ${data.city} - Propuesta Inicial #${requestCode}`,
+      subject: `Recibimos su solicitud para ${data.city} - ProDiscovery #${requestCode}`,
       html: emailHtml,
       from: NOTIFY_FROM_EMAIL
     });
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     title: `${data.leadPriority === "PRIORIDAD_VIP" ? "PRIORIDAD VIP - " : ""}Nueva oportunidad ProDiscovery ${requestCode}`,
     message: `${data.city} - ${data.groupSize} personas - ${data.contactName}`,
     metadata: {
-      referenceUrl: `/admin/prodiscovery-opportunities?opportunityId=${opportunity.id}`,
+      referenceUrl: `/workplace/prodiscovery?opportunityId=${opportunity.id}`,
       opportunityId: opportunity.id,
       requestCode,
       city: data.city,
