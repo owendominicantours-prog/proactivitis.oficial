@@ -14,7 +14,7 @@ export function buildBookingDetailRoute({ bookingId, metadataRole, fallback = "/
   if (roleHint.includes("ADMIN")) return `/admin/bookings?bookingId=${normalizedId}`;
   if (roleHint.includes("SUPPLIER")) return `/supplier/bookings?bookingId=${normalizedId}`;
   if (roleHint.includes("AGENCY")) return `/agency/bookings?bookingId=${normalizedId}`;
-  if (roleHint.includes("CUSTOMER")) return `/booking/confirmed?bookingId=${normalizedId}`;
+  if (roleHint.includes("CUSTOMER")) return `/dashboard/customer/reservas/${normalizedId}`;
 
   return `/booking/confirmed?bookingId=${normalizedId}`;
 }

@@ -18,7 +18,7 @@ export default function RegisterPage() {
     ADMIN: "/portal/admin",
     SUPPLIER: "/portal/supplier",
     AGENCY: "/portal/agency",
-    CUSTOMER: "/portal/customer"
+    CUSTOMER: "/dashboard/customer"
   };
   const rawCallbackUrl = searchParams.get("callbackUrl") ?? "";
   const callbackUrl = rawCallbackUrl.startsWith("/") && !rawCallbackUrl.startsWith("//") ? rawCallbackUrl : "";

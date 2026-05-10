@@ -30,7 +30,7 @@ const roleLabels: Record<string, { title: string; description: string; dashboard
   customer: {
     title: "Customer Portal",
     description: "Tus reservas, tickets, historial, chat y recomendaciones en un solo lugar.",
-    dashboard: "/customer"
+    dashboard: "/dashboard/customer"
   }
 };
 

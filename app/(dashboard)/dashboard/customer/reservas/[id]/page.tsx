@@ -1,33 +1,75 @@
-﻿export const dynamic = "force-dynamic"; // Booking detail must reflect live cancellations or updates.
+export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
+import { notFound, redirect } from "next/navigation";
+import { AlertTriangle, ArrowLeft, CreditCard, Download, FileText, LifeBuoy, MapPin, XCircle } from "lucide-react";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
-import { notFound } from "next/navigation";
+import Eticket from "@/components/booking/Eticket";
 import { DynamicImage } from "@/components/shared/DynamicImage";
-import type { BookingStatus } from "@/lib/types/booking";
+import { CustomerSupportForm } from "@/components/customer/CustomerSupportForm";
+import { authOptions } from "@/lib/auth";
+import { customerRequestCancellation } from "@/lib/actions/bookingCancellation";
 import { buildBookingPresentation } from "@/lib/bookingPresentation";
 import { formatDurationDisplay } from "@/lib/formatDuration";
+import { prisma } from "@/lib/prisma";
+import { BookingStatusEnum } from "@/lib/types/booking";
 
-export default async function CustomerBookingDetailPage({ params }: { params: Promise<{ id?: string }> }) {
-  const resolved = await params;
-  if (!resolved?.id) {
+type Props = {
+  params: Promise<{ id?: string }>;
+};
+
+const statusLabels: Record<string, string> = {
+  CONFIRMED: "Confirmada",
+  PAYMENT_PENDING: "Pendiente de pago",
+  CANCELLATION_REQUESTED: "Cancelacion en revision",
+  CANCELLED: "Cancelada",
+  COMPLETED: "Completada"
+};
+
+const paidStatuses = new Set(["paid", "succeeded", "requires_capture"]);
+
+const formatMoney = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD"
+  }).format(value);
+
+const formatDate = (value: Date) =>
+  new Intl.DateTimeFormat("es-ES", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric"
+  }).format(value);
+
+const isPaymentDue = (booking: { status: string; paymentStatus?: string | null; paymentMethod?: string | null }) => {
+  if (booking.status === BookingStatusEnum.CANCELLED || booking.status === BookingStatusEnum.COMPLETED) return false;
+  if (booking.status === BookingStatusEnum.PAYMENT_PENDING) return true;
+  if (booking.paymentMethod === "PAY_LATER") return true;
+  if (!booking.paymentStatus) return false;
+  return !paidStatuses.has(booking.paymentStatus.toLowerCase());
+};
+
+const blockedCancellationStatuses = new Set<string>([
+  BookingStatusEnum.CANCELLED,
+  BookingStatusEnum.COMPLETED,
+  BookingStatusEnum.CANCELLATION_REQUESTED
+]);
+const canRequestCancel = (status: string) => !blockedCancellationStatuses.has(status);
+
+export default async function CustomerBookingDetailPage({ params }: Props) {
+  const { id } = await params;
+  if (!id) {
     notFound();
   }
 
   const session = await getServerSession(authOptions);
   if (!session?.user?.email && !session?.user?.id) {
-    return (
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm text-center text-sm text-slate-600">
-        Inicia sesiÃ³n para ver el detalle de tu reserva.
-      </div>
-    );
+    redirect(`/auth/login?callbackUrl=${encodeURIComponent(`/dashboard/customer/reservas/${id}`)}`);
   }
 
   const booking = await prisma.booking.findUnique({
-    where: { id: resolved.id },
+    where: { id },
     include: {
       User: {
         include: {
@@ -51,50 +93,54 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
           }
         }
       },
+      AgencyTransferLink: {
+        include: {
+          AgencyUser: {
+            include: {
+              AgencyProfile: true,
+              PartnerApplication: {
+                orderBy: { updatedAt: "desc" },
+                take: 1
+              }
+            }
+          }
+        }
+      },
       Tour: {
         include: {
           SupplierProfile: true
         }
-      }
+      },
+      TourOption: true
     }
   });
 
-  if (!booking) {
+  if (!booking || !booking.Tour) {
     notFound();
   }
 
-  const isOwner =
-    booking.customerEmail === session.user?.email || (session.user?.id && booking.userId === session.user.id);
-  if (!isOwner) {
+  const ownsBooking =
+    (session.user?.id && booking.userId === session.user.id) ||
+    (session.user?.email && booking.customerEmail.toLowerCase() === session.user.email.toLowerCase());
+  if (!ownsBooking) {
     notFound();
   }
 
-  const travelDate = booking.travelDate.toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric"
-  });
-  const travelTime = booking.travelDate.toLocaleTimeString("es-ES", {
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-  const agencyUser = booking.AgencyProLink?.AgencyUser ?? (booking.source === "AGENCY" ? booking.User : null);
+  const agencyUser =
+    booking.AgencyProLink?.AgencyUser ??
+    booking.AgencyTransferLink?.AgencyUser ??
+    (booking.source === "AGENCY" ? booking.User : null);
   const agencyApplication = agencyUser?.PartnerApplication?.[0] ?? null;
-  const agencyLabel =
-    agencyUser
-      ? agencyUser.AgencyProfile?.companyName ?? agencyApplication?.companyName ?? agencyUser.name ?? "Agencia"
-      : null;
+  const agencyLabel = agencyUser
+    ? agencyUser.AgencyProfile?.companyName ?? agencyApplication?.companyName ?? agencyUser.name ?? "Agencia"
+    : null;
   const agencyPhone = agencyApplication?.phone ?? null;
   const bookingTripType = (booking as any).tripType as string | null | undefined;
   const bookingReturnTravelDate = (booking as any).returnTravelDate as Date | null | undefined;
   const bookingReturnStartTime = (booking as any).returnStartTime as string | null | undefined;
-  const returnDateLabel = bookingReturnTravelDate
-    ? bookingReturnTravelDate.toLocaleDateString("es-ES", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric"
-      })
-    : null;
+  const due = isPaymentDue(booking);
+  const orderCode = booking.bookingCode ?? `#PR-${booking.id.slice(-4).toUpperCase()}`;
+  const totalGuests = booking.paxAdults + booking.paxChildren;
   const presentation = buildBookingPresentation({
     flowType: booking.flowType,
     tripType: bookingTripType,
@@ -107,161 +153,265 @@ export default async function CustomerBookingDetailPage({ params }: { params: Pr
     returnStartTime: bookingReturnStartTime,
     startTime: booking.startTime,
     travelDateValue: booking.travelDate,
-    tourIncludes: booking.Tour?.includes,
-    language: booking.Tour?.language,
-    duration: booking.Tour?.duration,
-    meetingPoint: booking.Tour?.meetingPoint
+    tourIncludes: booking.Tour.includes,
+    language: booking.Tour.language,
+    duration: booking.Tour.duration,
+    meetingPoint: booking.Tour.meetingPoint
   });
-
-  const statusMessages: Record<string, string> = {
-    CONFIRMED: "Tu reserva estÃ¡ confirmada.",
-    CANCELLATION_REQUESTED: "Estamos revisando la cancelaciÃ³n solicitada.",
-    CANCELLED: "La reserva fue cancelada.",
-    COMPLETED: "Tu experiencia ya fue completada."
-  };
 
   return (
     <section className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-semibold text-slate-900">Reserva {booking.id.slice(0, 8).toUpperCase()}</h1>
-        <p className="text-sm text-slate-500">Todo lo que necesitas para tu tour estÃ¡ aquÃ­.</p>
-      </header>
+      <Link href="/dashboard/customer" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-950">
+        <ArrowLeft className="h-4 w-4" />
+        Volver al panel
+      </Link>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row">
-          <div className="relative h-48 w-full overflow-hidden rounded-2xl bg-slate-100 lg:w-1/3">
+      {due ? (
+        <div className="rounded-[28px] border border-amber-200 bg-amber-50 p-5 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex gap-3">
+              <span className="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                <AlertTriangle className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-amber-950">Esta reserva tiene pago pendiente</p>
+                <p className="mt-1 text-sm text-amber-800">
+                  Completa el pago para confirmar el servicio y activar el e-ticket final.
+                </p>
+              </div>
+            </div>
+            <Link
+              href={`/dashboard/customer/reservas/${booking.id}/pagar`}
+              className="inline-flex items-center gap-2 rounded-2xl bg-amber-600 px-4 py-3 text-xs font-semibold uppercase tracking-[0.22em] text-white"
+            >
+              <CreditCard className="h-4 w-4" />
+              Pagar ahora
+            </Link>
+          </div>
+        </div>
+      ) : null}
+
+      <article className="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-sm">
+        <div className="grid gap-0 lg:grid-cols-[360px_1fr]">
+          <div className="relative min-h-[260px] bg-slate-100">
             <DynamicImage
-              src={booking.Tour?.heroImage ?? "/fototours/fototour.jpeg"}
-              alt={booking.Tour?.title ?? "Tour"}
+              src={booking.Tour.heroImage ?? "/fototours/fototour.jpeg"}
+              alt={booking.Tour.title}
               className="absolute inset-0 h-full w-full object-cover"
             />
           </div>
-          <div className="flex-1 space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-2xl font-semibold text-slate-900">{booking.Tour?.title ?? "Tour"}</h2>
-              <BookingStatusBadge status={booking.status as BookingStatus} />
+          <div className="space-y-5 p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.32em] text-slate-500">{orderCode}</p>
+                <h1 className="mt-2 text-3xl font-semibold text-slate-950">{booking.Tour.title}</h1>
+                <p className="mt-2 text-sm text-slate-500">
+                  {formatDate(booking.travelDate)} - {booking.startTime ?? "Hora por confirmar"} - {booking.Tour.location}
+                </p>
+              </div>
+              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${due ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-700"}`}>
+                {statusLabels[booking.status] ?? booking.status}
+              </span>
             </div>
-            <p className="text-xs text-slate-500">{statusMessages[booking.status] ?? ""}</p>
-            <p className="text-sm text-slate-500">
-              {travelDate} Â· {travelTime} Â· {booking.Tour?.location}
-            </p>
-            <p className="text-sm text-slate-500">
-              Proveedor: {booking.Tour?.SupplierProfile?.company ?? "No asignado"}
-            </p>
-            <p className="text-sm text-slate-500">Pax: {booking.paxAdults + booking.paxChildren}</p>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href={`#ticket`}
-                className="inline-flex items-center rounded-md bg-sky-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
-              >
-                Ver ticket
-              </Link>
-              <button className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700">
-                Contactar soporte
-              </button>
+
+            <div className="grid gap-3 md:grid-cols-4">
+              <DetailMini label={due ? "Total pendiente" : "Total"} value={formatMoney(booking.totalAmount)} />
+              <DetailMini label="Pasajeros" value={`${totalGuests} pax`} />
+              <DetailMini label="Proveedor" value={booking.Tour.SupplierProfile?.company ?? "Proactivitis"} />
+              <DetailMini label="Pago" value={booking.paymentStatus ?? (due ? "Pendiente" : "Confirmado")} />
             </div>
-          </div>
-          <div className="flex flex-col gap-2 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Total pagado</p>
-            <p className="text-xl font-semibold text-slate-900">${booking.totalAmount.toFixed(2)}</p>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Hotel / pickup</p>
-            <p className="text-sm text-slate-700">{booking.hotel ?? "No aplica"}</p>
+
+            <div className="flex flex-wrap gap-2">
+              {!due && booking.status !== BookingStatusEnum.CANCELLED ? (
+                <Link
+                  href={`/api/bookings/${booking.id}/eticket`}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white"
+                >
+                  <Download className="h-4 w-4" />
+                  Descargar e-ticket
+                </Link>
+              ) : null}
+              {booking.Tour.slug ? (
+                <Link
+                  href={`/tours/${booking.Tour.slug}`}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700"
+                >
+                  <FileText className="h-4 w-4" />
+                  Ver tour
+                </Link>
+              ) : null}
+              {booking.Tour.slug && booking.status === BookingStatusEnum.COMPLETED ? (
+                <Link
+                  href={`/tours/${booking.Tour.slug}#reviews`}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-indigo-200 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-700"
+                >
+                  Dejar resena
+                </Link>
+              ) : null}
+            </div>
           </div>
         </div>
-      </div>
+      </article>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">InformaciÃ³n del cliente</p>
-          <p className="text-base font-semibold text-slate-900">{booking.customerName}</p>
+        <InfoBox title="Cliente">
+          <p className="font-semibold text-slate-950">{booking.customerName}</p>
           <p>{booking.customerEmail}</p>
-          {booking.customerPhone && <p>{booking.customerPhone}</p>}
-        </article>
-        <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.primaryDetailsLabel}</p>
-          <p className="text-sm text-slate-700">{presentation.primaryDetailsValue}</p>
-          {presentation.kind === "activity" && (
-            <p className="text-sm text-slate-700">{formatDurationDisplay(booking.Tour?.duration)}</p>
-          )}
-          {presentation.kind === "activity" && <p className="text-sm text-slate-700">{booking.Tour?.language}</p>}
-        </article>
-        <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Notas de recogida</p>
-          <p>{booking.pickupNotes ?? "Sin instrucciones adicionales"}</p>
-        </article>
+          {booking.customerPhone ? <p>{booking.customerPhone}</p> : null}
+        </InfoBox>
+        <InfoBox title={presentation.primaryDetailsLabel}>
+          <p>{presentation.primaryDetailsValue}</p>
+          {presentation.kind === "activity" ? <p>{formatDurationDisplay(booking.Tour.duration)}</p> : null}
+          {presentation.kind === "activity" ? <p>{booking.Tour.language}</p> : null}
+        </InfoBox>
+        <InfoBox title="Logistica">
+          <p>{presentation.logisticsValue || "Operacion pendiente"}</p>
+          {booking.originAirport ? <p>Origen: {booking.originAirport}</p> : null}
+          {booking.flightNumber ? <p>Vuelo: {booking.flightNumber}</p> : null}
+        </InfoBox>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.logisticsLabel}</p>
-          <p className="text-sm text-slate-700">{presentation.logisticsValue || "Operación pendiente"}</p>
-          {booking.transferVehicleName && (
-            <p className="text-sm text-slate-700">
-              Vehículo: {booking.transferVehicleName}
-              {booking.transferVehicleCategory ? ` · ${booking.transferVehicleCategory}` : ""}
+        <InfoBox title="Pickup / hotel">
+          <p>{booking.pickup ?? booking.hotel ?? booking.Tour.meetingPoint ?? "Por confirmar"}</p>
+          <p className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+            <MapPin className="h-4 w-4" />
+            {presentation.routeValue}
+          </p>
+        </InfoBox>
+        <InfoBox title="Agencia">
+          <p>{agencyLabel ?? "Reserva directa"}</p>
+          {agencyPhone ? <p>{agencyPhone}</p> : null}
+        </InfoBox>
+        <InfoBox title="Notas">
+          <p>{booking.pickupNotes ?? "Sin instrucciones adicionales"}</p>
+        </InfoBox>
+      </div>
+
+      {booking.status !== BookingStatusEnum.CANCELLED ? (
+        <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">E-ticket</p>
+              <h2 className="text-xl font-semibold text-slate-950">Voucher digital</h2>
+            </div>
+            {due ? (
+              <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                Se activa al completar el pago
+              </span>
+            ) : null}
+          </div>
+          <Eticket
+            booking={{
+              id: booking.id,
+              travelDate: booking.travelDate,
+              startTime: booking.startTime,
+              flowType: booking.flowType,
+              tripType: bookingTripType ?? undefined,
+              paymentStatus: booking.paymentStatus,
+              paymentMethod: booking.paymentMethod,
+              returnTravelDate: bookingReturnTravelDate ?? undefined,
+              returnStartTime: bookingReturnStartTime ?? undefined,
+              totalAmount: booking.totalAmount,
+              paxAdults: booking.paxAdults,
+              paxChildren: booking.paxChildren,
+              customerName: booking.customerName,
+              customerEmail: booking.customerEmail,
+              pickupNotes: booking.pickupNotes,
+              hotel: booking.hotel,
+              originAirport: booking.originAirport,
+              flightNumber: booking.flightNumber,
+              agencyName: agencyLabel,
+              agencyPhone
+            }}
+            tour={{
+              id: booking.Tour.id,
+              slug: booking.Tour.slug,
+              title: booking.Tour.title,
+              heroImage: booking.Tour.heroImage,
+              meetingPoint: booking.Tour.meetingPoint,
+              meetingInstructions: booking.Tour.meetingInstructions,
+              duration: booking.Tour.duration,
+              language: booking.Tour.language
+            }}
+            supplierName={booking.Tour.SupplierProfile?.company ?? "Proactivitis"}
+            orderCode={orderCode}
+          />
+        </section>
+      ) : (
+        <section className="rounded-[28px] border border-rose-200 bg-rose-50 p-6 text-sm text-rose-800">
+          <div className="flex gap-3">
+            <XCircle className="h-5 w-5" />
+            Esta reserva fue cancelada. El e-ticket ya no esta activo.
+          </div>
+        </section>
+      )}
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center gap-3">
+            <LifeBuoy className="h-5 w-5 text-slate-500" />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Soporte web</p>
+              <h2 className="text-lg font-semibold text-slate-950">Enviar mensaje sobre esta reserva</h2>
+            </div>
+          </div>
+          <div className="mt-4">
+            <CustomerSupportForm
+              name={booking.customerName}
+              email={booking.customerEmail}
+              bookingCode={booking.bookingCode ?? booking.id}
+              defaultTopic="Soporte de reserva"
+            />
+          </div>
+        </div>
+
+        <div className="rounded-[28px] border border-rose-100 bg-white p-6 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-rose-600">Cancelacion</p>
+          <h2 className="mt-1 text-lg font-semibold text-slate-950">Solicitar cancelacion</h2>
+          {canRequestCancel(booking.status) ? (
+            <form action={customerRequestCancellation} className="mt-4 space-y-3">
+              <input type="hidden" name="bookingId" value={booking.id} />
+              <textarea
+                name="reason"
+                required
+                minLength={8}
+                rows={5}
+                className="w-full rounded-2xl border border-rose-100 bg-rose-50/40 px-3 py-3 text-sm text-slate-900 outline-none focus:border-rose-300"
+                placeholder="Explica el motivo de la cancelacion"
+              />
+              <button
+                type="submit"
+                className="rounded-2xl bg-rose-600 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white"
+              >
+                Enviar solicitud
+              </button>
+            </form>
+          ) : (
+            <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+              Estado actual: {statusLabels[booking.status] ?? booking.status}. No permite una nueva solicitud.
             </p>
           )}
-          {presentation.kind === "transfer" && <p className="text-sm text-slate-700">Origen: {booking.originAirport ?? "Pendiente"}</p>}
-          {presentation.kind === "transfer" && <p className="text-sm text-slate-700">Vuelo: {booking.flightNumber ?? "Pendiente"}</p>}
-        </article>
-        <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Regreso</p>
-          <p className="text-sm text-slate-700">{returnDateLabel ?? "No aplica"}</p>
-          <p className="text-sm text-slate-700">{bookingReturnStartTime ?? "Hora no registrada"}</p>
-        </article>
-        <article className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Agencia</p>
-          <p className="text-sm text-slate-700">{agencyLabel ?? "Reserva directa"}</p>
-          <p className="text-sm text-slate-700">{agencyPhone ?? "Sin telÃƒÂ©fono registrado"}</p>
-        </article>
-      </div>
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Resumen operativo</p>
-        <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pasajero principal</p>
-            <p className="text-sm font-semibold text-slate-900">{booking.customerName}</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de ida</p>
-            <p className="text-sm font-semibold text-slate-900">{travelDate}</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Fecha de regreso</p>
-            <p className="text-sm font-semibold text-slate-900">{returnDateLabel ?? "No aplica"}</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.routeLabel}</p>
-            <p className="text-sm font-semibold text-slate-900">{presentation.routeValue}</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Agencia</p>
-            <p className="text-sm font-semibold text-slate-900">{agencyLabel ?? "Reserva directa"}</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">CÃ³digos internos</p>
-            <p className="text-sm font-semibold text-slate-900">{`${booking.bookingCode ?? booking.id} Â· ${booking.id.slice(0, 8).toUpperCase()}`}</p>
-          </div>
-          <div className="md:col-span-2">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{presentation.notesLabel}</p>
-            <p className="text-sm font-semibold text-slate-900">{presentation.notesValue}</p>
-          </div>
         </div>
-      </div>
-
-      <div id="ticket" className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
-        <h3 className="text-base font-semibold text-slate-900">Voucher digital</h3>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-y border-slate-100 py-4">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">CÃ³digo</p>
-          <p className="text-xl font-semibold text-slate-900">{booking.id.slice(0, 8).toUpperCase()}</p>
-        </div>
-        <p>Presenta este cÃ³digo y muestra tu confirmaciÃ³n al proveedor o guÃ­a.</p>
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-center text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-          QR en construcciÃ³n Â· lo tendrÃ¡s en la prÃ³xima versiÃ³n
-        </div>
-      </div>
+      </section>
     </section>
   );
 }
 
+function DetailMini({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-slate-50 p-4">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">{label}</p>
+      <p className="mt-1 truncate text-sm font-semibold text-slate-950">{value}</p>
+    </div>
+  );
+}
+
+function InfoBox({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <article className="rounded-[24px] border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-600 shadow-sm">
+      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">{title}</p>
+      <div className="mt-3 space-y-1">{children}</div>
+    </article>
+  );
+}

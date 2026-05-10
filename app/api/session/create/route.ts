@@ -212,7 +212,7 @@ export async function POST(request: NextRequest) {
     bookingId: booking.id,
     metadata: {
       bookingId: booking.id,
-      referenceUrl: `/customer/reservations/${booking.id}`,
+      referenceUrl: `/dashboard/customer/reservas/${booking.id}`,
       orderCode
     },
     recipientUserId: booking.User.id

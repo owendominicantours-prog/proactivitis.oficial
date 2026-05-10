@@ -19,7 +19,7 @@ export default function LoginPage() {
     EMPLOYEE: "/workplace",
     SUPPLIER: "/supplier",
     AGENCY: "/agency",
-    CUSTOMER: "/customer"
+    CUSTOMER: "/dashboard/customer"
   };
   const rawCallbackUrl = searchParams.get("callbackUrl") ?? "";
   const callbackUrl = rawCallbackUrl.startsWith("/") && !rawCallbackUrl.startsWith("//") ? rawCallbackUrl : "";

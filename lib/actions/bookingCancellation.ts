@@ -127,6 +127,86 @@ const notifyCancellation = async (bookingId: string, role: string, reason?: stri
   }
 };
 
+const notifyCancellationRequest = async (bookingId: string, role: string, reason?: string) => {
+  const current = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: {
+      Tour: {
+        include: {
+          SupplierProfile: {
+            include: {
+              User: {
+                select: {
+                  id: true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  if (!current || !current.Tour) {
+    return;
+  }
+
+  const tourTitle = current.Tour.title;
+  const summary = buildBookingSummary(
+    tourTitle,
+    current.travelDate,
+    (current.paxAdults ?? 0) + (current.paxChildren ?? 0)
+  );
+  const reasonLabel = reason ? ` - Motivo: ${reason}` : "";
+
+  await createNotification({
+    type: "ADMIN_BOOKING_MODIFIED",
+    role: "ADMIN",
+    title: "Solicitud de cancelacion",
+    message: `Reserva ${summary} solicito cancelacion por ${getRoleLabel(role)}${reasonLabel}.`,
+    bookingId,
+    metadata: {
+      bookingId,
+      tourId: current.Tour.id,
+      reason,
+      referenceUrl: `/admin/bookings?bookingId=${bookingId}`
+    }
+  });
+
+  if (current.Tour.SupplierProfile?.userId) {
+    await createNotification({
+      type: "SUPPLIER_BOOKING_MODIFIED",
+      role: "SUPPLIER",
+      title: `Cancelacion solicitada en ${tourTitle}`,
+      message: `La reserva ${summary} esta en revision de cancelacion${reason ? ` (motivo: ${reason})` : ""}.`,
+      bookingId,
+      metadata: {
+        bookingId,
+        tourId: current.Tour.id,
+        referenceUrl: `/supplier/bookings?bookingId=${bookingId}`
+      },
+      recipientUserId: current.Tour.SupplierProfile.userId
+    });
+  }
+
+  if (current.userId) {
+    await createNotification({
+      type: "CUSTOMER_BOOKING_MODIFIED",
+      role: "CUSTOMER",
+      title: "Cancelacion recibida",
+      message: `Recibimos tu solicitud para ${summary}. La revisaremos desde la plataforma.`,
+      bookingId,
+      metadata: {
+        bookingId,
+        tourId: current.Tour.id,
+        reason,
+        referenceUrl: `/dashboard/customer/reservas/${bookingId}`
+      },
+      recipientUserId: current.userId
+    });
+  }
+};
+
 const updateCancellation = async (bookingId: string, status: BookingStatus, role: string, reason?: string) => {
   const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
   if (!booking) {
@@ -153,8 +233,33 @@ const updateCancellation = async (bookingId: string, status: BookingStatus, role
   if (status === BookingStatusEnum.CANCELLED) {
     await notifyCancellation(bookingId, role, reason ?? booking.cancellationReason ?? undefined);
   }
+  if (status === BookingStatusEnum.CANCELLATION_REQUESTED) {
+    await notifyCancellationRequest(bookingId, role, reason ?? booking.cancellationReason ?? undefined);
+  }
 
   revalidate();
+};
+
+const requireCustomerBookingAccess = async (bookingId: string) => {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id && !session?.user?.email) {
+    throw new Error("Debes iniciar sesion para gestionar esta reserva.");
+  }
+
+  const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
+  if (!booking) {
+    throw new Error("Reserva no encontrada.");
+  }
+
+  const ownsBooking =
+    (session.user.id && booking.userId === session.user.id) ||
+    (session.user.email && booking.customerEmail.toLowerCase() === session.user.email.toLowerCase());
+
+  if (!ownsBooking) {
+    throw new Error("No tienes permiso para gestionar esta reserva.");
+  }
+
+  return booking;
 };
 
 const requireSupplierBookingAccess = async (bookingId: string) => {
@@ -303,4 +408,27 @@ export async function agencyRequestCancellation(formData: FormData) {
   }
   await requireAgencyBookingAccess(bookingId);
   await updateCancellation(bookingId, BookingStatusEnum.CANCELLATION_REQUESTED, "AGENCY", reason.trim());
+}
+
+export async function customerRequestCancellation(formData: FormData) {
+  const bookingId = formData.get("bookingId");
+  const reason = formData.get("reason");
+  if (!bookingId || typeof bookingId !== "string") {
+    throw new Error("Reserva invalida.");
+  }
+  if (!reason || typeof reason !== "string" || !reason.trim()) {
+    throw new Error("Describe el motivo de tu solicitud.");
+  }
+
+  const booking = await requireCustomerBookingAccess(bookingId);
+  const blockedStatuses = new Set<string>([
+    BookingStatusEnum.CANCELLED,
+    BookingStatusEnum.COMPLETED,
+    BookingStatusEnum.CANCELLATION_REQUESTED
+  ]);
+  if (blockedStatuses.has(booking.status)) {
+    throw new Error("Esta reserva no permite una nueva solicitud de cancelacion.");
+  }
+
+  await updateCancellation(bookingId, BookingStatusEnum.CANCELLATION_REQUESTED, "CUSTOMER", reason.trim());
 }

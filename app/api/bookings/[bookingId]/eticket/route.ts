@@ -1,5 +1,7 @@
 import PDFDocument from "pdfkit";
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { toDataURL } from "qrcode";
 
@@ -28,6 +30,7 @@ export async function GET(
   context: { params: Promise<{ bookingId: string }> }
 ) {
   const { bookingId } = await context.params;
+  const session = await getServerSession(authOptions);
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: {
@@ -37,6 +40,7 @@ export async function GET(
             include: {
               User: {
                 select: {
+                  id: true,
                   name: true
                 }
               }
@@ -44,12 +48,43 @@ export async function GET(
           }
         }
       },
-      User: true
+      User: true,
+      AgencyProLink: {
+        select: {
+          agencyUserId: true
+        }
+      },
+      AgencyTransferLink: {
+        select: {
+          agencyUserId: true
+        }
+      }
     }
   });
 
   if (!booking || !booking.Tour) {
     return NextResponse.json({ error: "Reserva no encontrada" }, { status: 404 });
+  }
+
+  const role = (session?.user?.role ?? "").toUpperCase();
+  const userId = session?.user?.id;
+  const userEmail = session?.user?.email?.toLowerCase();
+  const ownsBooking =
+    Boolean(userId && booking.userId === userId) ||
+    Boolean(userEmail && booking.customerEmail.toLowerCase() === userEmail);
+  const canDownload =
+    role === "ADMIN" ||
+    role === "EMPLOYEE" ||
+    ownsBooking ||
+    Boolean(userId && booking.Tour.SupplierProfile?.userId === userId) ||
+    Boolean(
+      userId &&
+        (booking.AgencyProLink?.agencyUserId === userId ||
+          booking.AgencyTransferLink?.agencyUserId === userId)
+    );
+
+  if (!session?.user || !canDownload) {
+    return NextResponse.json({ error: "No autorizado" }, { status: session?.user ? 403 : 401 });
   }
 
   const isRentCar = booking.flowType === "rent_car";

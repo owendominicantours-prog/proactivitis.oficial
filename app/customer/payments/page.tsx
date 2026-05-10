@@ -82,7 +82,7 @@ export default async function CustomerPaymentsPage() {
                 </span>
               </div>
               <p className="mt-2 text-sm text-slate-500">
-                Estado: {booking.status}. <Link href={`/customer/reservations/${booking.id}`} className="text-sky-600 underline">Ver detalles</Link>
+                Estado: {booking.status}. <Link href={`/dashboard/customer/reservas/${booking.id}`} className="text-sky-600 underline">Ver detalles</Link>
               </p>
             </article>
           ))}

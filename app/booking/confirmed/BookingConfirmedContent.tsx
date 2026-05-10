@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { TourCard } from "@/components/public/TourCard";
-import ContactoProveedor from "@/components/booking/ContactoProveedor";
 import BookingEmailDispatcher from "@/components/booking/BookingEmailDispatcher";
 import { ItineraryTimeline } from "@/components/itinerary/ItineraryTimeline";
 import { formatDurationDisplay } from "@/lib/formatDuration";
@@ -27,7 +26,6 @@ export function BookingConfirmedContent({
   agency,
   recommendedTours,
   timelineStops,
-  whatsappLink,
   summary,
   travelDateLabel,
   passengerLabel,
@@ -150,14 +148,12 @@ export function BookingConfirmedContent({
               >
                 {t("booking.confirmation.buttons.downloadEticket")}
               </a>
-              <a
-                href={whatsappLink}
-                target="_blank"
-                rel="noreferrer"
+              <Link
+                href={`/dashboard/customer/reservas/${booking.id}`}
                 className="inline-flex items-center justify-center rounded-full border border-slate-900 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-slate-900 hover:text-white"
               >
-                {t("booking.confirmation.buttons.whatsapp")}
-              </a>
+                Abrir panel
+              </Link>
               {!isTransfer && !isRentCar ? (
                 <Link
                   href={`/tours/${tour.slug}#reviews`}
@@ -259,8 +255,19 @@ export function BookingConfirmedContent({
                 </button>
               </Link>
             </div>
-
-            <ContactoProveedor nombreProveedor={supplier?.name ?? "Proactivitis"} telefono="" reservaId={booking.id} />
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Soporte web</p>
+              <h3 className="mt-2 text-xl font-semibold text-slate-900">Gestiona cambios desde tu cuenta</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                Para pagos, cancelaciones, e-ticket o cambios operativos, usa el panel del cliente. Todo queda registrado en la plataforma.
+              </p>
+              <Link
+                href={`/dashboard/customer/reservas/${booking.id}`}
+                className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+              >
+                Abrir reserva
+              </Link>
+            </div>
           </aside>
         </div>
 

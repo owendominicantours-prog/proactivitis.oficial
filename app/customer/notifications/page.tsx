@@ -46,7 +46,7 @@ export default async function CustomerNotificationsPage() {
               <h1 className="text-2xl font-semibold text-slate-900">Actualizaciones de tus reservas</h1>
             </div>
             <Link
-              href="/customer/reservations"
+              href="/dashboard/customer"
               className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300"
             >
               Ver reservas
@@ -64,8 +64,8 @@ export default async function CustomerNotificationsPage() {
               const redirectUrl =
                 metadata.referenceUrl ??
                 (metadata.bookingId ?? notification.bookingId
-                  ? `/customer/reservations/${metadata.bookingId ?? notification.bookingId}`
-                  : "/customer/reservations");
+                  ? `/dashboard/customer/reservas/${metadata.bookingId ?? notification.bookingId}`
+                  : "/dashboard/customer");
               const notificationType = notification.type as NotificationType | undefined;
               const display = getNotificationDisplayProps(notificationType);
               const message = notification.message ?? notification.body ?? "";

@@ -307,7 +307,7 @@ export async function POST(request: NextRequest) {
         bookingId: booking.id,
         metadata: {
           bookingId: booking.id,
-          referenceUrl: `/booking/confirmed?bookingId=${booking.id}`,
+          referenceUrl: `/dashboard/customer/reservas/${booking.id}`,
           flowType: "rent_car",
           bookingCode
         },
@@ -319,7 +319,6 @@ export async function POST(request: NextRequest) {
       "/admin/bookings",
       "/supplier/bookings",
       "/dashboard/customer",
-      "/customer/reservations",
       "/booking/confirmed"
     ].forEach((path) => revalidatePath(path));
 

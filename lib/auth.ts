@@ -11,7 +11,7 @@ const roleRedirects: Record<string, string> = {
   EMPLOYEE: "/workplace",
   SUPPLIER: "/portal/supplier",
   AGENCY: "/portal/agency",
-  CUSTOMER: "/portal/customer"
+  CUSTOMER: "/dashboard/customer"
 };
 
 const secret = process.env.NEXTAUTH_SECRET;

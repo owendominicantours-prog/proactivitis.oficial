@@ -11,7 +11,7 @@ const roleRedirects: Record<string, string> = {
   EMPLOYEE: "/workplace",
   SUPPLIER: "/supplier",
   AGENCY: "/agency",
-  CUSTOMER: "/customer"
+  CUSTOMER: "/dashboard/customer"
 };
 
 export default async function PortalsPage() {
@@ -19,6 +19,6 @@ export default async function PortalsPage() {
   if (!session?.user?.role) {
     redirect("/auth/login");
   }
-  const destination = roleRedirects[session.user.role] ?? "/customer";
+  const destination = roleRedirects[session.user.role] ?? "/dashboard/customer";
   redirect(destination);
 }

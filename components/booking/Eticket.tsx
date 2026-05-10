@@ -61,7 +61,12 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
   const qrDataUrl = await toDataURL(qrPayload, { width: qrSize, margin: 2 });
   const totalGuests = booking.paxAdults + booking.paxChildren;
   const isRentCar = booking.flowType === "rent_car";
-  const isPayLater = booking.paymentMethod === "PAY_LATER" || booking.paymentStatus === "PAY_LATER";
+  const paidStatuses = new Set(["paid", "succeeded", "requires_capture"]);
+  const normalizedPaymentStatus = booking.paymentStatus?.toLowerCase();
+  const isPaymentPending =
+    booking.paymentMethod === "PAY_LATER" ||
+    booking.paymentStatus === "PAY_LATER" ||
+    Boolean(normalizedPaymentStatus && !paidStatuses.has(normalizedPaymentStatus));
   const heroImage = tour.heroImage ?? "/fototours/fototour.jpeg";
   const rentCarPickupLabel = booking.pickupNotes?.match(/Pickup: ([^\n]+)/)?.[1] ?? null;
   const meetingPoint = isRentCar ? rentCarPickupLabel ?? "Entrega por coordinar" : tour.meetingPoint ?? "Punto aún por coordinar";
@@ -110,12 +115,12 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
           <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Estado</p>
           <span
             className={`inline-flex rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] ${
-              isPayLater
+              isPaymentPending
                 ? "border-amber-200 bg-amber-50 text-amber-700"
                 : "border-emerald-200 bg-emerald-50 text-emerald-700"
             }`}
           >
-            {isPayLater ? "RESERVADO" : "PAGADO"}
+            {isPaymentPending ? "PAGO PENDIENTE" : "PAGADO"}
           </span>
         </div>
       </div>
@@ -230,9 +235,9 @@ export default async function Eticket({ booking, tour, supplierName, variant = "
           </div>
           <div className="space-y-2 text-sm text-slate-600">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">{isPayLater ? "Total estimado" : "Total pagado"}</p>
+              <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">{isPaymentPending ? "Total pendiente" : "Total pagado"}</p>
               <p className="text-lg font-semibold text-slate-900">${booking.totalAmount.toFixed(2)} USD</p>
-              {isPayLater ? <p className="text-xs font-semibold text-amber-700">Pago pendiente de coordinacion</p> : null}
+              {isPaymentPending ? <p className="text-xs font-semibold text-amber-700">Completa el pago desde tu cuenta</p> : null}
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">Titular</p>

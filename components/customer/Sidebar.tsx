@@ -1,15 +1,13 @@
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
 const menu = [
-  { label: "Dashboard", href: "/customer" },
-  { label: "Mis Reservas", href: "/customer/reservations" },
-  { label: "Tickets", href: "/customer/tickets" },
-  { label: "Favoritos", href: "/customer/favorites" },
+  { label: "Dashboard", href: "/dashboard/customer" },
+  { label: "Mis reservas", href: "/dashboard/customer" },
+  { label: "Notificaciones", href: "/customer/notifications" },
   { label: "Perfil", href: "/customer/profile" },
-  { label: "Pagos / Facturación", href: "/customer/payments" },
-  { label: "Preferencias", href: "/customer/preferences" },
-  { label: "Cerrar sesión", href: "/auth/logout" }
+  { label: "Pagos / Facturacion", href: "/customer/payments" },
+  { label: "Preferencias", href: "/customer/preferences" }
 ];
 
 export const CustomerSidebar = () => (

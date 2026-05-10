@@ -316,8 +316,7 @@ export const buildCustomerEticketEmail = ({
         </a>
       </div>
       <p style="margin-top:24px;font-size:14px;color:#475569;">
-        Correo enviado a ${escapeHtml(booking.customerEmail)}. Si necesitas ajustar un detalle operativo, puedes
-        <a href="${whatsappLink}" style="color:#0ea5e9;font-weight:600;text-decoration:none;"> chatear por WhatsApp</a>.
+        Correo enviado a ${escapeHtml(booking.customerEmail)}. Si necesitas ajustar un detalle operativo, abre tu reserva desde el panel del cliente.
       </p>
       <p style="margin-top:12px;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#94a3b8;">
         ID de reserva: ${escapeHtml(booking.id)} - Proactivitis LLC
