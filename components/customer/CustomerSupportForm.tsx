@@ -63,7 +63,11 @@ export function CustomerSupportForm({
             className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm normal-case tracking-normal text-slate-900 outline-none focus:border-slate-400"
           >
             <option>Soporte de reserva</option>
+            <option>Cambiar fecha u hora</option>
+            <option>Cambiar participantes</option>
             <option>Cambio de pickup</option>
+            <option>Actualizar datos del viajero</option>
+            <option>Accesibilidad o necesidades especiales</option>
             <option>Pago o factura</option>
             <option>Pregunta operativa</option>
           </select>

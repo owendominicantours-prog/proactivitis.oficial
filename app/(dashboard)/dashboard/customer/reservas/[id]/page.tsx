@@ -3,13 +3,14 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { notFound, redirect } from "next/navigation";
-import { AlertTriangle, ArrowLeft, CreditCard, Download, FileText, LifeBuoy, MapPin, XCircle } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Clock, CreditCard, Download, FileText, LifeBuoy, MapPin, Receipt, Users, XCircle } from "lucide-react";
 import { getServerSession } from "next-auth";
 import Eticket from "@/components/booking/Eticket";
 import { DynamicImage } from "@/components/shared/DynamicImage";
 import { CustomerSupportForm } from "@/components/customer/CustomerSupportForm";
 import { authOptions } from "@/lib/auth";
 import { customerRequestCancellation } from "@/lib/actions/bookingCancellation";
+import { customerRequestBookingChange, customerUpdatePickup } from "@/lib/actions/customerBookingManagement";
 import { buildBookingPresentation } from "@/lib/bookingPresentation";
 import { formatDurationDisplay } from "@/lib/formatDuration";
 import { prisma } from "@/lib/prisma";
@@ -240,6 +241,13 @@ export default async function CustomerBookingDetailPage({ params }: Props) {
                   Ver tour
                 </Link>
               ) : null}
+              <Link
+                href={`/api/bookings/${booking.id}/receipt`}
+                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700"
+              >
+                <Receipt className="h-4 w-4" />
+                Comprobante
+              </Link>
               {booking.Tour.slug && booking.status === BookingStatusEnum.COMPLETED ? (
                 <Link
                   href={`/tours/${booking.Tour.slug}#reviews`}
@@ -287,6 +295,106 @@ export default async function CustomerBookingDetailPage({ params }: Props) {
           <p>{booking.pickupNotes ?? "Sin instrucciones adicionales"}</p>
         </InfoBox>
       </div>
+
+      <section className="grid gap-4 lg:grid-cols-3">
+        <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center gap-3">
+            <MapPin className="h-5 w-5 text-slate-500" />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Pickup</p>
+              <h2 className="text-lg font-semibold text-slate-950">Actualizar hotel o punto</h2>
+            </div>
+          </div>
+          {canRequestCancel(booking.status) ? (
+            <form action={customerUpdatePickup} className="mt-4 space-y-3">
+              <input type="hidden" name="bookingId" value={booking.id} />
+              <input
+                name="pickup"
+                defaultValue={booking.pickup ?? ""}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none focus:border-slate-400"
+                placeholder="Pickup o punto de encuentro"
+              />
+              <input
+                name="hotel"
+                defaultValue={booking.hotel ?? ""}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none focus:border-slate-400"
+                placeholder="Hotel o destino"
+              />
+              <textarea
+                name="pickupNotes"
+                defaultValue={booking.pickupNotes ?? ""}
+                rows={3}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none focus:border-slate-400"
+                placeholder="Notas para el operador"
+              />
+              <button className="rounded-2xl bg-slate-950 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white">
+                Guardar pickup
+              </button>
+            </form>
+          ) : (
+            <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">Esta reserva ya no permite cambios de pickup.</p>
+          )}
+        </div>
+
+        <ChangeRequestCard
+          bookingId={booking.id}
+          icon={<Clock className="h-5 w-5 text-slate-500" />}
+          title="Cambiar fecha u hora"
+          requestType="RESCHEDULE"
+          fields="schedule"
+        />
+        <ChangeRequestCard
+          bookingId={booking.id}
+          icon={<Users className="h-5 w-5 text-slate-500" />}
+          title="Cambiar participantes"
+          requestType="PARTICIPANTS"
+          fields="participants"
+          defaultAdults={booking.paxAdults}
+          defaultChildren={booking.paxChildren}
+        />
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-3">
+        <ChangeRequestCard
+          bookingId={booking.id}
+          icon={<FileText className="h-5 w-5 text-slate-500" />}
+          title="Datos del viajero"
+          requestType="TRAVELER_INFO"
+          placeholder="Nombre correcto, edad, documento o dato que debemos anotar"
+        />
+        <ChangeRequestCard
+          bookingId={booking.id}
+          icon={<LifeBuoy className="h-5 w-5 text-slate-500" />}
+          title="Necesidades especiales"
+          requestType="ACCESSIBILITY"
+          placeholder="Movilidad, dieta, silla infantil, idioma o condicion importante"
+        />
+        <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center gap-3">
+            <Receipt className="h-5 w-5 text-slate-500" />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Documentos</p>
+              <h2 className="text-lg font-semibold text-slate-950">Tickets y comprobantes</h2>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-2">
+            <Link
+              href={`/api/bookings/${booking.id}/receipt`}
+              className="rounded-2xl border border-slate-200 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-slate-700"
+            >
+              Descargar comprobante
+            </Link>
+            {!due && booking.status !== BookingStatusEnum.CANCELLED ? (
+              <Link
+                href={`/api/bookings/${booking.id}/eticket`}
+                className="rounded-2xl bg-slate-950 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-white"
+              >
+                Descargar e-ticket
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      </section>
 
       {booking.status !== BookingStatusEnum.CANCELLED ? (
         <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
@@ -395,6 +503,85 @@ export default async function CustomerBookingDetailPage({ params }: Props) {
         </div>
       </section>
     </section>
+  );
+}
+
+function ChangeRequestCard({
+  bookingId,
+  icon,
+  title,
+  requestType,
+  fields,
+  placeholder = "Describe el cambio que necesitas",
+  defaultAdults,
+  defaultChildren
+}: {
+  bookingId: string;
+  icon: ReactNode;
+  title: string;
+  requestType: string;
+  fields?: "schedule" | "participants";
+  placeholder?: string;
+  defaultAdults?: number;
+  defaultChildren?: number;
+}) {
+  return (
+    <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="flex items-center gap-3">
+        {icon}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Solicitud</p>
+          <h2 className="text-lg font-semibold text-slate-950">{title}</h2>
+        </div>
+      </div>
+      <form action={customerRequestBookingChange} className="mt-4 space-y-3">
+        <input type="hidden" name="bookingId" value={bookingId} />
+        <input type="hidden" name="requestType" value={requestType} />
+        {fields === "schedule" ? (
+          <div className="grid gap-2 sm:grid-cols-2">
+            <input
+              type="date"
+              name="requestedDate"
+              className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none focus:border-slate-400"
+            />
+            <input
+              type="time"
+              name="requestedTime"
+              className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none focus:border-slate-400"
+            />
+          </div>
+        ) : null}
+        {fields === "participants" ? (
+          <div className="grid gap-2 sm:grid-cols-2">
+            <input
+              type="number"
+              min="1"
+              name="adults"
+              defaultValue={defaultAdults ?? 1}
+              className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none focus:border-slate-400"
+              placeholder="Adultos"
+            />
+            <input
+              type="number"
+              min="0"
+              name="children"
+              defaultValue={defaultChildren ?? 0}
+              className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none focus:border-slate-400"
+              placeholder="Ninos"
+            />
+          </div>
+        ) : null}
+        <textarea
+          name="message"
+          rows={3}
+          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none focus:border-slate-400"
+          placeholder={placeholder}
+        />
+        <button className="rounded-2xl border border-slate-900 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-900">
+          Enviar solicitud
+        </button>
+      </form>
+    </div>
   );
 }
 

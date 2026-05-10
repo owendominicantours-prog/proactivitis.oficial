@@ -4,12 +4,15 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   AlertTriangle,
+  Bell,
   CalendarDays,
   CreditCard,
   Download,
   FileText,
   LifeBuoy,
   MapPin,
+  Receipt,
+  Search,
   ShieldCheck
 } from "lucide-react";
 import { getServerSession } from "next-auth";
@@ -68,7 +71,14 @@ const inactiveStatuses = new Set<string>([
 const finishedStatuses = new Set<string>([BookingStatusEnum.CANCELLED, BookingStatusEnum.COMPLETED]);
 const canRequestCancel = (status: string) => !inactiveStatuses.has(status);
 
-export default async function CustomerDashboardPage() {
+export default async function CustomerDashboardPage({
+  searchParams
+}: {
+  searchParams?: Promise<{ q?: string; tab?: string }>;
+}) {
+  const resolvedSearch = searchParams ? await searchParams : {};
+  const query = (resolvedSearch.q ?? "").trim().toLowerCase();
+  const tab = resolvedSearch.tab ?? "all";
   const session = await getServerSession(authOptions);
   if (!session?.user?.email && !session?.user?.id) {
     return (
@@ -131,10 +141,37 @@ export default async function CustomerDashboardPage() {
     userId ? getNotificationsForRecipient({ role: "CUSTOMER", userId, limit: 5 }) : []
   ]);
 
+  const filteredBookings = bookings.filter((booking) => {
+    const haystack = [
+      booking.bookingCode,
+      booking.id,
+      booking.Tour?.title,
+      booking.Tour?.location,
+      booking.status,
+      booking.customerName,
+      booking.customerEmail
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    const matchesQuery = query ? haystack.includes(query) : true;
+    const matchesTab =
+      tab === "upcoming"
+        ? booking.travelDate >= new Date() && booking.status !== BookingStatusEnum.CANCELLED
+        : tab === "completed"
+          ? booking.status === BookingStatusEnum.COMPLETED
+          : tab === "cancelled"
+            ? booking.status === BookingStatusEnum.CANCELLED
+            : tab === "pending"
+              ? isPaymentDue(booking)
+              : true;
+    return matchesQuery && matchesTab;
+  });
+
   const now = new Date();
   const pendingPayment = bookings.filter(isPaymentDue);
-  const upcoming = bookings.filter((booking) => booking.travelDate >= now && booking.status !== BookingStatusEnum.CANCELLED);
-  const past = bookings.filter((booking) => booking.travelDate < now || booking.status === BookingStatusEnum.CANCELLED);
+  const upcoming = filteredBookings.filter((booking) => booking.travelDate >= now && booking.status !== BookingStatusEnum.CANCELLED);
+  const past = filteredBookings.filter((booking) => booking.travelDate < now || booking.status === BookingStatusEnum.CANCELLED);
   const activeBookings = bookings.filter((booking) => !finishedStatuses.has(booking.status));
   const customerName = user?.name ?? session.user.name ?? "Cliente";
   const totalPending = pendingPayment.reduce((sum, booking) => sum + booking.totalAmount, 0);
@@ -192,6 +229,56 @@ export default async function CustomerDashboardPage() {
         <MetricCard icon={<ShieldCheck className="h-5 w-5" />} label="Activas" value={activeBookings.length.toString()} />
       </section>
 
+      <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Gestion</p>
+            <h2 className="mt-1 text-xl font-semibold text-slate-950">Buscar y filtrar reservas</h2>
+          </div>
+          <form className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[360px] sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                name="q"
+                defaultValue={resolvedSearch.q ?? ""}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-9 pr-3 text-sm outline-none focus:border-slate-400"
+                placeholder="Codigo, tour, destino..."
+              />
+            </div>
+            <input type="hidden" name="tab" value={tab} />
+            <button className="rounded-2xl bg-slate-950 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white">
+              Buscar
+            </button>
+          </form>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.18em]">
+          {[
+            ["all", "Todas"],
+            ["upcoming", "Proximas"],
+            ["pending", "Pago pendiente"],
+            ["completed", "Completadas"],
+            ["cancelled", "Canceladas"]
+          ].map(([value, label]) => (
+            <Link
+              key={value}
+              href={`/dashboard/customer?tab=${value}${resolvedSearch.q ? `&q=${encodeURIComponent(resolvedSearch.q)}` : ""}`}
+              className={`rounded-full border px-3 py-2 ${
+                tab === value ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 text-slate-600"
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <AccountOption icon={<FileText className="h-5 w-5" />} title="Reservas y e-tickets" body="Ver detalles, voucher, QR, comprobante y estado." href="/dashboard/customer" />
+        <AccountOption icon={<CreditCard className="h-5 w-5" />} title="Pagos" body="Metodos guardados, pagos pendientes y comprobantes." href="/customer/payments" />
+        <AccountOption icon={<Bell className="h-5 w-5" />} title="Notificaciones" body="Cambios, respuestas y alertas de operacion." href="/customer/notifications" />
+        <AccountOption icon={<LifeBuoy className="h-5 w-5" />} title="Soporte web" body="Mensajes internos sin salir de la plataforma." href="#support" />
+      </section>
+
       <section className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-6">
           <ReservationSection title="Proximas reservas" bookings={upcoming} />
@@ -199,7 +286,7 @@ export default async function CustomerDashboardPage() {
         </div>
 
         <aside className="space-y-6">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+          <div id="support" className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center gap-3">
               <LifeBuoy className="h-5 w-5 text-slate-500" />
               <div>
@@ -290,6 +377,26 @@ function MetricCard({ icon, label, value }: { icon: ReactNode; label: string; va
       </div>
       <p className="mt-4 text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">{label}</p>
     </article>
+  );
+}
+
+function AccountOption({
+  icon,
+  title,
+  body,
+  href
+}: {
+  icon: ReactNode;
+  title: string;
+  body: string;
+  href: string;
+}) {
+  return (
+    <Link href={href} className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:bg-slate-50">
+      <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">{icon}</span>
+      <h3 className="mt-4 text-sm font-semibold text-slate-950">{title}</h3>
+      <p className="mt-1 text-sm leading-6 text-slate-500">{body}</p>
+    </Link>
   );
 }
 
@@ -385,6 +492,13 @@ function ReservationCard({ booking, compact }: { booking: any; compact?: boolean
                 E-ticket
               </Link>
             ) : null}
+            <Link
+              href={`/api/bookings/${booking.id}/receipt`}
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700"
+            >
+              <Receipt className="h-4 w-4" />
+              Recibo
+            </Link>
           </div>
 
           {canRequestCancel(booking.status) ? (

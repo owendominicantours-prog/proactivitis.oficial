@@ -33,6 +33,8 @@ export default async function CustomerPaymentsPage() {
       travelDate: true,
       totalAmount: true,
       status: true,
+      paymentStatus: true,
+      paymentMethod: true,
       Tour: {
         select: {
           title: true
@@ -43,6 +45,7 @@ export default async function CustomerPaymentsPage() {
   });
 
   const totalPaid = bookings.reduce((sum, booking) => sum + (booking.status === "CANCELLED" ? 0 : booking.totalAmount), 0);
+  const pendingPayment = bookings.filter((booking) => booking.status === "PAYMENT_PENDING" || booking.paymentMethod === "PAY_LATER");
   const payment = await prisma.customerPayment.findUnique({
     where: { userId: session.user.id ?? "" }
   });
@@ -58,6 +61,14 @@ export default async function CustomerPaymentsPage() {
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Total pagado</p>
           <p className="mt-2 text-3xl font-semibold text-slate-900">${totalPaid.toFixed(2)}</p>
           <p className="text-sm text-slate-500">Consideramos solo reservas confirmadas o completadas.</p>
+          {pendingPayment.length ? (
+            <Link
+              href={`/dashboard/customer/reservas/${pendingPayment[0].id}/pagar`}
+              className="mt-4 inline-flex rounded-2xl bg-amber-600 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white"
+            >
+              Pagar pendiente
+            </Link>
+          ) : null}
           {payment && (
             <p className="mt-2 text-sm text-slate-500">
               Método guardado: {payment.brand ?? "Desconocido"} • **** {payment.last4 ?? "0000"}
@@ -82,8 +93,21 @@ export default async function CustomerPaymentsPage() {
                 </span>
               </div>
               <p className="mt-2 text-sm text-slate-500">
-                Estado: {booking.status}. <Link href={`/dashboard/customer/reservas/${booking.id}`} className="text-sky-600 underline">Ver detalles</Link>
+                Estado: {booking.status}. Pago: {booking.paymentStatus ?? "Pendiente"}.
               </p>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.2em]">
+                <Link href={`/dashboard/customer/reservas/${booking.id}`} className="rounded-2xl border border-slate-200 px-3 py-2 text-slate-700">
+                  Ver detalles
+                </Link>
+                <Link href={`/api/bookings/${booking.id}/receipt`} className="rounded-2xl border border-slate-200 px-3 py-2 text-slate-700">
+                  Comprobante
+                </Link>
+                {booking.status === "PAYMENT_PENDING" || booking.paymentMethod === "PAY_LATER" ? (
+                  <Link href={`/dashboard/customer/reservas/${booking.id}/pagar`} className="rounded-2xl bg-amber-600 px-3 py-2 text-white">
+                    Pagar
+                  </Link>
+                ) : null}
+              </div>
             </article>
           ))}
         </section>
