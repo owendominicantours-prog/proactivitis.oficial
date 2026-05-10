@@ -23,6 +23,7 @@ import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
 import { BookingStatusEnum } from "@/lib/types/booking";
 import { prisma } from "@/lib/prisma";
 import { CustomerSupportForm } from "@/components/customer/CustomerSupportForm";
+import CustomerPaymentMethod from "@/components/customer/CustomerPaymentMethod";
 import { DynamicImage } from "@/components/shared/DynamicImage";
 
 const statusLabels: Record<string, string> = {
@@ -141,6 +142,23 @@ export default async function CustomerDashboardPage({
     userId ? getNotificationsForRecipient({ role: "CUSTOMER", userId, limit: 5 }) : []
   ]);
 
+  const payment = user
+    ? await prisma.customerPayment.findUnique({
+        where: { userId: user.id },
+        select: { method: true, brand: true, last4: true, updatedAt: true, stripePaymentMethodId: true }
+      })
+    : null;
+  const paymentSummary = payment
+    ? {
+        method: payment.method,
+        brand: payment.brand,
+        last4: payment.last4,
+        updatedAt: payment.updatedAt.toISOString(),
+        isStripe: Boolean(payment.stripePaymentMethodId),
+        stripePaymentMethodId: payment.stripePaymentMethodId
+      }
+    : null;
+
   const filteredBookings = bookings.filter((booking) => {
     const haystack = [
       booking.bookingCode,
@@ -178,7 +196,8 @@ export default async function CustomerDashboardPage({
 
   return (
     <section className="space-y-6">
-      <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-100 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.14),transparent_36%),linear-gradient(135deg,#ffffff,#f8fafc)] p-6">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.32em] text-slate-500">Cuenta global</p>
@@ -195,6 +214,7 @@ export default async function CustomerDashboardPage({
               Viaje a medida
             </Link>
           </div>
+        </div>
         </div>
       </div>
 
@@ -223,13 +243,13 @@ export default async function CustomerDashboardPage({
       ) : null}
 
       <section className="grid gap-4 md:grid-cols-4">
-        <MetricCard icon={<CalendarDays className="h-5 w-5" />} label="Proximas" value={upcoming.length.toString()} />
-        <MetricCard icon={<CreditCard className="h-5 w-5" />} label="Pago pendiente" value={pendingPayment.length.toString()} />
-        <MetricCard icon={<FileText className="h-5 w-5" />} label="Reservas reales" value={bookings.length.toString()} />
-        <MetricCard icon={<ShieldCheck className="h-5 w-5" />} label="Activas" value={activeBookings.length.toString()} />
+        <MetricCard icon={<CalendarDays className="h-5 w-5" />} label="Proximas" value={upcoming.length.toString()} tone="sky" />
+        <MetricCard icon={<CreditCard className="h-5 w-5" />} label="Pago pendiente" value={pendingPayment.length.toString()} tone="amber" />
+        <MetricCard icon={<FileText className="h-5 w-5" />} label="Reservas reales" value={bookings.length.toString()} tone="slate" />
+        <MetricCard icon={<ShieldCheck className="h-5 w-5" />} label="Activas" value={activeBookings.length.toString()} tone="emerald" />
       </section>
 
-      <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm ring-1 ring-slate-100">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Gestion</p>
@@ -286,7 +306,11 @@ export default async function CustomerDashboardPage({
         </div>
 
         <aside className="space-y-6">
-          <div id="support" className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm ring-1 ring-slate-100">
+            <CustomerPaymentMethod initialPayment={paymentSummary} title="Tarjeta guardada" />
+          </div>
+
+          <div id="support" className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm ring-1 ring-slate-100">
             <div className="flex items-center gap-3">
               <LifeBuoy className="h-5 w-5 text-slate-500" />
               <div>
@@ -368,11 +392,28 @@ export default async function CustomerDashboardPage({
   );
 }
 
-function MetricCard({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+function MetricCard({
+  icon,
+  label,
+  value,
+  tone = "slate"
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  tone?: "slate" | "sky" | "amber" | "emerald";
+}) {
+  const toneClass = {
+    slate: "bg-slate-100 text-slate-700",
+    sky: "bg-sky-50 text-sky-700",
+    amber: "bg-amber-50 text-amber-700",
+    emerald: "bg-emerald-50 text-emerald-700"
+  }[tone];
+
   return (
-    <article className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+    <article className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm ring-1 ring-slate-100">
       <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">{icon}</span>
+        <span className={`inline-flex h-10 w-10 items-center justify-center rounded-2xl ${toneClass}`}>{icon}</span>
         <p className="text-3xl font-semibold text-slate-950">{value}</p>
       </div>
       <p className="mt-4 text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">{label}</p>
@@ -392,7 +433,7 @@ function AccountOption({
   href: string;
 }) {
   return (
-    <Link href={href} className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:bg-slate-50">
+    <Link href={href} className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm ring-1 ring-slate-100 transition hover:border-slate-300 hover:bg-slate-50">
       <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">{icon}</span>
       <h3 className="mt-4 text-sm font-semibold text-slate-950">{title}</h3>
       <p className="mt-1 text-sm leading-6 text-slate-500">{body}</p>
@@ -410,7 +451,7 @@ function ReservationSection({
   compact?: boolean;
 }) {
   return (
-    <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm ring-1 ring-slate-100">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Reservas</p>
@@ -438,7 +479,7 @@ function ReservationCard({ booking, compact }: { booking: any; compact?: boolean
   const supplier = booking.Tour?.SupplierProfile?.company ?? "Proactivitis";
 
   return (
-    <article className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+    <article className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm ring-1 ring-slate-100 transition hover:border-slate-300">
       <div className="grid gap-4 p-4 md:grid-cols-[140px_1fr]">
         {!compact ? (
           <div className="relative h-32 overflow-hidden rounded-2xl bg-slate-100 md:h-full">

@@ -54,63 +54,79 @@ export default function CustomerPaymentMethod({ initialPayment, title = "Metodo 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Pagos</p>
+          <h2 className="mt-1 text-lg font-semibold text-slate-950">{title}</h2>
+        </div>
         {savedPayment && (
-          <span className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-600">
-            Metodo guardado
+          <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
+            Guardada
           </span>
         )}
       </div>
 
       {savedPayment ? (
-        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm text-slate-700">
-          <p className="text-sm font-semibold text-slate-900">
-            {savedPayment.brand ?? "Metodo"} • •••• {savedPayment.last4 ?? "0000"}
-          </p>
-          <p className="text-xs text-slate-500">Guardado en Stripe. No almacenamos el numero completo.</p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setEditing((current) => !current);
-                setFeedback(null);
-              }}
-              className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700"
-            >
-              {editing ? "Ocultar formulario" : "Cambiar tarjeta"}
-            </button>
-            <button
-              type="button"
-              disabled={removing}
-              onClick={async () => {
-                setRemoving(true);
-                setFeedback(null);
-                const response = await fetch("/api/customer/payment", { method: "DELETE" });
-                const data = (await response.json().catch(() => ({}))) as { error?: string };
-                if (!response.ok) {
-                  setFeedback(data.error ?? "No pudimos eliminar la tarjeta guardada.");
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 text-white shadow-sm">
+          <div className="bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.3),transparent_30%),linear-gradient(135deg,#0f172a,#111827)] p-5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-white/55">Metodo seguro</p>
+            <p className="mt-8 text-lg font-semibold tracking-[0.18em]">
+              **** **** **** {savedPayment.last4 ?? "0000"}
+            </p>
+            <div className="mt-5 flex items-end justify-between gap-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.24em] text-white/45">Marca</p>
+                <p className="text-sm font-semibold uppercase text-white">{savedPayment.brand ?? "Tarjeta"}</p>
+              </div>
+              <p className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/80">
+                Stripe
+              </p>
+            </div>
+          </div>
+          <div className="bg-white p-4 text-sm text-slate-700">
+            <p className="text-xs text-slate-500">No almacenamos el numero completo. Puedes cambiarla o eliminarla cuando quieras.</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditing((current) => !current);
+                  setFeedback(null);
+                }}
+                className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700"
+              >
+                {editing ? "Ocultar formulario" : "Cambiar tarjeta"}
+              </button>
+              <button
+                type="button"
+                disabled={removing}
+                onClick={async () => {
+                  setRemoving(true);
+                  setFeedback(null);
+                  const response = await fetch("/api/customer/payment", { method: "DELETE" });
+                  const data = (await response.json().catch(() => ({}))) as { error?: string };
+                  if (!response.ok) {
+                    setFeedback(data.error ?? "No pudimos eliminar la tarjeta guardada.");
+                    setRemoving(false);
+                    return;
+                  }
+                  setSavedPayment(null);
+                  setEditing(true);
                   setRemoving(false);
-                  return;
-                }
-                setSavedPayment(null);
-                setEditing(true);
-                setRemoving(false);
-                setFeedback("Tarjeta eliminada correctamente.");
-              }}
-              className="rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-700 disabled:opacity-60"
-            >
-              {removing ? "Eliminando..." : "Eliminar tarjeta"}
-            </button>
+                  setFeedback("Tarjeta eliminada correctamente.");
+                }}
+                className="rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-700 disabled:opacity-60"
+              >
+                {removing ? "Eliminando..." : "Eliminar tarjeta"}
+              </button>
+            </div>
           </div>
         </div>
       ) : (
-        <p className="text-sm text-slate-600">Aun no tienes un metodo de pago guardado.</p>
+        <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
+          Aun no tienes un metodo de pago guardado.
+        </div>
       )}
 
-      {!stripePromise && (
-        <p className="text-sm text-rose-500">No se ha configurado la clave publica de Stripe.</p>
-      )}
-
+      {!stripePromise && <p className="text-sm text-rose-500">No se ha configurado la clave publica de Stripe.</p>}
       {loading && <p className="text-sm text-slate-500">Cargando formulario de pago...</p>}
 
       {clientSecret && stripePromise && editing && (
@@ -191,13 +207,13 @@ function StripePaymentSetupForm({ onSaved, onError }: StripePaymentSetupFormProp
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="rounded-2xl border border-slate-200 bg-white p-4">
+      <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
         <PaymentElement />
       </div>
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white disabled:opacity-70"
+        className="w-full rounded-2xl bg-slate-950 px-6 py-3 text-sm font-semibold text-white disabled:opacity-70"
       >
         {submitting ? "Guardando..." : "Guardar metodo"}
       </button>
