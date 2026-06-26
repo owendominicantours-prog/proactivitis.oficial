@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { TourCard } from "@/components/public/TourCard";
 import BookingEmailDispatcher from "@/components/booking/BookingEmailDispatcher";
+import GoogleCustomerReviewsOptIn from "@/components/booking/GoogleCustomerReviewsOptIn";
 import { ItineraryTimeline } from "@/components/itinerary/ItineraryTimeline";
 import { formatDurationDisplay } from "@/lib/formatDuration";
 import { BookingConfirmationData } from "./helpers";
@@ -110,6 +111,12 @@ export function BookingConfirmedContent({
         currency={analytics.currency}
         coupon={analytics.coupon}
         items={analytics.items}
+      />
+      <GoogleCustomerReviewsOptIn
+        orderId={orderCode}
+        email={booking.customerEmail}
+        deliveryCountry="DO"
+        estimatedDeliveryDate={booking.travelDate}
       />
       <BookingEmailDispatcher bookingId={booking.id} />
       <section className="bg-white border-b border-slate-200">
