@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import TourGalleryViewer from "@/components/shared/TourGalleryViewer";
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
+import StructuredData from "@/components/schema/StructuredData";
 import { prisma } from "@/lib/prisma";
 import { TransferLocationType } from "@prisma/client";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
@@ -149,6 +150,269 @@ const buildReviewTags = (t: (key: Parameters<typeof translate>[1]) => string) =>
   t(tKey("tourPickup.reviews.tags.3"))
 ];
 
+type TourIntent = {
+  label: string;
+  fit: string;
+  packing: string;
+  timing: string;
+};
+
+const normalizeIntentText = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+const resolveTourIntent = (haystack: string, locale: Locale): TourIntent => {
+  const normalized = normalizeIntentText(haystack);
+  const isWater = /saona|catamaran|boat|barco|isla|snorkel|playa|beach|parasail|mar|ocean/.test(normalized);
+  const isAdventure = /buggy|atv|zip|horse|caballo|safari|aventura|adventure|off-road|offroad/.test(normalized);
+  const isCulture = /santo domingo|historia|cultura|cultural|city|ciudad|museo/.test(normalized);
+  const isNature = /samana|ballena|whale|cascada|waterfall|montana|nature|natural|rio/.test(normalized);
+
+  if (locale === "en") {
+    if (isWater) {
+      return {
+        label: "Beach and water day",
+        fit: "best for travelers who want ocean time, photos, music or a relaxed Caribbean route",
+        packing: "bring swimwear, sunscreen, dry clothes and a small waterproof bag",
+        timing: "hotel pickup is important because marina and beach departures run on fixed windows"
+      };
+    }
+    if (isAdventure) {
+      return {
+        label: "Adventure route",
+        fit: "best for guests who want action, local stops and a more active day outside the resort",
+        packing: "wear closed shoes and clothes that can get dirty",
+        timing: "being ready at the lobby avoids losing the first trail or safety briefing"
+      };
+    }
+    if (isCulture) {
+      return {
+        label: "Cultural route",
+        fit: "best for travelers who want history, local context and a guided city experience",
+        packing: "bring comfortable shoes, light clothing and an ID copy",
+        timing: "early pickup helps protect the route time and the guided stops"
+      };
+    }
+    if (isNature) {
+      return {
+        label: "Nature route",
+        fit: "best for travelers who want landscapes, wildlife or a full day outside Punta Cana",
+        packing: "bring comfortable shoes, sun protection and a light change of clothes",
+        timing: "pickup timing matters because long-distance routes depend on road and boat connections"
+      };
+    }
+    return {
+      label: "Guided experience",
+      fit: "best for travelers who want a confirmed tour with local support and clear logistics",
+      packing: "bring comfortable clothes, sunscreen and your booking confirmation",
+      timing: "hotel pickup keeps the experience organized from the first step"
+    };
+  }
+
+  if (locale === "fr") {
+    if (isWater) {
+      return {
+        label: "Journee plage et mer",
+        fit: "ideal pour profiter de la mer, des photos, de la musique ou d'une route caribeenne detendue",
+        packing: "prevoyez maillot, protection solaire, vetements secs et petit sac impermeable",
+        timing: "la prise en charge est importante car les departs plage ou marina suivent des horaires fixes"
+      };
+    }
+    if (isAdventure) {
+      return {
+        label: "Route aventure",
+        fit: "ideal pour une journee active avec action, arrets locaux et sortie hors resort",
+        packing: "portez chaussures fermees et vetements qui peuvent se salir",
+        timing: "etre pret au lobby evite de manquer le briefing ou le premier troncon"
+      };
+    }
+    if (isCulture) {
+      return {
+        label: "Route culturelle",
+        fit: "ideal pour decouvrir histoire, contexte local et visite guidee",
+        packing: "prevoyez chaussures confortables, vetements legers et copie de piece d'identite",
+        timing: "un depart tot protege le temps de visite et les arrets guides"
+      };
+    }
+    if (isNature) {
+      return {
+        label: "Route nature",
+        fit: "ideal pour paysages, faune ou journee complete hors Punta Cana",
+        packing: "prevoyez chaussures confortables, protection solaire et vetement de rechange leger",
+        timing: "l'heure de pickup compte car les longues routes dependent des connexions route et bateau"
+      };
+    }
+    return {
+      label: "Experience guidee",
+      fit: "ideal pour reserver une activite confirmee avec support local et logistique claire",
+      packing: "prevoyez vetements confortables, protection solaire et confirmation de reservation",
+      timing: "la prise en charge hotel rend l'experience plus simple des le depart"
+    };
+  }
+
+  if (isWater) {
+    return {
+      label: "Dia de playa y mar",
+      fit: "ideal para viajeros que buscan mar, fotos, musica o una ruta caribena relajada",
+      packing: "lleva traje de bano, protector solar, ropa seca y una funda pequena impermeable",
+      timing: "la recogida importa porque las salidas de playa o marina trabajan con ventanas fijas"
+    };
+  }
+  if (isAdventure) {
+    return {
+      label: "Ruta de aventura",
+      fit: "ideal para quienes quieren accion, paradas locales y un dia activo fuera del resort",
+      packing: "usa zapatos cerrados y ropa que pueda ensuciarse",
+      timing: "estar listo en lobby evita perder el briefing de seguridad o la primera parte de la ruta"
+    };
+  }
+  if (isCulture) {
+    return {
+      label: "Ruta cultural",
+      fit: "ideal para conocer historia, contexto local y puntos guiados con mas calma",
+      packing: "lleva zapatos comodos, ropa ligera y copia de identificacion",
+      timing: "la salida temprano ayuda a proteger el tiempo real de visita"
+    };
+  }
+  if (isNature) {
+    return {
+      label: "Ruta de naturaleza",
+      fit: "ideal para paisajes, vida silvestre o una excursion de dia completo fuera de Punta Cana",
+      packing: "lleva zapatos comodos, proteccion solar y cambio de ropa ligero",
+      timing: "la hora de recogida importa porque las rutas largas dependen de carretera y conexiones"
+    };
+  }
+  return {
+    label: "Experiencia guiada",
+    fit: "ideal para reservar un tour confirmado con soporte local y logistica clara",
+    packing: "lleva ropa comoda, protector solar y la confirmacion de reserva",
+    timing: "la recogida en hotel ordena la experiencia desde el primer paso"
+  };
+};
+
+const buildTourPickupUniqueness = ({
+  locale,
+  title,
+  hotel,
+  pickupArea,
+  tourArea,
+  duration,
+  startTime,
+  category,
+  language,
+  capacity,
+  physicalLevel,
+  includePreview,
+  intent
+}: {
+  locale: Locale;
+  title: string;
+  hotel: string;
+  pickupArea: string;
+  tourArea: string;
+  duration: string;
+  startTime: string;
+  category: string;
+  language: string;
+  capacity: string;
+  physicalLevel: string;
+  includePreview: string;
+  intent: TourIntent;
+}) => {
+  if (locale === "en") {
+    return {
+      heading: `${title} from ${hotel}: pickup plan and local details`,
+      intro: `This page is built for the exact combination of ${title} and pickup from ${hotel}. The route is treated as a ${intent.label.toLowerCase()} in ${tourArea}, with pickup context for ${pickupArea}, estimated duration of ${duration}, and the first available departure around ${startTime}.`,
+      support: `For this pickup point, the most important details are lobby timing, clear passenger count and the right preparation before leaving the hotel. This option is ${intent.fit}.`,
+      cards: [
+        { title: "Pickup context", body: `Pickup is planned from ${hotel}, in the ${pickupArea} area, so the confirmation focuses on lobby access and meeting-point clarity.` },
+        { title: "Tour profile", body: `${category} experience in ${tourArea}. Languages: ${language}. Physical level: ${physicalLevel}. Capacity reference: ${capacity}.` },
+        { title: "Before leaving", body: `${intent.packing}. Included reference: ${includePreview}.` }
+      ],
+      faq: [
+        {
+          question: `How does pickup from ${hotel} work for ${title}?`,
+          answer: `After booking, the pickup point is confirmed for ${hotel}. The team checks the lobby or approved meeting point and keeps the tour linked to this hotel landing.`
+        },
+        {
+          question: `Is ${title} a good option from ${pickupArea}?`,
+          answer: `Yes. This page is filtered for the ${pickupArea} pickup context and the tour area ${tourArea}, so the logistics are more specific than a generic tour page.`
+        },
+        {
+          question: `What should I prepare before ${startTime}?`,
+          answer: `Be ready before the confirmed pickup window, keep your phone available, and ${intent.packing}.`
+        },
+        {
+          question: `Why book this tour from ${hotel} instead of a generic page?`,
+          answer: `This page keeps the tour, hotel, pickup area, duration, language and booking widget connected in one place, which reduces manual coordination.`
+        }
+      ]
+    };
+  }
+
+  if (locale === "fr") {
+    return {
+      heading: `${title} depuis ${hotel} : pickup et details locaux`,
+      intro: `Cette page est construite pour la combinaison exacte entre ${title} et la prise en charge a ${hotel}. La route est traitee comme ${intent.label.toLowerCase()} a ${tourArea}, avec contexte pickup pour ${pickupArea}, duree estimee de ${duration} et premier depart vers ${startTime}.`,
+      support: `Pour ce point de pickup, les details importants sont l'heure lobby, le nombre de passagers et la bonne preparation avant de quitter l'hotel. Cette option est ${intent.fit}.`,
+      cards: [
+        { title: "Contexte pickup", body: `La prise en charge est prevue depuis ${hotel}, dans la zone ${pickupArea}, avec confirmation du lobby ou point autorise.` },
+        { title: "Profil du tour", body: `Experience ${category} a ${tourArea}. Langues : ${language}. Niveau physique : ${physicalLevel}. Capacite reference : ${capacity}.` },
+        { title: "Avant depart", body: `${intent.packing}. Inclusion principale : ${includePreview}.` }
+      ],
+      faq: [
+        {
+          question: `Comment fonctionne le pickup depuis ${hotel} pour ${title} ?`,
+          answer: `Apres reservation, le point exact est confirme pour ${hotel}. L'equipe verifie le lobby ou point approuve et garde le tour lie a cette page hotel.`
+        },
+        {
+          question: `${title} convient-il depuis ${pickupArea} ?`,
+          answer: `Oui. Cette page est filtree pour le contexte pickup ${pickupArea} et la zone du tour ${tourArea}, avec logistique plus precise qu'une page generique.`
+        },
+        {
+          question: `Que preparer avant ${startTime} ?`,
+          answer: `Soyez pret avant la fenetre confirmee, gardez votre telephone disponible et ${intent.packing}.`
+        },
+        {
+          question: `Pourquoi reserver depuis ${hotel} ici ?`,
+          answer: `Cette page relie le tour, l'hotel, la zone pickup, la duree, la langue et le module de reservation au meme endroit.`
+        }
+      ]
+    };
+  }
+
+  return {
+    heading: `${title} desde ${hotel}: plan de recogida y detalles locales`,
+    intro: `Esta pagina esta creada para la combinacion exacta de ${title} con recogida en ${hotel}. La ruta se trata como ${intent.label.toLowerCase()} en ${tourArea}, con contexto de salida desde ${pickupArea}, duracion estimada de ${duration} y primera salida alrededor de ${startTime}.`,
+    support: `Para este punto de recogida, lo importante es confirmar lobby, cantidad de pasajeros y preparacion antes de salir del hotel. Esta opcion es ${intent.fit}.`,
+    cards: [
+      { title: "Contexto de recogida", body: `La salida se organiza desde ${hotel}, dentro de la zona ${pickupArea}, con foco en lobby o punto autorizado.` },
+      { title: "Perfil del tour", body: `Experiencia ${category} en ${tourArea}. Idioma: ${language}. Nivel fisico: ${physicalLevel}. Capacidad de referencia: ${capacity}.` },
+      { title: "Antes de salir", body: `${intent.packing}. Referencia incluida: ${includePreview}.` }
+    ],
+    faq: [
+      {
+        question: `Como funciona la recogida en ${hotel} para ${title}?`,
+        answer: `Despues de reservar, se confirma el punto exacto para ${hotel}. El equipo valida lobby o punto autorizado y mantiene este tour conectado a esta landing del hotel.`
+      },
+      {
+        question: `${title} conviene si estoy en ${pickupArea}?`,
+        answer: `Si. Esta pagina usa el contexto de recogida de ${pickupArea} y la zona del tour ${tourArea}, por eso es mas especifica que una ficha generica.`
+      },
+      {
+        question: `Que debo preparar antes de ${startTime}?`,
+        answer: `Debes estar listo antes de la ventana confirmada, mantener el telefono disponible y ${intent.packing}.`
+      },
+      {
+        question: `Por que reservar desde ${hotel} y no desde una pagina generica?`,
+        answer: `Aqui quedan conectados el tour, hotel, zona de recogida, duracion, idioma y widget de reserva en una sola pagina.`
+      }
+    ]
+  };
+};
+
 type TourHotelLandingParams = {
   params: Promise<{ slug: string; locationSlug: string }>;
   searchParams?: Promise<{ bookingCode?: string; hotelSlug?: string }>;
@@ -164,7 +428,11 @@ type PickupTarget = {
   name: string;
   countryId: string;
   destinationId?: string | null;
+  destinationName?: string | null;
+  destinationSlug?: string | null;
   microZoneId?: string | null;
+  microZoneName?: string | null;
+  microZoneSlug?: string | null;
 };
 
 const resolvePickupTarget = async (slug: string): Promise<PickupTarget | null> => {
@@ -175,11 +443,25 @@ const resolvePickupTarget = async (slug: string): Promise<PickupTarget | null> =
       name: true,
       countryId: true,
       destinationId: true,
-      microZoneId: true
+      destination: { select: { name: true, slug: true } },
+      microZoneId: true,
+      microZone: { select: { name: true, slug: true } }
     }
   });
 
-  if (location) return location;
+  if (location) {
+    return {
+      slug: location.slug,
+      name: location.name,
+      countryId: location.countryId,
+      destinationId: location.destinationId,
+      destinationName: location.destination?.name ?? null,
+      destinationSlug: location.destination?.slug ?? null,
+      microZoneId: location.microZoneId,
+      microZoneName: location.microZone?.name ?? null,
+      microZoneSlug: location.microZone?.slug ?? null
+    };
+  }
 
   const transferLocation = await prisma.transferLocation.findUnique({
     where: { slug },
@@ -206,7 +488,9 @@ const resolvePickupTarget = async (slug: string): Promise<PickupTarget | null> =
     },
     select: {
       destinationId: true,
-      microZoneId: true
+      destination: { select: { name: true, slug: true } },
+      microZoneId: true,
+      microZone: { select: { name: true, slug: true } }
     }
   });
 
@@ -215,7 +499,11 @@ const resolvePickupTarget = async (slug: string): Promise<PickupTarget | null> =
     name: transferLocation.name,
     countryId: transferLocation.countryCode,
     destinationId: mappedLocation?.destinationId ?? null,
-    microZoneId: mappedLocation?.microZoneId ?? null
+    destinationName: mappedLocation?.destination?.name ?? null,
+    destinationSlug: mappedLocation?.destination?.slug ?? null,
+    microZoneId: mappedLocation?.microZoneId ?? null,
+    microZoneName: mappedLocation?.microZone?.name ?? null,
+    microZoneSlug: mappedLocation?.microZone?.slug ?? null
   };
 };
 
@@ -317,6 +605,7 @@ export async function TourHotelLanding({
           },
           country: true,
           destination: true,
+          departureDestination: true,
           microZone: true,
           translations: {
             where: { locale },
@@ -419,7 +708,142 @@ export async function TourHotelLanding({
 
   const detailReviewCount = getTourReviewCount(tour.slug, "detail");
   const detailReviewLabel = formatReviewCountValue(detailReviewCount);
-              <div className="text-xs uppercase tracking-[0.3em] text-slate-400">{t("tourPickup.reviews.summary", { count: detailReviewLabel })}</div>
+  const categoryLabel = categories[0] ?? tour.category ?? t("tourPickup.details.defaults.categories");
+  const languageLabel = languages.length ? languages.join(", ") : t("tourPickup.details.defaults.languages");
+  const physicalLabel = tour.physicalLevel ?? t("tourPickup.details.defaults.physical");
+  const capacityLabel = t("tourPickup.details.defaults.capacity", { count: String(tour.capacity ?? 15) });
+  const pickupArea =
+    pickupTarget.microZoneName ?? pickupTarget.destinationName ?? tour.microZone?.name ?? tour.destination?.name ?? pickupTarget.name;
+  const tourArea =
+    tour.departureDestination?.name ?? tour.destination?.name ?? tour.microZone?.name ?? tour.location ?? pickupArea;
+  const includePreview = includesList.slice(0, 2).join(", ") || t("tourPickup.includes.defaults.1");
+  const tourIntent = resolveTourIntent(
+    [
+      localizedTitle,
+      localizedDescription,
+      localizedShortDescription,
+      tour.category,
+      tour.location,
+      tour.destination?.name,
+      tour.departureDestination?.name,
+      tour.microZone?.name,
+      includesList.join(" ")
+    ]
+      .filter(Boolean)
+      .join(" "),
+    locale
+  );
+  const uniquePickupContent = buildTourPickupUniqueness({
+    locale,
+    title: localizedTitle,
+    hotel: pickupTarget.name,
+    pickupArea,
+    tourArea,
+    duration: durationLabel,
+    startTime: displayTime,
+    category: categoryLabel,
+    language: languageLabel,
+    capacity: capacityLabel,
+    physicalLevel: physicalLabel,
+    includePreview,
+    intent: tourIntent
+  });
+  const pageUrl = buildTourPickupUrl(tour.slug, pickupTarget.slug, locale);
+  const heroImageAbsolute = heroImage.startsWith("http") ? heroImage : `${BASE_URL}${heroImage.startsWith("/") ? heroImage : `/${heroImage}`}`;
+  const tourPickupSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        "@id": `${pageUrl}#product`,
+        name: `${localizedTitle} - ${pickupTarget.name}`,
+        description: uniquePickupContent.intro,
+        image: heroImageAbsolute,
+        brand: {
+          "@type": "Brand",
+          name: "Proactivitis"
+        },
+        category: categoryLabel,
+        offers: {
+          "@type": "Offer",
+          url: pageUrl,
+          price: tour.price.toFixed(2),
+          priceCurrency: "USD",
+          availability: "https://schema.org/InStock"
+        },
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: "4.9",
+          reviewCount: detailReviewCount
+        }
+      },
+      {
+        "@type": "TouristTrip",
+        "@id": `${pageUrl}#tour`,
+        name: localizedTitle,
+        description: uniquePickupContent.support,
+        url: pageUrl,
+        touristType: categoryLabel,
+        itinerary: visualTimeline.slice(0, 6).map((stop, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: stop.title,
+          description: stop.description,
+          startTime: stop.time
+        })),
+        provider: {
+          "@type": "Organization",
+          name: tour.SupplierProfile?.company ?? "Proactivitis"
+        },
+        location: {
+          "@type": "Place",
+          name: tourArea
+        },
+        departureTime: displayTime,
+        departureStation: {
+          "@type": "Place",
+          name: pickupTarget.name,
+          address: pickupArea
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${pageUrl}#pickup-faq`,
+        mainEntity: uniquePickupContent.faq.map((item) => ({
+          "@type": "Question",
+          name: item.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: item.answer
+          }
+        }))
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${pageUrl}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: locale === "es" ? "Tours" : locale === "fr" ? "Tours" : "Tours",
+            item: `${BASE_URL}${locale === "es" ? "/tours" : `/${locale}/tours`}`
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: localizedTitle,
+            item: `${BASE_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: pickupTarget.name,
+            item: pageUrl
+          }
+        ]
+      }
+    ]
+  };
 
   const quickInfo = [
     {
@@ -475,6 +899,7 @@ export async function TourHotelLanding({
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] text-slate-900 pb-24 overflow-x-hidden">
+      <StructuredData data={tourPickupSchema} />
       <section className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-4 pt-8 sm:pt-10">
         <div className="grid gap-4 overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.06)] lg:grid-cols-2">
           <div className="flex flex-col justify-center gap-6 p-6 sm:p-8 lg:p-16 text-center lg:text-left">
@@ -569,6 +994,28 @@ export async function TourHotelLanding({
               <span className="text-xs uppercase tracking-[0.3em] text-slate-400">{t("tourPickup.summary.badge", { hotel: pickupTarget.name })}</span>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-slate-600">{localizedDescription || shortTeaser}</p>
+          </section>
+
+          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-3xl">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{tourIntent.label}</p>
+                <h2 className="mt-2 text-[22px] font-semibold text-slate-900">{uniquePickupContent.heading}</h2>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{uniquePickupContent.intro}</p>
+              </div>
+              <div className="rounded-[18px] border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-700">
+                {pickupArea}
+              </div>
+            </div>
+            <p className="mt-4 text-sm leading-7 text-slate-600">{uniquePickupContent.support}</p>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              {uniquePickupContent.cards.map((card) => (
+                <article key={card.title} className="rounded-[18px] border border-slate-100 bg-slate-50/70 p-4">
+                  <h3 className="text-sm font-semibold text-slate-900">{card.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{card.body}</p>
+                </article>
+              ))}
+            </div>
           </section>
 
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
@@ -737,6 +1184,30 @@ export async function TourHotelLanding({
                   <p className="text-sm font-semibold text-slate-900">{item.label}</p>
                   <p className="text-xs text-slate-500">{item.detail}</p>
                 </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pickup FAQ</p>
+                <h3 className="text-[16px] font-semibold text-slate-900">
+                  {locale === "es"
+                    ? "Preguntas especificas de esta recogida"
+                    : locale === "fr"
+                      ? "Questions specifiques a ce pickup"
+                      : "Pickup-specific questions"}
+                </h3>
+              </div>
+              <span className="text-xs uppercase tracking-[0.35em] text-slate-400">{pickupTarget.name}</span>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {uniquePickupContent.faq.map((item) => (
+                <details key={item.question} className="rounded-[18px] border border-slate-100 bg-slate-50/60 p-4">
+                  <summary className="cursor-pointer text-sm font-semibold text-slate-900">{item.question}</summary>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{item.answer}</p>
+                </details>
               ))}
             </div>
           </section>
