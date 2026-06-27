@@ -24,6 +24,12 @@ import CollapsibleSection from "@/components/admin/CollapsibleSection";
 import { getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
 import LandingRefreshControl from "@/components/admin/LandingRefreshControl";
 import { countryPuntaCanaLandings } from "@/data/country-punta-cana-landings";
+import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
+import {
+  NUEVA_GENERACION_INTENT_PATH,
+  NUEVA_GENERACION_INTENTS,
+  NUEVA_GENERACION_PATH
+} from "@/lib/nuevaGeneracionTours";
 
 type SearchParams = {
   zone?: string;
@@ -40,6 +46,7 @@ type LandingsAdminPageProps = {
 
 const TRANSFER_ZONE = "punta-cana";
 const EXPLORER_PAGE_SIZE = 60;
+const toPublicPath = (path: string) => path.replace(/^\/+/, "");
 
 const buildLandingSlug = (slug: string) => `punta-cana-international-airport-to-${slug}`;
 
@@ -57,7 +64,7 @@ type ExplorerEntry = {
 export default async function LandingsAdminPage({ searchParams }: LandingsAdminPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const params = resolvedSearchParams ?? {};
-  const [zones, locations, dynamicCombos, publishedTours] = await Promise.all([
+  const [zones, locations, dynamicCombos, publishedTours, experienceTours] = await Promise.all([
     prisma.transferZoneV2.findMany({
       where: { countryCode: "RD" },
       select: { id: true, name: true, slug: true },
@@ -73,6 +80,15 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       where: { status: { in: ["published", "seo_only"] } },
       select: { slug: true, title: true },
       orderBy: { createdAt: "desc" }
+    }),
+    prisma.tour.findMany({
+      where: {
+        status: "published",
+        slug: { not: HIDDEN_TRANSFER_SLUG }
+      },
+      select: { slug: true, title: true },
+      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+      take: 28
     })
   ]);
 
@@ -247,6 +263,38 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
     zone: "Country to Punta Cana",
     active: true
   }));
+  const experienceLandingEntries = [
+    {
+      slug: toPublicPath(NUEVA_GENERACION_PATH),
+      name: "Tours y experiencias",
+      zone: "Experiencias",
+      active: true,
+      type: "EXPERIENCE_HUB"
+    },
+    ...NUEVA_GENERACION_INTENTS.map((intent) => ({
+      slug: toPublicPath(`${NUEVA_GENERACION_INTENT_PATH}/${intent.slug}`),
+      name: `Tema: ${intent.label}`,
+      zone: "Experiencias por tema",
+      active: true,
+      type: "EXPERIENCE_THEME"
+    })),
+    ...experienceTours.map((tour) => ({
+      slug: toPublicPath(`${NUEVA_GENERACION_PATH}/${tour.slug}`),
+      name: tour.title,
+      zone: "Experiencia principal",
+      active: true,
+      type: "EXPERIENCE_TOUR"
+    })),
+    ...experienceTours.flatMap((tour) =>
+      NUEVA_GENERACION_INTENTS.map((intent) => ({
+        slug: toPublicPath(`${NUEVA_GENERACION_PATH}/${tour.slug}/${intent.slug}`),
+        name: `${tour.title} - ${intent.label}`,
+        zone: "Experiencia por intencion",
+        active: true,
+        type: "EXPERIENCE_INTENT"
+      }))
+    )
+  ];
   const thingsToDoSlugs = hotelThingsToDoEntries.map((entry) => entry.slug);
   const pickupHotelSlugs = pickupHotelEntries.map((entry) => entry.slug);
   const safetyGuideSlugs = safetyGuideEntries.map((entry) => entry.slug);
@@ -283,6 +331,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       ...transferQuestionSlugs,
       ...tourMarketVariantSlugs,
       ...goldenTourSlugs,
+      ...experienceLandingEntries.map((entry) => entry.slug),
       ...countrySalesLandingEntries.map((entry) => entry.slug)
     ])
   );
@@ -422,6 +471,12 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       path: entry.slug,
       visits: trafficMap.get(entry.slug) ?? 0
     })),
+    ...experienceLandingEntries.map((entry) => ({
+      ...entry,
+      category: "experience-pages",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    })),
     ...countrySalesLandingEntries.map((entry) => ({
       ...entry,
       type: "COUNTRY",
@@ -476,6 +531,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
   const explorerTotalCount = explorerEntries.length;
   const goldenTourCount = goldenTourEntries.length;
   const goldenTransferCount = goldenTransferEntries.length;
+  const experienceLandingCount = experienceLandingEntries.length;
 
   const pageHref = (nextPage: number) => {
     const query = new URLSearchParams();
@@ -526,7 +582,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
         </article>
         <article className="rounded-2xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-sky-700">Catálogos</p>
-          <p className="mt-2 text-3xl font-semibold text-sky-900">16</p>
+          <p className="mt-2 text-3xl font-semibold text-sky-900">17</p>
           <p className="text-sm text-sky-700">Colecciones para filtrar por intención.</p>
         </article>
         <article className="rounded-2xl border border-violet-200 bg-violet-50 p-5 shadow-sm">
@@ -560,6 +616,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
               <option value="excursion-keywords">Excursiones keywords</option>
               <option value="tour-market-variants">Tour market variants</option>
               <option value="golden-tour-pages">Las 100 mil de oro</option>
+              <option value="experience-pages">Experiencias</option>
               <option value="country-sales">Country sales</option>
             </select>
           </label>
@@ -1031,6 +1088,37 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
             </Link>
             );
           })}
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Experiencias"
+        description="Paginas publicas nuevas de /experiencias: hub, temas, tours y variantes por tipo de viajero."
+        badge={`${experienceLandingCount} items`}
+      >
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+          Estas son las landings nuevas de tours que se pueden revisar desde el admin. Tambien aparecen en el explorador con el catalogo "Experiencias".
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {experienceLandingEntries.map((entry) => (
+            <Link
+              key={entry.slug}
+              href={`https://proactivitis.com/${entry.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm text-slate-700 transition hover:border-emerald-400 hover:shadow-lg"
+            >
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-emerald-700">{entry.zone}</p>
+                <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.type}</p>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                <p className="line-clamp-1">{entry.slug}</p>
+                <p>Visitas {trafficMap.get(entry.slug)?.toLocaleString() ?? "0"}</p>
+              </div>
+            </Link>
+          ))}
         </div>
       </CollapsibleSection>
 
