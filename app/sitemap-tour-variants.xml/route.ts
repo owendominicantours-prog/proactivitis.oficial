@@ -8,6 +8,7 @@ import { getIndexableTourMarketIntentIds } from "@/lib/seo-index-policy";
 const BASE_URL = "https://proactivitis.com";
 const LOCALES = ["es", "en", "fr"] as const;
 const INDEXABLE_TOUR_MARKET_INTENT_IDS = new Set(getIndexableTourMarketIntentIds());
+const NON_CANONICAL_TOUR_SLUGS = new Set(["atv-punta-cana-single"]);
 export const revalidate = 86400;
 
 export async function GET() {
@@ -20,7 +21,7 @@ export async function GET() {
         select: { slug: true }
       }),
       prisma.tour.findMany({
-        where: { status: { in: ["published", "seo_only"] } },
+        where: { status: { in: ["published", "seo_only"] }, slug: { notIn: Array.from(NON_CANONICAL_TOUR_SLUGS) } },
         select: { slug: true, countryId: true }
       })
     ]);

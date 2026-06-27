@@ -48,6 +48,7 @@ const MAX_TOURS_PER_HOTEL = 35;
 const MAX_TOTAL_COMBOS = 4000;
 const INDEXABLE_TRANSFER_VARIANT_IDS = new Set(getIndexableTransferVariantIds());
 const INDEXABLE_TOUR_MARKET_INTENT_IDS = new Set(getIndexableTourMarketIntentIds());
+const NON_CANONICAL_TOUR_SLUGS = new Set(["atv-punta-cana-single"]);
 
 const HOTEL_TRANSFER_SALES_VARIANT_URLS = allLandings().flatMap((landing) =>
   TRANSFER_HOTEL_SALES_VARIANTS.filter((variant) => INDEXABLE_TRANSFER_VARIANT_IDS.has(variant.id)).map((variant) => ({
@@ -208,9 +209,9 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
 
   const combos: (RouteEntry & { tourSlug: string; locationSlug: string })[] = [];
   let totalCombos = 0;
-  const pickupTourCandidates = tours.filter(
-    (tour) => tour.status === "published" && !tour.slug.includes("transfer-privado")
-  );
+  const canonicalTours = tours.filter((tour) => !NON_CANONICAL_TOUR_SLUGS.has(tour.slug));
+  const publishedTours = canonicalTours.filter((tour) => tour.status === "published");
+  const pickupTourCandidates = publishedTours.filter((tour) => !tour.slug.includes("transfer-privado"));
 
   for (const { location } of locationRank) {
     if (totalCombos >= MAX_TOTAL_COMBOS) break;
@@ -284,11 +285,11 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
     })),
     ...TRANSFER_QUESTION_SALES_URLS,
     ...HOTEL_TRANSFER_SALES_VARIANT_URLS,
-    ...tours.map((tour) => ({
+    ...publishedTours.map((tour) => ({
       url: `${BASE_URL}/tours/${tour.slug}`,
       priority: 0.8
     })),
-    ...tours
+    ...canonicalTours
       .filter((tour) => isDominicanRepublicCountry(tour.countryId))
       .flatMap((tour) => [
         { url: `${BASE_URL}/prodiscovery/tour/${tour.slug}`, priority: 0.78 },
@@ -315,7 +316,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
         url: `${BASE_URL}${landing.path ?? `/landing/${landing.slug}`}`,
         priority: countryToPuntaCanaLandingSlugs.has(landing.slug) ? 0.72 : 0.7
       })),
-    ...tours
+    ...canonicalTours
       .filter(isTourMarketVariantEligible)
       .flatMap((tour) =>
         TOUR_MARKET_INTENTS.filter((intent) => INDEXABLE_TOUR_MARKET_INTENT_IDS.has(intent.id)).map((intent) => ({

@@ -4,6 +4,7 @@ import { warnOnce } from "@/lib/logOnce";
 
 const BASE_URL = "https://proactivitis.com";
 const LOCALES = ["es", "en", "fr"] as const;
+const NON_CANONICAL_TOUR_SLUGS = new Set(["atv-punta-cana-single"]);
 export const revalidate = 86400;
 
 type TourRow = {
@@ -15,7 +16,7 @@ export async function GET() {
   let tours: TourRow[] = [];
   try {
     tours = await prisma.tour.findMany({
-      where: { status: "seo_only" },
+      where: { status: "seo_only", slug: { notIn: Array.from(NON_CANONICAL_TOUR_SLUGS) } },
       select: { slug: true, createdAt: true },
       orderBy: { createdAt: "desc" }
     });

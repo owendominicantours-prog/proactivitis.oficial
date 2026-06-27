@@ -36,6 +36,51 @@ export default withAuth(
     const currentLocaleCookie = req.cookies.get("proactivitis-language")?.value;
     const requestHeaders = new Headers(req.headers);
     requestHeaders.set("x-proactivitis-locale", locale);
+    if (pathname === "/tours/atv-punta-cana-single") {
+      const url = req.nextUrl.clone();
+      url.pathname = "/tours/excursion-en-buggy-y-atv-en-punta-cana";
+      const response = NextResponse.redirect(url, 301);
+      if (currentLocaleCookie !== locale) {
+        response.cookies.set("proactivitis-language", locale, { path: "/", sameSite: "lax" });
+      }
+      return response;
+    }
+    if (pathname === "/transfers/aeropuerto-punta-cana-a-bavaro") {
+      const url = req.nextUrl.clone();
+      url.pathname = "/transfer/punta-cana-airport-to-bavaro-transfer";
+      const response = NextResponse.redirect(url, 301);
+      if (currentLocaleCookie !== locale) {
+        response.cookies.set("proactivitis-language", locale, { path: "/", sameSite: "lax" });
+      }
+      return response;
+    }
+    if (pathname === "/transfers" || pathname.startsWith("/transfers/")) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/traslado";
+      const response = NextResponse.redirect(url, 301);
+      if (currentLocaleCookie !== locale) {
+        response.cookies.set("proactivitis-language", locale, { path: "/", sameSite: "lax" });
+      }
+      return response;
+    }
+    if (pathname === "/en/transfers" || pathname.startsWith("/en/transfers/")) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/en/transfer";
+      const response = NextResponse.redirect(url, 301);
+      if (currentLocaleCookie !== locale) {
+        response.cookies.set("proactivitis-language", locale, { path: "/", sameSite: "lax" });
+      }
+      return response;
+    }
+    if (pathname === "/fr/transfers" || pathname.startsWith("/fr/transfers/")) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/fr/transfer";
+      const response = NextResponse.redirect(url, 301);
+      if (currentLocaleCookie !== locale) {
+        response.cookies.set("proactivitis-language", locale, { path: "/", sameSite: "lax" });
+      }
+      return response;
+    }
     if (pathname === "/en/hoteles" || pathname.startsWith("/en/hoteles/")) {
       const url = req.nextUrl.clone();
       url.pathname = pathname.replace("/en/hoteles", "/en/hotels");
