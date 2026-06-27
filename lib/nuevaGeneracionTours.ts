@@ -3,8 +3,14 @@ import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 import { parseAdminItinerary, parseItinerary, type ItineraryStop } from "@/lib/itinerary";
 
 export const NUEVA_GENERACION_BASE_URL = "https://proactivitis.com";
-export const NUEVA_GENERACION_PATH = "/experiencias/tours";
-export const NUEVA_GENERACION_INTENT_PATH = "/experiencias/tema";
+export const NUEVA_GENERACION_HUB_PATH = "/excursiones-punta-cana";
+export const NUEVA_GENERACION_PATH = "/excursiones-punta-cana/tour";
+export const NUEVA_GENERACION_INTENT_PATH = "/excursiones-punta-cana";
+
+export const buildNuevaGeneracionTourPath = (slug: string) => `${NUEVA_GENERACION_PATH}/${slug}`;
+export const buildNuevaGeneracionIntentPath = (intentSlug: string) => `${NUEVA_GENERACION_INTENT_PATH}/${intentSlug}`;
+export const buildNuevaGeneracionIntentTourPath = (slug: string, intentSlug: string) =>
+  `${NUEVA_GENERACION_HUB_PATH}/${intentSlug}/${slug}`;
 
 export type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
 
@@ -540,7 +546,7 @@ export const buildNuevaGeneracionSchema = ({
           "@type": "Offer",
           position: index + 1,
           name: related.title,
-          url: `${NUEVA_GENERACION_BASE_URL}${NUEVA_GENERACION_PATH}/${related.slug}`,
+          url: `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionTourPath(related.slug)}`,
           price: related.price.toFixed(2),
           priceCurrency: "USD",
           priceValidUntil,
@@ -564,7 +570,7 @@ export const buildNuevaGeneracionSchema = ({
           "@type": "ListItem",
           position: index + 1,
           name: related.title,
-          url: `${NUEVA_GENERACION_BASE_URL}${NUEVA_GENERACION_PATH}/${related.slug}`
+          url: `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionTourPath(related.slug)}`
         }))
       },
       {
@@ -595,7 +601,7 @@ export const buildNuevaGeneracionSchema = ({
         "@id": `${canonical}#breadcrumb`,
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Tours", item: `${NUEVA_GENERACION_BASE_URL}/tours` },
-          { "@type": "ListItem", position: 2, name: "Experiencias", item: `${NUEVA_GENERACION_BASE_URL}${NUEVA_GENERACION_PATH}` },
+          { "@type": "ListItem", position: 2, name: "Excursiones Punta Cana", item: `${NUEVA_GENERACION_BASE_URL}${NUEVA_GENERACION_HUB_PATH}` },
           { "@type": "ListItem", position: 3, name: tour.title, item: canonical }
         ]
       }

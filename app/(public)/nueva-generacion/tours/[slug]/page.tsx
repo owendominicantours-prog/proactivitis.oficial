@@ -6,5 +6,5 @@ type PageProps = {
 
 export default async function LegacyNuevaGeneracionTourPage({ params }: PageProps) {
   const { slug } = await params;
-  redirect(`/experiencias/tours/${slug}`);
+  redirect(`/excursiones-punta-cana/tour/${slug}`);
 }

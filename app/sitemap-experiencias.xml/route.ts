@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 
 import {
   NUEVA_GENERACION_BASE_URL,
-  NUEVA_GENERACION_INTENT_PATH,
+  NUEVA_GENERACION_HUB_PATH,
   NUEVA_GENERACION_INTENTS,
-  NUEVA_GENERACION_PATH,
+  buildNuevaGeneracionIntentPath,
+  buildNuevaGeneracionIntentTourPath,
+  buildNuevaGeneracionTourPath,
   getNuevaGeneracionTours
 } from "@/lib/nuevaGeneracionTours";
 import { warnOnce } from "@/lib/logOnce";
@@ -29,18 +31,18 @@ export async function GET() {
 
   const lastmod = new Date().toISOString();
   const urls = [
-    { loc: `${NUEVA_GENERACION_BASE_URL}${NUEVA_GENERACION_PATH}`, priority: "0.70" },
+    { loc: `${NUEVA_GENERACION_BASE_URL}${NUEVA_GENERACION_HUB_PATH}`, priority: "0.70" },
     ...NUEVA_GENERACION_INTENTS.map((intent) => ({
-      loc: `${NUEVA_GENERACION_BASE_URL}${NUEVA_GENERACION_INTENT_PATH}/${intent.slug}`,
+      loc: `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionIntentPath(intent.slug)}`,
       priority: "0.80"
     })),
     ...tours.map((tour) => ({
-      loc: `${NUEVA_GENERACION_BASE_URL}${NUEVA_GENERACION_PATH}/${tour.slug}`,
+      loc: `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionTourPath(tour.slug)}`,
       priority: "0.86"
     })),
     ...tours.flatMap((tour) =>
       NUEVA_GENERACION_INTENTS.map((intent) => ({
-        loc: `${NUEVA_GENERACION_BASE_URL}${NUEVA_GENERACION_PATH}/${tour.slug}/${intent.slug}`,
+        loc: `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionIntentTourPath(tour.slug, intent.slug)}`,
         priority: "0.88"
       }))
     )

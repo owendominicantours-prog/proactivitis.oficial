@@ -26,9 +26,11 @@ import LandingRefreshControl from "@/components/admin/LandingRefreshControl";
 import { countryPuntaCanaLandings } from "@/data/country-punta-cana-landings";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 import {
-  NUEVA_GENERACION_INTENT_PATH,
+  NUEVA_GENERACION_HUB_PATH,
   NUEVA_GENERACION_INTENTS,
-  NUEVA_GENERACION_PATH
+  buildNuevaGeneracionIntentPath,
+  buildNuevaGeneracionIntentTourPath,
+  buildNuevaGeneracionTourPath
 } from "@/lib/nuevaGeneracionTours";
 
 type SearchParams = {
@@ -265,21 +267,21 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
   }));
   const experienceLandingEntries = [
     {
-      slug: toPublicPath(NUEVA_GENERACION_PATH),
+      slug: toPublicPath(NUEVA_GENERACION_HUB_PATH),
       name: "Tours y experiencias",
       zone: "Experiencias",
       active: true,
       type: "EXPERIENCE_HUB"
     },
     ...NUEVA_GENERACION_INTENTS.map((intent) => ({
-      slug: toPublicPath(`${NUEVA_GENERACION_INTENT_PATH}/${intent.slug}`),
+      slug: toPublicPath(buildNuevaGeneracionIntentPath(intent.slug)),
       name: `Tema: ${intent.label}`,
       zone: "Experiencias por tema",
       active: true,
       type: "EXPERIENCE_THEME"
     })),
     ...experienceTours.map((tour) => ({
-      slug: toPublicPath(`${NUEVA_GENERACION_PATH}/${tour.slug}`),
+      slug: toPublicPath(buildNuevaGeneracionTourPath(tour.slug)),
       name: tour.title,
       zone: "Experiencia principal",
       active: true,
@@ -287,7 +289,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
     })),
     ...experienceTours.flatMap((tour) =>
       NUEVA_GENERACION_INTENTS.map((intent) => ({
-        slug: toPublicPath(`${NUEVA_GENERACION_PATH}/${tour.slug}/${intent.slug}`),
+        slug: toPublicPath(buildNuevaGeneracionIntentTourPath(tour.slug, intent.slug)),
         name: `${tour.title} - ${intent.label}`,
         zone: "Experiencia por intencion",
         active: true,
@@ -1093,7 +1095,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
 
       <CollapsibleSection
         title="Experiencias"
-        description="Paginas publicas nuevas de /experiencias: hub, temas, tours y variantes por tipo de viajero."
+        description="Paginas publicas nuevas de /excursiones-punta-cana: hub, categorias, tours y variantes por tipo de viajero."
         badge={`${experienceLandingCount} items`}
       >
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
