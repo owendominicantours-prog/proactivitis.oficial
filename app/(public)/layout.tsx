@@ -5,7 +5,7 @@ import PublicHeaderSwitch from "@/components/public/PublicHeaderSwitch";
 import PageViewTracker from "@/components/analytics/PageViewTracker";
 import WhatsappFloatingChat from "@/components/shared/WhatsappFloatingChat";
 import VisitorSalesChat from "@/components/shared/VisitorSalesChat";
-import { getPriceValidUntil, FUNJET_EMAIL, FUNJET_LOGO, FUNJET_PHONE, FUNJET_URL } from "@/lib/seo";
+import { getPriceValidUntil, PROACTIVITIS_EMAIL, PROACTIVITIS_LOGO, PROACTIVITIS_PHONE, PROACTIVITIS_URL } from "@/lib/seo";
 
 const OFFER_SERVICE_SCHEMA = {
   "@type": "Offer",
@@ -35,7 +35,7 @@ const OFFER_SERVICE_SCHEMA = {
   },
   hasMerchantReturnPolicy: {
     "@type": "MerchantReturnPolicy",
-    url: `${FUNJET_URL}/legal/refund-policy`,
+    url: `${PROACTIVITIS_URL}/legal/refund-policy`,
     returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
     merchantReturnDays: 1,
     applicableCountry: "DO",
@@ -48,11 +48,11 @@ const ORGANIZATION_SCHEMA = {
   "@graph": [
     {
       "@type": "OnlineBusiness",
-      "@id": `${FUNJET_URL}/#organization`,
+      "@id": `${PROACTIVITIS_URL}/#organization`,
       name: "Proactivitis",
-      url: `${FUNJET_URL}/`,
-      logo: FUNJET_LOGO,
-      image: `${FUNJET_URL}/icon.png`,
+      url: `${PROACTIVITIS_URL}/`,
+      logo: PROACTIVITIS_LOGO,
+      image: `${PROACTIVITIS_URL}/icon.png`,
       description:
         "Plataforma de tours, traslados privados, rent a car y servicios turisticos en Republica Dominicana.",
       hasOfferCatalog: {
@@ -64,7 +64,7 @@ const ORGANIZATION_SCHEMA = {
             itemOffered: {
               "@type": "Service",
               name: "Tours y Excursiones",
-              url: `${FUNJET_URL}/tours`
+              url: `${PROACTIVITIS_URL}/tours`
             }
           },
           {
@@ -72,7 +72,7 @@ const ORGANIZATION_SCHEMA = {
             itemOffered: {
               "@type": "Service",
               name: "Traslados Privados",
-              url: `${FUNJET_URL}/traslado`
+              url: `${PROACTIVITIS_URL}/traslado`
             }
           },
           {
@@ -80,7 +80,7 @@ const ORGANIZATION_SCHEMA = {
             itemOffered: {
               "@type": "Service",
               name: "Rent a Car",
-              url: `${FUNJET_URL}/rent-a-car`
+              url: `${PROACTIVITIS_URL}/rent-a-car`
             }
           }
         ]
@@ -94,11 +94,11 @@ const TRAVEL_AGENCY_SCHEMA = {
   "@type": "TravelAgency",
   name: "Proactivitis",
   alternateName: "Proactivitis Travel",
-  url: FUNJET_URL,
-  logo: FUNJET_LOGO,
-  image: `${FUNJET_URL}/icon.png`,
-  telephone: FUNJET_PHONE,
-  email: FUNJET_EMAIL,
+  url: PROACTIVITIS_URL,
+  logo: PROACTIVITIS_LOGO,
+  image: `${PROACTIVITIS_URL}/icon.png`,
+  telephone: PROACTIVITIS_PHONE,
+  email: PROACTIVITIS_EMAIL,
   description:
     "Plataforma para reservar experiencias turisticas, traslados privados y servicios de viaje con soporte local.",
   areaServed: {
@@ -113,19 +113,19 @@ const TRAVEL_AGENCY_SCHEMA = {
     {
       "@type": "WebPage",
       name: "Traslados Privados",
-      url: `${FUNJET_URL}/traslado`,
+      url: `${PROACTIVITIS_URL}/traslado`,
       description: "Traslado de lujo y traslados de aeropuerto con estandar internacional."
     },
     {
       "@type": "WebPage",
       name: "Rent a Car",
-      url: `${FUNJET_URL}/rent-a-car`,
+      url: `${PROACTIVITIS_URL}/rent-a-car`,
       description: "Renta de vehiculos y asistencia para viajes en Republica Dominicana."
     },
     {
       "@type": "WebPage",
       name: "Destinos Globales",
-      url: `${FUNJET_URL}/destinations`,
+      url: `${PROACTIVITIS_URL}/destinations`,
       description: "Guia de experiencias en los destinos mas importantes del mundo."
     }
   ]
@@ -134,13 +134,13 @@ const TRAVEL_AGENCY_SCHEMA = {
 const WEBSITE_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  "@id": `${FUNJET_URL}/#website`,
-  url: `${FUNJET_URL}/`,
+  "@id": `${PROACTIVITIS_URL}/#website`,
+  url: `${PROACTIVITIS_URL}/`,
   name: "Proactivitis",
   inLanguage: ["es", "en", "fr"],
   potentialAction: {
     "@type": "SearchAction",
-    target: `${FUNJET_URL}/search?q={search_term_string}`,
+    target: `${PROACTIVITIS_URL}/search?q={search_term_string}`,
     "query-input": "required name=search_term_string"
   }
 };

@@ -9,7 +9,7 @@ import HomeTourSearchSection from "@/components/public/HomeTourSearchSection";
 import HomeTransferTicker from "@/components/public/HomeTransferTicker";
 import { Locale, translate } from "@/lib/translations";
 import { getHomeContentOverrides } from "@/lib/siteContent";
-import { getPriceValidUntil, FUNJET_URL } from "@/lib/seo";
+import { getPriceValidUntil, PROACTIVITIS_URL } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import { CalendarCheck, Car, Compass, CreditCard, MapPinned, MessageCircle, Search, ShieldCheck, Sparkles } from "lucide-react";
@@ -58,7 +58,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   const priceValidUntil = getPriceValidUntil();
   const localePrefix = locale === "es" ? "" : `/${locale}`;
   const localePath = (path: string) => `${localePrefix}${path}`;
-  const localizedPath = (path: string) => `${FUNJET_URL}${locale === "es" ? path : `/${locale}${path}`}`;
+  const localizedPath = (path: string) => `${PROACTIVITIS_URL}${locale === "es" ? path : `/${locale}${path}`}`;
   const tripStartCards = [
     {
       icon: Compass,
@@ -280,7 +280,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
             ? "Excursion en Republique dominicaine avec reservation immediate."
             : "Dominican Republic excursion with instant booking."),
       url: localizedPath(`/tours/${tour.slug}`),
-      image: `${FUNJET_URL}/fototours/fotosimple.jpg`,
+      image: `${PROACTIVITIS_URL}/fototours/fotosimple.jpg`,
       brand: {
         "@type": "Brand",
         name: "Proactivitis"
@@ -322,7 +322,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         },
         hasMerchantReturnPolicy: {
           "@type": "MerchantReturnPolicy",
-          url: `${FUNJET_URL}/legal/refund-policy`,
+          url: `${PROACTIVITIS_URL}/legal/refund-policy`,
           returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
           merchantReturnDays: 1,
           applicableCountry: "DO",
@@ -342,7 +342,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
       name: landing.heroTitle,
       description: landing.heroSubtitle || landing.metaDescription,
       url: localizedPath(`/transfer/${landing.landingSlug}`),
-      image: `${FUNJET_URL}${landing.heroImage}`,
+      image: `${PROACTIVITIS_URL}${landing.heroImage}`,
       brand: {
         "@type": "Brand",
         name: "Proactivitis"
@@ -384,7 +384,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         },
         hasMerchantReturnPolicy: {
           "@type": "MerchantReturnPolicy",
-          url: `${FUNJET_URL}/legal/refund-policy`,
+          url: `${PROACTIVITIS_URL}/legal/refund-policy`,
           returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
           merchantReturnDays: 1,
           applicableCountry: "DO",
@@ -420,7 +420,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   const allPublicPageItems = allPublicPageUrls.map((url, index) => ({
     "@type": "ListItem",
     position: index + 1,
-    name: url.replace(`${FUNJET_URL}${localePrefix}`, "") || "/",
+    name: url.replace(`${PROACTIVITIS_URL}${localePrefix}`, "") || "/",
     url
   }));
 
@@ -429,10 +429,10 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     "@graph": [
       {
         "@type": "OnlineBusiness",
-        "@id": `${FUNJET_URL}/#organization`,
+        "@id": `${PROACTIVITIS_URL}/#organization`,
         name: "Proactivitis",
-        url: `${FUNJET_URL}/`,
-        logo: `${FUNJET_URL}/logo.png`,
+        url: `${PROACTIVITIS_URL}/`,
+        logo: `${PROACTIVITIS_URL}/logo.png`,
         description: translate(locale, "home.schema.description"),
         hasOfferCatalog: {
           "@type": "OfferCatalog",
@@ -466,7 +466,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               },
               hasMerchantReturnPolicy: {
                 "@type": "MerchantReturnPolicy",
-                url: `${FUNJET_URL}/legal/refund-policy`,
+                url: `${PROACTIVITIS_URL}/legal/refund-policy`,
                 returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
                 merchantReturnDays: 1,
                 applicableCountry: "DO",
@@ -475,7 +475,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               itemOffered: {
                 "@type": "Service",
                 name: "Tours y Excursiones",
-                url: `${FUNJET_URL}/tours`
+                url: `${PROACTIVITIS_URL}/tours`
               }
             },
             {
@@ -506,7 +506,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               },
               hasMerchantReturnPolicy: {
                 "@type": "MerchantReturnPolicy",
-                url: `${FUNJET_URL}/legal/refund-policy`,
+                url: `${PROACTIVITIS_URL}/legal/refund-policy`,
                 returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
                 merchantReturnDays: 1,
                 applicableCountry: "DO",
@@ -515,7 +515,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               itemOffered: {
                 "@type": "Service",
                 name: "Traslados Privados",
-                url: `${FUNJET_URL}/traslado`
+                url: `${PROACTIVITIS_URL}/traslado`
               }
             },
             {
@@ -546,7 +546,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               },
               hasMerchantReturnPolicy: {
                 "@type": "MerchantReturnPolicy",
-                url: `${FUNJET_URL}/legal/refund-policy`,
+                url: `${PROACTIVITIS_URL}/legal/refund-policy`,
                 returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
                 merchantReturnDays: 1,
                 applicableCountry: "DO",
@@ -555,7 +555,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               itemOffered: {
                 "@type": "Service",
                 name: "Rent a Car",
-                url: `${FUNJET_URL}/rent-a-car`
+                url: `${PROACTIVITIS_URL}/rent-a-car`
               }
             }
           ]
@@ -567,10 +567,10 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         url: localizedPath("/"),
         name: locale === "es" ? "Inicio Proactivitis" : locale === "fr" ? "Accueil Proactivitis" : "Proactivitis Home",
         isPartOf: {
-          "@id": `${FUNJET_URL}/#website`
+          "@id": `${PROACTIVITIS_URL}/#website`
         },
         about: {
-          "@id": `${FUNJET_URL}/#organization`
+          "@id": `${PROACTIVITIS_URL}/#organization`
         }
       },
       {

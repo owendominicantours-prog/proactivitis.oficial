@@ -16,7 +16,7 @@ import { Locale, translate, type TranslationKey } from "@/lib/translations";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import StructuredData from "@/components/schema/StructuredData";
-import { FUNJET_URL } from "@/lib/seo";
+import { PROACTIVITIS_URL } from "@/lib/seo";
 import { ensureLeadingCapital } from "@/lib/text-format";
 import { getActiveOfferPriceMapForTours } from "@/lib/offerPricing";
 import { localizedCountryName, localizedDestinationName, localizedLocationText } from "@/lib/localizedPlaces";
@@ -174,7 +174,7 @@ type TourDurationRow = Prisma.TourGetPayload<{
 
 const PUBLIC_TOUR_OPTION_WHERE: Prisma.TourWhereInput = {
   status: "published",
-  slug: { not: "transfer-privado-funjet" }
+  slug: { not: "transfer-privado-proactivitis" }
 };
 
 const normalizeCountryOption = (country: CountryOption, locale: Locale): CountryOption => {
@@ -446,7 +446,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
 
   const where = {
     ...buildTourFilter(params),
-    slug: { not: "transfer-privado-funjet" }
+    slug: { not: "transfer-privado-proactivitis" }
   } as Prisma.TourWhereInput;
 
   if (applyPreferences && (preferredCountries.length || preferredDestinations.length)) {
@@ -562,11 +562,11 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
     })
     .map(({ tour }) => tour);
   const toursHubPath = locale === "es" ? "/tours" : `/${locale}/tours`;
-  const toursHubUrl = `${FUNJET_URL}${toursHubPath}`;
+  const toursHubUrl = `${PROACTIVITIS_URL}${toursHubPath}`;
   const listItemSchema = toursSorted.slice(0, 24).map((tour, index) => ({
     "@type": "ListItem",
     position: index + 1,
-    url: `${FUNJET_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`,
+    url: `${PROACTIVITIS_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`,
     name: ensureLeadingCapital(tour.translations?.[0]?.title ?? tour.title)
   }));
   const itemListSchema = {
@@ -585,7 +585,7 @@ export default async function PublicToursPage({ searchParams, locale }: Props) {
         "@type": "ListItem",
         position: 1,
         name: locale === "es" ? "Inicio" : locale === "en" ? "Home" : "Accueil",
-        item: `${FUNJET_URL}${locale === "es" ? "/" : `/${locale}`}`
+        item: `${PROACTIVITIS_URL}${locale === "es" ? "/" : `/${locale}`}`
       },
       {
         "@type": "ListItem",
