@@ -212,31 +212,89 @@ type NotifyBookingPayload = {
   totalAmount: number;
   customerName?: string | null;
   customerEmail: string;
+  customerPhone?: string | null;
   tourTitle: string;
   tourSlug: string;
+  tourOptionName?: string | null;
+  tourOptionType?: string | null;
   flowType?: string | null;
   travelDate: Date;
   startTime?: string | null;
+  tripType?: string | null;
+  returnTravelDate?: Date | null;
+  returnStartTime?: string | null;
+  hotel?: string | null;
+  pickup?: string | null;
+  pickupNotes?: string | null;
+  originAirport?: string | null;
+  flightNumber?: string | null;
+  paxAdults?: number | null;
+  paxChildren?: number | null;
+  paymentStatus?: string | null;
+  paymentMethod?: string | null;
+  source?: string | null;
+  supplierName?: string | null;
+  supplierEmail?: string | null;
+  agencyName?: string | null;
+  agencyPhone?: string | null;
+  transferVehicleName?: string | null;
+  transferVehicleCategory?: string | null;
+};
+
+const formatOptionalDate = (value?: Date | null) => (value ? value.toLocaleDateString("es-ES") : null);
+
+const formatTripType = (value?: string | null) => {
+  if (value === "round-trip") return "Ida y vuelta";
+  if (value === "one-way") return "Solo ida";
+  return value ?? null;
 };
 
 export async function notifyAdminBookingConfirmed(payload: NotifyBookingPayload) {
+  const adults = payload.paxAdults ?? 0;
+  const children = payload.paxChildren ?? 0;
+  const passengerTotal = adults + children;
+  const adminBookingUrl = `${APP_BASE_URL}/admin/bookings?tab=all&bookingId=${encodeURIComponent(
+    payload.bookingId
+  )}&code=${encodeURIComponent(payload.orderCode)}`;
+
   await sendAdminEmail(
     "ADMIN_BOOKING_CONFIRMED",
     `Reserva confirmada ${payload.orderCode}`,
-    "La reserva ya tiene pago confirmado y se genero el voucher.",
+    "La reserva ya tiene pago confirmado y contiene la informacion operativa completa para seguimiento.",
     [
       { label: "Codigo interno", value: payload.orderCode },
       { label: "ID de reserva", value: payload.bookingId },
       { label: "Cliente", value: payload.customerName ?? "Sin nombre" },
+      { label: "Telefono cliente", value: payload.customerPhone ?? "Pendiente" },
+      { label: "Email cliente", value: payload.customerEmail },
       { label: "Servicio", value: payload.tourTitle },
+      { label: "Opcion", value: payload.tourOptionName ?? null },
+      { label: "Tipo de opcion", value: payload.tourOptionType ?? null },
+      { label: "Proveedor", value: payload.supplierName ?? "Proactivitis" },
+      { label: "Email proveedor", value: payload.supplierEmail ?? null },
       { label: "Fecha", value: payload.travelDate.toLocaleDateString("es-ES") },
       { label: "Hora", value: payload.startTime ?? "Pendiente" },
+      { label: "Tipo de viaje", value: formatTripType(payload.tripType) },
+      { label: "Fecha regreso", value: formatOptionalDate(payload.returnTravelDate) },
+      { label: "Hora regreso", value: payload.returnStartTime ?? null },
+      { label: "Origen / aeropuerto", value: payload.originAirport ?? null },
+      { label: "Pickup / ida", value: payload.pickup ?? null },
+      { label: "Hotel / destino", value: payload.hotel ?? null },
+      { label: "Vuelo", value: payload.flightNumber ?? null },
+      { label: "Notas", value: payload.pickupNotes ?? null },
+      { label: "Pasajeros", value: passengerTotal ? `${passengerTotal} (${adults} adultos, ${children} ninos)` : null },
+      { label: "Vehiculo", value: payload.transferVehicleName ?? null },
+      { label: "Categoria vehiculo", value: payload.transferVehicleCategory ?? null },
+      { label: "Agencia", value: payload.agencyName ?? null },
+      { label: "Telefono agencia", value: payload.agencyPhone ?? null },
       { label: "Flujo", value: payload.flowType ?? "tour" },
       { label: "Total", value: `$ ${payload.totalAmount.toFixed(2)} USD` },
-      { label: "Email cliente", value: payload.customerEmail },
+      { label: "Estado pago", value: payload.paymentStatus ?? null },
+      { label: "Metodo pago", value: payload.paymentMethod ?? null },
+      { label: "Fuente", value: payload.source ?? null },
       { label: "Link tour", value: `${APP_BASE_URL}/tours/${payload.tourSlug}` }
     ],
-    `Ve la reserva en: ${APP_BASE_URL}/admin/bookings`
+    `Ve la reserva exacta en: ${adminBookingUrl}`
   );
 }
 

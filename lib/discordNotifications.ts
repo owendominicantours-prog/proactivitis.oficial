@@ -4,13 +4,31 @@ type DiscordBookingPayload = {
   tourTitle: string;
   travelDate: Date;
   startTime?: string | null;
+  tripType?: string | null;
+  returnTravelDate?: Date | null;
+  returnStartTime?: string | null;
   customerName?: string | null;
   customerEmail: string;
+  customerPhone?: string | null;
   totalAmount: number;
   hotel?: string | null;
+  pickup?: string | null;
+  pickupNotes?: string | null;
   originAirport?: string | null;
+  flightNumber?: string | null;
   paxAdults?: number | null;
   paxChildren?: number | null;
+  tourOptionName?: string | null;
+  tourOptionType?: string | null;
+  paymentStatus?: string | null;
+  paymentMethod?: string | null;
+  source?: string | null;
+  supplierName?: string | null;
+  supplierEmail?: string | null;
+  agencyName?: string | null;
+  agencyPhone?: string | null;
+  transferVehicleName?: string | null;
+  transferVehicleCategory?: string | null;
 };
 
 type DiscordTransferQuotePayload = {
@@ -22,6 +40,56 @@ type DiscordTransferQuotePayload = {
 
 const safeText = (value: string | number | null | undefined) =>
   value === null || value === undefined || value === "" ? "-" : String(value);
+
+const appBaseUrl = () =>
+  (
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXTAUTH_URL ||
+    "https://proactivitis.com"
+  ).replace(/\/+$/, "");
+
+const formatDate = (value?: Date | null) => (value ? value.toISOString().slice(0, 10) : "-");
+
+const formatTripType = (value?: string | null) => {
+  if (value === "round-trip") return "Ida y vuelta";
+  if (value === "one-way") return "Solo ida";
+  return safeText(value);
+};
+
+const bookingLines = (payload: DiscordBookingPayload) => {
+  const paxAdults = payload.paxAdults ?? 0;
+  const paxChildren = payload.paxChildren ?? 0;
+  const totalPax = paxAdults + paxChildren;
+  return [
+    `Order: ${safeText(payload.orderCode)}`,
+    `Booking ID: ${safeText(payload.bookingId)}`,
+    `Service: ${safeText(payload.tourTitle)}`,
+    `Option: ${safeText(payload.tourOptionName)}${payload.tourOptionType ? ` (${payload.tourOptionType})` : ""}`,
+    `Date: ${formatDate(payload.travelDate)}`,
+    `Time: ${safeText(payload.startTime)}`,
+    `Trip type: ${formatTripType(payload.tripType)}`,
+    `Return: ${formatDate(payload.returnTravelDate)} ${safeText(payload.returnStartTime)}`,
+    `Customer: ${safeText(payload.customerName)}`,
+    `Email: ${safeText(payload.customerEmail)}`,
+    `Phone: ${safeText(payload.customerPhone)}`,
+    `PAX: ${totalPax} (${paxAdults} adults, ${paxChildren} children)`,
+    `Origin/Airport: ${safeText(payload.originAirport)}`,
+    `Pickup: ${safeText(payload.pickup)}`,
+    `Hotel/Destination: ${safeText(payload.hotel)}`,
+    `Flight: ${safeText(payload.flightNumber)}`,
+    `Vehicle: ${safeText(payload.transferVehicleName)} ${safeText(payload.transferVehicleCategory)}`,
+    `Supplier: ${safeText(payload.supplierName)} <${safeText(payload.supplierEmail)}>`,
+    `Agency: ${safeText(payload.agencyName)} ${safeText(payload.agencyPhone)}`,
+    `Payment: ${safeText(payload.paymentStatus)} / ${safeText(payload.paymentMethod)}`,
+    `Source: ${safeText(payload.source)}`,
+    `Total USD: ${payload.totalAmount.toFixed(2)}`,
+    `Notes: ${safeText(payload.pickupNotes)}`,
+    `Admin: ${appBaseUrl()}/admin/bookings?tab=all&bookingId=${encodeURIComponent(
+      payload.bookingId
+    )}&code=${encodeURIComponent(payload.orderCode)}`
+  ];
+};
 
 const postDiscordMessage = async (webhookUrl: string, lines: string[]) => {
   if (!webhookUrl.trim()) return;
@@ -43,15 +111,7 @@ export async function notifyDiscordTourBookingConfirmed(payload: DiscordBookingP
   const webhook = resolveWebhook("tour");
   const lines = [
     "New tour booking confirmed",
-    `Order: ${safeText(payload.orderCode)}`,
-    `Booking ID: ${safeText(payload.bookingId)}`,
-    `Tour: ${safeText(payload.tourTitle)}`,
-    `Date: ${payload.travelDate.toISOString().slice(0, 10)}`,
-    `Time: ${safeText(payload.startTime)}`,
-    `Customer: ${safeText(payload.customerName)}`,
-    `Email: ${safeText(payload.customerEmail)}`,
-    `PAX: ${(payload.paxAdults ?? 0) + (payload.paxChildren ?? 0)}`,
-    `Total USD: ${payload.totalAmount.toFixed(2)}`
+    ...bookingLines(payload)
   ];
   await postDiscordMessage(webhook, lines);
 }
@@ -60,17 +120,7 @@ export async function notifyDiscordTransferBookingConfirmed(payload: DiscordBook
   const webhook = resolveWebhook("transfer");
   const lines = [
     "New transfer booking confirmed",
-    `Order: ${safeText(payload.orderCode)}`,
-    `Booking ID: ${safeText(payload.bookingId)}`,
-    `Service: ${safeText(payload.tourTitle)}`,
-    `Date: ${payload.travelDate.toISOString().slice(0, 10)}`,
-    `Time: ${safeText(payload.startTime)}`,
-    `Hotel: ${safeText(payload.hotel)}`,
-    `Airport: ${safeText(payload.originAirport)}`,
-    `Customer: ${safeText(payload.customerName)}`,
-    `Email: ${safeText(payload.customerEmail)}`,
-    `PAX: ${(payload.paxAdults ?? 0) + (payload.paxChildren ?? 0)}`,
-    `Total USD: ${payload.totalAmount.toFixed(2)}`
+    ...bookingLines(payload)
   ];
   await postDiscordMessage(webhook, lines);
 }

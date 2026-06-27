@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { encode } from "next-auth/jwt";
 import jwt from "jsonwebtoken";
+import { Prisma } from "@prisma/client";
 import { BookingStatusEnum } from "@/lib/types/booking";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
@@ -20,6 +21,7 @@ type Body = {
 };
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
+const CONFIRMATION_DISPATCH_LOCK_PREFIX = "booking-confirmation-dispatch:";
 
 const buildCookie = (name: string, value: string) => {
   const secure = process.env.NODE_ENV === "production";
@@ -32,6 +34,49 @@ const buildCookie = (name: string, value: string) => {
   ];
   if (secure) segments.push("Secure");
   return segments.join("; ");
+};
+
+const isUniqueConstraintError = (error: unknown) =>
+  error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
+
+const claimConfirmationDispatch = async (bookingId: string, orderCode: string) => {
+  const lockId = `${CONFIRMATION_DISPATCH_LOCK_PREFIX}${bookingId}`;
+  const existingDispatch = await prisma.notification.findFirst({
+    where: {
+      OR: [
+        { id: lockId },
+        {
+          bookingId,
+          type: "ADMIN_BOOKING_CREATED",
+          role: "ADMIN"
+        }
+      ]
+    },
+    select: { id: true }
+  });
+
+  if (existingDispatch) return false;
+
+  try {
+    await prisma.notification.create({
+      data: {
+        id: lockId,
+        type: "BOOKING_CONFIRMATION_DISPATCH",
+        role: null,
+        title: "Booking confirmation dispatch lock",
+        message: orderCode,
+        body: null,
+        bookingId,
+        metadata: JSON.stringify({ bookingId, orderCode, hidden: true }),
+        caseNumber: bookingId,
+        isRead: true
+      }
+    });
+    return true;
+  } catch (error) {
+    if (isUniqueConstraintError(error)) return false;
+    throw error;
+  }
 };
 
 export async function POST(request: NextRequest) {
@@ -55,6 +100,19 @@ export async function POST(request: NextRequest) {
         }
       },
       AgencyProLink: {
+        include: {
+          AgencyUser: {
+            include: {
+              AgencyProfile: true,
+              PartnerApplication: {
+                orderBy: { updatedAt: "desc" },
+                take: 1
+              }
+            }
+          }
+        }
+      },
+      AgencyTransferLink: {
         include: {
           AgencyUser: {
             include: {
@@ -92,10 +150,11 @@ export async function POST(request: NextRequest) {
   const paymentIntentId = body.paymentIntentId ?? booking.stripePaymentIntentId;
   const stripeSessionId = body.sessionId ?? booking.stripeSessionId;
   let paymentStatus = booking.paymentStatus;
+  const alreadyConfirmed = booking.status === BookingStatusEnum.CONFIRMED;
   const isPayLaterRentCar =
     (booking.flowType ?? "tour") === "rent_car" && booking.paymentMethod === "PAY_LATER";
 
-  if (!isPayLaterRentCar && !paymentIntentId && !stripeSessionId) {
+  if (!isPayLaterRentCar && !paymentIntentId && !stripeSessionId && !alreadyConfirmed) {
     return NextResponse.json({ ok: false, error: "Falta la sesion de pago" }, { status: 400 });
   }
 
@@ -116,15 +175,20 @@ export async function POST(request: NextRequest) {
     paymentStatus = stripeSession.payment_status ?? paymentStatus;
   } else if (isPayLaterRentCar) {
     paymentStatus = paymentStatus ?? "PAY_LATER";
+  } else if (alreadyConfirmed) {
+    paymentStatus = booking.paymentStatus ?? paymentStatus;
   }
 
-  await prisma.booking.update({
-    where: { id: bookingId },
-    data: {
-      status: isPayLaterRentCar ? booking.status : BookingStatusEnum.CONFIRMED,
-      paymentStatus
-    }
-  });
+  const nextStatus = isPayLaterRentCar ? booking.status : BookingStatusEnum.CONFIRMED;
+  if (booking.status !== nextStatus || booking.paymentStatus !== paymentStatus) {
+    await prisma.booking.update({
+      where: { id: bookingId },
+      data: {
+        status: nextStatus,
+        paymentStatus
+      }
+    });
+  }
 
   if ((booking.flowType ?? "tour") === "transfer") {
     await prisma.transferReviewReminder.upsert({
@@ -159,7 +223,7 @@ export async function POST(request: NextRequest) {
     process.env.NEXTAUTH_URL ??
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
-  const orderCode = `#PR-${bookingId.slice(-4).toUpperCase()}`;
+  const orderCode = booking.bookingCode ?? `#PR-${bookingId.slice(-4).toUpperCase()}`;
   const ticketUrl = `${baseUrl}/booking/confirmed/${bookingId}`;
   const whatsappLink = process.env.NEXT_PUBLIC_WHATSAPP_LINK ?? "https://wa.me/?text=Hola%20Proactivitis";
 
@@ -169,7 +233,10 @@ export async function POST(request: NextRequest) {
     heroImage: tour.heroImage,
     meetingPoint: tour.meetingPoint
   };
-  const agencyUser = booking.AgencyProLink?.AgencyUser ?? (booking.source === "AGENCY" ? booking.User : null);
+  const agencyUser =
+    booking.AgencyProLink?.AgencyUser ??
+    booking.AgencyTransferLink?.AgencyUser ??
+    (booking.source === "AGENCY" ? booking.User : null);
   const agencyApplication = agencyUser?.PartnerApplication?.[0] ?? null;
   const bookingTripType = (booking as any).tripType as string | null | undefined;
   const bookingReturnTravelDate = (booking as any).returnTravelDate as Date | null | undefined;
@@ -202,6 +269,9 @@ export async function POST(request: NextRequest) {
     agencyPhone: agencyApplication?.phone ?? null
   };
 
+  const shouldDispatchConfirmation = await claimConfirmationDispatch(booking.id, orderCode);
+
+  if (shouldDispatchConfirmation) {
   await createNotification({
     type: "CUSTOMER_BOOKING_CREATED",
     role: "CUSTOMER",
@@ -279,7 +349,7 @@ export async function POST(request: NextRequest) {
 
   await Promise.all(emailTasks);
 
-  void notifyAdminBookingConfirmed({
+  await notifyAdminBookingConfirmed({
     bookingId: booking.id,
     orderCode,
     totalAmount: booking.totalAmount,
@@ -287,9 +357,31 @@ export async function POST(request: NextRequest) {
     customerEmail: booking.customerEmail,
     tourTitle: tour.title,
     tourSlug: tour.slug,
+    tourOptionName: booking.tourOptionName,
+    tourOptionType: booking.tourOptionType,
     flowType: booking.flowType ?? "tour",
     travelDate: booking.travelDate,
-    startTime: booking.startTime ?? null
+    startTime: booking.startTime ?? null,
+    tripType: bookingTripType ?? null,
+    returnTravelDate: bookingReturnTravelDate ?? null,
+    returnStartTime: bookingReturnStartTime ?? null,
+    hotel: booking.hotel,
+    pickup: booking.pickup,
+    pickupNotes: booking.pickupNotes,
+    originAirport: booking.originAirport,
+    flightNumber: booking.flightNumber,
+    paxAdults: booking.paxAdults,
+    paxChildren: booking.paxChildren,
+    customerPhone: booking.customerPhone,
+    paymentStatus,
+    paymentMethod: booking.paymentMethod,
+    source: booking.source,
+    supplierName,
+    supplierEmail,
+    agencyName: bookingDetails.agencyName,
+    agencyPhone: bookingDetails.agencyPhone,
+    transferVehicleName: booking.transferVehicleName,
+    transferVehicleCategory: booking.transferVehicleCategory
   });
 
   const discordPayload = {
@@ -300,21 +392,40 @@ export async function POST(request: NextRequest) {
     startTime: booking.startTime ?? null,
     customerName: booking.customerName,
     customerEmail: booking.customerEmail,
+    customerPhone: booking.customerPhone,
     totalAmount: booking.totalAmount,
     hotel: booking.hotel,
+    pickup: booking.pickup,
+    pickupNotes: booking.pickupNotes,
     originAirport: booking.originAirport,
+    flightNumber: booking.flightNumber,
     paxAdults: booking.paxAdults,
-    paxChildren: booking.paxChildren
+    paxChildren: booking.paxChildren,
+    tripType: bookingTripType ?? null,
+    returnTravelDate: bookingReturnTravelDate ?? null,
+    returnStartTime: bookingReturnStartTime ?? null,
+    tourOptionName: booking.tourOptionName,
+    tourOptionType: booking.tourOptionType,
+    paymentStatus,
+    paymentMethod: booking.paymentMethod,
+    source: booking.source,
+    supplierName,
+    supplierEmail,
+    agencyName: bookingDetails.agencyName,
+    agencyPhone: bookingDetails.agencyPhone,
+    transferVehicleName: booking.transferVehicleName,
+    transferVehicleCategory: booking.transferVehicleCategory
   };
 
   if ((booking.flowType ?? "tour") === "transfer") {
-    void notifyDiscordTransferBookingConfirmed(discordPayload).catch((error) => {
+    await notifyDiscordTransferBookingConfirmed(discordPayload).catch((error) => {
       console.warn("No se pudo enviar notificacion Discord de traslado", error);
     });
   } else {
-    void notifyDiscordTourBookingConfirmed(discordPayload).catch((error) => {
+    await notifyDiscordTourBookingConfirmed(discordPayload).catch((error) => {
       console.warn("No se pudo enviar notificacion Discord de tour", error);
     });
+  }
   }
 
   const tokenPayload = {
