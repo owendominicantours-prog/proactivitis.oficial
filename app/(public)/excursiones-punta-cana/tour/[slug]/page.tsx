@@ -22,6 +22,7 @@ import {
   buildNuevaGeneracionSchema,
   buildTourFacts,
   getNuevaGeneracionRelatedTours,
+  getNuevaGeneracionDisplayTitle,
   getNuevaGeneracionTourBySlug,
   normalizePickupTimes,
   parseJsonArray,
@@ -49,25 +50,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const persona = resolveTourPersona(tour);
   const facts = buildTourFacts(tour);
+  const displayTitle = getNuevaGeneracionDisplayTitle(tour);
   const canonical = `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionTourPath(tour.slug)}`;
   const description =
     tour.shortDescription ??
-    `${tour.title}: ${persona.promise}. Reserva con precio claro, fotos reales y soporte local.`;
+    `${displayTitle}: ${persona.promise}. Reserva con precio claro, fotos reales y soporte local.`;
 
   return {
-    title: `${tour.title} | Proactivitis`,
+    title: `${displayTitle} | Proactivitis`,
     description,
     alternates: { canonical },
     openGraph: {
-      title: tour.title,
+      title: displayTitle,
       description,
       url: canonical,
       type: "website",
-      images: [{ url: toAbsoluteImage(facts.heroImage), alt: tour.title }]
+      images: [{ url: toAbsoluteImage(facts.heroImage), alt: displayTitle }]
     },
     twitter: {
       card: "summary_large_image",
-      title: tour.title,
+      title: displayTitle,
       description,
       images: [toAbsoluteImage(facts.heroImage)]
     }
@@ -86,9 +88,10 @@ export default async function NuevaGeneracionTourLandingPage({ params }: PagePro
   const facts = buildTourFacts(tour);
   const persona = resolveTourPersona(tour);
   const conversion = buildNuevaGeneracionConversionCopy({ tour, facts, persona });
+  const displayTitle = getNuevaGeneracionDisplayTitle(tour);
   const canonical = `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionTourPath(tour.slug)}`;
   const schema = buildNuevaGeneracionSchema({ tour, facts, persona, canonical, relatedTours });
-  const faq = buildNuevaGeneracionFaq(tour.title, facts.area, persona);
+  const faq = buildNuevaGeneracionFaq(displayTitle, facts.area, persona);
   const timeSlots = facts.timeSlots.length ? facts.timeSlots : [{ hour: 9, minute: "00", period: "AM" as const }];
   const options = tour.options.map((option) => ({
     ...option,
@@ -104,7 +107,7 @@ export default async function NuevaGeneracionTourLandingPage({ params }: PagePro
       <section className="relative min-h-[620px] overflow-hidden bg-slate-950 text-white">
         <Image
           src={facts.heroImage}
-          alt={tour.title}
+          alt={displayTitle}
           fill
           priority
           className="object-cover opacity-65"
@@ -117,7 +120,7 @@ export default async function NuevaGeneracionTourLandingPage({ params }: PagePro
               Tours y experiencias
             </Link>
             <p className="text-xs font-black uppercase tracking-[0.34em] text-emerald-300">{persona.segment}</p>
-            <h1 className="mt-4 max-w-4xl text-4xl font-black leading-tight sm:text-5xl lg:text-6xl">{tour.title}</h1>
+            <h1 className="mt-4 max-w-4xl text-4xl font-black leading-tight sm:text-5xl lg:text-6xl">{displayTitle}</h1>
             <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-100">
               {conversion.heroSubtitle}
             </p>
@@ -249,7 +252,7 @@ export default async function NuevaGeneracionTourLandingPage({ params }: PagePro
         <aside id="reservar" className="space-y-5 lg:sticky lg:top-20 lg:self-start">
           <div className="border border-slate-200 bg-white p-5 shadow-xl">
             <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-700">Reserva directa</p>
-            <h2 className="mt-2 text-2xl font-black text-slate-950">{tour.title}</h2>
+            <h2 className="mt-2 text-2xl font-black text-slate-950">{displayTitle}</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               {conversion.bookingPrompt} Operado por {supplierName}. Precio claro y confirmacion desde Proactivitis.
             </p>
@@ -262,7 +265,7 @@ export default async function NuevaGeneracionTourLandingPage({ params }: PagePro
                 options={options}
                 supplierHasStripeAccount={Boolean(tour.SupplierProfile?.stripeAccountId)}
                 platformSharePercent={tour.platformSharePercent ?? 20}
-                tourTitle={tour.title}
+                tourTitle={displayTitle}
                 tourImage={facts.heroImage}
               />
             </div>

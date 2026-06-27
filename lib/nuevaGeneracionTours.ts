@@ -163,18 +163,20 @@ const parseTextList = (value: unknown): string[] => {
   if (Array.isArray(value)) {
     return value
       .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
-      .map((item) => item.trim());
+      .map((item) => fixTourTextTypos(item.trim()));
   }
   if (typeof value === "string") {
     const parsed = parseJsonArray<unknown>(value);
     if (parsed.length) return parseTextList(parsed);
     return value
       .split(";")
-      .map((item) => item.trim())
+      .map((item) => fixTourTextTypos(item.trim()))
       .filter(Boolean);
   }
   return [];
 };
+
+const fixTourTextTypos = (value: string) => value.replace(/\btorres\b/gi, "toallas");
 
 const uniqueTextItems = (items: string[]) => {
   const seen = new Set<string>();
@@ -276,6 +278,13 @@ export const getNuevaGeneracionRelatedTours = async (
     take
   });
 
+export const getNuevaGeneracionDisplayTitle = (tour: { slug: string; title: string }) => {
+  if (tour.slug === "sunset-catamaran-snorkel") {
+    return "Catamarán al Atardecer con Snorkel en Punta Cana";
+  }
+  return tour.title;
+};
+
 const normalizeIntentText = (value: string) =>
   value
     .toLowerCase()
@@ -338,6 +347,8 @@ export const resolveTourPersona = (tour: {
 };
 
 export const buildTourFacts = (tour: NonNullable<Awaited<ReturnType<typeof getNuevaGeneracionTourBySlug>>>) => {
+  const displayTitle =
+    tour.slug === "sunset-catamaran-snorkel" ? "Catamarán al Atardecer con Snorkel en Punta Cana" : tour.title;
   const gallery = parseJsonArray<string>(tour.gallery);
   const heroImage = tour.heroImage ?? gallery[0] ?? "/fototours/fotosimple.jpg";
   const images = [heroImage, ...gallery.filter((image) => image && image !== heroImage)].slice(0, 8);
@@ -347,7 +358,7 @@ export const buildTourFacts = (tour: NonNullable<Awaited<ReturnType<typeof getNu
   const itinerary = parseAdminItinerary(tour.adminNote ?? "");
   const parsedItinerary = itinerary.length ? itinerary : parseItinerary(tour.adminNote ?? "");
   const includesFromString = tour.includes
-    ? tour.includes.split(";").map((item) => item.trim()).filter(Boolean)
+    ? tour.includes.split(";").map((item) => fixTourTextTypos(item.trim())).filter(Boolean)
     : [];
   const includesList = parseTextList(tour.includesList);
   const notIncluded = parseTextList(tour.notIncludedList);
@@ -372,7 +383,7 @@ export const buildTourFacts = (tour: NonNullable<Awaited<ReturnType<typeof getNu
     timeSlots,
     firstTime,
     duration,
-    itinerary: parsedItinerary.length ? parsedItinerary : buildDefaultItinerary(tour.title, area),
+    itinerary: parsedItinerary.length ? parsedItinerary : buildDefaultItinerary(displayTitle, area),
     includes,
     notIncluded,
     categories,
@@ -396,19 +407,20 @@ export const buildNuevaGeneracionConversionCopy = ({
   facts: ReturnType<typeof buildTourFacts>;
   persona: ReturnType<typeof resolveTourPersona>;
 }) => {
+  const displayTitle = getNuevaGeneracionDisplayTitle(tour);
   const normalized = normalizeIntentText(
-    [tour.title, tour.description, tour.shortDescription, tour.category, tour.location, facts.area].filter(Boolean).join(" ")
+    [displayTitle, tour.description, tour.shortDescription, tour.category, tour.location, facts.area].filter(Boolean).join(" ")
   );
   const isParasailing = /parasail|parasailing/.test(normalized);
   const isWater = /saona|catamaran|boat|barco|isla|snorkel|playa|beach|mar|ocean|lancha/.test(normalized);
   const isAdventure = /buggy|atv|zip|horse|caballo|safari|aventura|adventure|off-road|offroad/.test(normalized);
 
   const heroSubtitle = isParasailing
-    ? `Vuela sobre las aguas turquesas de ${facts.area} con una salida organizada, equipo de seguridad y confirmacion clara antes de pagar.`
+    ? `Vuela sobre las aguas turquesas de ${facts.area} con una salida organizada, equipo de seguridad y confirmación clara antes de pagar.`
     : isWater
-      ? `Disfruta ${facts.area} con tiempo para fotos, agua caribena, logistica clara y soporte local desde la reserva.`
+      ? `Disfruta ${facts.area} con tiempo para fotos, agua caribeña, logística clara y soporte local desde la reserva.`
       : isAdventure
-        ? `Vive una ruta activa con briefing, paradas claras y coordinacion previa para llegar listo a la experiencia.`
+        ? `Vive una ruta activa con briefing, paradas claras y coordinación previa para llegar listo a la experiencia.`
         : `${persona.promise}. Reserva con precio visible, horario claro y asistencia humana antes de salir.`;
 
   const defaultExclusions = isParasailing
@@ -431,24 +443,24 @@ export const buildNuevaGeneracionConversionCopy = ({
 
   const confidence = [
     {
-      title: "Cancelacion gratuita hasta 24h antes",
+      title: "Cancelación gratuita hasta 24h antes",
       body: tour.cancellationPolicy?.trim() || "Puedes cancelar sin cargo hasta 24 horas antes de la salida confirmada."
     },
     {
-      title: isParasailing ? "Salida segun viento y seguridad" : "Clima y operacion claros",
+      title: isParasailing ? "Salida según viento y seguridad" : "Clima y operación claros",
       body: isParasailing
-        ? "Si el viento o el operador detienen la salida por seguridad, coordinamos reprogramacion o la solucion que aplique."
-        : "Si el clima impide operar la experiencia, coordinamos reprogramacion o la solucion que aplique segun la politica del tour."
+        ? "Si el viento o el operador detienen la salida por seguridad, coordinamos reprogramación o la solución que aplique."
+        : "Si el clima impide operar la experiencia, coordinamos reprogramación o la solución que aplique según la política del tour."
     },
     {
       title: "Confirmacion humana",
-      body: "Validamos pasajeros, horario, hotel o punto de encuentro para que llegues con la informacion importante lista."
+      body: "Validamos pasajeros, horario, hotel o punto de encuentro para que llegues con la información importante lista."
     }
   ];
 
   const trustBadges = [
-    "Cancelacion gratis 24h",
-    isParasailing ? "Operacion segun viento" : "Precio claro en USD",
+    "Cancelación gratis 24h",
+    isParasailing ? "Operación según viento" : "Precio claro en USD",
     facts.pickup ? "Recogida coordinada" : "Soporte local"
   ];
 
@@ -565,11 +577,12 @@ export const buildNuevaGeneracionSchema = ({
   relatedTours?: Awaited<ReturnType<typeof getNuevaGeneracionRelatedTours>>;
 }) => {
   const supplierName = tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Proactivitis";
+  const displayTitle = getNuevaGeneracionDisplayTitle(tour);
   const absoluteImages = facts.images.map(toAbsoluteImage);
-  const faq = buildNuevaGeneracionFaq(tour.title, facts.area, persona, intent);
-  const pageName = intent ? `${intent.titlePrefix}: ${tour.title}` : tour.title;
+  const faq = buildNuevaGeneracionFaq(displayTitle, facts.area, persona, intent);
+  const pageName = intent ? `${intent.titlePrefix}: ${displayTitle}` : displayTitle;
   const pageDescription = intent
-    ? `${tour.title} para ${intent.audience}. ${intent.angle}.`
+    ? `${displayTitle} para ${intent.audience}. ${intent.angle}.`
     : tour.shortDescription ?? persona.promise;
   const priceValidUntil = getPriceValidUntil();
 
@@ -659,7 +672,7 @@ export const buildNuevaGeneracionSchema = ({
       {
         "@type": "OfferCatalog",
         "@id": `${canonical}#related-offers`,
-        name: intent ? `Tours relacionados para ${intent.label}` : `Tours relacionados con ${tour.title}`,
+        name: intent ? `Tours relacionados para ${intent.label}` : `Tours relacionados con ${displayTitle}`,
         itemListElement: relatedTours.map((related, index) => ({
           "@type": "Offer",
           position: index + 1,
@@ -711,7 +724,7 @@ export const buildNuevaGeneracionSchema = ({
           "@type": "ImageObject",
           position: index + 1,
           url: image,
-          caption: `${tour.title} - imagen ${index + 1}`
+          caption: `${displayTitle} - imagen ${index + 1}`
         }))
       },
       {
@@ -720,7 +733,7 @@ export const buildNuevaGeneracionSchema = ({
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Tours", item: `${NUEVA_GENERACION_BASE_URL}/tours` },
           { "@type": "ListItem", position: 2, name: "Excursiones Punta Cana", item: `${NUEVA_GENERACION_BASE_URL}${NUEVA_GENERACION_HUB_PATH}` },
-          { "@type": "ListItem", position: 3, name: tour.title, item: canonical }
+          { "@type": "ListItem", position: 3, name: displayTitle, item: canonical }
         ]
       }
     ]
@@ -802,9 +815,9 @@ export const buildIntentLandingCopy = ({
   persona: ReturnType<typeof resolveTourPersona>;
   intent: NuevaGeneracionIntent;
 }) => ({
-  title: `${intent.titlePrefix}: ${tour.title}`,
+  title: `${intent.titlePrefix}: ${getNuevaGeneracionDisplayTitle(tour)}`,
   eyebrow: `${intent.label} | ${facts.area}`,
-  description: `${tour.title} para ${intent.audience}. ${intent.angle} ${persona.promise}.`,
+  description: `${getNuevaGeneracionDisplayTitle(tour)} para ${intent.audience}. ${intent.angle} ${persona.promise}.`,
   decision: [
     {
       title: "Para quien es",

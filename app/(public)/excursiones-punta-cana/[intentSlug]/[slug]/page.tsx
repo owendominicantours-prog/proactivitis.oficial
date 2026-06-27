@@ -22,6 +22,7 @@ import {
   buildTourFacts,
   getNuevaGeneracionIntent,
   getNuevaGeneracionRelatedTours,
+  getNuevaGeneracionDisplayTitle,
   getNuevaGeneracionTourBySlug,
   normalizePickupTimes,
   parseJsonArray,
@@ -91,10 +92,11 @@ export default async function NuevaGeneracionIntentTourPage({ params }: PageProp
   const facts = buildTourFacts(tour);
   const persona = resolveTourPersona(tour);
   const conversion = buildNuevaGeneracionConversionCopy({ tour, facts, persona });
+  const displayTitle = getNuevaGeneracionDisplayTitle(tour);
   const copy = buildIntentLandingCopy({ tour, facts, persona, intent });
   const canonical = `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionIntentTourPath(tour.slug, intent.slug)}`;
   const schema = buildNuevaGeneracionSchema({ tour, facts, persona, canonical, intent, relatedTours });
-  const faq = buildNuevaGeneracionFaq(tour.title, facts.area, persona, intent);
+  const faq = buildNuevaGeneracionFaq(displayTitle, facts.area, persona, intent);
   const timeSlots = facts.timeSlots.length ? facts.timeSlots : [{ hour: 9, minute: "00", period: "AM" as const }];
   const options = tour.options.map((option) => ({
     ...option,
@@ -201,7 +203,7 @@ export default async function NuevaGeneracionIntentTourPage({ params }: PageProp
         <aside id="reservar" className="lg:sticky lg:top-20 lg:self-start">
           <div className="border border-slate-200 bg-white p-5 shadow-xl">
             <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-700">{intent.label}</p>
-            <h2 className="mt-2 text-2xl font-black">{tour.title}</h2>
+            <h2 className="mt-2 text-2xl font-black">{displayTitle}</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               {conversion.bookingPrompt} Operado por {supplierName}. Confirmacion desde Proactivitis.
             </p>
@@ -213,7 +215,7 @@ export default async function NuevaGeneracionIntentTourPage({ params }: PageProp
               options={options}
               supplierHasStripeAccount={Boolean(tour.SupplierProfile?.stripeAccountId)}
               platformSharePercent={tour.platformSharePercent ?? 20}
-              tourTitle={tour.title}
+              tourTitle={displayTitle}
               tourImage={facts.heroImage}
             />
           </div>

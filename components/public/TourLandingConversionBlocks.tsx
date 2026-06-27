@@ -75,7 +75,7 @@ export function TourProofSection({
   if (reviews.length) {
     return (
       <section id="reviews" className="border border-slate-200 bg-white p-6">
-        <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-700">Resenas verificadas del tour</p>
+        <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-700">Reseñas verificadas del tour</p>
         <h2 className="mt-3 text-2xl font-black text-slate-950">Opiniones reales de esta experiencia</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           {reviews.slice(0, 3).map((review) => {
