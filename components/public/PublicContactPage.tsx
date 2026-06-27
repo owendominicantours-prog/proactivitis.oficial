@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Mail, Phone, Smartphone } from "lucide-react";
 
 import ContactForm from "@/components/contact/ContactForm";
-import { PROACTIVITIS_PHONE, PROACTIVITIS_WHATSAPP_LINK, PROACTIVITIS_WHATSAPP_NUMBER } from "@/lib/seo";
+import { FUNJET_EMAIL, FUNJET_PHONE, FUNJET_WHATSAPP_LINK, FUNJET_WHATSAPP_NUMBER } from "@/lib/seo";
 import { Locale, translate, type TranslationKey } from "@/lib/translations";
 import { getContactContentOverrides } from "@/lib/siteContent";
 
@@ -17,16 +17,16 @@ export default async function PublicContactPage({ locale }: PublicContactPagePro
   const heroDescription = overrides.hero?.description ?? translate(locale, "contact.hero.description");
   const phoneLabel = overrides.phone?.label ?? translate(locale, "contact.section.phone.label");
   const phoneDetails = overrides.phone?.details ?? translate(locale, "contact.section.phone.details");
-  const phoneNumber = overrides.phone?.number ?? PROACTIVITIS_PHONE;
+  const phoneNumber = overrides.phone?.number ?? FUNJET_PHONE;
   const whatsappLabel = overrides.whatsapp?.label ?? translate(locale, "contact.whatsapp.label");
   const whatsappCta = overrides.whatsapp?.cta ?? translate(locale, "contact.whatsapp.cta");
-  const whatsappNumber = overrides.whatsapp?.number ?? PROACTIVITIS_WHATSAPP_NUMBER;
-  const whatsappLink = overrides.whatsapp?.link ?? `${PROACTIVITIS_WHATSAPP_LINK}?text=Hola%20Proactivitis`;
+  const whatsappNumber = overrides.whatsapp?.number ?? FUNJET_WHATSAPP_NUMBER;
+  const whatsappLink = overrides.whatsapp?.link ?? `${FUNJET_WHATSAPP_LINK}?text=Hola%20Proactivitis`;
   const emailSectionTitle = overrides.emails?.sectionTitle ?? translate(locale, "contact.email.sectionTitle");
   const contactEmails: { labelKey: TranslationKey; value: string }[] = [
-    { labelKey: "contact.email.general", value: overrides.emails?.general ?? "info@proactivitis.com" },
-    { labelKey: "contact.email.reservations", value: overrides.emails?.reservations ?? "bookings@proactivitis.com" },
-    { labelKey: "contact.email.suppliers", value: overrides.emails?.suppliers ?? "suppliers@proactivitis.com" }
+    { labelKey: "contact.email.general", value: overrides.emails?.general ?? FUNJET_EMAIL },
+    { labelKey: "contact.email.reservations", value: overrides.emails?.reservations ?? FUNJET_EMAIL },
+    { labelKey: "contact.email.suppliers", value: overrides.emails?.suppliers ?? FUNJET_EMAIL }
   ];
   const longformEyebrow = overrides.longform?.eyebrow ?? translate(locale, "contact.longform.eyebrow");
   const longformTitle = overrides.longform?.title ?? translate(locale, "contact.longform.title");

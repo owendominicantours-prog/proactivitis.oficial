@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { sendEmail } from "@/lib/email";
-import { PROACTIVITIS_EMAIL } from "@/lib/seo";
+import { FUNJET_EMAIL } from "@/lib/seo";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 
@@ -17,7 +17,7 @@ export async function requestAccountDeletionAction(formData: FormData) {
     redirect("/account-deletion?error=email");
   }
 
-  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL ?? process.env.NOTIFY_FROM_EMAIL ?? PROACTIVITIS_EMAIL;
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL ?? process.env.NOTIFY_FROM_EMAIL ?? FUNJET_EMAIL;
   const requestHtml = `
     <div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#0f172a">
       <h1>Solicitud de eliminacion de cuenta Proactivitis App</h1>

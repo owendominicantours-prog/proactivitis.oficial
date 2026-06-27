@@ -5,7 +5,7 @@ import PublicHeaderSwitch from "@/components/public/PublicHeaderSwitch";
 import PageViewTracker from "@/components/analytics/PageViewTracker";
 import WhatsappFloatingChat from "@/components/shared/WhatsappFloatingChat";
 import VisitorSalesChat from "@/components/shared/VisitorSalesChat";
-import { getPriceValidUntil, PROACTIVITIS_PHONE } from "@/lib/seo";
+import { getPriceValidUntil, FUNJET_EMAIL, FUNJET_LOGO, FUNJET_PHONE, FUNJET_URL } from "@/lib/seo";
 
 const OFFER_SERVICE_SCHEMA = {
   "@type": "Offer",
@@ -35,9 +35,10 @@ const OFFER_SERVICE_SCHEMA = {
   },
   hasMerchantReturnPolicy: {
     "@type": "MerchantReturnPolicy",
-    returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+    url: `${FUNJET_URL}/legal/refund-policy`,
+    returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+    merchantReturnDays: 1,
     applicableCountry: "DO",
-    returnMethod: "https://schema.org/ReturnByMail",
     returnFees: "https://schema.org/FreeReturn"
   }
 };
@@ -47,13 +48,13 @@ const ORGANIZATION_SCHEMA = {
   "@graph": [
     {
       "@type": "OnlineBusiness",
-      "@id": "https://proactivitis.com/#organization",
+      "@id": `${FUNJET_URL}/#organization`,
       name: "Proactivitis",
-      url: "https://proactivitis.com/",
-      logo: "https://proactivitis.com/logo.png",
-      image: "https://proactivitis.com/icon.png",
+      url: `${FUNJET_URL}/`,
+      logo: FUNJET_LOGO,
+      image: `${FUNJET_URL}/icon.png`,
       description:
-        "Plataforma global de gestion turistica: Soluciones de traslados y tours para Clientes, Agencias de Viajes y Suplidores.",
+        "Plataforma de tours, traslados privados, rent a car y servicios turisticos en Republica Dominicana.",
       hasOfferCatalog: {
         "@type": "OfferCatalog",
         name: "Servicios Proactivitis",
@@ -63,7 +64,7 @@ const ORGANIZATION_SCHEMA = {
             itemOffered: {
               "@type": "Service",
               name: "Tours y Excursiones",
-              url: "https://proactivitis.com/tours"
+              url: `${FUNJET_URL}/tours`
             }
           },
           {
@@ -71,15 +72,15 @@ const ORGANIZATION_SCHEMA = {
             itemOffered: {
               "@type": "Service",
               name: "Traslados Privados",
-              url: "https://proactivitis.com/traslado"
+              url: `${FUNJET_URL}/traslado`
             }
           },
           {
             ...OFFER_SERVICE_SCHEMA,
             itemOffered: {
               "@type": "Service",
-              name: "Portal para Agencias y Suplidores",
-              url: "https://proactivitis.com/become-a-supplier"
+              name: "Rent a Car",
+              url: `${FUNJET_URL}/rent-a-car`
             }
           }
         ]
@@ -92,14 +93,14 @@ const TRAVEL_AGENCY_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "TravelAgency",
   name: "Proactivitis",
-  alternateName: "Proactivitis Global",
-  url: "https://proactivitis.com",
-  logo: "https://proactivitis.com/logo.png",
-  image: "https://proactivitis.com/icon.png",
-  telephone: PROACTIVITIS_PHONE,
-  email: "info@proactivitis.com",
+  alternateName: "Proactivitis Travel",
+  url: FUNJET_URL,
+  logo: FUNJET_LOGO,
+  image: `${FUNJET_URL}/icon.png`,
+  telephone: FUNJET_PHONE,
+  email: FUNJET_EMAIL,
   description:
-    "Plataforma lider en la gestion de experiencias turisticas y traslados privados a nivel global.",
+    "Plataforma para reservar experiencias turisticas, traslados privados y servicios de viaje con soporte local.",
   areaServed: {
     "@type": "Country",
     name: "Worldwide"
@@ -112,19 +113,19 @@ const TRAVEL_AGENCY_SCHEMA = {
     {
       "@type": "WebPage",
       name: "Traslados Privados",
-      url: "https://proactivitis.com/traslado",
+      url: `${FUNJET_URL}/traslado`,
       description: "Traslado de lujo y traslados de aeropuerto con estandar internacional."
     },
     {
       "@type": "WebPage",
-      name: "Programa de Partners",
-      url: "https://proactivitis.com/become-a-supplier",
-      description: "Unase a la red de especialistas locales certificados por Proactivitis."
+      name: "Rent a Car",
+      url: `${FUNJET_URL}/rent-a-car`,
+      description: "Renta de vehiculos y asistencia para viajes en Republica Dominicana."
     },
     {
       "@type": "WebPage",
       name: "Destinos Globales",
-      url: "https://proactivitis.com/destinations",
+      url: `${FUNJET_URL}/destinations`,
       description: "Guia de experiencias en los destinos mas importantes del mundo."
     }
   ]
@@ -133,13 +134,13 @@ const TRAVEL_AGENCY_SCHEMA = {
 const WEBSITE_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  "@id": "https://proactivitis.com/#website",
-  url: "https://proactivitis.com/",
+  "@id": `${FUNJET_URL}/#website`,
+  url: `${FUNJET_URL}/`,
   name: "Proactivitis",
   inLanguage: ["es", "en", "fr"],
   potentialAction: {
     "@type": "SearchAction",
-    target: "https://proactivitis.com/search?q={search_term_string}",
+    target: `${FUNJET_URL}/search?q={search_term_string}`,
     "query-input": "required name=search_term_string"
   }
 };

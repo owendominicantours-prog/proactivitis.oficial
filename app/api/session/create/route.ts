@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { encode } from "next-auth/jwt";
 import jwt from "jsonwebtoken";
 import { BookingStatusEnum } from "@/lib/types/booking";

@@ -8,7 +8,7 @@ import { buildReviewBreakdown, getApprovedTourReviews, getTourReviewSummary } fr
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 import StructuredData from "@/components/schema/StructuredData";
-import { PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL, SAME_AS_URLS, getPriceValidUntil } from "@/lib/seo";
+import { FUNJET_LOCALBUSINESS, FUNJET_URL, SAME_AS_URLS, getPriceValidUntil } from "@/lib/seo";
 import { HIDDEN_TRANSFER_SLUG } from "@/lib/hiddenTours";
 import { Prisma } from "@prisma/client";
 import GalleryLightbox from "@/components/shared/GalleryLightbox";
@@ -38,11 +38,11 @@ const PUNTA_CANA_TOP_TOURS = new Set([
   "tour-en-buggy-en-punta-cana",
   "tour-isla-saona-desde-bayhibe-la-romana",
   "tour-y-entrada-para-de-isla-saona-desde-punta-cana",
-  "transfer-privado-proactivitis"
+  "transfer-privado-funjet"
 ]);
 
 const LEGACY_TOUR_SLUG_REDIRECTS: Record<string, string> = {
-  "transfer-privado-proactivitis": "/punta-cana/premium-transfer-services",
+  "transfer-privado-funjet": "/punta-cana/premium-transfer-services",
   "saona-island-full-day-tour": "/tours/tour-y-entrada-para-de-isla-saona-desde-punta-cana",
   "atv-horseback-parasailing-combo": "/tours/excursion-en-buggy-y-atv-en-punta-cana",
   "sunset-sup-cocktails": "/tours/sunset-catamaran-snorkel",
@@ -118,7 +118,7 @@ const TOUR_H1_OVERRIDES: Record<string, Partial<Record<Locale, string>>> = {
     en: "Buggy and ATV in Punta Cana: off-road and cenote",
     fr: "Buggy et ATV a Punta Cana : off-road et cenote"
   },
-  "transfer-privado-proactivitis": {
+  "transfer-privado-funjet": {
     es: "Traslado privado en Punta Cana con chofer verificado",
     en: "Private transfer in Punta Cana with verified driver",
     fr: "Transfert prive a Punta Cana avec chauffeur verifie"
@@ -294,7 +294,7 @@ const TOUR_FAQ_OVERRIDES: Record<string, Partial<Record<Locale, TourFaqItem[]>>>
       }
     ]
   },
-  "transfer-privado-proactivitis": {
+  "transfer-privado-funjet": {
     es: [
       {
         question: "Es traslado privado o compartido?",
@@ -1798,7 +1798,7 @@ export default async function TourDetailPage({
       href: relatedHref,
       title: localizedRelatedTitle,
       price: `$${item.price.toFixed(0)} USD`,
-      image: relatedImage.startsWith("http") ? relatedImage : `${PROACTIVITIS_URL}${relatedImage}`
+      image: relatedImage.startsWith("http") ? relatedImage : `${FUNJET_URL}${relatedImage}`
     };
   });
   const isSosuaPartyBoatTour =
@@ -1987,16 +1987,16 @@ export default async function TourDetailPage({
   const heroImageAbsolute = heroImage
     ? heroImage.startsWith("http")
       ? heroImage
-      : `${PROACTIVITIS_URL}${heroImage}`
-    : `${PROACTIVITIS_URL}/fototours/fotosimple.jpg`;
+      : `${FUNJET_URL}${heroImage}`
+    : `${FUNJET_URL}/fototours/fotosimple.jpg`;
   const galleryImagesAbsolute = gallery
-    .map((image) => (image.startsWith("http") ? image : `${PROACTIVITIS_URL}${image}`))
+    .map((image) => (image.startsWith("http") ? image : `${FUNJET_URL}${image}`))
     .filter((image) => image && image !== heroImageAbsolute);
   const schemaImages = [heroImageAbsolute, ...galleryImagesAbsolute].slice(0, 10);
   const tourUrl = agencyMode
-    ? `${PROACTIVITIS_URL}/agency-pro/${agencyLinkFromQuery}`
-    : `${PROACTIVITIS_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`;
-  const toursHubUrl = `${PROACTIVITIS_URL}${locale === "es" ? "/tours" : `/${locale}/tours`}`;
+    ? `${FUNJET_URL}/agency-pro/${agencyLinkFromQuery}`
+    : `${FUNJET_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`;
+  const toursHubUrl = `${FUNJET_URL}${locale === "es" ? "/tours" : `/${locale}/tours`}`;
   const schemaImageObjects = schemaImages.map((image, index) => ({
     "@type": "ImageObject",
     "@id": `${tourUrl}#image-${index + 1}`,
@@ -2097,7 +2097,7 @@ export default async function TourDetailPage({
       priceValidUntil,
       availability: "https://schema.org/InStock",
       availabilityStarts: new Date().toISOString(),
-      seller: PROACTIVITIS_LOCALBUSINESS,
+      seller: FUNJET_LOCALBUSINESS,
       priceSpecification: {
         "@type": "UnitPriceSpecification",
         price: effectiveTourPrice,
@@ -2133,9 +2133,10 @@ export default async function TourDetailPage({
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
-        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+        url: `${FUNJET_URL}/legal/refund-policy`,
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 1,
         applicableCountry: "DO",
-        returnMethod: "https://schema.org/ReturnByMail",
         returnFees: "https://schema.org/FreeReturn"
       },
       acceptedPaymentMethod: ["https://schema.org/CreditCard", "https://schema.org/ByBankTransferInAdvance"]
@@ -2157,7 +2158,7 @@ export default async function TourDetailPage({
     url: tourUrl,
     inLanguage: locale,
     touristType: categories.length ? categories : [touristTypeFallback ?? "General"],
-    provider: PROACTIVITIS_LOCALBUSINESS,
+    provider: FUNJET_LOCALBUSINESS,
     availableLanguage: availableLanguages,
     ...(schemaAdditionalProperty ? { additionalProperty: schemaAdditionalProperty } : {}),
     itinerary: visualTimeline.slice(0, 6).map((stop, index) => ({
@@ -2199,9 +2200,10 @@ export default async function TourDetailPage({
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
-        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+        url: `${FUNJET_URL}/legal/refund-policy`,
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 1,
         applicableCountry: "DO",
-        returnMethod: "https://schema.org/ReturnByMail",
         returnFees: "https://schema.org/FreeReturn"
       },
       acceptedPaymentMethod: ["https://schema.org/CreditCard", "https://schema.org/ByBankTransferInAdvance"]
@@ -2249,9 +2251,9 @@ export default async function TourDetailPage({
     inLanguage: locale,
     isPartOf: {
       "@type": "WebSite",
-      "@id": `${PROACTIVITIS_URL}#website`,
+      "@id": `${FUNJET_URL}#website`,
       name: "Proactivitis",
-      url: PROACTIVITIS_URL
+      url: FUNJET_URL
     },
     about: [
       { "@id": `${tourUrl}#product` },
@@ -2271,7 +2273,7 @@ export default async function TourDetailPage({
         "@type": "ListItem",
         position: 1,
         name: localeLabel(locale, "Inicio", "Home", "Accueil"),
-        item: `${PROACTIVITIS_URL}${locale === "es" ? "/" : `/${locale}`}`
+        item: `${FUNJET_URL}${locale === "es" ? "/" : `/${locale}`}`
       },
       {
         "@type": "ListItem",
@@ -2347,7 +2349,7 @@ export default async function TourDetailPage({
           "@type": "ListItem",
           position: index + 1,
           name: item.title,
-          url: `${PROACTIVITIS_URL}${item.href}`
+          url: `${FUNJET_URL}${item.href}`
         }))
       }
     : null;

@@ -31,15 +31,23 @@ const FOOTER_STRUCTURE: SectionDefinition[] = [
   },
   {
     key: "company",
-    hrefs: ["/about", "/our-mission", "/press", EDITORIAL_TEAM_LINK, "/partners"]
+    hrefs: ["/about", "/our-mission", "/press", EDITORIAL_TEAM_LINK]
   },
   {
     key: "collaborate",
-    hrefs: ["/become-a-supplier", "/agency-partners", "/affiliates", "/careers"]
+    hrefs: ["/tours", "/traslado", "/rent-a-car", "/contact"]
   },
   {
     key: "legal",
-    hrefs: ["/legal/terms", "/legal/privacy", "/legal/cookies", "/legal/information", "/account-deletion"]
+    hrefs: [
+      "/legal/terms",
+      "/legal/privacy",
+      "/legal/refund-policy",
+      "/legal/shipping-policy",
+      "/legal/cookies",
+      "/legal/information",
+      "/account-deletion"
+    ]
   }
 ];
 
@@ -51,15 +59,23 @@ const FOOTER_TRANSLATIONS: Record<Locale, FooterCopy> = {
     },
     company: {
       title: "Empresa",
-      links: ["Sobre Proactivitis", "Nuestra misión", "Prensa", "Aliados"]
+      links: ["Sobre Proactivitis", "Nuestra mision", "Prensa", "Equipo editorial"]
     },
     collaborate: {
-      title: "Colabora",
-      links: ["Conviértete en Partner", "Alianzas con Agencias", "Afiliados", "Carreras"]
+      title: "Servicios",
+      links: ["Tours", "Traslados", "Rent a car", "Contacto"]
     },
     legal: {
       title: "Legal",
-      links: ["Términos y Condiciones", "Privacidad", "Cookies", "Información Legal"]
+      links: [
+        "Terminos y Condiciones",
+        "Privacidad",
+        "Devoluciones",
+        "Envio y entrega",
+        "Cookies",
+        "Informacion Legal",
+        "Eliminar cuenta"
+      ]
     },
     tagline: "Proactivitis - Turismo impulsado por personas, no por bots. Oficina central global."
   },
@@ -70,15 +86,23 @@ const FOOTER_TRANSLATIONS: Record<Locale, FooterCopy> = {
     },
     company: {
       title: "Company",
-      links: ["About Proactivitis", "Our mission", "Press", "Editorial Team", "Partners"]
+      links: ["About Proactivitis", "Our mission", "Press", "Editorial Team"]
     },
     collaborate: {
-      title: "Collaborate",
-      links: ["Become a Partner", "Agency alliances", "Affiliates", "Careers"]
+      title: "Services",
+      links: ["Tours", "Transfers", "Rent a car", "Contact"]
     },
     legal: {
       title: "Legal",
-      links: ["Terms & Conditions", "Privacy", "Cookies", "Legal information"]
+      links: [
+        "Terms & Conditions",
+        "Privacy",
+        "Refunds",
+        "Shipping & delivery",
+        "Cookies",
+        "Legal information",
+        "Delete account"
+      ]
     },
     tagline: "Proactivitis - Tourism powered by people, not bots. Global headquarters."
   },
@@ -89,17 +113,25 @@ const FOOTER_TRANSLATIONS: Record<Locale, FooterCopy> = {
     },
     company: {
       title: "Entreprise",
-      links: ["À propos de Proactivitis", "Notre mission", "Presse", "Partenaires"]
+      links: ["A propos de Proactivitis", "Notre mission", "Presse", "Equipe editoriale"]
     },
     collaborate: {
-      title: "Collaborer",
-      links: ["Devenir partenaire", "Partenariats agences", "Affiliés", "Carrières"]
+      title: "Services",
+      links: ["Excursions", "Transferts", "Rent a car", "Contact"]
     },
     legal: {
-      title: "Mentions légales",
-      links: ["Conditions", "Confidentialité", "Cookies", "Informations juridiques"]
+      title: "Mentions legales",
+      links: [
+        "Conditions",
+        "Confidentialite",
+        "Remboursements",
+        "Livraison",
+        "Cookies",
+        "Informations juridiques",
+        "Supprimer le compte"
+      ]
     },
-    tagline: "Proactivitis - Le tourisme porté par des personnes, pas des robots. Siège mondial."
+    tagline: "Proactivitis - Le tourisme porte par des personnes, pas des robots. Siege mondial."
   }
 };
 
@@ -136,7 +168,11 @@ export function PublicFooter() {
   const pathname = usePathname();
   if (shouldHidePublicFooter(pathname)) return null;
   const locale = normalizeLocale(pathname);
-  const copy = FOOTER_TRANSLATIONS[locale] ?? FOOTER_TRANSLATIONS.es;
+  const rawCopy = FOOTER_TRANSLATIONS[locale] ?? FOOTER_TRANSLATIONS.es;
+  const copy: FooterCopy = {
+    ...rawCopy,
+    tagline: rawCopy.tagline
+  };
   const honorHref = locale === "es" ? "/cliente-de-honor" : `/${locale}/cliente-de-honor`;
   const honorLabel =
     locale === "es" ? "Cliente de Honor" : locale === "en" ? "Honor Client" : "Client d'Honneur";
@@ -150,10 +186,7 @@ export function PublicFooter() {
       label:
         href === EDITORIAL_TEAM_LINK
           ? editorialLabel
-          : href === "/partners" && section.key === "company" && !copy[section.key].links[index]
-            ? copy[section.key].links[copy[section.key].links.length - 1]
-            :
-        copy[section.key].links[index] ??
+          : copy[section.key].links[index] ??
         (href === "/account-deletion"
           ? locale === "en"
             ? "Delete account"
