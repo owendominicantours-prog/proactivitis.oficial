@@ -26,6 +26,7 @@ export default function robots(): MetadataRoute.Robots {
       `${BASE_URL}/sitemap-transfers.xml`,
       `${BASE_URL}/sitemap-golden-transfer-pages.xml`,
       `${BASE_URL}/sitemap-tour-variants.xml`,
+      `${BASE_URL}/sitemap-tour-pickups.xml`,
       `${BASE_URL}/sitemap-golden-tour-pages.xml`,
       `${BASE_URL}/sitemap-things-to-do.xml`,
       `${BASE_URL}/sitemap-party-boat.xml`,

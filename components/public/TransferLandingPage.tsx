@@ -26,10 +26,11 @@ import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL, SAME_
 import { isIndexableTransferVariant } from "@/lib/seo-index-policy";
 import { applyTransferSchemaOverride, getTransferSchemaOverride } from "@/lib/schemaManager";
 import { getApprovedTransferReviewsForLanding, getTransferReviewSummaryForLanding } from "@/lib/transferReviews";
+import { countryIdentityVariants } from "@/lib/countryIdentity";
 
 const DEFAULT_AIRPORT_SLUG = "puj-airport";
 const DEFAULT_AIRPORT_NAME = "Punta Cana International Airport (PUJ)";
-const BASE_URL = "https://proactivitis.com";
+const BASE_URL = PROACTIVITIS_URL;
 const FALLBACK_PRICE = 44;
 const FALLBACK_HERO_IMAGE = "/transfer/mini van.png";
 const TRANSFER_HEADER_BANNER =
@@ -1321,14 +1322,22 @@ export async function TransferLandingPage({
   });
 
   const countryId = hotelLocation?.countryId ?? "RD";
+  const recommendedTourCountryIds = countryIdentityVariants(countryId);
+  const recommendedTourCountryWhere = recommendedTourCountryIds.length
+    ? { countryId: { in: recommendedTourCountryIds } }
+    : {};
   const recommendedTours = await prisma.tour.findMany({
     where: {
       status: "published",
       slug: { not: "transfer-privado-proactivitis" },
       OR: [
-        ...(hotelLocation?.microZoneId ? [{ countryId, microZoneId: hotelLocation.microZoneId }] : []),
-        ...(hotelLocation?.destinationId ? [{ countryId, destinationId: hotelLocation.destinationId }] : []),
-        { countryId }
+        ...(hotelLocation?.microZoneId
+          ? [{ ...recommendedTourCountryWhere, microZoneId: hotelLocation.microZoneId }]
+          : []),
+        ...(hotelLocation?.destinationId
+          ? [{ ...recommendedTourCountryWhere, destinationId: hotelLocation.destinationId }]
+          : []),
+        recommendedTourCountryWhere
       ]
     },
     select: {
@@ -1813,7 +1822,8 @@ export async function TransferLandingPage({
             </h2>
             <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {recommendedTours.map((tour) => {
-                const tourHref = locale === "es" ? `/tours/${tour.slug}` : `/${locale}/tours/${tour.slug}`;
+                const hotelTourPath = `/tours/${tour.slug}/recogida/${landing.hotelSlug}`;
+                const tourHref = locale === "es" ? hotelTourPath : `/${locale}${hotelTourPath}`;
                 return (
                   <article key={tour.id} className="overflow-hidden rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff,#f8fafc)] shadow-sm transition hover:-translate-y-1 hover:shadow-md">
                     <div className="relative h-44">

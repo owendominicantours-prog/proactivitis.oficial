@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/translations";
+import { isDominicanRepublicCountry } from "@/lib/countryIdentity";
 
 export type TourMarketIntent = {
   id: string;
@@ -319,7 +320,7 @@ export const buildTourMarketVariantSlug = (tourSlug: string, intentId: string) =
   `${tourSlug}--mkt-${intentId}`;
 
 export const isTourMarketVariantEligible = (tour: { countryId?: string | null }) =>
-  (tour.countryId ?? "RD").toUpperCase() === "RD";
+  !tour.countryId || isDominicanRepublicCountry(tour.countryId);
 
 export const parseTourMarketVariantSlug = (variantSlug: string) => {
   const marker = "--mkt-";

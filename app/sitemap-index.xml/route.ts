@@ -10,6 +10,7 @@ const SITEMAPS = [
   "/sitemap-transfers.xml",
   "/sitemap-golden-transfer-pages.xml",
   "/sitemap-tour-variants.xml",
+  "/sitemap-tour-pickups.xml",
   "/sitemap-golden-tour-pages.xml",
   "/sitemap-things-to-do.xml",
   "/sitemap-party-boat.xml",

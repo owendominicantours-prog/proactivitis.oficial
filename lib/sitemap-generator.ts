@@ -8,6 +8,7 @@ import { TRANSFER_QUESTION_SALES_LANDINGS } from "@/data/transfer-question-sales
 import { warnOnce } from "@/lib/logOnce";
 import { TOUR_MARKET_INTENTS, buildTourMarketVariantSlug, isTourMarketVariantEligible } from "@/lib/tourMarketVariants";
 import { getIndexableTourMarketIntentIds, getIndexableTransferVariantIds } from "@/lib/seo-index-policy";
+import { isDominicanRepublicCountry, sameCountryIdentity } from "@/lib/countryIdentity";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -73,17 +74,40 @@ export interface SitemapEntries {
 }
 
 const matchesInheritance = (
-  tour: { countryId: string; destinationId?: string | null; microZoneId?: string | null; category?: string | null },
-  location: { countryId: string; destinationId?: string | null; microZoneId?: string | null }
+  tour: {
+    countryId: string;
+    destinationId?: string | null;
+    departureDestinationId?: string | null;
+    microZoneId?: string | null;
+    category?: string | null;
+    location?: string | null;
+    departureDestination?: { slug?: string | null; name?: string | null } | null;
+  },
+  location: {
+    countryId: string;
+    destinationId?: string | null;
+    destinationSlug?: string | null;
+    destinationName?: string | null;
+    microZoneId?: string | null;
+  }
 ) => {
-  if (tour.countryId !== location.countryId) return false;
+  if (!sameCountryIdentity(tour.countryId, location.countryId)) return false;
 
   const category = normalize(tour.category);
+  const tourLocation = normalize(tour.location);
+  const tourDeparturePlace = normalize([tour.departureDestination?.slug, tour.departureDestination?.name].filter(Boolean).join(" "));
+  const locationPlace = normalize([location.destinationSlug, location.destinationName].filter(Boolean).join(" "));
+  const isPuntaCanaTour = [category, tourLocation, tourDeparturePlace].some(
+    (value) => value.includes("punta cana") || value.includes("punta-cana") || value.includes("bavaro")
+  );
   if (category.includes("nacional")) return true;
+  if (!location.destinationId && !location.microZoneId && isPuntaCanaTour) return true;
   if (category.includes("punta cana") && location.destinationId) return true;
+  if (tour.departureDestinationId && location.destinationId && tour.departureDestinationId === location.destinationId) return true;
   if (tour.microZoneId && location.microZoneId && tour.microZoneId === location.microZoneId) return true;
   if (tour.destinationId && location.destinationId && tour.destinationId === location.destinationId) return true;
   if (tour.destinationId && !tour.microZoneId && location.destinationId === tour.destinationId) return true;
+  if (tourLocation && locationPlace && (tourLocation.includes(locationPlace) || locationPlace.includes(tourLocation))) return true;
   return false;
 };
 
@@ -122,15 +146,19 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
           slug: true,
           countryId: true,
           destinationId: true,
+          departureDestinationId: true,
           microZoneId: true,
           category: true,
+          status: true,
+          location: true,
+          departureDestination: { select: { slug: true, name: true } },
           featured: true
         }
       }),
       prisma.location.findMany({
         include: {
           microZone: { select: { id: true } },
-          destination: { select: { id: true, slug: true } }
+          destination: { select: { id: true, slug: true, name: true } }
         }
       }),
       prisma.booking.groupBy({
@@ -180,15 +208,20 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
 
   const combos: (RouteEntry & { tourSlug: string; locationSlug: string })[] = [];
   let totalCombos = 0;
+  const pickupTourCandidates = tours.filter(
+    (tour) => tour.status === "published" && !tour.slug.includes("transfer-privado")
+  );
 
   for (const { location } of locationRank) {
     if (totalCombos >= MAX_TOTAL_COMBOS) break;
 
-    const eligible = tours
+    const eligible = pickupTourCandidates
       .filter((tour) =>
         matchesInheritance(tour, {
           countryId: location.countryId,
           destinationId: location.destinationId,
+          destinationSlug: location.destination?.slug,
+          destinationName: location.destination?.name,
           microZoneId: location.microZoneId
         })
       )
@@ -256,7 +289,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntries> {
       priority: 0.8
     })),
     ...tours
-      .filter((tour) => ["RD", "DO"].includes(tour.countryId))
+      .filter((tour) => isDominicanRepublicCountry(tour.countryId))
       .flatMap((tour) => [
         { url: `${BASE_URL}/prodiscovery/tour/${tour.slug}`, priority: 0.78 },
         { url: `${BASE_URL}/en/prodiscovery/tour/${tour.slug}`, priority: 0.78 },

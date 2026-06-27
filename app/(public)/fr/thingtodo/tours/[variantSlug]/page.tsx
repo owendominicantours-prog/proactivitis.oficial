@@ -97,7 +97,7 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
         robots: { index: false, follow: false }
       };
     }
-    const canonical = `https://proactivitis.com/fr/thingtodo/tours/${resolved.variantSlug}`;
+    const canonical = `${BASE_URL}/fr/thingtodo/tours/${resolved.variantSlug}`;
     const seoTitle = `${marketVariant.intent.heroPrefix.fr}: ${tour.title} a Punta Cana | Proactivitis`;
     const seoDescription = `${marketVariant.intent.angle.fr} Reservez ${tour.title} a partir de USD ${Math.round(tour.price)} avec support local.`;
     const imageUrl = toAbsoluteUrl(resolveTourImage(tour.heroImage ?? null, tour.gallery ?? null));
@@ -108,10 +108,10 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
       alternates: {
         canonical,
         languages: {
-          es: `https://proactivitis.com/thingtodo/tours/${resolved.variantSlug}`,
-          en: `https://proactivitis.com/en/thingtodo/tours/${resolved.variantSlug}`,
+          es: `${BASE_URL}/thingtodo/tours/${resolved.variantSlug}`,
+          en: `${BASE_URL}/en/thingtodo/tours/${resolved.variantSlug}`,
           fr: canonical,
-          "x-default": `https://proactivitis.com/thingtodo/tours/${resolved.variantSlug}`
+          "x-default": `${BASE_URL}/thingtodo/tours/${resolved.variantSlug}`
         }
       },
       robots: {
@@ -147,7 +147,7 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
   const marketTitle = ensureContains(title, "Punta Cana");
   const seoTitle = `${marketTitle} | Proactivitis`;
   const seoDescription = description.endsWith(".") ? description : `${description}.`;
-  const canonical = `https://proactivitis.com/fr/thingtodo/tours/${variant.slug}`;
+  const canonical = `${BASE_URL}/fr/thingtodo/tours/${variant.slug}`;
   const tourSlug = dbVariant?.tourSlug ?? variant.tourSlug ?? PARTY_BOAT_BASE_TOUR.slug;
   const tour = await prisma.tour.findUnique({
     where: { slug: tourSlug },
@@ -155,10 +155,10 @@ export async function generateMetadata({ params }: { params: Promise<{ variantSl
   });
   const imageUrl = toAbsoluteUrl(resolveTourImage(tour?.heroImage ?? null, tour?.gallery ?? null));
   const languages = {
-    es: `https://proactivitis.com/thingtodo/tours/${variant.slug}`,
-    en: `https://proactivitis.com/en/thingtodo/tours/${variant.slug}`,
+    es: `${BASE_URL}/thingtodo/tours/${variant.slug}`,
+    en: `${BASE_URL}/en/thingtodo/tours/${variant.slug}`,
     fr: canonical,
-    "x-default": `https://proactivitis.com/thingtodo/tours/${variant.slug}`
+    "x-default": `${BASE_URL}/thingtodo/tours/${variant.slug}`
   };
   return {
     title: seoTitle,
