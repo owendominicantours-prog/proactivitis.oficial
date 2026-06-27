@@ -13,10 +13,10 @@ export const revalidate = 86400;
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  return buildNuevaGeneracionTourMetadata(slug, "es");
+  return buildNuevaGeneracionTourMetadata(slug, "fr");
 }
 
 export default async function Page({ params }: PageProps) {
   const { slug } = await params;
-  return <NuevaGeneracionTourLandingPage slug={slug} locale="es" />;
+  return <NuevaGeneracionTourLandingPage slug={slug} locale="fr" />;
 }

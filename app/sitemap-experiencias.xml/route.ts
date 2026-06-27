@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 
 import {
   NUEVA_GENERACION_BASE_URL,
-  NUEVA_GENERACION_HUB_PATH,
-  NUEVA_GENERACION_INTENTS,
+  NUEVA_GENERACION_LOCALES,
   buildNuevaGeneracionIntentPath,
   buildNuevaGeneracionIntentTourPath,
   buildNuevaGeneracionTourPath,
+  getNuevaGeneracionHubPath,
+  getNuevaGeneracionIntents,
   getNuevaGeneracionTours
 } from "@/lib/nuevaGeneracionTours";
 import { warnOnce } from "@/lib/logOnce";
@@ -30,23 +31,26 @@ export async function GET() {
   }
 
   const lastmod = new Date().toISOString();
-  const urls = [
-    { loc: `${NUEVA_GENERACION_BASE_URL}${NUEVA_GENERACION_HUB_PATH}`, priority: "0.70" },
-    ...NUEVA_GENERACION_INTENTS.map((intent) => ({
-      loc: `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionIntentPath(intent.slug)}`,
-      priority: "0.80"
-    })),
-    ...tours.map((tour) => ({
-      loc: `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionTourPath(tour.slug)}`,
-      priority: "0.86"
-    })),
-    ...tours.flatMap((tour) =>
-      NUEVA_GENERACION_INTENTS.map((intent) => ({
-        loc: `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionIntentTourPath(tour.slug, intent.slug)}`,
-        priority: "0.88"
-      }))
-    )
-  ];
+  const urls = NUEVA_GENERACION_LOCALES.flatMap((locale) => {
+    const intents = getNuevaGeneracionIntents(locale);
+    return [
+      { loc: `${NUEVA_GENERACION_BASE_URL}${getNuevaGeneracionHubPath(locale)}`, priority: "0.70" },
+      ...intents.map((intent) => ({
+        loc: `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionIntentPath(intent.slug, locale)}`,
+        priority: "0.80"
+      })),
+      ...tours.map((tour) => ({
+        loc: `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionTourPath(tour.slug, locale)}`,
+        priority: "0.86"
+      })),
+      ...tours.flatMap((tour) =>
+        intents.map((intent) => ({
+          loc: `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionIntentTourPath(tour.slug, intent.slug, locale)}`,
+          priority: "0.88"
+        }))
+      )
+    ];
+  });
 
   const xml = urls
     .map(
