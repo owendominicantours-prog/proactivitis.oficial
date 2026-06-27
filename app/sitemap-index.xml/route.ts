@@ -12,6 +12,7 @@ const SITEMAPS = [
   "/sitemap-tour-variants.xml",
   "/sitemap-tour-pickups.xml",
   "/sitemap-golden-tour-pages.xml",
+  "/sitemap-experiencias.xml",
   "/sitemap-things-to-do.xml",
   "/sitemap-party-boat.xml",
   "/sitemap-santo-domingo.xml",
