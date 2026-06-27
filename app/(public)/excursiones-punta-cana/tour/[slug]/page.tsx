@@ -4,11 +4,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import StructuredData from "@/components/schema/StructuredData";
+import {
+  TourIncludedExcludedSection,
+  TourMobileBookingBar,
+  TourProofSection,
+  TourTrustBadges
+} from "@/components/public/TourLandingConversionBlocks";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import {
   NUEVA_GENERACION_BASE_URL,
   NUEVA_GENERACION_HUB_PATH,
   NUEVA_GENERACION_INTENTS,
+  buildNuevaGeneracionConversionCopy,
   buildNuevaGeneracionIntentTourPath,
   buildNuevaGeneracionTourPath,
   buildNuevaGeneracionFaq,
@@ -22,6 +29,7 @@ import {
   resolveTourPersona,
   toAbsoluteImage
 } from "@/lib/nuevaGeneracionTours";
+import { getApprovedTourReviews } from "@/lib/tourReviews";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -71,9 +79,13 @@ export default async function NuevaGeneracionTourLandingPage({ params }: PagePro
   const tour = await getNuevaGeneracionTourBySlug(slug);
   if (!tour) notFound();
 
-  const relatedTours = await getNuevaGeneracionRelatedTours(tour, 8);
+  const [relatedTours, reviews] = await Promise.all([
+    getNuevaGeneracionRelatedTours(tour, 8),
+    getApprovedTourReviews(tour.id, 3)
+  ]);
   const facts = buildTourFacts(tour);
   const persona = resolveTourPersona(tour);
+  const conversion = buildNuevaGeneracionConversionCopy({ tour, facts, persona });
   const canonical = `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionTourPath(tour.slug)}`;
   const schema = buildNuevaGeneracionSchema({ tour, facts, persona, canonical, relatedTours });
   const faq = buildNuevaGeneracionFaq(tour.title, facts.area, persona);
@@ -86,7 +98,7 @@ export default async function NuevaGeneracionTourLandingPage({ params }: PagePro
   const supplierName = tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Proactivitis";
 
   return (
-    <main className="bg-white text-slate-950">
+    <main className="bg-white pb-24 text-slate-950 lg:pb-0">
       <StructuredData data={schema} />
 
       <section className="relative min-h-[620px] overflow-hidden bg-slate-950 text-white">
@@ -107,8 +119,9 @@ export default async function NuevaGeneracionTourLandingPage({ params }: PagePro
             <p className="text-xs font-black uppercase tracking-[0.34em] text-emerald-300">{persona.segment}</p>
             <h1 className="mt-4 max-w-4xl text-4xl font-black leading-tight sm:text-5xl lg:text-6xl">{tour.title}</h1>
             <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-100">
-              {tour.shortDescription ?? persona.promise}
+              {conversion.heroSubtitle}
             </p>
+            <TourTrustBadges badges={conversion.trustBadges} dark />
             <div className="mt-8 flex flex-wrap gap-3">
               <a href="#reservar" className="bg-emerald-400 px-6 py-4 text-sm font-black text-slate-950 transition hover:bg-emerald-300">
                 Reservar ahora
@@ -120,7 +133,7 @@ export default async function NuevaGeneracionTourLandingPage({ params }: PagePro
           </div>
 
           <aside className="self-end border border-white/15 bg-white/12 p-5 backdrop-blur-xl">
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-300">Decision rapida</p>
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-300">Resumen de reserva</p>
             <div className="mt-5 grid gap-3">
               <FactLine label="Precio desde" value={`$${tour.price.toFixed(0)} USD`} />
               <FactLine label="Duracion" value={facts.duration} />
@@ -136,15 +149,14 @@ export default async function NuevaGeneracionTourLandingPage({ params }: PagePro
         <div className="space-y-8">
           <section className="border border-slate-200 bg-white p-6">
             <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-700">Por que reservar este tour</p>
-            <h2 className="mt-3 text-3xl font-black text-slate-950">Una experiencia con detalles claros antes de pagar</h2>
+            <h2 className="mt-3 text-3xl font-black text-slate-950">Una experiencia lista para reservar sin dudas</h2>
             <p className="mt-4 text-base leading-8 text-slate-600">
-              {tour.title} reune fotos del producto, precio, horario, zona, inclusiones, itinerario y soporte local para
-              ayudarte a decidir sin coordinar todo por separado.
+              {tour.shortDescription ?? conversion.heroSubtitle}
             </p>
             <div className="mt-6 grid gap-4 md:grid-cols-3">
-              <ValueBlock title="Promesa" body={persona.promise} />
-              <ValueBlock title="Preparacion" body={persona.packing} />
-              <ValueBlock title="Cupo" body={persona.urgency} />
+              <ValueBlock title="Lo que vas a vivir" body={persona.promise} />
+              <ValueBlock title="Como prepararte" body={persona.packing} />
+              <ValueBlock title="Mejor momento para reservar" body={persona.urgency} />
             </div>
           </section>
 
@@ -166,16 +178,9 @@ export default async function NuevaGeneracionTourLandingPage({ params }: PagePro
             </div>
           </section>
 
-          <section className="border border-slate-200 bg-slate-50 p-6">
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Lo que compra el cliente</p>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              {facts.includes.slice(0, 8).map((item) => (
-                <div key={item} className="border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800">
-                  {item}
-                </div>
-              ))}
-            </div>
-          </section>
+          <TourIncludedExcludedSection includes={facts.includes} exclusions={conversion.exclusions} />
+
+          <TourProofSection reviews={reviews} confidence={conversion.confidence} />
 
           <section className="border border-slate-200 bg-white p-6">
             <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Itinerario</p>
@@ -205,7 +210,7 @@ export default async function NuevaGeneracionTourLandingPage({ params }: PagePro
 
           <section className="border border-slate-200 bg-white p-6">
             <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Tours relacionados</p>
-            <h2 className="mt-3 text-2xl font-black">Mas opciones dentro del mismo ecosistema</h2>
+            <h2 className="mt-3 text-2xl font-black">Mas experiencias para comparar</h2>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               {relatedTours.map((related) => {
                 const relatedImage = related.heroImage ?? parseJsonArray<string>(related.gallery)[0] ?? "/fototours/fotosimple.jpg";
@@ -245,7 +250,9 @@ export default async function NuevaGeneracionTourLandingPage({ params }: PagePro
           <div className="border border-slate-200 bg-white p-5 shadow-xl">
             <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-700">Reserva directa</p>
             <h2 className="mt-2 text-2xl font-black text-slate-950">{tour.title}</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">Operado por {supplierName}. Precio claro y confirmacion desde Proactivitis.</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {conversion.bookingPrompt} Operado por {supplierName}. Precio claro y confirmacion desde Proactivitis.
+            </p>
             <div className="mt-5">
               <TourBookingWidget
                 tourId={tour.id}
@@ -262,6 +269,7 @@ export default async function NuevaGeneracionTourLandingPage({ params }: PagePro
           </div>
         </aside>
       </section>
+      <TourMobileBookingBar price={tour.price} />
     </main>
   );
 }

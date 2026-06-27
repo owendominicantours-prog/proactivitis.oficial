@@ -158,6 +158,34 @@ export const parseOperatingDays = (value?: string | null) => {
     .filter(Boolean);
 };
 
+const parseTextList = (value: unknown): string[] => {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+      .map((item) => item.trim());
+  }
+  if (typeof value === "string") {
+    const parsed = parseJsonArray<unknown>(value);
+    if (parsed.length) return parseTextList(parsed);
+    return value
+      .split(";")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [];
+};
+
+const uniqueTextItems = (items: string[]) => {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = normalizeIntentText(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
 export const toAbsoluteImage = (image?: string | null) => {
   if (!image) return `${NUEVA_GENERACION_BASE_URL}/fototours/fotosimple.jpg`;
   if (image.startsWith("http")) return image;
@@ -318,9 +346,16 @@ export const buildTourFacts = (tour: NonNullable<Awaited<ReturnType<typeof getNu
   const duration = parseDuration(tour.duration);
   const itinerary = parseAdminItinerary(tour.adminNote ?? "");
   const parsedItinerary = itinerary.length ? itinerary : parseItinerary(tour.adminNote ?? "");
-  const includes = tour.includes
+  const includesFromString = tour.includes
     ? tour.includes.split(";").map((item) => item.trim()).filter(Boolean)
-    : ["Tour confirmado", "Asistencia local", "Soporte durante la reserva"];
+    : [];
+  const includesList = parseTextList(tour.includesList);
+  const notIncluded = parseTextList(tour.notIncludedList);
+  const includes = includesList.length
+    ? includesList
+    : includesFromString.length
+      ? includesFromString
+      : ["Tour confirmado", "Asistencia local", "Soporte durante la reserva"];
   const categories = (tour.category ?? "")
     .split(",")
     .map((item) => item.trim())
@@ -339,9 +374,92 @@ export const buildTourFacts = (tour: NonNullable<Awaited<ReturnType<typeof getNu
     duration,
     itinerary: parsedItinerary.length ? parsedItinerary : buildDefaultItinerary(tour.title, area),
     includes,
+    notIncluded,
     categories,
     languages,
-    area: area ?? "Punta Cana"
+    area: area ?? "Punta Cana",
+    requirements: tour.requirements ?? null,
+    cancellationPolicy: tour.cancellationPolicy ?? null,
+    minAge: tour.minAge ?? null,
+    physicalLevel: tour.physicalLevel ?? null,
+    pickup: tour.pickup ?? null,
+    meetingPoint: tour.meetingPoint ?? null
+  };
+};
+
+export const buildNuevaGeneracionConversionCopy = ({
+  tour,
+  facts,
+  persona
+}: {
+  tour: NonNullable<Awaited<ReturnType<typeof getNuevaGeneracionTourBySlug>>>;
+  facts: ReturnType<typeof buildTourFacts>;
+  persona: ReturnType<typeof resolveTourPersona>;
+}) => {
+  const normalized = normalizeIntentText(
+    [tour.title, tour.description, tour.shortDescription, tour.category, tour.location, facts.area].filter(Boolean).join(" ")
+  );
+  const isParasailing = /parasail|parasailing/.test(normalized);
+  const isWater = /saona|catamaran|boat|barco|isla|snorkel|playa|beach|mar|ocean|lancha/.test(normalized);
+  const isAdventure = /buggy|atv|zip|horse|caballo|safari|aventura|adventure|off-road|offroad/.test(normalized);
+
+  const heroSubtitle = isParasailing
+    ? `Vuela sobre las aguas turquesas de ${facts.area} con una salida organizada, equipo de seguridad y confirmacion clara antes de pagar.`
+    : isWater
+      ? `Disfruta ${facts.area} con tiempo para fotos, agua caribena, logistica clara y soporte local desde la reserva.`
+      : isAdventure
+        ? `Vive una ruta activa con briefing, paradas claras y coordinacion previa para llegar listo a la experiencia.`
+        : `${persona.promise}. Reserva con precio visible, horario claro y asistencia humana antes de salir.`;
+
+  const defaultExclusions = isParasailing
+    ? [
+        "Fotos y videos profesionales, si el operador los ofrece, se pagan por separado",
+        "Propinas y gastos personales",
+        "Traslados fuera de la zona confirmada, si aplican"
+      ]
+    : isWater
+      ? [
+          "Fotos, videos o bebidas premium no indicadas como incluidas",
+          "Propinas y gastos personales",
+          "Servicios fuera del itinerario confirmado"
+        ]
+      : [
+          "Gastos personales y propinas",
+          "Servicios no indicados como incluidos",
+          "Cambios fuera del horario confirmado"
+        ];
+
+  const confidence = [
+    {
+      title: "Cancelacion gratuita hasta 24h antes",
+      body: tour.cancellationPolicy?.trim() || "Puedes cancelar sin cargo hasta 24 horas antes de la salida confirmada."
+    },
+    {
+      title: isParasailing ? "Salida segun viento y seguridad" : "Clima y operacion claros",
+      body: isParasailing
+        ? "Si el viento o el operador detienen la salida por seguridad, coordinamos reprogramacion o la solucion que aplique."
+        : "Si el clima impide operar la experiencia, coordinamos reprogramacion o la solucion que aplique segun la politica del tour."
+    },
+    {
+      title: "Confirmacion humana",
+      body: "Validamos pasajeros, horario, hotel o punto de encuentro para que llegues con la informacion importante lista."
+    }
+  ];
+
+  const trustBadges = [
+    "Cancelacion gratis 24h",
+    isParasailing ? "Operacion segun viento" : "Precio claro en USD",
+    facts.pickup ? "Recogida coordinada" : "Soporte local"
+  ];
+
+  return {
+    heroSubtitle,
+    exclusions: uniqueTextItems([...(facts.notIncluded ?? []), ...defaultExclusions]).slice(0, 6),
+    confidence,
+    trustBadges,
+    bookingPrompt: isParasailing
+      ? "Elige fecha, pasajeros y horario para confirmar tu vuelo sobre la costa."
+      : "Elige fecha, pasajeros y horario para confirmar tu experiencia."
   };
 };
 
@@ -614,28 +732,64 @@ export const buildNuevaGeneracionFaq = (
   area: string,
   persona: ReturnType<typeof resolveTourPersona>,
   intent?: NuevaGeneracionIntent | null
-) => [
-  {
-    question: intent
-      ? `Por que reservar ${title} como ${intent.keyword}?`
-      : `Por que reservar ${title} con Proactivitis?`,
-    answer: intent
-      ? `${title} encaja con viajeros que buscan ${intent.keyword}: ${intent.audience}. ${intent.angle}.`
-      : `${title} reune precio, horario, fotos, preparacion, soporte local y reserva directa en una sola experiencia.`
-  },
-  {
-    question: `Que hace diferente a ${title} frente a otros tours en ${area}?`,
-    answer: `${persona.promise}. La pagina destaca lo que importa antes de reservar: precio, horario, fotos, inclusiones, preparacion y soporte local.`
-  },
-  {
-    question: `Que debo llevar para ${title}?`,
-    answer: persona.packing
-  },
-  {
-    question: `Conviene reservar con anticipacion?`,
-    answer: persona.urgency
-  }
-];
+) => {
+  const normalizedTitle = normalizeIntentText(title);
+  const isParasailing = /parasail|parasailing/.test(normalizedTitle);
+  const baseFaq = [
+    {
+      question: intent
+        ? `Por que reservar ${title} como ${intent.keyword}?`
+        : `Por que reservar ${title} con Proactivitis?`,
+      answer: intent
+        ? `${title} encaja con viajeros que buscan ${intent.keyword}: ${intent.audience}. ${intent.angle}.`
+        : `${title} reune precio, horario, fotos, preparacion, soporte local y reserva directa en una sola experiencia.`
+    },
+    {
+      question: `Que hace diferente a ${title} frente a otros tours en ${area}?`,
+      answer: `${persona.promise}. La pagina destaca lo que importa antes de reservar: precio, horario, fotos, inclusiones, preparacion y soporte local.`
+    },
+    {
+      question: `Que debo llevar para ${title}?`,
+      answer: persona.packing
+    },
+    {
+      question: "Que pasa si llueve o el clima no permite operar?",
+      answer:
+        "Si el clima impide operar de forma segura, coordinamos reprogramacion o la solucion que aplique segun la politica del tour y del operador confirmado."
+    },
+    {
+      question: "La recogida en hotel esta incluida?",
+      answer:
+        "Cuando el tour incluye recogida, se confirma el hotel, punto de encuentro y horario antes de la salida. Si una zona requiere ajuste, se informa antes de completar la reserva."
+    },
+    {
+      question: "Hay cargos ocultos?",
+      answer:
+        "La pagina separa lo incluido y lo no incluido para que puedas ver precio, extras, propinas o servicios opcionales antes de reservar."
+    },
+    {
+      question: `Conviene reservar con anticipacion?`,
+      answer: persona.urgency
+    }
+  ];
+
+  if (!isParasailing) return baseFaq;
+
+  return [
+    ...baseFaq.slice(0, 4),
+    {
+      question: "Cual es el limite de peso para parasailing?",
+      answer:
+        "El limite exacto depende del operador, el viento y las condiciones del dia. Se confirma antes de operar para mantener la salida segura."
+    },
+    {
+      question: "Pueden volar dos personas juntas en tandem?",
+      answer:
+        "Muchas salidas permiten vuelo tandem, pero depende del peso combinado, viento y criterio del capitan. La confirmacion se realiza antes de la actividad."
+    },
+    ...baseFaq.slice(4)
+  ];
+};
 
 export const buildIntentLandingCopy = ({
   tour,

@@ -4,9 +4,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import StructuredData from "@/components/schema/StructuredData";
+import {
+  TourIncludedExcludedSection,
+  TourMobileBookingBar,
+  TourProofSection,
+  TourTrustBadges
+} from "@/components/public/TourLandingConversionBlocks";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import {
   NUEVA_GENERACION_BASE_URL,
+  buildNuevaGeneracionConversionCopy,
   buildNuevaGeneracionIntentTourPath,
   buildNuevaGeneracionTourPath,
   buildIntentLandingCopy,
@@ -22,6 +29,7 @@ import {
   resolveTourPersona,
   toAbsoluteImage
 } from "@/lib/nuevaGeneracionTours";
+import { getApprovedTourReviews } from "@/lib/tourReviews";
 
 type PageProps = {
   params: Promise<{ slug: string; intentSlug: string }>;
@@ -76,9 +84,13 @@ export default async function NuevaGeneracionIntentTourPage({ params }: PageProp
   const tour = await getNuevaGeneracionTourBySlug(slug);
   if (!tour) notFound();
 
-  const [relatedTours] = await Promise.all([getNuevaGeneracionRelatedTours(tour, 8)]);
+  const [relatedTours, reviews] = await Promise.all([
+    getNuevaGeneracionRelatedTours(tour, 8),
+    getApprovedTourReviews(tour.id, 3)
+  ]);
   const facts = buildTourFacts(tour);
   const persona = resolveTourPersona(tour);
+  const conversion = buildNuevaGeneracionConversionCopy({ tour, facts, persona });
   const copy = buildIntentLandingCopy({ tour, facts, persona, intent });
   const canonical = `${NUEVA_GENERACION_BASE_URL}${buildNuevaGeneracionIntentTourPath(tour.slug, intent.slug)}`;
   const schema = buildNuevaGeneracionSchema({ tour, facts, persona, canonical, intent, relatedTours });
@@ -89,9 +101,10 @@ export default async function NuevaGeneracionIntentTourPage({ params }: PageProp
     pickupTimes: normalizePickupTimes(option.pickupTimes)
   }));
   const operatingDays = parseOperatingDays(tour.operatingDays);
+  const supplierName = tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? "Proactivitis";
 
   return (
-    <main className="bg-white text-slate-950">
+    <main className="bg-white pb-24 text-slate-950 lg:pb-0">
       <StructuredData data={schema} />
       <section className="bg-slate-950 text-white">
         <div className="mx-auto grid max-w-7xl gap-8 px-5 py-12 sm:px-8 lg:grid-cols-[1fr_430px] lg:px-12 lg:py-16">
@@ -101,7 +114,8 @@ export default async function NuevaGeneracionIntentTourPage({ params }: PageProp
             </Link>
             <p className="mt-8 text-xs font-black uppercase tracking-[0.34em] text-slate-300">{copy.eyebrow}</p>
             <h1 className="mt-4 max-w-4xl text-4xl font-black leading-tight sm:text-5xl">{copy.title}</h1>
-            <p className="mt-5 max-w-3xl text-base leading-8 text-slate-200">{copy.description}</p>
+            <p className="mt-5 max-w-3xl text-base leading-8 text-slate-200">{conversion.heroSubtitle}</p>
+            <TourTrustBadges badges={conversion.trustBadges} dark />
             <div className="mt-7 flex flex-wrap gap-3">
               <a href="#reservar" className="bg-emerald-400 px-6 py-4 text-sm font-black text-slate-950 transition hover:bg-emerald-300">
                 {copy.cta}
@@ -133,21 +147,18 @@ export default async function NuevaGeneracionIntentTourPage({ params }: PageProp
           </section>
 
           <section className="border border-slate-200 bg-white p-6">
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Detalles del producto</p>
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Detalles de la experiencia</p>
             <div className="mt-5 grid gap-3 md:grid-cols-4">
               <MiniStat label="Precio" value={`$${tour.price.toFixed(0)} USD`} />
               <MiniStat label="Duracion" value={facts.duration} />
               <MiniStat label="Salida" value={facts.firstTime} />
               <MiniStat label="Zona" value={facts.area} />
             </div>
-            <div className="mt-6 grid gap-3 md:grid-cols-2">
-              {facts.includes.slice(0, 6).map((item) => (
-                <div key={item} className="border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800">
-                  {item}
-                </div>
-              ))}
-            </div>
           </section>
+
+          <TourIncludedExcludedSection includes={facts.includes} exclusions={conversion.exclusions} />
+
+          <TourProofSection reviews={reviews} confidence={conversion.confidence} />
 
           <section id="comparar" className="border border-slate-200 bg-white p-6">
             <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Tours relacionados</p>
@@ -191,6 +202,9 @@ export default async function NuevaGeneracionIntentTourPage({ params }: PageProp
           <div className="border border-slate-200 bg-white p-5 shadow-xl">
             <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-700">{intent.label}</p>
             <h2 className="mt-2 text-2xl font-black">{tour.title}</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {conversion.bookingPrompt} Operado por {supplierName}. Confirmacion desde Proactivitis.
+            </p>
             <TourBookingWidget
               tourId={tour.id}
               basePrice={tour.price}
@@ -205,6 +219,7 @@ export default async function NuevaGeneracionIntentTourPage({ params }: PageProp
           </div>
         </aside>
       </section>
+      <TourMobileBookingBar price={tour.price} cta={copy.cta} />
     </main>
   );
 }
