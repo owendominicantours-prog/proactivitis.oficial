@@ -82,6 +82,34 @@ const SCAPE_PARK_TOURS = new Set([
 ]);
 
 const TOUR_KEYWORDS_BY_SLUG: Record<string, Partial<Record<Locale, string[]>>> = {
+  "tour-en-buggy-por-punta-cana": {
+    es: [
+      "tour buggy punta cana",
+      "buggy playa macao punta cana",
+      "buggy cueva taina punta cana",
+      "buggy cenote punta cana",
+      "cuatrimoto todoterreno punta cana",
+      "excursion boogies cueva y playa",
+      "aventura buggy punta cana",
+      "buggy 4x4 punta cana",
+      "tour off road atv buggy punta cana",
+      "buggy con recogida punta cana"
+    ],
+    en: [
+      "buggy tour punta cana",
+      "punta cana buggy adventure",
+      "macao beach buggy tour",
+      "buggy cenote punta cana",
+      "off road atv buggy punta cana"
+    ],
+    fr: [
+      "tour buggy punta cana",
+      "aventure buggy punta cana",
+      "buggy plage macao",
+      "buggy cenote punta cana",
+      "tour off road punta cana"
+    ]
+  },
   "private-buggy-tour-cenote-swim-dominican-lunch": {
     es: [
       "buggy privado punta cana",
@@ -103,6 +131,42 @@ const TOUR_KEYWORDS_BY_SLUG: Record<string, Partial<Record<Locale, string[]>>> =
       "buggy cenote punta cana",
       "buggy avec dejeuner dominicain",
       "excursion buggy privee punta cana"
+    ]
+  }
+};
+
+const TOUR_SCHEMA_ALTERNATE_NAMES_BY_SLUG: Record<string, Partial<Record<Locale, string[]>>> = {
+  "tour-en-buggy-por-punta-cana": {
+    es: [
+      "Tour en buggy por Punta Cana: cuatrimoto todoterreno, nado en cueva y playa Macao + recogida",
+      "Punta Cana: tour en buggy con playa Macao y cueva Taína",
+      "Punta Cana: aventura en buggy a la playa de Macao y cenote",
+      "Punta Cana: paseo en buggy o cuatrimoto todoterreno, nado en cueva y playa Macao",
+      "Punta Cana: tour en cuatrimoto todoterreno: cueva, playa Macao, recogida gratuita",
+      "Punta Cana: Excursión de Boogies Cueva y Playa",
+      "Aventura en buggy en Punta Cana: barro, cueva y playa Macao",
+      "Excursión en cuatrimoto todoterreno y buggy 4x4 en Punta Cana con cueva de agua",
+      "Punta Cana: aventura en buggy por la selva, playa Macao y cueva Taíno",
+      "Punta Cana: aventura en buggy, cenote y playa Macao",
+      "Punta Cana: tour en buggy o cuatrimoto todoterreno con paradas en un cenote y en la playa",
+      "Punta Cana: Tour Off-Road ATV, Buggy Playa Macao. Recogida Gratis",
+      "Punta Cana: safari en buggy y cuatrimoto todoterreno con recogida",
+      "Punta Cana: tour en buggy o cuatrimoto todoterreno con visita a Playa Macao",
+      "Punta Cana: tour en buggy todoterreno con cenote y campo",
+      "Punta Cana: tour en buggy con baño en un cenote y playa Macao",
+      "Punta Cana: aventura en buggy por paisajes únicos"
+    ],
+    en: [
+      "Punta Cana buggy tour with Macao Beach and cave swim",
+      "Punta Cana off-road buggy and ATV adventure",
+      "Macao Beach buggy tour in Punta Cana",
+      "Punta Cana buggy adventure with cenote stop"
+    ],
+    fr: [
+      "Tour buggy à Punta Cana avec plage Macao et baignade en grotte",
+      "Aventure buggy tout-terrain à Punta Cana",
+      "Tour buggy plage Macao à Punta Cana",
+      "Buggy à Punta Cana avec arrêt cenote"
     ]
   }
 };
@@ -2014,6 +2078,10 @@ export default async function TourDetailPage({
       : NORTH_COAST_PARTY_BOAT_TOURS.has(tour.slug)
         ? NORTH_COAST_SCHEMA_KEYWORDS[locale]
         : undefined);
+  const schemaAlternateNames = TOUR_SCHEMA_ALTERNATE_NAMES_BY_SLUG[tour.slug]?.[locale];
+  const schemaKeywordText = schemaKeywords || schemaAlternateNames
+    ? [...(schemaKeywords ?? []), ...(schemaAlternateNames ?? [])].join(", ")
+    : undefined;
   const aggregateRating =
     detailReviewCount > 0
       ? {
@@ -2067,6 +2135,7 @@ export default async function TourDetailPage({
       name: "Proactivitis"
     },
     category: touristTypeFallback ?? "Tour",
+    ...(schemaAlternateNames ? { alternateName: schemaAlternateNames } : {}),
     sku: tour.slug,
     mpn: tour.productId,
     slogan:
@@ -2142,7 +2211,7 @@ export default async function TourDetailPage({
       acceptedPaymentMethod: ["https://schema.org/CreditCard", "https://schema.org/ByBankTransferInAdvance"]
     },
     sameAs: SAME_AS_URLS,
-    ...(schemaKeywords ? { keywords: schemaKeywords.join(", ") } : {}),
+    ...(schemaKeywordText ? { keywords: schemaKeywordText } : {}),
     ...(schemaAdditionalProperty ? { additionalProperty: schemaAdditionalProperty } : {}),
     ...(aggregateRating ? { aggregateRating } : {}),
     ...(reviewSchema ? { review: reviewSchema } : {})
@@ -2153,6 +2222,7 @@ export default async function TourDetailPage({
     "@type": "TouristTrip",
     "@id": `${tourUrl}#trip`,
     name: heroTitle,
+    ...(schemaAlternateNames ? { alternateName: schemaAlternateNames } : {}),
     description: localizedDescription ?? shortTeaser,
     image: schemaImages,
     url: tourUrl,
@@ -2259,9 +2329,10 @@ export default async function TourDetailPage({
       { "@id": `${tourUrl}#product` },
       { "@id": `${tourUrl}#trip` }
     ],
+    ...(schemaAlternateNames ? { alternateName: schemaAlternateNames } : {}),
     primaryImageOfPage: schemaImageObjects[0] ?? undefined,
     breadcrumb: { "@id": `${tourUrl}#breadcrumb` },
-    ...(schemaKeywords ? { keywords: schemaKeywords.join(", ") } : {})
+    ...(schemaKeywordText ? { keywords: schemaKeywordText } : {})
   };
 
   const breadcrumbSchema = {

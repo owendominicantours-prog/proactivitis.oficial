@@ -74,6 +74,34 @@ const PUNTA_CANA_KEYWORDS: Record<Locale, string[]> = {
   ]
 };
 const TOUR_KEYWORDS_BY_SLUG: Record<string, Partial<Record<Locale, string[]>>> = {
+  "tour-en-buggy-por-punta-cana": {
+    es: [
+      "tour buggy punta cana",
+      "buggy playa macao punta cana",
+      "buggy cueva taina punta cana",
+      "buggy cenote punta cana",
+      "cuatrimoto todoterreno punta cana",
+      "excursion boogies cueva y playa",
+      "aventura buggy punta cana",
+      "buggy 4x4 punta cana",
+      "tour off road atv buggy punta cana",
+      "buggy con recogida punta cana"
+    ],
+    en: [
+      "buggy tour punta cana",
+      "punta cana buggy adventure",
+      "macao beach buggy tour",
+      "buggy cenote punta cana",
+      "off road atv buggy punta cana"
+    ],
+    fr: [
+      "tour buggy punta cana",
+      "aventure buggy punta cana",
+      "buggy plage macao",
+      "buggy cenote punta cana",
+      "tour off road punta cana"
+    ]
+  },
   "party-boat-sosua": {
     es: [
       "sosua party boat",
@@ -392,7 +420,7 @@ const META_DESCRIPTION_OVERRIDES: Record<string, Partial<Record<Locale, string>>
 
 const buildSeoTitle = (baseTitle: string) => {
   const trimmed = ensureLeadingCapital(baseTitle.trim());
-  if (!trimmed) return `Proactivitis`;
+  if (!trimmed) return "Proactivitis";
   if (trimmed.length + BRAND_SUFFIX.length <= MAX_TITLE_LENGTH) {
     return `${trimmed}${BRAND_SUFFIX}`;
   }
