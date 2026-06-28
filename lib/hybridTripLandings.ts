@@ -502,34 +502,8 @@ export const buildHybridLandingSchema = (
 ) => {
   const priceValidUntil = getPriceValidUntil();
   const toProductPrice = (price: number) => Number(Math.max(0, price).toFixed(2));
-  const transferProducts = transferOptions.map((transfer, index) => ({
-    "@type": "Product",
-    "@id": `${landing.canonical}#transfer-product-${index + 1}`,
-    name: `${transfer.vehicleName} for ${landing.zone.mapName}`,
-    image: `${PROACTIVITIS_URL}${landing.zone.heroImage}`,
-    description: transfer.description,
-    url: `${landing.canonical}#plan`,
-    brand: {
-      "@type": "Brand",
-      name: "Proactivitis"
-    },
-    category: "Private transfer",
-    sku: transfer.id.slice(0, 50),
-    offers: {
-      "@type": "Offer",
-      "@id": `${landing.canonical}#transfer-product-offer-${index + 1}`,
-      url: `${landing.canonical}#plan`,
-      price: toProductPrice(transfer.price),
-      priceCurrency: "USD",
-      priceValidUntil,
-      availability: "https://schema.org/InStock",
-      itemCondition: "https://schema.org/NewCondition",
-      shippingDetails: SERVICE_SHIPPING_DETAILS,
-      hasMerchantReturnPolicy: MERCHANT_RETURN_POLICY,
-      seller: { "@id": `${PROACTIVITIS_URL}#organization` }
-    }
-  }));
-  const tourProducts = tours.map((tour, index) => ({
+  const uniqueTours = Array.from(new Map(tours.map((tour) => [tour.slug, tour])).values());
+  const tourProducts = uniqueTours.map((tour, index) => ({
     "@type": "Product",
     "@id": `${landing.canonical}#tour-product-${index + 1}`,
     name: tour.title,
@@ -638,25 +612,12 @@ export const buildHybridLandingSchema = (
       },
       {
         "@type": "ItemList",
-        "@id": `${landing.canonical}#transfer-carousel`,
-        name: `Private transfer options for ${landing.title}`,
-        numberOfItems: transferProducts.length,
-        itemListElement: transferProducts.map((product, index) => ({
-          "@type": "ListItem",
-          position: index + 1,
-          url: product.url,
-          item: product
-        }))
-      },
-      {
-        "@type": "ItemList",
         "@id": `${landing.canonical}#tour-carousel`,
         name: `Recommended tours for ${landing.title}`,
         numberOfItems: tourProducts.length,
         itemListElement: tourProducts.map((product, index) => ({
           "@type": "ListItem",
           position: index + 1,
-          url: product.url,
           item: product
         }))
       },
