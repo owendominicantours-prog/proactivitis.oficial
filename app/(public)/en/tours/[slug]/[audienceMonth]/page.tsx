@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 
 import StructuredData from "@/components/schema/StructuredData";
@@ -41,18 +40,21 @@ export default async function HybridTripLandingPage({ params }: PageProps) {
   const tours = await getHybridTourProducts(landing);
   const season = HYBRID_SEASON_COPY[landing.month.season];
   const schema = buildHybridLandingSchema(landing, tours);
+  const heroImage = tours.find((tour) => tour.image)?.image || landing.zone.heroImage;
 
   return (
     <main className="bg-white text-slate-950">
       <StructuredData data={schema} />
       <section className="relative min-h-[620px] overflow-hidden bg-slate-950 text-white">
-        <Image
+        <img
           src={landing.zone.heroImage}
           alt={landing.title}
-          fill
-          priority
-          className="object-cover opacity-55"
-          sizes="100vw"
+          className="absolute inset-0 h-full w-full object-cover opacity-35"
+        />
+        <img
+          src={heroImage}
+          alt={`${landing.zone.mapName} tours and private transfer`}
+          className="absolute inset-y-0 right-0 hidden h-full w-[52%] object-cover opacity-75 lg:block"
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,0.96),rgba(2,6,23,0.76),rgba(2,6,23,0.22))]" />
         <div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 lg:grid-cols-[1fr_360px] lg:px-12 lg:py-20">
@@ -81,6 +83,8 @@ export default async function HybridTripLandingPage({ params }: PageProps) {
           </aside>
         </div>
       </section>
+
+      <HybridTripPlanner landing={landing} tours={tours} />
 
       <section id="guide" className="mx-auto grid max-w-7xl gap-8 px-5 py-12 sm:px-8 lg:grid-cols-[1fr_360px] lg:px-12">
         <article className="space-y-6">
@@ -120,8 +124,6 @@ export default async function HybridTripLandingPage({ params }: PageProps) {
           </div>
         </aside>
       </section>
-
-      <HybridTripPlanner landing={landing} tours={tours} />
     </main>
   );
 }

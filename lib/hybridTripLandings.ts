@@ -74,7 +74,7 @@ export const HYBRID_ZONES = [
     name: "Punta Cana and Bavaro",
     mapName: "Punta Cana",
     transferType: "Private van or family minibus",
-    heroImage: "/transfer/mini van.png",
+    heroImage: "/fototours/fototour.jpeg",
     transferCopy:
       "Use a private airport transfer as the anchor for the trip, then add water, beach and adventure tours around the exact hotel stay.",
     productSlugs: [
@@ -108,7 +108,7 @@ export const HYBRID_ZONES = [
     name: "Santo Domingo",
     mapName: "Santo Domingo",
     transferType: "Executive sedan or corporate van",
-    heroImage: "/transfer/suv.png",
+    heroImage: "/fototours/fotosimple.jpg",
     transferCopy:
       "Start with an executive transfer plan, then add colonial history, food routes and indoor-friendly cultural stops.",
     productSlugs: [
@@ -141,7 +141,7 @@ export const HYBRID_ZONES = [
     name: "Bayahibe and La Romana",
     mapName: "Bayahibe",
     transferType: "Private express transfer",
-    heroImage: "/transfer/sedan.png",
+    heroImage: "/fototours/fototour.jpeg",
     transferCopy:
       "Anchor the stay with a private express transfer, then add island, diving and Saona VIP experiences from Bayahibe or La Romana.",
     productSlugs: [

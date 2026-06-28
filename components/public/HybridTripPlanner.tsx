@@ -67,6 +67,17 @@ export default function HybridTripPlanner({
   const canCheckout = canPickTours;
   const selectedMonth = getMonthName(state.arrivalDate);
   const monthMismatch = selectedMonth && selectedMonth !== landing.month.label;
+  const completedSteps = [Boolean(selectedTransfer), canPickTours, selectedTours.length > 0].filter(Boolean).length;
+  const progressPercent = Math.round((completedSteps / 3) * 100);
+  const recommendedSlugs = useMemo(() => tours.slice(0, landing.audience.slug === "families" ? 2 : 3).map((tour) => tour.slug), [landing.audience.slug, tours]);
+  const activeSlugs = useMemo(
+    () =>
+      tours
+        .filter((tour) => /buggy|catamaran|parasail|saona|water|beach|vip|adventure/i.test(`${tour.title} ${tour.category} ${tour.shortDescription}`))
+        .slice(0, 3)
+        .map((tour) => tour.slug),
+    [tours]
+  );
 
   const checkoutHref = useMemo(() => {
     const params = new URLSearchParams({
@@ -104,6 +115,9 @@ export default function HybridTripPlanner({
         : [...current.selectedTourSlugs, slug]
     }));
   };
+  const setTourPreset = (slugs: string[]) => {
+    setState((current) => ({ ...current, selectedTourSlugs: Array.from(new Set(slugs)) }));
+  };
 
   return (
     <section id="plan" className="border-y border-slate-200 bg-white">
@@ -112,6 +126,9 @@ export default function HybridTripPlanner({
           <div>
             <p className="text-sm font-semibold uppercase text-emerald-700">Build your trip</p>
             <h2 className="mt-2 text-3xl font-black text-slate-950">Private transfer first, dates second, tours last</h2>
+            <div className="mt-5 h-2 overflow-hidden bg-slate-100">
+              <div className="h-full bg-emerald-500 transition-all" style={{ width: `${progressPercent}%` }} />
+            </div>
           </div>
 
           <section className="border border-slate-200 p-5">
@@ -188,6 +205,40 @@ export default function HybridTripPlanner({
 
           <section className={`border p-5 ${canPickTours ? "border-slate-200 bg-white" : "border-slate-100 bg-slate-50"}`}>
             <StepHeader number="3" title="Add modular tours" active={canPickTours} />
+            <div className="mt-5 flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={!canPickTours}
+                onClick={() => setTourPreset(recommendedSlugs)}
+                className="border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-black text-emerald-800 disabled:opacity-50"
+              >
+                Smart package
+              </button>
+              <button
+                type="button"
+                disabled={!canPickTours}
+                onClick={() => setTourPreset(activeSlugs.length ? activeSlugs : recommendedSlugs)}
+                className="border border-sky-300 bg-sky-50 px-4 py-2 text-sm font-black text-sky-800 disabled:opacity-50"
+              >
+                Adventure mix
+              </button>
+              <button
+                type="button"
+                disabled={!canPickTours}
+                onClick={() => setTourPreset(tours.map((tour) => tour.slug))}
+                className="border border-slate-300 bg-white px-4 py-2 text-sm font-black text-slate-800 disabled:opacity-50"
+              >
+                Add all
+              </button>
+              <button
+                type="button"
+                disabled={!canPickTours}
+                onClick={() => setTourPreset([])}
+                className="border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-500 disabled:opacity-50"
+              >
+                Clear
+              </button>
+            </div>
             <div className="mt-5 grid gap-3">
               {tours.map((tour) => {
                 const checked = state.selectedTourSlugs.includes(tour.slug);
@@ -221,6 +272,15 @@ export default function HybridTripPlanner({
         <aside className="h-fit border border-slate-200 bg-slate-950 p-5 text-white lg:sticky lg:top-20">
           <p className="text-sm font-semibold uppercase text-emerald-300">Trip summary</p>
           <h3 className="mt-2 text-2xl font-black">{landing.zone.mapName} package</h3>
+          <div className="mt-4 border border-white/10 bg-white/5 p-3">
+            <div className="flex items-center justify-between text-xs font-black uppercase text-slate-300">
+              <span>Ready</span>
+              <span>{progressPercent}%</span>
+            </div>
+            <div className="mt-2 h-2 bg-white/10">
+              <div className="h-full bg-emerald-400 transition-all" style={{ width: `${progressPercent}%` }} />
+            </div>
+          </div>
           <div className="mt-5 space-y-3 text-sm text-slate-200">
             <SummaryLine label="Transfer" value={selectedTransfer?.label ?? "Select first"} />
             <SummaryLine label="Dates" value={state.arrivalDate && state.departureDate ? `${state.arrivalDate} to ${state.departureDate}` : "Pending"} />
