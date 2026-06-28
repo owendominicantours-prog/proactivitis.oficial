@@ -9,6 +9,7 @@ import {
   buildHybridLandingSchema,
   getHybridLanding,
   getHybridLandingStaticParams,
+  getHybridTransferOptions,
   getHybridTourProducts
 } from "@/lib/hybridTripLandings";
 
@@ -38,8 +39,9 @@ export default async function HybridTripLandingPage({ params }: PageProps) {
   if (!landing) notFound();
 
   const tours = await getHybridTourProducts(landing);
+  const transferOptions = getHybridTransferOptions(landing);
   const season = HYBRID_SEASON_COPY[landing.month.season];
-  const schema = buildHybridLandingSchema(landing, tours);
+  const schema = buildHybridLandingSchema(landing, tours, transferOptions);
   const heroImage = tours.find((tour) => tour.image)?.image || landing.zone.heroImage;
 
   return (
@@ -84,7 +86,7 @@ export default async function HybridTripLandingPage({ params }: PageProps) {
         </div>
       </section>
 
-      <HybridTripPlanner landing={landing} tours={tours} />
+      <HybridTripPlanner landing={landing} tours={tours} transferOptions={transferOptions} />
 
       <section id="guide" className="mx-auto grid max-w-7xl gap-8 px-5 py-12 sm:px-8 lg:grid-cols-[1fr_360px] lg:px-12">
         <article className="space-y-6">

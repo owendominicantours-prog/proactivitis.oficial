@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTransferPrice, type VehicleCategory as TransferVehicleCategory } from "@/data/traslado-pricing";
 import { prisma } from "@/lib/prisma";
 import { PROACTIVITIS_LOGO, PROACTIVITIS_URL, getPriceValidUntil } from "@/lib/seo";
 
@@ -11,8 +12,11 @@ export type HybridTransferOption = {
   vehicleName: string;
   description: string;
   price: number;
+  oneWayPrice?: number;
+  minPax?: number;
   maxPax: number;
   pax: string;
+  vehicleCategory?: TransferVehicleCategory;
 };
 
 export type HybridTourProduct = {
@@ -215,8 +219,64 @@ export const HYBRID_SEASON_COPY: Record<HybridSeason, { climate: string; tourFil
 };
 
 const ABSOLUTE_IMAGE_FALLBACK = `${PROACTIVITIS_URL}/fototours/fotosimple.jpg`;
+const ROUND_TRIP_DISCOUNT_PERCENT = Number(process.env.NEXT_PUBLIC_ROUND_TRIP_DISCOUNT_PERCENT ?? 5);
+const HYBRID_ROUND_TRIP_MULTIPLIER = 2 * (1 - ROUND_TRIP_DISCOUNT_PERCENT / 100);
+
+const HYBRID_TRANSFER_PRICE_ZONES: Record<string, { originZoneId: string; destinationZoneId: string }> = {
+  "punta-cana": { originZoneId: "PUJ_BAVARO", destinationZoneId: "PUJ_BAVARO" },
+  "santo-domingo": { originZoneId: "SANTO_DOMINGO", destinationZoneId: "SANTO_DOMINGO" },
+  "bayahibe-la-romana": { originZoneId: "PUJ_BAVARO", destinationZoneId: "ROMANA_BAYAHIBE" }
+};
+
+const HYBRID_TRANSFER_VEHICLES: Array<{
+  category: TransferVehicleCategory;
+  vehicleName: string;
+  label: string;
+  description: string;
+  minPax: number;
+  maxPax: number;
+  pax: string;
+}> = [
+  {
+    category: "SEDAN",
+    vehicleName: "Private Sedan",
+    label: "Private sedan round trip",
+    description: "Best for couples or small groups with light luggage.",
+    minPax: 1,
+    maxPax: 3,
+    pax: "1-3"
+  },
+  {
+    category: "VAN",
+    vehicleName: "Private Van",
+    label: "Private van round trip",
+    description: "Balanced option for families and groups with luggage.",
+    minPax: 4,
+    maxPax: 8,
+    pax: "4-8"
+  },
+  {
+    category: "SUV",
+    vehicleName: "Premium SUV",
+    label: "Premium SUV round trip",
+    description: "Premium comfort for travelers who want more space.",
+    minPax: 1,
+    maxPax: 4,
+    pax: "1-4"
+  },
+  {
+    category: "BUS",
+    vehicleName: "Private Minibus",
+    label: "Private minibus round trip",
+    description: "Group option for 9 to 14 travelers, bags and beach gear.",
+    minPax: 9,
+    maxPax: 14,
+    pax: "9-14"
+  }
+];
 
 const safeTitle = (value: string) => value.replace(/\s+/g, " ").trim();
+const toRoundTripPrice = (oneWayPrice: number) => Number((oneWayPrice * HYBRID_ROUND_TRIP_MULTIPLIER).toFixed(2));
 
 export const parseAudienceMonth = (audienceMonth: string) => {
   const match = audienceMonth.match(/^([a-z-]+)-([a-z]+)$/);
@@ -339,6 +399,43 @@ export const getHybridTourProducts = async (landing: HybridLanding): Promise<Hyb
     .slice(0, 6);
 };
 
+export const getHybridTransferOptions = (landing: HybridLanding): HybridTransferOption[] => {
+  const route = HYBRID_TRANSFER_PRICE_ZONES[landing.zone.slug];
+  if (!route) {
+    return landing.zone.transferOptions.map((transfer) => ({
+      ...transfer,
+      oneWayPrice: transfer.price,
+      price: toRoundTripPrice(transfer.price)
+    }));
+  }
+
+  const pricedOptions = HYBRID_TRANSFER_VEHICLES.map((vehicle) => {
+    const oneWayPrice = getTransferPrice(route.originZoneId, route.destinationZoneId, vehicle.category);
+    if (!oneWayPrice) return null;
+
+    return {
+      id: `${landing.zone.slug}-${vehicle.category.toLowerCase()}-roundtrip`,
+      label: vehicle.label,
+      vehicleName: vehicle.vehicleName,
+      description: `${vehicle.description} ${landing.zone.transferCopy}`,
+      oneWayPrice,
+      price: toRoundTripPrice(oneWayPrice),
+      minPax: vehicle.minPax,
+      maxPax: vehicle.maxPax,
+      pax: vehicle.pax,
+      vehicleCategory: vehicle.category
+    } satisfies HybridTransferOption;
+  }).filter(Boolean) as HybridTransferOption[];
+
+  if (pricedOptions.length) return pricedOptions;
+
+  return landing.zone.transferOptions.map((transfer) => ({
+    ...transfer,
+    oneWayPrice: transfer.price,
+    price: toRoundTripPrice(transfer.price)
+  }));
+};
+
 export const buildHybridLandingMetadata = (landing: HybridLanding): Metadata => ({
   title: `${landing.title} | Proactivitis`,
   description: landing.metaDescription,
@@ -398,10 +495,14 @@ const MERCHANT_RETURN_POLICY = {
   returnFees: "https://schema.org/FreeReturn"
 };
 
-export const buildHybridLandingSchema = (landing: HybridLanding, tours: HybridTourProduct[]) => {
+export const buildHybridLandingSchema = (
+  landing: HybridLanding,
+  tours: HybridTourProduct[],
+  transferOptions: HybridTransferOption[] = getHybridTransferOptions(landing)
+) => {
   const priceValidUntil = getPriceValidUntil();
   const toProductPrice = (price: number) => Number(Math.max(0, price).toFixed(2));
-  const transferProducts = landing.zone.transferOptions.map((transfer, index) => ({
+  const transferProducts = transferOptions.map((transfer, index) => ({
     "@type": "Product",
     "@id": `${landing.canonical}#transfer-product-${index + 1}`,
     name: `${transfer.vehicleName} for ${landing.zone.mapName}`,
@@ -456,7 +557,7 @@ export const buildHybridLandingSchema = (landing: HybridLanding, tours: HybridTo
     }
   }));
   const offers = [
-    ...landing.zone.transferOptions.map((transfer, index) => ({
+    ...transferOptions.map((transfer, index) => ({
       "@type": "Offer",
       "@id": `${landing.canonical}#transfer-offer-${index + 1}`,
       name: transfer.label,
