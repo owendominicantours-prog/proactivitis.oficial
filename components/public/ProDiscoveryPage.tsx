@@ -18,7 +18,13 @@ type Props = {
 };
 
 type ItemType = "tour" | "transfer" | "hotel";
-type Destination = "all" | "punta-cana" | "sosua" | "puerto-plata" | "la-romana" | "santo-domingo";
+type Destination =
+  | "all"
+  | "punta-cana"
+  | "sosua"
+  | "puerto-plata"
+  | "la-romana"
+  | "santo-domingo";
 
 type DiscoveryItem = {
   id: string;
@@ -41,7 +47,12 @@ type DiscoveryItem = {
   badges: string[];
 };
 
-function Link({ href, rel, prefetch, ...props }: ComponentProps<typeof NextLink>) {
+function Link({
+  href,
+  rel,
+  prefetch,
+  ...props
+}: ComponentProps<typeof NextLink>) {
   const hrefString =
     typeof href === "string"
       ? href
@@ -49,7 +60,9 @@ function Link({ href, rel, prefetch, ...props }: ComponentProps<typeof NextLink>
         ? `${href.pathname ?? ""}${href.query ? "?" : ""}`
         : "";
   const isProDiscoveryStateUrl = hrefString.includes("/prodiscovery?");
-  const mergedRel = isProDiscoveryStateUrl ? [rel, "nofollow"].filter(Boolean).join(" ") : rel;
+  const mergedRel = isProDiscoveryStateUrl
+    ? [rel, "nofollow"].filter(Boolean).join(" ")
+    : rel;
 
   return (
     <NextLink
@@ -135,10 +148,13 @@ type DiscoveryCopy = {
 const TRUST_BADGES: Record<Locale, string[]> = {
   es: ["Reseñas verificadas", "Reserva segura", "Soporte local real"],
   en: ["Verified reviews", "Secure booking", "Real local support"],
-  fr: ["Avis verifies", "Reservation securisee", "Support local reel"]
+  fr: ["Avis verifies", "Reservation securisee", "Support local reel"],
 };
 
-const getSearchValue = (searchParams: Record<string, string | string[] | undefined>, key: string) => {
+const getSearchValue = (
+  searchParams: Record<string, string | string[] | undefined>,
+  key: string,
+) => {
   const value = searchParams[key];
   if (Array.isArray(value)) return value[0] ?? "";
   return value ?? "";
@@ -155,31 +171,41 @@ const titleFromDestinationValue = (value: string) =>
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 
-const plannerCityFromSearch = (searchParams: Record<string, string | string[] | undefined>) => {
-  const raw = getSearchValue(searchParams, "dest") || getSearchValue(searchParams, "destination") || getSearchValue(searchParams, "q");
+const plannerCityFromSearch = (
+  searchParams: Record<string, string | string[] | undefined>,
+) => {
+  const raw =
+    getSearchValue(searchParams, "dest") ||
+    getSearchValue(searchParams, "destination") ||
+    getSearchValue(searchParams, "q");
   const city = titleFromDestinationValue(raw);
   return city.length >= 2 ? city : undefined;
 };
 
-const shouldShowCatalog = (searchParams: Record<string, string | string[] | undefined>) =>
-  getSearchValue(searchParams, "view").toLowerCase() === "archive";
+const shouldShowCatalog = (
+  searchParams: Record<string, string | string[] | undefined>,
+) => getSearchValue(searchParams, "view").toLowerCase() === "archive";
 
 const COPY: Record<Locale, DiscoveryCopy> = {
   es: {
     title: "ProDiscovery",
-    subtitle: "El espacio de Proactivitis para comparar experiencias, traslados y hoteles antes de reservar.",
+    subtitle:
+      "El espacio de Proactivitis para comparar experiencias, traslados y hoteles antes de reservar.",
     heroEyebrow: "Reviews, rankings y reserva segura",
     heroTitle: "Descubre que reservar con datos reales, no con promesas vacias",
-    heroBody: "Compara tours, traslados y hoteles con resenas verificadas, fotos reales, precios visibles y acceso directo a la reserva.",
+    heroBody:
+      "Compara tours, traslados y hoteles con resenas verificadas, fotos reales, precios visibles y acceso directo a la reserva.",
     heroCtaTours: "Ver mejores tours",
     heroCtaTransfers: "Cotizar traslado",
     heroReviewLabel: "resenas verificadas",
     topPicksTitle: "Lo mejor para reservar ahora",
-    topPicksBody: "Picks destacados por demanda, valor, reseñas y facilidad de reserva.",
+    topPicksBody:
+      "Picks destacados por demanda, valor, reseñas y facilidad de reserva.",
     categoryTitle: "Explora por intencion",
     categoryBody: "Entra directo al tipo de decision que necesitas resolver.",
     decisionTitle: "Por que usar ProDiscovery",
-    decisionBody: "Te ayuda a comparar sin perderte: opiniones reales, precio visible y reserva conectada a Proactivitis.",
+    decisionBody:
+      "Te ayuda a comparar sin perderte: opiniones reales, precio visible y reserva conectada a Proactivitis.",
     listTitle: "Compara todas las opciones",
     searchPlaceholder: "Buscar por tour, hotel, traslado o zona",
     transferSearchPlaceholder: "Buscar por hotel, ruta, aeropuerto o zona",
@@ -198,9 +224,11 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     clear: "Limpiar",
     results: "resultados",
     noResults: "No encontramos resultados con esos filtros",
-    noResultsBody: "Prueba otro termino, cambia destino o baja la puntuacion minima.",
+    noResultsBody:
+      "Prueba otro termino, cambia destino o baja la puntuacion minima.",
     transferPlannerTitle: "Cotiza tu traslado ahora",
-    transferPlannerBody: "Escribe origen y destino reales para reservar el traslado sin salir de Discovery.",
+    transferPlannerBody:
+      "Escribe origen y destino reales para reservar el traslado sin salir de Discovery.",
     from: "Desde",
     reviewsWord: "resenas",
     commentsTitle: "Comentarios de viajeros",
@@ -227,29 +255,37 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     badgePrice: "Mejor precio",
     badgeCertified: "Certificado ProDiscovery",
     faqQ1: "Como comparo tours y traslados en ProDiscovery?",
-    faqA1: "Usa filtros por destino, tipo de servicio, puntuacion y precio para elegir la mejor opcion para tu viaje.",
+    faqA1:
+      "Usa filtros por destino, tipo de servicio, puntuacion y precio para elegir la mejor opcion para tu viaje.",
     faqQ2: "Las resenas son reales?",
-    faqA2: "Mostramos resenas aprobadas de clientes verificadas por nuestro sistema interno.",
+    faqA2:
+      "Mostramos resenas aprobadas de clientes verificadas por nuestro sistema interno.",
     faqQ3: "Puedo reservar en USD?",
-    faqA3: "Si, las tarifas se muestran en USD y el proceso de reserva mantiene ese formato.",
+    faqA3:
+      "Si, las tarifas se muestran en USD y el proceso de reserva mantiene ese formato.",
     rankingHubTitle: "Rankings y hubs Discovery",
-    rankingHubBody: "Explora comparativas rapidas por destino y tipo de servicio."
+    rankingHubBody:
+      "Explora comparativas rapidas por destino y tipo de servicio.",
   },
   en: {
     title: "ProDiscovery",
-    subtitle: "The Proactivitis space to compare experiences, transfers, and hotels before booking.",
+    subtitle:
+      "The Proactivitis space to compare experiences, transfers, and hotels before booking.",
     heroEyebrow: "Reviews, rankings and secure booking",
     heroTitle: "Know what to book with real signals, not empty promises",
-    heroBody: "Compare tours, transfers, and hotels with verified reviews, real photos, visible prices, and direct booking access.",
+    heroBody:
+      "Compare tours, transfers, and hotels with verified reviews, real photos, visible prices, and direct booking access.",
     heroCtaTours: "See best tours",
     heroCtaTransfers: "Quote transfer",
     heroReviewLabel: "verified reviews",
     topPicksTitle: "Best picks to book now",
-    topPicksBody: "Highlighted by demand, value, reviews, and booking simplicity.",
+    topPicksBody:
+      "Highlighted by demand, value, reviews, and booking simplicity.",
     categoryTitle: "Explore by intent",
     categoryBody: "Go straight to the decision you need to solve.",
     decisionTitle: "Why use ProDiscovery",
-    decisionBody: "Compare without getting lost: real reviews, visible pricing, and booking connected to Proactivitis.",
+    decisionBody:
+      "Compare without getting lost: real reviews, visible pricing, and booking connected to Proactivitis.",
     listTitle: "Compare every option",
     searchPlaceholder: "Search by tour, hotel, transfer, or area",
     transferSearchPlaceholder: "Search by hotel, route, airport, or area",
@@ -268,9 +304,11 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     clear: "Clear",
     results: "results",
     noResults: "No matches found for these filters",
-    noResultsBody: "Try another keyword, destination, or lower the minimum rating.",
+    noResultsBody:
+      "Try another keyword, destination, or lower the minimum rating.",
     transferPlannerTitle: "Quote your transfer now",
-    transferPlannerBody: "Pick your real origin and destination to book a transfer directly from Discovery.",
+    transferPlannerBody:
+      "Pick your real origin and destination to book a transfer directly from Discovery.",
     from: "From",
     reviewsWord: "reviews",
     commentsTitle: "Traveler comments",
@@ -297,29 +335,37 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     badgePrice: "Best value",
     badgeCertified: "ProDiscovery certified",
     faqQ1: "How do I compare tours and transfers on ProDiscovery?",
-    faqA1: "Use destination, service type, rating, and price filters to find the best option for your trip.",
+    faqA1:
+      "Use destination, service type, rating, and price filters to find the best option for your trip.",
     faqQ2: "Are the reviews real?",
-    faqA2: "We display approved reviews from verified customers through our internal moderation flow.",
+    faqA2:
+      "We display approved reviews from verified customers through our internal moderation flow.",
     faqQ3: "Can I book in USD?",
-    faqA3: "Yes. Prices are displayed in USD and booking keeps that same currency format.",
+    faqA3:
+      "Yes. Prices are displayed in USD and booking keeps that same currency format.",
     rankingHubTitle: "Discovery rankings and hubs",
-    rankingHubBody: "Explore quick comparison hubs by destination and service type."
+    rankingHubBody:
+      "Explore quick comparison hubs by destination and service type.",
   },
   fr: {
     title: "ProDiscovery",
-    subtitle: "L espace Proactivitis pour comparer excursions, transferts et hotels avant de reserver.",
+    subtitle:
+      "L espace Proactivitis pour comparer excursions, transferts et hotels avant de reserver.",
     heroEyebrow: "Avis, classements et reservation securisee",
     heroTitle: "Decidez quoi reserver avec des signaux reels",
-    heroBody: "Comparez excursions, transferts et hotels avec avis verifies, vraies photos, prix visibles et acces direct a la reservation.",
+    heroBody:
+      "Comparez excursions, transferts et hotels avec avis verifies, vraies photos, prix visibles et acces direct a la reservation.",
     heroCtaTours: "Voir les meilleurs tours",
     heroCtaTransfers: "Calculer un transfert",
     heroReviewLabel: "avis verifies",
     topPicksTitle: "Les meilleurs choix a reserver",
-    topPicksBody: "Selectionnes selon demande, valeur, avis et facilite de reservation.",
+    topPicksBody:
+      "Selectionnes selon demande, valeur, avis et facilite de reservation.",
     categoryTitle: "Explorer par intention",
     categoryBody: "Allez directement a la decision que vous voulez prendre.",
     decisionTitle: "Pourquoi utiliser ProDiscovery",
-    decisionBody: "Comparez sans vous perdre: avis reels, prix visibles et reservation connectee a Proactivitis.",
+    decisionBody:
+      "Comparez sans vous perdre: avis reels, prix visibles et reservation connectee a Proactivitis.",
     listTitle: "Comparer toutes les options",
     searchPlaceholder: "Rechercher tour, hotel, transfert ou zone",
     transferSearchPlaceholder: "Rechercher hotel, trajet, aeroport ou zone",
@@ -338,9 +384,11 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     clear: "Effacer",
     results: "resultats",
     noResults: "Aucun resultat avec ces filtres",
-    noResultsBody: "Essayez un autre mot-cle, destination, ou reduisez la note minimale.",
+    noResultsBody:
+      "Essayez un autre mot-cle, destination, ou reduisez la note minimale.",
     transferPlannerTitle: "Calculez votre transfert maintenant",
-    transferPlannerBody: "Choisissez votre origine et votre destination reelles pour reserver sans quitter Discovery.",
+    transferPlannerBody:
+      "Choisissez votre origine et votre destination reelles pour reserver sans quitter Discovery.",
     from: "A partir de",
     reviewsWord: "avis",
     commentsTitle: "Avis voyageurs",
@@ -367,18 +415,23 @@ const COPY: Record<Locale, DiscoveryCopy> = {
     badgePrice: "Meilleur prix",
     badgeCertified: "Certifie ProDiscovery",
     faqQ1: "Comment comparer excursions et transferts sur ProDiscovery?",
-    faqA1: "Utilisez les filtres par destination, type de service, note et prix pour choisir la meilleure option.",
+    faqA1:
+      "Utilisez les filtres par destination, type de service, note et prix pour choisir la meilleure option.",
     faqQ2: "Les avis sont-ils reels?",
-    faqA2: "Nous affichons des avis approuves de clients verifies via notre moderation interne.",
+    faqA2:
+      "Nous affichons des avis approuves de clients verifies via notre moderation interne.",
     faqQ3: "Puis-je reserver en USD?",
-    faqA3: "Oui. Les tarifs sont affiches en USD et la reservation conserve cette meme devise.",
+    faqA3:
+      "Oui. Les tarifs sont affiches en USD et la reservation conserve cette meme devise.",
     rankingHubTitle: "Classements et hubs Discovery",
-    rankingHubBody: "Explorez des comparatifs rapides par destination et type de service."
-  }
+    rankingHubBody:
+      "Explorez des comparatifs rapides par destination et type de service.",
+  },
 };
 
 const localePrefix = (locale: Locale) => (locale === "es" ? "" : `/${locale}`);
-const firstParam = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) ?? "";
+const firstParam = (value: string | string[] | undefined) =>
+  (Array.isArray(value) ? value[0] : value) ?? "";
 const numberFormatter = new Intl.NumberFormat("es-DO");
 
 const parseGallery = (gallery?: string | null) => {
@@ -391,10 +444,17 @@ const parseGallery = (gallery?: string | null) => {
   }
 };
 
-const firstImage = (primary?: string | null, gallery?: string | null, fallback = "/fototours/fotosimple.jpg") =>
-  primary || parseGallery(gallery)[0] || fallback;
+const firstImage = (
+  primary?: string | null,
+  gallery?: string | null,
+  fallback = "/fototours/fotosimple.jpg",
+) => primary || parseGallery(gallery)[0] || fallback;
 const SCHEMA_COLLAGE_SIZE = 5;
-const TRANSFER_COLLAGE_POOL = ["/transfer/sedan.png", "/transfer/suv.png", "/transfer/mini van.png"];
+const TRANSFER_COLLAGE_POOL = [
+  "/transfer/sedan.png",
+  "/transfer/suv.png",
+  "/transfer/mini van.png",
+];
 
 const uniqueImages = (images: Array<string | null | undefined>) =>
   Array.from(new Set(images.filter((img): img is string => Boolean(img))));
@@ -402,7 +462,7 @@ const uniqueImages = (images: Array<string | null | undefined>) =>
 const buildSchemaImageCollage = (
   preferred: Array<string | null | undefined>,
   fallbackPool: string[] = ["/fototours/fotosimple.jpg"],
-  desiredCount: number = SCHEMA_COLLAGE_SIZE
+  desiredCount: number = SCHEMA_COLLAGE_SIZE,
 ) => {
   const merged = uniqueImages([...preferred, ...fallbackPool]);
   if (merged.length >= desiredCount) return merged.slice(0, desiredCount);
@@ -421,41 +481,70 @@ const detectDestination = (value: string): Destination => {
   const text = value.toLowerCase();
   if (text.includes("sosua")) return "sosua";
   if (text.includes("puerto plata")) return "puerto-plata";
-  if (text.includes("la romana") || text.includes("bayahibe") || text.includes("dominicus")) return "la-romana";
+  if (
+    text.includes("la romana") ||
+    text.includes("bayahibe") ||
+    text.includes("dominicus")
+  )
+    return "la-romana";
   if (text.includes("santo domingo")) return "santo-domingo";
-  if (text.includes("punta cana") || text.includes("bavaro") || text.includes("cap cana")) return "punta-cana";
+  if (
+    text.includes("punta cana") ||
+    text.includes("bavaro") ||
+    text.includes("cap cana")
+  )
+    return "punta-cana";
   return "all";
 };
 
-const toHotelHref = (locale: Locale, slug: string) => (locale === "es" ? `/hoteles/${slug}` : `/${locale}/hotels/${slug}`);
-const toTourHref = (locale: Locale, slug: string) => `${localePrefix(locale)}/prodiscovery/tour/${slug}`;
-const toTransferHref = (locale: Locale, slug: string) => `${localePrefix(locale)}/prodiscovery/transfer/${slug}`;
+const toHotelHref = (locale: Locale, slug: string) =>
+  locale === "es" ? `/hoteles/${slug}` : `/${locale}/hotels/${slug}`;
+const toTourHref = (locale: Locale, slug: string) =>
+  `${localePrefix(locale)}/prodiscovery/tour/${slug}`;
+const toTransferHref = (locale: Locale, slug: string) =>
+  `${localePrefix(locale)}/prodiscovery/transfer/${slug}`;
 const toMapHref = (item: DiscoveryItem) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${item.title} ${item.destination.replace("-", " ")}`)}`;
 const toAbsoluteUrl = (path: string) =>
-  path.startsWith("http") ? path : `${PROACTIVITIS_URL}${path.startsWith("/") ? path : `/${path}`}`;
-const humanizeTransferSlug = (value: string) => value.replace(/-/g, " ").replace(/\s+/g, " ").trim();
-const TOP_HUBS: Array<{ destination: Destination; category: "tours" | "transfers" }> = [
+  path.startsWith("http")
+    ? path
+    : `${PROACTIVITIS_URL}${path.startsWith("/") ? path : `/${path}`}`;
+const humanizeTransferSlug = (value: string) =>
+  value.replace(/-/g, " ").replace(/\s+/g, " ").trim();
+const TOP_HUBS: Array<{
+  destination: Destination;
+  category: "tours" | "transfers";
+}> = [
   { destination: "punta-cana", category: "tours" },
   { destination: "punta-cana", category: "transfers" },
   { destination: "la-romana", category: "tours" },
   { destination: "sosua", category: "tours" },
-  { destination: "puerto-plata", category: "transfers" }
+  { destination: "puerto-plata", category: "transfers" },
 ];
 
 function BubbleRating({ rating, label }: { rating: number; label: string }) {
   return (
-    <div className="inline-flex items-center gap-1.5" aria-label={`${label}: ${rating.toFixed(1)}/5`}>
+    <div
+      className="inline-flex items-center gap-1.5"
+      aria-label={`${label}: ${rating.toFixed(1)}/5`}
+    >
       {Array.from({ length: 5 }).map((_, idx) => {
         const n = idx + 1;
         const filled = rating >= n;
         const partial = !filled && rating > idx && rating < n;
-        const percent = partial ? Math.max(10, Math.min(90, (rating - idx) * 100)) : 0;
+        const percent = partial
+          ? Math.max(10, Math.min(90, (rating - idx) * 100))
+          : 0;
         return (
-          <span key={n} className="relative h-4 w-4 rounded-full border border-emerald-700/50 bg-emerald-50">
+          <span
+            key={n}
+            className="relative h-4 w-4 rounded-full border border-emerald-700/50 bg-emerald-50"
+          >
             <span
               className="absolute inset-0 rounded-full bg-emerald-600"
-              style={{ width: filled ? "100%" : partial ? `${percent}%` : "0%" }}
+              style={{
+                width: filled ? "100%" : partial ? `${percent}%` : "0%",
+              }}
             />
           </span>
         );
@@ -466,7 +555,12 @@ function BubbleRating({ rating, label }: { rating: number; label: string }) {
 
 export default async function ProDiscoveryPage(props: Props) {
   if (!shouldShowCatalog(props.searchParams ?? {})) {
-    return <ProDiscoveryPlannerPage locale={props.locale} initialCity={plannerCityFromSearch(props.searchParams ?? {})} />;
+    return (
+      <ProDiscoveryPlannerPage
+        locale={props.locale}
+        initialCity={plannerCityFromSearch(props.searchParams ?? {})}
+      />
+    );
   }
 
   return <ProDiscoveryCatalogPage {...props} />;
@@ -474,8 +568,10 @@ export default async function ProDiscoveryPage(props: Props) {
 
 async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
   const t = normalizeTextDeep(COPY[locale]);
-  const typeFilter = (firstParam(searchParams.type) || "all") as "all" | ItemType;
-  const destinationFilter = (firstParam(searchParams.destination) || "all") as Destination;
+  const typeFilter = (firstParam(searchParams.type) || "all") as
+    "all" | ItemType;
+  const destinationFilter = (firstParam(searchParams.destination) ||
+    "all") as Destination;
   const q = firstParam(searchParams.q).trim();
   const minRating = Number(firstParam(searchParams.minRating) || "0");
   const sort = firstParam(searchParams.sort) || "recommended";
@@ -486,13 +582,20 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
       compareRaw
         .split(",")
         .map((value) => value.trim())
-        .filter(Boolean)
-    )
+        .filter(Boolean),
+    ),
   ).slice(0, 3);
 
   const priceValidUntil = getPriceValidUntil();
 
-  const [tours, transferRatings, transferLocations, hotels, latestTourReviews, latestTransferReviews] = await Promise.all([
+  const [
+    tours,
+    transferRatings,
+    transferLocations,
+    hotels,
+    latestTourReviews,
+    latestTransferReviews,
+  ] = await Promise.all([
     prisma.tour.findMany({
       where: { status: { in: ["published", "seo_only"] } },
       select: {
@@ -509,14 +612,17 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
         heroImage: true,
         gallery: true,
         createdAt: true,
-        translations: { where: { locale }, select: { title: true, shortDescription: true, description: true } }
-      }
+        translations: {
+          where: { locale },
+          select: { title: true, shortDescription: true, description: true },
+        },
+      },
     }),
     prisma.transferReview.groupBy({
       by: ["transferLandingSlug"],
       where: { status: "APPROVED", transferLandingSlug: { not: null } },
       _avg: { rating: true },
-      _count: { rating: true }
+      _count: { rating: true },
     }),
     prisma.transferLocation.findMany({
       where: { active: true },
@@ -525,9 +631,9 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
         name: true,
         slug: true,
         type: true,
-        zone: { select: { name: true } }
+        zone: { select: { name: true } },
       },
-      take: 1200
+      take: 1200,
     }),
     prisma.transferLocation.findMany({
       where: { active: true, type: "HOTEL" },
@@ -536,22 +642,34 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
         name: true,
         description: true,
         heroImage: true,
-        zone: { select: { name: true } }
+        zone: { select: { name: true } },
       },
-      take: 400
+      take: 400,
     }),
     prisma.tourReview.findMany({
       where: { status: "APPROVED" },
       orderBy: { createdAt: "desc" },
-      select: { id: true, customerName: true, rating: true, body: true, createdAt: true },
-      take: 80
+      select: {
+        id: true,
+        customerName: true,
+        rating: true,
+        body: true,
+        createdAt: true,
+      },
+      take: 80,
     }),
     prisma.transferReview.findMany({
       where: { status: "APPROVED" },
       orderBy: { createdAt: "desc" },
-      select: { id: true, customerName: true, rating: true, body: true, createdAt: true },
-      take: 80
-    })
+      select: {
+        id: true,
+        customerName: true,
+        rating: true,
+        body: true,
+        createdAt: true,
+      },
+      take: 80,
+    }),
   ]);
 
   const transferBySlug = new Map(
@@ -561,23 +679,45 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
         row.transferLandingSlug as string,
         {
           rating: round1(Number(row._avg.rating ?? 0)),
-          reviews: row._count.rating
-        }
-      ])
+          reviews: row._count.rating,
+        },
+      ]),
   );
 
-  const tourSummary = await getTourReviewSummaryForTours(tours.map((tour) => tour.id));
+  const tourSummary = await getTourReviewSummaryForTours(
+    tours.map((tour) => tour.id),
+  );
   const transferLandings = allLandings();
 
   const tourItems: DiscoveryItem[] = tours.map((tour) => {
     const tr = tour.translations[0];
     const ratingData = tourSummary[tour.id] ?? { average: 0, count: 0 };
     const title = normalizeDisplayText(tr?.title || tour.title);
-    const description = normalizeDisplayText(tr?.shortDescription || tr?.description || tour.shortDescription || tour.description || "");
+    const description = normalizeDisplayText(
+      tr?.shortDescription ||
+        tr?.description ||
+        tour.shortDescription ||
+        tour.description ||
+        "",
+    );
     const gallery = parseGallery(tour.gallery);
-    const durationLabel = formatDurationDisplay(tour.duration, locale === "fr" ? "Duree variable" : locale === "en" ? "Flexible duration" : "Duracion variable");
-    const languageLabel = (tour.language || "").split(",").map((item) => item.trim()).filter(Boolean).slice(0, 2).join(", ");
-    const pickupIncluded = tour.includes?.toLowerCase().includes("pickup") || tour.includes?.toLowerCase().includes("recogida");
+    const durationLabel = formatDurationDisplay(
+      tour.duration,
+      locale === "fr"
+        ? "Duree variable"
+        : locale === "en"
+          ? "Flexible duration"
+          : "Duracion variable",
+    );
+    const languageLabel = (tour.language || "")
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 2)
+      .join(", ");
+    const pickupIncluded =
+      tour.includes?.toLowerCase().includes("pickup") ||
+      tour.includes?.toLowerCase().includes("recogida");
     return {
       id: `tour-${tour.id}`,
       type: "tour",
@@ -586,7 +726,12 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
       metaLine: `${durationLabel}${languageLabel ? ` · ${languageLabel}` : ""}`,
       decisionHighlights: [
         durationLabel,
-        languageLabel || (locale === "fr" ? "Langues confirmees" : locale === "en" ? "Confirmed languages" : "Idiomas confirmados"),
+        languageLabel ||
+          (locale === "fr"
+            ? "Langues confirmees"
+            : locale === "en"
+              ? "Confirmed languages"
+              : "Idiomas confirmados"),
         pickupIncluded
           ? locale === "fr"
             ? "Pickup disponible"
@@ -597,87 +742,136 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
             ? "Confirmation rapide"
             : locale === "en"
               ? "Fast confirmation"
-              : "Confirmacion rapida"
+              : "Confirmacion rapida",
       ],
-      bookingLabel: locale === "fr" ? "Reservation directe" : locale === "en" ? "Direct booking" : "Reserva directa",
-      trustLabel: locale === "fr" ? "Operado por Proactivitis" : locale === "en" ? "Operated by Proactivitis" : "Operado por Proactivitis",
+      bookingLabel:
+        locale === "fr"
+          ? "Reservation directe"
+          : locale === "en"
+            ? "Direct booking"
+            : "Reserva directa",
+      trustLabel:
+        locale === "fr"
+          ? "Operado por Proactivitis"
+          : locale === "en"
+            ? "Operated by Proactivitis"
+            : "Operado por Proactivitis",
       image: firstImage(tour.heroImage, tour.gallery),
-      schemaImages: buildSchemaImageCollage([tour.heroImage, ...gallery], ["/fototours/fotosimple.jpg"]),
+      schemaImages: buildSchemaImageCollage(
+        [tour.heroImage, ...gallery],
+        ["/fototours/fotosimple.jpg"],
+      ),
       rating: round1(ratingData.average || 0),
       reviews: ratingData.count || 0,
       price: Math.round(tour.price),
       destination: detectDestination(tour.location || title),
       href: toTourHref(locale, tour.slug),
       tag: "Tour",
-      badges: []
+      badges: [],
     };
   });
 
   const transferItems: DiscoveryItem[] = transferLandings.map((landing) => {
-    const ratingData = transferBySlug.get(landing.landingSlug) ?? { rating: 0, reviews: 0 };
+    const ratingData = transferBySlug.get(landing.landingSlug) ?? {
+      rating: 0,
+      reviews: 0,
+    };
     const routeLabel = humanizeTransferSlug(landing.landingSlug);
     const detailsText = landing.priceDetails.join(" ");
     return {
       id: `transfer-${landing.landingSlug}`,
       type: "transfer",
       title: normalizeDisplayText(landing.heroTitle),
-      description: normalizeDisplayText(landing.heroSubtitle || landing.metaDescription),
+      description: normalizeDisplayText(
+        landing.heroSubtitle || landing.metaDescription,
+      ),
       searchText: `${landing.heroTitle} ${landing.heroSubtitle || ""} ${landing.metaDescription || ""} ${landing.hotelName} ${landing.landingSlug} ${routeLabel} ${detailsText}`,
       metaLine: `${normalizeDisplayText(landing.hotelName)} · ${locale === "fr" ? "Service privé" : locale === "en" ? "Private service" : "Servicio privado"}`,
       decisionHighlights: [
         normalizeDisplayText(landing.hotelName),
-        locale === "fr" ? "Suivi de vol" : locale === "en" ? "Flight tracking" : "Seguimiento de vuelo",
-        locale === "fr" ? "Porte a porte" : locale === "en" ? "Door to door" : "Puerta a puerta"
+        locale === "fr"
+          ? "Suivi de vol"
+          : locale === "en"
+            ? "Flight tracking"
+            : "Seguimiento de vuelo",
+        locale === "fr"
+          ? "Porte a porte"
+          : locale === "en"
+            ? "Door to door"
+            : "Puerta a puerta",
       ],
-      bookingLabel: locale === "fr" ? "Reservation immediate" : locale === "en" ? "Instant booking" : "Reserva inmediata",
-      trustLabel: locale === "fr" ? "Tarif fixe sans surprises" : locale === "en" ? "Clear fixed rate" : "Tarifa fija sin sorpresas",
+      bookingLabel:
+        locale === "fr"
+          ? "Reservation immediate"
+          : locale === "en"
+            ? "Instant booking"
+            : "Reserva inmediata",
+      trustLabel:
+        locale === "fr"
+          ? "Tarif fixe sans surprises"
+          : locale === "en"
+            ? "Clear fixed rate"
+            : "Tarifa fija sin sorpresas",
       image: landing.heroImage || "/transfer/sedan.png",
-      schemaImages: buildSchemaImageCollage([landing.heroImage], TRANSFER_COLLAGE_POOL),
+      schemaImages: buildSchemaImageCollage(
+        [landing.heroImage],
+        TRANSFER_COLLAGE_POOL,
+      ),
       rating: ratingData.rating,
       reviews: ratingData.reviews,
       price: Math.round(landing.priceFrom),
-      destination: detectDestination(`${landing.heroTitle} ${landing.hotelName}`),
+      destination: detectDestination(
+        `${landing.heroTitle} ${landing.hotelName}`,
+      ),
       href: toTransferHref(locale, landing.landingSlug),
       tag: "Transfer",
-      badges: []
+      badges: [],
     };
   });
 
-  const transferLocationItems: DiscoveryItem[] = transferLocations.map((location) => {
-    const zoneName = location.zone?.name ?? "";
-    const title =
-      locale === "fr"
-        ? `Transferts vers ${location.name}`
-        : locale === "en"
-          ? `Transfers to ${location.name}`
-          : `Traslados hacia ${location.name}`;
-    const description =
-      locale === "fr"
-        ? `Planifiez un transfert prive vers ${location.name}${zoneName ? `, zone ${zoneName}` : ""}. Choisissez l origine et la destination pour voir le prix final.`
-        : locale === "en"
-          ? `Plan a private transfer to ${location.name}${zoneName ? ` in ${zoneName}` : ""}. Choose origin and destination to get the final rate.`
-          : `Planifica un traslado privado hacia ${location.name}${zoneName ? `, zona ${zoneName}` : ""}. Elige origen y destino para ver la tarifa final.`;
-    return {
-      id: `transfer-location-${location.id}`,
-      type: "transfer",
-      title: normalizeDisplayText(title),
-      description: normalizeDisplayText(description),
-      searchText: `${location.name} ${location.slug} ${zoneName} ${location.type} transfer traslado airport hotel route destination origin`,
-      image: "/transfer/suv.png",
-      schemaImages: buildSchemaImageCollage(["/transfer/suv.png"], TRANSFER_COLLAGE_POOL),
-      rating: 0,
-      reviews: 0,
-      price: null,
-      destination: detectDestination(`${location.name} ${zoneName}`),
-      href: `${localePrefix(locale)}/traslado`,
-      tag: "Transfer",
-      badges: []
-    };
-  });
+  const transferLocationItems: DiscoveryItem[] = transferLocations.map(
+    (location) => {
+      const zoneName = location.zone?.name ?? "";
+      const title =
+        locale === "fr"
+          ? `Transferts vers ${location.name}`
+          : locale === "en"
+            ? `Transfers to ${location.name}`
+            : `Traslados hacia ${location.name}`;
+      const description =
+        locale === "fr"
+          ? `Planifiez un transfert prive vers ${location.name}${zoneName ? `, zone ${zoneName}` : ""}. Choisissez l origine et la destination pour voir le prix final.`
+          : locale === "en"
+            ? `Plan a private transfer to ${location.name}${zoneName ? ` in ${zoneName}` : ""}. Choose origin and destination to get the final rate.`
+            : `Planifica un traslado privado hacia ${location.name}${zoneName ? `, zona ${zoneName}` : ""}. Elige origen y destino para ver la tarifa final.`;
+      return {
+        id: `transfer-location-${location.id}`,
+        type: "transfer",
+        title: normalizeDisplayText(title),
+        description: normalizeDisplayText(description),
+        searchText: `${location.name} ${location.slug} ${zoneName} ${location.type} transfer traslado airport hotel route destination origin`,
+        image: "/transfer/suv.png",
+        schemaImages: buildSchemaImageCollage(
+          ["/transfer/suv.png"],
+          TRANSFER_COLLAGE_POOL,
+        ),
+        rating: 0,
+        reviews: 0,
+        price: null,
+        destination: detectDestination(`${location.name} ${zoneName}`),
+        href: `${localePrefix(locale)}/traslado`,
+        tag: "Transfer",
+        badges: [],
+      };
+    },
+  );
 
   const hotelItems: DiscoveryItem[] = hotels.map((hotel) => {
     const candidates = transferLandings.filter(
-      (l) => l.hotelSlug === hotel.slug || l.landingSlug.includes(hotel.slug) || hotel.slug.includes(l.hotelSlug)
+      (l) =>
+        l.hotelSlug === hotel.slug ||
+        l.landingSlug.includes(hotel.slug) ||
+        hotel.slug.includes(l.hotelSlug),
     );
     const bestTransfer = candidates
       .map((l) => ({ landing: l, data: transferBySlug.get(l.landingSlug) }))
@@ -689,46 +883,89 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
       id: `hotel-${hotel.slug}`,
       type: "hotel",
       title: normalizeDisplayText(hotel.name),
-      description: normalizeDisplayText(hotel.description || `${hotel.name} in Punta Cana`).slice(0, 160),
-      metaLine: zoneName || (locale === "fr" ? "Zone hôtelière" : locale === "en" ? "Hotel zone" : "Zona hotelera"),
+      description: normalizeDisplayText(
+        hotel.description || `${hotel.name} in Punta Cana`,
+      ).slice(0, 160),
+      metaLine:
+        zoneName ||
+        (locale === "fr"
+          ? "Zone hôtelière"
+          : locale === "en"
+            ? "Hotel zone"
+            : "Zona hotelera"),
       decisionHighlights: [
         zoneName || "Punta Cana",
-        locale === "fr" ? "Acces aux transferts" : locale === "en" ? "Transfer access" : "Acceso a traslados",
-        locale === "fr" ? "Vendu via Proactivitis" : locale === "en" ? "Sold via Proactivitis" : "Vendido por Proactivitis"
+        locale === "fr"
+          ? "Acces aux transferts"
+          : locale === "en"
+            ? "Transfer access"
+            : "Acceso a traslados",
+        locale === "fr"
+          ? "Vendu via Proactivitis"
+          : locale === "en"
+            ? "Sold via Proactivitis"
+            : "Vendido por Proactivitis",
       ],
-      bookingLabel: locale === "fr" ? "Voir options" : locale === "en" ? "View options" : "Ver opciones",
-      trustLabel: locale === "fr" ? "Cross-sell hotel + transfert" : locale === "en" ? "Hotel + transfer cross-sell" : "Hotel + traslado",
+      bookingLabel:
+        locale === "fr"
+          ? "Voir options"
+          : locale === "en"
+            ? "View options"
+            : "Ver opciones",
+      trustLabel:
+        locale === "fr"
+          ? "Cross-sell hotel + transfert"
+          : locale === "en"
+            ? "Hotel + transfer cross-sell"
+            : "Hotel + traslado",
       image: hotel.heroImage || "/fototours/fotosimple.jpg",
-      schemaImages: buildSchemaImageCollage([hotel.heroImage], ["/fototours/fotosimple.jpg"]),
+      schemaImages: buildSchemaImageCollage(
+        [hotel.heroImage],
+        ["/fototours/fotosimple.jpg"],
+      ),
       rating,
       reviews,
       price: null,
       destination: detectDestination(`${hotel.zone?.name || ""} ${hotel.name}`),
       href: toHotelHref(locale, hotel.slug),
       tag: "Hotel",
-      badges: []
+      badges: [],
     };
   });
 
-  const allItemsRaw = [...tourItems, ...transferItems, ...transferLocationItems, ...hotelItems];
+  const allItemsRaw = [
+    ...tourItems,
+    ...transferItems,
+    ...transferLocationItems,
+    ...hotelItems,
+  ];
   const maxReviewsAll = Math.max(1, ...allItemsRaw.map((item) => item.reviews));
-  const buildBadges = (reviews: number, rating: number, price: number | null) => {
+  const buildBadges = (
+    reviews: number,
+    rating: number,
+    price: number | null,
+  ) => {
     const badges: string[] = [];
-    if (reviews >= Math.max(30, Math.round(maxReviewsAll * 0.7))) badges.push(t.badgeTop);
+    if (reviews >= Math.max(30, Math.round(maxReviewsAll * 0.7)))
+      badges.push(t.badgeTop);
     if (price !== null && price <= 60) badges.push(t.badgePrice);
     if (rating >= 4.7 && reviews >= 8) badges.push(t.badgeCertified);
     return badges.slice(0, 2);
   };
   const allItems = allItemsRaw.map((item) => ({
     ...item,
-    badges: buildBadges(item.reviews, item.rating, item.price)
+    badges: buildBadges(item.reviews, item.rating, item.price),
   }));
   const queryLower = q.toLowerCase();
   const filtered = allItems.filter((item) => {
     const typeOk = typeFilter === "all" || item.type === typeFilter;
-    const destinationOk = destinationFilter === "all" || item.destination === destinationFilter;
-    const ratingOk = !Number.isFinite(minRating) || minRating <= 0 || item.rating >= minRating;
-    const searchBase = item.searchText || `${item.title} ${item.description} ${item.destination.replace("-", " ")}`;
+    const destinationOk =
+      destinationFilter === "all" || item.destination === destinationFilter;
+    const ratingOk =
+      !Number.isFinite(minRating) || minRating <= 0 || item.rating >= minRating;
+    const searchBase =
+      item.searchText ||
+      `${item.title} ${item.description} ${item.destination.replace("-", " ")}`;
     const qOk =
       !q ||
       searchBase.toLowerCase().includes(queryLower) ||
@@ -738,13 +975,22 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
 
   const scored = filtered
     .map((item) => {
-      const score = item.rating * 8 + Math.min(item.reviews, 400) / 22 + (item.price ? Math.max(0, 10 - item.price / 25) : 2);
+      const score =
+        item.rating * 8 +
+        Math.min(item.reviews, 400) / 22 +
+        (item.price ? Math.max(0, 10 - item.price / 25) : 2);
       return { ...item, score };
     })
     .sort((a, b) => {
-      if (sort === "rating") return b.rating - a.rating || b.reviews - a.reviews;
-      if (sort === "reviews") return b.reviews - a.reviews || b.rating - a.rating;
-      if (sort === "price-low") return (a.price ?? Number.POSITIVE_INFINITY) - (b.price ?? Number.POSITIVE_INFINITY);
+      if (sort === "rating")
+        return b.rating - a.rating || b.reviews - a.reviews;
+      if (sort === "reviews")
+        return b.reviews - a.reviews || b.rating - a.rating;
+      if (sort === "price-low")
+        return (
+          (a.price ?? Number.POSITIVE_INFINITY) -
+          (b.price ?? Number.POSITIVE_INFINITY)
+        );
       if (sort === "price-high") return (b.price ?? 0) - (a.price ?? 0);
       return b.score - a.score;
     });
@@ -768,7 +1014,7 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
       destination: Destination;
       minRating: number;
       sort: string;
-    }>
+    }>,
   ) => {
     const params = new URLSearchParams();
     const nextQ = overrides?.q ?? q;
@@ -779,24 +1025,36 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
     if (nextQ) params.set("q", nextQ);
     if (nextType !== "all") params.set("type", nextType);
     if (nextDestination !== "all") params.set("destination", nextDestination);
-    if (Number.isFinite(nextMinRating) && nextMinRating > 0) params.set("minRating", String(nextMinRating));
+    if (Number.isFinite(nextMinRating) && nextMinRating > 0)
+      params.set("minRating", String(nextMinRating));
     if (nextSort !== "recommended") params.set("sort", nextSort);
     if (targetPage && targetPage > 1) params.set("page", String(targetPage));
     const compareList = compareOverride ?? [];
     if (compareList.length > 0) params.set("compare", compareList.join(","));
     const qs = params.toString();
-    return qs ? `${localePrefix(locale)}/prodiscovery?${qs}` : `${localePrefix(locale)}/prodiscovery`;
+    return qs
+      ? `${localePrefix(locale)}/prodiscovery?${qs}`
+      : `${localePrefix(locale)}/prodiscovery`;
   };
 
   const editorialItems = allItems
     .map((item) => ({
       ...item,
-      discoveryScore: item.rating * 8 + Math.min(item.reviews, 400) / 22 + (item.price ? Math.max(0, 10 - item.price / 25) : 2)
+      discoveryScore:
+        item.rating * 8 +
+        Math.min(item.reviews, 400) / 22 +
+        (item.price ? Math.max(0, 10 - item.price / 25) : 2),
     }))
     .sort((a, b) => b.discoveryScore - a.discoveryScore);
-  const heroItem = editorialItems.find((item) => item.type === "tour") ?? editorialItems[0];
-  const topPicks = editorialItems.filter((item) => item.type !== "hotel").slice(0, 4);
-  const totalApprovedReviews = allItems.reduce((sum, item) => sum + item.reviews, 0);
+  const heroItem =
+    editorialItems.find((item) => item.type === "tour") ?? editorialItems[0];
+  const topPicks = editorialItems
+    .filter((item) => item.type !== "hotel")
+    .slice(0, 4);
+  const totalApprovedReviews = allItems.reduce(
+    (sum, item) => sum + item.reviews,
+    0,
+  );
   const categoryCards = [
     {
       key: "tour",
@@ -809,7 +1067,7 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
             : "Experiencias con fotos, resenas y reserva directa.",
       href: makeHref(1, compareIds, { type: "tour" }),
       count: tourItems.length,
-      image: editorialItems.find((item) => item.type === "tour")?.image
+      image: editorialItems.find((item) => item.type === "tour")?.image,
     },
     {
       key: "transfer",
@@ -822,7 +1080,7 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
             : "Rutas privadas con tarifa clara y soporte local.",
       href: makeHref(1, compareIds, { type: "transfer" }),
       count: transferItems.length + transferLocationItems.length,
-      image: editorialItems.find((item) => item.type === "transfer")?.image
+      image: editorialItems.find((item) => item.type === "transfer")?.image,
     },
     {
       key: "hotel",
@@ -835,16 +1093,22 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
             : "Hoteles conectados con traslados y actividades cercanas.",
       href: makeHref(1, compareIds, { type: "hotel" }),
       count: hotelItems.length,
-      image: editorialItems.find((item) => item.type === "hotel")?.image
-    }
+      image: editorialItems.find((item) => item.type === "hotel")?.image,
+    },
   ];
 
   const byId = new Map(allItems.map((item) => [item.id, item]));
-  const selectedCompare = compareIds.map((id) => byId.get(id)).filter(Boolean) as DiscoveryItem[];
+  const selectedCompare = compareIds
+    .map((id) => byId.get(id))
+    .filter(Boolean) as DiscoveryItem[];
 
   const getToggleCompareHref = (itemId: string) => {
     const isSelected = compareIds.includes(itemId);
-    if (isSelected) return makeHref(currentPage, compareIds.filter((id) => id !== itemId));
+    if (isSelected)
+      return makeHref(
+        currentPage,
+        compareIds.filter((id) => id !== itemId),
+      );
     if (compareIds.length >= 3) return makeHref(currentPage, compareIds);
     return makeHref(currentPage, [...compareIds, itemId]);
   };
@@ -854,40 +1118,50 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
       ? {
           key: "q",
           label: `"${q}"`,
-          href: makeHref(1, compareIds, { q: "" })
+          href: makeHref(1, compareIds, { q: "" }),
         }
       : null,
     typeFilter !== "all"
       ? {
           key: "type",
           label: `${t.filterAll}: ${typeFilter}`,
-          href: makeHref(1, compareIds, { type: "all" })
+          href: makeHref(1, compareIds, { type: "all" }),
         }
       : null,
     destinationFilter !== "all"
       ? {
           key: "destination",
           label: `${t.destinationLabel}: ${destinationFilter.replace("-", " ")}`,
-          href: makeHref(1, compareIds, { destination: "all" })
+          href: makeHref(1, compareIds, { destination: "all" }),
         }
       : null,
     Number.isFinite(minRating) && minRating > 0
       ? {
           key: "minRating",
           label: `${t.minRatingLabel}: ${minRating}+`,
-          href: makeHref(1, compareIds, { minRating: 0 })
+          href: makeHref(1, compareIds, { minRating: 0 }),
         }
       : null,
     sort !== "recommended"
       ? {
           key: "sort",
           label: `${t.sortLabel}: ${sort}`,
-          href: makeHref(1, compareIds, { sort: "recommended" })
+          href: makeHref(1, compareIds, { sort: "recommended" }),
         }
-      : null
+      : null,
   ].filter(Boolean) as Array<{ key: string; label: string; href: string }>;
-  const transferQuickSearches = ["PUJ", "Cap Cana", "Bavaro", "Uvero Alto", "Bayahibe", "Sosua"];
-  const searchPlaceholder = typeFilter === "transfer" ? t.transferSearchPlaceholder : t.searchPlaceholder;
+  const transferQuickSearches = [
+    "PUJ",
+    "Cap Cana",
+    "Bavaro",
+    "Uvero Alto",
+    "Bayahibe",
+    "Sosua",
+  ];
+  const searchPlaceholder =
+    typeFilter === "transfer"
+      ? t.transferSearchPlaceholder
+      : t.searchPlaceholder;
   const rankingLinks = TOP_HUBS.map((hub) => {
     const href = `${localePrefix(locale)}/prodiscovery/top/${hub.destination}/${hub.category}`;
     const label =
@@ -900,7 +1174,8 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
   });
 
   const pageUrl = `${PROACTIVITIS_URL}${makeHref()}`;
-  const localeName = locale === "es" ? "es-DO" : locale === "fr" ? "fr-FR" : "en-US";
+  const localeName =
+    locale === "es" ? "es-DO" : locale === "fr" ? "fr-FR" : "en-US";
   const keywordDescription =
     locale === "es"
       ? "Tours en Punta Cana, party boat en Sosua, excursiones en Republica Dominicana, traslados privados aeropuerto PUJ, hoteles y transporte premium con resenas reales."
@@ -912,93 +1187,102 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
     new Map(
       allItems
         .filter((item) => item.type === "tour" || item.type === "transfer")
-        .map((item) => [item.href, item])
-    ).values()
+        .map((item) => [item.href, item]),
+    ).values(),
   );
 
-  const schemaProducts = uniqueSchemaItems
-    .map((item, index) => {
-      const fallbackComment = comments[index % Math.max(comments.length, 1)];
-      const reviewBody = fallbackComment?.body || "Great booking experience, clear details and reliable service.";
-      const reviewRatingValue = Number(
-        (item.rating > 0 ? item.rating : fallbackComment?.rating || 5).toFixed(1)
-      );
-      const reviewCountValue = item.reviews > 0 ? item.reviews : 1;
+  const schemaProducts = uniqueSchemaItems.map((item, index) => {
+    const fallbackComment = comments[index % Math.max(comments.length, 1)];
+    const reviewBody =
+      fallbackComment?.body ||
+      "Great booking experience, clear details and reliable service.";
+    const reviewRatingValue = Number(
+      (item.rating > 0 ? item.rating : fallbackComment?.rating || 5).toFixed(1),
+    );
+    const reviewCountValue = item.reviews > 0 ? item.reviews : 1;
 
-      return {
-        "@type": "ListItem",
-        position: index + 1,
-        item: {
-          "@type": "Product",
-          name: item.title,
-          description: item.description,
-          image: (item.schemaImages?.length ? item.schemaImages : [item.image]).map((img) => toAbsoluteUrl(img)),
-          url: toAbsoluteUrl(item.href),
-          brand: {
-            "@type": "Brand",
-            name: "ProDiscovery"
-          },
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: reviewRatingValue,
-            reviewCount: reviewCountValue
-          },
-          ...(item.price
-            ? {
-                offers: {
-                  "@type": "Offer",
-                  priceCurrency: "USD",
-                  price: item.price,
-                  priceValidUntil,
-                  availability: "https://schema.org/InStock",
-                  url: toAbsoluteUrl(item.href),
-                  shippingDetails: {
-                    "@type": "OfferShippingDetails",
-                    shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USD" },
-                    shippingDestination: {
-                      "@type": "DefinedRegion",
-                      addressCountry: "DO"
-                    },
-        deliveryTime: {
-          "@type": "ShippingDeliveryTime",
-          handlingTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d"
-          },
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d"
-          }
-        }
+    return {
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Product",
+        name: item.title,
+        description: item.description,
+        image: (item.schemaImages?.length
+          ? item.schemaImages
+          : [item.image]
+        ).map((img) => toAbsoluteUrl(img)),
+        url: toAbsoluteUrl(item.href),
+        brand: {
+          "@type": "Brand",
+          name: "ProDiscovery",
+        },
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: reviewRatingValue,
+          reviewCount: reviewCountValue,
+        },
+        ...(item.price
+          ? {
+              offers: {
+                "@type": "Offer",
+                priceCurrency: "USD",
+                price: item.price,
+                priceValidUntil,
+                availability: "https://schema.org/InStock",
+                url: toAbsoluteUrl(item.href),
+                shippingDetails: {
+                  "@type": "OfferShippingDetails",
+                  shippingRate: {
+                    "@type": "MonetaryAmount",
+                    value: 0,
+                    currency: "USD",
                   },
-                  hasMerchantReturnPolicy: {
-                    "@type": "MerchantReturnPolicy",
-                    returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
-                    merchantReturnDays: 2,
-                    applicableCountry: "DO",
-        returnMethod: "https://schema.org/ReturnByMail",
-        returnFees: "https://schema.org/FreeReturn"
-                  }
-                }
-              }
-            : {})
-        }
-      };
-    });
+                  shippingDestination: {
+                    "@type": "DefinedRegion",
+                    addressCountry: "DO",
+                  },
+                  deliveryTime: {
+                    "@type": "ShippingDeliveryTime",
+                    handlingTime: {
+                      "@type": "QuantitativeValue",
+                      minValue: 0,
+                      maxValue: 1,
+                      unitCode: "DAY",
+                    },
+                    transitTime: {
+                      "@type": "QuantitativeValue",
+                      minValue: 0,
+                      maxValue: 1,
+                      unitCode: "DAY",
+                    },
+                  },
+                },
+                hasMerchantReturnPolicy: {
+                  "@type": "MerchantReturnPolicy",
+                  returnPolicyCategory:
+                    "https://schema.org/MerchantReturnFiniteReturnWindow",
+                  merchantReturnDays: 2,
+                  applicableCountry: "DO",
+                  returnMethod: "https://schema.org/ReturnByMail",
+                  returnFees: "https://schema.org/FreeReturn",
+                },
+              },
+            }
+          : {}),
+      },
+    };
+  });
 
   const schemaReviews = comments.map((comment, index) => ({
     "@type": "Review",
     "@id": `${pageUrl}#review-${index + 1}`,
     itemReviewed: {
-      "@id": `${PROACTIVITIS_URL}#localbusiness`
+      "@id": `${PROACTIVITIS_URL}#localbusiness`,
     },
     author: {
       "@type": "Person",
-      name: comment.customerName || "Traveler"
+      name: comment.customerName || "Traveler",
     },
     datePublished: comment.createdAt.toISOString(),
     reviewBody: comment.body,
@@ -1006,8 +1290,8 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
       "@type": "Rating",
       ratingValue: comment.rating,
       bestRating: 5,
-      worstRating: 1
-    }
+      worstRating: 1,
+    },
   }));
 
   const schema = {
@@ -1019,7 +1303,7 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
         name: "Proactivitis",
         url: PROACTIVITIS_URL,
         logo: `${PROACTIVITIS_URL}/logo.png`,
-        sameAs: SAME_AS_URLS
+        sameAs: SAME_AS_URLS,
       },
       {
         "@type": "LocalBusiness",
@@ -1029,14 +1313,14 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
         image: `${PROACTIVITIS_URL}/logo.png`,
         description: keywordDescription,
         areaServed: ["DO", "US", "CA", "MX", "ES", "FR"],
-        availableLanguage: ["es", "en", "fr"]
+        availableLanguage: ["es", "en", "fr"],
       },
       {
         "@type": "WebSite",
         "@id": `${PROACTIVITIS_URL}#website`,
         url: PROACTIVITIS_URL,
         name: "ProDiscovery",
-        inLanguage: localeName
+        inLanguage: localeName,
       },
       {
         "@type": "CollectionPage",
@@ -1046,8 +1330,8 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
         description: `${t.subtitle} ${keywordDescription}`,
         inLanguage: localeName,
         mainEntity: {
-          "@id": `${pageUrl}#catalog`
-        }
+          "@id": `${pageUrl}#catalog`,
+        },
       },
       {
         "@type": "BreadcrumbList",
@@ -1056,16 +1340,17 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
           {
             "@type": "ListItem",
             position: 1,
-            name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
-            item: `${PROACTIVITIS_URL}${locale === "es" ? "/" : `/${locale}`}`
+            name:
+              locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
+            item: `${PROACTIVITIS_URL}${locale === "es" ? "/" : `/${locale}`}`,
           },
           {
             "@type": "ListItem",
             position: 2,
             name: "ProDiscovery",
-            item: `${PROACTIVITIS_URL}${localePrefix(locale)}/prodiscovery`
-          }
-        ]
+            item: `${PROACTIVITIS_URL}${localePrefix(locale)}/prodiscovery`,
+          },
+        ],
       },
       {
         "@type": "FAQPage",
@@ -1074,19 +1359,19 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
           {
             "@type": "Question",
             name: t.faqQ1,
-            acceptedAnswer: { "@type": "Answer", text: t.faqA1 }
+            acceptedAnswer: { "@type": "Answer", text: t.faqA1 },
           },
           {
             "@type": "Question",
             name: t.faqQ2,
-            acceptedAnswer: { "@type": "Answer", text: t.faqA2 }
+            acceptedAnswer: { "@type": "Answer", text: t.faqA2 },
           },
           {
             "@type": "Question",
             name: t.faqQ3,
-            acceptedAnswer: { "@type": "Answer", text: t.faqA3 }
-          }
-        ]
+            acceptedAnswer: { "@type": "Answer", text: t.faqA3 },
+          },
+        ],
       },
       {
         "@type": "ItemList",
@@ -1095,8 +1380,8 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
           "@type": "ListItem",
           position: start + index + 1,
           name: item.title,
-          url: `${PROACTIVITIS_URL}${item.href}`
-        }))
+          url: `${PROACTIVITIS_URL}${item.href}`,
+        })),
       },
       {
         "@type": "ItemList",
@@ -1104,9 +1389,9 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
         name: "ProDiscovery tours and transfers catalog",
         numberOfItems: schemaProducts.length,
         itemListOrder: "https://schema.org/ItemListOrderAscending",
-        itemListElement: schemaProducts
-      }
-    ].concat(schemaReviews as unknown as any[])
+        itemListElement: schemaProducts,
+      },
+    ].concat(schemaReviews as unknown as any[]),
   };
 
   return (
@@ -1116,35 +1401,53 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:px-8 lg:py-10">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-700">{t.heroEyebrow}</p>
+            <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-700">
+              {t.heroEyebrow}
+            </p>
             <h1 className="mt-3 max-w-4xl text-4xl font-black tracking-tight text-slate-950 md:text-6xl">
               {t.heroTitle}
             </h1>
-            <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">{t.heroBody}</p>
+            <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">
+              {t.heroBody}
+            </p>
             <div className="mt-5 flex flex-wrap gap-2">
-              {TRUST_BADGES[locale].map((badge) => normalizeDisplayText(badge)).map((badge) => (
-                <span
-                  key={badge}
-                  className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800"
-                >
-                  {badge}
-                </span>
-              ))}
+              {TRUST_BADGES[locale]
+                .map((badge) => normalizeDisplayText(badge))
+                .map((badge) => (
+                  <span
+                    key={badge}
+                    className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800"
+                  >
+                    {badge}
+                  </span>
+                ))}
             </div>
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-3xl font-black text-slate-950">{numberFormatter.format(tourItems.length)}</p>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{t.filterTours}</p>
+                <p className="text-3xl font-black text-slate-950">
+                  {numberFormatter.format(tourItems.length)}
+                </p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                  {t.filterTours}
+                </p>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-3xl font-black text-slate-950">
-                  {numberFormatter.format(transferItems.length + transferLocationItems.length)}
+                  {numberFormatter.format(
+                    transferItems.length + transferLocationItems.length,
+                  )}
                 </p>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{t.filterTransfers}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                  {t.filterTransfers}
+                </p>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-3xl font-black text-slate-950">{numberFormatter.format(totalApprovedReviews)}</p>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{t.heroReviewLabel}</p>
+                <p className="text-3xl font-black text-slate-950">
+                  {numberFormatter.format(totalApprovedReviews)}
+                </p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                  {t.heroReviewLabel}
+                </p>
               </div>
             </div>
             <div className="mt-6 flex flex-wrap gap-3">
@@ -1173,17 +1476,32 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
               <div className="absolute bottom-4 left-4 right-4">
                 <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-200">
-                  {locale === "es" ? "Destacado" : locale === "fr" ? "Sélection" : "Featured"}
+                  {locale === "es"
+                    ? "Destacado"
+                    : locale === "fr"
+                      ? "Sélection"
+                      : "Featured"}
                 </p>
-                <h2 className="mt-2 line-clamp-2 text-2xl font-black">{heroItem?.title ?? t.title}</h2>
+                <h2 className="mt-2 line-clamp-2 text-2xl font-black">
+                  {heroItem?.title ?? t.title}
+                </h2>
                 <div className="mt-2 flex items-center gap-2 text-sm text-white/85">
-                  <BubbleRating rating={heroItem?.rating ?? 0} label={t.bubbleLabel} />
+                  <BubbleRating
+                    rating={heroItem?.rating ?? 0}
+                    label={t.bubbleLabel}
+                  />
                   <span>{(heroItem?.rating ?? 0).toFixed(1)}</span>
-                  <span>({heroItem?.reviews ?? 0} {t.reviewsWord})</span>
+                  <span>
+                    ({heroItem?.reviews ?? 0} {t.reviewsWord})
+                  </span>
                 </div>
               </div>
             </div>
-            <form action={`${localePrefix(locale)}/prodiscovery`} method="get" className="grid gap-3 p-5">
+            <form
+              action={`${localePrefix(locale)}/prodiscovery`}
+              method="get"
+              className="grid gap-3 p-5"
+            >
               <input
                 name="q"
                 defaultValue={q}
@@ -1246,7 +1564,9 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
       <section className="mx-auto mt-6 max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
           <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-2xl font-black text-slate-950">{t.categoryTitle}</h2>
+            <h2 className="text-2xl font-black text-slate-950">
+              {t.categoryTitle}
+            </h2>
             <p className="mt-1 text-sm text-slate-600">{t.categoryBody}</p>
             <div className="mt-4 grid gap-3">
               {categoryCards.map((category) => (
@@ -1262,10 +1582,16 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
                     loading="lazy"
                   />
                   <span>
-                    <span className="block font-black text-slate-950 group-hover:text-emerald-700">{category.title}</span>
-                    <span className="text-xs text-slate-500">{category.body}</span>
+                    <span className="block font-black text-slate-950 group-hover:text-emerald-700">
+                      {category.title}
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      {category.body}
+                    </span>
                   </span>
-                  <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-700">{category.count}</span>
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-700">
+                    {category.count}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -1274,11 +1600,14 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
           <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
               <div>
-                <h2 className="text-2xl font-black text-slate-950">{t.topPicksTitle}</h2>
+                <h2 className="text-2xl font-black text-slate-950">
+                  {t.topPicksTitle}
+                </h2>
                 <p className="mt-1 text-sm text-slate-600">{t.topPicksBody}</p>
               </div>
               <span className="text-sm text-slate-500">
-                <strong className="text-slate-950">{scored.length}</strong> {t.results}
+                <strong className="text-slate-950">{scored.length}</strong>{" "}
+                {t.results}
               </span>
             </div>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -1289,20 +1618,32 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
                   className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md"
                 >
                   <div className="relative h-36 bg-slate-100">
-                    <img src={item.image} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
                     <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-slate-800">
                       {item.tag}
                     </span>
                   </div>
                   <div className="p-3">
-                    <h3 className="line-clamp-2 font-black text-slate-950 group-hover:text-emerald-700">{item.title}</h3>
+                    <h3 className="line-clamp-2 font-black text-slate-950 group-hover:text-emerald-700">
+                      {item.title}
+                    </h3>
                     <div className="mt-2 flex items-center gap-2 text-xs text-slate-600">
-                      <BubbleRating rating={item.rating} label={t.bubbleLabel} />
+                      <BubbleRating
+                        rating={item.rating}
+                        label={t.bubbleLabel}
+                      />
                       <span>{item.rating.toFixed(1)}</span>
                       <span>({item.reviews})</span>
                     </div>
                     <p className="mt-2 text-sm font-black text-emerald-700">
-                      {item.price ? `${t.from} USD ${Math.round(item.price)}` : t.consultRate}
+                      {item.price
+                        ? `${t.from} USD ${Math.round(item.price)}`
+                        : t.consultRate}
                     </p>
                   </div>
                 </Link>
@@ -1312,8 +1653,12 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
         </div>
 
         <div className="mt-4 rounded-[28px] border border-emerald-200 bg-emerald-50 p-5">
-          <h2 className="text-xl font-black text-emerald-950">{t.decisionTitle}</h2>
-          <p className="mt-1 max-w-4xl text-sm leading-6 text-emerald-900/80">{t.decisionBody}</p>
+          <h2 className="text-xl font-black text-emerald-950">
+            {t.decisionTitle}
+          </h2>
+          <p className="mt-1 max-w-4xl text-sm leading-6 text-emerald-900/80">
+            {t.decisionBody}
+          </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {activeFilterChips.map((chip) => (
               <Link
@@ -1322,10 +1667,15 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
                 className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-white px-3 py-1 text-xs font-semibold text-amber-800"
               >
                 {chip.label}
-                <span className="text-[10px] text-amber-700">{t.removeFilter}</span>
+                <span className="text-[10px] text-amber-700">
+                  {t.removeFilter}
+                </span>
               </Link>
             ))}
-            <Link href={`${localePrefix(locale)}/prodiscovery`} className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold">
+            <Link
+              href={`${localePrefix(locale)}/prodiscovery`}
+              className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold"
+            >
               {t.clear}
             </Link>
           </div>
@@ -1349,10 +1699,16 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
         <section className="mx-auto mt-6 max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-4">
-              <h2 className="text-xl font-black text-slate-900">{t.transferPlannerTitle}</h2>
-              <p className="mt-1 text-sm text-slate-600">{t.transferPlannerBody}</p>
+              <h2 className="text-xl font-black text-slate-900">
+                {t.transferPlannerTitle}
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                {t.transferPlannerBody}
+              </p>
             </div>
-            <Suspense fallback={<div className="h-24 rounded-2xl bg-slate-50" />}>
+            <Suspense
+              fallback={<div className="h-24 rounded-2xl bg-slate-50" />}
+            >
               <TrasladoSearchV2 />
             </Suspense>
           </div>
@@ -1361,7 +1717,9 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
 
       <section className="mx-auto mt-6 max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-xl font-black text-slate-900">{t.rankingHubTitle}</h2>
+          <h2 className="text-xl font-black text-slate-900">
+            {t.rankingHubTitle}
+          </h2>
           <p className="mt-1 text-sm text-slate-600">{t.rankingHubBody}</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {rankingLinks.map((hub) => (
@@ -1380,34 +1738,60 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
       <div className="mx-auto mt-6 grid max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:px-8">
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-700">{t.topFiltersTitle}</h2>
+            <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-700">
+              {t.topFiltersTitle}
+            </h2>
             <div className="mt-3 grid gap-2">
-              <Link href={makeHref()} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+              <Link
+                href={makeHref()}
+                className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              >
                 {t.filterAll}
               </Link>
-              <Link href={makeHref(currentPage, compareIds, { type: "tour" })} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+              <Link
+                href={makeHref(currentPage, compareIds, { type: "tour" })}
+                className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              >
                 {t.filterTours}
               </Link>
-              <Link href={makeHref(currentPage, compareIds, { type: "transfer" })} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+              <Link
+                href={makeHref(currentPage, compareIds, { type: "transfer" })}
+                className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              >
                 {t.filterTransfers}
               </Link>
-              <Link href={makeHref(currentPage, compareIds, { type: "hotel" })} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+              <Link
+                href={makeHref(currentPage, compareIds, { type: "hotel" })}
+                className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              >
                 {t.filterHotels}
               </Link>
             </div>
           </div>
 
           <div className="hidden rounded-2xl border border-slate-200 bg-white p-4 lg:block">
-            <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-700">{t.commentsTitle}</h2>
+            <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-700">
+              {t.commentsTitle}
+            </h2>
             <p className="mt-1 text-xs text-slate-500">{t.commentsSubtitle}</p>
             <div className="mt-3 space-y-3">
               {comments.map((comment) => (
-                <article key={comment.id} className="rounded-xl border border-slate-200 p-3">
+                <article
+                  key={comment.id}
+                  className="rounded-xl border border-slate-200 p-3"
+                >
                   <div className="flex items-center justify-between gap-2">
-                  <p className="truncate text-sm font-semibold text-slate-900">{normalizeDisplayText(comment.customerName)}</p>
-                    <BubbleRating rating={comment.rating} label={t.bubbleLabel} />
+                    <p className="truncate text-sm font-semibold text-slate-900">
+                      {normalizeDisplayText(comment.customerName)}
+                    </p>
+                    <BubbleRating
+                      rating={comment.rating}
+                      label={t.bubbleLabel}
+                    />
                   </div>
-                  <p className="mt-2 line-clamp-3 text-xs text-slate-600">{normalizeDisplayText(comment.body)}</p>
+                  <p className="mt-2 line-clamp-3 text-xs text-slate-600">
+                    {normalizeDisplayText(comment.body)}
+                  </p>
                 </article>
               ))}
             </div>
@@ -1418,17 +1802,24 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">{t.title}</p>
-                <h2 className="mt-1 text-2xl font-black text-slate-950">{t.listTitle}</h2>
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">
+                  {t.title}
+                </p>
+                <h2 className="mt-1 text-2xl font-black text-slate-950">
+                  {t.listTitle}
+                </h2>
               </div>
               <span className="text-sm text-slate-500">
-                <strong className="text-slate-950">{scored.length}</strong> {t.results}
+                <strong className="text-slate-950">{scored.length}</strong>{" "}
+                {t.results}
               </span>
             </div>
           </div>
           {items.length === 0 ? (
             <article className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-              <h2 className="text-xl font-bold text-slate-900">{t.noResults}</h2>
+              <h2 className="text-xl font-bold text-slate-900">
+                {t.noResults}
+              </h2>
               <p className="mt-2 text-sm text-slate-600">{t.noResultsBody}</p>
             </article>
           ) : (
@@ -1436,11 +1827,16 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
               <article
                 key={item.id}
                 className={`group overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg ${
-                  compareIds.includes(item.id) ? "border-emerald-300 ring-1 ring-emerald-200" : "border-slate-200"
+                  compareIds.includes(item.id)
+                    ? "border-emerald-300 ring-1 ring-emerald-200"
+                    : "border-slate-200"
                 }`}
               >
                 <div className="flex flex-col md:flex-row">
-                  <Link href={item.href} className="relative block h-52 w-full shrink-0 overflow-hidden bg-slate-100 md:h-auto md:w-72">
+                  <Link
+                    href={item.href}
+                    className="relative block h-52 w-full shrink-0 overflow-hidden bg-slate-100 md:h-auto md:w-72"
+                  >
                     <img
                       src={item.image}
                       alt={item.title}
@@ -1463,35 +1859,56 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
                   </Link>
                   <div className="flex w-full flex-col justify-between p-5">
                     <div>
-                      <Link href={item.href} className="text-xl font-bold text-slate-900 hover:text-emerald-700">
+                      <Link
+                        href={item.href}
+                        className="text-xl font-bold text-slate-900 hover:text-emerald-700"
+                      >
                         {item.title}
                       </Link>
-                      {item.metaLine ? <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{item.metaLine}</p> : null}
+                      {item.metaLine ? (
+                        <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                          {item.metaLine}
+                        </p>
+                      ) : null}
                       <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-600">
-                        <BubbleRating rating={item.rating} label={t.bubbleLabel} />
-                        <span className="font-semibold text-slate-900">{item.rating.toFixed(1)}</span>
-                        <span>({item.reviews} {t.reviewsWord})</span>
+                        <BubbleRating
+                          rating={item.rating}
+                          label={t.bubbleLabel}
+                        />
+                        <span className="font-semibold text-slate-900">
+                          {item.rating.toFixed(1)}
+                        </span>
+                        <span>
+                          ({item.reviews} {t.reviewsWord})
+                        </span>
                         <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
                           {item.destination.replace("-", " ")}
                         </span>
                       </div>
-                      <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600">{item.description}</p>
+                      <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600">
+                        {item.description}
+                      </p>
                       {item.decisionHighlights?.length ? (
                         <div className="mt-3 flex flex-wrap gap-2">
-                          {item.decisionHighlights.slice(0, 3).map((highlight) => (
-                            <span
-                              key={`${item.id}-${highlight}`}
-                              className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700"
-                            >
-                              {highlight}
-                            </span>
-                          ))}
+                          {item.decisionHighlights
+                            .slice(0, 3)
+                            .map((highlight) => (
+                              <span
+                                key={`${item.id}-${highlight}`}
+                                className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700"
+                              >
+                                {highlight}
+                              </span>
+                            ))}
                         </div>
                       ) : null}
                       {item.badges.length > 1 ? (
                         <div className="mt-3 flex flex-wrap gap-2">
                           {item.badges.slice(1).map((badge) => (
-                            <span key={`${item.id}-${badge}`} className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                            <span
+                              key={`${item.id}-${badge}`}
+                              className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700"
+                            >
                               {badge}
                             </span>
                           ))}
@@ -1502,10 +1919,15 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
                       <p className="text-sm text-slate-600">
                         {item.price ? (
                           <>
-                            {t.from} <span className="text-2xl font-black text-slate-900">USD {Math.round(item.price)}</span>
+                            {t.from}{" "}
+                            <span className="text-2xl font-black text-slate-900">
+                              USD {Math.round(item.price)}
+                            </span>
                           </>
                         ) : (
-                          <span className="font-semibold text-slate-900">{t.consultRate}</span>
+                          <span className="font-semibold text-slate-900">
+                            {t.consultRate}
+                          </span>
                         )}
                       </p>
                       <div className="flex flex-wrap items-center gap-2">
@@ -1525,17 +1947,21 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
                               : "border border-slate-300 bg-white text-slate-700"
                           }`}
                         >
-                          {compareIds.includes(item.id) ? t.compareRemove : t.compareSelect}
+                          {compareIds.includes(item.id)
+                            ? t.compareRemove
+                            : t.compareSelect}
                         </Link>
                         <Link
                           href={item.href}
                           className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 group-hover:ring-2 group-hover:ring-emerald-200"
                         >
-                          {item.type === "transfer" ? t.reserveTransfer : t.open}
+                          {item.type === "transfer"
+                            ? t.reserveTransfer
+                            : t.open}
                         </Link>
                       </div>
                     </div>
-                    {(item.bookingLabel || item.trustLabel) ? (
+                    {item.bookingLabel || item.trustLabel ? (
                       <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-3">
                         {item.bookingLabel ? (
                           <span className="rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white">
@@ -1563,12 +1989,18 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
                 </span>
                 <div className="flex gap-2">
                   {currentPage > 1 ? (
-                    <Link href={makeHref(currentPage - 1)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm">
+                    <Link
+                      href={makeHref(currentPage - 1)}
+                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                    >
                       {t.prev}
                     </Link>
                   ) : null}
                   {currentPage < totalPages ? (
-                    <Link href={makeHref(currentPage + 1)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm">
+                    <Link
+                      href={makeHref(currentPage + 1)}
+                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                    >
                       {t.next}
                     </Link>
                   ) : null}
@@ -1579,14 +2011,19 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
 
           {selectedCompare.length > 1 ? (
             <section className="overflow-x-auto rounded-2xl border border-slate-200 bg-white p-4">
-              <h3 className="mb-3 text-lg font-bold text-slate-900">{t.compareTableTitle}</h3>
+              <h3 className="mb-3 text-lg font-bold text-slate-900">
+                {t.compareTableTitle}
+              </h3>
               <table className="min-w-full divide-y divide-slate-200 text-sm">
                 <thead>
                   <tr className="text-left text-xs uppercase tracking-[0.12em] text-slate-500">
                     <th className="px-3 py-2">Item</th>
                     {selectedCompare.map((item) => (
                       <th key={item.id} className="px-3 py-2 min-w-[220px]">
-                        <Link href={item.href} className="font-semibold text-slate-800 hover:text-emerald-700">
+                        <Link
+                          href={item.href}
+                          className="font-semibold text-slate-800 hover:text-emerald-700"
+                        >
                           {item.title}
                         </Link>
                       </th>
@@ -1595,78 +2032,131 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   <tr>
-                    <td className="px-3 py-2 font-semibold text-slate-700">Tipo</td>
+                    <td className="px-3 py-2 font-semibold text-slate-700">
+                      Tipo
+                    </td>
                     {selectedCompare.map((item) => (
-                      <td key={`${item.id}-type`} className="px-3 py-2 text-slate-700">
+                      <td
+                        key={`${item.id}-type`}
+                        className="px-3 py-2 text-slate-700"
+                      >
                         {item.tag}
                       </td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 font-semibold text-slate-700">{t.destinationLabel}</td>
+                    <td className="px-3 py-2 font-semibold text-slate-700">
+                      {t.destinationLabel}
+                    </td>
                     {selectedCompare.map((item) => (
-                      <td key={`${item.id}-destination`} className="px-3 py-2 text-slate-700">
+                      <td
+                        key={`${item.id}-destination`}
+                        className="px-3 py-2 text-slate-700"
+                      >
                         {item.destination.replace("-", " ")}
                       </td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 font-semibold text-slate-700">Contexto</td>
+                    <td className="px-3 py-2 font-semibold text-slate-700">
+                      Contexto
+                    </td>
                     {selectedCompare.map((item) => (
-                      <td key={`${item.id}-meta`} className="px-3 py-2 text-slate-700">
+                      <td
+                        key={`${item.id}-meta`}
+                        className="px-3 py-2 text-slate-700"
+                      >
                         {item.metaLine ?? "-"}
                       </td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 font-semibold text-slate-700">{t.bubbleLabel}</td>
+                    <td className="px-3 py-2 font-semibold text-slate-700">
+                      {t.bubbleLabel}
+                    </td>
                     {selectedCompare.map((item) => (
                       <td key={`${item.id}-rating`} className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <BubbleRating rating={item.rating} label={t.bubbleLabel} />
-                          <span className="font-semibold text-slate-800">{item.rating.toFixed(1)}</span>
+                          <BubbleRating
+                            rating={item.rating}
+                            label={t.bubbleLabel}
+                          />
+                          <span className="font-semibold text-slate-800">
+                            {item.rating.toFixed(1)}
+                          </span>
                         </div>
                       </td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 font-semibold text-slate-700">{t.reviewsWord}</td>
+                    <td className="px-3 py-2 font-semibold text-slate-700">
+                      {t.reviewsWord}
+                    </td>
                     {selectedCompare.map((item) => (
-                      <td key={`${item.id}-reviews`} className="px-3 py-2 text-slate-700">
+                      <td
+                        key={`${item.id}-reviews`}
+                        className="px-3 py-2 text-slate-700"
+                      >
                         {item.reviews}
                       </td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 font-semibold text-slate-700">Ideal para</td>
+                    <td className="px-3 py-2 font-semibold text-slate-700">
+                      Ideal para
+                    </td>
                     {selectedCompare.map((item) => (
-                      <td key={`${item.id}-highlights`} className="px-3 py-2 text-slate-700">
-                        {(item.decisionHighlights ?? []).slice(0, 2).join(" · ") || "-"}
+                      <td
+                        key={`${item.id}-highlights`}
+                        className="px-3 py-2 text-slate-700"
+                      >
+                        {(item.decisionHighlights ?? [])
+                          .slice(0, 2)
+                          .join(" · ") || "-"}
                       </td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 font-semibold text-slate-700">{t.from}</td>
+                    <td className="px-3 py-2 font-semibold text-slate-700">
+                      {t.from}
+                    </td>
                     {selectedCompare.map((item) => (
-                      <td key={`${item.id}-price`} className="px-3 py-2 text-slate-700">
-                        {item.price ? `USD ${Math.round(item.price)}` : t.consultRate}
+                      <td
+                        key={`${item.id}-price`}
+                        className="px-3 py-2 text-slate-700"
+                      >
+                        {item.price
+                          ? `USD ${Math.round(item.price)}`
+                          : t.consultRate}
                       </td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 font-semibold text-slate-700">Reserva</td>
+                    <td className="px-3 py-2 font-semibold text-slate-700">
+                      Reserva
+                    </td>
                     {selectedCompare.map((item) => (
-                      <td key={`${item.id}-booking`} className="px-3 py-2 text-slate-700">
+                      <td
+                        key={`${item.id}-booking`}
+                        className="px-3 py-2 text-slate-700"
+                      >
                         {item.bookingLabel ?? "-"}
                       </td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 font-semibold text-slate-700">Accion</td>
+                    <td className="px-3 py-2 font-semibold text-slate-700">
+                      Accion
+                    </td>
                     {selectedCompare.map((item) => (
                       <td key={`${item.id}-cta`} className="px-3 py-2">
-                        <Link href={item.href} className="inline-flex rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white">
-                          {item.type === "transfer" ? t.reserveTransfer : t.open}
+                        <Link
+                          href={item.href}
+                          className="inline-flex rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white"
+                        >
+                          {item.type === "transfer"
+                            ? t.reserveTransfer
+                            : t.open}
                         </Link>
                       </td>
                     ))}
@@ -1677,16 +2167,28 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
           ) : null}
 
           <section className="rounded-2xl border border-slate-200 bg-white p-4 lg:hidden">
-            <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-700">{t.commentsTitle}</h2>
+            <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-700">
+              {t.commentsTitle}
+            </h2>
             <p className="mt-1 text-xs text-slate-500">{t.commentsSubtitle}</p>
             <div className="mt-3 space-y-3">
               {comments.map((comment) => (
-                <article key={`mobile-${comment.id}`} className="rounded-xl border border-slate-200 p-3">
+                <article
+                  key={`mobile-${comment.id}`}
+                  className="rounded-xl border border-slate-200 p-3"
+                >
                   <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-semibold text-slate-900">{normalizeDisplayText(comment.customerName)}</p>
-                    <BubbleRating rating={comment.rating} label={t.bubbleLabel} />
+                    <p className="truncate text-sm font-semibold text-slate-900">
+                      {normalizeDisplayText(comment.customerName)}
+                    </p>
+                    <BubbleRating
+                      rating={comment.rating}
+                      label={t.bubbleLabel}
+                    />
                   </div>
-                  <p className="mt-2 line-clamp-3 text-xs text-slate-600">{normalizeDisplayText(comment.body)}</p>
+                  <p className="mt-2 line-clamp-3 text-xs text-slate-600">
+                    {normalizeDisplayText(comment.body)}
+                  </p>
                 </article>
               ))}
             </div>
@@ -1702,17 +2204,27 @@ async function ProDiscoveryCatalogPage({ locale, searchParams = {} }: Props) {
                 {selectedCompare.length} {t.compareSelected}
               </span>
               <span className="text-xs text-slate-500">{t.compareLimit}</span>
-              <Link href={makeHref(currentPage, [])} className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700">
+              <Link
+                href={makeHref(currentPage, [])}
+                className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700"
+              >
                 {t.compareClear}
               </Link>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {selectedCompare.map((item) => (
-                <Link key={item.id} href={item.href} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800">
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800"
+                >
                   {item.title}
                 </Link>
               ))}
-              <Link href={selectedCompare[0]?.href ?? makeHref(currentPage)} className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">
+              <Link
+                href={selectedCompare[0]?.href ?? makeHref(currentPage)}
+                className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white"
+              >
                 {t.compareNow}
               </Link>
             </div>

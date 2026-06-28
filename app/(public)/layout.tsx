@@ -5,17 +5,27 @@ import PublicHeaderSwitch from "@/components/public/PublicHeaderSwitch";
 import PageViewTracker from "@/components/analytics/PageViewTracker";
 import WhatsappFloatingChat from "@/components/shared/WhatsappFloatingChat";
 import VisitorSalesChat from "@/components/shared/VisitorSalesChat";
-import { getPriceValidUntil, PROACTIVITIS_EMAIL, PROACTIVITIS_LOGO, PROACTIVITIS_PHONE, PROACTIVITIS_URL } from "@/lib/seo";
+import {
+  getPriceValidUntil,
+  PROACTIVITIS_EMAIL,
+  PROACTIVITIS_LOGO,
+  PROACTIVITIS_PHONE,
+  PROACTIVITIS_URL,
+} from "@/lib/seo";
 
 const OFFER_SERVICE_SCHEMA = {
   "@type": "Offer",
   priceValidUntil: getPriceValidUntil(),
   shippingDetails: {
     "@type": "OfferShippingDetails",
-    doesNotShip: true,
+    shippingRate: {
+      "@type": "MonetaryAmount",
+      value: 0,
+      currency: "USD",
+    },
     shippingDestination: {
       "@type": "DefinedRegion",
-      addressCountry: "DO"
+      addressCountry: "DO",
     },
     deliveryTime: {
       "@type": "ShippingDeliveryTime",
@@ -23,15 +33,15 @@ const OFFER_SERVICE_SCHEMA = {
         "@type": "QuantitativeValue",
         minValue: 0,
         maxValue: 1,
-        unitCode: "d"
+        unitCode: "DAY",
       },
       transitTime: {
         "@type": "QuantitativeValue",
         minValue: 0,
         maxValue: 1,
-        unitCode: "d"
-      }
-    }
+        unitCode: "DAY",
+      },
+    },
   },
   hasMerchantReturnPolicy: {
     "@type": "MerchantReturnPolicy",
@@ -39,8 +49,9 @@ const OFFER_SERVICE_SCHEMA = {
     returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
     merchantReturnDays: 1,
     applicableCountry: "DO",
-    returnFees: "https://schema.org/FreeReturn"
-  }
+    returnMethod: "https://schema.org/ReturnByMail",
+    returnFees: "https://schema.org/FreeReturn",
+  },
 };
 
 const ORGANIZATION_SCHEMA = {
@@ -64,29 +75,29 @@ const ORGANIZATION_SCHEMA = {
             itemOffered: {
               "@type": "Service",
               name: "Tours y Excursiones",
-              url: `${PROACTIVITIS_URL}/tours`
-            }
+              url: `${PROACTIVITIS_URL}/tours`,
+            },
           },
           {
             ...OFFER_SERVICE_SCHEMA,
             itemOffered: {
               "@type": "Service",
               name: "Traslados Privados",
-              url: `${PROACTIVITIS_URL}/traslado`
-            }
+              url: `${PROACTIVITIS_URL}/traslado`,
+            },
           },
           {
             ...OFFER_SERVICE_SCHEMA,
             itemOffered: {
               "@type": "Service",
               name: "Rent a Car",
-              url: `${PROACTIVITIS_URL}/rent-a-car`
-            }
-          }
-        ]
-      }
-    }
-  ]
+              url: `${PROACTIVITIS_URL}/rent-a-car`,
+            },
+          },
+        ],
+      },
+    },
+  ],
 };
 
 const TRAVEL_AGENCY_SCHEMA = {
@@ -103,32 +114,35 @@ const TRAVEL_AGENCY_SCHEMA = {
     "Plataforma para reservar experiencias turisticas, traslados privados y servicios de viaje con soporte local.",
   areaServed: {
     "@type": "Country",
-    name: "Worldwide"
+    name: "Worldwide",
   },
   address: {
     "@type": "PostalAddress",
-    addressCountry: "DO"
+    addressCountry: "DO",
   },
   hasPart: [
     {
       "@type": "WebPage",
       name: "Traslados Privados",
       url: `${PROACTIVITIS_URL}/traslado`,
-      description: "Traslado de lujo y traslados de aeropuerto con estandar internacional."
+      description:
+        "Traslado de lujo y traslados de aeropuerto con estandar internacional.",
     },
     {
       "@type": "WebPage",
       name: "Rent a Car",
       url: `${PROACTIVITIS_URL}/rent-a-car`,
-      description: "Renta de vehiculos y asistencia para viajes en Republica Dominicana."
+      description:
+        "Renta de vehiculos y asistencia para viajes en Republica Dominicana.",
     },
     {
       "@type": "WebPage",
       name: "Destinos Globales",
       url: `${PROACTIVITIS_URL}/destinations`,
-      description: "Guia de experiencias en los destinos mas importantes del mundo."
-    }
-  ]
+      description:
+        "Guia de experiencias en los destinos mas importantes del mundo.",
+    },
+  ],
 };
 
 const WEBSITE_SCHEMA = {
@@ -141,14 +155,18 @@ const WEBSITE_SCHEMA = {
   potentialAction: {
     "@type": "SearchAction",
     target: `${PROACTIVITIS_URL}/search?q={search_term_string}`,
-    "query-input": "required name=search_term_string"
-  }
+    "query-input": "required name=search_term_string",
+  },
 };
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      <Script async src="https://www.googletagmanager.com/gtag/js?id=G-R3L9DE7KXL" strategy="lazyOnload" />
+      <Script
+        async
+        src="https://www.googletagmanager.com/gtag/js?id=G-R3L9DE7KXL"
+        strategy="lazyOnload"
+      />
       <Script id="gtag-init" strategy="lazyOnload">
         {`
           window.dataLayer = window.dataLayer || [];
@@ -167,19 +185,19 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(ORGANIZATION_SCHEMA)
+            __html: JSON.stringify(ORGANIZATION_SCHEMA),
           }}
         />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(TRAVEL_AGENCY_SCHEMA)
+            __html: JSON.stringify(TRAVEL_AGENCY_SCHEMA),
           }}
         />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(WEBSITE_SCHEMA)
+            __html: JSON.stringify(WEBSITE_SCHEMA),
           }}
         />
         <PublicHeaderSwitch />

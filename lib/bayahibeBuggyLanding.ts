@@ -285,10 +285,6 @@ export const buildBayahibeBuggySchemaGraph = (
           { "@type": "Place", name: "La Romana" },
           { "@type": "Place", name: "Dominican Republic" }
         ],
-        audience: {
-          "@type": "Audience",
-          audienceType: content.audienceTypes
-        },
         availableLanguage: content.availableLanguages,
         description: content.description,
         offers: {

@@ -333,10 +333,6 @@ export const buildBuggySchemaGraph = (
           { "@type": "Place", name: "Bavaro" },
           { "@type": "Place", name: "Dominican Republic" }
         ],
-        audience: {
-          "@type": "Audience",
-          audienceType: content.audienceTypes
-        },
         availableLanguage: ["es", "en", "fr"],
         description: content.description,
         offers: {

@@ -7,12 +7,57 @@ import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 import StructuredData from "@/components/schema/StructuredData";
 import { prisma } from "@/lib/prisma";
 import { TransferLocationType } from "@prisma/client";
-import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
+import {
+  parseAdminItinerary,
+  parseItinerary,
+  ItineraryStop,
+} from "@/lib/itinerary";
 import { formatReviewCountValue, getTourReviewCount } from "@/lib/reviewCounts";
 import { Locale, translate } from "@/lib/translations";
 
 type PersistedTimeSlot = { hour: number; minute: string; period: "AM" | "PM" };
 const BASE_URL = "https://proactivitis.com";
+const SERVICE_SHIPPING_DETAILS = {
+  "@type": "OfferShippingDetails",
+  shippingRate: {
+    "@type": "MonetaryAmount",
+    value: 0,
+    currency: "USD",
+  },
+  shippingDestination: {
+    "@type": "DefinedRegion",
+    addressCountry: "DO",
+  },
+  deliveryTime: {
+    "@type": "ShippingDeliveryTime",
+    handlingTime: {
+      "@type": "QuantitativeValue",
+      minValue: 0,
+      maxValue: 1,
+      unitCode: "DAY",
+    },
+    transitTime: {
+      "@type": "QuantitativeValue",
+      minValue: 0,
+      maxValue: 1,
+      unitCode: "DAY",
+    },
+  },
+};
+const MERCHANT_RETURN_POLICY = {
+  "@type": "MerchantReturnPolicy",
+  url: `${BASE_URL}/legal/refund-policy`,
+  returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+  merchantReturnDays: 1,
+  applicableCountry: "DO",
+  returnMethod: "https://schema.org/ReturnByMail",
+  returnFees: "https://schema.org/FreeReturn",
+};
+const getPickupPriceValidUntil = () => {
+  const future = new Date();
+  future.setMonth(future.getMonth() + 6);
+  return future.toISOString().split("T")[0];
+};
 
 const parseJsonArray = <T,>(value?: string | null): T[] => {
   if (!value) return [];
@@ -32,12 +77,19 @@ const parseDuration = (value?: string | null) => {
   }
 };
 
-const formatDurationLabel = (duration: { value: string; unit: string }, locale: Locale) => {
+const formatDurationLabel = (
+  duration: { value: string; unit: string },
+  locale: Locale,
+) => {
   const normalized = duration.unit.trim().toLowerCase();
   if (normalized.includes("hora") || normalized.includes("hour")) {
     return `${duration.value} ${translate(locale, "tourPickup.duration.unit.hours")}`;
   }
-  if (normalized.includes("dia") || normalized.includes("day") || normalized.includes("jour")) {
+  if (
+    normalized.includes("dia") ||
+    normalized.includes("day") ||
+    normalized.includes("jour")
+  ) {
     return `${duration.value} ${translate(locale, "tourPickup.duration.unit.days")}`;
   }
   return `${duration.value} ${duration.unit}`;
@@ -50,104 +102,118 @@ const formatTimeSlot = (slot: PersistedTimeSlot) => {
 
 const normalizePickupTimes = (value: unknown): string[] | null => {
   if (!Array.isArray(value)) return null;
-  const times = value.filter((item): item is string => typeof item === "string");
+  const times = value.filter(
+    (item): item is string => typeof item === "string",
+  );
   return times.length ? times : null;
 };
 
 const tKey = (key: string) => key as Parameters<typeof translate>[1];
 
-const buildItineraryMock = (t: (key: Parameters<typeof translate>[1]) => string): ItineraryStop[] => [
+const buildItineraryMock = (
+  t: (key: Parameters<typeof translate>[1]) => string,
+): ItineraryStop[] => [
   {
     time: t(tKey("tourPickup.itinerary.mock.1.time")),
     title: t(tKey("tourPickup.itinerary.mock.1.title")),
-    description: t(tKey("tourPickup.itinerary.mock.1.body"))
+    description: t(tKey("tourPickup.itinerary.mock.1.body")),
   },
   {
     time: t(tKey("tourPickup.itinerary.mock.2.time")),
     title: t(tKey("tourPickup.itinerary.mock.2.title")),
-    description: t(tKey("tourPickup.itinerary.mock.2.body"))
+    description: t(tKey("tourPickup.itinerary.mock.2.body")),
   },
   {
     time: t(tKey("tourPickup.itinerary.mock.3.time")),
     title: t(tKey("tourPickup.itinerary.mock.3.title")),
-    description: t(tKey("tourPickup.itinerary.mock.3.body"))
+    description: t(tKey("tourPickup.itinerary.mock.3.body")),
   },
   {
     time: t(tKey("tourPickup.itinerary.mock.4.time")),
     title: t(tKey("tourPickup.itinerary.mock.4.title")),
-    description: t(tKey("tourPickup.itinerary.mock.4.body"))
+    description: t(tKey("tourPickup.itinerary.mock.4.body")),
   },
   {
     time: t(tKey("tourPickup.itinerary.mock.5.time")),
     title: t(tKey("tourPickup.itinerary.mock.5.title")),
-    description: t(tKey("tourPickup.itinerary.mock.5.body"))
-  }
+    description: t(tKey("tourPickup.itinerary.mock.5.body")),
+  },
 ];
 
-const buildAdditionalInfo = (t: (key: Parameters<typeof translate>[1]) => string) => [
+const buildAdditionalInfo = (
+  t: (key: Parameters<typeof translate>[1]) => string,
+) => [
   t(tKey("tourPickup.additionalInfo.1")),
   t(tKey("tourPickup.additionalInfo.2")),
   t(tKey("tourPickup.additionalInfo.3")),
   t(tKey("tourPickup.additionalInfo.4")),
-  t(tKey("tourPickup.additionalInfo.5"))
+  t(tKey("tourPickup.additionalInfo.5")),
 ];
 
-const buildPackingList = (t: (key: Parameters<typeof translate>[1]) => string) => [
+const buildPackingList = (
+  t: (key: Parameters<typeof translate>[1]) => string,
+) => [
   {
     icon: "OK",
     label: t(tKey("tourPickup.packing.1.label")),
-    detail: t(tKey("tourPickup.packing.1.detail"))
+    detail: t(tKey("tourPickup.packing.1.detail")),
   },
   {
     icon: "OK",
     label: t(tKey("tourPickup.packing.2.label")),
-    detail: t(tKey("tourPickup.packing.2.detail"))
+    detail: t(tKey("tourPickup.packing.2.detail")),
   },
   {
     icon: "OK",
     label: t(tKey("tourPickup.packing.3.label")),
-    detail: t(tKey("tourPickup.packing.3.detail"))
+    detail: t(tKey("tourPickup.packing.3.detail")),
   },
   {
     icon: "OK",
     label: t(tKey("tourPickup.packing.4.label")),
-    detail: t(tKey("tourPickup.packing.4.detail"))
-  }
+    detail: t(tKey("tourPickup.packing.4.detail")),
+  },
 ];
 
-const buildReviewBreakdown = (t: (key: Parameters<typeof translate>[1]) => string) => [
+const buildReviewBreakdown = (
+  t: (key: Parameters<typeof translate>[1]) => string,
+) => [
   { label: t(tKey("tourPickup.reviews.breakdown.5")), percent: 90 },
   { label: t(tKey("tourPickup.reviews.breakdown.4")), percent: 8 },
   { label: t(tKey("tourPickup.reviews.breakdown.3")), percent: 1 },
   { label: t(tKey("tourPickup.reviews.breakdown.2")), percent: 1 },
-  { label: t(tKey("tourPickup.reviews.breakdown.1")), percent: 0 }
+  { label: t(tKey("tourPickup.reviews.breakdown.1")), percent: 0 },
 ];
 
-const buildReviewHighlights = (t: (key: Parameters<typeof translate>[1]) => string) => [
+const buildReviewHighlights = (
+  t: (key: Parameters<typeof translate>[1]) => string,
+) => [
   {
     name: "Gabriela R.",
     date: t(tKey("tourPickup.reviews.highlights.1.date")),
     quote: t(tKey("tourPickup.reviews.highlights.1.quote")),
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
   },
   {
     name: "James T.",
     date: t(tKey("tourPickup.reviews.highlights.2.date")),
     quote: t(tKey("tourPickup.reviews.highlights.2.quote")),
-    avatar: "https://images.unsplash.com/photo-1504593811423-6dd665756598"
+    avatar: "https://images.unsplash.com/photo-1504593811423-6dd665756598",
   },
   {
     name: "Anna L.",
     date: t(tKey("tourPickup.reviews.highlights.3.date")),
     quote: t(tKey("tourPickup.reviews.highlights.3.quote")),
-    avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39"
-  }
+    avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39",
+  },
 ];
 
-const buildReviewTags = (t: (key: Parameters<typeof translate>[1]) => string) => [
+const buildReviewTags = (
+  t: (key: Parameters<typeof translate>[1]) => string,
+) => [
   t(tKey("tourPickup.reviews.tags.1")),
   t(tKey("tourPickup.reviews.tags.2")),
-  t(tKey("tourPickup.reviews.tags.3"))
+  t(tKey("tourPickup.reviews.tags.3")),
 ];
 
 type TourIntent = {
@@ -165,18 +231,32 @@ const normalizeIntentText = (value: string) =>
 
 const resolveTourIntent = (haystack: string, locale: Locale): TourIntent => {
   const normalized = normalizeIntentText(haystack);
-  const isWater = /saona|catamaran|boat|barco|isla|snorkel|playa|beach|parasail|mar|ocean/.test(normalized);
-  const isAdventure = /buggy|atv|zip|horse|caballo|safari|aventura|adventure|off-road|offroad/.test(normalized);
-  const isCulture = /santo domingo|historia|cultura|cultural|city|ciudad|museo/.test(normalized);
-  const isNature = /samana|ballena|whale|cascada|waterfall|montana|nature|natural|rio/.test(normalized);
+  const isWater =
+    /saona|catamaran|boat|barco|isla|snorkel|playa|beach|parasail|mar|ocean/.test(
+      normalized,
+    );
+  const isAdventure =
+    /buggy|atv|zip|horse|caballo|safari|aventura|adventure|off-road|offroad/.test(
+      normalized,
+    );
+  const isCulture =
+    /santo domingo|historia|cultura|cultural|city|ciudad|museo/.test(
+      normalized,
+    );
+  const isNature =
+    /samana|ballena|whale|cascada|waterfall|montana|nature|natural|rio/.test(
+      normalized,
+    );
 
   if (locale === "en") {
     if (isWater) {
       return {
         label: "Beach and water day",
         fit: "best for travelers who want ocean time, photos, music or a relaxed Caribbean route",
-        packing: "bring swimwear, sunscreen, dry clothes and a small waterproof bag",
-        timing: "hotel pickup is important because marina and beach departures run on fixed windows"
+        packing:
+          "bring swimwear, sunscreen, dry clothes and a small waterproof bag",
+        timing:
+          "hotel pickup is important because marina and beach departures run on fixed windows",
       };
     }
     if (isAdventure) {
@@ -184,7 +264,8 @@ const resolveTourIntent = (haystack: string, locale: Locale): TourIntent => {
         label: "Adventure route",
         fit: "best for guests who want action, local stops and a more active day outside the resort",
         packing: "wear closed shoes and clothes that can get dirty",
-        timing: "being ready at the lobby avoids losing the first trail or safety briefing"
+        timing:
+          "being ready at the lobby avoids losing the first trail or safety briefing",
       };
     }
     if (isCulture) {
@@ -192,22 +273,26 @@ const resolveTourIntent = (haystack: string, locale: Locale): TourIntent => {
         label: "Cultural route",
         fit: "best for travelers who want history, local context and a guided city experience",
         packing: "bring comfortable shoes, light clothing and an ID copy",
-        timing: "early pickup helps protect the route time and the guided stops"
+        timing:
+          "early pickup helps protect the route time and the guided stops",
       };
     }
     if (isNature) {
       return {
         label: "Nature route",
         fit: "best for travelers who want landscapes, wildlife or a full day outside Punta Cana",
-        packing: "bring comfortable shoes, sun protection and a light change of clothes",
-        timing: "pickup timing matters because long-distance routes depend on road and boat connections"
+        packing:
+          "bring comfortable shoes, sun protection and a light change of clothes",
+        timing:
+          "pickup timing matters because long-distance routes depend on road and boat connections",
       };
     }
     return {
       label: "Guided experience",
       fit: "best for travelers who want a confirmed tour with local support and clear logistics",
-      packing: "bring comfortable clothes, sunscreen and your booking confirmation",
-      timing: "hotel pickup keeps the experience organized from the first step"
+      packing:
+        "bring comfortable clothes, sunscreen and your booking confirmation",
+      timing: "hotel pickup keeps the experience organized from the first step",
     };
   }
 
@@ -216,8 +301,10 @@ const resolveTourIntent = (haystack: string, locale: Locale): TourIntent => {
       return {
         label: "Journee plage et mer",
         fit: "ideal pour profiter de la mer, des photos, de la musique ou d'une route caribeenne detendue",
-        packing: "prevoyez maillot, protection solaire, vetements secs et petit sac impermeable",
-        timing: "la prise en charge est importante car les departs plage ou marina suivent des horaires fixes"
+        packing:
+          "prevoyez maillot, protection solaire, vetements secs et petit sac impermeable",
+        timing:
+          "la prise en charge est importante car les departs plage ou marina suivent des horaires fixes",
       };
     }
     if (isAdventure) {
@@ -225,30 +312,36 @@ const resolveTourIntent = (haystack: string, locale: Locale): TourIntent => {
         label: "Route aventure",
         fit: "ideal pour une journee active avec action, arrets locaux et sortie hors resort",
         packing: "portez chaussures fermees et vetements qui peuvent se salir",
-        timing: "etre pret au lobby evite de manquer le briefing ou le premier troncon"
+        timing:
+          "etre pret au lobby evite de manquer le briefing ou le premier troncon",
       };
     }
     if (isCulture) {
       return {
         label: "Route culturelle",
         fit: "ideal pour decouvrir histoire, contexte local et visite guidee",
-        packing: "prevoyez chaussures confortables, vetements legers et copie de piece d'identite",
-        timing: "un depart tot protege le temps de visite et les arrets guides"
+        packing:
+          "prevoyez chaussures confortables, vetements legers et copie de piece d'identite",
+        timing: "un depart tot protege le temps de visite et les arrets guides",
       };
     }
     if (isNature) {
       return {
         label: "Route nature",
         fit: "ideal pour paysages, faune ou journee complete hors Punta Cana",
-        packing: "prevoyez chaussures confortables, protection solaire et vetement de rechange leger",
-        timing: "l'heure de pickup compte car les longues routes dependent des connexions route et bateau"
+        packing:
+          "prevoyez chaussures confortables, protection solaire et vetement de rechange leger",
+        timing:
+          "l'heure de pickup compte car les longues routes dependent des connexions route et bateau",
       };
     }
     return {
       label: "Experience guidee",
       fit: "ideal pour reserver une activite confirmee avec support local et logistique claire",
-      packing: "prevoyez vetements confortables, protection solaire et confirmation de reservation",
-      timing: "la prise en charge hotel rend l'experience plus simple des le depart"
+      packing:
+        "prevoyez vetements confortables, protection solaire et confirmation de reservation",
+      timing:
+        "la prise en charge hotel rend l'experience plus simple des le depart",
     };
   }
 
@@ -256,8 +349,10 @@ const resolveTourIntent = (haystack: string, locale: Locale): TourIntent => {
     return {
       label: "Dia de playa y mar",
       fit: "ideal para viajeros que buscan mar, fotos, musica o una ruta caribena relajada",
-      packing: "lleva traje de bano, protector solar, ropa seca y una funda pequena impermeable",
-      timing: "la recogida importa porque las salidas de playa o marina trabajan con ventanas fijas"
+      packing:
+        "lleva traje de bano, protector solar, ropa seca y una funda pequena impermeable",
+      timing:
+        "la recogida importa porque las salidas de playa o marina trabajan con ventanas fijas",
     };
   }
   if (isAdventure) {
@@ -265,7 +360,8 @@ const resolveTourIntent = (haystack: string, locale: Locale): TourIntent => {
       label: "Ruta de aventura",
       fit: "ideal para quienes quieren accion, paradas locales y un dia activo fuera del resort",
       packing: "usa zapatos cerrados y ropa que pueda ensuciarse",
-      timing: "estar listo en lobby evita perder el briefing de seguridad o la primera parte de la ruta"
+      timing:
+        "estar listo en lobby evita perder el briefing de seguridad o la primera parte de la ruta",
     };
   }
   if (isCulture) {
@@ -273,22 +369,24 @@ const resolveTourIntent = (haystack: string, locale: Locale): TourIntent => {
       label: "Ruta cultural",
       fit: "ideal para conocer historia, contexto local y puntos guiados con mas calma",
       packing: "lleva zapatos comodos, ropa ligera y copia de identificacion",
-      timing: "la salida temprano ayuda a proteger el tiempo real de visita"
+      timing: "la salida temprano ayuda a proteger el tiempo real de visita",
     };
   }
   if (isNature) {
     return {
       label: "Ruta de naturaleza",
       fit: "ideal para paisajes, vida silvestre o una excursion de dia completo fuera de Punta Cana",
-      packing: "lleva zapatos comodos, proteccion solar y cambio de ropa ligero",
-      timing: "la hora de recogida importa porque las rutas largas dependen de carretera y conexiones"
+      packing:
+        "lleva zapatos comodos, proteccion solar y cambio de ropa ligero",
+      timing:
+        "la hora de recogida importa porque las rutas largas dependen de carretera y conexiones",
     };
   }
   return {
     label: "Experiencia guiada",
     fit: "ideal para reservar un tour confirmado con soporte local y logistica clara",
     packing: "lleva ropa comoda, protector solar y la confirmacion de reserva",
-    timing: "la recogida en hotel ordena la experiencia desde el primer paso"
+    timing: "la recogida en hotel ordena la experiencia desde el primer paso",
   };
 };
 
@@ -305,7 +403,7 @@ const buildTourPickupUniqueness = ({
   capacity,
   physicalLevel,
   includePreview,
-  intent
+  intent,
 }: {
   locale: Locale;
   title: string;
@@ -327,28 +425,37 @@ const buildTourPickupUniqueness = ({
       intro: `This page is built for the exact combination of ${title} and pickup from ${hotel}. The route is treated as a ${intent.label.toLowerCase()} in ${tourArea}, with pickup context for ${pickupArea}, estimated duration of ${duration}, and the first available departure around ${startTime}.`,
       support: `For this pickup point, the most important details are lobby timing, clear passenger count and the right preparation before leaving the hotel. This option is ${intent.fit}.`,
       cards: [
-        { title: "Pickup context", body: `Pickup is planned from ${hotel}, in the ${pickupArea} area, so the confirmation focuses on lobby access and meeting-point clarity.` },
-        { title: "Tour profile", body: `${category} experience in ${tourArea}. Languages: ${language}. Physical level: ${physicalLevel}. Capacity reference: ${capacity}.` },
-        { title: "Before leaving", body: `${intent.packing}. Included reference: ${includePreview}.` }
+        {
+          title: "Pickup context",
+          body: `Pickup is planned from ${hotel}, in the ${pickupArea} area, so the confirmation focuses on lobby access and meeting-point clarity.`,
+        },
+        {
+          title: "Tour profile",
+          body: `${category} experience in ${tourArea}. Languages: ${language}. Physical level: ${physicalLevel}. Capacity reference: ${capacity}.`,
+        },
+        {
+          title: "Before leaving",
+          body: `${intent.packing}. Included reference: ${includePreview}.`,
+        },
       ],
       faq: [
         {
           question: `How does pickup from ${hotel} work for ${title}?`,
-          answer: `After booking, the pickup point is confirmed for ${hotel}. The team checks the lobby or approved meeting point and keeps the tour linked to this hotel landing.`
+          answer: `After booking, the pickup point is confirmed for ${hotel}. The team checks the lobby or approved meeting point and keeps the tour linked to this hotel landing.`,
         },
         {
           question: `Is ${title} a good option from ${pickupArea}?`,
-          answer: `Yes. This page is filtered for the ${pickupArea} pickup context and the tour area ${tourArea}, so the logistics are more specific than a generic tour page.`
+          answer: `Yes. This page is filtered for the ${pickupArea} pickup context and the tour area ${tourArea}, so the logistics are more specific than a generic tour page.`,
         },
         {
           question: `What should I prepare before ${startTime}?`,
-          answer: `Be ready before the confirmed pickup window, keep your phone available, and ${intent.packing}.`
+          answer: `Be ready before the confirmed pickup window, keep your phone available, and ${intent.packing}.`,
         },
         {
           question: `Why book this tour from ${hotel} instead of a generic page?`,
-          answer: `This page keeps the tour, hotel, pickup area, duration, language and booking widget connected in one place, which reduces manual coordination.`
-        }
-      ]
+          answer: `This page keeps the tour, hotel, pickup area, duration, language and booking widget connected in one place, which reduces manual coordination.`,
+        },
+      ],
     };
   }
 
@@ -358,28 +465,37 @@ const buildTourPickupUniqueness = ({
       intro: `Cette page est construite pour la combinaison exacte entre ${title} et la prise en charge a ${hotel}. La route est traitee comme ${intent.label.toLowerCase()} a ${tourArea}, avec contexte pickup pour ${pickupArea}, duree estimee de ${duration} et premier depart vers ${startTime}.`,
       support: `Pour ce point de pickup, les details importants sont l'heure lobby, le nombre de passagers et la bonne preparation avant de quitter l'hotel. Cette option est ${intent.fit}.`,
       cards: [
-        { title: "Contexte pickup", body: `La prise en charge est prevue depuis ${hotel}, dans la zone ${pickupArea}, avec confirmation du lobby ou point autorise.` },
-        { title: "Profil du tour", body: `Experience ${category} a ${tourArea}. Langues : ${language}. Niveau physique : ${physicalLevel}. Capacite reference : ${capacity}.` },
-        { title: "Avant depart", body: `${intent.packing}. Inclusion principale : ${includePreview}.` }
+        {
+          title: "Contexte pickup",
+          body: `La prise en charge est prevue depuis ${hotel}, dans la zone ${pickupArea}, avec confirmation du lobby ou point autorise.`,
+        },
+        {
+          title: "Profil du tour",
+          body: `Experience ${category} a ${tourArea}. Langues : ${language}. Niveau physique : ${physicalLevel}. Capacite reference : ${capacity}.`,
+        },
+        {
+          title: "Avant depart",
+          body: `${intent.packing}. Inclusion principale : ${includePreview}.`,
+        },
       ],
       faq: [
         {
           question: `Comment fonctionne le pickup depuis ${hotel} pour ${title} ?`,
-          answer: `Apres reservation, le point exact est confirme pour ${hotel}. L'equipe verifie le lobby ou point approuve et garde le tour lie a cette page hotel.`
+          answer: `Apres reservation, le point exact est confirme pour ${hotel}. L'equipe verifie le lobby ou point approuve et garde le tour lie a cette page hotel.`,
         },
         {
           question: `${title} convient-il depuis ${pickupArea} ?`,
-          answer: `Oui. Cette page est filtree pour le contexte pickup ${pickupArea} et la zone du tour ${tourArea}, avec logistique plus precise qu'une page generique.`
+          answer: `Oui. Cette page est filtree pour le contexte pickup ${pickupArea} et la zone du tour ${tourArea}, avec logistique plus precise qu'une page generique.`,
         },
         {
           question: `Que preparer avant ${startTime} ?`,
-          answer: `Soyez pret avant la fenetre confirmee, gardez votre telephone disponible et ${intent.packing}.`
+          answer: `Soyez pret avant la fenetre confirmee, gardez votre telephone disponible et ${intent.packing}.`,
         },
         {
           question: `Pourquoi reserver depuis ${hotel} ici ?`,
-          answer: `Cette page relie le tour, l'hotel, la zone pickup, la duree, la langue et le module de reservation au meme endroit.`
-        }
-      ]
+          answer: `Cette page relie le tour, l'hotel, la zone pickup, la duree, la langue et le module de reservation au meme endroit.`,
+        },
+      ],
     };
   }
 
@@ -388,28 +504,37 @@ const buildTourPickupUniqueness = ({
     intro: `Esta pagina esta creada para la combinacion exacta de ${title} con recogida en ${hotel}. La ruta se trata como ${intent.label.toLowerCase()} en ${tourArea}, con contexto de salida desde ${pickupArea}, duracion estimada de ${duration} y primera salida alrededor de ${startTime}.`,
     support: `Para este punto de recogida, lo importante es confirmar lobby, cantidad de pasajeros y preparacion antes de salir del hotel. Esta opcion es ${intent.fit}.`,
     cards: [
-      { title: "Contexto de recogida", body: `La salida se organiza desde ${hotel}, dentro de la zona ${pickupArea}, con foco en lobby o punto autorizado.` },
-      { title: "Perfil del tour", body: `Experiencia ${category} en ${tourArea}. Idioma: ${language}. Nivel fisico: ${physicalLevel}. Capacidad de referencia: ${capacity}.` },
-      { title: "Antes de salir", body: `${intent.packing}. Referencia incluida: ${includePreview}.` }
+      {
+        title: "Contexto de recogida",
+        body: `La salida se organiza desde ${hotel}, dentro de la zona ${pickupArea}, con foco en lobby o punto autorizado.`,
+      },
+      {
+        title: "Perfil del tour",
+        body: `Experiencia ${category} en ${tourArea}. Idioma: ${language}. Nivel fisico: ${physicalLevel}. Capacidad de referencia: ${capacity}.`,
+      },
+      {
+        title: "Antes de salir",
+        body: `${intent.packing}. Referencia incluida: ${includePreview}.`,
+      },
     ],
     faq: [
       {
         question: `Como funciona la recogida en ${hotel} para ${title}?`,
-        answer: `Despues de reservar, se confirma el punto exacto para ${hotel}. El equipo valida lobby o punto autorizado y mantiene este tour conectado a esta landing del hotel.`
+        answer: `Despues de reservar, se confirma el punto exacto para ${hotel}. El equipo valida lobby o punto autorizado y mantiene este tour conectado a esta landing del hotel.`,
       },
       {
         question: `${title} conviene si estoy en ${pickupArea}?`,
-        answer: `Si. Esta pagina usa el contexto de recogida de ${pickupArea} y la zona del tour ${tourArea}, por eso es mas especifica que una ficha generica.`
+        answer: `Si. Esta pagina usa el contexto de recogida de ${pickupArea} y la zona del tour ${tourArea}, por eso es mas especifica que una ficha generica.`,
       },
       {
         question: `Que debo preparar antes de ${startTime}?`,
-        answer: `Debes estar listo antes de la ventana confirmada, mantener el telefono disponible y ${intent.packing}.`
+        answer: `Debes estar listo antes de la ventana confirmada, mantener el telefono disponible y ${intent.packing}.`,
       },
       {
         question: `Por que reservar desde ${hotel} y no desde una pagina generica?`,
-        answer: `Aqui quedan conectados el tour, hotel, zona de recogida, duracion, idioma y widget de reserva en una sola pagina.`
-      }
-    ]
+        answer: `Aqui quedan conectados el tour, hotel, zona de recogida, duracion, idioma y widget de reserva en una sola pagina.`,
+      },
+    ],
   };
 };
 
@@ -418,7 +543,11 @@ type TourHotelLandingParams = {
   searchParams?: Promise<{ bookingCode?: string; hotelSlug?: string }>;
 };
 
-const buildTourPickupUrl = (slug: string, locationSlug: string, locale: Locale) =>
+const buildTourPickupUrl = (
+  slug: string,
+  locationSlug: string,
+  locale: Locale,
+) =>
   locale === "es"
     ? `${BASE_URL}/tours/${slug}/recogida/${locationSlug}`
     : `${BASE_URL}/${locale}/tours/${slug}/recogida/${locationSlug}`;
@@ -435,7 +564,9 @@ type PickupTarget = {
   microZoneSlug?: string | null;
 };
 
-const resolvePickupTarget = async (slug: string): Promise<PickupTarget | null> => {
+const resolvePickupTarget = async (
+  slug: string,
+): Promise<PickupTarget | null> => {
   const location = await prisma.location.findUnique({
     where: { slug },
     select: {
@@ -445,8 +576,8 @@ const resolvePickupTarget = async (slug: string): Promise<PickupTarget | null> =
       destinationId: true,
       destination: { select: { name: true, slug: true } },
       microZoneId: true,
-      microZone: { select: { name: true, slug: true } }
-    }
+      microZone: { select: { name: true, slug: true } },
+    },
   });
 
   if (location) {
@@ -459,7 +590,7 @@ const resolvePickupTarget = async (slug: string): Promise<PickupTarget | null> =
       destinationSlug: location.destination?.slug ?? null,
       microZoneId: location.microZoneId,
       microZoneName: location.microZone?.name ?? null,
-      microZoneSlug: location.microZone?.slug ?? null
+      microZoneSlug: location.microZone?.slug ?? null,
     };
   }
 
@@ -469,8 +600,8 @@ const resolvePickupTarget = async (slug: string): Promise<PickupTarget | null> =
       slug: true,
       name: true,
       countryCode: true,
-      type: true
-    }
+      type: true,
+    },
   });
 
   if (!transferLocation) return null;
@@ -484,14 +615,14 @@ const resolvePickupTarget = async (slug: string): Promise<PickupTarget | null> =
 
   const mappedLocation = await prisma.location.findFirst({
     where: {
-      OR: [{ slug: transferLocation.slug }, { name: transferLocation.name }]
+      OR: [{ slug: transferLocation.slug }, { name: transferLocation.name }],
     },
     select: {
       destinationId: true,
       destination: { select: { name: true, slug: true } },
       microZoneId: true,
-      microZone: { select: { name: true, slug: true } }
-    }
+      microZone: { select: { name: true, slug: true } },
+    },
   });
 
   return {
@@ -503,14 +634,14 @@ const resolvePickupTarget = async (slug: string): Promise<PickupTarget | null> =
     destinationSlug: mappedLocation?.destination?.slug ?? null,
     microZoneId: mappedLocation?.microZoneId ?? null,
     microZoneName: mappedLocation?.microZone?.name ?? null,
-    microZoneSlug: mappedLocation?.microZone?.slug ?? null
+    microZoneSlug: mappedLocation?.microZone?.slug ?? null,
   };
 };
 
 export async function buildTourPickupMetadata(
   slug: string,
   locationSlug: string,
-  locale: Locale
+  locale: Locale,
 ): Promise<Metadata> {
   const [tour, pickupTarget] = await Promise.all([
     prisma.tour.findUnique({
@@ -520,33 +651,35 @@ export async function buildTourPickupMetadata(
         shortDescription: true,
         translations: {
           where: { locale },
-          select: { title: true, shortDescription: true, description: true }
-        }
-      }
+          select: { title: true, shortDescription: true, description: true },
+        },
+      },
     }),
-    resolvePickupTarget(locationSlug)
+    resolvePickupTarget(locationSlug),
   ]);
 
   if (!tour || !pickupTarget) {
     return {
       title: translate(locale, "tourPickup.meta.fallbackTitle"),
-      description: translate(locale, "tourPickup.meta.fallbackDescription")
+      description: translate(locale, "tourPickup.meta.fallbackDescription"),
     };
   }
 
   const translation = tour.translations?.[0];
   const resolvedTitle = translation?.title ?? tour.title;
   const resolvedDescription =
-    translation?.shortDescription ?? translation?.description ?? tour.shortDescription;
+    translation?.shortDescription ??
+    translation?.description ??
+    tour.shortDescription;
   const title = translate(locale, "tourPickup.meta.title", {
     tour: resolvedTitle,
-    hotel: pickupTarget.name
+    hotel: pickupTarget.name,
   });
   const description =
     resolvedDescription ??
     translate(locale, "tourPickup.meta.description", {
       tour: resolvedTitle,
-      hotel: pickupTarget.name
+      hotel: pickupTarget.name,
     });
 
   return {
@@ -557,14 +690,14 @@ export async function buildTourPickupMetadata(
       languages: {
         es: `/tours/${slug}/recogida/${pickupTarget.slug}`,
         en: `/en/tours/${slug}/recogida/${pickupTarget.slug}`,
-        fr: `/fr/tours/${slug}/recogida/${pickupTarget.slug}`
-      }
-    }
+        fr: `/fr/tours/${slug}/recogida/${pickupTarget.slug}`,
+      },
+    },
   };
 }
 
 export async function generateMetadata({
-  params
+  params,
 }: {
   params: Promise<{ slug: string; locationSlug: string }>;
 }) {
@@ -575,7 +708,7 @@ export async function generateMetadata({
 export async function TourHotelLanding({
   params,
   searchParams,
-  locale
+  locale,
 }: TourHotelLandingParams & { locale: Locale }) {
   const { slug, locationSlug } = await params;
   const resolvedSearch = searchParams ? await searchParams : {};
@@ -583,11 +716,13 @@ export async function TourHotelLanding({
     permanentRedirect(
       locale === "es"
         ? `/tours/${slug}/recogida/${locationSlug}`
-        : `/${locale}/tours/${slug}/recogida/${locationSlug}`
+        : `/${locale}/tours/${slug}/recogida/${locationSlug}`,
     );
   }
-  const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
-    translate(locale, key, replacements);
+  const t = (
+    key: Parameters<typeof translate>[1],
+    replacements?: Record<string, string>,
+  ) => translate(locale, key, replacements);
 
   let tour = null;
   let pickupTarget: PickupTarget | null = null;
@@ -597,11 +732,11 @@ export async function TourHotelLanding({
         where: { slug },
         include: {
           SupplierProfile: {
-            include: { User: { select: { name: true } } }
+            include: { User: { select: { name: true } } },
           },
           options: {
             where: { active: true },
-            orderBy: { sortOrder: "asc" }
+            orderBy: { sortOrder: "asc" },
           },
           country: true,
           destination: true,
@@ -616,19 +751,19 @@ export async function TourHotelLanding({
               includesList: true,
               notIncludedList: true,
               itineraryStops: true,
-              highlights: true
-            }
-          }
-        }
+              highlights: true,
+            },
+          },
+        },
       }),
-      resolvePickupTarget(locationSlug)
+      resolvePickupTarget(locationSlug),
     ]);
   } catch (error) {
-        console.error("Error loading tour or location for landing page", {
-          slug,
-          locationSlug,
-          error
-        });
+    console.error("Error loading tour or location for landing page", {
+      slug,
+      locationSlug,
+      error,
+    });
     throw error;
   }
 
@@ -638,16 +773,23 @@ export async function TourHotelLanding({
   }
 
   if (!pickupTarget) {
-    console.error("Location/pickup target no encontrado para el slug", { locationSlug, slug });
+    console.error("Location/pickup target no encontrado para el slug", {
+      locationSlug,
+      slug,
+    });
     notFound();
   }
 
   const translation = tour.translations?.[0];
   const localizedTitle = translation?.title ?? tour.title;
-  const localizedShortDescription = translation?.shortDescription ?? tour.shortDescription ?? "";
-  const localizedDescription = translation?.description ?? tour.description ?? "";
+  const localizedShortDescription =
+    translation?.shortDescription ?? tour.shortDescription ?? "";
+  const localizedDescription =
+    translation?.description ?? tour.description ?? "";
   const normalizeArray = (value?: unknown) =>
-    Array.isArray(value) ? value.map((entry) => String(entry).trim()).filter(Boolean) : [];
+    Array.isArray(value)
+      ? value.map((entry) => String(entry).trim()).filter(Boolean)
+      : [];
   const translatedIncludes = normalizeArray(translation?.includesList);
   const translatedNotIncluded = normalizeArray(translation?.notIncludedList);
   const translatedHighlights = normalizeArray(translation?.highlights);
@@ -660,11 +802,14 @@ export async function TourHotelLanding({
     locale !== "es" && translatedIncludes.length
       ? translatedIncludes
       : tour.includes
-        ? tour.includes.split(";").map((item) => item.trim()).filter(Boolean)
+        ? tour.includes
+            .split(";")
+            .map((item) => item.trim())
+            .filter(Boolean)
         : [
             t("tourPickup.includes.defaults.1"),
             t("tourPickup.includes.defaults.2"),
-            t("tourPickup.includes.defaults.3")
+            t("tourPickup.includes.defaults.3"),
           ];
   const excludesList =
     locale !== "es" && translatedNotIncluded.length
@@ -672,30 +817,50 @@ export async function TourHotelLanding({
       : [
           t("tourPickup.excludes.defaults.1"),
           t("tourPickup.excludes.defaults.2"),
-          t("tourPickup.excludes.defaults.3")
+          t("tourPickup.excludes.defaults.3"),
         ];
-  const categories = (tour.category ?? "").split(",").map((part) => part.trim()).filter(Boolean);
-  const languages = (tour.language ?? "").split(",").map((part) => part.trim()).filter(Boolean);
+  const categories = (tour.category ?? "")
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const languages = (tour.language ?? "")
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
   const timeSlotsRaw = parseJsonArray<PersistedTimeSlot>(tour.timeOptions);
-  const defaultSlot: PersistedTimeSlot = { hour: 9, minute: "00", period: "AM" };
-  const timeSlots: PersistedTimeSlot[] = timeSlotsRaw.length ? timeSlotsRaw : [defaultSlot];
+  const defaultSlot: PersistedTimeSlot = {
+    hour: 9,
+    minute: "00",
+    period: "AM",
+  };
+  const timeSlots: PersistedTimeSlot[] = timeSlotsRaw.length
+    ? timeSlotsRaw
+    : [defaultSlot];
   const durationValue = parseDuration(tour.duration);
   const durationLabel = formatDurationLabel(durationValue, locale);
-  const displayTime = timeSlots.length ? formatTimeSlot(timeSlots[0]) : "09:00 AM";
+  const displayTime = timeSlots.length
+    ? formatTimeSlot(timeSlots[0])
+    : "09:00 AM";
   const priceLabel = `$${tour.price.toFixed(0)} USD`;
   const parsedAdminItinerary = parseAdminItinerary(tour.adminNote ?? "");
-  const itinerarySource = parsedAdminItinerary.length ? parsedAdminItinerary : parseItinerary(tour.adminNote ?? "");
+  const itinerarySource = parsedAdminItinerary.length
+    ? parsedAdminItinerary
+    : parseItinerary(tour.adminNote ?? "");
   const visualTimeline =
     locale !== "es" && translatedItinerary.length
       ? translatedItinerary
       : itinerarySource.length
         ? itinerarySource
         : buildItineraryMock(t);
-  const heroImage = tour.heroImage ?? rawGallery[0] ?? "/fototours/fotosimple.jpg";
-  const gallery = [heroImage, ...rawGallery.filter((img) => img && img !== heroImage)];
+  const heroImage =
+    tour.heroImage ?? rawGallery[0] ?? "/fototours/fotosimple.jpg";
+  const gallery = [
+    heroImage,
+    ...rawGallery.filter((img) => img && img !== heroImage),
+  ];
   const normalizedOptions = tour.options?.map((option) => ({
     ...option,
-    pickupTimes: normalizePickupTimes(option.pickupTimes)
+    pickupTimes: normalizePickupTimes(option.pickupTimes),
   }));
   const shortTeaser =
     localizedShortDescription && localizedShortDescription.length > 220
@@ -708,15 +873,32 @@ export async function TourHotelLanding({
 
   const detailReviewCount = getTourReviewCount(tour.slug, "detail");
   const detailReviewLabel = formatReviewCountValue(detailReviewCount);
-  const categoryLabel = categories[0] ?? tour.category ?? t("tourPickup.details.defaults.categories");
-  const languageLabel = languages.length ? languages.join(", ") : t("tourPickup.details.defaults.languages");
-  const physicalLabel = tour.physicalLevel ?? t("tourPickup.details.defaults.physical");
-  const capacityLabel = t("tourPickup.details.defaults.capacity", { count: String(tour.capacity ?? 15) });
+  const categoryLabel =
+    categories[0] ??
+    tour.category ??
+    t("tourPickup.details.defaults.categories");
+  const languageLabel = languages.length
+    ? languages.join(", ")
+    : t("tourPickup.details.defaults.languages");
+  const physicalLabel =
+    tour.physicalLevel ?? t("tourPickup.details.defaults.physical");
+  const capacityLabel = t("tourPickup.details.defaults.capacity", {
+    count: String(tour.capacity ?? 15),
+  });
   const pickupArea =
-    pickupTarget.microZoneName ?? pickupTarget.destinationName ?? tour.microZone?.name ?? tour.destination?.name ?? pickupTarget.name;
+    pickupTarget.microZoneName ??
+    pickupTarget.destinationName ??
+    tour.microZone?.name ??
+    tour.destination?.name ??
+    pickupTarget.name;
   const tourArea =
-    tour.departureDestination?.name ?? tour.destination?.name ?? tour.microZone?.name ?? tour.location ?? pickupArea;
-  const includePreview = includesList.slice(0, 2).join(", ") || t("tourPickup.includes.defaults.1");
+    tour.departureDestination?.name ??
+    tour.destination?.name ??
+    tour.microZone?.name ??
+    tour.location ??
+    pickupArea;
+  const includePreview =
+    includesList.slice(0, 2).join(", ") || t("tourPickup.includes.defaults.1");
   const tourIntent = resolveTourIntent(
     [
       localizedTitle,
@@ -727,11 +909,11 @@ export async function TourHotelLanding({
       tour.destination?.name,
       tour.departureDestination?.name,
       tour.microZone?.name,
-      includesList.join(" ")
+      includesList.join(" "),
     ]
       .filter(Boolean)
       .join(" "),
-    locale
+    locale,
   );
   const uniquePickupContent = buildTourPickupUniqueness({
     locale,
@@ -746,10 +928,12 @@ export async function TourHotelLanding({
     capacity: capacityLabel,
     physicalLevel: physicalLabel,
     includePreview,
-    intent: tourIntent
+    intent: tourIntent,
   });
   const pageUrl = buildTourPickupUrl(tour.slug, pickupTarget.slug, locale);
-  const heroImageAbsolute = heroImage.startsWith("http") ? heroImage : `${BASE_URL}${heroImage.startsWith("/") ? heroImage : `/${heroImage}`}`;
+  const heroImageAbsolute = heroImage.startsWith("http")
+    ? heroImage
+    : `${BASE_URL}${heroImage.startsWith("/") ? heroImage : `/${heroImage}`}`;
   const tourPickupSchema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -761,7 +945,7 @@ export async function TourHotelLanding({
         image: heroImageAbsolute,
         brand: {
           "@type": "Brand",
-          name: "Proactivitis"
+          name: "Proactivitis",
         },
         category: categoryLabel,
         offers: {
@@ -769,8 +953,11 @@ export async function TourHotelLanding({
           url: pageUrl,
           price: tour.price.toFixed(2),
           priceCurrency: "USD",
-          availability: "https://schema.org/InStock"
-        }
+          priceValidUntil: getPickupPriceValidUntil(),
+          availability: "https://schema.org/InStock",
+          shippingDetails: SERVICE_SHIPPING_DETAILS,
+          hasMerchantReturnPolicy: MERCHANT_RETURN_POLICY,
+        },
       },
       {
         "@type": "TouristTrip",
@@ -784,22 +971,22 @@ export async function TourHotelLanding({
           position: index + 1,
           name: stop.title,
           description: stop.description,
-          startTime: stop.time
+          startTime: stop.time,
         })),
         provider: {
           "@type": "Organization",
-          name: tour.SupplierProfile?.company ?? "Proactivitis"
+          name: tour.SupplierProfile?.company ?? "Proactivitis",
         },
         location: {
           "@type": "Place",
-          name: tourArea
+          name: tourArea,
         },
         departureTime: displayTime,
         departureStation: {
           "@type": "Place",
           name: pickupTarget.name,
-          address: pickupArea
-        }
+          address: pickupArea,
+        },
       },
       {
         "@type": "FAQPage",
@@ -809,9 +996,9 @@ export async function TourHotelLanding({
           name: item.question,
           acceptedAnswer: {
             "@type": "Answer",
-            text: item.answer
-          }
-        }))
+            text: item.answer,
+          },
+        })),
       },
       {
         "@type": "BreadcrumbList",
@@ -820,24 +1007,25 @@ export async function TourHotelLanding({
           {
             "@type": "ListItem",
             position: 1,
-            name: locale === "es" ? "Tours" : locale === "fr" ? "Tours" : "Tours",
-            item: `${BASE_URL}${locale === "es" ? "/tours" : `/${locale}/tours`}`
+            name:
+              locale === "es" ? "Tours" : locale === "fr" ? "Tours" : "Tours",
+            item: `${BASE_URL}${locale === "es" ? "/tours" : `/${locale}/tours`}`,
           },
           {
             "@type": "ListItem",
             position: 2,
             name: localizedTitle,
-            item: `${BASE_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`
+            item: `${BASE_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`,
           },
           {
             "@type": "ListItem",
             position: 3,
             name: pickupTarget.name,
-            item: pageUrl
-          }
-        ]
-      }
-    ]
+            item: pageUrl,
+          },
+        ],
+      },
+    ],
   };
 
   const quickInfo = [
@@ -846,48 +1034,80 @@ export async function TourHotelLanding({
       value: durationLabel,
       detail: t("tourPickup.quickInfo.duration.detail"),
       icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
+        <svg
+          className="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1}
+        >
           <circle cx="12" cy="12" r="9" />
           <path d="M12 7v5l3 2" />
         </svg>
-      )
+      ),
     },
     {
       label: t("tourPickup.quickInfo.departure.label"),
       value: displayTime,
-      detail: t("tourPickup.quickInfo.departure.detail", { hotel: pickupTarget.name }),
+      detail: t("tourPickup.quickInfo.departure.detail", {
+        hotel: pickupTarget.name,
+      }),
       icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
+        <svg
+          className="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1}
+        >
           <path d="M12 4a8 8 0 100 16 8 8 0 000-16Zm0 9V7" />
           <path d="M12 12h4" />
         </svg>
-      )
+      ),
     },
     {
       label: t("tourPickup.quickInfo.languages.label"),
-      value: languages.length ? languages.join(", ") : t("tourPickup.quickInfo.languages.fallback"),
+      value: languages.length
+        ? languages.join(", ")
+        : t("tourPickup.quickInfo.languages.fallback"),
       detail: languages.length
-        ? t("tourPickup.quickInfo.languages.detail", { count: String(languages.length) })
+        ? t("tourPickup.quickInfo.languages.detail", {
+            count: String(languages.length),
+          })
         : t("tourPickup.quickInfo.languages.fallback"),
       icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
+        <svg
+          className="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1}
+        >
           <path d="M4 6h16M4 12h16M4 18h16" />
           <path d="M8 4c0 2.21-1.343 4-3 4M18 4c0 2.21 1.343 4 3 4" />
         </svg>
-      )
+      ),
     },
     {
       label: t("tourPickup.quickInfo.capacity.label"),
-      value: t("tourPickup.quickInfo.capacity.value", { count: String(tour.capacity ?? 15) }),
+      value: t("tourPickup.quickInfo.capacity.value", {
+        count: String(tour.capacity ?? 15),
+      }),
       detail: t("tourPickup.quickInfo.capacity.detail"),
       icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
+        <svg
+          className="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1}
+        >
           <circle cx="8" cy="8" r="3" />
           <circle cx="16" cy="8" r="3" />
           <path d="M2 21c0-3.314 2.686-6 6-6h8c3.314 0 6 2.686 6 6" />
         </svg>
-      )
-    }
+      ),
+    },
   ];
 
   const bookingCode = resolvedSearch.bookingCode;
@@ -904,15 +1124,23 @@ export async function TourHotelLanding({
             <h1 className="mb-6 text-3xl font-black leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
               {localizedTitle}
             </h1>
-            <p className="text-lg text-slate-500 leading-relaxed">{shortTeaser}</p>
+            <p className="text-lg text-slate-500 leading-relaxed">
+              {shortTeaser}
+            </p>
             <div className="flex items-center gap-8 border-t border-slate-100 pt-8">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{t("tourPickup.hero.fromLabel")}</p>
-                <p className="text-4xl font-black text-indigo-600">{priceLabel}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  {t("tourPickup.hero.fromLabel")}
+                </p>
+                <p className="text-4xl font-black text-indigo-600">
+                  {priceLabel}
+                </p>
               </div>
               <div className="h-10 w-px bg-slate-200" />
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{t("tourPickup.hero.ratingLabel")}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  {t("tourPickup.hero.ratingLabel")}
+                </p>
                 <p className="text-xl font-black">4.9</p>
               </div>
             </div>
@@ -934,7 +1162,7 @@ export async function TourHotelLanding({
           <div
             className="h-[320px] sm:h-[350px] lg:h-full bg-cover bg-center"
             style={{
-              backgroundImage: `url(${heroImage})`
+              backgroundImage: `url(${heroImage})`,
             }}
           />
         </div>
@@ -943,11 +1171,20 @@ export async function TourHotelLanding({
       <section className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-4 py-10">
         <div className="grid gap-4 rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm md:grid-cols-2 lg:grid-cols-4">
           {quickInfo.map((item) => (
-            <div key={item.label} className="space-y-2 rounded-[18px] border border-slate-100 bg-slate-50/60 p-4 text-sm">
+            <div
+              key={item.label}
+              className="space-y-2 rounded-[18px] border border-slate-100 bg-slate-50/60 p-4 text-sm"
+            >
               <div className="text-slate-500">{item.icon}</div>
-              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-slate-400">{item.label}</p>
-              <p className="text-lg font-semibold text-slate-900">{item.value}</p>
-              <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{item.detail}</p>
+              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-slate-400">
+                {item.label}
+              </p>
+              <p className="text-lg font-semibold text-slate-900">
+                {item.value}
+              </p>
+              <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">
+                {item.detail}
+              </p>
             </div>
           ))}
         </div>
@@ -957,13 +1194,16 @@ export async function TourHotelLanding({
         <div className="rounded-[28px] border border-slate-100 bg-white/90 p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-2 text-slate-600">
             <span className="flex items-center gap-2">
-              <span className="text-emerald-500">OK</span> {t("tourPickup.ribbon.immediate")}
+              <span className="text-emerald-500">OK</span>{" "}
+              {t("tourPickup.ribbon.immediate")}
             </span>
             <span className="flex items-center gap-2">
-              <span className="text-emerald-500">OK</span> {t("tourPickup.ribbon.flexible")}
+              <span className="text-emerald-500">OK</span>{" "}
+              {t("tourPickup.ribbon.flexible")}
             </span>
             <span className="flex items-center gap-2">
-              <span className="text-emerald-500">OK</span> {t("tourPickup.ribbon.support")}
+              <span className="text-emerald-500">OK</span>{" "}
+              {t("tourPickup.ribbon.support")}
             </span>
           </div>
         </div>
@@ -971,11 +1211,14 @@ export async function TourHotelLanding({
 
       <main className="mx-auto mt-12 grid max-w-[1240px] gap-10 px-4 sm:px-6 lg:px-4 lg:grid-cols-[1fr,400px]">
         <div className="space-y-10">
-          <section id="gallery" className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
+          <section
+            id="gallery"
+            className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm"
+          >
             <TourGalleryViewer
               images={gallery.map((img, index) => ({
                 url: img,
-                label: `${localizedTitle} ${index + 1}`
+                label: `${localizedTitle} ${index + 1}`,
               }))}
             />
           </section>
@@ -983,31 +1226,54 @@ export async function TourHotelLanding({
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.summary.eyebrow")}</p>
-                <h2 className="text-[20px] font-semibold text-slate-900">{t("tourPickup.summary.title")}</h2>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                  {t("tourPickup.summary.eyebrow")}
+                </p>
+                <h2 className="text-[20px] font-semibold text-slate-900">
+                  {t("tourPickup.summary.title")}
+                </h2>
               </div>
-              <span className="text-xs uppercase tracking-[0.3em] text-slate-400">{t("tourPickup.summary.badge", { hotel: pickupTarget.name })}</span>
+              <span className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                {t("tourPickup.summary.badge", { hotel: pickupTarget.name })}
+              </span>
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">{localizedDescription || shortTeaser}</p>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">
+              {localizedDescription || shortTeaser}
+            </p>
           </section>
 
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-3xl">
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{tourIntent.label}</p>
-                <h2 className="mt-2 text-[22px] font-semibold text-slate-900">{uniquePickupContent.heading}</h2>
-                <p className="mt-3 text-sm leading-7 text-slate-600">{uniquePickupContent.intro}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                  {tourIntent.label}
+                </p>
+                <h2 className="mt-2 text-[22px] font-semibold text-slate-900">
+                  {uniquePickupContent.heading}
+                </h2>
+                <p className="mt-3 text-sm leading-7 text-slate-600">
+                  {uniquePickupContent.intro}
+                </p>
               </div>
               <div className="rounded-[18px] border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-700">
                 {pickupArea}
               </div>
             </div>
-            <p className="mt-4 text-sm leading-7 text-slate-600">{uniquePickupContent.support}</p>
+            <p className="mt-4 text-sm leading-7 text-slate-600">
+              {uniquePickupContent.support}
+            </p>
             <div className="mt-5 grid gap-4 md:grid-cols-3">
               {uniquePickupContent.cards.map((card) => (
-                <article key={card.title} className="rounded-[18px] border border-slate-100 bg-slate-50/70 p-4">
-                  <h3 className="text-sm font-semibold text-slate-900">{card.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{card.body}</p>
+                <article
+                  key={card.title}
+                  className="rounded-[18px] border border-slate-100 bg-slate-50/70 p-4"
+                >
+                  <h3 className="text-sm font-semibold text-slate-900">
+                    {card.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {card.body}
+                  </p>
                 </article>
               ))}
             </div>
@@ -1016,23 +1282,43 @@ export async function TourHotelLanding({
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{t("tourPickup.details.eyebrow")}</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">{t("tourPickup.details.title")}</h3>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">
+                  {t("tourPickup.details.eyebrow")}
+                </p>
+                <h3 className="text-[16px] font-semibold text-slate-900">
+                  {t("tourPickup.details.title")}
+                </h3>
               </div>
-              <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">{t("tourPickup.details.badge")}</span>
+              <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">
+                {t("tourPickup.details.badge")}
+              </span>
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {[
-                { title: t("tourPickup.details.labels.categories"), value: categories.join(", ") || t("tourPickup.details.defaults.categories") },
-                { title: t("tourPickup.details.labels.languages"), value: languages.join(", ") || t("tourPickup.details.defaults.languages") },
+                {
+                  title: t("tourPickup.details.labels.categories"),
+                  value:
+                    categories.join(", ") ||
+                    t("tourPickup.details.defaults.categories"),
+                },
+                {
+                  title: t("tourPickup.details.labels.languages"),
+                  value:
+                    languages.join(", ") ||
+                    t("tourPickup.details.defaults.languages"),
+                },
                 {
                   title: t("tourPickup.details.labels.capacity"),
-                  value: t("tourPickup.details.defaults.capacity", { count: String(tour.capacity ?? 15) })
+                  value: t("tourPickup.details.defaults.capacity", {
+                    count: String(tour.capacity ?? 15),
+                  }),
                 },
                 {
                   title: t("tourPickup.details.labels.physical"),
-                  value: tour.physicalLevel ?? t("tourPickup.details.defaults.physical")
-                }
+                  value:
+                    tour.physicalLevel ??
+                    t("tourPickup.details.defaults.physical"),
+                },
               ].map((item) => (
                 <div
                   key={item.title}
@@ -1041,7 +1327,9 @@ export async function TourHotelLanding({
                   <p className="text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-slate-500">
                     {item.title}
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">{item.value}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900">
+                    {item.value}
+                  </p>
                 </div>
               ))}
             </div>
@@ -1050,7 +1338,9 @@ export async function TourHotelLanding({
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.includes.title")}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                  {t("tourPickup.includes.title")}
+                </p>
                 <ul className="mt-3 space-y-2 text-sm text-slate-600">
                   {includesList.map((entry) => (
                     <li key={entry} className="flex items-center gap-2">
@@ -1061,7 +1351,9 @@ export async function TourHotelLanding({
                 </ul>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.excludes.title")}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                  {t("tourPickup.excludes.title")}
+                </p>
                 <ul className="mt-3 space-y-2 text-sm text-slate-600">
                   {excludesList.map((entry) => (
                     <li key={entry} className="flex items-center gap-2">
@@ -1077,24 +1369,41 @@ export async function TourHotelLanding({
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.itinerary.eyebrow")}</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">{t("tourPickup.itinerary.title")}</h3>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                  {t("tourPickup.itinerary.eyebrow")}
+                </p>
+                <h3 className="text-[16px] font-semibold text-slate-900">
+                  {t("tourPickup.itinerary.title")}
+                </h3>
               </div>
-              <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">{t("tourPickup.itinerary.badge")}</span>
+              <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">
+                {t("tourPickup.itinerary.badge")}
+              </span>
             </div>
             <div className="relative mt-4 pl-0 lg:pl-10">
               <div className="absolute left-4 top-0 bottom-0 w-px border-l-2 border-dashed border-slate-200" />
               <div className="space-y-5">
                 {visualTimeline.map((stop, index) => (
-                  <div key={`${stop.title}-${index}`} className="relative flex gap-4">
+                  <div
+                    key={`${stop.title}-${index}`}
+                    className="relative flex gap-4"
+                  >
                     <div className="flex flex-col items-center">
                       <span className="h-3 w-3 rounded-full bg-indigo-600" />
-                      {index !== visualTimeline.length - 1 && <span className="mt-2 h-6 w-px bg-slate-200" />}
+                      {index !== visualTimeline.length - 1 && (
+                        <span className="mt-2 h-6 w-px bg-slate-200" />
+                      )}
                     </div>
                     <div className="flex-1 rounded-[16px] border border-[#F1F5F9] bg-white/70 px-4 py-3">
-                      <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{stop.time}</p>
-                      <p className="mt-1 text-[16px] font-semibold text-slate-900">{stop.title}</p>
-                      <p className="mt-1 text-sm text-slate-600">{stop.description ?? t("tourPickup.itinerary.fallback")}</p>
+                      <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">
+                        {stop.time}
+                      </p>
+                      <p className="mt-1 text-[16px] font-semibold text-slate-900">
+                        {stop.title}
+                      </p>
+                      <p className="mt-1 text-sm text-slate-600">
+                        {stop.description ?? t("tourPickup.itinerary.fallback")}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -1105,34 +1414,49 @@ export async function TourHotelLanding({
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.reviews.eyebrow")}</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">{t("tourPickup.reviews.title")}</h3>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                  {t("tourPickup.reviews.eyebrow")}
+                </p>
+                <h3 className="text-[16px] font-semibold text-slate-900">
+                  {t("tourPickup.reviews.title")}
+                </h3>
               </div>
-              <div className="text-xs uppercase tracking-[0.3em] text-slate-400">{t("tourPickup.reviews.summary", { count: detailReviewLabel })}</div>
+              <div className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                {t("tourPickup.reviews.summary", { count: detailReviewLabel })}
+              </div>
             </div>
             <div className="mt-4 grid gap-6 lg:grid-cols-[1.2fr,1fr]">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <p className="text-4xl font-semibold text-slate-900">4.9</p>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.reviews.outOf")}</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                    {t("tourPickup.reviews.outOf")}
+                  </p>
                 </div>
                 <div className="space-y-3 text-sm text-slate-600">
                   {reviewBreakdown.map((item) => (
                     <div key={item.label} className="flex items-center gap-3">
-                      <span className="w-24 text-xs text-slate-500">{item.label}</span>
+                      <span className="w-24 text-xs text-slate-500">
+                        {item.label}
+                      </span>
                       <div className="relative flex-1 overflow-hidden rounded-full bg-slate-100">
                         <span
                           className="block h-2 rounded-full bg-emerald-500"
                           style={{ width: `${item.percent}%` }}
                         />
                       </div>
-                      <span className="ml-2 text-xs font-semibold text-slate-500">{item.percent}%</span>
+                      <span className="ml-2 text-xs font-semibold text-slate-500">
+                        {item.percent}%
+                      </span>
                     </div>
                   ))}
                 </div>
                 <div className="flex flex-wrap gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
                   {reviewTags.map((tag) => (
-                    <span key={tag} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
+                    <span
+                      key={tag}
+                      className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1"
+                    >
                       {tag}
                     </span>
                   ))}
@@ -1140,7 +1464,10 @@ export async function TourHotelLanding({
               </div>
               <div className="space-y-4">
                 {reviewHighlights.map((review) => (
-                  <div key={review.name} className="rounded-[16px] border border-[#F1F5F9] bg-white p-4 shadow-sm">
+                  <div
+                    key={review.name}
+                    className="rounded-[16px] border border-[#F1F5F9] bg-white p-4 shadow-sm"
+                  >
                     <div className="flex items-center gap-3">
                       <Image
                         src={review.avatar}
@@ -1150,11 +1477,15 @@ export async function TourHotelLanding({
                         className="h-12 w-12 rounded-full object-cover"
                       />
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">{review.name}</p>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {review.name}
+                        </p>
                         <p className="text-xs text-slate-500">{review.date}</p>
                       </div>
                     </div>
-                    <p className="mt-2 text-sm text-slate-600">{review.quote}</p>
+                    <p className="mt-2 text-sm text-slate-600">
+                      {review.quote}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -1164,10 +1495,16 @@ export async function TourHotelLanding({
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Qué llevar</p>
-                <h3 className="text-[16px] font-semibold text-slate-900">{t("tourPickup.packing.title")}</h3>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                  Qué llevar
+                </p>
+                <h3 className="text-[16px] font-semibold text-slate-900">
+                  {t("tourPickup.packing.title")}
+                </h3>
               </div>
-              <span className="text-xs uppercase tracking-[0.35em] text-slate-400">{t("tourPickup.packing.badge")}</span>
+              <span className="text-xs uppercase tracking-[0.35em] text-slate-400">
+                {t("tourPickup.packing.badge")}
+              </span>
             </div>
             <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
               {packingList.map((item) => (
@@ -1176,7 +1513,9 @@ export async function TourHotelLanding({
                   className="flex min-w-[140px] flex-col items-center gap-2 rounded-[16px] border border-[#F1F5F9] bg-white/0 px-3 py-4 text-center"
                 >
                   <span className="text-2xl">{item.icon}</span>
-                  <p className="text-sm font-semibold text-slate-900">{item.label}</p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {item.label}
+                  </p>
                   <p className="text-xs text-slate-500">{item.detail}</p>
                 </div>
               ))}
@@ -1186,7 +1525,9 @@ export async function TourHotelLanding({
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Pickup FAQ</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                  Pickup FAQ
+                </p>
                 <h3 className="text-[16px] font-semibold text-slate-900">
                   {locale === "es"
                     ? "Preguntas especificas de esta recogida"
@@ -1195,13 +1536,22 @@ export async function TourHotelLanding({
                       : "Pickup-specific questions"}
                 </h3>
               </div>
-              <span className="text-xs uppercase tracking-[0.35em] text-slate-400">{pickupTarget.name}</span>
+              <span className="text-xs uppercase tracking-[0.35em] text-slate-400">
+                {pickupTarget.name}
+              </span>
             </div>
             <div className="mt-4 grid gap-3">
               {uniquePickupContent.faq.map((item) => (
-                <details key={item.question} className="rounded-[18px] border border-slate-100 bg-slate-50/60 p-4">
-                  <summary className="cursor-pointer text-sm font-semibold text-slate-900">{item.question}</summary>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{item.answer}</p>
+                <details
+                  key={item.question}
+                  className="rounded-[18px] border border-slate-100 bg-slate-50/60 p-4"
+                >
+                  <summary className="cursor-pointer text-sm font-semibold text-slate-900">
+                    {item.question}
+                  </summary>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {item.answer}
+                  </p>
                 </details>
               ))}
             </div>
@@ -1209,9 +1559,16 @@ export async function TourHotelLanding({
         </div>
 
         <aside className="space-y-6 lg:w-[400px] w-full lg:sticky lg:top-16">
-          <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl" id="booking">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t("tourPickup.booking.eyebrow")}</p>
-            <h3 className="mt-2 text-2xl font-bold text-slate-900">{t("tourPickup.booking.title")}</h3>
+          <div
+            className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl"
+            id="booking"
+          >
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+              {t("tourPickup.booking.eyebrow")}
+            </p>
+            <h3 className="mt-2 text-2xl font-bold text-slate-900">
+              {t("tourPickup.booking.title")}
+            </h3>
             <p className="text-sm text-slate-600">
               {t("tourPickup.booking.body", { hotel: pickupTarget.name })}
             </p>
@@ -1220,7 +1577,9 @@ export async function TourHotelLanding({
               basePrice={tour.price}
               timeSlots={timeSlots}
               options={normalizedOptions ?? []}
-              supplierHasStripeAccount={Boolean(tour.SupplierProfile?.stripeAccountId)}
+              supplierHasStripeAccount={Boolean(
+                tour.SupplierProfile?.stripeAccountId,
+              )}
               platformSharePercent={tour.platformSharePercent ?? 20}
               tourTitle={localizedTitle}
               tourImage={heroImage}
@@ -1230,15 +1589,23 @@ export async function TourHotelLanding({
             />
             <div className="mt-6 rounded-[16px] border border-[#F1F5F9] bg-slate-50/60 p-4 text-sm text-slate-600 text-center">
               <p className="font-semibold text-slate-900">
-                {tour.SupplierProfile?.company ?? tour.SupplierProfile?.User?.name ?? t("tourPickup.booking.supplierFallback")}
+                {tour.SupplierProfile?.company ??
+                  tour.SupplierProfile?.User?.name ??
+                  t("tourPickup.booking.supplierFallback")}
               </p>
               <p>{t("tourPickup.booking.supplierNote")}</p>
             </div>
           </div>
           <div className="rounded-[28px] border border-slate-100 bg-emerald-50/80 p-5 text-sm text-emerald-900 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.3em] text-emerald-700">{t("tourPickup.urgency.eyebrow")}</p>
-            <p className="text-xl font-semibold">{t("tourPickup.urgency.title")}</p>
-            <p className="text-xs text-emerald-700">{t("tourPickup.urgency.body", { hotel: pickupTarget.name })}</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-emerald-700">
+              {t("tourPickup.urgency.eyebrow")}
+            </p>
+            <p className="text-xl font-semibold">
+              {t("tourPickup.urgency.title")}
+            </p>
+            <p className="text-xs text-emerald-700">
+              {t("tourPickup.urgency.body", { hotel: pickupTarget.name })}
+            </p>
           </div>
         </aside>
       </main>
@@ -1248,6 +1615,8 @@ export async function TourHotelLanding({
   );
 }
 
-export default async function TourHotelLandingRoute(props: TourHotelLandingParams) {
+export default async function TourHotelLandingRoute(
+  props: TourHotelLandingParams,
+) {
   return TourHotelLanding({ ...props, locale: "es" });
 }

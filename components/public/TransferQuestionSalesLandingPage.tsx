@@ -5,10 +5,15 @@ import { prisma } from "@/lib/prisma";
 import PremiumTransferBookingWidget from "@/components/transfers/PremiumTransferBookingWidget";
 import StructuredData from "@/components/schema/StructuredData";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
-import { PROACTIVITIS_URL, PROACTIVITIS_LOCALBUSINESS, SAME_AS_URLS, getPriceValidUntil } from "@/lib/seo";
+import {
+  PROACTIVITIS_URL,
+  PROACTIVITIS_LOCALBUSINESS,
+  SAME_AS_URLS,
+  getPriceValidUntil,
+} from "@/lib/seo";
 import {
   findTransferQuestionSalesLandingBySlug,
-  type TransferQuestionSalesLanding
+  type TransferQuestionSalesLanding,
 } from "@/data/transfer-question-sales-landings";
 
 const DOMINICAN_COUNTRY_CODES = ["RD", "DO", "DOMINICAN-REPUBLIC"];
@@ -18,33 +23,33 @@ const FAQ_FOLLOWUPS: Record<Locale, Array<{ q: string; a: string }>> = {
   es: [
     {
       q: "Conviene reservar el transfer antes de viajar?",
-      a: "Si. Aseguras tarifa, disponibilidad y llegada sin estres."
+      a: "Si. Aseguras tarifa, disponibilidad y llegada sin estres.",
     },
     {
       q: "Puedo agregar tours luego del traslado?",
-      a: "Si. Puedes coordinar actividades con pickup desde el hotel."
-    }
+      a: "Si. Puedes coordinar actividades con pickup desde el hotel.",
+    },
   ],
   en: [
     {
       q: "Should I pre-book transfer before flying?",
-      a: "Yes. You secure rates, availability, and smoother arrival."
+      a: "Yes. You secure rates, availability, and smoother arrival.",
     },
     {
       q: "Can I add tours after transfer booking?",
-      a: "Yes. You can add hotel-pickup activities easily."
-    }
+      a: "Yes. You can add hotel-pickup activities easily.",
+    },
   ],
   fr: [
     {
       q: "Faut-il reserver le transfert avant le vol ?",
-      a: "Oui. Vous securisez tarif, disponibilite et arrivee fluide."
+      a: "Oui. Vous securisez tarif, disponibilite et arrivee fluide.",
     },
     {
       q: "Puis-je ajouter des tours apres le transfert ?",
-      a: "Oui. Vous pouvez ajouter des activites avec pickup hotel."
-    }
-  ]
+      a: "Oui. Vous pouvez ajouter des activites avec pickup hotel.",
+    },
+  ],
 };
 
 const UI = {
@@ -58,7 +63,7 @@ const UI = {
       "No hay opciones activas en este momento. Escribenos por WhatsApp para cotizacion inmediata.",
     whyTitle: "Por que esta respuesta convierte",
     whyCopy:
-      "Responde la duda real del cliente y lo lleva directo a una accion concreta: reservar traslado y luego sumar tours."
+      "Responde la duda real del cliente y lo lleva directo a una accion concreta: reservar traslado y luego sumar tours.",
   },
   en: {
     eyebrow: "Google Question Intent",
@@ -66,10 +71,11 @@ const UI = {
     ctaBack: "Open main premium landing",
     ctaTransfers: "See hotel transfer pages",
     bookingTitle: "Get your premium transfer quote now",
-    fallback: "No active options right now. Message us on WhatsApp for an instant quote.",
+    fallback:
+      "No active options right now. Message us on WhatsApp for an instant quote.",
     whyTitle: "Why this answer converts",
     whyCopy:
-      "It solves the real doubt and moves the visitor to a concrete action: book transfer first, add tours next."
+      "It solves the real doubt and moves the visitor to a concrete action: book transfer first, add tours next.",
   },
   fr: {
     eyebrow: "Google Question Intent",
@@ -77,16 +83,17 @@ const UI = {
     ctaBack: "Voir landing premium principale",
     ctaTransfers: "Voir les transferts par hotel",
     bookingTitle: "Obtenez votre devis premium maintenant",
-    fallback: "Aucune option active pour le moment. Ecrivez-nous sur WhatsApp pour un devis immediat.",
+    fallback:
+      "Aucune option active pour le moment. Ecrivez-nous sur WhatsApp pour un devis immediat.",
     whyTitle: "Pourquoi cette reponse convertit",
     whyCopy:
-      "Elle repond au vrai doute du client et le pousse vers une action concrete: reserver transfert puis ajouter des tours."
-  }
+      "Elle repond au vrai doute du client et le pousse vers une action concrete: reserver transfert puis ajouter des tours.",
+  },
 } as const;
 
 export default async function TransferQuestionSalesLandingPage({
   locale,
-  questionSlug
+  questionSlug,
 }: {
   locale: Locale;
   questionSlug: string;
@@ -102,15 +109,19 @@ export default async function TransferQuestionSalesLandingPage({
       where: {
         active: true,
         countryCode: { in: DOMINICAN_COUNTRY_CODES },
-        type: { in: ["HOTEL", "AIRPORT"] }
+        type: { in: ["HOTEL", "AIRPORT"] },
       },
       select: { id: true, slug: true, name: true },
       orderBy: { name: "asc" },
-      take: 500
+      take: 500,
     });
-    origins = allLocations.filter((item) => item.slug.includes("airport") || item.slug.includes("puj"));
+    origins = allLocations.filter(
+      (item) => item.slug.includes("airport") || item.slug.includes("puj"),
+    );
     if (!origins.length) origins = allLocations.slice(0, 5);
-    destinations = allLocations.filter((item) => !origins.some((origin) => origin.id === item.id));
+    destinations = allLocations.filter(
+      (item) => !origins.some((origin) => origin.id === item.id),
+    );
     if (!destinations.length) destinations = allLocations;
   } catch (error) {
     console.warn("transfer-question-sales: fallback without locations", error);
@@ -123,7 +134,10 @@ export default async function TransferQuestionSalesLandingPage({
       : `/${locale}/punta-cana/premium-transfer-services/questions/${entry.slug}`;
   const pageUrl = `${PROACTIVITIS_URL}${pagePath}`;
   const priceValidUntil = getPriceValidUntil();
-  const faqItems = [{ q: entry.question[locale], a: entry.shortAnswer[locale] }, ...(FAQ_FOLLOWUPS[locale] ?? [])];
+  const faqItems = [
+    { q: entry.question[locale], a: entry.shortAnswer[locale] },
+    ...(FAQ_FOLLOWUPS[locale] ?? []),
+  ];
 
   const serviceSchema = {
     "@context": "https://schema.org",
@@ -141,10 +155,14 @@ export default async function TransferQuestionSalesLandingPage({
       priceValidUntil,
       shippingDetails: {
         "@type": "OfferShippingDetails",
-        doesNotShip: true,
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: 0,
+          currency: "USD",
+        },
         shippingDestination: {
           "@type": "DefinedRegion",
-          addressCountry: "DO"
+          addressCountry: "DO",
         },
         deliveryTime: {
           "@type": "ShippingDeliveryTime",
@@ -152,26 +170,26 @@ export default async function TransferQuestionSalesLandingPage({
             "@type": "QuantitativeValue",
             minValue: 0,
             maxValue: 1,
-            unitCode: "d"
+            unitCode: "DAY",
           },
           transitTime: {
             "@type": "QuantitativeValue",
             minValue: 0,
             maxValue: 1,
-            unitCode: "d"
-          }
-        }
+            unitCode: "DAY",
+          },
+        },
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
         returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
         applicableCountry: "DO",
         returnMethod: "https://schema.org/ReturnByMail",
-        returnFees: "https://schema.org/FreeReturn"
-      }
+        returnFees: "https://schema.org/FreeReturn",
+      },
     },
     keywords: entry.keywords.join(", "),
-    sameAs: SAME_AS_URLS
+    sameAs: SAME_AS_URLS,
   };
 
   const faqSchema = {
@@ -182,9 +200,9 @@ export default async function TransferQuestionSalesLandingPage({
       name: item.q,
       acceptedAnswer: {
         "@type": "Answer",
-        text: item.a
-      }
-    }))
+        text: item.a,
+      },
+    })),
   };
 
   const webSchema = {
@@ -196,31 +214,47 @@ export default async function TransferQuestionSalesLandingPage({
     inLanguage: locale,
     primaryImageOfPage: {
       "@type": "ImageObject",
-      url: DEFAULT_SOCIAL_IMAGE
-    }
+      url: DEFAULT_SOCIAL_IMAGE,
+    },
   };
 
   return (
     <main className="min-h-screen bg-[#020617] text-slate-100">
-      <LandingViewTracker landingSlug={`punta-cana/premium-transfer-services/questions/${entry.slug}`} />
+      <LandingViewTracker
+        landingSlug={`punta-cana/premium-transfer-services/questions/${entry.slug}`}
+      />
       <StructuredData data={serviceSchema} />
       <StructuredData data={faqSchema} />
       <StructuredData data={webSchema} />
 
       <section className="mx-auto max-w-6xl px-4 py-14">
-        <p className="text-xs uppercase tracking-[0.35em] text-amber-300">{copy.eyebrow}</p>
-        <h1 className="mt-2 text-4xl font-black leading-tight text-white md:text-5xl">{entry.question[locale]}</h1>
-        <p className="mt-4 text-lg text-slate-200">{entry.shortAnswer[locale]}</p>
+        <p className="text-xs uppercase tracking-[0.35em] text-amber-300">
+          {copy.eyebrow}
+        </p>
+        <h1 className="mt-2 text-4xl font-black leading-tight text-white md:text-5xl">
+          {entry.question[locale]}
+        </h1>
+        <p className="mt-4 text-lg text-slate-200">
+          {entry.shortAnswer[locale]}
+        </p>
         <p className="mt-3 text-sm text-slate-300">{entry.salesBody[locale]}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
-            href={locale === "es" ? "/punta-cana/premium-transfer-services" : `/${locale}/punta-cana/premium-transfer-services`}
+            href={
+              locale === "es"
+                ? "/punta-cana/premium-transfer-services"
+                : `/${locale}/punta-cana/premium-transfer-services`
+            }
             className="rounded-full bg-amber-300 px-5 py-2 text-xs font-black uppercase tracking-[0.25em] text-slate-900"
           >
             {copy.ctaBack}
           </Link>
           <Link
-            href={locale === "es" ? "/transfer/punta-cana" : `/${locale}/transfer/punta-cana`}
+            href={
+              locale === "es"
+                ? "/transfer/punta-cana"
+                : `/${locale}/transfer/punta-cana`
+            }
             className="rounded-full border border-white/50 px-5 py-2 text-xs font-bold uppercase tracking-[0.25em] text-white"
           >
             {copy.ctaTransfers}
@@ -236,8 +270,8 @@ export default async function TransferQuestionSalesLandingPage({
             {locale === "es"
               ? "Secuencia recomendada: 1) cerrar traslado aeropuerto-hotel, 2) cerrar tours con pickup desde hotel."
               : locale === "fr"
-              ? "Sequence recommandee: 1) fermer transfert aeroport-hotel, 2) vendre tours avec pickup hotel."
-              : "Recommended sequence: 1) close airport-hotel transfer, 2) close hotel-pickup tours."}
+                ? "Sequence recommandee: 1) fermer transfert aeroport-hotel, 2) vendre tours avec pickup hotel."
+                : "Recommended sequence: 1) close airport-hotel transfer, 2) close hotel-pickup tours."}
           </p>
         </article>
       </section>
@@ -262,7 +296,10 @@ export default async function TransferQuestionSalesLandingPage({
           <h2 className="text-2xl font-semibold text-white">{copy.whyTitle}</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {faqItems.map((item) => (
-              <div key={item.q} className="rounded-xl border border-amber-200/20 bg-slate-800/60 p-4">
+              <div
+                key={item.q}
+                className="rounded-xl border border-amber-200/20 bg-slate-800/60 p-4"
+              >
                 <h3 className="text-sm font-semibold text-white">{item.q}</h3>
                 <p className="mt-2 text-xs text-slate-200">{item.a}</p>
               </div>
@@ -274,5 +311,7 @@ export default async function TransferQuestionSalesLandingPage({
   );
 }
 
-export const findQuestionLandingOrNull = (questionSlug: string): TransferQuestionSalesLanding | undefined =>
+export const findQuestionLandingOrNull = (
+  questionSlug: string,
+): TransferQuestionSalesLanding | undefined =>
   findTransferQuestionSalesLandingBySlug(questionSlug);

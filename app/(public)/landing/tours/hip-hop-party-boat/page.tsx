@@ -1,10 +1,15 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import StructuredData from "@/components/schema/StructuredData";
 import { prisma } from "@/lib/prisma";
-import { PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL, SAME_AS_URLS, getPriceValidUntil } from "@/lib/seo";
+import {
+  PROACTIVITIS_LOCALBUSINESS,
+  PROACTIVITIS_URL,
+  SAME_AS_URLS,
+  getPriceValidUntil,
+} from "@/lib/seo";
 import CountdownUrgency from "@/components/landing/CountdownUrgency";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 import TourGalleryCollage from "@/components/tours/TourGalleryCollage";
@@ -18,9 +23,16 @@ const SEO_TITLE = "Hip Hop Party Boat con Snorkel en Punta Cana";
 const SEO_DESCRIPTION =
   "Baila hip hop y reggaeton en el Hip Hop Party Boat mientras navegas el Caribe. Barra libre premium, snorkel y atardeceres de lujo para grupos y despedidas.";
 const TAXONOMY = {
-  amenities: ["barra libre", "dj en vivo", "snorkel guiado", "tobogan", "foam party", "transporte incluido"],
+  amenities: [
+    "barra libre",
+    "dj en vivo",
+    "snorkel guiado",
+    "tobogan",
+    "foam party",
+    "transporte incluido",
+  ],
   niches: ["despedida de soltera", "grupos grandes", "spring break", "parejas"],
-  locations: ["Playa Bavaro", "Cap Cana", "Piscina Natural", "Bibijagua"]
+  locations: ["Playa Bavaro", "Cap Cana", "Piscina Natural", "Bibijagua"],
 };
 
 const BASE_URL = "https://proactivitis.com";
@@ -32,7 +44,7 @@ const buildKeywords = () => [
   ...TAXONOMY.amenities,
   ...TAXONOMY.niches,
   ...TAXONOMY.locations,
-  "Proactivitis"
+  "Proactivitis",
 ];
 
 const parseGallery = (gallery?: string | null) => {
@@ -44,7 +56,10 @@ const parseGallery = (gallery?: string | null) => {
   }
 };
 
-const resolveTourImage = (heroImage?: string | null, gallery?: string | null) => {
+const resolveTourImage = (
+  heroImage?: string | null,
+  gallery?: string | null,
+) => {
   if (heroImage) return heroImage;
   const parsed = parseGallery(gallery);
   return parsed[0] ?? null;
@@ -59,7 +74,9 @@ const toAbsoluteUrl = (value?: string | null) => {
 
 const normalizePickupTimes = (value: unknown): string[] | null => {
   if (!Array.isArray(value)) return null;
-  const times = value.filter((item): item is string => typeof item === "string");
+  const times = value.filter(
+    (item): item is string => typeof item === "string",
+  );
   return times.length ? times : null;
 };
 
@@ -67,11 +84,15 @@ export async function generateMetadata(): Promise<Metadata> {
   const canonical = `${BASE_URL}/thingtodo/tours/${LANDING_SLUG}`;
   const tour = await prisma.tour.findUnique({
     where: { slug: TOUR_SLUG },
-    select: { heroImage: true, gallery: true }
+    select: { heroImage: true, gallery: true },
   });
-  const imageUrl = toAbsoluteUrl(resolveTourImage(tour?.heroImage ?? null, tour?.gallery ?? null));
+  const imageUrl = toAbsoluteUrl(
+    resolveTourImage(tour?.heroImage ?? null, tour?.gallery ?? null),
+  );
   const seoTitle = `${SEO_TITLE} | Proactivitis`;
-  const seoDescription = SEO_DESCRIPTION.endsWith(".") ? SEO_DESCRIPTION : `${SEO_DESCRIPTION}.`;
+  const seoDescription = SEO_DESCRIPTION.endsWith(".")
+    ? SEO_DESCRIPTION
+    : `${SEO_DESCRIPTION}.`;
 
   return {
     title: seoTitle,
@@ -83,8 +104,8 @@ export async function generateMetadata(): Promise<Metadata> {
         es: canonical,
         en: `https://proactivitis.com/en/thingtodo/tours/${LANDING_SLUG}`,
         fr: `https://proactivitis.com/fr/thingtodo/tours/${LANDING_SLUG}`,
-        "x-default": canonical
-      }
+        "x-default": canonical,
+      },
     },
     openGraph: {
       title: seoTitle,
@@ -93,14 +114,14 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: "Proactivitis",
       type: "website",
       locale: "es_DO",
-      images: imageUrl ? [{ url: imageUrl }] : undefined
+      images: imageUrl ? [{ url: imageUrl }] : undefined,
     },
     twitter: {
       card: imageUrl ? "summary_large_image" : "summary",
       title: seoTitle,
       description: seoDescription,
-      images: imageUrl ? [imageUrl] : undefined
-    }
+      images: imageUrl ? [imageUrl] : undefined,
+    },
   };
 }
 
@@ -109,55 +130,79 @@ const features = [
     title: "El Beat",
     copy: "DJ en vivo con selecciones curadas de hip hop, reggaeton y soca para una fiesta continua sobre el mar.",
     icon: (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.4}>
+      <svg
+        className="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.4}
+      >
         <path d="M4 16h16M4 12h16M4 8h16" />
       </svg>
-    )
+    ),
   },
   {
     title: "La Barra",
     copy: "Barra libre con marcas premium, mocktails artesanales y snacks tropicales durante todo el recorrido.",
     icon: (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.4}>
+      <svg
+        className="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.4}
+      >
         <path d="M8 5h8l1.5 3h-11L8 5zM6 8h12l-1 5H7L6 8zm2 8h8M14 22h-4" />
       </svg>
-    )
+    ),
   },
   {
     title: "El Arrecife",
     copy: "Snorkel guiado en el arrecife de Bibijagua y foam party al atardecer para fotos epicas.",
     icon: (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.4}>
+      <svg
+        className="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.4}
+      >
         <path d="M5 17c3-4 8-4 11 0" />
         <circle cx="12" cy="12" r="3" />
       </svg>
-    )
+    ),
   },
   {
     title: "El Ride",
     copy: "Traslados privados desde hoteles de Punta Cana y Cap Cana; olvida las filas de taxis.",
     icon: (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.4}>
+      <svg
+        className="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.4}
+      >
         <path d="M3 15h18" />
         <path d="M5 9h14l1 6H4l1-6z" />
         <circle cx="7" cy="18" r="2" />
         <circle cx="17" cy="18" r="2" />
       </svg>
-    )
-  }
+    ),
+  },
 ];
 
 const faqs = [
   "Incluye transporte desde los hoteles de Playa Bavaro y Cap Cana? Si, pickups privados incluidos.",
   "Que incluye la barra libre? Ron premium, vodka, cerveza local y mocktails tropicales ilimitados.",
-  "Hay snorkel guiado? Si, equipo profesional y guias certificados para explorar el arrecife."
+  "Hay snorkel guiado? Si, equipo profesional y guias certificados para explorar el arrecife.",
 ];
 
 const itinerary = [
   "Encuentro en el club nautico con bienvenida y barra libre.",
   "Set en vivo del DJ con coreografias urbanas y beats contagiosos.",
   "Snorkel guiado en Bibijagua seguido de la foam party al atardecer.",
-  "Brindis al sunset con tragos premium y musica nonstop."
+  "Brindis al sunset con tragos premium y musica nonstop.",
 ];
 
 export const runtime = "nodejs";
@@ -188,18 +233,18 @@ export default async function HipHopLandingPage() {
           extraPricePerPerson: true,
           pickupTimes: true,
           isDefault: true,
-          active: true
-        }
+          active: true,
+        },
       },
       SupplierProfile: {
         select: {
           stripeAccountId: true,
-          company: true
-        }
+          company: true,
+        },
       },
       platformSharePercent: true,
-      location: true
-    }
+      location: true,
+    },
   });
 
   if (!tour) {
@@ -208,11 +253,15 @@ export default async function HipHopLandingPage() {
 
   const gallery = parseGallery(tour.gallery);
   const heroImage = tour.heroImage ?? gallery[0] ?? "/fototours/fotosimple.jpg";
-  const timeSlots = JSON.parse(tour.timeOptions ?? "[]") as { hour: number; minute: string; period: "AM" | "PM" }[];
+  const timeSlots = JSON.parse(tour.timeOptions ?? "[]") as {
+    hour: number;
+    minute: string;
+    period: "AM" | "PM";
+  }[];
   const priceLabel = `$${tour.price.toFixed(0)} USD`;
   const normalizedOptions = tour.options?.map((option) => ({
     ...option,
-    pickupTimes: normalizePickupTimes(option.pickupTimes)
+    pickupTimes: normalizePickupTimes(option.pickupTimes),
   }));
   const bookingWidgetProps = {
     tourId: tour.id,
@@ -224,7 +273,7 @@ export default async function HipHopLandingPage() {
     tourTitle: tour.title ?? SEO_TITLE,
     tourImage: heroImage,
     bookingCode: undefined,
-    hotelSlug: undefined
+    hotelSlug: undefined,
   };
 
   const schema = {
@@ -232,7 +281,11 @@ export default async function HipHopLandingPage() {
     "@type": "TouristTrip",
     name: SEO_TITLE,
     description: SEO_DESCRIPTION,
-    image: [heroImage.startsWith("http") ? heroImage : `${PROACTIVITIS_URL}${heroImage}`],
+    image: [
+      heroImage.startsWith("http")
+        ? heroImage
+        : `${PROACTIVITIS_URL}${heroImage}`,
+    ],
     url: `https://proactivitis.com/thingtodo/tours/${LANDING_SLUG}`,
     provider: PROACTIVITIS_LOCALBUSINESS,
     offers: {
@@ -243,10 +296,14 @@ export default async function HipHopLandingPage() {
       availability: "https://schema.org/InStock",
       shippingDetails: {
         "@type": "OfferShippingDetails",
-        doesNotShip: true,
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: 0,
+          currency: "USD",
+        },
         shippingDestination: {
           "@type": "DefinedRegion",
-          addressCountry: "DO"
+          addressCountry: "DO",
         },
         deliveryTime: {
           "@type": "ShippingDeliveryTime",
@@ -254,25 +311,25 @@ export default async function HipHopLandingPage() {
             "@type": "QuantitativeValue",
             minValue: 0,
             maxValue: 1,
-            unitCode: "d"
+            unitCode: "DAY",
           },
           transitTime: {
             "@type": "QuantitativeValue",
             minValue: 0,
             maxValue: 1,
-            unitCode: "d"
-          }
-        }
+            unitCode: "DAY",
+          },
+        },
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
         returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
         applicableCountry: "DO",
         returnMethod: "https://schema.org/ReturnByMail",
-        returnFees: "https://schema.org/FreeReturn"
-      }
+        returnFees: "https://schema.org/FreeReturn",
+      },
     },
-    sameAs: SAME_AS_URLS
+    sameAs: SAME_AS_URLS,
   };
 
   return (
@@ -301,27 +358,45 @@ export default async function HipHopLandingPage() {
               </svg>
               <span>{tour.location ?? "Punta Cana"}</span>
             </div>
-            <h1 className="text-3xl font-black text-slate-900 sm:text-4xl lg:text-5xl">{SEO_TITLE}</h1>
+            <h1 className="text-3xl font-black text-slate-900 sm:text-4xl lg:text-5xl">
+              {SEO_TITLE}
+            </h1>
             <p className="max-w-xl text-base text-slate-600 sm:text-lg">
-              Baila hip hop y reggaeton mientras navegas por aguas turquesas, haces snorkel en Bibijagua y brindas con un
-              atardecer cinematografico y servicio premium.
+              Baila hip hop y reggaeton mientras navegas por aguas turquesas,
+              haces snorkel en Bibijagua y brindas con un atardecer
+              cinematografico y servicio premium.
             </p>
             <div className="flex items-end gap-8">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Precio desde</p>
-                <p className="text-4xl font-black text-indigo-600">{priceLabel}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  Precio desde
+                </p>
+                <p className="text-4xl font-black text-indigo-600">
+                  {priceLabel}
+                </p>
               </div>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Rating</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  Rating
+                </p>
                 <div className="flex items-center gap-2">
-                  <span aria-hidden className="text-2xl text-indigo-600">★</span>
+                  <span aria-hidden className="text-2xl text-indigo-600">
+                    ★
+                  </span>
                   <p className="text-xl font-black">4.8/5</p>
                 </div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">+1,500 reviews</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                  +1,500 reviews
+                </p>
               </div>
             </div>
             <div className="flex flex-wrap gap-3 text-sm font-medium text-slate-700">
-              {["Guia bilingue", "Open bar", "Snorkel guiado", "Transporte incluido"].map((badge) => (
+              {[
+                "Guia bilingue",
+                "Open bar",
+                "Snorkel guiado",
+                "Transporte incluido",
+              ].map((badge) => (
                 <span
                   key={badge}
                   className="rounded-full border border-slate-200 bg-white/80 px-4 py-1 text-sm font-semibold text-slate-700 shadow-sm"
@@ -344,14 +419,25 @@ export default async function HipHopLandingPage() {
               />
             </div>
           </div>
-          <TourGalleryCollage images={gallery} title={tour.title ?? SEO_TITLE} fallbackImage={heroImage} />
+          <TourGalleryCollage
+            images={gallery}
+            title={tour.title ?? SEO_TITLE}
+            fallbackImage={heroImage}
+          />
         </div>
       </section>
 
-      <section id="booking" className="mx-auto mt-6 max-w-[1240px] px-4 lg:hidden">
+      <section
+        id="booking"
+        className="mx-auto mt-6 max-w-[1240px] px-4 lg:hidden"
+      >
         <div className="md:hidden mb-3">
-          <p className="text-sm font-semibold text-gray-900">Reserva tu lugar</p>
-          <p className="text-xs text-gray-600">Mesas limitadas para 2026, reserva ya tu tripulacion.</p>
+          <p className="text-sm font-semibold text-gray-900">
+            Reserva tu lugar
+          </p>
+          <p className="text-xs text-gray-600">
+            Mesas limitadas para 2026, reserva ya tu tripulacion.
+          </p>
         </div>
         <div className="md:hidden ring-1 ring-black/10 shadow-md rounded-[28px] border border-slate-100 bg-white p-6">
           <TourBookingWidget {...bookingWidgetProps} />
@@ -363,10 +449,13 @@ export default async function HipHopLandingPage() {
         <div className="space-y-10">
           <section id="overview" className="space-y-4">
             <div className="space-y-4 rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
-              <h2 className="text-xs uppercase tracking-[0.4em] text-slate-500">Overview</h2>
+              <h2 className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                Overview
+              </h2>
               <p className="text-lg text-slate-800">
-                Hip Hop Party Boat es la mejor forma de vivir Punta Cana: musica en vivo, barra libre premium, snorkel y
-                sunset party con fotos epicas.
+                Hip Hop Party Boat es la mejor forma de vivir Punta Cana: musica
+                en vivo, barra libre premium, snorkel y sunset party con fotos
+                epicas.
               </p>
               <div className="grid gap-4 md:grid-cols-2">
                 {features.map((feature) => (
@@ -375,7 +464,9 @@ export default async function HipHopLandingPage() {
                     className="space-y-3 rounded-[16px] border border-slate-100 bg-white p-4 shadow-sm"
                   >
                     <div className="text-indigo-600">{feature.icon}</div>
-                    <h3 className="text-base font-semibold text-slate-900">{feature.title}</h3>
+                    <h3 className="text-base font-semibold text-slate-900">
+                      {feature.title}
+                    </h3>
                     <p className="text-sm text-slate-600">{feature.copy}</p>
                   </article>
                 ))}
@@ -385,10 +476,15 @@ export default async function HipHopLandingPage() {
 
           <section id="itinerary" className="space-y-4">
             <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
-              <h2 className="text-xs uppercase tracking-[0.4em] text-slate-500">Itinerario express</h2>
+              <h2 className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                Itinerario express
+              </h2>
               <ul className="mt-4 space-y-3 text-sm text-slate-600">
                 {itinerary.map((line) => (
-                  <li key={line} className="rounded-[12px] border border-slate-100 bg-[#f8f9fb] p-4">
+                  <li
+                    key={line}
+                    className="rounded-[12px] border border-slate-100 bg-[#f8f9fb] p-4"
+                  >
                     {line}
                   </li>
                 ))}
@@ -398,11 +494,18 @@ export default async function HipHopLandingPage() {
 
           <section id="faq" className="space-y-4">
             <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
-              <h2 className="text-xs uppercase tracking-[0.4em] text-slate-500">FAQs</h2>
+              <h2 className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                FAQs
+              </h2>
               <div className="mt-4 space-y-4 text-sm text-slate-600">
                 {faqs.map((faq) => (
-                  <article key={faq} className="rounded-[12px] border border-slate-100 bg-[#f8f9fb] p-4">
-                    <p className="font-semibold text-slate-900">{faq.split("?")[0]}?</p>
+                  <article
+                    key={faq}
+                    className="rounded-[12px] border border-slate-100 bg-[#f8f9fb] p-4"
+                  >
+                    <p className="font-semibold text-slate-900">
+                      {faq.split("?")[0]}?
+                    </p>
                     <p className="text-sm text-slate-600">{faq}</p>
                   </article>
                 ))}
@@ -413,9 +516,15 @@ export default async function HipHopLandingPage() {
 
         <aside className="hidden lg:block">
           <div className="sticky top-10 space-y-6 rounded-[28px] border border-slate-100 bg-white p-6 shadow-xl">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reserva tu lugar</p>
-            <h3 className="mt-2 text-2xl font-bold text-slate-900">Hip Hop Party Boat</h3>
-            <p className="text-sm text-slate-600">Mesas limitadas para 2026, reserva ya tu tripulacion.</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+              Reserva tu lugar
+            </p>
+            <h3 className="mt-2 text-2xl font-bold text-slate-900">
+              Hip Hop Party Boat
+            </h3>
+            <p className="text-sm text-slate-600">
+              Mesas limitadas para 2026, reserva ya tu tripulacion.
+            </p>
             <div className="mt-4">
               <TourBookingWidget {...bookingWidgetProps} />
             </div>

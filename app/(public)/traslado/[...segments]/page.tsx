@@ -17,7 +17,7 @@ import {
   PROACTIVITIS_LOCALBUSINESS,
   PROACTIVITIS_PHONE,
   PROACTIVITIS_URL,
-  SAME_AS_URLS
+  SAME_AS_URLS,
 } from "@/lib/seo";
 import { Locale, translate } from "@/lib/translations";
 
@@ -25,7 +25,13 @@ type LandingLevel = "country" | "destination" | "microzone";
 
 type LandingContext = {
   level: LandingLevel;
-  country: { id: string; name: string; slug: string; heroImage?: string; shortDescription?: string };
+  country: {
+    id: string;
+    name: string;
+    slug: string;
+    heroImage?: string;
+    shortDescription?: string;
+  };
   destination?: {
     id: string;
     name: string;
@@ -38,26 +44,31 @@ type LandingContext = {
 
 const getLevelCopy = (level: LandingLevel, locale: Locale) => ({
   badge: translate(locale, `transfer.level.${level}.badge`),
-  summary: translate(locale, `transfer.level.${level}.summary`)
+  summary: translate(locale, `transfer.level.${level}.summary`),
 });
 
 const DURATION_ESTIMATES: Record<string, number> = {
   "punta-cana": 35,
-  "bavaro": 30,
+  bavaro: 30,
   "cap-cana": 25,
   "bavaro-cortecito": 27,
   "los-corales": 28,
   "arena-gorda": 28,
   "uvero-alto": 45,
-  "miches": 65,
+  miches: 65,
   "santo-domingo": 80,
-  "quito": 40,
-  "manta": 115,
-  "cuenca": 180
+  quito: 40,
+  manta: 115,
+  cuenca: 180,
 };
 
-const estimateDurationMinutes = (microZoneSlug: string | null, destinationSlug: string | null) => {
-  const key = (microZoneSlug ?? destinationSlug ?? "").toLowerCase().replace(/_/g, "-");
+const estimateDurationMinutes = (
+  microZoneSlug: string | null,
+  destinationSlug: string | null,
+) => {
+  const key = (microZoneSlug ?? destinationSlug ?? "")
+    .toLowerCase()
+    .replace(/_/g, "-");
   if (!key) return 45;
   return DURATION_ESTIMATES[key] ?? 45;
 };
@@ -72,9 +83,12 @@ const resolveHeroImageForContext = (context: LandingContext) => {
   return context.country.heroImage;
 };
 
-const buildSegmentsContext = async (segments: string[]): Promise<LandingContext | null> => {
+const buildSegmentsContext = async (
+  segments: string[],
+): Promise<LandingContext | null> => {
   if (!segments.length || segments.length > 3) return null;
-  if (segments[0] === "punta-cana" && segments[1]?.startsWith("to-")) return null;
+  if (segments[0] === "punta-cana" && segments[1]?.startsWith("to-"))
+    return null;
   const countrySlug = segments[0];
   const country = await prisma.country.findUnique({
     where: { slug: countrySlug },
@@ -83,8 +97,8 @@ const buildSegmentsContext = async (segments: string[]): Promise<LandingContext 
       name: true,
       slug: true,
       heroImage: true,
-      shortDescription: true
-    }
+      shortDescription: true,
+    },
   });
   if (!country) return null;
 
@@ -94,15 +108,15 @@ const buildSegmentsContext = async (segments: string[]): Promise<LandingContext 
     destination = await prisma.destination.findFirst({
       where: {
         slug: destinationSlug,
-        countryId: country.id
+        countryId: country.id,
       },
       select: {
         id: true,
         name: true,
         slug: true,
         shortDescription: true,
-        heroImage: true
-      }
+        heroImage: true,
+      },
     });
     if (!destination) return null;
   }
@@ -113,14 +127,18 @@ const buildSegmentsContext = async (segments: string[]): Promise<LandingContext 
     microZone = await prisma.microZone.findFirst({
       where: {
         slug: microZoneSlug,
-        destinationId: destination?.id
-      }
+        destinationId: destination?.id,
+      },
     });
     if (!microZone) return null;
   }
 
   const level: LandingLevel =
-    segments.length === 3 ? "microzone" : segments.length === 2 ? "destination" : "country";
+    segments.length === 3
+      ? "microzone"
+      : segments.length === 2
+        ? "destination"
+        : "country";
 
   return {
     level,
@@ -129,7 +147,7 @@ const buildSegmentsContext = async (segments: string[]): Promise<LandingContext 
       name: country.name,
       slug: country.slug,
       heroImage: country.heroImage ?? undefined,
-      shortDescription: country.shortDescription ?? undefined
+      shortDescription: country.shortDescription ?? undefined,
     },
     destination: destination
       ? {
@@ -137,18 +155,20 @@ const buildSegmentsContext = async (segments: string[]): Promise<LandingContext 
           name: destination.name,
           slug: destination.slug,
           shortDescription: destination.shortDescription ?? undefined,
-          heroImage: destination.heroImage ?? undefined
+          heroImage: destination.heroImage ?? undefined,
         }
       : undefined,
     microZone: microZone
       ? { id: microZone.id, name: microZone.name, slug: microZone.slug }
-      : undefined
+      : undefined,
   };
 };
 
 const DEFAULT_TITLE = "Traslados Proactivitis";
-const DEFAULT_DESCRIPTION = "Descubre la red global de traslados premium de Proactivitis.";
-const DEFAULT_METADATA_IMAGE = "https://www.proactivitis.com/transfer/sedan.png";
+const DEFAULT_DESCRIPTION =
+  "Descubre la red de traslados premium de Proactivitis.";
+const DEFAULT_METADATA_IMAGE =
+  "https://www.proactivitis.com/transfer/sedan.png";
 const TRANSFER_BANNER_IMAGE =
   "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
 const TRANSFER_BASE_URL = "https://proactivitis.com/traslado";
@@ -160,7 +180,8 @@ const resolveLocale = async (): Promise<Locale> => {
   return "es";
 };
 
-const buildTransferBasePath = (locale: Locale) => (locale === "es" ? "/traslado" : `/${locale}/traslado`);
+const buildTransferBasePath = (locale: Locale) =>
+  locale === "es" ? "/traslado" : `/${locale}/traslado`;
 const META_DESCRIPTION_MIN = 120;
 const META_DESCRIPTION_MAX = 160;
 
@@ -184,16 +205,18 @@ const extendMetaDescription = (value: string, extra: string) => {
 };
 
 export async function generateMetadata({
-  params
+  params,
 }: {
   params: Promise<{ segments?: string[] }>;
 }): Promise<Metadata> {
   const LOCALE = await resolveLocale();
   const resolvedParams = await params;
   const segments = resolvedParams.segments ?? [];
-  if (!segments.length) return { title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION };
+  if (!segments.length)
+    return { title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION };
   const context = await buildSegmentsContext(segments);
-  if (!context) return { title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION };
+  if (!context)
+    return { title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION };
 
   const { level, country, destination, microZone } = context;
   const countryName = country.name;
@@ -204,28 +227,45 @@ export async function generateMetadata({
   const keywords: string[] = [];
 
   if (level === "country") {
-    title = translate(LOCALE, "transfer.metadata.title.country", { country: countryName });
-    description = translate(LOCALE, "transfer.metadata.description.country", { country: countryName });
+    title = translate(LOCALE, "transfer.metadata.title.country", {
+      country: countryName,
+    });
+    description = translate(LOCALE, "transfer.metadata.description.country", {
+      country: countryName,
+    });
     description = ensureContains(description, countryName);
     description = ensureContains(description, country.slug.replace(/-/g, " "));
     keywords.push(`proactivitis ${countryName}`);
   } else if (level === "destination" && destination) {
-    title = translate(LOCALE, "transfer.metadata.title.destination", { destination: destinationName });
+    title = translate(LOCALE, "transfer.metadata.title.destination", {
+      destination: destinationName,
+    });
     description =
       destination.shortDescription ??
-      translate(LOCALE, "transfer.metadata.description.destination", { destination: destinationName });
+      translate(LOCALE, "transfer.metadata.description.destination", {
+        destination: destinationName,
+      });
     description = ensureContains(description, destinationName);
     description = ensureContains(description, countryName);
-    keywords.push(`transporte ${destinationName}`, `proactivitis ${countryName}`);
+    keywords.push(
+      `transporte ${destinationName}`,
+      `proactivitis ${countryName}`,
+    );
   } else if (level === "microzone" && microZone) {
-    title = translate(LOCALE, "transfer.metadata.title.microzone", { hotel: hotelName });
+    title = translate(LOCALE, "transfer.metadata.title.microzone", {
+      hotel: hotelName,
+    });
     description = translate(LOCALE, "transfer.metadata.description.microzone", {
       hotel: hotelName,
-      country: countryName
+      country: countryName,
     });
     description = ensureContains(description, hotelName);
     description = ensureContains(description, countryName);
-    keywords.push(`traslado ${hotelName}`, `transporte ${destinationName ?? countryName}`, `proactivitis ${countryName}`);
+    keywords.push(
+      `traslado ${hotelName}`,
+      `transporte ${destinationName ?? countryName}`,
+      `proactivitis ${countryName}`,
+    );
   }
 
   if (!keywords.length) {
@@ -235,22 +275,23 @@ export async function generateMetadata({
   if (level === "destination") {
     description = extendMetaDescription(
       description,
-      `Reserva traslados privados en ${destinationName} con tarifa fija, vehiculos verificados y soporte 24/7.`
+      `Reserva traslados privados en ${destinationName} con tarifa fija, vehiculos verificados y soporte 24/7.`,
     );
   } else if (level === "country") {
     description = extendMetaDescription(
       description,
-      `Reserva traslados privados en ${countryName} con tarifa fija, conductores verificados y soporte 24/7.`
+      `Reserva traslados privados en ${countryName} con tarifa fija, conductores verificados y soporte 24/7.`,
     );
   } else if (level === "microzone") {
     description = extendMetaDescription(
       description,
-      `Traslados privados con confirmacion inmediata y soporte 24/7.`
+      `Traslados privados con confirmacion inmediata y soporte 24/7.`,
     );
   }
   description = trimMetaDescription(description);
 
-  const heroImage = resolveHeroImageForContext(context) ?? DEFAULT_METADATA_IMAGE;
+  const heroImage =
+    resolveHeroImageForContext(context) ?? DEFAULT_METADATA_IMAGE;
   const basePath = buildTransferBasePath(LOCALE);
   const pageUrl =
     segments.length === 0
@@ -269,15 +310,15 @@ export async function generateMetadata({
       images: [
         {
           url: heroImage,
-          alt: title
-        }
-      ]
+          alt: title,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [heroImage]
+      images: [heroImage],
     },
     keywords: keywords.filter(Boolean),
     alternates: {
@@ -285,9 +326,9 @@ export async function generateMetadata({
       languages: {
         es: `/traslado/${segments.join("/")}`.replace(/\/$/, ""),
         en: `/en/traslado/${segments.join("/")}`.replace(/\/$/, ""),
-        fr: `/fr/traslado/${segments.join("/")}`.replace(/\/$/, "")
-      }
-    }
+        fr: `/fr/traslado/${segments.join("/")}`.replace(/\/$/, ""),
+      },
+    },
   };
 }
 
@@ -295,12 +336,22 @@ type TrasladoLandingProps = {
   params: Promise<{ segments?: string[] }>;
 };
 
-export default async function TrasladoHierarchicalLanding({ params }: TrasladoLandingProps) {
+export default async function TrasladoHierarchicalLanding({
+  params,
+}: TrasladoLandingProps) {
   const LOCALE = await resolveLocale();
   const resolvedParams = await params;
   const segments = resolvedParams.segments ?? [];
-  if (segments.length === 2 && segments[0] === "dominican-republic" && segments[1] === "punta-cana") {
-    redirect(LOCALE === "es" ? "/punta-cana/traslado" : `/${LOCALE}/punta-cana/traslado`);
+  if (
+    segments.length === 2 &&
+    segments[0] === "dominican-republic" &&
+    segments[1] === "punta-cana"
+  ) {
+    redirect(
+      LOCALE === "es"
+        ? "/punta-cana/traslado"
+        : `/${LOCALE}/punta-cana/traslado`,
+    );
   }
   const context = await buildSegmentsContext(segments);
   if (!context) {
@@ -314,26 +365,45 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
 
   const heroTitle =
     level === "microzone"
-      ? translate(LOCALE, "transfer.hero.title.microzone", { name: microzoneName })
+      ? translate(LOCALE, "transfer.hero.title.microzone", {
+          name: microzoneName,
+        })
       : level === "destination"
-      ? translate(LOCALE, "transfer.hero.title.destination", { name: destinationName })
-      : translate(LOCALE, "transfer.hero.title.country", { name: country.name });
+        ? translate(LOCALE, "transfer.hero.title.destination", {
+            name: destinationName,
+          })
+        : translate(LOCALE, "transfer.hero.title.country", {
+            name: country.name,
+          });
 
   const heroSubtitle =
     level === "country"
-      ? translate(LOCALE, "transfer.hero.subtitle.country", { country: country.name })
+      ? translate(LOCALE, "transfer.hero.subtitle.country", {
+          country: country.name,
+        })
       : level === "destination"
-      ? translate(LOCALE, "transfer.hero.subtitle.destination", { destination: destinationName })
-      : translate(LOCALE, "transfer.hero.subtitle.microzone", { hotel: microzoneName });
+        ? translate(LOCALE, "transfer.hero.subtitle.destination", {
+            destination: destinationName,
+          })
+        : translate(LOCALE, "transfer.hero.subtitle.microzone", {
+            hotel: microzoneName,
+          });
 
   const basePath = buildTransferBasePath(LOCALE);
-  const localPath = (path: string) => (LOCALE === "es" ? path : `/${LOCALE}${path}`);
-  const homeLabel = LOCALE === "en" ? "Home" : LOCALE === "fr" ? "Accueil" : "Inicio";
+  const localPath = (path: string) =>
+    LOCALE === "es" ? path : `/${LOCALE}${path}`;
+  const homeLabel =
+    LOCALE === "en" ? "Home" : LOCALE === "fr" ? "Accueil" : "Inicio";
   const toursCtaLabel =
-    LOCALE === "en" ? "See tours and experiences" : LOCALE === "fr" ? "Voir tours et experiences" : "Ver tours y experiencias";
+    LOCALE === "en"
+      ? "See tours and experiences"
+      : LOCALE === "fr"
+        ? "Voir tours et experiences"
+        : "Ver tours y experiencias";
   const callToAction = "#transfer-search";
   const toursPath = LOCALE === "es" ? "/tours" : `/${LOCALE}/tours`;
-  const homeHref = LOCALE === "es" ? PROACTIVITIS_URL : `${PROACTIVITIS_URL}/${LOCALE}`;
+  const homeHref =
+    LOCALE === "es" ? PROACTIVITIS_URL : `${PROACTIVITIS_URL}/${LOCALE}`;
   const breadcrumbItems = [
     { name: homeLabel, href: homeHref },
     { name: country.name, href: `${basePath}/${country.slug}` },
@@ -341,18 +411,18 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       ? [
           {
             name: destination.name,
-            href: `${basePath}/${country.slug}/${destination.slug}`
-          }
+            href: `${basePath}/${country.slug}/${destination.slug}`,
+          },
         ]
       : []),
     ...(microZone
       ? [
           {
             name: microZone.name,
-            href: `${basePath}/${country.slug}/${destination?.slug ?? country.slug}/${microZone.slug}`
-          }
+            href: `${basePath}/${country.slug}/${destination?.slug ?? country.slug}/${microZone.slug}`,
+          },
         ]
-      : [])
+      : []),
   ];
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -361,46 +431,53 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: item.href
-    }))
+      item: item.href,
+    })),
   };
-  const highlightHotelName = microZone?.name ?? destination?.name ?? country.name;
-  const durationMinutes = estimateDurationMinutes(microZone?.slug ?? null, destination?.slug ?? null);
+  const highlightHotelName =
+    microZone?.name ?? destination?.name ?? country.name;
+  const durationMinutes = estimateDurationMinutes(
+    microZone?.slug ?? null,
+    destination?.slug ?? null,
+  );
   const meetingDestinationName = destination?.name ?? country.name;
   const durationCopy = translate(LOCALE, "transfer.detail.duration", {
     hotel: highlightHotelName,
-    minutes: durationMinutes
+    minutes: durationMinutes,
   });
   const meetingCopy = translate(LOCALE, "transfer.detail.meeting", {
-    destination: meetingDestinationName
+    destination: meetingDestinationName,
   });
   const showTransferCopy = Boolean(destination || microZone);
 
   const destinationZoneId = resolveZoneId({
     microZoneSlug: microZone?.slug ?? undefined,
     microZoneName: microZone?.name ?? undefined,
-    destinationName: destination?.name ?? country.name
+    destinationName: destination?.name ?? country.name,
   });
   const sedanPrice = getTransferPrice("PUJ_BAVARO", destinationZoneId, "SEDAN");
   const schemaOriginLabel = `Aeropuerto Internacional de ${country.name}`;
-  const schemaDestinationLabel = microZone?.name ?? destination?.name ?? country.name;
+  const schemaDestinationLabel =
+    microZone?.name ?? destination?.name ?? country.name;
   const schemaAreaServed = [
     { "@type": "Place", name: country.name },
     ...(destination ? [{ "@type": "Place", name: destination.name }] : []),
-    ...(microZone ? [{ "@type": "Place", name: microZone.name }] : [])
+    ...(microZone ? [{ "@type": "Place", name: microZone.name }] : []),
   ];
-  const heroImage = resolveHeroImageForContext(context) ?? DEFAULT_METADATA_IMAGE;
+  const heroImage =
+    resolveHeroImageForContext(context) ?? DEFAULT_METADATA_IMAGE;
   const pageUrl =
     segments.length === 0
       ? `${PROACTIVITIS_URL}${basePath}`
       : `${PROACTIVITIS_URL}${basePath}/${segments.map((segment) => encodeURIComponent(segment)).join("/")}`;
   const priceValidUntil = getPriceValidUntil();
   const locationMapUrl = buildGoogleMapsUrl(schemaDestinationLabel);
-  const sanitizedSegments = segments.filter(Boolean).map((segment) =>
-    segment.toUpperCase().replace(/[^A-Z0-9]/g, "")
-  );
+  const sanitizedSegments = segments
+    .filter(Boolean)
+    .map((segment) => segment.toUpperCase().replace(/[^A-Z0-9]/g, ""));
   const isEcuador =
-    country.slug.toLowerCase() === "ecuador" || country.slug.toLowerCase() === "ec";
+    country.slug.toLowerCase() === "ecuador" ||
+    country.slug.toLowerCase() === "ec";
   const ecuadorIdentifier =
     isEcuador && sanitizedSegments.length
       ? `EC-TRANSFER-${sanitizedSegments.join("-")}`
@@ -411,11 +488,13 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
   const providerContactPoint = {
     ...PROACTIVITIS_LOCALBUSINESS.contactPoint,
     email: isEcuador ? ECUADOR_SUPPORT_EMAIL : PROACTIVITIS_EMAIL,
-    telephone: isEcuador ? ECUADOR_SUPPORT_PHONE : PROACTIVITIS_PHONE
+    telephone: isEcuador ? ECUADOR_SUPPORT_PHONE : PROACTIVITIS_PHONE,
   };
   const providerAddress = {
     ...PROACTIVITIS_LOCALBUSINESS.address,
-    addressCountry: isEcuador ? "EC" : PROACTIVITIS_LOCALBUSINESS.address.addressCountry
+    addressCountry: isEcuador
+      ? "EC"
+      : PROACTIVITIS_LOCALBUSINESS.address.addressCountry,
   };
   const provider = {
     ...PROACTIVITIS_LOCALBUSINESS,
@@ -423,7 +502,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
     email: isEcuador ? ECUADOR_SUPPORT_EMAIL : PROACTIVITIS_EMAIL,
     telephone: isEcuador ? ECUADOR_SUPPORT_PHONE : PROACTIVITIS_PHONE,
     contactPoint: providerContactPoint,
-    address: providerAddress
+    address: providerAddress,
   };
 
   const landingSchema = {
@@ -444,10 +523,14 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       url: pageUrl,
       shippingDetails: {
         "@type": "OfferShippingDetails",
-        doesNotShip: true,
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: 0,
+          currency: "USD",
+        },
         shippingDestination: {
           "@type": "DefinedRegion",
-          addressCountry: "DO"
+          addressCountry: "DO",
         },
         deliveryTime: {
           "@type": "ShippingDeliveryTime",
@@ -455,28 +538,28 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
             "@type": "QuantitativeValue",
             minValue: 0,
             maxValue: 1,
-            unitCode: "d"
+            unitCode: "DAY",
           },
           transitTime: {
             "@type": "QuantitativeValue",
             minValue: 0,
             maxValue: 1,
-            unitCode: "d"
-          }
-        }
+            unitCode: "DAY",
+          },
+        },
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
         returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
         applicableCountry: "DO",
         returnMethod: "https://schema.org/ReturnByMail",
-        returnFees: "https://schema.org/FreeReturn"
-      }
+        returnFees: "https://schema.org/FreeReturn",
+      },
     },
     hasMap: locationMapUrl,
     sameAs: SAME_AS_URLS,
     ...(ecuadorIdentifier ? { identifier: ecuadorIdentifier } : {}),
-    ...(ecuadorLocation ? { location: ecuadorLocation } : {})
+    ...(ecuadorLocation ? { location: ecuadorLocation } : {}),
   };
 
   const countryDestinations =
@@ -484,7 +567,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       ? await prisma.destination.findMany({
           where: { countryId: country.id },
           orderBy: { name: "asc" },
-          select: { name: true, slug: true, shortDescription: true }
+          select: { name: true, slug: true, shortDescription: true },
         })
       : [];
 
@@ -493,7 +576,7 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       ? await prisma.microZone.findMany({
           where: { destinationId: destination.id },
           orderBy: { name: "asc" },
-          select: { name: true, slug: true }
+          select: { name: true, slug: true },
         })
       : [];
 
@@ -502,41 +585,43 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       ? await prisma.location.findMany({
           where: { destinationId: destination.id },
           orderBy: { name: "asc" },
-          select: { name: true, slug: true }
+          select: { name: true, slug: true },
         })
       : level === "microzone" && microZone
-      ? await prisma.location.findMany({
-          where: { microZoneId: microZone.id },
-          orderBy: { name: "asc" },
-          select: { name: true, slug: true }
-        })
-      : [];
+        ? await prisma.location.findMany({
+            where: { microZoneId: microZone.id },
+            orderBy: { name: "asc" },
+            select: { name: true, slug: true },
+          })
+        : [];
   const relatedHotels =
     destination && destination.id
       ? await prisma.location.findMany({
           where: { destinationId: destination.id },
           orderBy: { name: "asc" },
           select: { name: true, slug: true },
-          take: 4
+          take: 4,
         })
       : [];
   const nearbyItems = [
     {
       label: `Aeropuerto Internacional de ${country.name}`,
-      href: localPath(`/traslado/${country.slug}`)
+      href: localPath(`/traslado/${country.slug}`),
     },
     ...(destination
       ? [
           {
             label: `Tours y experiencias en ${destination.name}`,
-            href: localPath(`/tours?destination=${encodeURIComponent(destination.slug)}`)
-          }
+            href: localPath(
+              `/tours?destination=${encodeURIComponent(destination.slug)}`,
+            ),
+          },
         ]
       : []),
     ...relatedHotels.map((hotel) => ({
       label: hotel.name,
-      href: localPath(`/recogida/${hotel.slug}`)
-    }))
+      href: localPath(`/recogida/${hotel.slug}`),
+    })),
   ].slice(0, 5);
 
   return (
@@ -560,21 +645,25 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
             {breadcrumbItems.map((item, index) => (
               <span key={item.href} className="inline-flex items-center gap-1">
                 {index > 0 && <span aria-hidden>&gt;</span>}
-                <Link href={item.href} className="hover:text-white">{item.name}</Link>
+                <Link href={item.href} className="hover:text-white">
+                  {item.name}
+                </Link>
               </span>
             ))}
           </nav>
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/70">{levelCopy.badge}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/70">
+            {levelCopy.badge}
+          </p>
           <h1 className="text-4xl font-bold text-white">{heroTitle}</h1>
           <p className="max-w-3xl text-lg text-white/90">{heroSubtitle}</p>
           <p className="text-sm text-white/70">{levelCopy.summary}</p>
           <div className="flex flex-wrap gap-3">
-              <Link
-                href={callToAction}
-                className="rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500"
-              >
-                {translate(LOCALE, "transfer.button.primary")}
-              </Link>
+            <Link
+              href={callToAction}
+              className="rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-emerald-500"
+            >
+              {translate(LOCALE, "transfer.button.primary")}
+            </Link>
             <Link
               href={toursPath}
               className="rounded-full border border-white/70 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:border-white"
@@ -586,7 +675,10 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
       </section>
 
       <main className="mx-auto flex max-w-6xl flex-col gap-12 px-4 py-10">
-        <section id="transfer-search" className="rounded-[36px] border border-slate-100 bg-white/95 p-3 shadow-2xl md:p-5">
+        <section
+          id="transfer-search"
+          className="rounded-[36px] border border-slate-100 bg-white/95 p-3 shadow-2xl md:p-5"
+        >
           <TrasladoSearchV2 />
         </section>
 
@@ -594,25 +686,36 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
           <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Destinos</p>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                  Destinos
+                </p>
                 <h2 className="text-2xl font-bold text-slate-900">
                   Explora los destinos confirmados en {country.name}
                 </h2>
               </div>
-              <span className="text-xs uppercase tracking-[0.4em] text-emerald-600">Padre</span>
+              <span className="text-xs uppercase tracking-[0.4em] text-emerald-600">
+                Padre
+              </span>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               {countryDestinations.map((destinationItem) => (
                 <Link
                   key={destinationItem.slug}
-                  href={localPath(`/traslado/${country.slug}/${destinationItem.slug}`)}
+                  href={localPath(
+                    `/traslado/${country.slug}/${destinationItem.slug}`,
+                  )}
                   className="flex flex-col justify-between rounded-2xl border border-slate-200 p-5 transition hover:border-emerald-300 hover:shadow-xl"
                 >
                   <div>
-                    <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Destino</p>
-                    <h3 className="text-xl font-semibold text-slate-900">{destinationItem.name}</h3>
+                    <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
+                      Destino
+                    </p>
+                    <h3 className="text-xl font-semibold text-slate-900">
+                      {destinationItem.name}
+                    </h3>
                     <p className="mt-2 text-sm text-slate-500">
-                      {destinationItem.shortDescription ?? "Tarifas fijas, zonas claras y proveedores certificados."}
+                      {destinationItem.shortDescription ??
+                        "Tarifas fijas, zonas claras y proveedores certificados."}
                     </p>
                   </div>
                   <span className="mt-4 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-600">
@@ -628,40 +731,61 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
           <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Padre - Destino</p>
-                <h2 className="text-2xl font-bold text-slate-900">{destination.name}</h2>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                  Padre - Destino
+                </p>
+                <h2 className="text-2xl font-bold text-slate-900">
+                  {destination.name}
+                </h2>
                 <p className="text-sm text-slate-600">
-                  {destination.shortDescription ?? "Selecciona la microzona que mejor conecta tu hotel con el aeropuerto."}
+                  {destination.shortDescription ??
+                    "Selecciona la microzona que mejor conecta tu hotel con el aeropuerto."}
                 </p>
               </div>
-              <span className="text-xs uppercase tracking-[0.4em] text-slate-600">Padre</span>
+              <span className="text-xs uppercase tracking-[0.4em] text-slate-600">
+                Padre
+              </span>
             </div>
             {microZones.length > 0 && (
               <div className="grid gap-4 md:grid-cols-3">
                 {microZones.map((zone) => (
                   <Link
                     key={zone.slug}
-                    href={localPath(`/traslado/${country.slug}/${destination.slug}/${zone.slug}`)}
+                    href={localPath(
+                      `/traslado/${country.slug}/${destination.slug}/${zone.slug}`,
+                    )}
                     className="rounded-2xl border border-slate-200 p-4 text-sm text-slate-600 transition hover:border-emerald-300 hover:bg-emerald-50"
                   >
-                    <p className="text-xs uppercase tracking-[0.3em] text-emerald-600">Microzona</p>
-                    <p className="mt-1 text-lg font-semibold text-slate-900">{zone.name}</p>
-                    <p className="mt-2 text-xs uppercase tracking-[0.3em] text-slate-400">Ver hoteles y traslados</p>
+                    <p className="text-xs uppercase tracking-[0.3em] text-emerald-600">
+                      Microzona
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900">
+                      {zone.name}
+                    </p>
+                    <p className="mt-2 text-xs uppercase tracking-[0.3em] text-slate-400">
+                      Ver hoteles y traslados
+                    </p>
                   </Link>
                 ))}
               </div>
             )}
             {level === "microzone" && (
               <div className="space-y-3">
-                <p className="text-sm font-semibold uppercase tracking-[0.4em] text-slate-500">Nieto - Hoteles</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.4em] text-slate-500">
+                  Nieto - Hoteles
+                </p>
                 <div className="grid gap-4 md:grid-cols-2">
                   {availableHotels.map((hotel) => (
                     <div
                       key={hotel.slug}
                       className="rounded-2xl border border-slate-200 p-4 transition hover:border-emerald-300"
                     >
-                      <p className="text-lg font-semibold text-slate-900">{hotel.name}</p>
-                      <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Lugar de aterrizaje</p>
+                      <p className="text-lg font-semibold text-slate-900">
+                        {hotel.name}
+                      </p>
+                      <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                        Lugar de aterrizaje
+                      </p>
                       <Link
                         href={localPath(`/recogida/${hotel.slug}`)}
                         className="mt-3 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700"
@@ -678,7 +802,9 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
 
         {level !== "microzone" && availableHotels.length > 0 && (
           <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Nietos - Hoteles</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+              Nietos - Hoteles
+            </p>
             <div className="grid gap-4 md:grid-cols-3">
               {availableHotels.slice(0, 6).map((hotel) => (
                 <Link
@@ -686,8 +812,12 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
                   href={localPath(`/recogida/${hotel.slug}`)}
                   className="rounded-2xl border border-slate-200 p-4 text-sm text-slate-600 transition hover:border-emerald-300"
                 >
-                  <p className="text-lg font-semibold text-slate-900">{hotel.name}</p>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Reservar traslado</p>
+                  <p className="text-lg font-semibold text-slate-900">
+                    {hotel.name}
+                  </p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                    Reservar traslado
+                  </p>
                 </Link>
               ))}
             </div>
@@ -695,8 +825,12 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
         )}
         {showTransferCopy && (
           <section className="space-y-3 rounded-3xl border border-emerald-100 bg-emerald-50/60 p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">Detalle rapido</p>
-            <h2 className="text-2xl font-bold text-slate-900">Informacion del servicio</h2>
+            <p className="text-xs uppercase tracking-[0.4em] text-emerald-600">
+              Detalle rapido
+            </p>
+            <h2 className="text-2xl font-bold text-slate-900">
+              Informacion del servicio
+            </h2>
             <p className="text-sm text-slate-600">{durationCopy}</p>
             <p className="text-sm text-slate-600">{meetingCopy}</p>
           </section>
@@ -746,10 +880,16 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
           <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Destinos cercanos</p>
-                <h2 className="text-2xl font-bold text-slate-900">Explora puntos vinculados a esta ciudad</h2>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                  Destinos cercanos
+                </p>
+                <h2 className="text-2xl font-bold text-slate-900">
+                  Explora puntos vinculados a esta ciudad
+                </h2>
               </div>
-              <span className="text-xs uppercase tracking-[0.4em] text-emerald-600">Red local</span>
+              <span className="text-xs uppercase tracking-[0.4em] text-emerald-600">
+                Red local
+              </span>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {nearbyItems.map((item) => (
@@ -758,8 +898,12 @@ export default async function TrasladoHierarchicalLanding({ params }: TrasladoLa
                   href={item.href}
                   className="rounded-2xl border border-slate-200 p-4 text-sm font-semibold text-slate-600 transition hover:border-emerald-300 hover:bg-emerald-50"
                 >
-                  <p className="text-xs uppercase tracking-[0.3em] text-emerald-500">Enlace relacionado</p>
-                  <p className="mt-2 text-lg font-semibold text-slate-900">{item.label}</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-emerald-500">
+                    Enlace relacionado
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-slate-900">
+                    {item.label}
+                  </p>
                 </Link>
               ))}
             </div>

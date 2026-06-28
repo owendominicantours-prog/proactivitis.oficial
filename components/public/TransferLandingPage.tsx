@@ -5,27 +5,46 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
 import type { TransferLandingData } from "@/data/transfer-landings";
-import { findGenericTransferLandingBySlug, genericTransferLandings } from "@/data/transfer-generic-landings";
+import {
+  findGenericTransferLandingBySlug,
+  genericTransferLandings,
+} from "@/data/transfer-generic-landings";
 import {
   applyTransferHotelSalesVariant,
   buildTransferHotelVariantSlug,
   findTransferHotelSalesVariant,
   parseTransferHotelVariantSlug,
-  TRANSFER_HOTEL_SALES_VARIANTS
+  TRANSFER_HOTEL_SALES_VARIANTS,
 } from "@/data/transfer-hotel-sales-variants";
-import TrasladoSearchV2, { type LocationSummary } from "@/components/traslado/TrasladoSearchV2";
+import TrasladoSearchV2, {
+  type LocationSummary,
+} from "@/components/traslado/TrasladoSearchV2";
 import LandingViewTracker from "@/components/transfers/LandingViewTracker";
 import StructuredData from "@/components/schema/StructuredData";
 import { translateEntries, translateText } from "@/lib/translationService";
 import { Locale, translate } from "@/lib/translations";
 import { TransferLocationType } from "@prisma/client";
-import { findDynamicLandingBySlug, getDynamicTransferLandingCombos } from "@/lib/transfer-landing-utils";
+import {
+  findDynamicLandingBySlug,
+  getDynamicTransferLandingCombos,
+} from "@/lib/transfer-landing-utils";
 import PublicTransferPage from "@/components/public/PublicTransferPage";
 import { ensureLeadingCapital, normalizeTextDeep } from "@/lib/text-format";
-import { getPriceValidUntil, PROACTIVITIS_LOCALBUSINESS, PROACTIVITIS_URL, SAME_AS_URLS } from "@/lib/seo";
+import {
+  getPriceValidUntil,
+  PROACTIVITIS_LOCALBUSINESS,
+  PROACTIVITIS_URL,
+  SAME_AS_URLS,
+} from "@/lib/seo";
 import { isIndexableTransferVariant } from "@/lib/seo-index-policy";
-import { applyTransferSchemaOverride, getTransferSchemaOverride } from "@/lib/schemaManager";
-import { getApprovedTransferReviewsForLanding, getTransferReviewSummaryForLanding } from "@/lib/transferReviews";
+import {
+  applyTransferSchemaOverride,
+  getTransferSchemaOverride,
+} from "@/lib/schemaManager";
+import {
+  getApprovedTransferReviewsForLanding,
+  getTransferReviewSummaryForLanding,
+} from "@/lib/transferReviews";
 import { countryIdentityVariants } from "@/lib/countryIdentity";
 
 const DEFAULT_AIRPORT_SLUG = "puj-airport";
@@ -38,7 +57,7 @@ const TRANSFER_HEADER_BANNER =
 const DEFAULT_ORIGIN_LABELS: Record<Locale, string> = {
   es: "Aeropuerto de Punta Cana (PUJ)",
   en: "Punta Cana Airport (PUJ)",
-  fr: "Aeroport de Punta Cana (PUJ)"
+  fr: "Aeroport de Punta Cana (PUJ)",
 };
 
 const normalizeLoose = (value: string) =>
@@ -55,7 +74,10 @@ const normalizeLoose = (value: string) =>
     .replace(/-+/g, "-")
     .replace(/(^-|-$)/g, "");
 
-const slugTokens = (value: string) => normalizeLoose(value).split("-").filter((token) => token.length > 2);
+const slugTokens = (value: string) =>
+  normalizeLoose(value)
+    .split("-")
+    .filter((token) => token.length > 2);
 
 const looksLikeAirportSlug = (value: string) => {
   const normalized = normalizeLoose(value);
@@ -71,11 +93,25 @@ const looksLikeAirportSlug = (value: string) => {
 const buildSlugAliases = (value: string) => {
   const normalized = normalizeLoose(value);
   const aliases = new Set<string>([value, normalized]);
-  aliases.add(normalized.replace("punta-cana-international-airport", "puj-airport"));
+  aliases.add(
+    normalized.replace("punta-cana-international-airport", "puj-airport"),
+  );
   aliases.add(normalized.replace("punta-cana-airport", "puj-airport"));
-  aliases.add(normalized.replace("aeropuerto-las-americas", "aeropuerto-internacional-las-americas"));
-  aliases.add(normalized.replace("aeropuerto-las-americas", "las-americas-airport"));
-  aliases.add(normalized.replace("aeropuerto-internacional-las-americas", "aeropuerto-las-americas"));
+  aliases.add(
+    normalized.replace(
+      "aeropuerto-las-americas",
+      "aeropuerto-internacional-las-americas",
+    ),
+  );
+  aliases.add(
+    normalized.replace("aeropuerto-las-americas", "las-americas-airport"),
+  );
+  aliases.add(
+    normalized.replace(
+      "aeropuerto-internacional-las-americas",
+      "aeropuerto-las-americas",
+    ),
+  );
   return Array.from(aliases).filter(Boolean);
 };
 
@@ -90,10 +126,16 @@ type TransferLocationLite = {
 const scoreLocationMatch = (target: string, location: TransferLocationLite) => {
   const targetTokens = slugTokens(target);
   const haystack = `${normalizeLoose(location.slug)} ${normalizeLoose(location.name)}`;
-  return targetTokens.reduce((score, token) => score + (haystack.includes(token) ? 1 : 0), 0);
+  return targetTokens.reduce(
+    (score, token) => score + (haystack.includes(token) ? 1 : 0),
+    0,
+  );
 };
 
-const findBestLocation = (target: string, locations: TransferLocationLite[]) => {
+const findBestLocation = (
+  target: string,
+  locations: TransferLocationLite[],
+) => {
   if (locations.length === 0) return null;
   let best: TransferLocationLite | null = null;
   let bestScore = -1;
@@ -109,13 +151,13 @@ const findBestLocation = (target: string, locations: TransferLocationLite[]) => 
 
 export const resolveLocationByAlias = async (
   rawSlug: string,
-  expectedType?: TransferLocationType
+  expectedType?: TransferLocationType,
 ): Promise<TransferLocationLite | null> => {
   const aliases = buildSlugAliases(rawSlug);
   for (const alias of aliases) {
     const exact = await prisma.transferLocation.findUnique({
       where: { slug: alias },
-      select: { id: true, slug: true, name: true, type: true, zoneId: true }
+      select: { id: true, slug: true, name: true, type: true, zoneId: true },
     });
     if (exact && (!expectedType || exact.type === expectedType)) {
       return exact;
@@ -125,17 +167,19 @@ export const resolveLocationByAlias = async (
   if (expectedType || looksLikeAirportSlug(rawSlug)) {
     const airports = await prisma.transferLocation.findMany({
       where: { type: TransferLocationType.AIRPORT, active: true },
-      select: { id: true, slug: true, name: true, type: true, zoneId: true }
+      select: { id: true, slug: true, name: true, type: true, zoneId: true },
     });
     const bestAirport = findBestLocation(rawSlug, airports);
     if (bestAirport) return bestAirport;
   }
 
-  const expectedWhere = expectedType ? { type: expectedType, active: true } : { active: true };
+  const expectedWhere = expectedType
+    ? { type: expectedType, active: true }
+    : { active: true };
   const generic = await prisma.transferLocation.findMany({
     where: expectedWhere,
     select: { id: true, slug: true, name: true, type: true, zoneId: true },
-    take: 2500
+    take: 2500,
   });
   return findBestLocation(rawSlug, generic);
 };
@@ -153,7 +197,7 @@ const buildFallbackLanding = ({
   originName,
   originSlug,
   destinationName,
-  destinationSlug
+  destinationSlug,
 }: {
   originName: string;
   originSlug: string;
@@ -172,51 +216,69 @@ const buildFallbackLanding = ({
     heroImage: pickHeroImage(destinationSlug),
     heroImageAlt: `Transfer desde ${originName} a ${destinationName}`,
     priceFrom: FALLBACK_PRICE,
-    priceDetails: ["Confirmacion instantanea", "Espera gratuita de 60 minutos", "Wi-Fi incluido"],
+    priceDetails: [
+      "Confirmacion instantanea",
+      "Espera gratuita de 60 minutos",
+      "Wi-Fi incluido",
+    ],
     longCopy: [
       `${originName} conecta con ${destinationName} sin esperas ni sorpresas.`,
       `El chofer bilingue te espera con cartel, maneja la ruta mas rapida y cuida tu equipaje.`,
-      `El precio incluye 60 minutos de cortesia, asistencia 24/7 y soporte local durante el traslado.`
+      `El precio incluye 60 minutos de cortesia, asistencia 24/7 y soporte local durante el traslado.`,
     ],
-    trustBadges: ["Servicio privado garantizado", "Chofer bilingue | Wi-Fi a bordo", "Cancelacion flexible 24h"],
+    trustBadges: [
+      "Servicio privado garantizado",
+      "Chofer bilingue | Wi-Fi a bordo",
+      "Cancelacion flexible 24h",
+    ],
     faq: [
       {
         question: "Que pasa si mi vuelo se retrasa?",
-        answer: "Monitoreamos tu vuelo y esperamos hasta 60 minutos sin costo adicional."
+        answer:
+          "Monitoreamos tu vuelo y esperamos hasta 60 minutos sin costo adicional.",
       },
       {
         question: "Puedo pedir un vehiculo mas grande?",
-        answer: "Si, puedes solicitar una van o minibus y ajustamos la tarifa."
+        answer: "Si, puedes solicitar una van o minibus y ajustamos la tarifa.",
       },
       {
         question: "Hay algo extra que necesite saber?",
-        answer: "Mantenemos comunicacion continua por WhatsApp y confirmamos el pickup antes de tu llegada."
-      }
+        answer:
+          "Mantenemos comunicacion continua por WhatsApp y confirmamos el pickup antes de tu llegada.",
+      },
     ],
     seoTitle: `Transfer privado ${originName} a ${destinationName} | Proactivitis`,
     metaDescription: `Servicio premium desde ${originName} hasta ${destinationName} con chofer bilingue y confirmacion inmediata.`,
     keywords: [
       `${originName} ${destinationName} transfer`,
       `${destinationName} transfer privado`,
-      `transfer ${destinationName}`
+      `transfer ${destinationName}`,
     ],
-    canonical: `${BASE_URL}/transfer/${landingSlug}`
+    canonical: `${BASE_URL}/transfer/${landingSlug}`,
   };
 };
 
-const resolveBaseLanding = async (landingSlug: string): Promise<TransferLandingData | null> => {
+const resolveBaseLanding = async (
+  landingSlug: string,
+): Promise<TransferLandingData | null> => {
   const normalizedLandingSlug = normalizeLoose(landingSlug);
   const normalizedLandingSlugAlias = normalizedLandingSlug
-    .replace("punta-cana-international-airport-puj-to-", "punta-cana-international-airport-to-")
-    .replace("-to-punta-cana-international-airport-puj", "-to-punta-cana-international-airport");
+    .replace(
+      "punta-cana-international-airport-puj-to-",
+      "punta-cana-international-airport-to-",
+    )
+    .replace(
+      "-to-punta-cana-international-airport-puj",
+      "-to-punta-cana-international-airport",
+    );
   const manual = allLandings().find(
     (landing) =>
       landing.landingSlug === landingSlug ||
       landing.reverseSlug === landingSlug ||
       normalizeLoose(landing.landingSlug) === normalizedLandingSlug ||
       normalizeLoose(landing.landingSlug) === normalizedLandingSlugAlias ||
-      normalizeLoose(landing.reverseSlug) === normalizedLandingSlug
-      || normalizeLoose(landing.reverseSlug) === normalizedLandingSlugAlias
+      normalizeLoose(landing.reverseSlug) === normalizedLandingSlug ||
+      normalizeLoose(landing.reverseSlug) === normalizedLandingSlugAlias,
   );
   if (manual) return manual;
 
@@ -226,7 +288,7 @@ const resolveBaseLanding = async (landingSlug: string): Promise<TransferLandingD
       originName: dynamic.origin.name,
       originSlug: dynamic.origin.slug,
       destinationName: dynamic.destination.name,
-      destinationSlug: dynamic.destination.slug
+      destinationSlug: dynamic.destination.slug,
     });
   }
 
@@ -238,12 +300,16 @@ const resolveBaseLanding = async (landingSlug: string): Promise<TransferLandingD
   const [originGuess, destinationGuess] = await Promise.all([
     resolveLocationByAlias(
       originSlug,
-      looksLikeAirportSlug(originSlug) ? TransferLocationType.AIRPORT : undefined
+      looksLikeAirportSlug(originSlug)
+        ? TransferLocationType.AIRPORT
+        : undefined,
     ),
     resolveLocationByAlias(
       destinationSlug,
-      looksLikeAirportSlug(destinationSlug) ? TransferLocationType.AIRPORT : undefined
-    )
+      looksLikeAirportSlug(destinationSlug)
+        ? TransferLocationType.AIRPORT
+        : undefined,
+    ),
   ]);
 
   let resolvedOrigin = originGuess;
@@ -271,14 +337,18 @@ const resolveBaseLanding = async (landingSlug: string): Promise<TransferLandingD
     const leftIsAirport = looksLikeAirportSlug(leftSlug);
     const rightIsAirport = looksLikeAirportSlug(rightSlug);
     if (!leftIsAirport && !rightIsAirport) return null;
-    const originSlugFallback = normalizeLoose(leftIsAirport ? leftSlug : rightSlug) || DEFAULT_AIRPORT_SLUG;
-    const destinationSlugFallback = normalizeLoose(leftIsAirport ? rightSlug : leftSlug);
+    const originSlugFallback =
+      normalizeLoose(leftIsAirport ? leftSlug : rightSlug) ||
+      DEFAULT_AIRPORT_SLUG;
+    const destinationSlugFallback = normalizeLoose(
+      leftIsAirport ? rightSlug : leftSlug,
+    );
     if (!destinationSlugFallback) return null;
     return buildFallbackLanding({
       originName: DEFAULT_AIRPORT_NAME,
       originSlug: originSlugFallback,
       destinationName: humanizeSlug(destinationSlugFallback),
-      destinationSlug: destinationSlugFallback
+      destinationSlug: destinationSlugFallback,
     });
   }
 
@@ -286,11 +356,13 @@ const resolveBaseLanding = async (landingSlug: string): Promise<TransferLandingD
     originName: resolvedOrigin.name,
     originSlug: resolvedOrigin.slug,
     destinationName: resolvedDestination.name,
-    destinationSlug: resolvedDestination.slug
+    destinationSlug: resolvedDestination.slug,
   });
 };
 
-export const resolveLanding = async (landingSlug: string): Promise<TransferLandingData | null> => {
+export const resolveLanding = async (
+  landingSlug: string,
+): Promise<TransferLandingData | null> => {
   const parsed = parseTransferHotelVariantSlug(landingSlug);
   const baseLanding = await resolveBaseLanding(parsed.baseSlug);
   if (!baseLanding) return null;
@@ -299,28 +371,38 @@ export const resolveLanding = async (landingSlug: string): Promise<TransferLandi
   return applyTransferHotelSalesVariant(baseLanding, variant);
 };
 
-export const localizeLanding = async (landing: TransferLandingData, locale: Locale) => {
+export const localizeLanding = async (
+  landing: TransferLandingData,
+  locale: Locale,
+) => {
   if (locale === "es") return landing;
   const target = locale;
-  const [heroTitle, heroSubtitle, heroTagline, heroImageAlt, seoTitle, metaDescription] = await Promise.all([
+  const [
+    heroTitle,
+    heroSubtitle,
+    heroTagline,
+    heroImageAlt,
+    seoTitle,
+    metaDescription,
+  ] = await Promise.all([
     translateText(landing.heroTitle, target),
     translateText(landing.heroSubtitle, target),
     translateText(landing.heroTagline, target),
     translateText(landing.heroImageAlt, target),
     translateText(landing.seoTitle, target),
-    translateText(landing.metaDescription, target)
+    translateText(landing.metaDescription, target),
   ]);
   const [priceDetails, longCopy, trustBadges, keywords] = await Promise.all([
     translateEntries(landing.priceDetails, target),
     translateEntries(landing.longCopy, target),
     translateEntries(landing.trustBadges, target),
-    translateEntries(landing.keywords, target)
+    translateEntries(landing.keywords, target),
   ]);
   const faq = await Promise.all(
     landing.faq.map(async (item) => ({
       question: await translateText(item.question, target),
-      answer: await translateText(item.answer, target)
-    }))
+      answer: await translateText(item.answer, target),
+    })),
   );
   return {
     ...landing,
@@ -334,19 +416,30 @@ export const localizeLanding = async (landing: TransferLandingData, locale: Loca
     longCopy,
     trustBadges,
     keywords,
-    faq
+    faq,
   };
 };
 
 export const buildCanonical = (slug: string, locale: Locale) =>
-  locale === "es" ? `${BASE_URL}/transfer/${slug}` : `${BASE_URL}/${locale}/transfer/${slug}`;
+  locale === "es"
+    ? `${BASE_URL}/transfer/${slug}`
+    : `${BASE_URL}/${locale}/transfer/${slug}`;
 
 const toPujAirportAlias = (slug: string) =>
   normalizeLoose(slug)
-    .replace("punta-cana-international-airport-to-", "punta-cana-international-airport-puj-to-")
-    .replace("-to-punta-cana-international-airport", "-to-punta-cana-international-airport-puj");
+    .replace(
+      "punta-cana-international-airport-to-",
+      "punta-cana-international-airport-puj-to-",
+    )
+    .replace(
+      "-to-punta-cana-international-airport",
+      "-to-punta-cana-international-airport-puj",
+    );
 
-const isAcceptedAirportAlias = (canonicalSlug: string, requestedSlug: string) => {
+const isAcceptedAirportAlias = (
+  canonicalSlug: string,
+  requestedSlug: string,
+) => {
   const canonical = normalizeLoose(canonicalSlug);
   const requested = normalizeLoose(requestedSlug);
   return requested === canonical || requested === toPujAirportAlias(canonical);
@@ -376,7 +469,11 @@ const buildMetaSuffix = (locale: Locale, hotelName?: string) => {
     : "Reserva traslados privados con seguimiento de vuelo, chofer bilingue y soporte 24/7.";
 };
 
-const ensureMetaDescription = (description: string, locale: Locale, hotelName?: string) => {
+const ensureMetaDescription = (
+  description: string,
+  locale: Locale,
+  hotelName?: string,
+) => {
   const base = description.trim();
   if (base.length >= MIN_META_DESCRIPTION) return base;
   return `${base} ${buildMetaSuffix(locale, hotelName)}`.trim();
@@ -385,37 +482,49 @@ const ensureMetaDescription = (description: string, locale: Locale, hotelName?: 
 export const buildMarketTransferTitles = (
   locale: Locale,
   hotelName: string,
-  originName?: string
+  originName?: string,
 ): { heroTitle: string; seoTitle: string } => {
-  const origin = originName?.trim() || DEFAULT_ORIGIN_LABELS[locale] || DEFAULT_ORIGIN_LABELS.es;
+  const origin =
+    originName?.trim() ||
+    DEFAULT_ORIGIN_LABELS[locale] ||
+    DEFAULT_ORIGIN_LABELS.es;
   if (locale === "en") {
     return {
       heroTitle: `${origin} to ${hotelName} Private Transfer`,
-      seoTitle: `${hotelName} Private Transfer from Punta Cana Airport (PUJ)`
+      seoTitle: `${hotelName} Private Transfer from Punta Cana Airport (PUJ)`,
     };
   }
   if (locale === "fr") {
     return {
       heroTitle: `Transfert prive ${origin} vers ${hotelName}`,
-      seoTitle: `${hotelName} transfert prive depuis l'aeroport de Punta Cana (PUJ)`
+      seoTitle: `${hotelName} transfert prive depuis l'aeroport de Punta Cana (PUJ)`,
     };
   }
   return {
     heroTitle: `Traslado privado ${origin} a ${hotelName}`,
-    seoTitle: `${hotelName}: traslado privado desde el aeropuerto de Punta Cana (PUJ)`
+    seoTitle: `${hotelName}: traslado privado desde el aeropuerto de Punta Cana (PUJ)`,
   };
 };
 
-const dedupeAlternateNames = (items: Array<string | null | undefined>, primary?: string) =>
+const dedupeAlternateNames = (
+  items: Array<string | null | undefined>,
+  primary?: string,
+) =>
   Array.from(
     new Set(
       items
         .map((item) => item?.trim())
-        .filter((item): item is string => Boolean(item && item.length > 0 && item !== primary))
-    )
+        .filter((item): item is string =>
+          Boolean(item && item.length > 0 && item !== primary),
+        ),
+    ),
   );
 
-const buildGenericTransferAlternateNames = (keyword: string, locale: Locale, primary: string) => {
+const buildGenericTransferAlternateNames = (
+  keyword: string,
+  locale: Locale,
+  primary: string,
+) => {
   const normalizedKeyword = ensureLeadingCapital(keyword);
   const variants =
     locale === "en"
@@ -423,20 +532,20 @@ const buildGenericTransferAlternateNames = (keyword: string, locale: Locale, pri
           normalizedKeyword,
           `${normalizedKeyword} in Punta Cana`,
           `Private ${normalizedKeyword}`,
-          `${normalizedKeyword} booking`
+          `${normalizedKeyword} booking`,
         ]
       : locale === "fr"
         ? [
             normalizedKeyword,
             `${normalizedKeyword} a Punta Cana`,
             `Reservation ${normalizedKeyword}`,
-            `${normalizedKeyword} prive`
+            `${normalizedKeyword} prive`,
           ]
         : [
             normalizedKeyword,
             `${normalizedKeyword} en Punta Cana`,
             `Reserva ${normalizedKeyword}`,
-            `${normalizedKeyword} privado`
+            `${normalizedKeyword} privado`,
           ];
 
   return dedupeAlternateNames(variants, primary);
@@ -446,7 +555,7 @@ const buildMarketTransferAlternateNames = (
   locale: Locale,
   hotelName: string,
   originLabel: string,
-  primary: string
+  primary: string,
 ) => {
   const variants =
     locale === "en"
@@ -454,20 +563,20 @@ const buildMarketTransferAlternateNames = (
           `${hotelName} airport transfer`,
           `${hotelName} private transfer`,
           `${originLabel} to ${hotelName} transfer`,
-          `${hotelName} transfer booking`
+          `${hotelName} transfer booking`,
         ]
       : locale === "fr"
         ? [
             `Transfert aeroport ${hotelName}`,
             `Transfert prive ${hotelName}`,
             `${originLabel} vers ${hotelName}`,
-            `Reservation transfert ${hotelName}`
+            `Reservation transfert ${hotelName}`,
           ]
         : [
             `Traslado aeropuerto ${hotelName}`,
             `Traslado privado ${hotelName}`,
             `${originLabel} a ${hotelName}`,
-            `Reserva traslado ${hotelName}`
+            `Reserva traslado ${hotelName}`,
           ];
 
   return dedupeAlternateNames(variants, primary);
@@ -484,31 +593,67 @@ const parseGalleryImages = (value?: string | null): string[] => {
   }
 };
 
-const resolveTourCardImage = (heroImage?: string | null, gallery?: string | null) => {
+const resolveTourCardImage = (
+  heroImage?: string | null,
+  gallery?: string | null,
+) => {
   if (heroImage) return heroImage;
   return parseGalleryImages(gallery)[0] ?? "/transfer/sedan.png";
 };
 
-const detectTransferArea = (slug: string, hotelName: string, locale: Locale) => {
+const detectTransferArea = (
+  slug: string,
+  hotelName: string,
+  locale: Locale,
+) => {
   const haystack = `${slug} ${hotelName}`.toLowerCase();
   if (haystack.includes("cap-cana")) {
-    return locale === "fr" ? "Cap Cana" : locale === "en" ? "Cap Cana" : "Cap Cana";
+    return locale === "fr"
+      ? "Cap Cana"
+      : locale === "en"
+        ? "Cap Cana"
+        : "Cap Cana";
   }
   if (haystack.includes("uvero") || haystack.includes("macao")) {
-    return locale === "fr" ? "Uvero Alto" : locale === "en" ? "Uvero Alto" : "Uvero Alto";
+    return locale === "fr"
+      ? "Uvero Alto"
+      : locale === "en"
+        ? "Uvero Alto"
+        : "Uvero Alto";
   }
   if (haystack.includes("bavaro") || haystack.includes("arena-gorda")) {
     return locale === "fr" ? "Bavaro" : locale === "en" ? "Bavaro" : "Bavaro";
   }
-  return locale === "fr" ? "Punta Cana" : locale === "en" ? "Punta Cana" : "Punta Cana";
+  return locale === "fr"
+    ? "Punta Cana"
+    : locale === "en"
+      ? "Punta Cana"
+      : "Punta Cana";
 };
 
 const detectTransferProfile = (slug: string, hotelName: string) => {
   const haystack = `${slug} ${hotelName}`.toLowerCase();
-  if (haystack.includes("adult") || haystack.includes("secret") || haystack.includes("breathless")) return "couples";
-  if (haystack.includes("family") || haystack.includes("nickelodeon")) return "family";
-  if (haystack.includes("hard-rock") || haystack.includes("casino") || haystack.includes("group")) return "groups";
-  if (haystack.includes("luxury") || haystack.includes("zoetry") || haystack.includes("finest") || haystack.includes("excellence")) return "premium";
+  if (
+    haystack.includes("adult") ||
+    haystack.includes("secret") ||
+    haystack.includes("breathless")
+  )
+    return "couples";
+  if (haystack.includes("family") || haystack.includes("nickelodeon"))
+    return "family";
+  if (
+    haystack.includes("hard-rock") ||
+    haystack.includes("casino") ||
+    haystack.includes("group")
+  )
+    return "groups";
+  if (
+    haystack.includes("luxury") ||
+    haystack.includes("zoetry") ||
+    haystack.includes("finest") ||
+    haystack.includes("excellence")
+  )
+    return "premium";
   return "standard";
 };
 
@@ -517,7 +662,7 @@ const buildTransferSalesCards = (
   hotelName: string,
   hotelSlug: string,
   originLabel: string,
-  destinationLabel: string
+  destinationLabel: string,
 ) => {
   const area = detectTransferArea(hotelSlug, hotelName, locale);
   const profile = detectTransferProfile(hotelSlug, hotelName);
@@ -526,107 +671,108 @@ const buildTransferSalesCards = (
     es: [
       {
         title: `Recogida puntual desde ${originLabel}`,
-        body: `Monitoreamos tu vuelo y coordinamos la salida para que llegues a ${destinationLabel} sin fricciones ni esperas innecesarias.`
+        body: `Monitoreamos tu vuelo y coordinamos la salida para que llegues a ${destinationLabel} sin fricciones ni esperas innecesarias.`,
       },
       {
         title: `Ruta privada hacia ${area}`,
-        body: `Este traslado está pensado para viajeros que quieren bajar del avión y entrar al hotel con una operación clara y rápida.`
+        body: `Este traslado está pensado para viajeros que quieren bajar del avión y entrar al hotel con una operación clara y rápida.`,
       },
       {
         title: "Precio claro antes del checkout",
-        body: "Seleccionas pasajeros, tipo de viaje y vehículo con tarifa visible antes de reservar."
-      }
+        body: "Seleccionas pasajeros, tipo de viaje y vehículo con tarifa visible antes de reservar.",
+      },
     ],
     en: [
       {
         title: `On-time pickup from ${originLabel}`,
-        body: `We track your flight and coordinate departure so you reach ${destinationLabel} without unnecessary waiting.`
+        body: `We track your flight and coordinate departure so you reach ${destinationLabel} without unnecessary waiting.`,
       },
       {
         title: `Private route into ${area}`,
-        body: `This transfer is built for travelers who want to land and get into the resort with a cleaner, faster operation.`
+        body: `This transfer is built for travelers who want to land and get into the resort with a cleaner, faster operation.`,
       },
       {
         title: "Clear price before checkout",
-        body: "Passengers, trip type, and vehicle are selected with visible pricing before booking."
-      }
+        body: "Passengers, trip type, and vehicle are selected with visible pricing before booking.",
+      },
     ],
     fr: [
       {
         title: `Prise en charge ponctuelle depuis ${originLabel}`,
-        body: `Nous suivons votre vol et coordonnons le depart pour arriver a ${destinationLabel} sans attente inutile.`
+        body: `Nous suivons votre vol et coordonnons le depart pour arriver a ${destinationLabel} sans attente inutile.`,
       },
       {
         title: `Route privee vers ${area}`,
-        body: `Ce transfert est pense pour les voyageurs qui veulent sortir de l aeroport et entrer a l hotel avec une operation plus propre.`
+        body: `Ce transfert est pense pour les voyageurs qui veulent sortir de l aeroport et entrer a l hotel avec une operation plus propre.`,
       },
       {
         title: "Prix clair avant checkout",
-        body: "Passagers, type de trajet et vehicule avec tarif visible avant reservation."
-      }
-    ]
+        body: "Passagers, type de trajet et vehicule avec tarif visible avant reservation.",
+      },
+    ],
   }[locale];
 
   const profileOverrideMap = {
     couples: {
       es: {
         title: "Ideal para llegadas de parejas",
-        body: `Una llegada más tranquila y privada para resorts adultos o escapadas románticas hacia ${destinationLabel}.`
+        body: `Una llegada más tranquila y privada para resorts adultos o escapadas románticas hacia ${destinationLabel}.`,
       },
       en: {
         title: "Built for couples arrivals",
-        body: `A quieter and more private arrival flow for adults-only resorts or romantic stays into ${destinationLabel}.`
+        body: `A quieter and more private arrival flow for adults-only resorts or romantic stays into ${destinationLabel}.`,
       },
       fr: {
         title: "Ideal pour les couples",
-        body: `Une arrivee plus calme et privee pour resorts adults only ou sejours romantiques vers ${destinationLabel}.`
-      }
+        body: `Une arrivee plus calme et privee pour resorts adults only ou sejours romantiques vers ${destinationLabel}.`,
+      },
     },
     family: {
       es: {
         title: "Mejor para familias con equipaje",
-        body: "Más útil cuando viajas con maletas, niños, cochecito o quieres entrar al resort sin improvisaciones."
+        body: "Más útil cuando viajas con maletas, niños, cochecito o quieres entrar al resort sin improvisaciones.",
       },
       en: {
         title: "Better for families with luggage",
-        body: "More useful when traveling with bags, children, strollers, or when you want a smoother resort arrival."
+        body: "More useful when traveling with bags, children, strollers, or when you want a smoother resort arrival.",
       },
       fr: {
         title: "Mieux pour les familles",
-        body: "Plus utile avec bagages, enfants, poussette ou si vous voulez une arrivee plus simple au resort."
-      }
+        body: "Plus utile avec bagages, enfants, poussette ou si vous voulez une arrivee plus simple au resort.",
+      },
     },
     groups: {
       es: {
         title: "Útil para grupos y reservas grandes",
-        body: "La operación se siente más controlada cuando llegan varias personas y quieres evitar coordinar taxis separados."
+        body: "La operación se siente más controlada cuando llegan varias personas y quieres evitar coordinar taxis separados.",
       },
       en: {
         title: "Useful for groups and larger bookings",
-        body: "The operation feels more controlled when several travelers arrive together and want to avoid split taxis."
+        body: "The operation feels more controlled when several travelers arrive together and want to avoid split taxis.",
       },
       fr: {
         title: "Utile pour groupes",
-        body: "L operation parait plus controlee quand plusieurs voyageurs arrivent ensemble et veulent eviter des taxis separes."
-      }
+        body: "L operation parait plus controlee quand plusieurs voyageurs arrivent ensemble et veulent eviter des taxis separes.",
+      },
     },
     premium: {
       es: {
         title: "Más alineado con una estancia premium",
-        body: "Una llegada de mayor nivel para hoteles donde la experiencia de entrada también importa."
+        body: "Una llegada de mayor nivel para hoteles donde la experiencia de entrada también importa.",
       },
       en: {
         title: "Better aligned with premium stays",
-        body: "A stronger arrival match for hotels where the entrance experience also matters."
+        body: "A stronger arrival match for hotels where the entrance experience also matters.",
       },
       fr: {
         title: "Mieux aligne avec un sejour premium",
-        body: "Une arrivee plus forte pour les hotels ou l experience d entree compte aussi."
-      }
-    }
+        body: "Une arrivee plus forte pour les hotels ou l experience d entree compte aussi.",
+      },
+    },
   } as const;
 
-  const override = profileOverrideMap[profile as keyof typeof profileOverrideMap];
+  const override =
+    profileOverrideMap[profile as keyof typeof profileOverrideMap];
   if (override) {
     common[1] = override[locale];
   }
@@ -636,24 +782,42 @@ const buildTransferSalesCards = (
 
 const formatTourDuration = (value?: string | null, locale: Locale = "es") => {
   if (!value) {
-    return locale === "fr" ? "Duree variable" : locale === "en" ? "Flexible duration" : "Duracion variable";
+    return locale === "fr"
+      ? "Duree variable"
+      : locale === "en"
+        ? "Flexible duration"
+        : "Duracion variable";
   }
   const trimmed = value.trim();
   if (!trimmed.startsWith("{")) return trimmed;
   try {
     const parsed = JSON.parse(trimmed) as { value?: string; unit?: string };
     const durationValue = parsed?.value ? String(parsed.value).trim() : "";
-    const unitRaw = parsed?.unit ? String(parsed.unit).trim().toLowerCase() : "";
+    const unitRaw = parsed?.unit
+      ? String(parsed.unit).trim().toLowerCase()
+      : "";
     if (!durationValue || !unitRaw) return trimmed;
-    if (unitRaw.includes("hora") || unitRaw.includes("hour") || unitRaw.includes("heure")) {
-      if (locale === "fr") return `${durationValue} heure${durationValue === "1" ? "" : "s"}`;
-      if (locale === "en") return `${durationValue} hour${durationValue === "1" ? "" : "s"}`;
+    if (
+      unitRaw.includes("hora") ||
+      unitRaw.includes("hour") ||
+      unitRaw.includes("heure")
+    ) {
+      if (locale === "fr")
+        return `${durationValue} heure${durationValue === "1" ? "" : "s"}`;
+      if (locale === "en")
+        return `${durationValue} hour${durationValue === "1" ? "" : "s"}`;
       return `${durationValue} hora${durationValue === "1" ? "" : "s"}`;
     }
     if (unitRaw.includes("min")) return `${durationValue} min`;
-    if (unitRaw.includes("dia") || unitRaw.includes("day") || unitRaw.includes("jour")) {
-      if (locale === "fr") return `${durationValue} jour${durationValue === "1" ? "" : "s"}`;
-      if (locale === "en") return `${durationValue} day${durationValue === "1" ? "" : "s"}`;
+    if (
+      unitRaw.includes("dia") ||
+      unitRaw.includes("day") ||
+      unitRaw.includes("jour")
+    ) {
+      if (locale === "fr")
+        return `${durationValue} jour${durationValue === "1" ? "" : "s"}`;
+      if (locale === "en")
+        return `${durationValue} day${durationValue === "1" ? "" : "s"}`;
       return `${durationValue} dia${durationValue === "1" ? "" : "s"}`;
     }
     return `${durationValue} ${parsed.unit ?? ""}`.trim();
@@ -662,21 +826,27 @@ const formatTourDuration = (value?: string | null, locale: Locale = "es") => {
   }
 };
 
-export async function buildTransferMetadata(landingSlug: string, locale: Locale): Promise<Metadata> {
+export async function buildTransferMetadata(
+  landingSlug: string,
+  locale: Locale,
+): Promise<Metadata> {
   const parsedSlug = parseTransferHotelVariantSlug(landingSlug);
   const canIndexVariant = isIndexableTransferVariant(parsedSlug.variantId);
   const generic = findGenericTransferLandingBySlug(landingSlug);
   if (generic) {
     const canonical = buildCanonical(generic.landingSlug, locale);
     const seoTitle = ensureLeadingCapital(generic.seoTitle[locale]);
-    const seoDescription = ensureMetaDescription(generic.metaDescription[locale], locale);
+    const seoDescription = ensureMetaDescription(
+      generic.metaDescription[locale],
+      locale,
+    );
     const imageUrl = encodeURI(`${BASE_URL}/transfer/sedan.png`);
     return {
       title: seoTitle,
       description: seoDescription,
       robots: {
         index: true,
-        follow: true
+        follow: true,
       },
       alternates: {
         canonical,
@@ -684,8 +854,8 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
           es: `/transfer/${generic.landingSlug}`,
           en: `/en/transfer/${generic.landingSlug}`,
           fr: `/fr/transfer/${generic.landingSlug}`,
-          "x-default": `/transfer/${generic.landingSlug}`
-        }
+          "x-default": `/transfer/${generic.landingSlug}`,
+        },
       },
       openGraph: {
         title: seoTitle,
@@ -697,29 +867,39 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
         images: [
           {
             url: imageUrl,
-            alt: "Transfer Punta Cana"
-          }
-        ]
+            alt: "Transfer Punta Cana",
+          },
+        ],
       },
       twitter: {
         card: "summary_large_image",
         title: seoTitle,
         description: seoDescription,
-        images: [imageUrl]
+        images: [imageUrl],
       },
-      keywords: generic.keywords
+      keywords: generic.keywords,
     };
   }
 
   const landing = await resolveLanding(landingSlug);
   if (!landing) return {};
   const localized = await localizeLanding(landing, locale);
-  const canonicalTargetSlug = canIndexVariant ? landing.landingSlug : parsedSlug.baseSlug;
+  const canonicalTargetSlug = canIndexVariant
+    ? landing.landingSlug
+    : parsedSlug.baseSlug;
   const canonical = buildCanonical(canonicalTargetSlug, locale);
   const marketTitles = buildMarketTransferTitles(locale, landing.hotelName);
-  const seoTitle = ensureLeadingCapital(`${marketTitles.seoTitle} | Proactivitis`);
-  const rawDescription = ensureMetaDescription(localized.metaDescription, locale, landing.hotelName);
-  const seoDescription = rawDescription.endsWith(".") ? rawDescription : `${rawDescription}.`;
+  const seoTitle = ensureLeadingCapital(
+    `${marketTitles.seoTitle} | Proactivitis`,
+  );
+  const rawDescription = ensureMetaDescription(
+    localized.metaDescription,
+    locale,
+    landing.hotelName,
+  );
+  const seoDescription = rawDescription.endsWith(".")
+    ? rawDescription
+    : `${rawDescription}.`;
   const imageUrl = encodeURI(`${BASE_URL}${localized.heroImage}`);
   return {
     title: seoTitle,
@@ -730,12 +910,12 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
         es: `/transfer/${canonicalTargetSlug}`,
         en: `/en/transfer/${canonicalTargetSlug}`,
         fr: `/fr/transfer/${canonicalTargetSlug}`,
-        "x-default": `/transfer/${canonicalTargetSlug}`
-      }
+        "x-default": `/transfer/${canonicalTargetSlug}`,
+      },
     },
     robots: {
       index: canIndexVariant,
-      follow: true
+      follow: true,
     },
     openGraph: {
       title: seoTitle,
@@ -747,17 +927,17 @@ export async function buildTransferMetadata(landingSlug: string, locale: Locale)
       images: [
         {
           url: imageUrl,
-          alt: localized.heroImageAlt
-        }
-      ]
+          alt: localized.heroImageAlt,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: seoTitle,
       description: seoDescription,
-      images: [imageUrl]
+      images: [imageUrl],
     },
-    keywords: localized.keywords
+    keywords: localized.keywords,
   };
 }
 
@@ -766,20 +946,20 @@ const buildGenericTransferHighlights = (keyword: string, locale: Locale) => {
     return [
       `Built around the search intent for ${keyword}`,
       "Private airport and hotel transfer with clear pricing",
-      "Flight tracking, WhatsApp support, and bilingual drivers"
+      "Flight tracking, WhatsApp support, and bilingual drivers",
     ];
   }
   if (locale === "fr") {
     return [
       `Cree autour de l intention de recherche ${keyword}`,
       "Transfert prive aeroport-hotel avec tarif clair",
-      "Suivi de vol, support WhatsApp et chauffeur bilingue"
+      "Suivi de vol, support WhatsApp et chauffeur bilingue",
     ];
   }
   return [
     `Creada alrededor de la intencion de busqueda ${keyword}`,
     "Traslado privado aeropuerto-hotel con precio claro",
-    "Seguimiento de vuelo, soporte por WhatsApp y chofer bilingue"
+    "Seguimiento de vuelo, soporte por WhatsApp y chofer bilingue",
   ];
 };
 
@@ -792,7 +972,7 @@ const buildGenericTransferNarrative = (keyword: string, locale: Locale) => {
       body2:
         "Instead of forcing them through a generic transport page, this landing narrows the promise: private transfer service in Punta Cana, easy booking, and a more reliable arrival experience from the airport to the hotel.",
       body3:
-        "That makes this page easier to rank for a narrower intent and easier to convert because the copy, metadata, and internal links are all aligned around the same demand."
+        "That makes this page easier to rank for a narrower intent and easier to convert because the copy, metadata, and internal links are all aligned around the same demand.",
     };
   }
   if (locale === "fr") {
@@ -803,7 +983,7 @@ const buildGenericTransferNarrative = (keyword: string, locale: Locale) => {
       body2:
         "Au lieu de les envoyer vers une page trop generique, cette landing recentre la promesse: transfert prive a Punta Cana, reservation simple et arrivee plus fiable depuis l aeroport jusqu a l hotel.",
       body3:
-        "Cela aide la page a mieux se positionner sur une intention plus precise et a convertir davantage grace a un message, une metadata et un maillage interne alignes."
+        "Cela aide la page a mieux se positionner sur une intention plus precise et a convertir davantage grace a un message, une metadata et un maillage interne alignes.",
     };
   }
   return {
@@ -813,28 +993,63 @@ const buildGenericTransferNarrative = (keyword: string, locale: Locale) => {
     body2:
       "En lugar de empujarlo a una pagina generica de transporte, esta landing concentra la promesa: traslado privado en Punta Cana, reserva sencilla y una llegada mas confiable desde el aeropuerto hasta el hotel.",
     body3:
-      "Eso hace la URL mas facil de posicionar para una intencion cerrada y tambien mas facil de convertir porque copy, metadata y enlaces internos apuntan a la misma necesidad."
+      "Eso hace la URL mas facil de posicionar para una intencion cerrada y tambien mas facil de convertir porque copy, metadata y enlaces internos apuntan a la misma necesidad.",
   };
 };
 
 const detectGenericTransferIntent = (keyword: string) => {
   const lower = keyword.toLowerCase();
-  if (lower.includes("vip") || lower.includes("luxury") || lower.includes("chauffeur") || lower.includes("executive")) {
+  if (
+    lower.includes("vip") ||
+    lower.includes("luxury") ||
+    lower.includes("chauffeur") ||
+    lower.includes("executive")
+  ) {
     return "premium";
   }
-  if (lower.includes("suv") || lower.includes("van") || lower.includes("minivan") || lower.includes("for 6") || lower.includes("for 8") || lower.includes("for 10") || lower.includes("for 12") || lower.includes("group")) {
+  if (
+    lower.includes("suv") ||
+    lower.includes("van") ||
+    lower.includes("minivan") ||
+    lower.includes("for 6") ||
+    lower.includes("for 8") ||
+    lower.includes("for 10") ||
+    lower.includes("for 12") ||
+    lower.includes("group")
+  ) {
     return "vehicle";
   }
-  if (lower.includes("price") || lower.includes("cost") || lower.includes("cheap") || lower.includes("affordable") || lower.includes("best price")) {
+  if (
+    lower.includes("price") ||
+    lower.includes("cost") ||
+    lower.includes("cheap") ||
+    lower.includes("affordable") ||
+    lower.includes("best price")
+  ) {
     return "price";
   }
-  if (lower.includes("round trip") || lower.includes("return") || lower.includes("hotel to airport")) {
+  if (
+    lower.includes("round trip") ||
+    lower.includes("return") ||
+    lower.includes("hotel to airport")
+  ) {
     return "roundtrip";
   }
-  if (lower.includes("child seat") || lower.includes("baby seat") || lower.includes("car seat") || lower.includes("family")) {
+  if (
+    lower.includes("child seat") ||
+    lower.includes("baby seat") ||
+    lower.includes("car seat") ||
+    lower.includes("family")
+  ) {
     return "family";
   }
-  if (lower.includes("whatsapp") || lower.includes("last minute") || lower.includes("24/7") || lower.includes("flight tracking") || lower.includes("meet and greet")) {
+  if (
+    lower.includes("whatsapp") ||
+    lower.includes("last minute") ||
+    lower.includes("24/7") ||
+    lower.includes("flight tracking") ||
+    lower.includes("meet and greet")
+  ) {
     return "service";
   }
   return "airport";
@@ -846,145 +1061,307 @@ const buildGenericTransferSalesCards = (keyword: string, locale: Locale) => {
   if (intent === "premium") {
     return locale === "en"
       ? [
-          { title: "Higher-end arrival", body: "Better vehicle perception, cleaner presentation, and a more executive handoff from airport to hotel." },
-          { title: "Ideal for premium travelers", body: "Useful for couples, VIP guests, corporate travelers, and clients who care about comfort and image." },
-          { title: "More commercial margin", body: "Luxury-intent pages usually support stronger average order value than standard transfer searches." }
+          {
+            title: "Higher-end arrival",
+            body: "Better vehicle perception, cleaner presentation, and a more executive handoff from airport to hotel.",
+          },
+          {
+            title: "Ideal for premium travelers",
+            body: "Useful for couples, VIP guests, corporate travelers, and clients who care about comfort and image.",
+          },
+          {
+            title: "More commercial margin",
+            body: "Luxury-intent pages usually support stronger average order value than standard transfer searches.",
+          },
         ]
       : locale === "fr"
         ? [
-            { title: "Arrivee plus premium", body: "Meilleure perception du vehicule, presentation plus propre et accueil plus executif de l aeroport a l hotel." },
-            { title: "Ideal pour clients premium", body: "Utile pour couples, VIP, voyageurs corporate et clients sensibles au confort et a l image." },
-            { title: "Valeur commerciale plus forte", body: "Les pages a intention luxe soutiennent souvent un panier moyen plus eleve." }
+            {
+              title: "Arrivee plus premium",
+              body: "Meilleure perception du vehicule, presentation plus propre et accueil plus executif de l aeroport a l hotel.",
+            },
+            {
+              title: "Ideal pour clients premium",
+              body: "Utile pour couples, VIP, voyageurs corporate et clients sensibles au confort et a l image.",
+            },
+            {
+              title: "Valeur commerciale plus forte",
+              body: "Les pages a intention luxe soutiennent souvent un panier moyen plus eleve.",
+            },
           ]
         : [
-            { title: "Llegada mas premium", body: "Mejor percepcion del vehiculo, presentacion mas limpia y una recepcion mas ejecutiva desde el aeropuerto al hotel." },
-            { title: "Ideal para clientes premium", body: "Sirve para parejas, VIP, ejecutivos y viajeros que valoran comodidad e imagen." },
-            { title: "Mayor valor comercial", body: "Las paginas con intencion luxury suelen soportar un ticket promedio mas alto que una busqueda generica." }
+            {
+              title: "Llegada mas premium",
+              body: "Mejor percepcion del vehiculo, presentacion mas limpia y una recepcion mas ejecutiva desde el aeropuerto al hotel.",
+            },
+            {
+              title: "Ideal para clientes premium",
+              body: "Sirve para parejas, VIP, ejecutivos y viajeros que valoran comodidad e imagen.",
+            },
+            {
+              title: "Mayor valor comercial",
+              body: "Las paginas con intencion luxury suelen soportar un ticket promedio mas alto que una busqueda generica.",
+            },
           ];
   }
 
   if (intent === "price") {
     return locale === "en"
       ? [
-          { title: "Clear pricing intent", body: "These searches need price confidence first, so the landing should answer cost, pickup, and confirmation speed quickly." },
-          { title: "Better quote behavior", body: "A tighter page reduces friction before the user reaches the transfer quote or checkout flow." },
-          { title: "Stronger pre-sale trust", body: "Transparent language around rates and service quality helps price-sensitive visitors convert." }
+          {
+            title: "Clear pricing intent",
+            body: "These searches need price confidence first, so the landing should answer cost, pickup, and confirmation speed quickly.",
+          },
+          {
+            title: "Better quote behavior",
+            body: "A tighter page reduces friction before the user reaches the transfer quote or checkout flow.",
+          },
+          {
+            title: "Stronger pre-sale trust",
+            body: "Transparent language around rates and service quality helps price-sensitive visitors convert.",
+          },
         ]
       : locale === "fr"
         ? [
-            { title: "Intention prix claire", body: "Ces recherches veulent d abord de la clarte sur le prix, le pickup et la rapidite de confirmation." },
-            { title: "Meilleur comportement au devis", body: "Une page plus serree reduit la friction avant d arriver au devis ou au checkout." },
-            { title: "Confiance avant vente", body: "Un langage plus transparent sur le tarif et le service aide a convertir les visiteurs sensibles au prix." }
+            {
+              title: "Intention prix claire",
+              body: "Ces recherches veulent d abord de la clarte sur le prix, le pickup et la rapidite de confirmation.",
+            },
+            {
+              title: "Meilleur comportement au devis",
+              body: "Une page plus serree reduit la friction avant d arriver au devis ou au checkout.",
+            },
+            {
+              title: "Confiance avant vente",
+              body: "Un langage plus transparent sur le tarif et le service aide a convertir les visiteurs sensibles au prix.",
+            },
           ]
         : [
-            { title: "Intencion de precio clara", body: "Estas busquedas necesitan primero claridad en costo, pickup y rapidez de confirmacion." },
-            { title: "Mejor paso a cotizacion", body: "Una pagina mas cerrada reduce friccion antes de llegar al cotizador o al checkout." },
-            { title: "Mas confianza antes de comprar", body: "Un lenguaje transparente sobre tarifa y servicio ayuda a convertir al viajero sensible al precio." }
+            {
+              title: "Intencion de precio clara",
+              body: "Estas busquedas necesitan primero claridad en costo, pickup y rapidez de confirmacion.",
+            },
+            {
+              title: "Mejor paso a cotizacion",
+              body: "Una pagina mas cerrada reduce friccion antes de llegar al cotizador o al checkout.",
+            },
+            {
+              title: "Mas confianza antes de comprar",
+              body: "Un lenguaje transparente sobre tarifa y servicio ayuda a convertir al viajero sensible al precio.",
+            },
           ];
   }
 
   if (intent === "family" || intent === "vehicle") {
     return locale === "en"
       ? [
-          { title: "Vehicle-fit intent", body: "The visitor wants to know if luggage, group size, or children are handled correctly before booking." },
-          { title: "Operational clarity", body: "This page can pre-answer seats, comfort, space, and route suitability in a more direct way." },
-          { title: "Higher confidence for groups", body: "Families and group travelers convert better when the page feels specific to their logistics." }
+          {
+            title: "Vehicle-fit intent",
+            body: "The visitor wants to know if luggage, group size, or children are handled correctly before booking.",
+          },
+          {
+            title: "Operational clarity",
+            body: "This page can pre-answer seats, comfort, space, and route suitability in a more direct way.",
+          },
+          {
+            title: "Higher confidence for groups",
+            body: "Families and group travelers convert better when the page feels specific to their logistics.",
+          },
         ]
       : locale === "fr"
         ? [
-            { title: "Intention liee au vehicule", body: "Le visiteur veut savoir si bagages, groupe ou enfants sont bien geres avant de reserver." },
-            { title: "Clarte operationnelle", body: "La page peut repondre plus vite sur l espace, le confort, les sieges et l adequation du trajet." },
-            { title: "Plus de confiance pour groupes", body: "Familles et groupes convertissent mieux quand la page semble adaptee a leur logistique." }
+            {
+              title: "Intention liee au vehicule",
+              body: "Le visiteur veut savoir si bagages, groupe ou enfants sont bien geres avant de reserver.",
+            },
+            {
+              title: "Clarte operationnelle",
+              body: "La page peut repondre plus vite sur l espace, le confort, les sieges et l adequation du trajet.",
+            },
+            {
+              title: "Plus de confiance pour groupes",
+              body: "Familles et groupes convertissent mieux quand la page semble adaptee a leur logistique.",
+            },
           ]
         : [
-            { title: "Intencion ligada al vehiculo", body: "El usuario quiere saber si equipaje, grupo o ninos estan bien cubiertos antes de reservar." },
-            { title: "Claridad operativa", body: "La pagina puede resolver mejor espacio, confort, sillas y encaje de ruta de forma mas directa." },
-            { title: "Mas confianza para grupos", body: "Familias y grupos convierten mejor cuando la pagina parece hecha para su logistica." }
+            {
+              title: "Intencion ligada al vehiculo",
+              body: "El usuario quiere saber si equipaje, grupo o ninos estan bien cubiertos antes de reservar.",
+            },
+            {
+              title: "Claridad operativa",
+              body: "La pagina puede resolver mejor espacio, confort, sillas y encaje de ruta de forma mas directa.",
+            },
+            {
+              title: "Mas confianza para grupos",
+              body: "Familias y grupos convierten mejor cuando la pagina parece hecha para su logistica.",
+            },
           ];
   }
 
   if (intent === "roundtrip") {
     return locale === "en"
       ? [
-          { title: "Arrival + departure solved", body: "Round-trip intent means the traveler wants the whole airport transport flow handled in one decision." },
-          { title: "Less operational leakage", body: "A dedicated page helps lock both directions earlier and reduces return-trip uncertainty." },
-          { title: "Better vacation planning", body: "The landing supports travelers who want transport confirmed before they even check in." }
+          {
+            title: "Arrival + departure solved",
+            body: "Round-trip intent means the traveler wants the whole airport transport flow handled in one decision.",
+          },
+          {
+            title: "Less operational leakage",
+            body: "A dedicated page helps lock both directions earlier and reduces return-trip uncertainty.",
+          },
+          {
+            title: "Better vacation planning",
+            body: "The landing supports travelers who want transport confirmed before they even check in.",
+          },
         ]
       : locale === "fr"
         ? [
-            { title: "Arrivee + depart resolus", body: "L intention aller-retour veut regler tout le transport aeroport en une seule decision." },
-            { title: "Moins de fuite operationnelle", body: "Une page dediee aide a verrouiller les deux trajets plus tot et reduit l incertitude du retour." },
-            { title: "Planification plus propre", body: "La landing aide les voyageurs qui veulent tout confirmer avant meme le check-in." }
+            {
+              title: "Arrivee + depart resolus",
+              body: "L intention aller-retour veut regler tout le transport aeroport en une seule decision.",
+            },
+            {
+              title: "Moins de fuite operationnelle",
+              body: "Une page dediee aide a verrouiller les deux trajets plus tot et reduit l incertitude du retour.",
+            },
+            {
+              title: "Planification plus propre",
+              body: "La landing aide les voyageurs qui veulent tout confirmer avant meme le check-in.",
+            },
           ]
         : [
-            { title: "Llegada + salida resueltas", body: "La intencion round-trip quiere resolver todo el transporte al aeropuerto en una sola decision." },
-            { title: "Menos fuga operativa", body: "Una pagina dedicada ayuda a cerrar ambos trayectos mas temprano y reduce incertidumbre del regreso." },
-            { title: "Mejor plan de viaje", body: "La landing ayuda a quien quiere dejar su transporte cerrado antes incluso del check-in." }
+            {
+              title: "Llegada + salida resueltas",
+              body: "La intencion round-trip quiere resolver todo el transporte al aeropuerto en una sola decision.",
+            },
+            {
+              title: "Menos fuga operativa",
+              body: "Una pagina dedicada ayuda a cerrar ambos trayectos mas temprano y reduce incertidumbre del regreso.",
+            },
+            {
+              title: "Mejor plan de viaje",
+              body: "La landing ayuda a quien quiere dejar su transporte cerrado antes incluso del check-in.",
+            },
           ];
   }
 
   return locale === "en"
     ? [
-        { title: "Closer to booking", body: "Generic airport transfer searches still carry strong purchase intent when the landing answers the arrival problem clearly." },
-        { title: "Cleaner transfer promise", body: "This page narrows the message around direct transport, support, and easier booking behavior." },
-        { title: "Useful entry page", body: "It works as a conversion doorway for travelers who are not searching by hotel yet but already want transport." }
+        {
+          title: "Closer to booking",
+          body: "Generic airport transfer searches still carry strong purchase intent when the landing answers the arrival problem clearly.",
+        },
+        {
+          title: "Cleaner transfer promise",
+          body: "This page narrows the message around direct transport, support, and easier booking behavior.",
+        },
+        {
+          title: "Useful entry page",
+          body: "It works as a conversion doorway for travelers who are not searching by hotel yet but already want transport.",
+        },
       ]
     : locale === "fr"
       ? [
-          { title: "Plus proche de la reservation", body: "Les recherches generiques airport transfer gardent une forte intention d achat si la page resout bien l arrivee." },
-          { title: "Promesse plus propre", body: "La page recentre le message sur transport direct, support et reservation plus simple." },
-          { title: "Bonne page d entree", body: "Elle capte les voyageurs qui ne cherchent pas encore par hotel mais veulent deja leur transport." }
+          {
+            title: "Plus proche de la reservation",
+            body: "Les recherches generiques airport transfer gardent une forte intention d achat si la page resout bien l arrivee.",
+          },
+          {
+            title: "Promesse plus propre",
+            body: "La page recentre le message sur transport direct, support et reservation plus simple.",
+          },
+          {
+            title: "Bonne page d entree",
+            body: "Elle capte les voyageurs qui ne cherchent pas encore par hotel mais veulent deja leur transport.",
+          },
         ]
       : [
-          { title: "Mas cerca de la reserva", body: "Las busquedas genericas de airport transfer siguen teniendo fuerte intencion de compra si la pagina resuelve bien la llegada." },
-          { title: "Promesa mas limpia", body: "La pagina concentra el mensaje en transporte directo, soporte y reserva mas simple." },
-          { title: "Buena puerta de entrada", body: "Sirve para viajeros que aun no buscan por hotel pero ya quieren resolver su traslado." }
+          {
+            title: "Mas cerca de la reserva",
+            body: "Las busquedas genericas de airport transfer siguen teniendo fuerte intencion de compra si la pagina resuelve bien la llegada.",
+          },
+          {
+            title: "Promesa mas limpia",
+            body: "La pagina concentra el mensaje en transporte directo, soporte y reserva mas simple.",
+          },
+          {
+            title: "Buena puerta de entrada",
+            body: "Sirve para viajeros que aun no buscan por hotel pero ya quieren resolver su traslado.",
+          },
         ];
 };
 
 export async function TransferLandingPage({
   landingSlug,
-  locale
+  locale,
 }: {
   landingSlug: string;
   locale: Locale;
 }) {
-  const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
-    translate(locale, key, replacements);
+  const t = (
+    key: Parameters<typeof translate>[1],
+    replacements?: Record<string, string>,
+  ) => translate(locale, key, replacements);
 
   const generic = findGenericTransferLandingBySlug(landingSlug);
   if (generic) {
     const genericCanonical = buildCanonical(generic.landingSlug, locale);
     const genericPrimaryName = generic.titles[locale];
-    const genericAlternateNames = buildGenericTransferAlternateNames(generic.keyword, locale, genericPrimaryName);
-    const genericHighlights = buildGenericTransferHighlights(generic.keyword, locale);
-    const genericNarrative = buildGenericTransferNarrative(generic.keyword, locale);
-    const genericSalesCards = buildGenericTransferSalesCards(generic.keyword, locale);
+    const genericAlternateNames = buildGenericTransferAlternateNames(
+      generic.keyword,
+      locale,
+      genericPrimaryName,
+    );
+    const genericHighlights = buildGenericTransferHighlights(
+      generic.keyword,
+      locale,
+    );
+    const genericNarrative = buildGenericTransferNarrative(
+      generic.keyword,
+      locale,
+    );
+    const genericSalesCards = buildGenericTransferSalesCards(
+      generic.keyword,
+      locale,
+    );
     const relatedGenericLandings = genericTransferLandings
       .filter((item) => item.landingSlug !== generic.landingSlug)
       .filter(
         (item) =>
-          item.keyword.includes("punta cana") === generic.keyword.includes("punta cana") ||
-          item.keyword.includes("airport") === generic.keyword.includes("airport") ||
-          item.keyword.includes("private") === generic.keyword.includes("private")
+          item.keyword.includes("punta cana") ===
+            generic.keyword.includes("punta cana") ||
+          item.keyword.includes("airport") ===
+            generic.keyword.includes("airport") ||
+          item.keyword.includes("private") ===
+            generic.keyword.includes("private"),
       )
       .slice(0, 4);
     const genericFaq = [
       {
         "@type": "Question",
         name: translate(locale, "transfer.faq.where.q"),
-        acceptedAnswer: { "@type": "Answer", text: translate(locale, "transfer.faq.where.a") }
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: translate(locale, "transfer.faq.where.a"),
+        },
       },
       {
         "@type": "Question",
         name: translate(locale, "transfer.faq.delay.q"),
-        acceptedAnswer: { "@type": "Answer", text: translate(locale, "transfer.faq.delay.a") }
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: translate(locale, "transfer.faq.delay.a"),
+        },
       },
       {
         "@type": "Question",
         name: translate(locale, "transfer.faq.cancel.q"),
-        acceptedAnswer: { "@type": "Answer", text: translate(locale, "transfer.faq.cancel.a") }
-      }
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: translate(locale, "transfer.faq.cancel.a"),
+        },
+      },
     ];
     const genericSchema = {
       "@context": "https://schema.org",
@@ -993,16 +1370,21 @@ export async function TransferLandingPage({
       name: genericPrimaryName,
       alternateName: genericAlternateNames,
       description: generic.descriptions[locale],
-      serviceType: locale === "es" ? "Traslado aeropuerto y transporte terrestre" : locale === "fr" ? "Transfert aeroport et transport terrestre" : "Airport and ground transfer service",
+      serviceType:
+        locale === "es"
+          ? "Traslado aeropuerto y transporte terrestre"
+          : locale === "fr"
+            ? "Transfert aeroport et transport terrestre"
+            : "Airport and ground transfer service",
       areaServed: {
         "@type": "Place",
-        name: "Punta Cana"
+        name: "Punta Cana",
       },
       provider: {
         "@type": "TravelAgency",
         name: "Proactivitis",
         url: BASE_URL,
-        logo: `${BASE_URL}/icon.png`
+        logo: `${BASE_URL}/icon.png`,
       },
       image: [toAbsoluteImageUrl(generic.heroImage)],
       offers: {
@@ -1015,10 +1397,14 @@ export async function TransferLandingPage({
         priceValidUntil: getPriceValidUntil(),
         shippingDetails: {
           "@type": "OfferShippingDetails",
-          doesNotShip: true,
+          shippingRate: {
+            "@type": "MonetaryAmount",
+            value: 0,
+            currency: "USD",
+          },
           shippingDestination: {
             "@type": "DefinedRegion",
-            addressCountry: "DO"
+            addressCountry: "DO",
           },
           deliveryTime: {
             "@type": "ShippingDeliveryTime",
@@ -1026,29 +1412,29 @@ export async function TransferLandingPage({
               "@type": "QuantitativeValue",
               minValue: 0,
               maxValue: 1,
-              unitCode: "d"
+              unitCode: "DAY",
             },
             transitTime: {
               "@type": "QuantitativeValue",
               minValue: 0,
               maxValue: 1,
-              unitCode: "d"
-            }
-          }
+              unitCode: "DAY",
+            },
+          },
         },
         hasMerchantReturnPolicy: {
           "@type": "MerchantReturnPolicy",
           returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
           applicableCountry: "DO",
           returnMethod: "https://schema.org/ReturnByMail",
-          returnFees: "https://schema.org/FreeReturn"
-        }
-      }
+          returnFees: "https://schema.org/FreeReturn",
+        },
+      },
     };
     const genericFaqSchema = {
       "@context": "https://schema.org",
       "@type": "FAQPage",
-      mainEntity: genericFaq
+      mainEntity: genericFaq,
     };
     const genericBreadcrumbSchema = {
       "@context": "https://schema.org",
@@ -1057,22 +1443,31 @@ export async function TransferLandingPage({
         {
           "@type": "ListItem",
           position: 1,
-          name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
-          item: locale === "es" ? `${BASE_URL}/` : `${BASE_URL}/${locale}`
+          name:
+            locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
+          item: locale === "es" ? `${BASE_URL}/` : `${BASE_URL}/${locale}`,
         },
         {
           "@type": "ListItem",
           position: 2,
-          name: locale === "es" ? "Traslados" : locale === "fr" ? "Transferts" : "Transfers",
-          item: locale === "es" ? `${BASE_URL}/traslado` : `${BASE_URL}/${locale}/traslado`
+          name:
+            locale === "es"
+              ? "Traslados"
+              : locale === "fr"
+                ? "Transferts"
+                : "Transfers",
+          item:
+            locale === "es"
+              ? `${BASE_URL}/traslado`
+              : `${BASE_URL}/${locale}/traslado`,
         },
         {
           "@type": "ListItem",
           position: 3,
           name: generic.titles[locale],
-          item: genericCanonical
-        }
-      ]
+          item: genericCanonical,
+        },
+      ],
     };
     const genericWebPageSchema = {
       "@context": "https://schema.org",
@@ -1086,21 +1481,21 @@ export async function TransferLandingPage({
         "@type": "WebSite",
         "@id": `${BASE_URL}/#website`,
         url: BASE_URL,
-        name: "Proactivitis"
+        name: "Proactivitis",
       },
       about: {
-        "@id": `${genericCanonical}#service`
+        "@id": `${genericCanonical}#service`,
       },
       primaryImageOfPage: {
         "@type": "ImageObject",
         "@id": `${genericCanonical}#image`,
         url: toAbsoluteImageUrl(generic.heroImage),
-        contentUrl: toAbsoluteImageUrl(generic.heroImage)
+        contentUrl: toAbsoluteImageUrl(generic.heroImage),
       },
       breadcrumb: {
-        "@id": `${genericCanonical}#breadcrumb`
+        "@id": `${genericCanonical}#breadcrumb`,
       },
-      inLanguage: locale
+      inLanguage: locale,
     };
     const genericHighlightsSchema = {
       "@context": "https://schema.org",
@@ -1109,8 +1504,8 @@ export async function TransferLandingPage({
       itemListElement: genericHighlights.map((item, index) => ({
         "@type": "ListItem",
         position: index + 1,
-        name: item
-      }))
+        name: item,
+      })),
     };
     const genericSalesCardsSchema = {
       "@context": "https://schema.org",
@@ -1120,8 +1515,8 @@ export async function TransferLandingPage({
         "@type": "ListItem",
         position: index + 1,
         name: item.title,
-        description: item.body
-      }))
+        description: item.body,
+      })),
     };
 
     return (
@@ -1137,9 +1532,15 @@ export async function TransferLandingPage({
           <section className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
             <article className="rounded-[30px] border border-slate-100 bg-white p-8 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-                {locale === "es" ? "Intencion SEO" : locale === "fr" ? "Intention SEO" : "SEO intent"}
+                {locale === "es"
+                  ? "Intencion SEO"
+                  : locale === "fr"
+                    ? "Intention SEO"
+                    : "SEO intent"}
               </p>
-              <h2 className="mt-3 text-2xl font-bold text-slate-900">{genericNarrative.title}</h2>
+              <h2 className="mt-3 text-2xl font-bold text-slate-900">
+                {genericNarrative.title}
+              </h2>
               <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600">
                 <p>{genericNarrative.body1}</p>
                 <p>{genericNarrative.body2}</p>
@@ -1149,11 +1550,18 @@ export async function TransferLandingPage({
 
             <aside className="rounded-[30px] border border-slate-900 bg-slate-950 p-8 text-white shadow-[0_30px_80px_rgba(15,23,42,0.32)]">
               <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
-                {locale === "es" ? "Lo que quiere el viajero" : locale === "fr" ? "Ce que veut le voyageur" : "What the traveler wants"}
+                {locale === "es"
+                  ? "Lo que quiere el viajero"
+                  : locale === "fr"
+                    ? "Ce que veut le voyageur"
+                    : "What the traveler wants"}
               </p>
               <div className="mt-4 space-y-3">
                 {genericHighlights.map((item) => (
-                  <div key={item} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 text-slate-200">
+                  <div
+                    key={item}
+                    className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 text-slate-200"
+                  >
                     {item}
                   </div>
                 ))}
@@ -1163,13 +1571,25 @@ export async function TransferLandingPage({
                   href={locale === "es" ? "/traslado" : `/${locale}/traslado`}
                   className="rounded-full bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.22em] text-slate-950 transition hover:bg-slate-200"
                 >
-                  {locale === "es" ? "Cotizar traslado" : locale === "fr" ? "Demander un devis" : "Quote transfer"}
+                  {locale === "es"
+                    ? "Cotizar traslado"
+                    : locale === "fr"
+                      ? "Demander un devis"
+                      : "Quote transfer"}
                 </Link>
                 <Link
-                  href={locale === "es" ? "/punta-cana/premium-transfer-services" : `/${locale}/punta-cana/premium-transfer-services`}
+                  href={
+                    locale === "es"
+                      ? "/punta-cana/premium-transfer-services"
+                      : `/${locale}/punta-cana/premium-transfer-services`
+                  }
                   className="rounded-full border border-white/20 px-5 py-3 text-xs font-semibold uppercase tracking-[0.22em] text-white transition hover:border-white/50 hover:bg-white/10"
                 >
-                  {locale === "es" ? "Ver premium" : locale === "fr" ? "Voir premium" : "View premium"}
+                  {locale === "es"
+                    ? "Ver premium"
+                    : locale === "fr"
+                      ? "Voir premium"
+                      : "View premium"}
                 </Link>
               </div>
             </aside>
@@ -1178,7 +1598,11 @@ export async function TransferLandingPage({
           <section className="rounded-[30px] border border-slate-100 bg-white p-8 shadow-sm">
             <div className="flex flex-col gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-                {locale === "es" ? "Por que esta keyword vende" : locale === "fr" ? "Pourquoi ce mot cle convertit" : "Why this keyword converts"}
+                {locale === "es"
+                  ? "Por que esta keyword vende"
+                  : locale === "fr"
+                    ? "Pourquoi ce mot cle convertit"
+                    : "Why this keyword converts"}
               </p>
               <h2 className="text-2xl font-bold text-slate-900">
                 {locale === "es"
@@ -1197,12 +1621,23 @@ export async function TransferLandingPage({
             </div>
             <div className="mt-5 grid gap-4 lg:grid-cols-3">
               {genericSalesCards.map((item) => (
-                <article key={item.title} className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white">
+                <article
+                  key={item.title}
+                  className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white"
+                >
                   <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
-                    {locale === "es" ? "Intencion" : locale === "fr" ? "Intention" : "Intent"}
+                    {locale === "es"
+                      ? "Intencion"
+                      : locale === "fr"
+                        ? "Intention"
+                        : "Intent"}
                   </p>
-                  <h3 className="mt-3 text-lg font-semibold text-slate-900">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-slate-600">{item.body}</p>
+                  <h3 className="mt-3 text-lg font-semibold text-slate-900">
+                    {item.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-7 text-slate-600">
+                    {item.body}
+                  </p>
                 </article>
               ))}
             </div>
@@ -1211,7 +1646,11 @@ export async function TransferLandingPage({
           <section className="rounded-[30px] border border-slate-100 bg-white p-8 shadow-sm">
             <div className="flex flex-col gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-                {locale === "es" ? "Variantes relacionadas" : locale === "fr" ? "Variantes liees" : "Related variants"}
+                {locale === "es"
+                  ? "Variantes relacionadas"
+                  : locale === "fr"
+                    ? "Variantes liees"
+                    : "Related variants"}
               </p>
               <h2 className="text-2xl font-bold text-slate-900">
                 {locale === "es"
@@ -1225,13 +1664,23 @@ export async function TransferLandingPage({
               {relatedGenericLandings.map((item) => (
                 <Link
                   key={item.landingSlug}
-                  href={locale === "es" ? `/transfer/${item.landingSlug}` : `/${locale}/transfer/${item.landingSlug}`}
+                  href={
+                    locale === "es"
+                      ? `/transfer/${item.landingSlug}`
+                      : `/${locale}/transfer/${item.landingSlug}`
+                  }
                   className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white"
                 >
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                    {locale === "es" ? "Keyword" : locale === "fr" ? "Mot cle" : "Keyword"}
+                    {locale === "es"
+                      ? "Keyword"
+                      : locale === "fr"
+                        ? "Mot cle"
+                        : "Keyword"}
                   </p>
-                  <p className="mt-2 font-semibold text-slate-900">{item.titles[locale]}</p>
+                  <p className="mt-2 font-semibold text-slate-900">
+                    {item.titles[locale]}
+                  </p>
                 </Link>
               ))}
             </div>
@@ -1252,27 +1701,45 @@ export async function TransferLandingPage({
   const landing = await resolveLanding(landingSlug);
   if (!landing) return notFound();
   if (!isAcceptedAirportAlias(landing.landingSlug, landingSlug)) {
-    permanentRedirect(locale === "es" ? `/transfer/${landing.landingSlug}` : `/${locale}/transfer/${landing.landingSlug}`);
+    permanentRedirect(
+      locale === "es"
+        ? `/transfer/${landing.landingSlug}`
+        : `/${locale}/transfer/${landing.landingSlug}`,
+    );
   }
-  const localizedLanding = normalizeTextDeep(await localizeLanding(landing, locale));
+  const localizedLanding = normalizeTextDeep(
+    await localizeLanding(landing, locale),
+  );
 
-  const [originSlugRaw, destinationSlugRaw] = landing.landingSlug.includes("-to-")
+  const [originSlugRaw, destinationSlugRaw] = landing.landingSlug.includes(
+    "-to-",
+  )
     ? landing.landingSlug.split("-to-")
     : [DEFAULT_AIRPORT_SLUG, landing.hotelSlug];
 
   const [originLocation, destinationLocation] = await Promise.all([
-    resolveLocationByAlias(originSlugRaw || DEFAULT_AIRPORT_SLUG, TransferLocationType.AIRPORT),
+    resolveLocationByAlias(
+      originSlugRaw || DEFAULT_AIRPORT_SLUG,
+      TransferLocationType.AIRPORT,
+    ),
     (async () => {
-      const hotelMatch = await resolveLocationByAlias(landing.hotelSlug, TransferLocationType.HOTEL);
+      const hotelMatch = await resolveLocationByAlias(
+        landing.hotelSlug,
+        TransferLocationType.HOTEL,
+      );
       if (hotelMatch) return hotelMatch;
-      const placeMatch = await resolveLocationByAlias(landing.hotelSlug, TransferLocationType.PLACE);
+      const placeMatch = await resolveLocationByAlias(
+        landing.hotelSlug,
+        TransferLocationType.PLACE,
+      );
       if (placeMatch) return placeMatch;
       const destinationSlugCandidate = destinationSlugRaw || landing.hotelSlug;
       return resolveLocationByAlias(destinationSlugCandidate);
-    })()
+    })(),
   ]);
   const originLabel = originLocation?.name ?? DEFAULT_AIRPORT_NAME;
-  const destinationLabel = destinationLocation?.name ?? localizedLanding.hotelName;
+  const destinationLabel =
+    destinationLocation?.name ?? localizedLanding.hotelName;
   const canQuote = Boolean(originLocation?.id && destinationLocation?.id);
   const initialOrigin: LocationSummary | null = originLocation
     ? {
@@ -1280,7 +1747,7 @@ export async function TransferLandingPage({
         name: originLocation.name,
         slug: originLocation.slug,
         type: originLocation.type,
-        zoneName: null
+        zoneName: null,
       }
     : null;
   const initialDestination: LocationSummary | null = destinationLocation
@@ -1289,26 +1756,31 @@ export async function TransferLandingPage({
         name: destinationLocation.name,
         slug: destinationLocation.slug,
         type: destinationLocation.type,
-        zoneName: null
+        zoneName: null,
       }
     : null;
   const marketTitles = buildMarketTransferTitles(
     locale,
     localizedLanding.hotelName,
-    originLabel
+    originLabel,
   );
-  const activeSalesVariant = findTransferHotelSalesVariant(parseTransferHotelVariantSlug(landingSlug).variantId);
+  const activeSalesVariant = findTransferHotelSalesVariant(
+    parseTransferHotelVariantSlug(landingSlug).variantId,
+  );
   const toursHubHref = locale === "es" ? "/tours" : `/${locale}/tours`;
-  const puntaCanaToursHref = locale === "es" ? "/punta-cana/tours" : `/${locale}/punta-cana/tours`;
+  const puntaCanaToursHref =
+    locale === "es" ? "/punta-cana/tours" : `/${locale}/punta-cana/tours`;
   const hotelThingsToDoHref =
-    locale === "es" ? `/things-to-do/${landing.hotelSlug}` : `/${locale}/things-to-do/${landing.hotelSlug}`;
+    locale === "es"
+      ? `/things-to-do/${landing.hotelSlug}`
+      : `/${locale}/things-to-do/${landing.hotelSlug}`;
 
   const salesCards = buildTransferSalesCards(
     locale,
     localizedLanding.hotelName,
     landing.hotelSlug,
     originLabel,
-    destinationLabel
+    destinationLabel,
   );
 
   const priceValidUntil = getPriceValidUntil();
@@ -1317,8 +1789,8 @@ export async function TransferLandingPage({
     select: {
       countryId: true,
       destinationId: true,
-      microZoneId: true
-    }
+      microZoneId: true,
+    },
   });
 
   const countryId = hotelLocation?.countryId ?? "RD";
@@ -1332,13 +1804,23 @@ export async function TransferLandingPage({
       slug: { not: "transfer-privado-proactivitis" },
       OR: [
         ...(hotelLocation?.microZoneId
-          ? [{ ...recommendedTourCountryWhere, microZoneId: hotelLocation.microZoneId }]
+          ? [
+              {
+                ...recommendedTourCountryWhere,
+                microZoneId: hotelLocation.microZoneId,
+              },
+            ]
           : []),
         ...(hotelLocation?.destinationId
-          ? [{ ...recommendedTourCountryWhere, destinationId: hotelLocation.destinationId }]
+          ? [
+              {
+                ...recommendedTourCountryWhere,
+                destinationId: hotelLocation.destinationId,
+              },
+            ]
           : []),
-        recommendedTourCountryWhere
-      ]
+        recommendedTourCountryWhere,
+      ],
     },
     select: {
       id: true,
@@ -1354,32 +1836,45 @@ export async function TransferLandingPage({
         where: { locale },
         select: {
           title: true,
-          shortDescription: true
-        }
-      }
+          shortDescription: true,
+        },
+      },
     },
     orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-    take: 6
+    take: 6,
   });
   const [approvedTransferReviews, transferReviewSummary] = await Promise.all([
     getApprovedTransferReviewsForLanding(landing.landingSlug, 28),
-    getTransferReviewSummaryForLanding(landing.landingSlug)
+    getTransferReviewSummaryForLanding(landing.landingSlug),
   ]);
   const totalApprovedTransferReviews = transferReviewSummary.count;
   const initialVisibleTransferReviews = 7;
-  const transferReviewAverage = Math.round(transferReviewSummary.average * 10) / 10;
+  const transferReviewAverage =
+    Math.round(transferReviewSummary.average * 10) / 10;
   const canonicalUrl = buildCanonical(landing.landingSlug, locale);
   const primaryImageUrl = TRANSFER_HEADER_BANNER;
-  const transferArea = detectTransferArea(landing.hotelSlug, localizedLanding.hotelName, locale);
-  const travelerProfile = detectTransferProfile(landing.hotelSlug, localizedLanding.hotelName);
-  const marketAlternateNames = buildMarketTransferAlternateNames(locale, localizedLanding.hotelName, originLabel, marketTitles.heroTitle);
+  const transferArea = detectTransferArea(
+    landing.hotelSlug,
+    localizedLanding.hotelName,
+    locale,
+  );
+  const travelerProfile = detectTransferProfile(
+    landing.hotelSlug,
+    localizedLanding.hotelName,
+  );
+  const marketAlternateNames = buildMarketTransferAlternateNames(
+    locale,
+    localizedLanding.hotelName,
+    originLabel,
+    marketTitles.heroTitle,
+  );
   const genericKeywordLinks = genericTransferLandings
     .filter(
       (item) =>
         item.keyword.includes("airport") ||
         item.keyword.includes("private") ||
         item.keyword.includes("transfer price") ||
-        item.keyword.includes("shuttle")
+        item.keyword.includes("shuttle"),
     )
     .slice(0, 6);
   const otherLandings = allLandings()
@@ -1387,8 +1882,19 @@ export async function TransferLandingPage({
     .sort((a, b) => {
       const score = (candidate: TransferLandingData) => {
         let value = 0;
-        if (detectTransferArea(candidate.hotelSlug, candidate.hotelName, locale) === transferArea) value += 3;
-        if (detectTransferProfile(candidate.hotelSlug, candidate.hotelName) === travelerProfile) value += 1;
+        if (
+          detectTransferArea(
+            candidate.hotelSlug,
+            candidate.hotelName,
+            locale,
+          ) === transferArea
+        )
+          value += 3;
+        if (
+          detectTransferProfile(candidate.hotelSlug, candidate.hotelName) ===
+          travelerProfile
+        )
+          value += 1;
         return value;
       };
       return score(b) - score(a);
@@ -1405,41 +1911,35 @@ export async function TransferLandingPage({
     name: marketTitles.heroTitle,
     alternateName: marketAlternateNames,
     description: localizedLanding.metaDescription,
-    serviceType: t("transferLanding.schema.serviceType", { hotel: localizedLanding.hotelName }),
+    serviceType: t("transferLanding.schema.serviceType", {
+      hotel: localizedLanding.hotelName,
+    }),
     provider: {
       "@type": "TravelAgency",
       "@id": `${PROACTIVITIS_URL}#organization`,
       name: "Proactivitis",
       url: BASE_URL,
       logo: `${BASE_URL}/icon.png`,
-      sameAs: SAME_AS_URLS
+      sameAs: SAME_AS_URLS,
     },
     areaServed: [
       {
         "@type": "Place",
         "@id": `${canonicalUrl}#origin`,
-        name: originLabel
+        name: originLabel,
       },
       {
         "@type": "Place",
         "@id": `${canonicalUrl}#destination`,
-        name: destinationLabel
-      }
+        name: destinationLabel,
+      },
     ],
-    availableLanguage: locale === "fr" ? ["fr", "en", "es"] : locale === "en" ? ["en", "es"] : ["es", "en"],
-    audience: {
-      "@type": "Audience",
-      audienceType:
-        travelerProfile === "family"
-          ? "Families"
-          : travelerProfile === "groups"
-          ? "Groups"
-          : travelerProfile === "couples"
-          ? "Couples"
-          : travelerProfile === "premium"
-          ? "Premium travelers"
-          : "Tourists"
-    },
+    availableLanguage:
+      locale === "fr"
+        ? ["fr", "en", "es"]
+        : locale === "en"
+          ? ["en", "es"]
+          : ["es", "en"],
     image: [primaryImageUrl],
     hasOfferCatalog: {
       "@type": "OfferCatalog",
@@ -1451,7 +1951,9 @@ export async function TransferLandingPage({
           "@id": `${canonicalUrl}#offer`,
           itemOffered: {
             "@type": "Service",
-            name: t("transferLanding.schema.offerName", { hotel: localizedLanding.hotelName })
+            name: t("transferLanding.schema.offerName", {
+              hotel: localizedLanding.hotelName,
+            }),
           },
           priceCurrency: "USD",
           price: localizedLanding.priceFrom,
@@ -1459,10 +1961,14 @@ export async function TransferLandingPage({
           priceValidUntil,
           shippingDetails: {
             "@type": "OfferShippingDetails",
-            doesNotShip: true,
+            shippingRate: {
+              "@type": "MonetaryAmount",
+              value: 0,
+              currency: "USD",
+            },
             shippingDestination: {
               "@type": "DefinedRegion",
-              addressCountry: "DO"
+              addressCountry: "DO",
             },
             deliveryTime: {
               "@type": "ShippingDeliveryTime",
@@ -1470,35 +1976,36 @@ export async function TransferLandingPage({
                 "@type": "QuantitativeValue",
                 minValue: 0,
                 maxValue: 1,
-                unitCode: "d"
+                unitCode: "DAY",
               },
               transitTime: {
                 "@type": "QuantitativeValue",
                 minValue: 0,
                 maxValue: 1,
-                unitCode: "d"
-              }
-            }
+                unitCode: "DAY",
+              },
+            },
           },
           hasMerchantReturnPolicy: {
             "@type": "MerchantReturnPolicy",
-            returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+            returnPolicyCategory:
+              "https://schema.org/MerchantReturnNotPermitted",
             applicableCountry: "DO",
             returnMethod: "https://schema.org/ReturnByMail",
-            returnFees: "https://schema.org/FreeReturn"
-          }
-        }
-      ]
+            returnFees: "https://schema.org/FreeReturn",
+          },
+        },
+      ],
     },
     ...(totalApprovedTransferReviews > 0
       ? {
           aggregateRating: {
             "@type": "AggregateRating",
             ratingValue: transferReviewAverage,
-            reviewCount: totalApprovedTransferReviews
-          }
+            reviewCount: totalApprovedTransferReviews,
+          },
         }
-      : {})
+      : {}),
   };
 
   const businessSchema = {
@@ -1514,7 +2021,7 @@ export async function TransferLandingPage({
     email: PROACTIVITIS_LOCALBUSINESS.email,
     priceRange: "$$",
     address: PROACTIVITIS_LOCALBUSINESS.address,
-    contactPoint: PROACTIVITIS_LOCALBUSINESS.contactPoint
+    contactPoint: PROACTIVITIS_LOCALBUSINESS.contactPoint,
   };
 
   const webPageSchema = {
@@ -1530,11 +2037,11 @@ export async function TransferLandingPage({
       "@type": "WebSite",
       "@id": `${PROACTIVITIS_URL}#website`,
       url: BASE_URL,
-      name: "Proactivitis"
+      name: "Proactivitis",
     },
     about: { "@id": `${canonicalUrl}#service` },
     primaryImageOfPage: { "@id": `${canonicalUrl}#image` },
-    breadcrumb: { "@id": `${canonicalUrl}#breadcrumb` }
+    breadcrumb: { "@id": `${canonicalUrl}#breadcrumb` },
   };
 
   const imageSchema = {
@@ -1544,19 +2051,24 @@ export async function TransferLandingPage({
     url: primaryImageUrl,
     contentUrl: primaryImageUrl,
     caption: localizedLanding.heroImageAlt,
-    representativeOfPage: true
+    representativeOfPage: true,
   };
 
   const routeSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     "@id": `${canonicalUrl}#route-highlights`,
-    name: locale === "es" ? "Highlights del traslado" : locale === "fr" ? "Highlights du transfert" : "Transfer highlights",
+    name:
+      locale === "es"
+        ? "Highlights del traslado"
+        : locale === "fr"
+          ? "Highlights du transfert"
+          : "Transfer highlights",
     itemListElement: localizedLanding.trustBadges.map((item, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      name: item
-    }))
+      name: item,
+    })),
   };
 
   const breadcrumbSchema = {
@@ -1569,21 +2081,21 @@ export async function TransferLandingPage({
         "@type": "ListItem",
         position: 1,
         name: t("transferLanding.breadcrumb.home"),
-        item: `${BASE_URL}/`
+        item: `${BASE_URL}/`,
       },
       {
         "@type": "ListItem",
         position: 2,
         name: t("transferLanding.breadcrumb.transfers"),
-        item: buildCanonical("", locale).replace(/\/$/, "")
+        item: buildCanonical("", locale).replace(/\/$/, ""),
       },
       {
         "@type": "ListItem",
         position: 3,
         name: marketTitles.heroTitle,
-        item: buildCanonical(landing.landingSlug, locale)
-      }
-    ]
+        item: buildCanonical(landing.landingSlug, locale),
+      },
+    ],
   };
 
   const faqSchema = {
@@ -1596,17 +2108,20 @@ export async function TransferLandingPage({
       name: item.question,
       acceptedAnswer: {
         "@type": "Answer",
-        text: item.answer
-      }
-    }))
+        text: item.answer,
+      },
+    })),
   };
-  const schemaOverride = await getTransferSchemaOverride(landing.landingSlug, locale);
+  const schemaOverride = await getTransferSchemaOverride(
+    landing.landingSlug,
+    locale,
+  );
   const schemaGraph = applyTransferSchemaOverride({
     businessSchema,
     serviceSchema,
     faqSchema,
     breadcrumbSchema,
-    override: schemaOverride
+    override: schemaOverride,
   });
 
   return (
@@ -1623,20 +2138,34 @@ export async function TransferLandingPage({
               <h1 className="max-w-3xl text-4xl font-black leading-[1.02] text-slate-950 md:text-5xl">
                 {marketTitles.heroTitle}
               </h1>
-              <p className="max-w-2xl text-lg leading-8 text-slate-600">{localizedLanding.heroSubtitle}</p>
-              <p className="max-w-2xl text-sm leading-7 text-slate-500">{localizedLanding.heroTagline}</p>
+              <p className="max-w-2xl text-lg leading-8 text-slate-600">
+                {localizedLanding.heroSubtitle}
+              </p>
+              <p className="max-w-2xl text-sm leading-7 text-slate-500">
+                {localizedLanding.heroTagline}
+              </p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-[24px] border border-emerald-100 bg-white/90 p-4 shadow-sm">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
-                  {locale === "es" ? "Precio desde" : locale === "fr" ? "Prix des" : "Price from"}
+                  {locale === "es"
+                    ? "Precio desde"
+                    : locale === "fr"
+                      ? "Prix des"
+                      : "Price from"}
                 </p>
-                <p className="mt-2 text-2xl font-black text-slate-950">USD {Math.round(localizedLanding.priceFrom)}</p>
+                <p className="mt-2 text-2xl font-black text-slate-950">
+                  USD {Math.round(localizedLanding.priceFrom)}
+                </p>
               </div>
               <div className="rounded-[24px] border border-emerald-100 bg-white/90 p-4 shadow-sm">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
-                  {locale === "es" ? "Ruta" : locale === "fr" ? "Trajet" : "Route"}
+                  {locale === "es"
+                    ? "Ruta"
+                    : locale === "fr"
+                      ? "Trajet"
+                      : "Route"}
                 </p>
                 <p className="mt-2 text-sm font-semibold leading-6 text-slate-900">
                   {originLabel} {"->"} {destinationLabel}
@@ -1644,14 +2173,18 @@ export async function TransferLandingPage({
               </div>
               <div className="rounded-[24px] border border-emerald-100 bg-white/90 p-4 shadow-sm">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
-                  {locale === "es" ? "Servicio" : locale === "fr" ? "Service" : "Service"}
+                  {locale === "es"
+                    ? "Servicio"
+                    : locale === "fr"
+                      ? "Service"
+                      : "Service"}
                 </p>
                 <p className="mt-2 text-sm font-semibold leading-6 text-slate-900">
                   {locale === "es"
                     ? "Privado, con seguimiento de vuelo"
                     : locale === "fr"
-                    ? "Prive avec suivi de vol"
-                    : "Private with flight tracking"}
+                      ? "Prive avec suivi de vol"
+                      : "Private with flight tracking"}
                 </p>
               </div>
             </div>
@@ -1661,13 +2194,21 @@ export async function TransferLandingPage({
                 href="#transfer-quote-cards"
                 className="rounded-full bg-emerald-600 px-6 py-3 text-xs font-black uppercase tracking-[0.28em] text-white transition hover:bg-emerald-500"
               >
-                {locale === "es" ? "Cotizar ahora" : locale === "fr" ? "Demander un devis" : "Get a quote"}
+                {locale === "es"
+                  ? "Cotizar ahora"
+                  : locale === "fr"
+                    ? "Demander un devis"
+                    : "Get a quote"}
               </a>
               <Link
                 href={hotelThingsToDoHref}
                 className="rounded-full border border-slate-300 bg-white px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-slate-900 transition hover:border-emerald-400 hover:text-emerald-700"
               >
-                {locale === "es" ? "Ver tours del hotel" : locale === "fr" ? "Voir tours hotel" : "See hotel tours"}
+                {locale === "es"
+                  ? "Ver tours del hotel"
+                  : locale === "fr"
+                    ? "Voir tours hotel"
+                    : "See hotel tours"}
               </Link>
             </div>
           </div>
@@ -1683,43 +2224,55 @@ export async function TransferLandingPage({
             <div className="absolute bottom-0 left-0 right-0 p-5">
               <div className="rounded-[28px] border border-white/20 bg-slate-950/55 p-4 backdrop-blur">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-200">
-                  {locale === "es" ? "Llegada sin friccion" : locale === "fr" ? "Arrivee sans friction" : "Frictionless arrival"}
+                  {locale === "es"
+                    ? "Llegada sin friccion"
+                    : locale === "fr"
+                      ? "Arrivee sans friction"
+                      : "Frictionless arrival"}
                 </p>
                 <p className="mt-2 text-sm leading-6 text-white">
                   {locale === "es"
                     ? "Chofer bilingue, equipaje asistido y confirmacion inmediata desde la primera pantalla."
                     : locale === "fr"
-                    ? "Chauffeur bilingue, bagages assistes et confirmation immediate."
-                    : "Bilingual driver, luggage assistance, and instant confirmation from the first screen."}
+                      ? "Chauffeur bilingue, bagages assistes et confirmation immediate."
+                      : "Bilingual driver, luggage assistance, and instant confirmation from the first screen."}
                 </p>
               </div>
             </div>
           </div>
         </div>
       </section>
-      <section id="transfer-quote-cards" className="mx-auto max-w-6xl px-4 py-12">
+      <section
+        id="transfer-quote-cards"
+        className="mx-auto max-w-6xl px-4 py-12"
+      >
         <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-700">
-              {locale === "es" ? "Cotizacion en tiempo real" : locale === "fr" ? "Devis en temps reel" : "Real-time quote"}
+              {locale === "es"
+                ? "Cotizacion en tiempo real"
+                : locale === "fr"
+                  ? "Devis en temps reel"
+                  : "Real-time quote"}
             </p>
             <h2 className="mt-2 text-3xl font-black text-slate-950">
               {locale === "es"
                 ? `Reserva tu transfer a ${localizedLanding.hotelName}`
                 : locale === "fr"
-                ? `Reservez votre transfert vers ${localizedLanding.hotelName}`
-                : `Book your transfer to ${localizedLanding.hotelName}`}
+                  ? `Reservez votre transfert vers ${localizedLanding.hotelName}`
+                  : `Book your transfer to ${localizedLanding.hotelName}`}
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
               {locale === "es"
                 ? "Fecha, pasajeros, tipo de viaje y vehiculo con precio claro antes del checkout."
                 : locale === "fr"
-                ? "Date, passagers, type de trajet et vehicule avec prix clair avant le checkout."
-                : "Date, passengers, trip type, and vehicle with clear pricing before checkout."}
+                  ? "Date, passagers, type de trajet et vehicule avec prix clair avant le checkout."
+                  : "Date, passengers, trip type, and vehicle with clear pricing before checkout."}
             </p>
           </div>
           <p className="text-sm font-medium text-slate-500">
-            {t("transferLanding.route.label")} {originLabel} {"->"} {destinationLabel}
+            {t("transferLanding.route.label")} {originLabel} {"->"}{" "}
+            {destinationLabel}
           </p>
         </div>
         {canQuote ? (
@@ -1733,14 +2286,18 @@ export async function TransferLandingPage({
             {locale === "es"
               ? "Estamos actualizando esta ruta para cotizacion automatica. Puedes cotizar ahora mismo en el formulario general de traslados."
               : locale === "fr"
-              ? "Nous mettons a jour cette route pour un devis automatique. Vous pouvez demander un devis immediat via le formulaire general."
-              : "We are updating this route for automatic pricing. You can still request an instant quote from the general transfer form."}
+                ? "Nous mettons a jour cette route pour un devis automatique. Vous pouvez demander un devis immediat via le formulaire general."
+                : "We are updating this route for automatic pricing. You can still request an instant quote from the general transfer form."}
             <div className="mt-4">
               <Link
                 href={locale === "es" ? "/traslado" : `/${locale}/traslado`}
                 className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white hover:bg-slate-700"
               >
-                {locale === "es" ? "Cotizar traslado" : locale === "fr" ? "Demander un devis" : "Get transfer quote"}
+                {locale === "es"
+                  ? "Cotizar traslado"
+                  : locale === "fr"
+                    ? "Demander un devis"
+                    : "Get transfer quote"}
               </Link>
             </div>
           </div>
@@ -1749,17 +2306,32 @@ export async function TransferLandingPage({
       <section className="mx-auto max-w-6xl px-4 pb-8">
         <div className="grid gap-4 md:grid-cols-3">
           {salesCards.map((card) => (
-            <article key={card.title} className="rounded-[28px] border border-emerald-100 bg-[linear-gradient(180deg,#ffffff,#f8fffb)] p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+            <article
+              key={card.title}
+              className="rounded-[28px] border border-emerald-100 bg-[linear-gradient(180deg,#ffffff,#f8fffb)] p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            >
               <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-700">
-                {locale === "es" ? "Beneficio" : locale === "fr" ? "Avantage" : "Benefit"}
+                {locale === "es"
+                  ? "Beneficio"
+                  : locale === "fr"
+                    ? "Avantage"
+                    : "Benefit"}
               </p>
-              <h3 className="mt-3 text-xl font-black text-slate-950">{card.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{card.body}</p>
+              <h3 className="mt-3 text-xl font-black text-slate-950">
+                {card.title}
+              </h3>
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                {card.body}
+              </p>
               <Link
                 href="#transfer-quote-cards"
                 className="mt-5 inline-flex rounded-full border border-emerald-200 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-700 transition hover:border-emerald-400 hover:bg-emerald-50"
               >
-                {locale === "es" ? "Cotizar ahora" : locale === "fr" ? "Demander un devis" : "Get a quote"}
+                {locale === "es"
+                  ? "Cotizar ahora"
+                  : locale === "fr"
+                    ? "Demander un devis"
+                    : "Get a quote"}
               </Link>
             </article>
           ))}
@@ -1768,7 +2340,11 @@ export async function TransferLandingPage({
       <section className="mx-auto max-w-6xl px-4 py-12">
         <div className="rounded-[32px] border border-slate-100 bg-white p-6 shadow-sm md:p-8">
           <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">
-            {locale === "es" ? "Informacion util" : locale === "fr" ? "Information utile" : "Useful details"}
+            {locale === "es"
+              ? "Informacion util"
+              : locale === "fr"
+                ? "Information utile"
+                : "Useful details"}
           </p>
           <div className="mt-5 grid gap-5 md:grid-cols-2">
             {localizedLanding.longCopy.map((paragraph, index) => (
@@ -1782,7 +2358,11 @@ export async function TransferLandingPage({
       <section className="mx-auto max-w-6xl px-4 pb-12">
         <div className="rounded-[32px] border border-slate-100 bg-white p-6 shadow-sm md:p-8">
           <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">
-            {locale === "es" ? "Keywords relacionadas" : locale === "fr" ? "Keywords reliees" : "Related keywords"}
+            {locale === "es"
+              ? "Keywords relacionadas"
+              : locale === "fr"
+                ? "Keywords reliees"
+                : "Related keywords"}
           </p>
           <h2 className="mt-2 text-2xl font-black text-slate-950">
             {locale === "es"
@@ -1795,13 +2375,23 @@ export async function TransferLandingPage({
             {genericKeywordLinks.map((item) => (
               <Link
                 key={item.landingSlug}
-                href={locale === "es" ? `/transfer/${item.landingSlug}` : `/${locale}/transfer/${item.landingSlug}`}
+                href={
+                  locale === "es"
+                    ? `/transfer/${item.landingSlug}`
+                    : `/${locale}/transfer/${item.landingSlug}`
+                }
                 className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white"
               >
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                  {locale === "es" ? "Busqueda" : locale === "fr" ? "Recherche" : "Search"}
+                  {locale === "es"
+                    ? "Busqueda"
+                    : locale === "fr"
+                      ? "Recherche"
+                      : "Search"}
                 </p>
-                <p className="mt-2 font-semibold leading-6 text-slate-900">{item.titles[locale]}</p>
+                <p className="mt-2 font-semibold leading-6 text-slate-900">
+                  {item.titles[locale]}
+                </p>
               </Link>
             ))}
           </div>
@@ -1811,21 +2401,31 @@ export async function TransferLandingPage({
         <section className="mx-auto max-w-6xl px-4 pb-12">
           <div className="rounded-[32px] border border-slate-100 bg-white p-6 shadow-sm md:p-8">
             <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">
-              {locale === "es" ? "Tours recomendados" : locale === "fr" ? "Tours recommandes" : "Recommended tours"}
+              {locale === "es"
+                ? "Tours recomendados"
+                : locale === "fr"
+                  ? "Tours recommandes"
+                  : "Recommended tours"}
             </p>
             <h2 className="mt-2 text-3xl font-black text-slate-950">
               {locale === "es"
                 ? `Combina tu traslado a ${localizedLanding.hotelName} con estas excursiones`
                 : locale === "fr"
-                ? `Combinez votre transfert vers ${localizedLanding.hotelName} avec ces excursions`
-                : `Pair your transfer to ${localizedLanding.hotelName} with these tours`}
+                  ? `Combinez votre transfert vers ${localizedLanding.hotelName} avec ces excursions`
+                  : `Pair your transfer to ${localizedLanding.hotelName} with these tours`}
             </h2>
             <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {recommendedTours.map((tour) => {
                 const hotelTourPath = `/tours/${tour.slug}/recogida/${landing.hotelSlug}`;
-                const tourHref = locale === "es" ? hotelTourPath : `/${locale}${hotelTourPath}`;
+                const tourHref =
+                  locale === "es"
+                    ? hotelTourPath
+                    : `/${locale}${hotelTourPath}`;
                 return (
-                  <article key={tour.id} className="overflow-hidden rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff,#f8fafc)] shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+                  <article
+                    key={tour.id}
+                    className="overflow-hidden rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff,#f8fafc)] shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                  >
                     <div className="relative h-44">
                       <Image
                         src={resolveTourCardImage(tour.heroImage, tour.gallery)}
@@ -1840,20 +2440,35 @@ export async function TransferLandingPage({
                         {tour.translations?.[0]?.title ?? tour.title}
                       </h3>
                       <p className="line-clamp-2 text-sm leading-6 text-slate-600">
-                        {tour.translations?.[0]?.shortDescription || tour.shortDescription || localizedLanding.heroSubtitle}
+                        {tour.translations?.[0]?.shortDescription ||
+                          tour.shortDescription ||
+                          localizedLanding.heroSubtitle}
                       </p>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                        {locale === "es" ? "Duracion" : locale === "fr" ? "Duree" : "Duration"}:{" "}
-                        {formatTourDuration(tour.duration, locale)}
+                        {locale === "es"
+                          ? "Duracion"
+                          : locale === "fr"
+                            ? "Duree"
+                            : "Duration"}
+                        : {formatTourDuration(tour.duration, locale)}
                       </p>
                       <p className="text-base font-black text-emerald-700">
-                        {locale === "es" ? "Desde" : locale === "fr" ? "A partir de" : "From"} USD {Math.round(tour.price)}
+                        {locale === "es"
+                          ? "Desde"
+                          : locale === "fr"
+                            ? "A partir de"
+                            : "From"}{" "}
+                        USD {Math.round(tour.price)}
                       </p>
                       <Link
                         href={tourHref}
                         className="inline-flex rounded-full border border-emerald-500 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-700 transition hover:bg-emerald-50"
                       >
-                        {locale === "es" ? "Ver tour" : locale === "fr" ? "Voir le tour" : "View tour"}
+                        {locale === "es"
+                          ? "Ver tour"
+                          : locale === "fr"
+                            ? "Voir le tour"
+                            : "View tour"}
                       </Link>
                     </div>
                   </article>
@@ -1867,61 +2482,109 @@ export async function TransferLandingPage({
         <section className="mx-auto max-w-6xl px-4 pb-12">
           <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
-              {locale === "es" ? "Resenas verificadas" : locale === "fr" ? "Avis verifies" : "Verified reviews"}
+              {locale === "es"
+                ? "Resenas verificadas"
+                : locale === "fr"
+                  ? "Avis verifies"
+                  : "Verified reviews"}
             </p>
             <h2 className="mt-2 text-2xl font-bold text-slate-900">
               {locale === "es"
                 ? "Lo que dicen los clientes de este transfer"
                 : locale === "fr"
-                ? "Ce que disent les clients de ce transfert"
-                : "What clients say about this transfer"}
+                  ? "Ce que disent les clients de ce transfert"
+                  : "What clients say about this transfer"}
             </h2>
             <p className="mt-3 text-sm text-slate-500">
               {locale === "es"
                 ? `${totalApprovedTransferReviews} reseñas aprobadas`
                 : locale === "fr"
-                ? `${totalApprovedTransferReviews} avis approuves`
-                : `${totalApprovedTransferReviews} approved reviews`}
+                  ? `${totalApprovedTransferReviews} avis approuves`
+                  : `${totalApprovedTransferReviews} approved reviews`}
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
-                {"★".repeat(Math.max(1, Math.min(5, Math.round(transferReviewAverage || 5))))} {transferReviewAverage.toFixed(1)}/5
+                {"★".repeat(
+                  Math.max(
+                    1,
+                    Math.min(5, Math.round(transferReviewAverage || 5)),
+                  ),
+                )}{" "}
+                {transferReviewAverage.toFixed(1)}/5
               </span>
               <Link
-                href={locale === "es" ? `/prodiscovery/transfer/${landing.landingSlug}` : `/${locale}/prodiscovery/transfer/${landing.landingSlug}`}
+                href={
+                  locale === "es"
+                    ? `/prodiscovery/transfer/${landing.landingSlug}`
+                    : `/${locale}/prodiscovery/transfer/${landing.landingSlug}`
+                }
                 className="inline-flex rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-800 hover:border-emerald-400 hover:text-emerald-700"
               >
-                {locale === "es" ? "Ver pagina de reseñas" : locale === "fr" ? "Voir la page d avis" : "Open review page"}
+                {locale === "es"
+                  ? "Ver pagina de reseñas"
+                  : locale === "fr"
+                    ? "Voir la page d avis"
+                    : "Open review page"}
               </Link>
             </div>
             <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {approvedTransferReviews.slice(0, initialVisibleTransferReviews).map((review) => (
-                <article key={review.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm font-semibold text-slate-900">{review.customerName}</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.25em] text-amber-600">
-                    {"★".repeat(Math.max(1, Math.min(5, review.rating)))} {review.rating}/5
-                  </p>
-                  {review.title ? <p className="mt-2 text-sm font-semibold text-slate-700">{review.title}</p> : null}
-                  <p className="mt-2 text-sm text-slate-600">{review.body}</p>
-                </article>
-              ))}
+              {approvedTransferReviews
+                .slice(0, initialVisibleTransferReviews)
+                .map((review) => (
+                  <article
+                    key={review.id}
+                    className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                  >
+                    <p className="text-sm font-semibold text-slate-900">
+                      {review.customerName}
+                    </p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.25em] text-amber-600">
+                      {"★".repeat(Math.max(1, Math.min(5, review.rating)))}{" "}
+                      {review.rating}/5
+                    </p>
+                    {review.title ? (
+                      <p className="mt-2 text-sm font-semibold text-slate-700">
+                        {review.title}
+                      </p>
+                    ) : null}
+                    <p className="mt-2 text-sm text-slate-600">{review.body}</p>
+                  </article>
+                ))}
             </div>
             {approvedTransferReviews.length > initialVisibleTransferReviews ? (
               <details className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <summary className="cursor-pointer list-none text-sm font-semibold text-emerald-700">
-                  {locale === "es" ? "Ver más reseñas" : locale === "fr" ? "Voir plus d avis" : "See more reviews"}
+                  {locale === "es"
+                    ? "Ver más reseñas"
+                    : locale === "fr"
+                      ? "Voir plus d avis"
+                      : "See more reviews"}
                 </summary>
                 <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {approvedTransferReviews.slice(initialVisibleTransferReviews).map((review) => (
-                    <article key={review.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                      <p className="text-sm font-semibold text-slate-900">{review.customerName}</p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.25em] text-amber-600">
-                        {"★".repeat(Math.max(1, Math.min(5, review.rating)))} {review.rating}/5
-                      </p>
-                      {review.title ? <p className="mt-2 text-sm font-semibold text-slate-700">{review.title}</p> : null}
-                      <p className="mt-2 text-sm text-slate-600">{review.body}</p>
-                    </article>
-                  ))}
+                  {approvedTransferReviews
+                    .slice(initialVisibleTransferReviews)
+                    .map((review) => (
+                      <article
+                        key={review.id}
+                        className="rounded-2xl border border-slate-200 bg-white p-4"
+                      >
+                        <p className="text-sm font-semibold text-slate-900">
+                          {review.customerName}
+                        </p>
+                        <p className="mt-1 text-xs uppercase tracking-[0.25em] text-amber-600">
+                          {"★".repeat(Math.max(1, Math.min(5, review.rating)))}{" "}
+                          {review.rating}/5
+                        </p>
+                        {review.title ? (
+                          <p className="mt-2 text-sm font-semibold text-slate-700">
+                            {review.title}
+                          </p>
+                        ) : null}
+                        <p className="mt-2 text-sm text-slate-600">
+                          {review.body}
+                        </p>
+                      </article>
+                    ))}
                 </div>
               </details>
             ) : null}
@@ -1931,40 +2594,54 @@ export async function TransferLandingPage({
       <section className="mx-auto max-w-6xl px-4 py-10">
         <div className="rounded-[32px] border border-slate-100 bg-[linear-gradient(135deg,#f8fafc,#f0fdf4)] p-6 md:p-8">
           <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">
-            {activeSalesVariant ? `${activeSalesVariant.badge} + Tours` : t("transferLanding.other.title")}
+            {activeSalesVariant
+              ? `${activeSalesVariant.badge} + Tours`
+              : t("transferLanding.other.title")}
           </p>
           <h2 className="mt-2 text-3xl font-black text-slate-950">
             {locale === "es"
               ? `Completa tu viaje en ${localizedLanding.hotelName} con tours`
               : locale === "fr"
-              ? `Completez votre voyage a ${localizedLanding.hotelName} avec des tours`
-              : `Complete your trip in ${localizedLanding.hotelName} with tours`}
+                ? `Completez votre voyage a ${localizedLanding.hotelName} avec des tours`
+                : `Complete your trip in ${localizedLanding.hotelName} with tours`}
           </h2>
           <p className="mt-3 text-sm text-slate-600">
             {locale === "es"
               ? "Ademas del traslado privado, puedes vender actividades con recogida desde el hotel para aumentar conversion y ticket promedio."
               : locale === "fr"
-              ? "En plus du transfert prive, vous pouvez vendre des activites avec pickup hotel pour augmenter conversion et revenu."
-              : "Besides private transfer, you can sell hotel-pickup tours to increase conversion and average order value."}
+                ? "En plus du transfert prive, vous pouvez vendre des activites avec pickup hotel pour augmenter conversion et revenu."
+                : "Besides private transfer, you can sell hotel-pickup tours to increase conversion and average order value."}
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
               href={hotelThingsToDoHref}
               className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-800 hover:border-emerald-500 hover:text-emerald-700"
             >
-              {locale === "es" ? "Ver tours desde este hotel" : locale === "fr" ? "Voir tours depuis cet hotel" : "See tours from this hotel"}
+              {locale === "es"
+                ? "Ver tours desde este hotel"
+                : locale === "fr"
+                  ? "Voir tours depuis cet hotel"
+                  : "See tours from this hotel"}
             </Link>
             <Link
               href={puntaCanaToursHref}
               className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-800 hover:border-emerald-500 hover:text-emerald-700"
             >
-              {locale === "es" ? "Tours Punta Cana" : locale === "fr" ? "Tours Punta Cana" : "Punta Cana Tours"}
+              {locale === "es"
+                ? "Tours Punta Cana"
+                : locale === "fr"
+                  ? "Tours Punta Cana"
+                  : "Punta Cana Tours"}
             </Link>
             <Link
               href={toursHubHref}
               className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-800 hover:border-emerald-500 hover:text-emerald-700"
             >
-              {locale === "es" ? "Todas las excursiones" : locale === "fr" ? "Toutes les excursions" : "All excursions"}
+              {locale === "es"
+                ? "Todas las excursiones"
+                : locale === "fr"
+                  ? "Toutes les excursions"
+                  : "All excursions"}
             </Link>
           </div>
         </div>
@@ -1975,24 +2652,43 @@ export async function TransferLandingPage({
             {t("transferLanding.longform.eyebrow")}
           </p>
           <h2 className="mt-2 text-3xl font-black text-slate-950">
-            {t("transferLanding.longform.title", { hotel: localizedLanding.hotelName })}
+            {t("transferLanding.longform.title", {
+              hotel: localizedLanding.hotelName,
+            })}
           </h2>
           <div className="mt-4 space-y-3 text-sm text-slate-600">
-            <p>{t("transferLanding.longform.body1", { hotel: localizedLanding.hotelName })}</p>
-            <p>{t("transferLanding.longform.body2", { hotel: localizedLanding.hotelName })}</p>
+            <p>
+              {t("transferLanding.longform.body1", {
+                hotel: localizedLanding.hotelName,
+              })}
+            </p>
+            <p>
+              {t("transferLanding.longform.body2", {
+                hotel: localizedLanding.hotelName,
+              })}
+            </p>
             <p>{t("transferLanding.longform.body3")}</p>
           </div>
         </div>
       </section>
       <section className="mx-auto max-w-6xl space-y-6 px-4 py-12">
         <header className="space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">{t("transferLanding.faq.eyebrow")}</p>
-          <h2 className="text-3xl font-black text-slate-950">{t("transferLanding.faq.title")}</h2>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">
+            {t("transferLanding.faq.eyebrow")}
+          </p>
+          <h2 className="text-3xl font-black text-slate-950">
+            {t("transferLanding.faq.title")}
+          </h2>
         </header>
         <div className="grid gap-4 md:grid-cols-2">
           {localizedLanding.faq.map((item, index) => (
-            <article key={item.question} className="rounded-[28px] border border-slate-100 bg-white p-6 text-sm text-slate-600 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-700">0{index + 1}</p>
+            <article
+              key={item.question}
+              className="rounded-[28px] border border-slate-100 bg-white p-6 text-sm text-slate-600 shadow-sm"
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-700">
+                0{index + 1}
+              </p>
               <p className="mt-3 font-black text-slate-950">{item.question}</p>
               <p className="mt-3 leading-7 text-slate-600">{item.answer}</p>
             </article>
@@ -2001,12 +2697,18 @@ export async function TransferLandingPage({
       </section>
       <section className="mx-auto max-w-6xl px-4 py-12">
         <div className="flex flex-col gap-4 rounded-[32px] border border-slate-100 bg-slate-50 p-6 md:p-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">{t("transferLanding.other.title")}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-emerald-700">
+            {t("transferLanding.other.title")}
+          </p>
           <div className="grid gap-3 md:grid-cols-3">
             {otherLandings.map((item) => (
               <Link
                 key={item.landingSlug}
-                href={locale === "es" ? `/transfer/${item.landingSlug}` : `/${locale}/transfer/${item.landingSlug}`}
+                href={
+                  locale === "es"
+                    ? `/transfer/${item.landingSlug}`
+                    : `/${locale}/transfer/${item.landingSlug}`
+                }
                 className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 text-sm font-semibold leading-6 text-slate-800 transition hover:border-emerald-400 hover:text-emerald-700"
               >
                 {item.hotelName}
@@ -2018,7 +2720,11 @@ export async function TransferLandingPage({
           {otherLandings.map((item) => (
             <Link
               key={`reverse-${item.reverseSlug}`}
-              href={locale === "es" ? `/transfer/${item.reverseSlug}` : `/${locale}/transfer/${item.reverseSlug}`}
+              href={
+                locale === "es"
+                  ? `/transfer/${item.reverseSlug}`
+                  : `/${locale}/transfer/${item.reverseSlug}`
+              }
               className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700 underline underline-offset-4"
             >
               {t("transferLanding.backLink", { hotel: item.hotelName })}
@@ -2054,8 +2760,11 @@ export async function generateTransferStaticParams() {
     .map((landing) => ({ landingSlug: landing.landingSlug }));
   const variantParams = allLandings().flatMap((landing) =>
     TRANSFER_HOTEL_SALES_VARIANTS.map((variant) => ({
-      landingSlug: buildTransferHotelVariantSlug(landing.landingSlug, variant.id)
-    }))
+      landingSlug: buildTransferHotelVariantSlug(
+        landing.landingSlug,
+        variant.id,
+      ),
+    })),
   );
   return [...dynamicParams, ...manualParams, ...variantParams];
 }

@@ -339,11 +339,7 @@ export default async function ProDiscoveryPlannerPage({ locale, initialCity, lan
           "@type": "Place",
           name: initialCity ?? "Dominican Republic"
         },
-        availableLanguage: ["es", "en", "fr"],
-        audience: {
-          "@type": "Audience",
-          audienceType: "Private groups, companies, families, weddings and VIP travelers"
-        }
+        availableLanguage: ["es", "en", "fr"]
       },
       {
         "@type": "BreadcrumbList",

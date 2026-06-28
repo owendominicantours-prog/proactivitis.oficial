@@ -12,7 +12,17 @@ import { getHomeContentOverrides } from "@/lib/siteContent";
 import { getPriceValidUntil, PROACTIVITIS_URL } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
 import { allLandings } from "@/data/transfer-landings";
-import { CalendarCheck, Car, Compass, CreditCard, MapPinned, MessageCircle, Search, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  CalendarCheck,
+  Car,
+  Compass,
+  CreditCard,
+  MapPinned,
+  MessageCircle,
+  Search,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 
 type PublicHomePageProps = {
   locale: Locale;
@@ -20,15 +30,36 @@ type PublicHomePageProps = {
 
 const PUNTA_CANA_LINKS = [
   { slug: "tour-en-buggy-en-punta-cana", labelKey: "puntaCana.links.item.1" },
-  { slug: "excursion-en-buggy-y-atv-en-punta-cana", labelKey: "puntaCana.links.item.2" },
-  { slug: "tour-isla-saona-desde-bayhibe-la-romana", labelKey: "puntaCana.links.item.3" },
-  { slug: "tour-y-entrada-para-de-isla-saona-desde-punta-cana", labelKey: "puntaCana.links.item.4" },
+  {
+    slug: "excursion-en-buggy-y-atv-en-punta-cana",
+    labelKey: "puntaCana.links.item.2",
+  },
+  {
+    slug: "tour-isla-saona-desde-bayhibe-la-romana",
+    labelKey: "puntaCana.links.item.3",
+  },
+  {
+    slug: "tour-y-entrada-para-de-isla-saona-desde-punta-cana",
+    labelKey: "puntaCana.links.item.4",
+  },
   { slug: "sunset-catamaran-snorkel", labelKey: "puntaCana.links.item.5" },
   { slug: "parasailing-punta-cana", labelKey: "puntaCana.links.item.6" },
-  { slug: "cayo-levantado-luxury-beach-day", labelKey: "puntaCana.links.item.7" },
-  { slug: "excursion-de-un-dia-a-santo-domingo-desde-punta-cana", labelKey: "puntaCana.links.item.8" },
-  { slug: "tour-de-safari-cultural-por-el-pais-de-republica-dominicana-desde-punta-cana", labelKey: "puntaCana.links.item.9" },
-  { slug: "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana", labelKey: "puntaCana.links.item.10" }
+  {
+    slug: "cayo-levantado-luxury-beach-day",
+    labelKey: "puntaCana.links.item.7",
+  },
+  {
+    slug: "excursion-de-un-dia-a-santo-domingo-desde-punta-cana",
+    labelKey: "puntaCana.links.item.8",
+  },
+  {
+    slug: "tour-de-safari-cultural-por-el-pais-de-republica-dominicana-desde-punta-cana",
+    labelKey: "puntaCana.links.item.9",
+  },
+  {
+    slug: "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana",
+    labelKey: "puntaCana.links.item.10",
+  },
 ] as const;
 
 const SOSUA_PARTY_BOAT_LINKS = [
@@ -36,21 +67,24 @@ const SOSUA_PARTY_BOAT_LINKS = [
     slug: "party-boat-sosua",
     es: "Sosua Party Boat: precios y opciones VIP",
     en: "Sosua Party Boat: prices and VIP options",
-    fr: "Sosua Party Boat : prix et options VIP"
+    fr: "Sosua Party Boat : prix et options VIP",
   },
   {
     slug: "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua",
     es: "Barco privado en Sosua desde Puerto Plata",
     en: "Private party boat in Sosua from Puerto Plata",
-    fr: "Bateau prive a Sosua depuis Puerto Plata"
-  }
+    fr: "Bateau prive a Sosua depuis Puerto Plata",
+  },
 ] as const;
 
 export default async function PublicHomePage({ locale }: PublicHomePageProps) {
-  const t = (key: Parameters<typeof translate>[1], replacements?: Record<string, string>) =>
-    translate(locale, key, replacements);
+  const t = (
+    key: Parameters<typeof translate>[1],
+    replacements?: Record<string, string>,
+  ) => translate(locale, key, replacements);
   const transferHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
-  const tourHref = (slug: string) => (locale === "es" ? `/tours/${slug}` : `/${locale}/tours/${slug}`);
+  const tourHref = (slug: string) =>
+    locale === "es" ? `/tours/${slug}` : `/${locale}/tours/${slug}`;
   const homeOverrides = await getHomeContentOverrides(locale);
   const transferBannerImage =
     homeOverrides.transferBanner?.backgroundImage ??
@@ -58,7 +92,8 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
   const priceValidUntil = getPriceValidUntil();
   const localePrefix = locale === "es" ? "" : `/${locale}`;
   const localePath = (path: string) => `${localePrefix}${path}`;
-  const localizedPath = (path: string) => `${PROACTIVITIS_URL}${locale === "es" ? path : `/${locale}${path}`}`;
+  const localizedPath = (path: string) =>
+    `${PROACTIVITIS_URL}${locale === "es" ? path : `/${locale}${path}`}`;
   const tripStartCards = [
     {
       icon: Compass,
@@ -80,7 +115,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           ? "Saona, buggy, catamarán, safari y experiencias con recogida coordinada."
           : locale === "fr"
             ? "Saona, buggy, catamaran, safari et experiences avec pickup coordonne."
-            : "Saona, buggy, catamaran, safari, and experiences with coordinated pickup."
+            : "Saona, buggy, catamaran, safari, and experiences with coordinated pickup.",
     },
     {
       icon: Car,
@@ -102,7 +137,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           ? "Busca hotel, aeropuerto o zona y ve el precio antes de reservar."
           : locale === "fr"
             ? "Cherchez hotel, aeroport ou zone et voyez le prix avant de reserver."
-            : "Search hotel, airport, or area and see the price before booking."
+            : "Search hotel, airport, or area and see the price before booking.",
     },
     {
       icon: MapPinned,
@@ -124,8 +159,8 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           ? "Explora Punta Cana, Bávaro, Cap Cana, Macao, Bayahibe y más."
           : locale === "fr"
             ? "Explorez Punta Cana, Bavaro, Cap Cana, Macao, Bayahibe et plus."
-            : "Explore Punta Cana, Bavaro, Cap Cana, Macao, Bayahibe, and more."
-    }
+            : "Explore Punta Cana, Bavaro, Cap Cana, Macao, Bayahibe, and more.",
+    },
   ];
   const trustNotes = [
     {
@@ -135,7 +170,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           ? "Proveedores verificados"
           : locale === "fr"
             ? "Prestataires verifies"
-            : "Verified providers"
+            : "Verified providers",
     },
     {
       icon: MessageCircle,
@@ -144,7 +179,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           ? "Soporte humano por WhatsApp"
           : locale === "fr"
             ? "Support humain par WhatsApp"
-            : "Human WhatsApp support"
+            : "Human WhatsApp support",
     },
     {
       icon: CreditCard,
@@ -153,8 +188,8 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           ? "Pago protegido"
           : locale === "fr"
             ? "Paiement protege"
-            : "Protected payment"
-    }
+            : "Protected payment",
+    },
   ];
   const steps = [
     {
@@ -170,7 +205,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           ? "Tours, traslados o zonas populares con precios y detalles claros."
           : locale === "fr"
             ? "Tours, transferts ou zones populaires avec prix et details clairs."
-            : "Tours, transfers, or popular areas with clear prices and details."
+            : "Tours, transfers, or popular areas with clear prices and details.",
     },
     {
       icon: CalendarCheck,
@@ -185,7 +220,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           ? "Elige fecha, pasajeros y preferencias desde una experiencia simple."
           : locale === "fr"
             ? "Choisissez date, passagers et preferences dans une experience simple."
-            : "Choose date, passengers, and preferences in a simple flow."
+            : "Choose date, passengers, and preferences in a simple flow.",
     },
     {
       icon: Sparkles,
@@ -200,44 +235,52 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           ? "Confirmación, asistencia y coordinación humana cuando la necesitas."
           : locale === "fr"
             ? "Confirmation, assistance et coordination humaine quand vous en avez besoin."
-            : "Confirmation, assistance, and human coordination when you need it."
-    }
+            : "Confirmation, assistance, and human coordination when you need it.",
+    },
   ];
 
   const [publishedTours, tourRatingAgg, transferRatingAgg] = await Promise.all([
     prisma.tour.findMany({
       where: { status: { in: ["published", "seo_only"] } },
-      select: { id: true, slug: true, title: true, price: true, shortDescription: true },
-      orderBy: { createdAt: "desc" }
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        price: true,
+        shortDescription: true,
+      },
+      orderBy: { createdAt: "desc" },
     }),
     prisma.tourReview.groupBy({
       by: ["tourId"],
       where: { status: "APPROVED" },
       _avg: { rating: true },
-      _count: { rating: true }
+      _count: { rating: true },
     }),
     prisma.transferReview.groupBy({
       by: ["transferLandingSlug"],
       where: { status: "APPROVED", transferLandingSlug: { not: null } },
       _avg: { rating: true },
-      _count: { rating: true }
-    })
+      _count: { rating: true },
+    }),
   ]);
   const transferLandings = allLandings();
   const uniquePublishedTours = Array.from(
-    new Map(publishedTours.map((tour) => [tour.slug, tour])).values()
+    new Map(publishedTours.map((tour) => [tour.slug, tour])).values(),
   );
   const uniqueTransferLandings = Array.from(
-    new Map(transferLandings.map((landing) => [landing.landingSlug, landing])).values()
+    new Map(
+      transferLandings.map((landing) => [landing.landingSlug, landing]),
+    ).values(),
   );
   const tourRatingMap = new Map(
     tourRatingAgg.map((row) => [
       row.tourId,
       {
         rating: Number(row._avg.rating ?? 0),
-        count: row._count.rating
-      }
-    ])
+        count: row._count.rating,
+      },
+    ]),
   );
   const transferRatingMap = new Map(
     transferRatingAgg
@@ -246,28 +289,34 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         row.transferLandingSlug as string,
         {
           rating: Number(row._avg.rating ?? 0),
-          count: row._count.rating
-        }
-      ])
+          count: row._count.rating,
+        },
+      ]),
   );
 
   const tourCatalogItems = uniquePublishedTours.map((tour, index) => ({
     "@type": "ListItem",
     position: index + 1,
     name: tour.title,
-    url: localizedPath(`/tours/${tour.slug}`)
+    url: localizedPath(`/tours/${tour.slug}`),
   }));
 
   const transferCatalogItems = uniqueTransferLandings.map((landing, index) => ({
     "@type": "ListItem",
     position: index + 1,
     name: landing.heroTitle,
-    url: localizedPath(`/transfer/${landing.landingSlug}`)
+    url: localizedPath(`/transfer/${landing.landingSlug}`),
   }));
   const tourProducts = uniquePublishedTours.map((tour) => {
     const ratingData = tourRatingMap.get(tour.id);
-    const ratingValue = Number((ratingData?.rating && ratingData.rating > 0 ? ratingData.rating : 5).toFixed(1));
-    const reviewCount = ratingData?.count && ratingData.count > 0 ? ratingData.count : 1;
+    const ratingValue = Number(
+      (ratingData?.rating && ratingData.rating > 0
+        ? ratingData.rating
+        : 5
+      ).toFixed(1),
+    );
+    const reviewCount =
+      ratingData?.count && ratingData.count > 0 ? ratingData.count : 1;
     return {
       "@type": "Product",
       "@id": `${localizedPath(`/tours/${tour.slug}`)}#product`,
@@ -283,12 +332,12 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
       image: `${PROACTIVITIS_URL}/fototours/fotosimple.jpg`,
       brand: {
         "@type": "Brand",
-        name: "Proactivitis"
+        name: "Proactivitis",
       },
       aggregateRating: {
         "@type": "AggregateRating",
         ratingValue,
-        reviewCount
+        reviewCount,
       },
       offers: {
         "@type": "Offer",
@@ -299,10 +348,14 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         url: localizedPath(`/tours/${tour.slug}`),
         shippingDetails: {
           "@type": "OfferShippingDetails",
-          doesNotShip: true,
+          shippingRate: {
+            "@type": "MonetaryAmount",
+            value: 0,
+            currency: "USD",
+          },
           shippingDestination: {
             "@type": "DefinedRegion",
-            addressCountry: "DO"
+            addressCountry: "DO",
           },
           deliveryTime: {
             "@type": "ShippingDeliveryTime",
@@ -310,32 +363,40 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               "@type": "QuantitativeValue",
               minValue: 0,
               maxValue: 1,
-              unitCode: "d"
+              unitCode: "DAY",
             },
             transitTime: {
               "@type": "QuantitativeValue",
               minValue: 0,
               maxValue: 1,
-              unitCode: "d"
-            }
-          }
+              unitCode: "DAY",
+            },
+          },
         },
         hasMerchantReturnPolicy: {
           "@type": "MerchantReturnPolicy",
           url: `${PROACTIVITIS_URL}/legal/refund-policy`,
-          returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+          returnPolicyCategory:
+            "https://schema.org/MerchantReturnFiniteReturnWindow",
           merchantReturnDays: 1,
           applicableCountry: "DO",
-          returnFees: "https://schema.org/FreeReturn"
-        }
-      }
+          returnMethod: "https://schema.org/ReturnByMail",
+          returnFees: "https://schema.org/FreeReturn",
+        },
+      },
     };
   });
 
   const transferProducts = uniqueTransferLandings.map((landing) => {
     const ratingData = transferRatingMap.get(landing.landingSlug);
-    const ratingValue = Number((ratingData?.rating && ratingData.rating > 0 ? ratingData.rating : 5).toFixed(1));
-    const reviewCount = ratingData?.count && ratingData.count > 0 ? ratingData.count : 1;
+    const ratingValue = Number(
+      (ratingData?.rating && ratingData.rating > 0
+        ? ratingData.rating
+        : 5
+      ).toFixed(1),
+    );
+    const reviewCount =
+      ratingData?.count && ratingData.count > 0 ? ratingData.count : 1;
     return {
       "@type": "Product",
       "@id": `${localizedPath(`/transfer/${landing.landingSlug}`)}#product`,
@@ -345,12 +406,12 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
       image: `${PROACTIVITIS_URL}${landing.heroImage}`,
       brand: {
         "@type": "Brand",
-        name: "Proactivitis"
+        name: "Proactivitis",
       },
       aggregateRating: {
         "@type": "AggregateRating",
         ratingValue,
-        reviewCount
+        reviewCount,
       },
       offers: {
         "@type": "Offer",
@@ -361,10 +422,14 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         url: localizedPath(`/transfer/${landing.landingSlug}`),
         shippingDetails: {
           "@type": "OfferShippingDetails",
-          doesNotShip: true,
+          shippingRate: {
+            "@type": "MonetaryAmount",
+            value: 0,
+            currency: "USD",
+          },
           shippingDestination: {
             "@type": "DefinedRegion",
-            addressCountry: "DO"
+            addressCountry: "DO",
           },
           deliveryTime: {
             "@type": "ShippingDeliveryTime",
@@ -372,56 +437,84 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               "@type": "QuantitativeValue",
               minValue: 0,
               maxValue: 1,
-              unitCode: "d"
+              unitCode: "DAY",
             },
             transitTime: {
               "@type": "QuantitativeValue",
               minValue: 0,
               maxValue: 1,
-              unitCode: "d"
-            }
-          }
+              unitCode: "DAY",
+            },
+          },
         },
         hasMerchantReturnPolicy: {
           "@type": "MerchantReturnPolicy",
           url: `${PROACTIVITIS_URL}/legal/refund-policy`,
-          returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+          returnPolicyCategory:
+            "https://schema.org/MerchantReturnFiniteReturnWindow",
           merchantReturnDays: 1,
           applicableCountry: "DO",
-          returnFees: "https://schema.org/FreeReturn"
-        }
-      }
+          returnMethod: "https://schema.org/ReturnByMail",
+          returnFees: "https://schema.org/FreeReturn",
+        },
+      },
     };
   });
 
   const corePublicPages = [
-    { path: "/", name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home" },
-    { path: "/tours", name: locale === "es" ? "Tours" : locale === "fr" ? "Excursions" : "Tours" },
-    { path: "/traslado", name: locale === "es" ? "Traslados" : locale === "fr" ? "Transferts" : "Transfers" },
+    {
+      path: "/",
+      name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
+    },
+    {
+      path: "/tours",
+      name:
+        locale === "es" ? "Tours" : locale === "fr" ? "Excursions" : "Tours",
+    },
+    {
+      path: "/traslado",
+      name:
+        locale === "es"
+          ? "Traslados"
+          : locale === "fr"
+            ? "Transferts"
+            : "Transfers",
+    },
     { path: "/prodiscovery", name: "ProDiscovery" },
-    { path: "/news", name: locale === "es" ? "Noticias" : locale === "fr" ? "Actualites" : "News" },
+    {
+      path: "/news",
+      name:
+        locale === "es" ? "Noticias" : locale === "fr" ? "Actualites" : "News",
+    },
     {
       path: locale === "es" ? "/hoteles" : "/hotels",
-      name: locale === "es" ? "Hoteles" : locale === "fr" ? "Hotels" : "Hotels"
+      name: locale === "es" ? "Hoteles" : locale === "fr" ? "Hotels" : "Hotels",
     },
     { path: "/punta-cana/tours", name: "Punta Cana Tours" },
     { path: "/punta-cana/traslado", name: "Punta Cana Transfers" },
-    { path: "/punta-cana/premium-transfer-services", name: "Premium Transfer Services" }
+    {
+      path: "/punta-cana/premium-transfer-services",
+      name: "Premium Transfer Services",
+    },
   ];
 
   const allPublicPageUrls = Array.from(
     new Set([
       ...corePublicPages.map((page) => localizedPath(page.path)),
-      ...uniquePublishedTours.map((tour) => localizedPath(`/tours/${tour.slug}`)),
-      ...uniqueTransferLandings.map((landing) => localizedPath(`/transfer/${landing.landingSlug}`))
-    ])
+      ...uniquePublishedTours.map((tour) =>
+        localizedPath(`/tours/${tour.slug}`),
+      ),
+      ...uniqueTransferLandings.map((landing) =>
+        localizedPath(`/transfer/${landing.landingSlug}`),
+      ),
+    ]),
   );
 
   const allPublicPageItems = allPublicPageUrls.map((url, index) => ({
     "@type": "ListItem",
     position: index + 1,
     name: url.replace(`${PROACTIVITIS_URL}${localePrefix}`, "") || "/",
-    url
+    url,
   }));
 
   const schema = {
@@ -443,171 +536,216 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
               priceValidUntil,
               shippingDetails: {
                 "@type": "OfferShippingDetails",
-                doesNotShip: true,
+                shippingRate: {
+                  "@type": "MonetaryAmount",
+                  value: 0,
+                  currency: "USD",
+                },
                 shippingDestination: {
                   "@type": "DefinedRegion",
-                  addressCountry: "DO"
+                  addressCountry: "DO",
                 },
-        deliveryTime: {
-          "@type": "ShippingDeliveryTime",
-          handlingTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d"
-          },
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d"
-          }
-        }
+                deliveryTime: {
+                  "@type": "ShippingDeliveryTime",
+                  handlingTime: {
+                    "@type": "QuantitativeValue",
+                    minValue: 0,
+                    maxValue: 1,
+                    unitCode: "DAY",
+                  },
+                  transitTime: {
+                    "@type": "QuantitativeValue",
+                    minValue: 0,
+                    maxValue: 1,
+                    unitCode: "DAY",
+                  },
+                },
               },
               hasMerchantReturnPolicy: {
                 "@type": "MerchantReturnPolicy",
                 url: `${PROACTIVITIS_URL}/legal/refund-policy`,
-                returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+                returnPolicyCategory:
+                  "https://schema.org/MerchantReturnFiniteReturnWindow",
                 merchantReturnDays: 1,
                 applicableCountry: "DO",
-        returnFees: "https://schema.org/FreeReturn"
+                returnMethod: "https://schema.org/ReturnByMail",
+                returnFees: "https://schema.org/FreeReturn",
               },
               itemOffered: {
                 "@type": "Service",
                 name: "Tours y Excursiones",
-                url: `${PROACTIVITIS_URL}/tours`
-              }
+                url: `${PROACTIVITIS_URL}/tours`,
+              },
             },
             {
               "@type": "Offer",
               priceValidUntil,
               shippingDetails: {
                 "@type": "OfferShippingDetails",
-                doesNotShip: true,
+                shippingRate: {
+                  "@type": "MonetaryAmount",
+                  value: 0,
+                  currency: "USD",
+                },
                 shippingDestination: {
                   "@type": "DefinedRegion",
-                  addressCountry: "DO"
+                  addressCountry: "DO",
                 },
-        deliveryTime: {
-          "@type": "ShippingDeliveryTime",
-          handlingTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d"
-          },
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d"
-          }
-        }
+                deliveryTime: {
+                  "@type": "ShippingDeliveryTime",
+                  handlingTime: {
+                    "@type": "QuantitativeValue",
+                    minValue: 0,
+                    maxValue: 1,
+                    unitCode: "DAY",
+                  },
+                  transitTime: {
+                    "@type": "QuantitativeValue",
+                    minValue: 0,
+                    maxValue: 1,
+                    unitCode: "DAY",
+                  },
+                },
               },
               hasMerchantReturnPolicy: {
                 "@type": "MerchantReturnPolicy",
                 url: `${PROACTIVITIS_URL}/legal/refund-policy`,
-                returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+                returnPolicyCategory:
+                  "https://schema.org/MerchantReturnFiniteReturnWindow",
                 merchantReturnDays: 1,
                 applicableCountry: "DO",
-        returnFees: "https://schema.org/FreeReturn"
+                returnMethod: "https://schema.org/ReturnByMail",
+                returnFees: "https://schema.org/FreeReturn",
               },
               itemOffered: {
                 "@type": "Service",
                 name: "Traslados Privados",
-                url: `${PROACTIVITIS_URL}/traslado`
-              }
+                url: `${PROACTIVITIS_URL}/traslado`,
+              },
             },
             {
               "@type": "Offer",
               priceValidUntil,
               shippingDetails: {
                 "@type": "OfferShippingDetails",
-                doesNotShip: true,
+                shippingRate: {
+                  "@type": "MonetaryAmount",
+                  value: 0,
+                  currency: "USD",
+                },
                 shippingDestination: {
                   "@type": "DefinedRegion",
-                  addressCountry: "DO"
+                  addressCountry: "DO",
                 },
-        deliveryTime: {
-          "@type": "ShippingDeliveryTime",
-          handlingTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d"
-          },
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d"
-          }
-        }
+                deliveryTime: {
+                  "@type": "ShippingDeliveryTime",
+                  handlingTime: {
+                    "@type": "QuantitativeValue",
+                    minValue: 0,
+                    maxValue: 1,
+                    unitCode: "DAY",
+                  },
+                  transitTime: {
+                    "@type": "QuantitativeValue",
+                    minValue: 0,
+                    maxValue: 1,
+                    unitCode: "DAY",
+                  },
+                },
               },
               hasMerchantReturnPolicy: {
                 "@type": "MerchantReturnPolicy",
                 url: `${PROACTIVITIS_URL}/legal/refund-policy`,
-                returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+                returnPolicyCategory:
+                  "https://schema.org/MerchantReturnFiniteReturnWindow",
                 merchantReturnDays: 1,
                 applicableCountry: "DO",
-        returnFees: "https://schema.org/FreeReturn"
+                returnMethod: "https://schema.org/ReturnByMail",
+                returnFees: "https://schema.org/FreeReturn",
               },
               itemOffered: {
                 "@type": "Service",
                 name: "Rent a Car",
-                url: `${PROACTIVITIS_URL}/rent-a-car`
-              }
-            }
-          ]
-        }
+                url: `${PROACTIVITIS_URL}/rent-a-car`,
+              },
+            },
+          ],
+        },
       },
       {
         "@type": "WebPage",
         "@id": `${localizedPath("/")}#webpage`,
         url: localizedPath("/"),
-        name: locale === "es" ? "Inicio Proactivitis" : locale === "fr" ? "Accueil Proactivitis" : "Proactivitis Home",
+        name:
+          locale === "es"
+            ? "Inicio Proactivitis"
+            : locale === "fr"
+              ? "Accueil Proactivitis"
+              : "Proactivitis Home",
         isPartOf: {
-          "@id": `${PROACTIVITIS_URL}/#website`
+          "@id": `${PROACTIVITIS_URL}/#website`,
         },
         about: {
-          "@id": `${PROACTIVITIS_URL}/#organization`
-        }
+          "@id": `${PROACTIVITIS_URL}/#organization`,
+        },
       },
       {
         "@type": "ItemList",
         "@id": `${localizedPath("/")}#tour-catalog`,
-        name: locale === "es" ? "Catalogo completo de tours" : locale === "fr" ? "Catalogue complet des excursions" : "Complete tours catalog",
+        name:
+          locale === "es"
+            ? "Catalogo completo de tours"
+            : locale === "fr"
+              ? "Catalogue complet des excursions"
+              : "Complete tours catalog",
         numberOfItems: tourCatalogItems.length,
         itemListOrder: "https://schema.org/ItemListOrderAscending",
-        itemListElement: tourCatalogItems
+        itemListElement: tourCatalogItems,
       },
       {
         "@type": "ItemList",
         "@id": `${localizedPath("/")}#transfer-catalog`,
-        name: locale === "es" ? "Catalogo completo de traslados" : locale === "fr" ? "Catalogue complet des transferts" : "Complete transfers catalog",
+        name:
+          locale === "es"
+            ? "Catalogo completo de traslados"
+            : locale === "fr"
+              ? "Catalogue complet des transferts"
+              : "Complete transfers catalog",
         numberOfItems: transferCatalogItems.length,
         itemListOrder: "https://schema.org/ItemListOrderAscending",
-        itemListElement: transferCatalogItems
+        itemListElement: transferCatalogItems,
       },
       {
         "@type": "ItemList",
         "@id": `${localizedPath("/")}#public-pages`,
-        name: locale === "es" ? "Paginas publicas Proactivitis" : locale === "fr" ? "Pages publiques Proactivitis" : "Proactivitis public pages",
+        name:
+          locale === "es"
+            ? "Paginas publicas Proactivitis"
+            : locale === "fr"
+              ? "Pages publiques Proactivitis"
+              : "Proactivitis public pages",
         numberOfItems: allPublicPageItems.length,
         itemListOrder: "https://schema.org/ItemListOrderAscending",
-        itemListElement: allPublicPageItems
+        itemListElement: allPublicPageItems,
       },
       {
         "@type": "ItemList",
         "@id": `${localizedPath("/")}#product-catalog`,
-        name: locale === "es" ? "Catalogo de productos Proactivitis" : locale === "fr" ? "Catalogue de produits Proactivitis" : "Proactivitis product catalog",
+        name:
+          locale === "es"
+            ? "Catalogo de productos Proactivitis"
+            : locale === "fr"
+              ? "Catalogue de produits Proactivitis"
+              : "Proactivitis product catalog",
         numberOfItems: tourProducts.length + transferProducts.length,
         itemListOrder: "https://schema.org/ItemListOrderAscending",
-        itemListElement: [...tourProducts, ...transferProducts].map((product, index) => ({
-          "@type": "ListItem",
-          position: index + 1,
-          item: product
-        }))
+        itemListElement: [...tourProducts, ...transferProducts].map(
+          (product, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            item: product,
+          }),
+        ),
       },
       {
         "@type": "FAQPage",
@@ -617,20 +755,20 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
             name: translate(locale, "home.schema.faq.question.booking"),
             acceptedAnswer: {
               "@type": "Answer",
-              text: translate(locale, "home.schema.faq.answer.booking")
-            }
+              text: translate(locale, "home.schema.faq.answer.booking"),
+            },
           },
           {
             "@type": "Question",
             name: translate(locale, "home.schema.faq.question.agencies"),
             acceptedAnswer: {
               "@type": "Answer",
-              text: translate(locale, "home.schema.faq.answer.agencies")
-            }
-          }
-        ]
-      }
-    ]
+              text: translate(locale, "home.schema.faq.answer.agencies"),
+            },
+          },
+        ],
+      },
+    ],
   };
 
   return (
@@ -659,8 +797,12 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
                     </span>
                   </div>
                   <div className="mt-6 space-y-2">
-                    <h2 className="text-xl font-black leading-tight text-slate-950">{card.title}</h2>
-                    <p className="text-sm font-medium leading-6 text-slate-600">{card.body}</p>
+                    <h2 className="text-xl font-black leading-tight text-slate-950">
+                      {card.title}
+                    </h2>
+                    <p className="text-sm font-medium leading-6 text-slate-600">
+                      {card.body}
+                    </p>
                   </div>
                 </Link>
               );
@@ -670,7 +812,10 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
             {trustNotes.map((item) => {
               const Icon = item.icon;
               return (
-                <span key={item.text} className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm ring-1 ring-slate-200">
+                <span
+                  key={item.text}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm ring-1 ring-slate-200"
+                >
                   <Icon className="h-4 w-4 text-emerald-600" aria-hidden />
                   {item.text}
                 </span>
@@ -682,14 +827,18 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
 
       <section className="travel-surface">
         <div className="mx-auto max-w-6xl space-y-5 px-4 py-12 sm:px-6">
-          <HomeRecommendedHeader locale={locale} overrides={homeOverrides.recommended} />
+          <HomeRecommendedHeader
+            locale={locale}
+            overrides={homeOverrides.recommended}
+          />
           <HomeTourSearchSection locale={locale} />
           <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
             <FeaturedToursSection locale={locale} />
           </div>
           <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-              {homeOverrides.puntaCana?.subtitle ?? t("puntaCana.links.subtitle")}
+              {homeOverrides.puntaCana?.subtitle ??
+                t("puntaCana.links.subtitle")}
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-900">
               {homeOverrides.puntaCana?.title ?? t("puntaCana.links.title")}
@@ -724,7 +873,11 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
                   href={tourHref(item.slug)}
                   className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
                 >
-                  {locale === "es" ? item.es : locale === "en" ? item.en : item.fr}
+                  {locale === "es"
+                    ? item.es
+                    : locale === "en"
+                      ? item.en
+                      : item.fr}
                 </Link>
               ))}
             </div>
@@ -737,7 +890,11 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
           <div className="grid gap-5 lg:grid-cols-[0.9fr_1.6fr] lg:items-stretch">
             <div className="rounded-[32px] border border-slate-200 bg-slate-950 p-7 text-white shadow-sm">
               <p className="text-xs font-black uppercase tracking-[0.32em] text-sky-300">
-                {locale === "es" ? "Cómo funciona" : locale === "fr" ? "Comment ça marche" : "How it works"}
+                {locale === "es"
+                  ? "Cómo funciona"
+                  : locale === "fr"
+                    ? "Comment ça marche"
+                    : "How it works"}
               </p>
               <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight">
                 {locale === "es"
@@ -765,8 +922,12 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
                     <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
                       <Icon className="h-5 w-5" aria-hidden />
                     </span>
-                    <h3 className="mt-5 text-lg font-black leading-tight text-slate-950">{step.title}</h3>
-                    <p className="mt-3 text-sm font-medium leading-6 text-slate-600">{step.body}</p>
+                    <h3 className="mt-5 text-lg font-black leading-tight text-slate-950">
+                      {step.title}
+                    </h3>
+                    <p className="mt-3 text-sm font-medium leading-6 text-slate-600">
+                      {step.body}
+                    </p>
                   </article>
                 );
               })}
@@ -782,26 +943,30 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
             style={{
               backgroundImage: `url('${transferBannerImage}')`,
               backgroundSize: "cover",
-              backgroundPosition: "center"
+              backgroundPosition: "center",
             }}
           >
             <div className="absolute inset-0 bg-slate-900/55 md:bg-slate-900/65" />
             <div className="relative z-10 w-full space-y-6 px-6 py-10 text-center text-white md:text-left">
-            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/70">
-              {homeOverrides.transferBanner?.label ?? t("home.transferBanner.label")}
-            </p>
-            <h2 className="text-3xl font-semibold leading-tight md:text-4xl">
-              {homeOverrides.transferBanner?.title ?? t("home.transferBanner.title")}
-            </h2>
-            <p className="text-sm text-white/90 md:text-base">
-              {homeOverrides.transferBanner?.description ?? t("home.transferBanner.description")}
-            </p>
-            <HomeTransferTicker locale={locale} />
-            <div className="botones-banner justify-center md:justify-start">
-              <Link href={transferHref} className="boton-verde">
-                {homeOverrides.transferBanner?.cta ?? t("home.transferBanner.cta")}
-              </Link>
-            </div>
+              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/70">
+                {homeOverrides.transferBanner?.label ??
+                  t("home.transferBanner.label")}
+              </p>
+              <h2 className="text-3xl font-semibold leading-tight md:text-4xl">
+                {homeOverrides.transferBanner?.title ??
+                  t("home.transferBanner.title")}
+              </h2>
+              <p className="text-sm text-white/90 md:text-base">
+                {homeOverrides.transferBanner?.description ??
+                  t("home.transferBanner.description")}
+              </p>
+              <HomeTransferTicker locale={locale} />
+              <div className="botones-banner justify-center md:justify-start">
+                <Link href={transferHref} className="boton-verde">
+                  {homeOverrides.transferBanner?.cta ??
+                    t("home.transferBanner.cta")}
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -825,7 +990,10 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         </div>
       </section>
       <section className="sr-only">
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
       </section>
     </div>
   );
