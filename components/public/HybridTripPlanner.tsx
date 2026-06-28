@@ -29,6 +29,8 @@ const addDays = (dateValue: string, days: number) => {
   return date.toISOString().split("T")[0];
 };
 
+const getVehicleUnits = (travelers: number, maxPax?: number) => Math.max(1, Math.ceil(Math.max(1, travelers) / Math.max(1, maxPax ?? 1)));
+
 export default function HybridTripPlanner({ landing, tours }: { landing: HybridLanding; tours: HybridTourProduct[] }) {
   const storageKey = `proactivitis-hybrid-planner:${landing.path}`;
   const recommendedSlugs = useMemo(
@@ -69,7 +71,8 @@ export default function HybridTripPlanner({ landing, tours }: { landing: HybridL
 
   const selectedTransfer = landing.zone.transferOptions.find((transfer) => transfer.id === state.transferId);
   const selectedTours = tours.filter((tour) => state.selectedTourSlugs.includes(tour.slug));
-  const transferTotal = selectedTransfer?.price ?? 0;
+  const vehicleUnits = selectedTransfer ? getVehicleUnits(state.adults, selectedTransfer.maxPax) : 0;
+  const transferTotal = selectedTransfer ? selectedTransfer.price * vehicleUnits : 0;
   const tourTotal = selectedTours.reduce((sum, tour) => sum + tour.price * Math.max(1, state.adults), 0);
   const total = transferTotal + tourTotal;
   const canCheckout = Boolean(selectedTransfer && state.arrivalDate && state.departureDate);
@@ -94,14 +97,26 @@ export default function HybridTripPlanner({ landing, tours }: { landing: HybridL
       returnDatetime: state.departureDate ? `${state.departureDate}T11:00:00` : "",
       specialRequirements: [
         `Custom package: ${landing.title}`,
-        selectedTransfer ? `Transfer: ${selectedTransfer.label}` : "",
+      selectedTransfer ? `Transfer: ${selectedTransfer.label} (${vehicleUnits} vehicle${vehicleUnits > 1 ? "s" : ""})` : "",
         selectedTours.length ? `Tours: ${selectedTours.map((tour) => tour.title).join(", ")}` : "Tours: no extras"
       ]
         .filter(Boolean)
         .join(" | ")
     });
     return `/checkout?${params.toString()}`;
-  }, [landing, selectedTours, selectedTransfer, state.adults, state.arrivalDate, state.departureDate, total]);
+  }, [landing, selectedTours, selectedTransfer, state.adults, state.arrivalDate, state.departureDate, total, vehicleUnits]);
+
+  const updateTravelers = (travelers: number) => {
+    const nextTravelers = Math.max(1, travelers);
+    const bestTransfer =
+      landing.zone.transferOptions.find((transfer) => nextTravelers <= transfer.maxPax) ??
+      landing.zone.transferOptions[landing.zone.transferOptions.length - 1];
+    setState((current) => ({
+      ...current,
+      adults: nextTravelers,
+      transferId: bestTransfer?.id ?? current.transferId
+    }));
+  };
 
   const setTourPreset = (slugs: string[]) => {
     setState((current) => ({ ...current, selectedTourSlugs: Array.from(new Set(slugs)) }));
@@ -142,7 +157,7 @@ export default function HybridTripPlanner({ landing, tours }: { landing: HybridL
           <section className="border border-slate-200 bg-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <StepTitle number="1" title="Private transfer" />
-              <span className="text-sm font-black text-emerald-700">{selectedTransfer ? money(transferTotal) : "Choose one"}</span>
+              <span className="text-sm font-black text-emerald-700">{selectedTransfer ? `${money(transferTotal)} estimated` : "Choose one"}</span>
             </div>
             <div className="mt-5 grid gap-3 md:grid-cols-2">
               {landing.zone.transferOptions.map((transfer) => {
@@ -161,7 +176,7 @@ export default function HybridTripPlanner({ landing, tours }: { landing: HybridL
                         <span className="block text-base font-black text-slate-950">{transfer.label}</span>
                         <span className="mt-1 block text-sm font-semibold text-slate-500">{transfer.vehicleName} - {transfer.pax} travelers</span>
                       </span>
-                      <span className="text-sm font-black text-emerald-700">{money(transfer.price)}</span>
+                      <span className="text-sm font-black text-emerald-700">{money(transfer.price)} / vehicle</span>
                     </span>
                     <span className="mt-3 block text-sm leading-6 text-slate-600">{transfer.description}</span>
                     <span className={`mt-4 inline-flex px-3 py-1 text-xs font-black ${selected ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-600"}`}>
@@ -201,11 +216,16 @@ export default function HybridTripPlanner({ landing, tours }: { landing: HybridL
                   min={1}
                   max={40}
                   value={state.adults}
-                  onChange={(event) => setState((current) => ({ ...current, adults: Math.max(1, Number(event.target.value) || 1) }))}
+                  onChange={(event) => updateTravelers(Number(event.target.value) || 1)}
                   className="mt-2 w-full border border-slate-300 px-3 py-3 text-sm"
                 />
               </label>
             </div>
+            {selectedTransfer ? (
+              <p className="mt-3 text-sm font-semibold text-slate-600">
+                Transfer estimate: {vehicleUnits} {selectedTransfer.vehicleName}{vehicleUnits > 1 ? "s" : ""} x {money(selectedTransfer.price)}.
+              </p>
+            ) : null}
             <div className="mt-4 flex flex-wrap gap-2">
               {[4, 5, 7].map((days) => (
                 <button
@@ -270,7 +290,7 @@ export default function HybridTripPlanner({ landing, tours }: { landing: HybridL
           </div>
           <div className="mt-6 border-t border-white/15 pt-5">
             <div className="flex justify-between text-sm text-slate-300">
-              <span>Transfer</span>
+              <span>Transfer{selectedTransfer ? ` (${vehicleUnits} vehicle${vehicleUnits > 1 ? "s" : ""})` : ""}</span>
               <span>{money(transferTotal)}</span>
             </div>
             <div className="mt-2 flex justify-between text-sm text-slate-300">

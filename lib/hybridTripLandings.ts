@@ -11,6 +11,7 @@ export type HybridTransferOption = {
   vehicleName: string;
   description: string;
   price: number;
+  maxPax: number;
   pax: string;
 };
 
@@ -91,6 +92,7 @@ export const HYBRID_ZONES = [
         vehicleName: "Private Van",
         description: "Round-trip private transfer for resorts in Punta Cana, Bavaro, Cap Cana and Uvero Alto.",
         price: 85,
+        maxPax: 6,
         pax: "1-6"
       },
       {
@@ -99,6 +101,7 @@ export const HYBRID_ZONES = [
         vehicleName: "Private Minibus",
         description: "More luggage space and easier boarding for families or small groups.",
         price: 135,
+        maxPax: 14,
         pax: "7-14"
       }
     ]
@@ -124,6 +127,7 @@ export const HYBRID_ZONES = [
         vehicleName: "Executive Sedan",
         description: "Direct private transfer for couples, executives or short city stays.",
         price: 145,
+        maxPax: 3,
         pax: "1-3"
       },
       {
@@ -132,6 +136,7 @@ export const HYBRID_ZONES = [
         vehicleName: "Corporate Van",
         description: "Comfortable city transfer for groups with bags, meetings or event schedules.",
         price: 225,
+        maxPax: 10,
         pax: "4-10"
       }
     ]
@@ -157,6 +162,7 @@ export const HYBRID_ZONES = [
         vehicleName: "Private SUV",
         description: "Direct airport or hotel transfer for Bayahibe, Dominicus and La Romana.",
         price: 125,
+        maxPax: 5,
         pax: "1-5"
       },
       {
@@ -165,6 +171,7 @@ export const HYBRID_ZONES = [
         vehicleName: "Private Van",
         description: "Better for island tour groups carrying luggage and beach gear.",
         price: 185,
+        maxPax: 12,
         pax: "6-12"
       }
     ]
