@@ -32,6 +32,7 @@ import {
   buildNuevaGeneracionIntentTourPath,
   buildNuevaGeneracionTourPath
 } from "@/lib/nuevaGeneracionTours";
+import { getHybridLanding, getHybridLandingStaticParams } from "@/lib/hybridTripLandings";
 
 type SearchParams = {
   zone?: string;
@@ -297,6 +298,16 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       }))
     )
   ];
+  const hybridTripLandingEntries = getHybridLandingStaticParams()
+    .map((params) => getHybridLanding(params.zoneSlug, params.audienceMonth))
+    .filter((landing): landing is NonNullable<typeof landing> => Boolean(landing))
+    .map((landing) => ({
+      slug: toPublicPath(landing.path),
+      name: landing.title,
+      zone: `${landing.zone.mapName} / ${landing.month.label}`,
+      active: true,
+      type: landing.audience.label
+    }));
   const thingsToDoSlugs = hotelThingsToDoEntries.map((entry) => entry.slug);
   const pickupHotelSlugs = pickupHotelEntries.map((entry) => entry.slug);
   const safetyGuideSlugs = safetyGuideEntries.map((entry) => entry.slug);
@@ -334,6 +345,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       ...tourMarketVariantSlugs,
       ...goldenTourSlugs,
       ...experienceLandingEntries.map((entry) => entry.slug),
+      ...hybridTripLandingEntries.map((entry) => entry.slug),
       ...countrySalesLandingEntries.map((entry) => entry.slug)
     ])
   );
@@ -479,6 +491,12 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
       path: entry.slug,
       visits: trafficMap.get(entry.slug) ?? 0
     })),
+    ...hybridTripLandingEntries.map((entry) => ({
+      ...entry,
+      category: "hybrid-trip-landings",
+      path: entry.slug,
+      visits: trafficMap.get(entry.slug) ?? 0
+    })),
     ...countrySalesLandingEntries.map((entry) => ({
       ...entry,
       type: "COUNTRY",
@@ -534,6 +552,7 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
   const goldenTourCount = goldenTourEntries.length;
   const goldenTransferCount = goldenTransferEntries.length;
   const experienceLandingCount = experienceLandingEntries.length;
+  const hybridTripLandingCount = hybridTripLandingEntries.length;
 
   const pageHref = (nextPage: number) => {
     const query = new URLSearchParams();
@@ -1112,6 +1131,37 @@ export default async function LandingsAdminPage({ searchParams }: LandingsAdminP
             >
               <div>
                 <p className="text-[0.65rem] uppercase tracking-[0.35em] text-emerald-700">{entry.zone}</p>
+                <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.type}</p>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                <p className="line-clamp-1">{entry.slug}</p>
+                <p>Visitas {trafficMap.get(entry.slug)?.toLocaleString() ?? "0"}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Hybrid trip landings"
+        description="Landings Blog + Producto con embudo transfer, fechas y tours. URLs tipo /en/tours/punta-cana/families-july."
+        badge={`${hybridTripLandingCount} items`}
+      >
+        <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
+          Estas son las landings nuevas del sistema hibrido. Tambien aparecen en el explorador con el catalogo "hybrid-trip-landings".
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {hybridTripLandingEntries.map((entry) => (
+            <Link
+              key={entry.slug}
+              href={`https://proactivitis.com/${entry.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-sm text-slate-700 transition hover:border-sky-400 hover:shadow-lg"
+            >
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.35em] text-sky-700">{entry.zone}</p>
                 <h3 className="text-lg font-semibold text-slate-900">{entry.name}</h3>
                 <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-500">{entry.type}</p>
               </div>
