@@ -14,25 +14,28 @@ import {
 } from "@/lib/hybridTripLandings";
 
 type PageProps = {
-  params: Promise<{ zoneSlug: string; audienceMonth: string }>;
+  params: Promise<{ slug: string; audienceMonth: string }>;
 };
 
 export const revalidate = 86400;
 
 export function generateStaticParams() {
-  return getHybridLandingStaticParams();
+  return getHybridLandingStaticParams().map((params) => ({
+    slug: params.zoneSlug,
+    audienceMonth: params.audienceMonth
+  }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { zoneSlug, audienceMonth } = await params;
-  const landing = getHybridLanding(zoneSlug, audienceMonth);
+  const { slug, audienceMonth } = await params;
+  const landing = getHybridLanding(slug, audienceMonth);
   if (!landing) return { title: "Trip planner not found | Proactivitis", robots: { index: false, follow: false } };
   return buildHybridLandingMetadata(landing);
 }
 
 export default async function HybridTripLandingPage({ params }: PageProps) {
-  const { zoneSlug, audienceMonth } = await params;
-  const landing = getHybridLanding(zoneSlug, audienceMonth);
+  const { slug, audienceMonth } = await params;
+  const landing = getHybridLanding(slug, audienceMonth);
   if (!landing) notFound();
 
   const tours = await getHybridTourProducts(landing);
