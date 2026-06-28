@@ -24,6 +24,7 @@ const SITEMAPS = [
   "/sitemap-images.xml",
   "/sitemap-seo-only-tours.xml",
   "/sitemap-transfer-seo-only.xml",
+  "/sitemap-hybrid-trip-landings.xml",
   "/sitemap-seo-factory.xml",
   "/sitemap-urgent-discovered.xml",
   "/sitemap-prodiscovery.xml",

@@ -773,6 +773,74 @@ model TourVariant {
   @@index([status])
 }
 
+model HybridLandingZone {
+  id                String              @id @default(cuid())
+  slug              String              @unique
+  name              String
+  transferType      String
+  transferCopy      String              @db.Text
+  featuredTourSlugs Json
+  active            Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  rules             HybridLandingRule[]
+
+  @@index([active])
+}
+
+model HybridLandingAudience {
+  id               String              @id @default(cuid())
+  slug             String              @unique
+  label            String
+  prioritySignals  Json
+  blockedSignals   Json
+  active           Boolean             @default(true)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  rules            HybridLandingRule[]
+
+  @@index([active])
+}
+
+model HybridLandingMonth {
+  id             String              @id @default(cuid())
+  month          Int                 @unique
+  slug           String              @unique
+  season         String
+  climateCopy    String              @db.Text
+  tourFilterCopy String              @db.Text
+  active         Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  rules          HybridLandingRule[]
+
+  @@index([season])
+  @@index([active])
+}
+
+model HybridLandingRule {
+  id              String                @id @default(cuid())
+  zoneId          String
+  audienceId      String
+  monthId         String
+  locale          String                @default("en")
+  title           String
+  metaDescription String                @db.Text
+  blogIntro       String                @db.Text
+  blogTips        Json
+  transferCopy    String                @db.Text
+  productSlugs    Json
+  active          Boolean               @default(true)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  zone            HybridLandingZone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  audience        HybridLandingAudience @relation(fields: [audienceId], references: [id], onDelete: Cascade)
+  month           HybridLandingMonth    @relation(fields: [monthId], references: [id], onDelete: Cascade)
+
+  @@unique([zoneId, audienceId, monthId, locale])
+  @@index([locale, active])
+}
+
 model TourTranslation {
   id               String                @id @default(cuid())
   tourId           String
