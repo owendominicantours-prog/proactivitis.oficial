@@ -37,7 +37,7 @@ import {
   resolveTourPersona,
   toAbsoluteImage
 } from "@/lib/nuevaGeneracionTours";
-import { getApprovedTourReviews } from "@/lib/tourReviews";
+import { getApprovedTourReviewsForTour } from "@/lib/tourReviews";
 
 const UI = {
   es: {
@@ -401,7 +401,7 @@ export async function NuevaGeneracionTourLandingPage({ slug, locale }: { slug: s
   if (!tour) notFound();
   const [relatedTours, rawReviews] = await Promise.all([
     getNuevaGeneracionRelatedTours(tour, 8, locale),
-    getApprovedTourReviews(tour.id, 3)
+    getApprovedTourReviewsForTour({ id: tour.id, slug: tour.slug }, 3)
   ]);
   const reviews = rawReviews.filter((review) => review.locale === locale);
   const facts = buildTourFacts(tour, locale);
@@ -520,7 +520,7 @@ export async function NuevaGeneracionIntentTourPage({ slug, intentSlug, locale }
   if (!tour) notFound();
   const [relatedTours, rawReviews] = await Promise.all([
     getNuevaGeneracionRelatedTours(tour, 8, locale),
-    getApprovedTourReviews(tour.id, 3)
+    getApprovedTourReviewsForTour({ id: tour.id, slug: tour.slug }, 3)
   ]);
   const reviews = rawReviews.filter((review) => review.locale === locale);
   const facts = buildTourFacts(tour, locale);

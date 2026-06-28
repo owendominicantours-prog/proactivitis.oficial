@@ -15,6 +15,33 @@ export type ApprovedTourReview = {
   createdAt: Date;
 };
 
+const TOUR_REVIEW_EQUIVALENT_SLUG_GROUPS = [
+  [
+    "tour-en-buggy-por-punta-cana",
+    "tour-en-buggy-en-punta-cana",
+    "excursion-en-buggy-y-atv-en-punta-cana",
+    "atv-punta-cana-single"
+  ]
+];
+
+const getEquivalentTourReviewSlugs = (slug: string) =>
+  TOUR_REVIEW_EQUIVALENT_SLUG_GROUPS.find((group) => group.includes(slug)) ?? [slug];
+
+const getReviewTourIds = async (tour: { id: string; slug: string }) => {
+  const slugs = getEquivalentTourReviewSlugs(tour.slug);
+  if (slugs.length === 1) return [tour.id];
+
+  const tours = await prisma.tour.findMany({
+    where: {
+      slug: { in: slugs },
+      status: "published"
+    },
+    select: { id: true }
+  });
+
+  return Array.from(new Set([tour.id, ...tours.map((item) => item.id)]));
+};
+
 export const getApprovedTourReviews = async (tourId: string, limit = 6) => {
   return prisma.tourReview.findMany({
     where: { tourId, status: "APPROVED" },
@@ -32,9 +59,40 @@ export const getApprovedTourReviews = async (tourId: string, limit = 6) => {
   });
 };
 
+export const getApprovedTourReviewsForTour = async (tour: { id: string; slug: string }, limit = 6) => {
+  const tourIds = await getReviewTourIds(tour);
+  return prisma.tourReview.findMany({
+    where: { tourId: { in: tourIds }, status: "APPROVED" },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      customerName: true,
+      rating: true,
+      title: true,
+      body: true,
+      locale: true,
+      createdAt: true
+    }
+  });
+};
+
 export const getTourReviewSummary = async (tourId: string): Promise<TourReviewSummary> => {
   const result = await prisma.tourReview.aggregate({
     where: { tourId, status: "APPROVED" },
+    _avg: { rating: true },
+    _count: { rating: true }
+  });
+  return {
+    average: Number(result._avg.rating ?? 0),
+    count: result._count.rating ?? 0
+  };
+};
+
+export const getTourReviewSummaryForTour = async (tour: { id: string; slug: string }): Promise<TourReviewSummary> => {
+  const tourIds = await getReviewTourIds(tour);
+  const result = await prisma.tourReview.aggregate({
+    where: { tourId: { in: tourIds }, status: "APPROVED" },
     _avg: { rating: true },
     _count: { rating: true }
   });

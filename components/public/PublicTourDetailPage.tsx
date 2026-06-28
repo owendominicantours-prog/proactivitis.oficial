@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { TourBookingWidget } from "@/components/tours/TourBookingWidget";
 import { prisma } from "@/lib/prisma";
 import { formatReviewCountValue } from "@/lib/reviewCounts";
-import { buildReviewBreakdown, getApprovedTourReviews, getTourReviewSummary } from "@/lib/tourReviews";
+import { buildReviewBreakdown, getApprovedTourReviewsForTour, getTourReviewSummaryForTour } from "@/lib/tourReviews";
 import { parseAdminItinerary, parseItinerary, ItineraryStop } from "@/lib/itinerary";
 import ReserveFloatingButton from "@/components/shared/ReserveFloatingButton";
 import StructuredData from "@/components/schema/StructuredData";
@@ -1924,7 +1924,7 @@ export default async function TourDetailPage({
   const mapSearchUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
   const travelerGallery = [...gallery].reverse().slice(0, 6);
 
-  const approvedReviews = await getApprovedTourReviews(tour.id);
+  const approvedReviews = await getApprovedTourReviewsForTour({ id: tour.id, slug: tour.slug });
   const reviewLocale =
     locale === "en" ? "en-US" : locale === "fr" ? "fr-FR" : "es-ES";
   const translatedReviews = await Promise.all(
@@ -1949,7 +1949,7 @@ export default async function TourDetailPage({
       };
     })
   );
-  const reviewSummaryData = await getTourReviewSummary(tour.id);
+  const reviewSummaryData = await getTourReviewSummaryForTour({ id: tour.id, slug: tour.slug });
   const detailReviewCount = reviewSummaryData.count;
   const ratingValue = reviewSummaryData.count > 0 ? reviewSummaryData.average : 0;
   const detailReviewLabel = formatReviewCountValue(detailReviewCount);

@@ -770,11 +770,6 @@ export async function TourHotelLanding({
           price: tour.price.toFixed(2),
           priceCurrency: "USD",
           availability: "https://schema.org/InStock"
-        },
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: "4.9",
-          reviewCount: detailReviewCount
         }
       },
       {
