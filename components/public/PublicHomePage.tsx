@@ -11,7 +11,6 @@ import { Locale, translate } from "@/lib/translations";
 import { getHomeContentOverrides } from "@/lib/siteContent";
 import { getPriceValidUntil, PROACTIVITIS_URL } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
-import { allLandings } from "@/data/transfer-landings";
 import {
   CalendarCheck,
   Car,
@@ -239,7 +238,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
     },
   ];
 
-  const [publishedTours, tourRatingAgg, transferRatingAgg] = await Promise.all([
+  const [publishedTours, tourRatingAgg] = await Promise.all([
     prisma.tour.findMany({
       where: { status: { in: ["published", "seo_only"] } },
       select: {
@@ -248,6 +247,7 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         title: true,
         price: true,
         shortDescription: true,
+        heroImage: true,
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -257,21 +257,9 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
       _avg: { rating: true },
       _count: { rating: true },
     }),
-    prisma.transferReview.groupBy({
-      by: ["transferLandingSlug"],
-      where: { status: "APPROVED", transferLandingSlug: { not: null } },
-      _avg: { rating: true },
-      _count: { rating: true },
-    }),
   ]);
-  const transferLandings = allLandings();
   const uniquePublishedTours = Array.from(
     new Map(publishedTours.map((tour) => [tour.slug, tour])).values(),
-  );
-  const uniqueTransferLandings = Array.from(
-    new Map(
-      transferLandings.map((landing) => [landing.landingSlug, landing]),
-    ).values(),
   );
   const tourRatingMap = new Map(
     tourRatingAgg.map((row) => [
@@ -282,41 +270,18 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
       },
     ]),
   );
-  const transferRatingMap = new Map(
-    transferRatingAgg
-      .filter((row) => row.transferLandingSlug)
-      .map((row) => [
-        row.transferLandingSlug as string,
-        {
-          rating: Number(row._avg.rating ?? 0),
-          count: row._count.rating,
-        },
-      ]),
-  );
-
-  const tourCatalogItems = uniquePublishedTours.map((tour, index) => ({
-    "@type": "ListItem",
-    position: index + 1,
-    name: tour.title,
-    url: localizedPath(`/tours/${tour.slug}`),
-  }));
-
-  const transferCatalogItems = uniqueTransferLandings.map((landing, index) => ({
-    "@type": "ListItem",
-    position: index + 1,
-    name: landing.heroTitle,
-    url: localizedPath(`/transfer/${landing.landingSlug}`),
-  }));
-  const tourProducts = uniquePublishedTours.map((tour) => {
+  const featuredTourOrder = new Map<string, number>(PUNTA_CANA_LINKS.map((item, index) => [item.slug, index]));
+  const featuredTours = uniquePublishedTours
+    .filter((tour) => featuredTourOrder.has(tour.slug))
+    .sort((a, b) => (featuredTourOrder.get(a.slug) ?? 999) - (featuredTourOrder.get(b.slug) ?? 999))
+    .slice(0, 8);
+  const homeCarouselTours = featuredTours.length ? featuredTours : uniquePublishedTours.slice(0, 8);
+  const featuredTourProducts = homeCarouselTours.map((tour) => {
     const ratingData = tourRatingMap.get(tour.id);
-    const ratingValue = Number(
-      (ratingData?.rating && ratingData.rating > 0
-        ? ratingData.rating
-        : 5
-      ).toFixed(1),
-    );
-    const reviewCount =
-      ratingData?.count && ratingData.count > 0 ? ratingData.count : 1;
+    const hasRealRating = Boolean(ratingData?.count && ratingData.count > 0 && ratingData.rating > 0);
+    const image = tour.heroImage?.startsWith("http")
+      ? tour.heroImage
+      : `${PROACTIVITIS_URL}${tour.heroImage || "/fototours/fotosimple.jpg"}`;
     return {
       "@type": "Product",
       "@id": `${localizedPath(`/tours/${tour.slug}`)}#product`,
@@ -329,16 +294,20 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
             ? "Excursion en Republique dominicaine avec reservation immediate."
             : "Dominican Republic excursion with instant booking."),
       url: localizedPath(`/tours/${tour.slug}`),
-      image: `${PROACTIVITIS_URL}/fototours/fotosimple.jpg`,
+      image,
       brand: {
         "@type": "Brand",
         name: "Proactivitis",
       },
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue,
-        reviewCount,
-      },
+      ...(hasRealRating
+        ? {
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: Number(ratingData!.rating.toFixed(1)),
+              reviewCount: ratingData!.count,
+            },
+          }
+        : {}),
       offers: {
         "@type": "Offer",
         priceCurrency: "USD",
@@ -386,136 +355,6 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
       },
     };
   });
-
-  const transferProducts = uniqueTransferLandings.map((landing) => {
-    const ratingData = transferRatingMap.get(landing.landingSlug);
-    const ratingValue = Number(
-      (ratingData?.rating && ratingData.rating > 0
-        ? ratingData.rating
-        : 5
-      ).toFixed(1),
-    );
-    const reviewCount =
-      ratingData?.count && ratingData.count > 0 ? ratingData.count : 1;
-    return {
-      "@type": "Product",
-      "@id": `${localizedPath(`/transfer/${landing.landingSlug}`)}#product`,
-      name: landing.heroTitle,
-      description: landing.heroSubtitle || landing.metaDescription,
-      url: localizedPath(`/transfer/${landing.landingSlug}`),
-      image: `${PROACTIVITIS_URL}${landing.heroImage}`,
-      brand: {
-        "@type": "Brand",
-        name: "Proactivitis",
-      },
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue,
-        reviewCount,
-      },
-      offers: {
-        "@type": "Offer",
-        priceCurrency: "USD",
-        price: Math.round(landing.priceFrom),
-        priceValidUntil,
-        availability: "https://schema.org/InStock",
-        url: localizedPath(`/transfer/${landing.landingSlug}`),
-        shippingDetails: {
-          "@type": "OfferShippingDetails",
-          shippingRate: {
-            "@type": "MonetaryAmount",
-            value: 0,
-            currency: "USD",
-          },
-          shippingDestination: {
-            "@type": "DefinedRegion",
-            addressCountry: "DO",
-          },
-          deliveryTime: {
-            "@type": "ShippingDeliveryTime",
-            handlingTime: {
-              "@type": "QuantitativeValue",
-              minValue: 0,
-              maxValue: 1,
-              unitCode: "DAY",
-            },
-            transitTime: {
-              "@type": "QuantitativeValue",
-              minValue: 0,
-              maxValue: 1,
-              unitCode: "DAY",
-            },
-          },
-        },
-        hasMerchantReturnPolicy: {
-          "@type": "MerchantReturnPolicy",
-          url: `${PROACTIVITIS_URL}/legal/refund-policy`,
-          returnPolicyCategory:
-            "https://schema.org/MerchantReturnFiniteReturnWindow",
-          merchantReturnDays: 1,
-          applicableCountry: "DO",
-          returnMethod: "https://schema.org/ReturnByMail",
-          returnFees: "https://schema.org/FreeReturn",
-        },
-      },
-    };
-  });
-
-  const corePublicPages = [
-    {
-      path: "/",
-      name: locale === "es" ? "Inicio" : locale === "fr" ? "Accueil" : "Home",
-    },
-    {
-      path: "/tours",
-      name:
-        locale === "es" ? "Tours" : locale === "fr" ? "Excursions" : "Tours",
-    },
-    {
-      path: "/traslado",
-      name:
-        locale === "es"
-          ? "Traslados"
-          : locale === "fr"
-            ? "Transferts"
-            : "Transfers",
-    },
-    { path: "/prodiscovery", name: "ProDiscovery" },
-    {
-      path: "/news",
-      name:
-        locale === "es" ? "Noticias" : locale === "fr" ? "Actualites" : "News",
-    },
-    {
-      path: locale === "es" ? "/hoteles" : "/hotels",
-      name: locale === "es" ? "Hoteles" : locale === "fr" ? "Hotels" : "Hotels",
-    },
-    { path: "/punta-cana/tours", name: "Punta Cana Tours" },
-    { path: "/punta-cana/traslado", name: "Punta Cana Transfers" },
-    {
-      path: "/punta-cana/premium-transfer-services",
-      name: "Premium Transfer Services",
-    },
-  ];
-
-  const allPublicPageUrls = Array.from(
-    new Set([
-      ...corePublicPages.map((page) => localizedPath(page.path)),
-      ...uniquePublishedTours.map((tour) =>
-        localizedPath(`/tours/${tour.slug}`),
-      ),
-      ...uniqueTransferLandings.map((landing) =>
-        localizedPath(`/transfer/${landing.landingSlug}`),
-      ),
-    ]),
-  );
-
-  const allPublicPageItems = allPublicPageUrls.map((url, index) => ({
-    "@type": "ListItem",
-    position: index + 1,
-    name: url.replace(`${PROACTIVITIS_URL}${localePrefix}`, "") || "/",
-    url,
-  }));
 
   const schema = {
     "@context": "https://schema.org",
@@ -688,64 +527,26 @@ export default async function PublicHomePage({ locale }: PublicHomePageProps) {
         about: {
           "@id": `${PROACTIVITIS_URL}/#organization`,
         },
+        mainEntity: {
+          "@id": `${localizedPath("/")}#featured-tour-carousel`,
+        },
       },
       {
         "@type": "ItemList",
-        "@id": `${localizedPath("/")}#tour-catalog`,
+        "@id": `${localizedPath("/")}#featured-tour-carousel`,
         name:
           locale === "es"
-            ? "Catalogo completo de tours"
+            ? "Tours destacados de Proactivitis"
             : locale === "fr"
-              ? "Catalogue complet des excursions"
-              : "Complete tours catalog",
-        numberOfItems: tourCatalogItems.length,
+              ? "Excursions vedettes Proactivitis"
+              : "Featured Proactivitis tours",
+        numberOfItems: featuredTourProducts.length,
         itemListOrder: "https://schema.org/ItemListOrderAscending",
-        itemListElement: tourCatalogItems,
-      },
-      {
-        "@type": "ItemList",
-        "@id": `${localizedPath("/")}#transfer-catalog`,
-        name:
-          locale === "es"
-            ? "Catalogo completo de traslados"
-            : locale === "fr"
-              ? "Catalogue complet des transferts"
-              : "Complete transfers catalog",
-        numberOfItems: transferCatalogItems.length,
-        itemListOrder: "https://schema.org/ItemListOrderAscending",
-        itemListElement: transferCatalogItems,
-      },
-      {
-        "@type": "ItemList",
-        "@id": `${localizedPath("/")}#public-pages`,
-        name:
-          locale === "es"
-            ? "Paginas publicas Proactivitis"
-            : locale === "fr"
-              ? "Pages publiques Proactivitis"
-              : "Proactivitis public pages",
-        numberOfItems: allPublicPageItems.length,
-        itemListOrder: "https://schema.org/ItemListOrderAscending",
-        itemListElement: allPublicPageItems,
-      },
-      {
-        "@type": "ItemList",
-        "@id": `${localizedPath("/")}#product-catalog`,
-        name:
-          locale === "es"
-            ? "Catalogo de productos Proactivitis"
-            : locale === "fr"
-              ? "Catalogue de produits Proactivitis"
-              : "Proactivitis product catalog",
-        numberOfItems: tourProducts.length + transferProducts.length,
-        itemListOrder: "https://schema.org/ItemListOrderAscending",
-        itemListElement: [...tourProducts, ...transferProducts].map(
-          (product, index) => ({
-            "@type": "ListItem",
-            position: index + 1,
-            item: product,
-          }),
-        ),
+        itemListElement: featuredTourProducts.map((product, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          item: product,
+        })),
       },
       {
         "@type": "FAQPage",

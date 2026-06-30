@@ -3,12 +3,29 @@ import { DISCOVERED_NOT_INDEXED_URLS } from "@/data/discovered-not-indexed-urls"
 
 export const revalidate = 3600;
 
+const escapeXml = (value: string) =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+
+const isCleanSitemapUrl = (value: string) => {
+  try {
+    const url = new URL(value);
+    return !url.search && !url.hash;
+  } catch {
+    return false;
+  }
+};
+
 export async function GET() {
   const now = new Date().toISOString();
-  const urls = DISCOVERED_NOT_INDEXED_URLS.map((url) => {
+  const urls = DISCOVERED_NOT_INDEXED_URLS.filter(isCleanSitemapUrl).map((url) => {
     return `
   <url>
-    <loc>${url}</loc>
+    <loc>${escapeXml(url)}</loc>
     <lastmod>${now}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>

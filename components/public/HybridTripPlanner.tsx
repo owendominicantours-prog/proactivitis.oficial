@@ -305,7 +305,11 @@ export default function HybridTripPlanner({
     return () => controller.abort();
   }, [selectedOrigin, state.adults, state.destinationLocation]);
 
-  const liveTransferOptions = state.destinationLocation ? quoteTransfers : [];
+  const liveTransferOptions = state.destinationLocation
+    ? quoteTransfers.length
+      ? quoteTransfers
+      : availableTransfers
+    : [];
   const selectedTransfer = liveTransferOptions.find((transfer) => transfer.id === state.transferId);
   const selectedTours = tours.filter((tour) => state.selectedTourSlugs.includes(tour.slug));
   const vehicleUnits = selectedTransfer ? getVehicleUnits(state.adults, selectedTransfer.maxPax) : 0;
@@ -418,7 +422,7 @@ export default function HybridTripPlanner({
     <section id="plan" className="border-y border-slate-200 bg-white">
       <div className="mx-auto grid max-w-7xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[1fr_380px] lg:px-12">
         <div className="space-y-6">
-          <header className="grid gap-5 border border-slate-200 bg-slate-50 p-5 lg:grid-cols-[1fr_auto]">
+          <header className="grid gap-5 rounded-lg border border-slate-200 bg-slate-50 p-5 shadow-sm shadow-slate-200/70 lg:grid-cols-[1fr_auto]">
             <div>
               <p className="text-sm font-black uppercase tracking-[0.18em] text-emerald-700">Customize your package</p>
               <h2 className="mt-2 text-3xl font-black text-slate-950">Start with a ready plan, then change anything</h2>
@@ -426,14 +430,14 @@ export default function HybridTripPlanner({
                 Choose your private transfer, travel dates and the tours you want. You can keep the recommended package or remove/add tours one by one.
               </p>
             </div>
-            <div className="min-w-[190px] border border-slate-200 bg-white p-4">
+            <div className="min-w-[190px] rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/70">
               <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Package status</p>
               <p className="mt-2 text-2xl font-black text-emerald-700">{completedCount}/3</p>
               <p className="text-xs font-semibold text-slate-500">parts selected</p>
             </div>
           </header>
 
-          <section className="border border-slate-200 bg-white p-5">
+          <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-md shadow-slate-200/70">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <StepTitle number="1" title="Destination and private transfer" />
               <span className="text-sm font-black text-emerald-700">
@@ -441,7 +445,7 @@ export default function HybridTripPlanner({
               </span>
             </div>
             <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_1.4fr]">
-              <div className="border border-slate-200 bg-slate-50 p-4">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm shadow-slate-200/60">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Pickup airport</p>
                 <p className="mt-2 text-sm font-black text-slate-950">
                   {selectedOrigin?.name ?? `Loading ${landing.zone.mapName} airport...`}
@@ -456,10 +460,10 @@ export default function HybridTripPlanner({
                   onChange={(event) => updateDestinationQuery(event.target.value)}
                   onFocus={() => setDestinationOpen(destinationOptions.length > 0)}
                   placeholder="Type hotel, resort, airport or area"
-                  className="mt-2 w-full border border-slate-300 px-3 py-3 text-sm"
+                  className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-3 text-sm shadow-sm shadow-slate-200/60 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
                 />
                 {destinationOpen && destinationOptions.length > 0 ? (
-                  <div className="absolute z-20 mt-1 max-h-72 w-full overflow-auto border border-slate-200 bg-white shadow-xl">
+                  <div className="absolute z-20 mt-1 max-h-72 w-full overflow-auto rounded-lg border border-slate-200 bg-white shadow-xl shadow-slate-300/40">
                     {destinationOptions.map((location) => (
                       <button
                         key={location.id}
@@ -479,18 +483,18 @@ export default function HybridTripPlanner({
               </label>
             </div>
             {!state.destinationLocation ? (
-              <div className="mt-5 border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800">
+              <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800 shadow-sm shadow-amber-100">
                 Choose the hotel or destination first so the transfer price is calculated with the real route.
               </div>
             ) : null}
             {quoteLoading ? (
-              <div className="mt-5 border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
+              <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800 shadow-sm shadow-emerald-100">
                 Calculating real transfer prices for {state.destinationLocation?.name}...
               </div>
             ) : null}
             {quoteError ? (
-              <div className="mt-5 border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">
-                {quoteError}
+              <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800 shadow-sm shadow-amber-100">
+                Exact hotel pricing is not available yet, so we are showing the zone transfer rate.
               </div>
             ) : null}
             <div className="mt-5 grid gap-3 md:grid-cols-2">
@@ -501,8 +505,8 @@ export default function HybridTripPlanner({
                     key={transfer.id}
                     type="button"
                     onClick={() => setState((current) => ({ ...current, transferId: transfer.id }))}
-                    className={`border p-4 text-left transition ${
-                      selected ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-100" : "border-slate-200 bg-white hover:border-slate-400"
+                    className={`rounded-lg border p-4 text-left shadow-sm transition ${
+                      selected ? "border-emerald-500 bg-emerald-50 shadow-emerald-100 ring-2 ring-emerald-100" : "border-slate-200 bg-white shadow-slate-200/60 hover:border-slate-400 hover:shadow-md"
                     }`}
                   >
                     <span className="flex items-start justify-between gap-3">
@@ -520,12 +524,12 @@ export default function HybridTripPlanner({
                 );
               })}
             </div>
-            {state.destinationLocation && !quoteLoading && !quoteError && liveTransferOptions.length === 0 ? (
-              <p className="mt-4 text-sm font-semibold text-slate-500">No automatic vehicle price is available for this destination yet.</p>
+            {state.destinationLocation && !quoteLoading && liveTransferOptions.length === 0 ? (
+              <p className="mt-4 text-sm font-semibold text-slate-500">No transfer price is available for this destination yet.</p>
             ) : null}
           </section>
 
-          <section className="border border-slate-200 bg-white p-5">
+          <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-md shadow-slate-200/70">
             <StepTitle number="2" title="Dates and travelers" />
             <div className="mt-5 grid gap-4 sm:grid-cols-3">
               <label className="text-sm font-semibold text-slate-700">
@@ -534,7 +538,7 @@ export default function HybridTripPlanner({
                   type="date"
                   value={state.arrivalDate}
                   onChange={(event) => setState((current) => ({ ...current, arrivalDate: event.target.value }))}
-                  className="mt-2 w-full border border-slate-300 px-3 py-3 text-sm"
+                  className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-3 text-sm shadow-sm shadow-slate-200/60 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
                 />
               </label>
               <label className="text-sm font-semibold text-slate-700">
@@ -543,7 +547,7 @@ export default function HybridTripPlanner({
                   type="date"
                   value={state.departureDate}
                   onChange={(event) => setState((current) => ({ ...current, departureDate: event.target.value }))}
-                  className="mt-2 w-full border border-slate-300 px-3 py-3 text-sm"
+                  className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-3 text-sm shadow-sm shadow-slate-200/60 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
                 />
               </label>
               <label className="text-sm font-semibold text-slate-700">
@@ -554,7 +558,7 @@ export default function HybridTripPlanner({
                   max={40}
                   value={state.adults}
                   onChange={(event) => updateTravelers(Number(event.target.value) || 1)}
-                  className="mt-2 w-full border border-slate-300 px-3 py-3 text-sm"
+                  className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-3 text-sm shadow-sm shadow-slate-200/60 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
                 />
               </label>
             </div>
@@ -570,7 +574,7 @@ export default function HybridTripPlanner({
                   type="button"
                   disabled={!state.arrivalDate}
                   onClick={() => setStayLength(days)}
-                  className="border border-slate-300 bg-white px-3 py-2 text-sm font-black text-slate-700 disabled:opacity-50"
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-black text-slate-700 shadow-sm shadow-slate-200/60 hover:border-emerald-400 disabled:opacity-50"
                 >
                   {days} nights
                 </button>
@@ -578,7 +582,7 @@ export default function HybridTripPlanner({
             </div>
           </section>
 
-          <section className="border border-slate-200 bg-white p-5">
+          <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-md shadow-slate-200/70">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <StepTitle number="3" title="Tours and extras" />
               <span className="text-sm font-black text-emerald-700">{selectedTours.length} selected</span>
@@ -596,11 +600,11 @@ export default function HybridTripPlanner({
                     key={tour.slug}
                     type="button"
                     onClick={() => toggleTour(tour.slug)}
-                    className={`grid gap-4 border p-4 text-left transition sm:grid-cols-[96px_1fr_auto] ${
-                      selected ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-100" : "border-slate-200 bg-white hover:border-slate-400"
+                    className={`grid gap-4 rounded-lg border p-4 text-left shadow-sm transition sm:grid-cols-[96px_1fr_auto] ${
+                      selected ? "border-emerald-500 bg-emerald-50 shadow-emerald-100 ring-2 ring-emerald-100" : "border-slate-200 bg-white shadow-slate-200/60 hover:border-slate-400 hover:shadow-md"
                     }`}
                   >
-                    <img src={tour.image} alt={tour.title} className="h-20 w-24 object-cover" />
+                    <img src={tour.image} alt={tour.title} className="h-20 w-24 rounded-lg object-cover shadow-sm shadow-slate-300/60" />
                     <span>
                       <span className="block text-base font-black text-slate-950">{tour.title}</span>
                       <span className="mt-1 block text-sm leading-6 text-slate-600">{tour.shortDescription}</span>
@@ -616,7 +620,7 @@ export default function HybridTripPlanner({
           </section>
         </div>
 
-        <aside className="h-fit border border-slate-200 bg-slate-950 p-5 text-white lg:sticky lg:top-20">
+        <aside className="h-fit rounded-lg border border-slate-800 bg-slate-950 p-5 text-white shadow-xl shadow-slate-300/40 lg:sticky lg:top-20">
           <p className="text-sm font-black uppercase tracking-[0.18em] text-emerald-300">Your package</p>
           <h3 className="mt-2 text-2xl font-black">{landing.zone.mapName}</h3>
           <div className="mt-5 space-y-3 text-sm text-slate-200">

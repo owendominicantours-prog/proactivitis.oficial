@@ -130,7 +130,7 @@ export const buildProDiscoveryTransferNotFoundMetadata = (locale: Locale): Metad
   title: TRANSFER_NOT_FOUND_TITLE[locale]
 });
 
-export const buildProDiscoveryHomeMetadata = (locale: Locale): Metadata => {
+export const buildProDiscoveryHomeMetadata = (locale: Locale, options?: { noindex?: boolean }): Metadata => {
   const canonicalPath = locale === "es" ? "/prodiscovery" : `/${locale}/prodiscovery`;
   const canonical = `${PROACTIVITIS_URL}${canonicalPath}`;
   return {
@@ -156,7 +156,7 @@ export const buildProDiscoveryHomeMetadata = (locale: Locale): Metadata => {
       title: HOME_TITLE[locale],
       description: HOME_DESCRIPTION[locale]
     },
-    robots: { index: true, follow: true }
+    robots: options?.noindex ? { index: false, follow: true } : { index: true, follow: true }
   };
 };
 
