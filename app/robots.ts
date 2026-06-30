@@ -19,31 +19,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/admin", "/dashboard", "/portal", "/customer", "/checkout", "/search", "/preview"]
       }
     ],
-    sitemap: [
-      `${BASE_URL}/sitemap-index.xml`,
-      `${BASE_URL}/sitemap.xml`,
-      `${BASE_URL}/sitemap-hotels.xml`,
-      `${BASE_URL}/sitemap-transfers.xml`,
-      `${BASE_URL}/sitemap-golden-transfer-pages.xml`,
-      `${BASE_URL}/sitemap-tour-variants.xml`,
-      `${BASE_URL}/sitemap-tour-pickups.xml`,
-      `${BASE_URL}/sitemap-golden-tour-pages.xml`,
-      `${BASE_URL}/sitemap-experiencias.xml`,
-      `${BASE_URL}/sitemap-things-to-do.xml`,
-      `${BASE_URL}/sitemap-party-boat.xml`,
-      `${BASE_URL}/sitemap-santo-domingo.xml`,
-      `${BASE_URL}/sitemap-samana-whale.xml`,
-      `${BASE_URL}/sitemap-buggy-atv.xml`,
-      `${BASE_URL}/sitemap-parasailing.xml`,
-      `${BASE_URL}/sitemap-safety-guides.xml`,
-      `${BASE_URL}/sitemap-i18n.xml`,
-      `${BASE_URL}/sitemap-images.xml`,
-      `${BASE_URL}/sitemap-seo-only-tours.xml`,
-      `${BASE_URL}/sitemap-transfer-seo-only.xml`,
-      `${BASE_URL}/sitemap-seo-factory.xml`,
-      `${BASE_URL}/sitemap-prodiscovery.xml`,
-      `${BASE_URL}/sitemap-blog.xml`,
-      `${BASE_URL}/sitemap-urgent-discovered.xml`
-    ]
+    sitemap: [`${BASE_URL}/sitemap-index.xml`]
   };
 }

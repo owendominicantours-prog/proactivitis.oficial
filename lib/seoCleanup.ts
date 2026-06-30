@@ -11,16 +11,12 @@ const DEFAULT_LIMIT = 10;
 const MAX_URLS_TO_CHECK = 140;
 
 const SITEMAPS_TO_SCAN = [
-  "/sitemap.xml",
-  "/sitemap-seo-factory.xml",
-  "/sitemap-transfers.xml",
-  "/sitemap-rent-a-car.xml",
+  "/sitemap-core-clean.xml",
+  "/sitemap-tours-clean.xml",
+  "/sitemap-transfers-clean.xml",
+  "/sitemap-hotels-clean.xml",
   "/sitemap-blog.xml",
-  "/sitemap-prodiscovery.xml",
-  "/sitemap-seo-only-tours.xml",
-  "/sitemap-transfer-seo-only.xml",
-  "/sitemap-golden-tour-pages.xml",
-  "/sitemap-golden-transfer-pages.xml"
+  "/sitemap-rent-a-car.xml"
 ] as const;
 
 export type SeoCleanupUrl = {
@@ -238,12 +234,12 @@ export async function runDailySeoCleanup(limit = DEFAULT_LIMIT) {
       ? await submitSitemapsToSearchConsole(
           [
             "/sitemap-index.xml",
-            "/sitemap.xml",
-            "/sitemap-seo-factory.xml",
-            "/sitemap-transfers.xml",
-            "/sitemap-rent-a-car.xml",
+            "/sitemap-core-clean.xml",
+            "/sitemap-tours-clean.xml",
+            "/sitemap-transfers-clean.xml",
+            "/sitemap-hotels-clean.xml",
             "/sitemap-blog.xml",
-            "/sitemap-prodiscovery.xml"
+            "/sitemap-rent-a-car.xml"
           ],
           "daily-seo-cleanup"
         )

@@ -26,6 +26,6 @@ ${SITEMAPS.map(
 </sitemapindex>`;
 
   return new NextResponse(xml, {
-    headers: { "Content-Type": "application/xml" }
+    headers: { "Content-Type": "application/xml; charset=utf-8" }
   });
 }

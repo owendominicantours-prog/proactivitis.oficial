@@ -76,31 +76,18 @@ const PROACTIVITIS_BASE_URL = "https://proactivitis.com";
 
 const SEO_FACTORY_SITEMAPS = [
   "/sitemap-index.xml",
-  "/sitemap-seo-factory.xml",
-  "/sitemap-rent-a-car.xml",
-  "/sitemap-transfer-seo-only.xml",
-  "/sitemap-golden-transfer-pages.xml",
-  "/sitemap-golden-tour-pages.xml",
-  "/sitemap-prodiscovery.xml"
+  "/sitemap-core-clean.xml",
+  "/sitemap-rent-a-car.xml"
 ] as const;
 
 const PUBLISHED_TOUR_SITEMAPS = [
   "/sitemap-index.xml",
-  "/sitemap.xml",
-  "/sitemap-i18n.xml",
-  "/sitemap-images.xml",
-  "/sitemap-prodiscovery.xml",
-  "/sitemap-tour-variants.xml",
-  "/sitemap-golden-tour-pages.xml",
-  "/sitemap-seo-only-tours.xml"
+  "/sitemap-tours-clean.xml"
 ] as const;
 
 const TRANSFER_LANDING_SITEMAPS = [
   "/sitemap-index.xml",
-  "/sitemap-transfers.xml",
-  "/sitemap-transfer-seo-only.xml",
-  "/sitemap-golden-transfer-pages.xml",
-  "/sitemap-prodiscovery.xml"
+  "/sitemap-transfers-clean.xml"
 ] as const;
 
 const NEWS_SITEMAPS = [
