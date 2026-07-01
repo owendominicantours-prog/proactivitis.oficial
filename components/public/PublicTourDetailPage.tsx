@@ -2940,8 +2940,6 @@ export default async function TourDetailPage({
     discountPercent: allowPublicDiscounts ? discountPercent : 0,
     agencyLink: agencyLinkFromQuery ?? undefined,
     agencyDirectDiscountPercent,
-    ratingValue: detailReviewCount ? Number(ratingValue.toFixed(1)) : null,
-    reviewCount: detailReviewCount,
   };
   const currentTourPath = toLocalizedPath(`/tours/${tour.slug}`, locale);
   const buildTourOptionHref = (optionId: string) => {

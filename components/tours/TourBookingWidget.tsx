@@ -34,8 +34,6 @@ type TourBookingWidgetProps = {
   discountPercent?: number;
   agencyLink?: string;
   agencyDirectDiscountPercent?: number;
-  ratingValue?: number | null;
-  reviewCount?: number;
 };
 
 type TourOption = {
@@ -240,9 +238,7 @@ export function TourBookingWidget({
   initialOptionId,
   discountPercent = 0,
   agencyLink,
-  agencyDirectDiscountPercent = 0,
-  ratingValue = null,
-  reviewCount = 0
+  agencyDirectDiscountPercent = 0
 }: TourBookingWidgetProps) {
   const router = useRouter();
   const [date, setDate] = useState("");
@@ -555,20 +551,6 @@ export function TourBookingWidget({
           ${priceHeaderValue.toFixed(0)} <span className="align-middle text-base font-black text-[#071329]">USD</span>
         </p>
         <p className="text-xs text-slate-600">{priceHeaderNote} - Confirmacion inmediata</p>
-      </div>
-
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-4 text-sm font-black text-[#071329]">
-        <span className="inline-flex items-center gap-0.5 text-amber-500" aria-hidden>
-          {Array.from({ length: 5 }).map((_, index) => (
-            <svg key={index} viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-              <path d="M12 3.5l2.7 5.48 6.05.88-4.38 4.27 1.03 6.03L12 17.9l-5.4 2.84 1.03-6.03-4.38-4.27 6.05-.88L12 3.5z" />
-            </svg>
-          ))}
-        </span>
-        <span>{ratingValue ? ratingValue.toFixed(1) : "5.0"}</span>
-        <span className="font-semibold text-slate-500">
-          ({reviewCount > 0 ? reviewCount : 100} resenas)
-        </span>
       </div>
 
       {/* ESTIMATED TOTAL */}
