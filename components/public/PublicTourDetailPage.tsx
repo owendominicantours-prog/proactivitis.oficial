@@ -2975,9 +2975,7 @@ export default async function TourDetailPage({
     : null;
 
   const BookingPanel = ({ className = "" }: { className?: string }) => (
-    <div
-      className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ${className}`}
-    >
+    <div className={`space-y-4 ${className}`}>
       {isDiscoveryMode ? (
         <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-slate-100 pb-4">
           <span className="rounded-full bg-rose-600 px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-white">
@@ -3001,7 +2999,7 @@ export default async function TourDetailPage({
       <div>
         <TourBookingWidget {...bookingWidgetProps} />
       </div>
-      <div className="mt-4 border-t border-slate-100 pt-4">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex items-start gap-3 text-sm text-slate-700">
           <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500 text-xs font-black text-emerald-600">
             +
@@ -3055,7 +3053,7 @@ export default async function TourDetailPage({
   );
 
   return (
-    <div className="travel-surface min-h-screen overflow-x-clip pb-24 text-slate-950">
+    <div className="min-h-screen overflow-x-clip bg-white pb-24 text-[#071329]">
       <StructuredData data={tourSchema} />
       <StructuredData data={touristTripSchema} />
       <StructuredData data={webPageSchema} />
@@ -3065,7 +3063,7 @@ export default async function TourDetailPage({
       <StructuredData data={faqSchema} />
       {relatedToursSchema ? <StructuredData data={relatedToursSchema} /> : null}
 
-      <section className="mx-auto max-w-[1180px] px-4 pt-6 sm:pt-8">
+      <section className="mx-auto max-w-[1320px] px-5 pt-8 sm:px-8">
         {agencyMode ? (
           <div className="mb-4 rounded-[24px] border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-sky-50 px-5 py-4 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -3099,11 +3097,17 @@ export default async function TourDetailPage({
             </div>
           </div>
         ) : null}
-        <div className="space-y-4">
-          <div className="hidden flex-wrap items-center gap-2 text-xs font-semibold text-slate-600 lg:flex">
-            <span className="rounded-full bg-slate-100 px-3 py-1 uppercase tracking-[0.18em] text-slate-700">
-              {locationLabel}
-            </span>
+        <div className="space-y-5">
+          <div className="hidden flex-wrap items-center gap-3 text-sm font-semibold text-[#2d5b9a] lg:flex">
+            <Link href={locale === "es" ? "/" : `/${locale}`} className="hover:text-[#1267e8]">
+              {localeLabel(locale, "Inicio", "Home", "Accueil")}
+            </Link>
+            <span className="text-slate-300">›</span>
+            <Link href={toursHubUrl.replace(PROACTIVITIS_URL, "") || "/tours"} className="hover:text-[#1267e8]">
+              {localeLabel(locale, "Tours", "Tours", "Tours")}
+            </Link>
+            <span className="text-slate-300">›</span>
+            <span className="text-[#071329]">{heroTitle}</span>
             {agencyMode ? (
               <span className="rounded-full bg-emerald-50 px-3 py-1 uppercase tracking-[0.18em] text-emerald-700">
                 {agencyDisplayName ??
@@ -3116,11 +3120,11 @@ export default async function TourDetailPage({
               </span>
             ) : null}
           </div>
-          <div className="hidden space-y-2 lg:block">
-            <h1 className="max-w-4xl text-3xl font-black leading-tight text-slate-950 sm:text-4xl">
+          <div className="hidden space-y-3 lg:block">
+            <h1 className="max-w-4xl text-[34px] font-black leading-tight tracking-[-0.03em] text-[#071329]">
               {visibleHeroTitle}
             </h1>
-            <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-700">
+            <div className="flex flex-wrap items-center gap-5 text-sm font-semibold text-[#071329]">
               <span className="inline-flex items-center gap-1 text-slate-950">
                 {Array.from({ length: 5 }).map((_, index) => (
                   <svg
@@ -3137,20 +3141,21 @@ export default async function TourDetailPage({
               </span>
               <a
                 href="#reviews"
-                className="underline decoration-slate-300 underline-offset-4 hover:text-sky-700"
+                className="font-black hover:text-[#1267e8]"
               >
                 {heroReviewsLabel}
               </a>
-              <span className="text-slate-400">|</span>
-              <span>
-                {localeLabel(locale, "Operado por", "Operated by", "Opere par")}{" "}
-                {agencyDisplayName ??
-                  tour.SupplierProfile?.company ??
-                  tour.SupplierProfile?.User?.name ??
-                  translate(locale, "tour.booking.panel.providerFallback")}
+              <span className="text-slate-300">|</span>
+              <span className="inline-flex items-center gap-2">
+                <span className="h-4 w-4 rounded-full border border-[#071329]" />
+                {localeLabel(locale, "Mas de 8,500 viajeros", "More than 8,500 travelers", "Plus de 8 500 voyageurs")}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="h-4 w-4 rounded-full border border-emerald-500" />
+                {localeLabel(locale, "Cancelacion gratuita", "Free cancellation", "Annulation gratuite")}
               </span>
             </div>
-            <div className="mt-3 flex flex-wrap gap-2 text-sm font-semibold text-slate-700">
+            <div className="mt-3 hidden flex-wrap gap-2 text-sm font-semibold text-slate-700">
               {trustBadges.map((badge) => (
                 <span
                   key={badge}
@@ -3161,7 +3166,7 @@ export default async function TourDetailPage({
               ))}
             </div>
           </div>
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
             <div className="space-y-6">
               <div className="space-y-3">
                 <TourGalleryCollage
@@ -3171,6 +3176,30 @@ export default async function TourDetailPage({
                   label={heroGalleryCta}
                   variant="compact"
                 />
+                {quickInfo.length ? (
+                  <div className="hidden overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-sm lg:grid lg:grid-cols-4">
+                    {quickInfo.map((item, index) => (
+                      <div
+                        key={item.label}
+                        className={`flex min-h-[72px] items-center gap-3 px-5 py-4 ${
+                          index < quickInfo.length - 1 ? "border-r border-slate-200" : ""
+                        }`}
+                      >
+                        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[#1267e8]">
+                          {item.icon}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-xs font-black text-[#071329]">
+                            {item.label}
+                          </p>
+                          <p className="mt-0.5 truncate text-xs font-semibold text-slate-500">
+                            {item.value}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
                 <div className="space-y-3 lg:hidden">
                   <p className="inline-flex items-center gap-2 text-sm font-black text-slate-500">
                     <svg
@@ -3227,13 +3256,15 @@ export default async function TourDetailPage({
                     </a>
                   </div>
                 </div>
-                <nav className="hidden rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 shadow-sm backdrop-blur lg:block">
-                  <div className="flex gap-3 overflow-x-auto py-1 text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    {heroNavTabs.map((tab) => (
+                <nav className="hidden border-b border-slate-200 bg-white lg:block">
+                  <div className="flex gap-8 overflow-x-auto text-sm font-black text-[#071329]">
+                    {heroNavTabs.map((tab, index) => (
                       <a
                         key={tab.href}
                         href={tab.href}
-                        className="whitespace-nowrap rounded-full px-4 py-2 transition hover:bg-slate-100 hover:text-slate-700"
+                        className={`whitespace-nowrap border-b-4 px-1 py-4 transition hover:text-[#1267e8] ${
+                          index === 0 ? "border-[#1267e8] text-[#071329]" : "border-transparent text-slate-600"
+                        }`}
                       >
                         {translate(locale, tab.labelKey)}
                       </a>
@@ -3243,35 +3274,31 @@ export default async function TourDetailPage({
               </div>
 
               <section id="overview" className="mt-8">
-                <div className="space-y-4 rounded-[28px] border border-slate-100 bg-white p-6 shadow-lg">
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
-                    {translate(locale, "tour.section.overview.label")}
-                  </p>
-                  <p className="text-lg text-slate-800 line-clamp-3">
-                    {shortDescriptionText ?? shortTeaser}
-                  </p>
-                  <div className="grid gap-5 border-t border-slate-100 pt-4 md:grid-cols-2">
-                    {quickInfo.map((item) => (
-                      <div key={item.label} className="flex gap-3">
-                        <span className="mt-1 inline-flex h-7 w-7 shrink-0 items-center justify-center text-slate-950">
-                          {item.icon}
-                        </span>
-                        <div>
-                          <p className="text-base font-black text-slate-950">
-                            {item.label}
-                          </p>
-                          <p className="mt-1 text-sm font-bold text-slate-800">
-                            {item.value}
-                          </p>
-                          <p className="mt-0.5 text-sm text-slate-600">
-                            {item.detail}
-                          </p>
+                <div className="grid gap-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm lg:grid-cols-[1fr,340px]">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                      {translate(locale, "tour.section.overview.label")}
+                    </p>
+                    <p className="mt-3 text-base font-semibold leading-7 text-slate-700 line-clamp-4">
+                      {shortDescriptionText ?? shortTeaser}
+                    </p>
+                  </div>
+                  <div className="rounded-[18px] border border-slate-200 bg-white p-5">
+                    <div className="space-y-4 text-sm">
+                      {[
+                        localeLabel(locale, "Confirmacion inmediata", "Instant confirmation", "Confirmation immediate"),
+                        localeLabel(locale, "Cancelacion gratuita hasta 24 horas antes", "Free cancellation up to 24h before", "Annulation gratuite 24h avant"),
+                        localeLabel(locale, "Mejor precio garantizado", "Best price guaranteed", "Meilleur prix garanti"),
+                      ].map((item) => (
+                        <div key={item} className="flex gap-3">
+                          <span className="mt-0.5 text-emerald-600">✓</span>
+                          <p className="font-black text-[#071329]">{item}</p>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                   {featuredReviewHighlights.length ? (
-                    <div className="border-t border-slate-100 pt-5">
+                    <div className="border-t border-slate-100 pt-5 lg:col-span-2">
                       <h2 className="text-xl font-black text-slate-950">
                         {localeLabel(
                           locale,
@@ -3348,7 +3375,7 @@ export default async function TourDetailPage({
                     </div>
                   ) : null}
                   {visibleHighlights.length ? (
-                    <ul className="space-y-2 text-sm font-semibold text-slate-700">
+                    <ul className="space-y-2 text-sm font-semibold text-slate-700 lg:col-span-2">
                       {visibleHighlights.map((item) => (
                         <li key={item} className="flex items-center gap-2">
                           <span

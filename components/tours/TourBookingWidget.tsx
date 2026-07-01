@@ -416,10 +416,10 @@ export function TourBookingWidget({
 
   const travelersSummary = () => {
     const parts: string[] = [];
-    if (adults > 0) parts.push(`${adults} adult${adults > 1 ? "s" : ""}`);
-    if (youth > 0) parts.push(`${youth} youth`);
-    if (child > 0) parts.push(`${child} child${child > 1 ? "ren" : ""}`);
-    if (!parts.length) return "1 traveler";
+    if (adults > 0) parts.push(`${adults} adulto${adults > 1 ? "s" : ""}`);
+    if (youth > 0) parts.push(`${youth} joven${youth > 1 ? "es" : ""}`);
+    if (child > 0) parts.push(`${child} nino${child > 1 ? "s" : ""}`);
+    if (!parts.length) return "1 viajero";
     return parts.join(", ");
   };
 
@@ -461,26 +461,26 @@ export function TourBookingWidget({
   }, [showTravelersPopover]);
 
   const travelerGroups: TravelerGroup[] = [
-    { label: "Adult", range: "Age 17-99", count: adults, setter: setAdults },
-    { label: "Youth", range: "Age 10-16", count: youth, setter: setYouth },
-    { label: "Child", range: "Age 1-9", count: child, setter: setChild }
+    { label: "Adultos", range: "17-99 anos", count: adults, setter: setAdults },
+    { label: "Jovenes", range: "10-16 anos", count: youth, setter: setYouth },
+    { label: "Ninos", range: "1-9 anos", count: child, setter: setChild }
   ];
 
   const canContinue = Boolean(date && !operatingDayBlocked && selectedOptionAvailable);
 
   return (
-    <div className="relative w-full max-w-sm space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-none">
+    <div className="relative w-full space-y-5 rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_22px_60px_rgba(7,19,41,0.10)]">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-md bg-rose-600 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-[0.12em] text-white shadow-sm shadow-rose-600/20">
-          Alta demanda
+        <span className="rounded-md bg-rose-500 px-3 py-1.5 text-[0.68rem] font-black text-white shadow-sm shadow-rose-600/20">
+          Mas reservado
         </span>
-        <span className="rounded-md bg-amber-100 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-[0.12em] text-amber-900">
-          Se agota rápido
+        <span className="ml-auto text-xs font-black text-slate-700">
+          124 veces esta semana
         </span>
       </div>
       {resolvedOptions.length > 0 && (
         <div className="space-y-2">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-slate-500">Opción</p>
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-slate-500">Opcion</p>
           <div className="space-y-2">
             {resolvedOptions.map((option) => {
               const optionPricing = resolveOptionPricing(option, totalTravelers, basePrice);
@@ -527,7 +527,7 @@ export function TourBookingWidget({
                       {disabledForDate ? (
                         <p className="mt-0.5 text-[10px] font-semibold text-rose-600">
                           {option.unavailableReason ||
-                            "Esta opción no opera en la fecha seleccionada."}
+                            "Esta opcion no opera en la fecha seleccionada."}
                         </p>
                       ) : null}
                     </div>
@@ -545,16 +545,16 @@ export function TourBookingWidget({
       )}
       {/* PRICE HEADER */}
       <div className="space-y-1">
-        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-slate-500">From price</p>
-        <p className="text-3xl font-semibold text-slate-900">
-          ${priceHeaderValue.toFixed(2)} <span className="text-xs font-normal text-slate-500">USD</span>
+        <p className="text-[0.72rem] font-semibold text-slate-500">Precio desde</p>
+        <p className="text-4xl font-black leading-none text-[#071329]">
+          ${priceHeaderValue.toFixed(0)} <span className="align-middle text-base font-black text-[#071329]">USD</span>
         </p>
-        <p className="text-xs text-slate-600">{priceHeaderNote} - Confirmación inmediata</p>
+        <p className="text-xs text-slate-600">{priceHeaderNote} - Confirmacion inmediata</p>
       </div>
 
       {/* ESTIMATED TOTAL */}
-      <div className="rounded-xl bg-slate-50 px-3 py-1.5 text-xs text-slate-700">
-        <span className="font-semibold">Estimated total:</span> ${estimatedTotal.toFixed(2)} for {totalTravelers} traveler
+      <div className="rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-700">
+        <span className="font-semibold">Total estimado:</span> ${estimatedTotal.toFixed(2)} USD para {totalTravelers} viajero
         {totalTravelers > 1 ? "s" : ""}
       </div>
 
@@ -570,7 +570,7 @@ export function TourBookingWidget({
       <div className="grid grid-cols-[1.15fr,1fr] divide-x divide-slate-200">
           {/* DATE */}
           <div className="flex flex-col px-4 py-2">
-            <span className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Date</span>
+            <span className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Fecha</span>
             <input
               ref={dateInputRef}
               type="date"
@@ -586,9 +586,9 @@ export function TourBookingWidget({
           {/* TRAVELERS */}
           <div className="relative flex flex-col px-4 py-2">
             <button ref={triggerRef} type="button" onClick={handlePopperToggle} className="w-full text-left outline-none">
-              <span className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Travelers</span>
+              <span className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Viajeros</span>
               <p className="mt-0.5 text-sm font-semibold text-slate-900">
-                {totalTravelers} traveler{totalTravelers > 1 ? "s" : ""}
+                {totalTravelers} viajero{totalTravelers > 1 ? "s" : ""}
               </p>
               <p className="text-xs text-slate-500">{travelersSummary()}</p>
             </button>
@@ -596,7 +596,7 @@ export function TourBookingWidget({
         </div>
 
         <div className="border-t border-slate-200 bg-slate-100 px-4 py-2 space-y-1">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Start time</p>
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Hora</p>
           {timeSlotLabels.length > 1 ? (
             <select
               value={selectedTime}
@@ -612,7 +612,7 @@ export function TourBookingWidget({
           ) : timeSlotLabels.length === 1 ? (
             <p className="text-xs font-semibold text-slate-900">{timeSlotLabels[0]}</p>
           ) : (
-            <p className="text-xs text-slate-500">Start time will be confirmed after booking.</p>
+            <p className="text-xs text-slate-500">Confirmaremos la hora despues de reservar.</p>
           )}
         </div>
       </div>
@@ -626,7 +626,7 @@ export function TourBookingWidget({
 
       {!operatingDayBlocked && date && selectedWeekday && !selectedOptionAvailable ? (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          La opción elegida no opera ese día. Cambia de ticket o elige una fecha compatible.
+          La opcion elegida no opera ese dia. Cambia de ticket o elige una fecha compatible.
         </div>
       ) : null}
 
@@ -643,7 +643,7 @@ export function TourBookingWidget({
           className="absolute left-1/2 top-[165px] z-[9999] mt-2 w-[300px] -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-2xl"
         >
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-            Select up to 15 travelers in total.
+            Selecciona hasta 15 viajeros en total.
           </p>
 
           <div className="mt-3 space-y-3">
@@ -682,7 +682,7 @@ export function TourBookingWidget({
             onClick={handleApplyTravelers}
             className="mt-4 w-full rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600"
           >
-            Apply
+            Aplicar
           </button>
         </div>
       )}
@@ -698,7 +698,7 @@ export function TourBookingWidget({
         type="button"
         onClick={handleCheckAvailability}
         aria-disabled={!canContinue}
-        className="w-full rounded-full bg-blue-600 px-5 py-4 text-base font-black text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200"
+        className="w-full rounded-2xl bg-[#1267e8] px-5 py-4 text-lg font-black text-white shadow-[0_16px_30px_rgba(18,103,232,0.22)] transition hover:bg-[#0d57c7] focus:outline-none focus:ring-4 focus:ring-blue-200"
       >
         Reservar ahora
       </button>
@@ -709,9 +709,9 @@ export function TourBookingWidget({
             ✓
           </span>
           <div>
-            <p className="font-black text-slate-900">Cancelación gratis</p>
+            <p className="font-black text-slate-900">Cancelacion gratis</p>
             <p className="text-xs leading-relaxed text-slate-600">
-              Reembolso íntegro si cancelas con 24 horas de antelación.
+              Reembolso integro si cancelas con 24 horas de antelacion.
             </p>
           </div>
         </div>

@@ -47,9 +47,9 @@ export default function WhatsappFloatingChat() {
         <Image
           src="/fotoperfilwhatsapp.png"
           alt="Proactivitis"
-          width={48}
-          height={48}
-          className="h-10 w-10 object-cover sm:h-12 sm:w-12"
+          fill
+          className="object-cover"
+          sizes="48px"
         />
         <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-400" />
       </span>

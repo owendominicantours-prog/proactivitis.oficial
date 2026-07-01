@@ -133,20 +133,11 @@ export function PublicCurrencyLanguage() {
             setLanguageOpen((prev) => !prev);
           }}
           aria-label={t("header.language.label")}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600"
+          className="flex h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-[13px] font-black tracking-normal text-[#071329] shadow-sm"
         >
-          <svg
-            className="h-4 w-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-          >
-            <path
-              d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 0c2.5 2.4 4 5.7 4 9s-1.5 6.6-4 9c-2.5-2.4-4-5.7-4-9s1.5-6.6 4-9Zm-8.2 7h16.4m-16.4 4h16.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+          {locale.toUpperCase()}
+          <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="m5 7 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
         {languageOpen && (

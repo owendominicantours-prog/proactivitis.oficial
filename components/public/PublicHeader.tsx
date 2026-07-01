@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { Header } from "@/components/shared/Header";
-import { PublicHeaderSearch } from "@/components/public/PublicHeaderSearch";
 import { PublicAuthButtons } from "@/components/public/PublicAuthButtons";
 import { PublicCurrencyLanguage } from "@/components/public/PublicCurrencyLanguage";
 import { Locale, useTranslation } from "@/context/LanguageProvider";
 import { useSession } from "next-auth/react";
+import { Heart, ShoppingCart } from "lucide-react";
 
 const publicNavLinks: Array<{
   labels: Record<Locale, string>;
@@ -13,19 +14,15 @@ const publicNavLinks: Array<{
   hrefByLocale?: Partial<Record<Locale, string>>;
 }> = [
   {
-    labels: { es: "Inicio", en: "Home", fr: "Accueil" },
-    href: "/"
-  },
-  {
     labels: { es: "Tours", en: "Tours", fr: "Tours" },
     href: "/tours"
   },
   {
-    labels: { es: "Traslado", en: "Transfer", fr: "Transfert" },
+    labels: { es: "Traslados", en: "Transfers", fr: "Transferts" },
     href: "/traslado"
   },
   {
-    labels: { es: "Rent a car", en: "Rent a car", fr: "Voitures" },
+    labels: { es: "Renta de auto", en: "Rent a car", fr: "Voitures" },
     href: "/rent-a-car",
     hrefByLocale: {
       es: "/rent-a-car",
@@ -34,13 +31,26 @@ const publicNavLinks: Array<{
     }
   },
   {
-    labels: { es: "Alojamiento", en: "Accommodation", fr: "Hebergement" },
+    labels: { es: "Alojamientos", en: "Stays", fr: "Hebergements" },
     href: "/hoteles",
     hrefByLocale: {
       es: "/hoteles",
       en: "/hotels",
       fr: "/hotels"
     }
+  },
+  {
+    labels: { es: "Actividades", en: "Activities", fr: "Activites" },
+    href: "/actividades",
+    hrefByLocale: {
+      es: "/actividades",
+      en: "/activities",
+      fr: "/activities"
+    }
+  },
+  {
+    labels: { es: "Contacto", en: "Contact", fr: "Contact" },
+    href: "/contact"
   }
 ];
 
@@ -61,19 +71,24 @@ export function PublicHeader() {
     label: navItem.labels[locale] ?? navItem.labels.es,
     href: getLocalizedPath(navItem.hrefByLocale?.[locale] ?? navItem.href, locale)
   }));
-  const dropdownNav = {
-    label: "Contacto",
-    items: [
-      { label: "Contacto", href: getLocalizedPath("/contact", locale) },
-      { label: "Blog", href: getLocalizedPath("/news", locale) }
-    ]
-  };
-
   const userName = session?.user?.name ?? session?.user?.email ?? null;
 
   const rightSlot = (
-    <div className="flex items-center gap-3">
-      <PublicHeaderSearch />
+    <div className="flex items-center gap-2">
+      <Link
+        href={getLocalizedPath("/wishlist", locale)}
+        aria-label="Favoritos"
+        className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm transition hover:border-slate-300"
+      >
+        <Heart className="h-5 w-5" />
+      </Link>
+      <Link
+        href={getLocalizedPath("/cart", locale)}
+        aria-label="Carrito"
+        className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm transition hover:border-slate-300"
+      >
+        <ShoppingCart className="h-5 w-5" />
+      </Link>
       <PublicCurrencyLanguage />
       {userName && (
         <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700 sm:px-3 sm:text-xs">
@@ -85,5 +100,5 @@ export function PublicHeader() {
     </div>
   );
 
-  return <Header navItems={navItems} rightSlot={rightSlot} dropdownNav={dropdownNav} />;
+  return <Header navItems={navItems} rightSlot={rightSlot} logoScale={1} />;
 }

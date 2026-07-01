@@ -10,7 +10,17 @@ export function PublicAuthButtons() {
   const showPortalButton = session && (pathname === "/" || pathname === "/home");
 
   if (status === "loading") {
-    return <div className="text-sm text-slate-500">Cargando...</div>;
+    return (
+      <div
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-400"
+        aria-label="Cargando cuenta"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.5 19.5a6.5 6.5 0 0113 0" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 11.5a4 4 0 100-8 4 4 0 000 8z" />
+        </svg>
+      </div>
+    );
   }
 
   if (session) {

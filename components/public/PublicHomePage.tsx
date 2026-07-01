@@ -1,801 +1,665 @@
 import Image from "next/image";
 import Link from "next/link";
-import FeaturedToursSection from "@/components/public/FeaturedToursSection";
-import { HomeAboutContent } from "@/components/public/HomeAboutContent";
-import { HomeHeroContent } from "@/components/public/HomeHeroContent";
-import { HomeHeroCarousel } from "@/components/public/HomeHeroCarousel";
-import { HomeRecommendedHeader } from "@/components/public/HomeRecommendedHeader";
-import HomeTourSearchSection from "@/components/public/HomeTourSearchSection";
-import HomeTransferTicker from "@/components/public/HomeTransferTicker";
-import { Locale, translate } from "@/lib/translations";
-import { getHomeContentOverrides } from "@/lib/siteContent";
-import { getPriceValidUntil, PROACTIVITIS_URL } from "@/lib/seo";
-import { prisma } from "@/lib/prisma";
 import {
-  CalendarCheck,
+  ArrowRight,
+  CalendarDays,
   Car,
-  Compass,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
   CreditCard,
-  MapPinned,
+  Heart,
+  MapPin,
   MessageCircle,
+  RefreshCcw,
   Search,
   ShieldCheck,
-  Sparkles,
+  Star,
+  ThumbsUp,
+  Users,
 } from "lucide-react";
+
+import { Locale } from "@/lib/translations";
+import { prisma } from "@/lib/prisma";
+import { getPriceValidUntil, PROACTIVITIS_URL } from "@/lib/seo";
 
 type PublicHomePageProps = {
   locale: Locale;
 };
 
-const PUNTA_CANA_LINKS = [
-  { slug: "tour-en-buggy-en-punta-cana", labelKey: "puntaCana.links.item.1" },
+type HomeTour = {
+  id: string;
+  slug: string;
+  title: string;
+  price: number;
+  heroImage: string | null;
+  duration: string | null;
+  location: string | null;
+};
+
+const heroImage = "/CARRU1.jpg";
+const transferImage = "/banner    transfer.jpeg";
+const teamImage = "/mini-portada.png";
+
+const copy = {
+  es: {
+    badge: "Experiencias reales en Republica Dominicana",
+    title: "Reserva tours y traslados en Republica Dominicana sin perder tiempo",
+    subtitle: "Experiencias reales, proveedores verificados y soporte humano por WhatsApp.",
+    destination: "A donde quieres ir?",
+    destinationHint: "Punta Cana, Saona...",
+    date: "Fecha",
+    dateHint: "Selecciona fecha",
+    people: "Personas",
+    peopleHint: "2 personas",
+    search: "Buscar experiencias",
+    popular: "Busquedas populares:",
+    recommended: "Recomendado",
+    popularTours: "Tours mas populares",
+    viewTours: "Ver todos los tours",
+    why: "Por que elegir Proactivitis",
+    peopleTitle: "Turismo pensado por personas reales",
+    peopleBody:
+      "Combinamos personas en el terreno, tecnologia y procesos confiables para que cada viaje sea claro, humano y memorable.",
+    knowMore: "Conocenos mas",
+    destinationsLabel: "Destinos populares",
+    destinationsTitle: "Zonas mas buscadas",
+    viewZones: "Ver todas las zonas",
+    transferLabel: "Traslados privados",
+    transferTitle: "Traslados privados con chofer verificado",
+    transferBody:
+      "Desde el aeropuerto a tu hotel o cualquier destino en Republica Dominicana. Confianza, comodidad y puntualidad garantizada.",
+    transferCta: "Reservar traslado",
+    reviewsLabel: "Lo que dicen nuestros viajeros",
+    reviewsTitle: "Mas de 5,000 viajeros ya confian en nosotros",
+    viewReviews: "Ver todas las resenas",
+  },
+  en: {
+    badge: "Real experiences in the Dominican Republic",
+    title: "Book tours and transfers in the Dominican Republic without wasting time",
+    subtitle: "Real experiences, verified providers and human WhatsApp support.",
+    destination: "Where do you want to go?",
+    destinationHint: "Punta Cana, Saona...",
+    date: "Date",
+    dateHint: "Select date",
+    people: "People",
+    peopleHint: "2 people",
+    search: "Search experiences",
+    popular: "Popular searches:",
+    recommended: "Recommended",
+    popularTours: "Most popular tours",
+    viewTours: "View all tours",
+    why: "Why choose Proactivitis",
+    peopleTitle: "Tourism designed by real people",
+    peopleBody:
+      "We combine people on the ground, technology and reliable processes so every trip feels clear, human and memorable.",
+    knowMore: "Learn more",
+    destinationsLabel: "Popular destinations",
+    destinationsTitle: "Most searched areas",
+    viewZones: "View all areas",
+    transferLabel: "Private transfers",
+    transferTitle: "Private transfers with verified drivers",
+    transferBody:
+      "From the airport to your hotel or any destination in the Dominican Republic. Trust, comfort and punctuality guaranteed.",
+    transferCta: "Book transfer",
+    reviewsLabel: "What travelers say",
+    reviewsTitle: "More than 5,000 travelers already trust us",
+    viewReviews: "View all reviews",
+  },
+  fr: {
+    badge: "Experiences reelles en Republique dominicaine",
+    title: "Reservez tours et transferts en Republique dominicaine sans perdre de temps",
+    subtitle: "Experiences reelles, prestataires verifies et support humain par WhatsApp.",
+    destination: "Ou voulez-vous aller?",
+    destinationHint: "Punta Cana, Saona...",
+    date: "Date",
+    dateHint: "Selectionnez une date",
+    people: "Personnes",
+    peopleHint: "2 personnes",
+    search: "Chercher",
+    popular: "Recherches populaires:",
+    recommended: "Recommande",
+    popularTours: "Tours les plus populaires",
+    viewTours: "Voir tous les tours",
+    why: "Pourquoi choisir Proactivitis",
+    peopleTitle: "Un tourisme pense par de vraies personnes",
+    peopleBody:
+      "Nous combinons equipe locale, technologie et processus fiables pour rendre chaque voyage clair, humain et memorable.",
+    knowMore: "En savoir plus",
+    destinationsLabel: "Destinations populaires",
+    destinationsTitle: "Zones les plus recherchees",
+    viewZones: "Voir toutes les zones",
+    transferLabel: "Transferts prives",
+    transferTitle: "Transferts prives avec chauffeur verifie",
+    transferBody:
+      "De l aeroport a votre hotel ou toute destination en Republique dominicaine. Confiance, confort et ponctualite.",
+    transferCta: "Reserver transfert",
+    reviewsLabel: "Ce que disent nos voyageurs",
+    reviewsTitle: "Plus de 5 000 voyageurs nous font deja confiance",
+    viewReviews: "Voir tous les avis",
+  },
+} satisfies Record<Locale, Record<string, string>>;
+
+const chips = ["Isla Saona", "Buggy", "Santo Domingo", "Parasailing", "Shuttle"];
+
+const trustItems = [
   {
-    slug: "excursion-en-buggy-y-atv-en-punta-cana",
-    labelKey: "puntaCana.links.item.2",
+    icon: ShieldCheck,
+    title: "Proveedores verificados",
+    body: "Trabajamos solo con los mejores",
   },
   {
-    slug: "tour-isla-saona-desde-bayhibe-la-romana",
-    labelKey: "puntaCana.links.item.3",
+    icon: CreditCard,
+    title: "Pago seguro",
+    body: "Tu pago esta 100% protegido",
   },
+  {
+    icon: MessageCircle,
+    title: "Soporte 24/7",
+    body: "Te ayudamos siempre",
+  },
+  {
+    icon: RefreshCcw,
+    title: "Cancelacion flexible",
+    body: "Hasta 24 horas antes",
+  },
+];
+
+const benefits = [
+  {
+    icon: ThumbsUp,
+    title: "Experiencias reales",
+    body: "Vive lo mejor de cada destino con actividades probadas.",
+  },
+  {
+    icon: MessageCircle,
+    title: "Atencion humana",
+    body: "Hablamos tu idioma y estamos disponibles por WhatsApp.",
+  },
+  {
+    icon: ArrowRight,
+    title: "Mejores precios",
+    body: "Sin intermediarios, precios justos y sin cargos ocultos.",
+  },
+  {
+    icon: Check,
+    title: "Viajes responsables",
+    body: "Apoyamos comunidades locales y turismo responsable.",
+  },
+];
+
+const destinations = [
+  { name: "Punta Cana", count: "128 tours", image: "/CARRU2.jpg" },
+  { name: "Isla Saona", count: "23 tours", image: "/CARRU1.jpg" },
+  { name: "Santo Domingo", count: "18 tours", image: "/banner.png" },
+  { name: "Bayahibe", count: "15 tours", image: "/CARR3.png" },
+  { name: "Samana", count: "12 tours", image: "/mejorbanner.png" },
+  { name: "Puerto Plata", count: "10 tours", image: "/uploads/1765475552058-928dca75-2e04-438f-9ce9-aa04a93382a0.webp" },
+];
+
+const fallbackTours = [
   {
     slug: "tour-y-entrada-para-de-isla-saona-desde-punta-cana",
-    labelKey: "puntaCana.links.item.4",
-  },
-  { slug: "sunset-catamaran-snorkel", labelKey: "puntaCana.links.item.5" },
-  { slug: "parasailing-punta-cana", labelKey: "puntaCana.links.item.6" },
-  {
-    slug: "cayo-levantado-luxury-beach-day",
-    labelKey: "puntaCana.links.item.7",
-  },
-  {
-    slug: "excursion-de-un-dia-a-santo-domingo-desde-punta-cana",
-    labelKey: "puntaCana.links.item.8",
+    title: "Isla Saona desde Punta Cana",
+    price: 75,
+    image: "/CARRU1.jpg",
+    badge: "Mas vendido",
+    rating: "4.8",
+    reviews: "460",
+    duration: "8 horas",
   },
   {
-    slug: "tour-de-safari-cultural-por-el-pais-de-republica-dominicana-desde-punta-cana",
-    labelKey: "puntaCana.links.item.9",
+    slug: "tour-en-buggy-por-punta-cana",
+    title: "Tour en buggy por Punta Cana",
+    price: 35,
+    image: "/fototours/fototour.jpeg",
+    badge: "Popular",
+    rating: "4.9",
+    reviews: "320",
+    duration: "3 horas",
   },
   {
-    slug: "avistamiento-de-ballenas-samana-cayo-levantado-y-cascadas-desde-punta-cana",
-    labelKey: "puntaCana.links.item.10",
+    slug: "snorkel-en-arrecife-de-coral",
+    title: "Snorkel en Arrecife de Coral",
+    price: 50,
+    image: "/CARR3.png",
+    badge: "Top valorado",
+    rating: "4.9",
+    reviews: "180",
+    duration: "4 horas",
   },
-] as const;
+  {
+    slug: "parasailing-punta-cana",
+    title: "Aventura en Parasailing",
+    price: 90,
+    image: "/uploads/1765478992529-893939d5-8ce3-4440-8dac-7cf1c89986b0.webp",
+    badge: "Aventura",
+    rating: "4.8",
+    reviews: "230",
+    duration: "2 horas",
+  },
+  {
+    slug: "monkeyland-punta-cana",
+    title: "Monkeyland + Cenote Natural",
+    price: 65,
+    image: "/uploads/1765478993158-db314cee-543c-43bc-9537-6e0168a4f43e.webp",
+    badge: "Familiar",
+    rating: "4.7",
+    reviews: "150",
+    duration: "5 horas",
+  },
+];
 
-const SOSUA_PARTY_BOAT_LINKS = [
+const reviews = [
   {
-    slug: "party-boat-sosua",
-    es: "Sosua Party Boat: precios y opciones VIP",
-    en: "Sosua Party Boat: prices and VIP options",
-    fr: "Sosua Party Boat : prix et options VIP",
+    name: "Sarah Johnson",
+    country: "US",
+    date: "Junio 2024",
+    text: "Increible experiencia! Los guias fueron muy amables y el cenote es hermoso. Lo recomiendo 100%.",
+    images: ["/fototours/fototour.jpeg", "/uploads/1765478992298-712c51d5-950b-43f0-8a32-84efcfae5e8c.webp", "/CARRU1.jpg"],
   },
   {
-    slug: "barco-privado-para-fiestas-con-todo-incluido-desde-puerto-plata-sosua",
-    es: "Barco privado en Sosua desde Puerto Plata",
-    en: "Private party boat in Sosua from Puerto Plata",
-    fr: "Bateau prive a Sosua depuis Puerto Plata",
+    name: "Mark Davis",
+    country: "CA",
+    date: "Mayo 2024",
+    text: "Muy divertido, buena organizacion y vale cada centavo. Volveria a reservar sin duda.",
+    images: ["/transfer/suv.png", "/CARRU2.jpg", "/CARR3.png"],
   },
-] as const;
+  {
+    name: "Laura Martinez",
+    country: "ES",
+    date: "Abril 2024",
+    text: "Excelente servicio desde la reserva hasta el final. Soporte por WhatsApp 24/7.",
+    images: ["/fototours/fotosimple.jpg", "/uploads/1765478993158-db314cee-543c-43bc-9537-6e0168a4f43e.webp", "/CARR3.png"],
+  },
+];
 
-export default async function PublicHomePage({ locale }: PublicHomePageProps) {
-  const t = (
-    key: Parameters<typeof translate>[1],
-    replacements?: Record<string, string>,
-  ) => translate(locale, key, replacements);
-  const transferHref = locale === "es" ? "/traslado" : `/${locale}/traslado`;
-  const tourHref = (slug: string) =>
-    locale === "es" ? `/tours/${slug}` : `/${locale}/tours/${slug}`;
-  const homeOverrides = await getHomeContentOverrides(locale);
-  const transferBannerImage =
-    homeOverrides.transferBanner?.backgroundImage ??
-    "https://cfplxlfjp1i96vih.public.blob.vercel-storage.com/transfer/banner%20%20%20%20transfer.jpeg";
-  const priceValidUntil = getPriceValidUntil();
-  const localePrefix = locale === "es" ? "" : `/${locale}`;
-  const localePath = (path: string) => `${localePrefix}${path}`;
-  const localizedPath = (path: string) =>
-    `${PROACTIVITIS_URL}${locale === "es" ? path : `/${locale}${path}`}`;
-  const tripStartCards = [
-    {
-      icon: Compass,
-      href: localePath("/tours"),
-      label:
-        locale === "es"
-          ? "Tours y experiencias"
-          : locale === "fr"
-            ? "Tours et experiences"
-            : "Tours and experiences",
-      title:
-        locale === "es"
-          ? "Encuentra actividades reales"
-          : locale === "fr"
-            ? "Trouvez des activites reelles"
-            : "Find real activities",
-      body:
-        locale === "es"
-          ? "Saona, buggy, catamarán, safari y experiencias con recogida coordinada."
-          : locale === "fr"
-            ? "Saona, buggy, catamaran, safari et experiences avec pickup coordonne."
-            : "Saona, buggy, catamaran, safari, and experiences with coordinated pickup.",
-    },
-    {
-      icon: Car,
-      href: transferHref,
-      label:
-        locale === "es"
-          ? "Traslado privado"
-          : locale === "fr"
-            ? "Transfert prive"
-            : "Private transfer",
-      title:
-        locale === "es"
-          ? "Llega sin negociar en el aeropuerto"
-          : locale === "fr"
-            ? "Arrivez sans negocier a l aeroport"
-            : "Arrive without airport negotiation",
-      body:
-        locale === "es"
-          ? "Busca hotel, aeropuerto o zona y ve el precio antes de reservar."
-          : locale === "fr"
-            ? "Cherchez hotel, aeroport ou zone et voyez le prix avant de reserver."
-            : "Search hotel, airport, or area and see the price before booking.",
-    },
-    {
-      icon: MapPinned,
-      href: localePath("/destinos"),
-      label:
-        locale === "es"
-          ? "Zonas populares"
-          : locale === "fr"
-            ? "Zones populaires"
-            : "Popular areas",
-      title:
-        locale === "es"
-          ? "Planifica por zona"
-          : locale === "fr"
-            ? "Planifiez par zone"
-            : "Plan by area",
-      body:
-        locale === "es"
-          ? "Explora Punta Cana, Bávaro, Cap Cana, Macao, Bayahibe y más."
-          : locale === "fr"
-            ? "Explorez Punta Cana, Bavaro, Cap Cana, Macao, Bayahibe et plus."
-            : "Explore Punta Cana, Bavaro, Cap Cana, Macao, Bayahibe, and more.",
-    },
-  ];
-  const trustNotes = [
-    {
-      icon: ShieldCheck,
-      text:
-        locale === "es"
-          ? "Proveedores verificados"
-          : locale === "fr"
-            ? "Prestataires verifies"
-            : "Verified providers",
-    },
-    {
-      icon: MessageCircle,
-      text:
-        locale === "es"
-          ? "Soporte humano por WhatsApp"
-          : locale === "fr"
-            ? "Support humain par WhatsApp"
-            : "Human WhatsApp support",
-    },
-    {
-      icon: CreditCard,
-      text:
-        locale === "es"
-          ? "Pago protegido"
-          : locale === "fr"
-            ? "Paiement protege"
-            : "Protected payment",
-    },
-  ];
-  const steps = [
-    {
-      icon: Search,
-      title:
-        locale === "es"
-          ? "Busca lo que quieres vivir"
-          : locale === "fr"
-            ? "Cherchez ce que vous voulez vivre"
-            : "Search what you want to experience",
-      body:
-        locale === "es"
-          ? "Tours, traslados o zonas populares con precios y detalles claros."
-          : locale === "fr"
-            ? "Tours, transferts ou zones populaires avec prix et details clairs."
-            : "Tours, transfers, or popular areas with clear prices and details.",
-    },
-    {
-      icon: CalendarCheck,
-      title:
-        locale === "es"
-          ? "Reserva sin fricción"
-          : locale === "fr"
-            ? "Reservez sans friction"
-            : "Book without friction",
-      body:
-        locale === "es"
-          ? "Elige fecha, pasajeros y preferencias desde una experiencia simple."
-          : locale === "fr"
-            ? "Choisissez date, passagers et preferences dans une experience simple."
-            : "Choose date, passengers, and preferences in a simple flow.",
-    },
-    {
-      icon: Sparkles,
-      title:
-        locale === "es"
-          ? "Viaja con apoyo local"
-          : locale === "fr"
-            ? "Voyagez avec support local"
-            : "Travel with local support",
-      body:
-        locale === "es"
-          ? "Confirmación, asistencia y coordinación humana cuando la necesitas."
-          : locale === "fr"
-            ? "Confirmation, assistance et coordination humaine quand vous en avez besoin."
-            : "Confirmation, assistance, and human coordination when you need it.",
-    },
-  ];
+function localePath(locale: Locale, path: string) {
+  if (locale === "es") return path;
+  return `/${locale}${path}`;
+}
 
-  const [publishedTours, tourRatingAgg] = await Promise.all([
-    prisma.tour.findMany({
-      where: { status: { in: ["published", "seo_only"] } },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        price: true,
-        shortDescription: true,
-        heroImage: true,
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.tourReview.groupBy({
-      by: ["tourId"],
-      where: { status: "APPROVED" },
-      _avg: { rating: true },
-      _count: { rating: true },
-    }),
-  ]);
-  const uniquePublishedTours = Array.from(
-    new Map(publishedTours.map((tour) => [tour.slug, tour])).values(),
-  );
-  const tourRatingMap = new Map(
-    tourRatingAgg.map((row) => [
+function imageUrl(image?: string | null) {
+  if (!image) return "/fototours/fototour.jpeg";
+  return image.startsWith("http") ? image : image;
+}
+
+function parseDuration(value?: string | null) {
+  if (!value) return "4 horas";
+  try {
+    const parsed = JSON.parse(value);
+    if (parsed?.value && parsed?.unit) return `${parsed.value} ${parsed.unit}`;
+  } catch {
+    return value;
+  }
+  return value;
+}
+
+async function getHomeTours(locale: Locale) {
+  const tours = await prisma.tour.findMany({
+    where: { status: "published" },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      price: true,
+      heroImage: true,
+      duration: true,
+      location: true,
+    },
+    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+    take: 5,
+  });
+
+  const reviewsByTour = tours.length
+    ? await prisma.tourReview.groupBy({
+        by: ["tourId"],
+        where: { status: "APPROVED", tourId: { in: tours.map((tour) => tour.id) } },
+        _avg: { rating: true },
+        _count: { rating: true },
+      })
+    : [];
+
+  const ratingMap = new Map(
+    reviewsByTour.map((row) => [
       row.tourId,
       {
         rating: Number(row._avg.rating ?? 0),
         count: row._count.rating,
       },
-    ]),
+    ])
   );
-  const featuredTourOrder = new Map<string, number>(PUNTA_CANA_LINKS.map((item, index) => [item.slug, index]));
-  const featuredTours = uniquePublishedTours
-    .filter((tour) => featuredTourOrder.has(tour.slug))
-    .sort((a, b) => (featuredTourOrder.get(a.slug) ?? 999) - (featuredTourOrder.get(b.slug) ?? 999))
-    .slice(0, 8);
-  const homeCarouselTours = featuredTours.length ? featuredTours : uniquePublishedTours.slice(0, 8);
-  const featuredTourProducts = homeCarouselTours.map((tour) => {
-    const ratingData = tourRatingMap.get(tour.id);
-    const hasRealRating = Boolean(ratingData?.count && ratingData.count > 0 && ratingData.rating > 0);
-    const image = tour.heroImage?.startsWith("http")
-      ? tour.heroImage
-      : `${PROACTIVITIS_URL}${tour.heroImage || "/fototours/fotosimple.jpg"}`;
+
+  if (!tours.length) {
+    return fallbackTours.map((tour) => ({
+      ...tour,
+      location: "Punta Cana",
+      href: localePath(locale, `/tours/${tour.slug}`),
+    }));
+  }
+
+  return tours.map((tour: HomeTour, index: number) => {
+    const rating = ratingMap.get(tour.id);
+    const fallback = fallbackTours[index] ?? fallbackTours[0];
     return {
-      "@type": "Product",
-      "@id": `${localizedPath(`/tours/${tour.slug}`)}#product`,
-      name: tour.title,
-      description:
-        tour.shortDescription ||
-        (locale === "es"
-          ? "Excursion en Republica Dominicana con reserva inmediata."
-          : locale === "fr"
-            ? "Excursion en Republique dominicaine avec reservation immediate."
-            : "Dominican Republic excursion with instant booking."),
-      url: localizedPath(`/tours/${tour.slug}`),
-      image,
-      brand: {
-        "@type": "Brand",
-        name: "Proactivitis",
-      },
-      ...(hasRealRating
-        ? {
-            aggregateRating: {
-              "@type": "AggregateRating",
-              ratingValue: Number(ratingData!.rating.toFixed(1)),
-              reviewCount: ratingData!.count,
-            },
-          }
-        : {}),
-      offers: {
-        "@type": "Offer",
-        priceCurrency: "USD",
-        price: tour.price,
-        priceValidUntil,
-        availability: "https://schema.org/InStock",
-        url: localizedPath(`/tours/${tour.slug}`),
-        shippingDetails: {
-          "@type": "OfferShippingDetails",
-          shippingRate: {
-            "@type": "MonetaryAmount",
-            value: 0,
-            currency: "USD",
-          },
-          shippingDestination: {
-            "@type": "DefinedRegion",
-            addressCountry: "DO",
-          },
-          deliveryTime: {
-            "@type": "ShippingDeliveryTime",
-            handlingTime: {
-              "@type": "QuantitativeValue",
-              minValue: 0,
-              maxValue: 1,
-              unitCode: "DAY",
-            },
-            transitTime: {
-              "@type": "QuantitativeValue",
-              minValue: 0,
-              maxValue: 1,
-              unitCode: "DAY",
-            },
-          },
-        },
-        hasMerchantReturnPolicy: {
-          "@type": "MerchantReturnPolicy",
-          url: `${PROACTIVITIS_URL}/legal/refund-policy`,
-          returnPolicyCategory:
-            "https://schema.org/MerchantReturnFiniteReturnWindow",
-          merchantReturnDays: 1,
-          applicableCountry: "DO",
-          returnMethod: "https://schema.org/ReturnByMail",
-          returnFees: "https://schema.org/FreeReturn",
-        },
-      },
+      slug: tour.slug,
+      title: tour.title,
+      price: Number(tour.price || fallback.price),
+      image: imageUrl(tour.heroImage) || fallback.image,
+      badge: fallback.badge,
+      rating: rating?.rating ? rating.rating.toFixed(1) : fallback.rating,
+      reviews: rating?.count ? String(rating.count) : fallback.reviews,
+      duration: parseDuration(tour.duration) || fallback.duration,
+      location: tour.location ?? "Punta Cana",
+      href: localePath(locale, `/tours/${tour.slug}`),
     };
   });
+}
+
+export default async function PublicHomePage({ locale }: PublicHomePageProps) {
+  const text = copy[locale] ?? copy.es;
+  const tours = await getHomeTours(locale);
+  const priceValidUntil = getPriceValidUntil();
+  const homeUrl = `${PROACTIVITIS_URL}${locale === "es" ? "/" : `/${locale}`}`;
 
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "OnlineBusiness",
-        "@id": `${PROACTIVITIS_URL}/#organization`,
-        name: "Proactivitis",
-        url: `${PROACTIVITIS_URL}/`,
-        logo: `${PROACTIVITIS_URL}/logo.png`,
-        description: translate(locale, "home.schema.description"),
-        hasOfferCatalog: {
-          "@type": "OfferCatalog",
-          name: "Servicios Proactivitis",
-          itemListElement: [
-            {
-              "@type": "Offer",
-              priceValidUntil,
-              shippingDetails: {
-                "@type": "OfferShippingDetails",
-                shippingRate: {
-                  "@type": "MonetaryAmount",
-                  value: 0,
-                  currency: "USD",
-                },
-                shippingDestination: {
-                  "@type": "DefinedRegion",
-                  addressCountry: "DO",
-                },
-                deliveryTime: {
-                  "@type": "ShippingDeliveryTime",
-                  handlingTime: {
-                    "@type": "QuantitativeValue",
-                    minValue: 0,
-                    maxValue: 1,
-                    unitCode: "DAY",
-                  },
-                  transitTime: {
-                    "@type": "QuantitativeValue",
-                    minValue: 0,
-                    maxValue: 1,
-                    unitCode: "DAY",
-                  },
-                },
-              },
-              hasMerchantReturnPolicy: {
-                "@type": "MerchantReturnPolicy",
-                url: `${PROACTIVITIS_URL}/legal/refund-policy`,
-                returnPolicyCategory:
-                  "https://schema.org/MerchantReturnFiniteReturnWindow",
-                merchantReturnDays: 1,
-                applicableCountry: "DO",
-                returnMethod: "https://schema.org/ReturnByMail",
-                returnFees: "https://schema.org/FreeReturn",
-              },
-              itemOffered: {
-                "@type": "Service",
-                name: "Tours y Excursiones",
-                url: `${PROACTIVITIS_URL}/tours`,
-              },
-            },
-            {
-              "@type": "Offer",
-              priceValidUntil,
-              shippingDetails: {
-                "@type": "OfferShippingDetails",
-                shippingRate: {
-                  "@type": "MonetaryAmount",
-                  value: 0,
-                  currency: "USD",
-                },
-                shippingDestination: {
-                  "@type": "DefinedRegion",
-                  addressCountry: "DO",
-                },
-                deliveryTime: {
-                  "@type": "ShippingDeliveryTime",
-                  handlingTime: {
-                    "@type": "QuantitativeValue",
-                    minValue: 0,
-                    maxValue: 1,
-                    unitCode: "DAY",
-                  },
-                  transitTime: {
-                    "@type": "QuantitativeValue",
-                    minValue: 0,
-                    maxValue: 1,
-                    unitCode: "DAY",
-                  },
-                },
-              },
-              hasMerchantReturnPolicy: {
-                "@type": "MerchantReturnPolicy",
-                url: `${PROACTIVITIS_URL}/legal/refund-policy`,
-                returnPolicyCategory:
-                  "https://schema.org/MerchantReturnFiniteReturnWindow",
-                merchantReturnDays: 1,
-                applicableCountry: "DO",
-                returnMethod: "https://schema.org/ReturnByMail",
-                returnFees: "https://schema.org/FreeReturn",
-              },
-              itemOffered: {
-                "@type": "Service",
-                name: "Traslados Privados",
-                url: `${PROACTIVITIS_URL}/traslado`,
-              },
-            },
-            {
-              "@type": "Offer",
-              priceValidUntil,
-              shippingDetails: {
-                "@type": "OfferShippingDetails",
-                shippingRate: {
-                  "@type": "MonetaryAmount",
-                  value: 0,
-                  currency: "USD",
-                },
-                shippingDestination: {
-                  "@type": "DefinedRegion",
-                  addressCountry: "DO",
-                },
-                deliveryTime: {
-                  "@type": "ShippingDeliveryTime",
-                  handlingTime: {
-                    "@type": "QuantitativeValue",
-                    minValue: 0,
-                    maxValue: 1,
-                    unitCode: "DAY",
-                  },
-                  transitTime: {
-                    "@type": "QuantitativeValue",
-                    minValue: 0,
-                    maxValue: 1,
-                    unitCode: "DAY",
-                  },
-                },
-              },
-              hasMerchantReturnPolicy: {
-                "@type": "MerchantReturnPolicy",
-                url: `${PROACTIVITIS_URL}/legal/refund-policy`,
-                returnPolicyCategory:
-                  "https://schema.org/MerchantReturnFiniteReturnWindow",
-                merchantReturnDays: 1,
-                applicableCountry: "DO",
-                returnMethod: "https://schema.org/ReturnByMail",
-                returnFees: "https://schema.org/FreeReturn",
-              },
-              itemOffered: {
-                "@type": "Service",
-                name: "Rent a Car",
-                url: `${PROACTIVITIS_URL}/rent-a-car`,
-              },
-            },
-          ],
-        },
-      },
-      {
         "@type": "WebPage",
-        "@id": `${localizedPath("/")}#webpage`,
-        url: localizedPath("/"),
-        name:
-          locale === "es"
-            ? "Inicio Proactivitis"
-            : locale === "fr"
-              ? "Accueil Proactivitis"
-              : "Proactivitis Home",
-        isPartOf: {
-          "@id": `${PROACTIVITIS_URL}/#website`,
-        },
-        about: {
-          "@id": `${PROACTIVITIS_URL}/#organization`,
-        },
-        mainEntity: {
-          "@id": `${localizedPath("/")}#featured-tour-carousel`,
-        },
+        "@id": `${homeUrl}#webpage`,
+        url: homeUrl,
+        name: text.title,
+        description: text.subtitle,
       },
       {
         "@type": "ItemList",
-        "@id": `${localizedPath("/")}#featured-tour-carousel`,
-        name:
-          locale === "es"
-            ? "Tours destacados de Proactivitis"
-            : locale === "fr"
-              ? "Excursions vedettes Proactivitis"
-              : "Featured Proactivitis tours",
-        numberOfItems: featuredTourProducts.length,
+        "@id": `${homeUrl}#popular-tours`,
+        name: text.popularTours,
         itemListOrder: "https://schema.org/ItemListOrderAscending",
-        itemListElement: featuredTourProducts.map((product, index) => ({
+        numberOfItems: tours.length,
+        itemListElement: tours.map((tour, index) => ({
           "@type": "ListItem",
           position: index + 1,
-          item: product,
+          item: {
+            "@type": "Product",
+            name: tour.title,
+            image: tour.image.startsWith("http") ? tour.image : `${PROACTIVITIS_URL}${tour.image}`,
+            url: `${PROACTIVITIS_URL}${localePath(locale, `/tours/${tour.slug}`)}`,
+            brand: { "@type": "Brand", name: "Proactivitis" },
+            offers: {
+              "@type": "Offer",
+              price: tour.price,
+              priceCurrency: "USD",
+              availability: "https://schema.org/InStock",
+              priceValidUntil,
+              url: `${PROACTIVITIS_URL}${localePath(locale, `/tours/${tour.slug}`)}`,
+            },
+          },
         })),
-      },
-      {
-        "@type": "FAQPage",
-        mainEntity: [
-          {
-            "@type": "Question",
-            name: translate(locale, "home.schema.faq.question.booking"),
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: translate(locale, "home.schema.faq.answer.booking"),
-            },
-          },
-          {
-            "@type": "Question",
-            name: translate(locale, "home.schema.faq.question.agencies"),
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: translate(locale, "home.schema.faq.answer.agencies"),
-            },
-          },
-        ],
       },
     ],
   };
 
   return (
-    <div className="bg-slate-50 text-slate-900 overflow-x-hidden">
-      <HomeHeroCarousel>
-        <HomeHeroContent locale={locale} overrides={homeOverrides.hero} />
-      </HomeHeroCarousel>
+    <div className="bg-white text-[#071329]">
+      <section className="relative min-h-[590px] overflow-hidden">
+        <Image src={heroImage} alt="Playa en Republica Dominicana" fill priority className="object-cover object-center" sizes="100vw" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#00395f]/82 via-[#006b92]/35 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/25" />
 
-      <section className="relative z-10 -mt-16 px-4 sm:px-6">
-        <div className="mx-auto max-w-6xl overflow-hidden rounded-[32px] border border-white/80 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.16)]">
-          <div className="grid gap-px bg-slate-200/70 md:grid-cols-3">
-            {tripStartCards.map((card) => {
-              const Icon = card.icon;
-              return (
-                <Link
-                  key={card.href}
-                  href={card.href}
-                  className="group flex min-h-[190px] flex-col justify-between bg-white p-6 transition hover:bg-slate-50"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-sky-700 ring-1 ring-sky-100 transition group-hover:-translate-y-0.5 group-hover:bg-sky-600 group-hover:text-white">
-                      <Icon className="h-5 w-5" aria-hidden />
-                    </span>
-                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-emerald-700">
-                      {card.label}
-                    </span>
-                  </div>
-                  <div className="mt-6 space-y-2">
-                    <h2 className="text-xl font-black leading-tight text-slate-950">
-                      {card.title}
-                    </h2>
-                    <p className="text-sm font-medium leading-6 text-slate-600">
-                      {card.body}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
+        <div className="relative z-10 mx-auto max-w-[1280px] px-5 pt-[92px] sm:px-8 lg:pt-[108px]">
+          <div className="max-w-[660px]">
+            <p className="inline-flex rounded-full bg-white/15 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-white shadow-sm backdrop-blur">
+              {text.badge}
+            </p>
+            <h1 className="mt-5 text-[34px] font-black leading-[1.02] tracking-[-0.03em] text-white drop-shadow sm:text-[46px] lg:text-[54px]">
+              {text.title}
+            </h1>
+            <p className="mt-5 max-w-[520px] text-base font-bold leading-7 text-white sm:text-lg">{text.subtitle}</p>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-3 border-t border-slate-100 bg-slate-50 px-5 py-4">
-            {trustNotes.map((item) => {
-              const Icon = item.icon;
-              return (
-                <span
-                  key={item.text}
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm ring-1 ring-slate-200"
-                >
-                  <Icon className="h-4 w-4 text-emerald-600" aria-hidden />
-                  {item.text}
+
+          <form action={localePath(locale, "/tours")} className="mt-8 max-w-[1060px] rounded-2xl bg-white p-3 shadow-[0_24px_70px_rgba(7,19,41,0.18)]">
+            <div className="grid gap-2 lg:grid-cols-[1.35fr,0.9fr,0.8fr,220px]">
+              <label className="flex items-center gap-4 rounded-xl px-4 py-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-[#0c1d3a]">
+                  <MapPin className="h-5 w-5" />
                 </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-black text-[#071329]">{text.destination}</span>
+                  <input name="destination" className="mt-1 w-full border-0 p-0 text-sm font-semibold text-slate-500 outline-none placeholder:text-slate-400" placeholder={text.destinationHint} />
+                </span>
+              </label>
+              <label className="flex items-center gap-4 rounded-xl border-l border-slate-100 px-4 py-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-[#0c1d3a]">
+                  <CalendarDays className="h-5 w-5" />
+                </span>
+                <span>
+                  <span className="block text-sm font-black text-[#071329]">{text.date}</span>
+                  <span className="mt-1 block text-sm font-semibold text-slate-500">{text.dateHint}</span>
+                </span>
+              </label>
+              <label className="flex items-center gap-4 rounded-xl border-l border-slate-100 px-4 py-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-[#0c1d3a]">
+                  <Users className="h-5 w-5" />
+                </span>
+                <span>
+                  <span className="block text-sm font-black text-[#071329]">{text.people}</span>
+                  <span className="mt-1 block text-sm font-semibold text-slate-500">{text.peopleHint}</span>
+                </span>
+              </label>
+              <button className="rounded-xl bg-[#1267e8] px-6 py-4 text-sm font-black text-white shadow-lg shadow-blue-700/20 transition hover:bg-[#0d57c7]">
+                {text.search}
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-6 flex flex-wrap items-center gap-2 text-sm font-bold text-white">
+            <span className="mr-2">{text.popular}</span>
+            {chips.map((chip) => (
+              <Link key={chip} href={`${localePath(locale, "/tours")}?destination=${encodeURIComponent(chip)}`} className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-black text-white backdrop-blur hover:bg-white/30">
+                {chip}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="relative z-20 -mt-14 px-5 sm:px-8">
+        <div className="mx-auto grid max-w-[1210px] gap-0 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_22px_60px_rgba(7,19,41,0.12)] md:grid-cols-4">
+          {trustItems.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <article key={item.title} className={`flex items-center gap-4 px-7 py-7 ${index ? "border-t border-slate-100 md:border-l md:border-t-0" : ""}`}>
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#eaf3ff] text-[#1267e8]">
+                  <Icon className="h-7 w-7" />
+                </span>
+                <span>
+                  <strong className="block text-sm font-black text-[#071329]">{item.title}</strong>
+                  <span className="mt-1 block text-sm font-semibold text-slate-500">{item.body}</span>
+                </span>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <main className="mx-auto max-w-[1210px] px-5 py-10 sm:px-8">
+        <section>
+          <div className="mb-5 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-[12px] font-black uppercase tracking-[0.32em] text-[#1267e8]">{text.recommended}</p>
+              <h2 className="mt-2 text-3xl font-black tracking-[-0.03em] text-[#071329] sm:text-4xl">{text.popularTours}</h2>
+            </div>
+            <Link href={localePath(locale, "/tours")} className="hidden items-center gap-2 text-sm font-black text-[#1267e8] md:inline-flex">
+              {text.viewTours}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="relative">
+            <button aria-label="Anterior" className="absolute -left-8 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white text-slate-700 shadow-lg lg:flex">
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
+              {tours.map((tour) => (
+                <article key={tour.slug} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_14px_34px_rgba(7,19,41,0.11)] transition hover:-translate-y-1 hover:shadow-[0_22px_50px_rgba(7,19,41,0.16)]">
+                  <div className="relative h-[152px]">
+                    <Image src={tour.image} alt={tour.title} fill className="object-cover" sizes="(min-width:1024px) 230px, 50vw" />
+                    <span className="absolute left-3 top-3 rounded-full bg-emerald-500 px-3 py-1 text-[11px] font-black text-white">{tour.badge}</span>
+                    <button aria-label="Guardar tour" className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-700 shadow">
+                      <Heart className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <div className="p-4">
+                    <div className="flex items-center gap-1 text-xs font-black text-slate-700">
+                      <Star className="h-4 w-4 fill-[#ffb703] text-[#ffb703]" />
+                      {tour.rating} <span className="text-slate-400">({tour.reviews})</span>
+                    </div>
+                    <h3 className="mt-2 min-h-[48px] text-base font-black leading-tight text-[#071329]">{tour.title}</h3>
+                    <div className="mt-3 flex items-center gap-3 text-[12px] font-bold text-slate-500">
+                      <span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" /> {tour.duration}</span>
+                      <span className="inline-flex items-center gap-1"><Car className="h-3.5 w-3.5" /> Recogida incluida</span>
+                    </div>
+                    <div className="mt-4 flex items-end justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-bold text-slate-500">Desde</p>
+                        <p className="text-xl font-black text-[#0d3b85]">${tour.price} <span className="text-xs">USD</span></p>
+                      </div>
+                      <Link href={tour.href ?? localePath(locale, `/tours/${tour.slug}`)} className="rounded-xl bg-[#1267e8] px-4 py-2 text-xs font-black text-white hover:bg-[#0d57c7]">
+                        Ver tour
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <button aria-label="Siguiente" className="absolute -right-8 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white text-slate-700 shadow-lg lg:flex">
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
+        </section>
+
+        <section className="grid gap-10 py-14 lg:grid-cols-[0.9fr,1.7fr,1fr] lg:items-center">
+          <div>
+            <p className="text-[12px] font-black uppercase tracking-[0.32em] text-[#1267e8]">{text.why}</p>
+            <h2 className="mt-2 text-3xl font-black leading-tight tracking-[-0.03em] text-[#071329]">{text.peopleTitle}</h2>
+            <p className="mt-4 text-base font-semibold leading-7 text-slate-600">{text.peopleBody}</p>
+            <Link href={localePath(locale, "/about")} className="mt-6 inline-flex rounded-xl bg-[#1267e8] px-6 py-3 text-sm font-black text-white">
+              {text.knowMore}
+            </Link>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-4">
+            {benefits.map((benefit) => {
+              const Icon = benefit.icon;
+              return (
+                <article key={benefit.title} className="text-center sm:text-left">
+                  <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#eaf3ff] text-[#1267e8] sm:mx-0">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <h3 className="mt-5 text-sm font-black text-[#071329]">{benefit.title}</h3>
+                  <p className="mt-2 text-xs font-semibold leading-5 text-slate-500">{benefit.body}</p>
+                </article>
               );
             })}
           </div>
-        </div>
-      </section>
+          <div className="relative min-h-[230px] overflow-hidden rounded-3xl shadow-[0_20px_45px_rgba(7,19,41,0.16)]">
+            <Image src={teamImage} alt="Equipo Proactivitis" fill className="object-cover" sizes="360px" />
+          </div>
+        </section>
 
-      <section className="travel-surface">
-        <div className="mx-auto max-w-6xl space-y-5 px-4 py-12 sm:px-6">
-          <HomeRecommendedHeader
-            locale={locale}
-            overrides={homeOverrides.recommended}
-          />
-          <HomeTourSearchSection locale={locale} />
-          <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
-            <FeaturedToursSection locale={locale} />
-          </div>
-          <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-              {homeOverrides.puntaCana?.subtitle ??
-                t("puntaCana.links.subtitle")}
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-              {homeOverrides.puntaCana?.title ?? t("puntaCana.links.title")}
-            </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {PUNTA_CANA_LINKS.map((item) => (
-                <Link
-                  key={item.slug}
-                  href={tourHref(item.slug)}
-                  className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
-                >
-                  {t(item.labelKey)}
-                </Link>
-              ))}
+        <section>
+          <div className="mb-5 flex items-end justify-between">
+            <div>
+              <p className="text-[12px] font-black uppercase tracking-[0.32em] text-[#1267e8]">{text.destinationsLabel}</p>
+              <h2 className="mt-2 text-3xl font-black tracking-[-0.03em] text-[#071329]">{text.destinationsTitle}</h2>
             </div>
+            <Link href={localePath(locale, "/destinations")} className="hidden items-center gap-2 text-sm font-black text-[#1267e8] md:inline-flex">
+              {text.viewZones}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
-          <div className="rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-              Sosua Party Boat
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-              {locale === "es"
-                ? "Reserva tu party boat en Sosua al mejor precio"
-                : locale === "en"
-                  ? "Book your Sosua party boat at the best price"
-                  : "Reservez votre party boat a Sosua au meilleur prix"}
-            </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {SOSUA_PARTY_BOAT_LINKS.map((item) => (
-                <Link
-                  key={item.slug}
-                  href={tourHref(item.slug)}
-                  className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-white"
-                >
-                  {locale === "es"
-                    ? item.es
-                    : locale === "en"
-                      ? item.en
-                      : item.fr}
-                </Link>
-              ))}
-            </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+            {destinations.map((destination) => (
+              <Link key={destination.name} href={`${localePath(locale, "/tours")}?destination=${encodeURIComponent(destination.name)}`} className="group relative h-[92px] overflow-hidden rounded-2xl shadow-md">
+                <Image src={destination.image} alt={destination.name} fill className="object-cover transition group-hover:scale-105" sizes="200px" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#071329]/80 to-transparent" />
+                <div className="absolute bottom-3 left-3 text-white">
+                  <p className="text-base font-black leading-none">{destination.name}</p>
+                  <p className="mt-1 text-xs font-bold">{destination.count}</p>
+                </div>
+              </Link>
+            ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="border-y border-slate-100 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-          <div className="grid gap-5 lg:grid-cols-[0.9fr_1.6fr] lg:items-stretch">
-            <div className="rounded-[32px] border border-slate-200 bg-slate-950 p-7 text-white shadow-sm">
-              <p className="text-xs font-black uppercase tracking-[0.32em] text-sky-300">
-                {locale === "es"
-                  ? "Cómo funciona"
-                  : locale === "fr"
-                    ? "Comment ça marche"
-                    : "How it works"}
-              </p>
-              <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight">
-                {locale === "es"
-                  ? "Menos dudas. Más viaje."
-                  : locale === "fr"
-                    ? "Moins de doute. Plus de voyage."
-                    : "Less doubt. More travel."}
-              </h2>
-              <p className="mt-4 text-sm font-medium leading-6 text-white/75">
-                {locale === "es"
-                  ? "Decide rápido: vive una experiencia, coordina tu traslado o explora por zona."
-                  : locale === "fr"
-                    ? "Decidez vite: vivez une experience, coordonnez votre transfert ou explorez par zone."
-                    : "Decide quickly: book an experience, coordinate your transfer, or explore by area."}
-              </p>
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              {steps.map((step) => {
-                const Icon = step.icon;
-                return (
-                  <article
-                    key={step.title}
-                    className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
-                  >
-                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
-                      <Icon className="h-5 w-5" aria-hidden />
-                    </span>
-                    <h3 className="mt-5 text-lg font-black leading-tight text-slate-950">
-                      {step.title}
-                    </h3>
-                    <p className="mt-3 text-sm font-medium leading-6 text-slate-600">
-                      {step.body}
-                    </p>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="travel-surface">
-        <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6">
-          <div
-            className="relative flex min-h-[280px] items-center overflow-hidden rounded-3xl border border-slate-100 shadow-sm"
-            style={{
-              backgroundImage: `url('${transferBannerImage}')`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
-            <div className="absolute inset-0 bg-slate-900/55 md:bg-slate-900/65" />
-            <div className="relative z-10 w-full space-y-6 px-6 py-10 text-center text-white md:text-left">
-              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/70">
-                {homeOverrides.transferBanner?.label ??
-                  t("home.transferBanner.label")}
-              </p>
-              <h2 className="text-3xl font-semibold leading-tight md:text-4xl">
-                {homeOverrides.transferBanner?.title ??
-                  t("home.transferBanner.title")}
-              </h2>
-              <p className="text-sm text-white/90 md:text-base">
-                {homeOverrides.transferBanner?.description ??
-                  t("home.transferBanner.description")}
-              </p>
-              <HomeTransferTicker locale={locale} />
-              <div className="botones-banner justify-center md:justify-start">
-                <Link href={transferHref} className="boton-verde">
-                  {homeOverrides.transferBanner?.cta ??
-                    t("home.transferBanner.cta")}
-                </Link>
+        <section className="py-10">
+          <div className="relative overflow-hidden rounded-3xl bg-[#071329] p-8 text-white shadow-[0_22px_55px_rgba(7,19,41,0.22)] md:p-11">
+            <Image src={transferImage} alt="Traslado privado al aeropuerto" fill className="object-cover opacity-55" sizes="100vw" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#071329]/95 via-[#071329]/75 to-[#071329]/20" />
+            <div className="relative z-10 max-w-[640px]">
+              <p className="text-[12px] font-black uppercase tracking-[0.38em] text-white/70">{text.transferLabel}</p>
+              <h2 className="mt-3 text-3xl font-black tracking-[-0.03em] sm:text-4xl">{text.transferTitle}</h2>
+              <p className="mt-4 text-base font-semibold leading-7 text-white/88">{text.transferBody}</p>
+              <Link href={localePath(locale, "/traslado")} className="mt-6 inline-flex rounded-xl bg-white px-7 py-3 text-sm font-black text-[#071329]">
+                {text.transferCta}
+              </Link>
+              <div className="mt-7 flex flex-wrap gap-5 text-sm font-bold text-white/90">
+                <span className="inline-flex items-center gap-2"><ShieldCheck className="h-5 w-5" /> Choferes verificados</span>
+                <span className="inline-flex items-center gap-2"><Car className="h-5 w-5" /> Vehiculos modernos</span>
+                <span className="inline-flex items-center gap-2"><CreditCard className="h-5 w-5" /> Precios fijos sin sorpresas</span>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="border-t border-slate-100 bg-white">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-2">
-          <div className="overflow-hidden rounded-[32px] bg-slate-900">
-            <Image
-              src="/mini-portada.png"
-              alt="Grupo de viajeros felices"
-              width={900}
-              height={600}
-              className="object-cover"
-              priority
-            />
+        <section className="pb-10">
+          <div className="mb-5 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-[12px] font-black uppercase tracking-[0.32em] text-[#1267e8]">{text.reviewsLabel}</p>
+              <h2 className="mt-2 text-3xl font-black tracking-[-0.03em] text-[#071329]">{text.reviewsTitle}</h2>
+            </div>
+            <Link href={localePath(locale, "/reviews")} className="hidden items-center gap-2 text-sm font-black text-[#1267e8] md:inline-flex">
+              {text.viewReviews}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
-          <div className="space-y-4">
-            <HomeAboutContent locale={locale} overrides={homeOverrides.about} />
+          <div className="relative">
+            <button aria-label="Resena anterior" className="absolute -left-8 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white text-slate-700 shadow-lg lg:flex">
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <div className="grid gap-5 lg:grid-cols-3">
+              {reviews.map((review) => (
+                <article key={review.name} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#eaf3ff] text-sm font-black text-[#1267e8]">{review.name.slice(0, 1)}</div>
+                    <div>
+                      <p className="text-sm font-black text-[#071329]">
+                        {review.name} <span className="text-xs text-slate-400">{review.country}</span>
+                      </p>
+                      <p className="text-xs font-bold text-slate-400">{review.date}</p>
+                    </div>
+                  </div>
+                  <p className="mt-4 min-h-[64px] text-sm font-semibold leading-6 text-slate-600">{review.text}</p>
+                  <div className="mt-4 grid grid-cols-3 gap-3">
+                    {review.images.map((image) => (
+                      <div key={image} className="relative h-[64px] overflow-hidden rounded-xl">
+                        <Image src={image} alt="Foto de resena" fill className="object-cover" sizes="120px" />
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+            <button aria-label="Resena siguiente" className="absolute -right-8 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white text-slate-700 shadow-lg lg:flex">
+              <ChevronRight className="h-5 w-5" />
+            </button>
           </div>
-        </div>
-      </section>
-      <section className="sr-only">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-      </section>
+        </section>
+      </main>
+
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
     </div>
   );
 }

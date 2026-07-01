@@ -45,8 +45,8 @@ export const Header = ({
   }, [mobileOpen]);
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-white/95 shadow-sm backdrop-blur">
-      <div className="mx-auto flex h-24 max-w-7xl items-center justify-between gap-3 px-4 sm:h-[5.5rem] sm:px-6">
+    <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/95 shadow-[0_2px_18px_rgba(7,19,41,0.04)] backdrop-blur">
+      <div className="mx-auto flex h-[70px] max-w-[1280px] items-center justify-between gap-4 px-5 sm:px-8">
         <div className="flex min-w-0 items-center">
           <Link href="/" className="flex items-center">
             <Image
@@ -54,23 +54,23 @@ export const Header = ({
               alt="Proactivitis"
               width={200}
               height={60}
-              className="h-[8.5rem] w-auto max-w-[520px] origin-left object-contain transition-transform sm:h-[7rem] sm:max-w-[420px] lg:h-12 lg:max-w-none lg:scale-[var(--logo-scale)]"
+              className="h-14 w-40 origin-left object-cover object-center transition-transform lg:h-14 lg:w-44 lg:scale-[var(--logo-scale)]"
               style={{ "--logo-scale": logoScale } as CSSProperties}
             />
           </Link>
         </div>
 
-        <nav className="hidden items-center gap-4 text-sm text-slate-700 lg:flex">
+        <nav className="hidden items-center gap-7 text-sm text-slate-700 lg:flex">
           {navDisplay === "inline" ? (
-            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 p-1.5 shadow-sm">
+            <div className="flex items-center gap-7">
               {navItems.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+                  className={`text-[14px] font-black transition ${
                     isActivePath(item.href)
-                      ? "bg-slate-900 text-white shadow-sm"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      ? "text-[#1267e8]"
+                      : "text-[#071329] hover:text-[#1267e8]"
                   }`}
                 >
                   {item.label}
@@ -82,7 +82,7 @@ export const Header = ({
                     type="button"
                     aria-expanded={dropdownOpen}
                     onClick={() => setDropdownOpen((prev) => !prev)}
-                    className="flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:bg-slate-100"
+                    className="flex items-center gap-2 text-[14px] font-black text-[#071329] transition hover:text-[#1267e8]"
                   >
                     {dropdownNav.label}
                     <ChevronDown className={`h-4 w-4 transition ${dropdownOpen ? "rotate-180" : ""}`} />
@@ -171,7 +171,7 @@ export const Header = ({
           onClick={() => setMobileOpen(false)}
         />
         <div
-          className={`fixed inset-x-0 top-24 z-50 max-h-[calc(100vh-6rem)] overflow-y-auto border-t border-slate-100 bg-white shadow-2xl transition duration-200 sm:top-[5.5rem] sm:max-h-[calc(100vh-5.5rem)] ${
+          className={`fixed inset-x-0 top-[70px] z-50 max-h-[calc(100vh-70px)] overflow-y-auto border-t border-slate-100 bg-white shadow-2xl transition duration-200 ${
             mobileOpen ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
           }`}
         >

@@ -28,9 +28,9 @@ export default function TourGalleryCollage({
   const hasMoreImages = galleryImages.length > visibleThumbs.length;
   const shellClassName =
     variant === "compact"
-      ? "relative h-[430px] w-full overflow-hidden rounded-[28px] bg-slate-100 p-2.5 sm:h-[350px] lg:h-[430px]"
+      ? "relative h-[430px] w-full overflow-hidden rounded-[16px] bg-white p-0 sm:h-[350px] lg:h-[430px]"
       : "relative h-[380px] w-full overflow-hidden rounded-[36px] bg-slate-100 p-3 sm:h-[420px] lg:h-[520px]";
-  const mediaRadius = variant === "compact" ? "rounded-[22px]" : "rounded-[28px]";
+  const mediaRadius = variant === "compact" ? "rounded-[12px]" : "rounded-[28px]";
   const goTo = (delta: number) => {
     setActiveIndex((current) => (current + delta + galleryImages.length) % galleryImages.length);
   };
@@ -66,7 +66,7 @@ export default function TourGalleryCollage({
         images={galleryImages}
         showDefaultTrigger={false}
         renderTrigger={(open) => (
-          <div className="grid h-full w-full gap-2 sm:grid-cols-[96px_minmax(0,1fr)] lg:grid-cols-[118px_minmax(0,1fr)]">
+          <div className="grid h-full w-full gap-3 sm:grid-cols-[100px_minmax(0,1fr)] lg:grid-cols-[112px_minmax(0,1fr)]">
             <div className="order-2 hidden gap-2 overflow-x-auto sm:order-1 sm:grid sm:grid-rows-5 sm:overflow-visible">
               {visibleThumbs.map((image, index) => {
                 const isActive = index === activeIndex;
@@ -76,7 +76,7 @@ export default function TourGalleryCollage({
                     key={`${image}-${index}`}
                     type="button"
                     onClick={() => (isLastVisible ? open() : setActiveIndex(index))}
-                    className={`relative h-16 min-w-[84px] overflow-hidden rounded-xl border bg-slate-200 transition sm:h-full sm:min-w-0 ${
+                    className={`relative h-16 min-w-[84px] overflow-hidden rounded-[10px] border bg-slate-200 transition sm:h-full sm:min-w-0 ${
                       isActive ? "border-slate-950 ring-2 ring-slate-950/10" : "border-white/80 hover:border-slate-400"
                     }`}
                   >
@@ -86,6 +86,7 @@ export default function TourGalleryCollage({
                       fill
                       className="object-cover"
                       sizes="120px"
+                      priority={index === 0}
                     />
                     {isLastVisible ? (
                       <span className="absolute inset-0 flex items-center justify-center bg-slate-950/55 text-xs font-black uppercase tracking-[0.18em] text-white">
