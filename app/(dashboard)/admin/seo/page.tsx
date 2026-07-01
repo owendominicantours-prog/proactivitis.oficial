@@ -31,6 +31,12 @@ export default async function AdminSeoPage() {
           >
             Abrir Schema Manager
           </Link>
+          <Link
+            href="/admin/seo/indexing"
+            className="ml-3 inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+          >
+            Abrir Indexing API
+          </Link>
         </div>
       </header>
 
