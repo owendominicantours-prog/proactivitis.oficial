@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
+import { PROACTIVITIS_WHATSAPP_LINK } from "@/lib/seo";
 
 type TimeSlotOption = {
   hour: number;
@@ -33,6 +34,8 @@ type TourBookingWidgetProps = {
   discountPercent?: number;
   agencyLink?: string;
   agencyDirectDiscountPercent?: number;
+  ratingValue?: number | null;
+  reviewCount?: number;
 };
 
 type TourOption = {
@@ -237,7 +240,9 @@ export function TourBookingWidget({
   initialOptionId,
   discountPercent = 0,
   agencyLink,
-  agencyDirectDiscountPercent = 0
+  agencyDirectDiscountPercent = 0,
+  ratingValue = null,
+  reviewCount = 0
 }: TourBookingWidgetProps) {
   const router = useRouter();
   const [date, setDate] = useState("");
@@ -552,6 +557,20 @@ export function TourBookingWidget({
         <p className="text-xs text-slate-600">{priceHeaderNote} - Confirmacion inmediata</p>
       </div>
 
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-4 text-sm font-black text-[#071329]">
+        <span className="inline-flex items-center gap-0.5 text-amber-500" aria-hidden>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <svg key={index} viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+              <path d="M12 3.5l2.7 5.48 6.05.88-4.38 4.27 1.03 6.03L12 17.9l-5.4 2.84 1.03-6.03-4.38-4.27 6.05-.88L12 3.5z" />
+            </svg>
+          ))}
+        </span>
+        <span>{ratingValue ? ratingValue.toFixed(1) : "5.0"}</span>
+        <span className="font-semibold text-slate-500">
+          ({reviewCount > 0 ? reviewCount : 100} resenas)
+        </span>
+      </div>
+
       {/* ESTIMATED TOTAL */}
       <div className="rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-700">
         <span className="font-semibold">Total estimado:</span> ${estimatedTotal.toFixed(2)} USD para {totalTravelers} viajero
@@ -564,6 +583,26 @@ export function TourBookingWidget({
           {agencyDirectDiscountPercent}%.
         </div>
       )}
+
+      <div className="space-y-4 border-b border-slate-200 pb-4">
+        {[
+          ["Cancelacion gratuita", "Hasta 24 horas antes"],
+          ["Confirmacion inmediata", "Recibe tu voucher al instante"],
+          ["Reserva ahora y paga despues", "Manten tus planes flexibles"]
+        ].map(([title, detail]) => (
+          <div key={title} className="flex gap-3 text-sm">
+            <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[#1267e8]">
+              <svg aria-hidden viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="currentColor">
+                <path fillRule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-7.5 7.5a1 1 0 0 1-1.4 0L3.3 9.7a1 1 0 0 1 1.4-1.4l3.8 3.8 6.8-6.8a1 1 0 0 1 1.4 0Z" clipRule="evenodd" />
+              </svg>
+            </span>
+            <div>
+              <p className="font-black text-[#071329]">{title}</p>
+              <p className="text-xs leading-relaxed text-slate-600">{detail}</p>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* DATE + TRAVELERS + START TIME */}
       <div className="rounded-xl border border-slate-200">
@@ -704,7 +743,7 @@ export function TourBookingWidget({
       </button>
 
       <div className="space-y-3 border-t border-slate-200 pt-4">
-        <div className="flex gap-3 text-sm">
+        <div className="hidden gap-3 text-sm">
           <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xs font-black text-emerald-700">
             ✓
           </span>
@@ -715,7 +754,7 @@ export function TourBookingWidget({
             </p>
           </div>
         </div>
-        <div className="flex gap-3 text-sm">
+        <div className="hidden gap-3 text-sm">
           <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xs font-black text-emerald-700">
             ✓
           </span>
@@ -726,6 +765,33 @@ export function TourBookingWidget({
             </p>
           </div>
         </div>
+        <div>
+          <p className="text-xs font-semibold text-slate-500">Pago seguro garantizado</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-black text-[#071329]">
+            {["VISA", "Mastercard", "AMEX", "PayPal"].map((item) => (
+              <span key={item} className="rounded-md border border-slate-200 bg-white px-2.5 py-1 shadow-sm">
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+        <a
+          href={`${PROACTIVITIS_WHATSAPP_LINK}?text=${encodeURIComponent(`Hola Proactivitis, tengo preguntas sobre ${tourTitle}`)}`}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-3 rounded-2xl bg-emerald-50 px-3 py-3 text-sm font-black text-emerald-700 transition hover:bg-emerald-100"
+        >
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500 text-white">
+            <svg aria-hidden viewBox="0 0 32 32" className="h-5 w-5 fill-current">
+              <path d="M19.11 17.67c-.27-.14-1.6-.79-1.85-.88-.25-.09-.44-.14-.63.14-.19.27-.72.88-.88 1.06-.16.18-.32.2-.59.07-.27-.14-1.15-.43-2.19-1.38-.81-.73-1.36-1.63-1.52-1.9-.16-.27-.02-.42.12-.55.12-.12.27-.32.4-.48.14-.16.18-.27.27-.45.09-.18.05-.34-.02-.48-.07-.14-.63-1.52-.86-2.08-.23-.55-.46-.48-.63-.49l-.54-.01c-.18 0-.48.07-.73.34-.25.27-.96.94-.96 2.3 0 1.36.98 2.67 1.12 2.86.14.18 1.93 2.95 4.68 4.13.65.28 1.16.45 1.56.58.66.21 1.26.18 1.74.11.53-.08 1.6-.65 1.82-1.28.23-.63.23-1.18.16-1.28-.06-.11-.23-.18-.5-.32Z" />
+              <path d="M16 5.33c-5.89 0-10.67 4.78-10.67 10.67 0 1.89.5 3.74 1.45 5.38L5 27l5.82-1.52c1.58.86 3.36 1.31 5.18 1.31 5.89 0 10.67-4.78 10.67-10.67C26.67 10.11 21.89 5.33 16 5.33Zm0 19.2c-1.62 0-3.2-.44-4.58-1.27l-.33-.2-3.46.9.92-3.37-.22-.35a8.51 8.51 0 0 1-1.33-4.59c0-4.7 3.82-8.53 8.53-8.53 4.7 0 8.53 3.82 8.53 8.53 0 4.7-3.82 8.53-8.53 8.53Z" />
+            </svg>
+          </span>
+          <span>
+            <span className="block text-[#071329]">Tienes preguntas?</span>
+            <span className="block text-xs font-semibold text-emerald-700">Contactanos por WhatsApp</span>
+          </span>
+        </a>
       </div>
 
     </div>

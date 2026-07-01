@@ -67,9 +67,9 @@ export const Header = ({
                 <Link
                   key={item.label}
                   href={item.href}
-                  className={`text-[14px] font-black transition ${
+                  className={`whitespace-nowrap rounded-full px-4 py-2.5 text-[14px] font-black transition ${
                     isActivePath(item.href)
-                      ? "text-[#1267e8]"
+                      ? "bg-[#071329] text-white shadow-[0_10px_24px_rgba(7,19,41,0.16)]"
                       : "text-[#071329] hover:text-[#1267e8]"
                   }`}
                 >

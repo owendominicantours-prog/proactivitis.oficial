@@ -2940,6 +2940,8 @@ export default async function TourDetailPage({
     discountPercent: allowPublicDiscounts ? discountPercent : 0,
     agencyLink: agencyLinkFromQuery ?? undefined,
     agencyDirectDiscountPercent,
+    ratingValue: detailReviewCount ? Number(ratingValue.toFixed(1)) : null,
+    reviewCount: detailReviewCount,
   };
   const currentTourPath = toLocalizedPath(`/tours/${tour.slug}`, locale);
   const buildTourOptionHref = (optionId: string) => {
@@ -2999,7 +3001,7 @@ export default async function TourDetailPage({
       <div>
         <TourBookingWidget {...bookingWidgetProps} />
       </div>
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex items-start gap-3 text-sm text-slate-700">
           <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500 text-xs font-black text-emerald-600">
             +
@@ -3298,7 +3300,7 @@ export default async function TourDetailPage({
                     </div>
                   </div>
                   {featuredReviewHighlights.length ? (
-                    <div className="border-t border-slate-100 pt-5 lg:col-span-2">
+                    <div className="hidden border-t border-slate-100 pt-5 lg:col-span-2">
                       <h2 className="text-xl font-black text-slate-950">
                         {localeLabel(
                           locale,
@@ -3375,7 +3377,7 @@ export default async function TourDetailPage({
                     </div>
                   ) : null}
                   {visibleHighlights.length ? (
-                    <ul className="space-y-2 text-sm font-semibold text-slate-700 lg:col-span-2">
+                    <ul className="hidden space-y-2 text-sm font-semibold text-slate-700 lg:col-span-2">
                       {visibleHighlights.map((item) => (
                         <li key={item} className="flex items-center gap-2">
                           <span
@@ -3389,6 +3391,45 @@ export default async function TourDetailPage({
                       ))}
                     </ul>
                   ) : null}
+                </div>
+              </section>
+
+              <section className="mt-6">
+                <div className="grid overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-sm md:grid-cols-3">
+                  {[
+                    [
+                      localeLabel(locale, "Explora paisajes", "Explore landscapes", "Explorez les paysages"),
+                      localeLabel(locale, "Recorre caminos rurales y descubre la autentica Republica Dominicana.", "Ride rural trails and discover the authentic Dominican Republic.", "Parcourez des sentiers ruraux et decouvrez la Republique dominicaine authentique."),
+                      "M6 15h12l3-3 2.5 2.5L18 8"
+                    ],
+                    [
+                      localeLabel(locale, "Aventura y diversion", "Adventure and fun", "Aventure et plaisir"),
+                      localeLabel(locale, "Conduce tu buggy y siente la adrenalina en cada curva.", "Drive your buggy and feel the energy in every turn.", "Conduisez votre buggy et profitez de chaque virage."),
+                      "M5 16l4-8 4 8 4-8 2 4"
+                    ],
+                    [
+                      localeLabel(locale, "Cenote natural", "Natural cenote", "Cenote naturel"),
+                      localeLabel(locale, "Nada en aguas cristalinas y vive una parada refrescante.", "Swim in clear water and enjoy a refreshing stop.", "Nagez dans une eau claire et profitez d une pause fraiche."),
+                      "M4 14c3-4 5-6 8-10 3 4 5 6 8 10"
+                    ]
+                  ].map(([title, text, path], index) => (
+                    <article
+                      key={title}
+                      className={`flex min-h-[120px] items-center gap-5 px-6 py-5 ${
+                        index < 2 ? "border-b border-slate-200 md:border-b-0 md:border-r" : ""
+                      }`}
+                    >
+                      <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#1267e8]">
+                        <svg aria-hidden viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d={path} />
+                        </svg>
+                      </span>
+                      <span>
+                        <span className="block text-base font-black text-[#071329]">{title}</span>
+                        <span className="mt-1 block text-sm font-semibold leading-6 text-slate-600">{text}</span>
+                      </span>
+                    </article>
+                  ))}
                 </div>
               </section>
 
