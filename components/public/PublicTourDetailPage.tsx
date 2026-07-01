@@ -2540,6 +2540,23 @@ export default async function TourDetailPage({
     ? `${PROACTIVITIS_URL}/agency-pro/${agencyLinkFromQuery}`
     : `${PROACTIVITIS_URL}${locale === "es" ? "" : `/${locale}`}/tours/${tour.slug}`;
   const toursHubUrl = `${PROACTIVITIS_URL}${locale === "es" ? "/tours" : `/${locale}/tours`}`;
+  const toursHubPath = toursHubUrl.replace(PROACTIVITIS_URL, "") || "/tours";
+  const normalizedLocationKey = locationLabel
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  const breadcrumbZoneLabel =
+    locationLabel ||
+    localeLabel(
+      locale,
+      "Republica Dominicana",
+      "Dominican Republic",
+      "Republique dominicaine",
+    );
+  const breadcrumbZonePath = normalizedLocationKey.includes("punta cana")
+    ? toLocalizedPath("/punta-cana/tours", locale)
+    : toursHubPath;
+  const breadcrumbZoneUrl = `${PROACTIVITIS_URL}${breadcrumbZonePath}`;
   const schemaImageObjects = schemaImages.map((image, index) => ({
     "@type": "ImageObject",
     "@id": `${tourUrl}#image-${index + 1}`,
@@ -2887,8 +2904,8 @@ export default async function TourDetailPage({
       {
         "@type": "ListItem",
         position: 1,
-        name: localeLabel(locale, "Inicio", "Home", "Accueil"),
-        item: `${PROACTIVITIS_URL}${locale === "es" ? "/" : `/${locale}`}`,
+        name: breadcrumbZoneLabel,
+        item: breadcrumbZoneUrl,
       },
       {
         "@type": "ListItem",
@@ -3099,11 +3116,11 @@ export default async function TourDetailPage({
         ) : null}
         <div className="space-y-5">
           <div className="hidden flex-wrap items-center gap-3 text-sm font-semibold text-[#2d5b9a] lg:flex">
-            <Link href={locale === "es" ? "/" : `/${locale}`} className="hover:text-[#1267e8]">
-              {localeLabel(locale, "Inicio", "Home", "Accueil")}
+            <Link href={breadcrumbZonePath} className="hover:text-[#1267e8]">
+              {breadcrumbZoneLabel}
             </Link>
             <span className="text-slate-300">›</span>
-            <Link href={toursHubUrl.replace(PROACTIVITIS_URL, "") || "/tours"} className="hover:text-[#1267e8]">
+            <Link href={toursHubPath} className="hover:text-[#1267e8]">
               {localeLabel(locale, "Tours", "Tours", "Tours")}
             </Link>
             <span className="text-slate-300">›</span>
