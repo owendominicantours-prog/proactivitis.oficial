@@ -2521,6 +2521,186 @@ export default async function TourDetailPage({
       ),
     },
   ];
+  const tourBenefitSearch = `${tour.slug} ${heroTitle} ${categories.join(" ")} ${
+    shortDescriptionText ?? ""
+  }`
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  const tourBenefitCards = (() => {
+    if (/(buggy|atv|cuatrimoto|macao|cenote|taina|taino)/.test(tourBenefitSearch)) {
+      return [
+        {
+          title: localeLabel(locale, "Explora paisajes", "Explore landscapes", "Explorez les paysages"),
+          text: localeLabel(
+            locale,
+            "Recorre caminos rurales y descubre paisajes naturales del destino.",
+            "Ride rural trails and discover natural scenery around the destination.",
+            "Parcourez des pistes rurales et decouvrez les paysages naturels.",
+          ),
+          path: "M6 15h12l3-3 2.5 2.5L18 8",
+        },
+        {
+          title: localeLabel(locale, "Aventura y diversion", "Adventure and fun", "Aventure et plaisir"),
+          text: localeLabel(
+            locale,
+            "Vive una experiencia activa con paradas pensadas para disfrutar el recorrido.",
+            "Enjoy an active experience with stops planned to make the route easy to enjoy.",
+            "Profitez d une experience active avec des arrets bien organises.",
+          ),
+          path: "M5 16l4-8 4 8 4-8 2 4",
+        },
+        {
+          title: localeLabel(locale, "Paradas refrescantes", "Refreshing stops", "Arrets rafraichissants"),
+          text: localeLabel(
+            locale,
+            "Aprovecha las pausas del itinerario para fotos, descanso y agua.",
+            "Use the route stops for photos, rest and fresh water moments.",
+            "Profitez des pauses pour les photos, le repos et l eau fraiche.",
+          ),
+          path: "M4 14c3-4 5-6 8-10 3 4 5 6 8 10",
+        },
+      ];
+    }
+
+    if (/(saona|bayahibe|catamaran|snorkel|isla|catalina|playa|boat|barco)/.test(tourBenefitSearch)) {
+      return [
+        {
+          title: localeLabel(locale, "Mar Caribe", "Caribbean sea", "Mer des Caraibes"),
+          text: localeLabel(
+            locale,
+            "Disfruta agua turquesa, brisa marina y tiempo para relajarte.",
+            "Enjoy turquoise water, sea breeze and time to relax.",
+            "Profitez de l eau turquoise, de la brise marine et du temps libre.",
+          ),
+          path: "M3 16c3-2 6-2 9 0s6 2 9 0M4 11c2-2 5-2 8 0s6 2 8 0",
+        },
+        {
+          title: localeLabel(locale, "Dia organizado", "Organized day", "Journee organisee"),
+          text: localeLabel(
+            locale,
+            "El recorrido mantiene horarios claros para que reserves sin complicarte.",
+            "The route keeps clear timing so booking feels simple.",
+            "Le circuit garde des horaires clairs pour reserver facilement.",
+          ),
+          path: "M8 7h8M8 12h8M8 17h5M5 5v14h14V5z",
+        },
+        {
+          title: localeLabel(locale, "Momentos para fotos", "Photo moments", "Moments photo"),
+          text: localeLabel(
+            locale,
+            "Aprovecha los mejores puntos del viaje para guardar recuerdos del Caribe.",
+            "Use the best stops of the trip for Caribbean memories.",
+            "Profitez des meilleurs arrets pour garder des souvenirs des Caraibes.",
+          ),
+          path: "M4 8h4l2-2h4l2 2h4v10H4zM12 17a4 4 0 100-8 4 4 0 000 8z",
+        },
+      ];
+    }
+
+    if (/(santo domingo|colonial|histor|cultura|gastronom)/.test(tourBenefitSearch)) {
+      return [
+        {
+          title: localeLabel(locale, "Historia local", "Local history", "Histoire locale"),
+          text: localeLabel(
+            locale,
+            "Conoce lugares emblematicos con contexto claro y facil de seguir.",
+            "Visit emblematic places with clear, easy-to-follow context.",
+            "Decouvrez des lieux emblematiques avec un contexte clair.",
+          ),
+          path: "M4 20h16M6 20V9l6-4 6 4v11M9 20v-6h6v6",
+        },
+        {
+          title: localeLabel(locale, "Ruta comoda", "Comfortable route", "Circuit confortable"),
+          text: localeLabel(
+            locale,
+            "La experiencia esta pensada para moverte entre paradas sin perder tiempo.",
+            "The experience is planned so you move between stops without wasting time.",
+            "L experience est organisee pour passer entre les arrets sans perdre de temps.",
+          ),
+          path: "M5 12h14M12 5l7 7-7 7",
+        },
+        {
+          title: localeLabel(locale, "Cultura dominicana", "Dominican culture", "Culture dominicaine"),
+          text: localeLabel(
+            locale,
+            "Descubre detalles reales del destino mas alla de una visita rapida.",
+            "Discover real destination details beyond a quick visit.",
+            "Decouvrez des details reels de la destination.",
+          ),
+          path: "M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z",
+        },
+      ];
+    }
+
+    if (/(parasailing|parapente|zip|scape|hoyo azul|adventure|aventura)/.test(tourBenefitSearch)) {
+      return [
+        {
+          title: localeLabel(locale, "Adrenalina segura", "Safe adrenaline", "Adrenaline encadree"),
+          text: localeLabel(
+            locale,
+            "Vive una actividad emocionante con equipo y coordinacion profesional.",
+            "Enjoy an exciting activity with professional coordination and gear.",
+            "Profitez d une activite intense avec une organisation professionnelle.",
+          ),
+          path: "M12 3l3 7h6l-5 4 2 7-6-4-6 4 2-7-5-4h6z",
+        },
+        {
+          title: localeLabel(locale, "Vistas memorables", "Memorable views", "Vues memorables"),
+          text: localeLabel(
+            locale,
+            "Elige una experiencia con puntos visuales fuertes para recordar el viaje.",
+            "Choose an experience with strong scenic moments to remember the trip.",
+            "Choisissez une experience avec des moments visuels forts.",
+          ),
+          path: "M4 14s3-5 8-5 8 5 8 5-3 5-8 5-8-5-8-5zM12 16a2 2 0 100-4 2 2 0 000 4z",
+        },
+        {
+          title: localeLabel(locale, "Reserva flexible", "Flexible booking", "Reservation flexible"),
+          text: localeLabel(
+            locale,
+            "Te ayudamos a coordinar horario, recogida y detalles antes de salir.",
+            "We help coordinate time, pickup and details before departure.",
+            "Nous vous aidons a coordonner horaire, prise en charge et details.",
+          ),
+          path: "M7 11l3 3 7-7M5 5h14v14H5z",
+        },
+      ];
+    }
+
+    return [
+      {
+        title: localeLabel(locale, "Experiencia verificada", "Verified experience", "Experience verifiee"),
+        text: localeLabel(
+          locale,
+          "Producto revisado para reservar con informacion clara y soporte local.",
+          "A reviewed product with clear booking information and local support.",
+          "Produit verifie avec informations claires et support local.",
+        ),
+        path: "M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z",
+      },
+      {
+        title: localeLabel(locale, "Itinerario claro", "Clear itinerary", "Itineraire clair"),
+        text: localeLabel(
+          locale,
+          "Conoce que incluye la actividad antes de confirmar tu reserva.",
+          "Know what the activity includes before confirming your booking.",
+          "Sachez ce qui est inclus avant de confirmer votre reservation.",
+        ),
+        path: "M8 7h8M8 12h8M8 17h5M5 5v14h14V5z",
+      },
+      {
+        title: localeLabel(locale, "Soporte local", "Local support", "Support local"),
+        text: localeLabel(
+          locale,
+          "Te asistimos por WhatsApp si necesitas confirmar detalles del viaje.",
+          "We assist by WhatsApp if you need to confirm trip details.",
+          "Nous vous aidons par WhatsApp pour confirmer les details.",
+        ),
+        path: "M6 8a6 6 0 1110 4l3 3-4 1a6 6 0 01-9-8z",
+      },
+    ];
+  })();
 
   const heroImageAbsolute = heroImage
     ? heroImage.startsWith("http")
@@ -3411,23 +3591,7 @@ export default async function TourDetailPage({
 
               <section className="mt-6">
                 <div className="grid overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-sm md:grid-cols-3">
-                  {[
-                    [
-                      localeLabel(locale, "Explora paisajes", "Explore landscapes", "Explorez les paysages"),
-                      localeLabel(locale, "Recorre caminos rurales y descubre la autentica Republica Dominicana.", "Ride rural trails and discover the authentic Dominican Republic.", "Parcourez des sentiers ruraux et decouvrez la Republique dominicaine authentique."),
-                      "M6 15h12l3-3 2.5 2.5L18 8"
-                    ],
-                    [
-                      localeLabel(locale, "Aventura y diversion", "Adventure and fun", "Aventure et plaisir"),
-                      localeLabel(locale, "Conduce tu buggy y siente la adrenalina en cada curva.", "Drive your buggy and feel the energy in every turn.", "Conduisez votre buggy et profitez de chaque virage."),
-                      "M5 16l4-8 4 8 4-8 2 4"
-                    ],
-                    [
-                      localeLabel(locale, "Cenote natural", "Natural cenote", "Cenote naturel"),
-                      localeLabel(locale, "Nada en aguas cristalinas y vive una parada refrescante.", "Swim in clear water and enjoy a refreshing stop.", "Nagez dans une eau claire et profitez d une pause fraiche."),
-                      "M4 14c3-4 5-6 8-10 3 4 5 6 8 10"
-                    ]
-                  ].map(([title, text, path], index) => (
+                  {tourBenefitCards.map(({ title, text, path }, index) => (
                     <article
                       key={title}
                       className={`flex min-h-[120px] items-center gap-5 px-6 py-5 ${
