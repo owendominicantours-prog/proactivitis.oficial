@@ -40,15 +40,6 @@ const publicNavLinks: Array<{
     }
   },
   {
-    labels: { es: "Actividades", en: "Activities", fr: "Activites" },
-    href: "/actividades",
-    hrefByLocale: {
-      es: "/actividades",
-      en: "/activities",
-      fr: "/activities"
-    }
-  },
-  {
     labels: { es: "Contacto", en: "Contact", fr: "Contact" },
     href: "/contact"
   }
